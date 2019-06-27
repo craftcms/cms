@@ -439,6 +439,7 @@ class Entry extends Element
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
@@ -602,6 +603,15 @@ class Entry extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __clone()
+    {
+        parent::__clone();
+        $this->_hasNewParent = null;
+    }
 
     /**
      * @inheritdoc
@@ -1227,12 +1237,12 @@ EOD;
      */
     public function afterPropagate(bool $isNew)
     {
-        // Save a new revision
+        parent::afterPropagate($isNew);
+
+        // Save a new revision?
         if ($this->_shouldSaveRevision()) {
             Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
         }
-
-        parent::afterPropagate($isNew);
     }
 
     /**

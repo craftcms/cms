@@ -88,24 +88,35 @@ class Revisions extends Component
         $num = ArrayHelper::remove($newAttributes, 'revisionNum');
 
         if (!$force || !$num) {
-            // Get the source's last revision, if it has one
-            /** @var Element|RevisionBehavior|null $lastRevision */
-            $lastRevision = $source::find()
-                ->revisionOf($source)
-                ->siteId($source->siteId)
-                ->anyStatus()
+            // Find the source's last revision number, if it has one
+            $lastRevisionNum = (new Query())
+                ->select(['num'])
+                ->from([Table::REVISIONS])
+                ->where(['sourceId' => $source->id])
                 ->orderBy(['num' => SORT_DESC])
-                ->one();
+                ->limit(1)
+                ->scalar();
 
-            // If the source hasn't been updated since the revision's creation date,
-            // there's no need to create a new one
-            if (!$force && $lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
-                $mutex->release($lockKey);
-                return $lastRevision;
+            if (!$force && $lastRevisionNum) {
+                // Get the revision, if it exists for the source's site
+                /** @var Element|RevisionBehavior|null $lastRevision */
+                $lastRevision = $source::find()
+                    ->revisionOf($source)
+                    ->siteId($source->siteId)
+                    ->anyStatus()
+                    ->andWhere(['revisions.num' => $lastRevisionNum])
+                    ->one();
+
+                // If the source hasn't been updated since the revision's creation date,
+                // there's no need to create a new one
+                if ($lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
+                    $mutex->release($lockKey);
+                    return $lastRevision;
+                }
             }
 
             // Get the next revision number for this element
-            $num = ($lastRevision->revisionNum ?? 0) + 1;
+            $num = ($lastRevisionNum ?: 0) + 1;
         }
 
         if ($creatorId === null) {

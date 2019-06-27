@@ -1084,7 +1084,7 @@ class ProjectConfig extends Component
         $configMap = Json::decode(Craft::$app->getInfo()->configMap) ?? [];
 
         foreach ($configMap as &$filePath) {
-            $filePath = Craft::getAlias($filePath);
+            $filePath = FileHelper::normalizePath(Craft::getAlias($filePath));
 
             // If any of the file doesn't exist, return a generated map and make sure we save it as request ends
             if (!file_exists($filePath)) {

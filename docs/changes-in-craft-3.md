@@ -411,7 +411,7 @@ Some element query params have been renamed in Craft 3. The old params have been
 | All of them  | `relatedTo.sourceLocale` | `relatedTo.sourceSite`
 | Asset        | `source`                 | `volume`
 | Asset        | `sourceId`               | `volumeId`
-| Matrix Block | `ownerLocale`            | `ownerSite` or `ownerSiteId`
+| Matrix Block | `ownerLocale`            | `site` or `siteId`
 
 #### `limit` Param
 

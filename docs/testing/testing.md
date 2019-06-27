@@ -5,7 +5,7 @@ TODO:
 
 ## Types of tests
 
-There are a variety of tests each providing a specific advantage to specific use cases and
+There are a variety of tests each providing pros and cons to specific use cases and
 functionalities within your application/module/plugin. Craft currently supports the following four test types. 
 
 ## Manual testing

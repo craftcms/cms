@@ -59,8 +59,6 @@
 {% endjs %}
 
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
-
-{% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}

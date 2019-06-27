@@ -54,6 +54,8 @@ class ControllerTest extends Unit
      */
     public function testBeforeAction()
     {
+        Craft::$app->getConfig()->getGeneral()->isSystemLive = true;
+
         $this->tester->expectThrowable(ServiceUnavailableHttpException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception
             $this->controller->beforeAction(new Action('not-allow-anonymous', $this->controller));

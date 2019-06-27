@@ -141,11 +141,7 @@ Craft.CP = Garnish.Base.extend(
 
             for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                 $form = this.$confirmUnloadForms.eq(i);
-
-                if (!Craft.forceConfirmUnload) {
-                    $form.data('initialSerializedValue', $form.serialize());
-                }
-
+                $form.data('initialSerializedValue', $form.serialize());
                 this.addListener($form, 'submit', function() {
                     this.removeListener(Garnish.$win, 'beforeunload');
                 });
@@ -153,19 +149,18 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
-                var $form;
-                if (
-                    Craft.forceConfirmUnload ||
-                    (
-                        typeof Craft.livePreview !== 'undefined' &&
-                        Craft.livePreview.inPreviewMode
-                    )
-                ) {
+                var $form, serialized;
+                if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
                     confirmUnload = true;
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                         $form = this.$confirmUnloadForms.eq(i);
-                        if ($form.data('initialSerializedValue') !== $form.serialize()) {
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        if ($form.data('initialSerializedValue') !== serialized) {
                             confirmUnload = true;
                             break;
                         }

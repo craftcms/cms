@@ -11,7 +11,7 @@ return [
         'handle' => 'aGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
         'plainTextField' => 'There is some information here',
-        'uid' => 'globalset-1000-uid',
+        'uid' => 'globalset-1000-------------------uid',
     ],
 
     [
@@ -19,7 +19,7 @@ return [
         'handle' => 'aDifferentGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
         'plainTextField' => 'No more information to give.',
-        'uid' => 'globalset-1001-uid',
+        'uid' => 'globalset-1001-------------------uid',
     ],
 
     [
@@ -27,7 +27,7 @@ return [
         'handle' => 'aThirdGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
         'plainTextField' => 'No more information to give.',
-        'uid' => 'globalset-1002-uid',
+        'uid' => 'globalset-1002-------------------uid',
     ],
 
     // Deleted
@@ -35,6 +35,6 @@ return [
         'name' => 'A deleted global set',
         'handle' => 'aDeletedGlobalSet',
         'dateDeleted' => (new DateTime('now'))->format('Y-m-d H:i:s'),
-        'uid' => 'globalset-1003-uid',
+        'uid' => 'globalset-1003-------------------uid',
     ],
 ];

@@ -22,7 +22,7 @@ return [
         ]),
         'sortOrder' => 5,
         'fieldLayoutType' => 'volume_field_layout',
-        'uid' => 'volume-1000-uid',
+        'uid' => 'volume-1000----------------------uid',
     ],
 
     'deleted1' => [
@@ -38,7 +38,7 @@ return [
         'hasUrls' => true,
         'sortOrder' => 6,
         'fieldLayoutType' => 'volume_field_layout',
-        'uid' => 'volume-1001-uid',
+        'uid' => 'volume-1001----------------------uid',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
     ],
 
@@ -55,7 +55,7 @@ return [
         'hasUrls' => true,
         'sortOrder' => 7,
         'fieldLayoutType' => 'volume_field_layout',
-        'uid' => 'volume-1002-uid',
+        'uid' => 'volume-1002----------------------uid',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
 
     ],

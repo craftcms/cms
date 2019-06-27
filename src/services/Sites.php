@@ -999,17 +999,6 @@ class Sites extends Component
 
                     if (!empty($blockIds)) {
                         Craft::$app->getDb()->createCommand()
-                            ->update(
-                                Table::MATRIXBLOCKS,
-                                ['ownerSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['id' => $blockIds],
-                                    ['not', ['ownerSiteId' => null]]
-                                ])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
                             ->delete(
                                 Table::ELEMENTS_SITES,
                                 [

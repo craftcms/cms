@@ -19,6 +19,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
+use craft\models\Section;
+use craft\models\Site;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\validators\SiteIdValidator;
 use craft\web\assets\matrix\MatrixAsset;
@@ -147,6 +149,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @var int|null Owner site ID
+     * @deprecated in 3.2. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 
@@ -172,7 +175,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     public $deletedWithOwner = false;
 
     /**
-     * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
+     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
 
@@ -183,6 +186,16 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'owner';
+        return $names;
+    }
 
     /**
      * @inheritdoc
@@ -202,7 +215,6 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         $rules = parent::rules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        $rules[] = [['ownerSiteId'], SiteIdValidator::class];
         return $rules;
     }
 
@@ -211,31 +223,17 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getSupportedSites(): array
     {
-        // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
-        // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
-
-        if ($this->ownerSiteId !== null) {
-            return [$this->ownerSiteId];
-        }
-
         try {
             $owner = $this->getOwner();
         } catch (InvalidConfigException $e) {
-            $owner = null;
+            $owner = $this->duplicateOf;
         }
 
-        if ($owner || $this->duplicateOf) {
-            // Just send back an array of site IDs -- don't pass along enabledByDefault configs
-            $siteIds = [];
-
-            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
-                $siteIds[] = $siteInfo['siteId'];
-            }
-
-            return $siteIds;
+        if (!$owner) {
+            return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return [Craft::$app->getSites()->getPrimarySite()->id];
+        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_getField(), $owner);
     }
 
     /**
@@ -279,12 +277,8 @@ class MatrixBlock extends Element implements BlockElementInterface
             }
 
             if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
-                $this->_owner = false;
+                throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
             }
-        }
-
-        if ($this->_owner === false) {
-            throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
         }
 
         return $this->_owner;
@@ -423,7 +417,6 @@ class MatrixBlock extends Element implements BlockElementInterface
 
         $record->fieldId = $this->fieldId;
         $record->ownerId = $this->ownerId;
-        $record->ownerSiteId = $this->ownerSiteId;
         $record->typeId = $this->typeId;
         $record->sortOrder = $this->sortOrder;
         $record->save(false);

@@ -1324,7 +1324,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             if ($this->trashed === false) {
                 $this->subQuery->andWhere(['elements.dateDeleted' => null]);
@@ -2034,7 +2034,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->from([Table::STRUCTURES])
                 ->where('[[id]] = [[structureelements.structureId]]');
             // todo: remove schema version condition after next beakpoint
-            $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
             if (version_compare($schemaVersion, '3.1.0', '>=')) {
                 $existsQuery->andWhere(['dateDeleted' => null]);
             }
@@ -2176,7 +2176,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams()
     {
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.2.6', '<')) {
             return;
         }

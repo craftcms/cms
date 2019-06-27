@@ -1,18 +1,51 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-RC2 - 2019-06-26
 
 ### Added
-- Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
+- Added `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
+- Added `craft\services\Matrix::duplicateBlocks()`.
 
 ### Changed
+- `craft\services\Matrix::saveField()` no longer has a `$checkOtherSites` argument, and is no longer is responsible for duplicating blocks from other elements.
+- `fieldValues` is now reserved field handle. ([#4453](https://github.com/craftcms/cms/issues/4453))
+
+### Fixed
+- Fixed a bug where Edit Entry pages would show unnecessary page unload warnings in Chrome 75.
+- Fixed an error that could occur when editing entries on multi-site installs.
+- Fixed a bug where Matrix blocks weren’t getting duplicated for other sites when creating a new element. ([#4449](https://github.com/craftcms/cms/issues/4449))
+- Fixed a bug where new installs could be missing most project config values.
+- Fixed a bug where entries could get `-1` appended to their slugs when updated, for no good reason. ([#4448](https://github.com/craftcms/cms/issues/4448))
+- Fixed an error that could occur when creating entries programmatically, or via Feed Me. ([#4450](https://github.com/craftcms/cms/issues/4450))
+
+## 3.2.0-RC1 - 2019-06-25
+
+### Added
+- Matrix fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
+- Added the `resave/matrix-blocks` console command.
+- Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
+- Asset, category, entry, and user indexes can now have “UID” columns. ([#4433](https://github.com/craftcms/cms/issues/4433))
+- Added `craft\services\Matrix::getSupportedSiteIdsForField()`.
+
+### Changed
+- `craft\services\Elements::resaveElements()` now has a `$skipRevisions` argument.
+- `craft\services\Matrix::saveField()` now has a `$checkOtherSites` argument.
+- `craft\test\Craft::assertElementsExist()` now has a `$searchAll` argument.
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
+- Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 
 ### Deprecated
+- Deprecated the `ownerSite` and `ownerSiteId` Matrix block query params.
+- Deprecated `craft\elements\MatrixBlock::$ownerSiteId`.
 - Deprecated `craft\events\DefineComponentsEvent`.
 
 ### Fixed
 - Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
+- Fixed an error that could occur when installing Craft with an existing `project.yaml` file that defined a Single section.
+- Fixed an error that could occur when saving an entry with Matrix blocks on a multi-site Craft install. ([#4429](https://github.com/craftcms/cms/issues/4429))
+- Fixed a JavaScript error that could occur when creating new entries. ([#4443](https://github.com/craftcms/cms/issues/4443))
+- Fixed a bug where new entry revisions within Structure sections weren’t getting saved properly. ([#4438](https://github.com/craftcms/cms/issues/4438))
+- Fixed a bug where `craft\test\Craft::amLoggedInAs()` would not login a user.
 
 ## 3.2.0-beta.3 - 2019-06-18
 
@@ -329,6 +362,21 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+
+## 3.1.32.1 - 2019-06-25
+
+### Fixed
+- Fixed a couple Windows compatibility issues.
+
+## 3.1.32 - 2019-06-25
+
+### Changed
+- Project Config now sorts arrays when all of the keys are UIDs. ([#4425](https://github.com/craftcms/cms/issues/4425))
+
+### Fixed
+- Fixed a bug where Craft might not match a domain to the proper site if it had a non-ASCII character in the host name.
+- Fixed an error that could occur when using the `|filter` Twig filter. ([#4437](https://github.com/craftcms/cms/issues/4437))
+- Fixed a bug where pagination URL could get repeated page params added to the query string if using query string-based pagination.
 
 ## 3.1.31 - 2019-06-18
 
