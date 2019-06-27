@@ -1191,6 +1191,7 @@ class Users extends Component
             ->anyStatus()
             ->ids();
 
+        // Anything that doesn't have any more urls - Bye!
         if ($sitesNowWithoutUrls) {
             Craft::$app->getDb()->createCommand()
                 ->update(
@@ -1203,13 +1204,13 @@ class Users extends Component
                 ->execute();
         }
 
-        //
+        // Anything that needs updating?
         if ($sitesWithNewUriFormats) {
             App::maxPowerCaptain();
 
+            // Loop through each of the changed sites and update all of the users’ slugs and
+            // URIs
             foreach ($userIds as $userId) {
-                // Loop through each of the changed sites and update all of the categories’ slugs and
-                // URIs
                 foreach ($sitesWithNewUriFormats as $siteId) {
                     $user = User::find()
                         ->id($userId)
@@ -1217,6 +1218,7 @@ class Users extends Component
                         ->anyStatus()
                         ->one();
 
+                    // Launch
                     if ($user) {
                         Craft::$app->getElements()->updateElementSlugAndUri($user, false, false);
                     }
