@@ -164,7 +164,15 @@ class User extends Element implements IdentityInterface
      */
     public function getUriFormat()
     {
-        $uriFormat = Craft::$app->getProjectConfig()->get('users.uriFormat');
+        if (!$this->siteId) {
+            return null;
+        }
+
+        // Try to get the relevant format.
+        $site = Craft::$app->getUsers()->getSiteSettingsBySiteId(
+            $this->siteId
+        );
+        $uriFormat =  $site && $site->hasUrls ? $site->uriFormat : null;
 
         // Default to no Uri on this user.
         if (!$uriFormat) {
@@ -183,7 +191,10 @@ class User extends Element implements IdentityInterface
             return null;
         }
 
-        $templatePath = Craft::$app->getProjectConfig()->get('users.templatePath');
+        $setting = Craft::$app->getUsers()->getSiteSettingsBySiteId(
+            Craft::$app->getSites()->getCurrentSite()->id
+        );
+        $templatePath = $setting && $setting->hasUrls ? $setting->template : null;
 
         // Default to no routing on this user
         if (!$templatePath) {
