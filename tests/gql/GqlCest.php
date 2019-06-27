@@ -5,12 +5,13 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace tests\functional;
+namespace tests\gql;
 
 use Craft;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
+use yii\base\Application;
 
 class GqlCest
 {
@@ -28,6 +29,7 @@ class GqlCest
 
     public function _before(FunctionalTester $I)
     {
+        \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
         $gqlService = Craft::$app->getGql();
         $token = $gqlService->getTokenByAccessToken('My+voice+is+my+passport.+Verify me.');
         $gqlService->setToken($token);
@@ -44,8 +46,6 @@ class GqlCest
      */
     public function forgetQueryParameter(FunctionalTester $I)
     {
-        // If this suite is ran separately, sometimes this test fails for no reason.
-        // ¯\_(ツ)_/¯
         $I->amOnPage('?action=gql');
         $I->see('Request missing required param');
     }
