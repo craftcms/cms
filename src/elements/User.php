@@ -21,6 +21,7 @@ use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -1182,17 +1183,22 @@ class User extends Element implements IdentityInterface
         return null;
     }
 
+
     /**
      * @inheritdoc
      */
     public function getCpEditUrl()
     {
         if ($this->getIsCurrent()) {
-            return UrlHelper::cpUrl('myaccount');
+            $url =  'myaccount';
         }
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            return UrlHelper::cpUrl('users/' . $this->id);
+            $url = 'users/' . $this->id;
+        }
+
+        if ($url) {
+            return UrlHelper::cpUrl($url . '/' . $this->getSite()->handle);
         }
 
         return null;
@@ -1337,6 +1343,23 @@ class User extends Element implements IdentityInterface
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * Takes action on the Before save method to ensure a slug exists for this user.
+     *
+     * @param bool $isNew
+     * @return bool
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!$this->slug) {
+            $this->slug = ElementHelper::createSlug(
+                $this->username
+            );
+        }
+
+        return parent::beforeSave($isNew);
+    }
 
     /**
      * @inheritdoc

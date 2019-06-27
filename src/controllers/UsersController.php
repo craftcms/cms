@@ -558,7 +558,10 @@ class UsersController extends Controller
             Craft::$app->getSession()->setError(reset($errors));
         }
 
-        // Try to get the site
+
+        // Get our current site + some required site details.
+        // ---------------------------------------------------------------------
+
         $site = null;
         if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
