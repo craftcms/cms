@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added an `edition` config setting for the `codeception.yml` file.
+
 ## 3.2.0-RC2 - 2019-06-26
 
 ### Added
