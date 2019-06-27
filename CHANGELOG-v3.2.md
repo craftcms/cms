@@ -98,8 +98,9 @@
 - Added `craft\services\Users::canImpersonate()`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
 - Added `craft\web\UrlManager::$checkToken`.
-- Added the `Craft.parseUrl()` JavaScript method.
 - Added the `Craft.isSameHost()` JavaScript method.
+- Added the `Craft.parseUrl()` JavaScript method.
+- Added the `Craft.randomString()` JavaScript method.
 - Added the `Craft.DraftEditor` JavaScript class.
 - Added the `Craft.Preview` JavaScript class.
 

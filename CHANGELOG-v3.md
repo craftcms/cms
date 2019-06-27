@@ -3,7 +3,10 @@
 ## Unreleased
 
 ### Added
-- Added an `edition` config setting for the `codeception.yml` file.
+- Added the `Craft.randomString()` JavaScript method.
+
+### Changed
+- Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
 
 ## 3.2.0-RC2 - 2019-06-26
 
