@@ -90,7 +90,6 @@ class InterfaceAndGeneratorTest extends Unit
 
     /**
      * Test interfaces running type generators.
-     * @group gql
      *
      * @dataProvider interfaceDataProvider
      *
@@ -111,7 +110,7 @@ class InterfaceAndGeneratorTest extends Unit
 
     /**
      * Test table row generator
-     * @group gql
+
      *
      * @throws \craft\errors\GqlException
      */

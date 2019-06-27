@@ -42,7 +42,6 @@ class DirectiveTest extends Unit
 
     /**
      * Test directives
-     * @group gql
      *
      * @dataProvider directiveDataProvider
      *
@@ -69,7 +68,6 @@ class DirectiveTest extends Unit
 
     /**
      * Test transform directive
-     * @group gql
      *
      * @dataProvider assetTransformDirectiveDataProvider
      *
@@ -121,7 +119,6 @@ class DirectiveTest extends Unit
 
     /**
      * Test if transform is only correctly applied to URL.
-     * @group gql
      */
     public function testTransformOnlyUrl()
     {
