@@ -1075,6 +1075,11 @@ class UsersController extends Controller
         // If this is Craft Pro, grab any profile content from post
         $user->setFieldValuesFromRequest('fields');
 
+        // Don't allow slug changes from the frontend
+        if ($request->isCpRequest) {
+            $user->slug = $request->getParam('slug');
+        }
+
         // Validate and save!
         // ---------------------------------------------------------------------
 

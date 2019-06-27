@@ -327,6 +327,18 @@
                             <p class="value">{{ user.invalidLoginCount }}</p>
                         </div>
                     {% endif %}
+
+                {{ forms.textField({
+                        label: "Slug"|t('app'),
+                        siteId: user.siteId,
+                        id: 'slug',
+                        name: 'slug',
+                        autocorrect: false,
+                        autocapitalize: false,
+                        value: user.slug,
+                        placeholder: "Enter slug"|t('app'),
+                        errors: (user.getErrors('slug')|merge(user.getErrors('uri')))
+                    }) }}
                 {% endif %}
             </form>
         {% endif %}
@@ -352,4 +364,12 @@
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)'
     ]);
+
+{% if not user.slug %}
+    window.slugGenerator = new Craft.SlugGenerator('#username', '#slug', {
+        charMap: {{ craft.cp.getAsciiCharMap(user.site.language)|json_encode|raw }}
+    });
+{% endif %}
+
 {% endjs %}
+
