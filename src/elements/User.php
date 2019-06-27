@@ -188,7 +188,7 @@ class User extends Element implements IdentityInterface
      */
     protected function route()
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->getEdition() !== Craft::Pro || $this->getStatus() !== User::STATUS_ACTIVE) {
             return null;
         }
 
