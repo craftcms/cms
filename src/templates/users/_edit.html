@@ -31,6 +31,20 @@
 
 {% hook "cp.users.edit" %}
 
+{% block contextMenu %}
+{% if craft.app.getIsMultiSite() %}
+        {% set urlFormat =
+            url("users/"~ user.id ~"/{handle}/")
+        %}
+
+        {% include "_elements/sitemenu" with {
+            siteIds: siteIds,
+            selectedSiteId: user.siteId,
+            urlFormat: urlFormat
+        } only %}
+{% endif %}
+{% endblock %}
+
 {% block actionButton %}
     {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
         <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>

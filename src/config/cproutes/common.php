@@ -20,6 +20,10 @@ return [
         'route' => 'users/edit-user',
         'defaults' => ['userId' => 'current']
     ],
+    'myaccount/<siteHandle:{handle}>' => [
+        'route' => 'users/edit-user',
+        'defaults' => ['userId' => 'current']
+    ],
     'update' => 'updater',
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',

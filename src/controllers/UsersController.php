@@ -552,10 +552,33 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
+    public function actionEditUser(string $siteHandle = null, $userId = null, User $user = null, array $errors = null): Response
     {
         if (!empty($errors)) {
             Craft::$app->getSession()->setError(reset($errors));
+        }
+
+        // Try to get the site
+        $site = null;
+        if ($siteHandle !== null) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
+            }
+        }
+
+        if (!$site) {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $site = Craft::$app->getSites()->getCurrentSite();
+        }
+
+        if (Craft::$app->getIsMultiSite()) {
+            // Only use the sites that the user has access to
+            $siteIds = Craft::$app->getSites()->getAllSiteIds();
+        } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
         // Determine which user account we're editing
@@ -590,6 +613,7 @@ class UsersController extends Controller
                         /** @var User|null $user */
                         $user = User::find()
                             ->id($userId)
+                            ->siteId($site->id)
                             ->anyStatus()
                             ->addSelect('users.passwordResetRequired')
                             ->one();
@@ -892,6 +916,24 @@ class UsersController extends Controller
         ]);
         $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
 
+        // Enable Live Preview?
+        if (!Craft::$app->getRequest()->isMobileBrowser(true)) {
+            $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
+                    'fields' => '#userform, #fields > div > div > .field',
+                    'extraFields' => '#settings',
+                    'previewUrl' => $user->getUrl(),
+                    'previewAction' => Craft::$app->getSecurity()->hashData('users/preview-user'),
+                    'previewParams' => [
+                        'userId' => $user->id,
+                        'siteId' => $user->siteId,
+                    ]
+                ]) . ');');
+
+            $showPreviewBtn = true;
+        } else {
+            $showPreviewBtn = false;
+        }
+
         return $this->renderTemplate('users/_edit', compact(
             'user',
             'isNewUser',
@@ -903,8 +945,16 @@ class UsersController extends Controller
             'selectedTab',
             'craftIdAccount',
             'craftIdError',
-            'craftIdToken'
+            'craftIdToken',
+            'siteIds',
+            'site',
+            'showPreviewBtn'
         ));
+    }
+
+    public function actionPreviewUser()
+    {
+        return '22';
     }
 
     /**
