@@ -478,6 +478,8 @@ class Gql extends Component
 
         $label = Craft::t('app', 'Users');
 
+        $userPermissions = ['usergroups.everyone:read' => ['label' => Craft::t('app', 'View all users')]];
+
         foreach ($userGroups as $userGroup) {
             $suffix = 'usergroups.' . $userGroup->uid;
             $userPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];

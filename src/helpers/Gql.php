@@ -80,6 +80,25 @@ class Gql
     }
 
     /**
+     * Returns true if the current token can perform the action on the scope.
+     *
+     * @param string $scope The scope to check.
+     * @param string $action The action. Defaults to "read"
+     * @return bool
+     * @throws GqlException
+     */
+    public static function canToken($scope, $action = 'read'): bool
+    {
+        try {
+            $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+            return !empty(preg_grep('/^' . preg_quote($scope, '/') . '\:' . preg_quote($action, '/') . '$/i', $permissions));
+        } catch (GqlException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return false;
+        }
+    }
+
+    /**
      * Return true if current token can query entries.
      *
      * @return bool
