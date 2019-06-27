@@ -17,6 +17,7 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
+use craft\events\ElementEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
@@ -33,11 +34,13 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -82,6 +85,11 @@ class UsersController extends Controller
      * ```
      */
     const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
+
+    /**
+     * The event that is used when the template for previewing a user is rendered.
+     */
+    const EVENT_PREVIEW_USER = 'previewUser';
 
     // Properties
     // =========================================================================
@@ -922,8 +930,7 @@ class UsersController extends Controller
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->isMobileBrowser(true)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#userform, #fields > div > div > .field',
-                    'extraFields' => '#settings',
+                    'fields' => '#fields',
                     'previewUrl' => $user->getUrl(),
                     'previewAction' => Craft::$app->getSecurity()->hashData('users/preview-user'),
                     'previewParams' => [
@@ -955,9 +962,64 @@ class UsersController extends Controller
         ));
     }
 
+    /**
+     * Handles the previewing of a user.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @throws InvalidConfigException
+     */
     public function actionPreviewUser()
     {
-        return '22';
+        $this->requirePermission('moderateUsers');
+
+        $this->requirePostRequest();
+        $request = Craft::$app->getRequest();
+        $userId = $request->getRequiredParam('userId');
+        $siteId = $request->getRequiredParam('siteId');
+        $user = User::find()
+            ->id($userId)
+            ->siteId($siteId)
+            ->one();
+        if (!$user) {
+            throw new BadRequestHttpException('Invalid user ID: ' . $user);
+        }
+
+        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
+        $user->setFieldValuesFromRequest($fieldsLocation);
+
+        // Fire a 'previewCategory' event
+        if ($this->hasEventHandlers(self::EVENT_PREVIEW_USER)) {
+            $this->trigger(self::EVENT_PREVIEW_CATEGORY, new ElementEvent([
+                'element' => $user,
+            ]));
+        }
+
+        $siteSettings = Craft::$app->getUsers()->getSiteSettingsBySiteId($siteId);
+
+        if (!$siteSettings || !$siteSettings->hasUrls) {
+            throw new ServerErrorHttpException('The user ' . $user->getName() . ' doesn’t have a URL for the site ' . $siteId . '.');
+        }
+
+        $site = Craft::$app->getSites()->getSiteById($siteId);
+
+        if (!$site) {
+            throw new ServerErrorHttpException('Invalid site ID: ' . $siteId);
+        }
+
+        Craft::$app->language = $site->language;
+        Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
+
+        // Have this user override any freshly queried categories with the same ID/site
+        Craft::$app->getElements()->setPlaceholderElement($user);
+
+        $this->getView()->getTwig()->disableStrictVariables();
+
+        return $this->renderTemplate($siteSettings->template, [
+            'user' => $user
+        ]);
     }
 
     /**
