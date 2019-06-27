@@ -73,33 +73,59 @@ class TypeResolverTest extends Unit
     // =========================================================================
 
     /**
-     * Test an arrayable string is split by comma
-     * @group gql
-     *
-     * @dataProvider arrayableDataProvider
-     */
-    public function testArrayableParameters($in, $out, $result)
+     * Test resolving a related element.
+     **/
+    public function testRunGqlResolveTest()
     {
-        if ($result) {
-            $this->assertEquals(BaseResolver::prepareArguments($in), $out);
-        } else {
-            $this->assertNotEquals(BaseResolver::prepareArguments($in), $out);
+        // Not using a data provider for this because of fixture load/unload on *every* iteration.
+        $data = [
+            // Assets
+            [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
+            [Asset::class, ['folderId' => 1000], AssetResolver::class],
+            [Asset::class, ['folderId' => 1], AssetResolver::class],
+            [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
+
+            // Entries
+            [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
+            [Entry::class, ['title' => StringHelper::randomString(128)], EntryResolver::class],
+            [Entry::class, ['authorId' => [1]], EntryResolver::class],
+
+            // Globals
+            [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => 'aDeletedGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => StringHelper::randomString(128)], GlobalSetResolver::class, true],
+
+            // Users
+            [User::class, ['username' => 'user1'], UserResolver::class],
+            [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
+            [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
+            [User::class, ['username' => StringHelper::randomString(128)], UserResolver::class],
+
+            // Matrix Blocks
+            [MatrixBlock::class, ['type' => 'aBlock'], MatrixBlockResolver::class],
+            [MatrixBlock::class, ['site' => 'testSite1'], MatrixBlockResolver::class],
+            [MatrixBlock::class, ['type' => 'MISSING'], MatrixBlockResolver::class],
+            [MatrixBlock::class, [], MatrixBlockResolver::class],
+        ];
+
+        foreach ($data as $testData) {
+            $this->_runResolverTest(... $testData);
         }
     }
 
     /**
-     * Test resolving a related element.
-     * @group gql
-     *
-     * @dataProvider resolverDataProvider
+     * Run the test.
      *
      * @param string $elementType The element class providing the elements
      * @param array $parameterSet Querying parameters to use
      * @param string $resolverClass The resolver class being tested
      * @param boolean $mustNotBeSame Whether the results should differ instead
+     * @throws \Exception
      */
-    public function testRunGqlResolveTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
+    public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
+
         $elementQuery = Craft::configure($elementType::find(), $params);
 
         // Get the ids and elements.
@@ -128,52 +154,5 @@ class TypeResolverTest extends Unit
         } else {
             $this->assertEquals($resolvedField, $elementResults);
         }
-    }
-
-    // Data Providers
-    // =========================================================================
-
-    public function arrayableDataProvider()
-    {
-        return [
-            [['siteId' => '8, 12, 44'], ['siteId' => [8,12,44]], true],
-            [['siteId' => '8, 12, 44'], ['siteId' => ['8','12','44']], true],
-            [['siteId' => 'longstring'], ['siteId' => ['longstring']], false],
-            [['siteId' => 'longstring'], ['siteId' => 'longstring'], true],
-        ];
-    }
-
-    public function resolverDataProvider()
-    {
-        return [
-            // Assets
-            [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
-            [Asset::class, ['folderId' => 1000], AssetResolver::class],
-            [Asset::class, ['folderId' => 1], AssetResolver::class, true],
-            [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
-
-            // Entries
-            [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
-            [Entry::class, ['title' => StringHelper::randomString(128)], EntryResolver::class],
-            [Entry::class, ['authorId' => [1]], EntryResolver::class],
-
-            // Globals
-            [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
-            [GlobalSet::class, ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']], GlobalSetResolver::class, true],
-            [GlobalSet::class, ['handle' => 'aDeletedGlobalSet'], GlobalSetResolver::class, true],
-            [GlobalSet::class, ['handle' => StringHelper::randomString(128)], GlobalSetResolver::class, true],
-
-            // Users
-            [User::class, ['username' => 'user1'], UserResolver::class],
-            [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
-            [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
-            [User::class, ['username' => StringHelper::randomString(128)], UserResolver::class],
-
-            // Matrix Blocks
-            [MatrixBlock::class, ['type' => 'aBlock'], MatrixBlockResolver::class],
-            [MatrixBlock::class, ['site' => 'testSite1'], MatrixBlockResolver::class],
-            [MatrixBlock::class, ['type' => 'MISSING'], MatrixBlockResolver::class],
-            [MatrixBlock::class, [], MatrixBlockResolver::class],
-        ];
     }
 }
