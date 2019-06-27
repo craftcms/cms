@@ -8,6 +8,7 @@
 
 ### Changed
 - `craft\services\Matrix::saveField()` no longer has a `$checkOtherSites` argument, and is no longer is responsible for duplicating blocks from other elements.
+- `fieldValues` is now reserved field handle. ([#4453](https://github.com/craftcms/cms/issues/4453))
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would show unnecessary page unload warnings in Chrome 75.
