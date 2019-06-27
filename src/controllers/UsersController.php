@@ -930,7 +930,7 @@ class UsersController extends Controller
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->isMobileBrowser(true)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#fields > div > div > .field, #photo-field, #username-field, #firstName-field, #lastname-field, #slug-field, #email-field',
+                    'fields' => '#fields > div > div > .field, #username-field, #firstName-field, #lastName-field, #slug-field, #email-field',
                     'previewUrl' => $user->getUrl(),
                     'previewAction' => Craft::$app->getSecurity()->hashData('users/preview-user'),
                     'previewParams' => [
@@ -987,6 +987,14 @@ class UsersController extends Controller
             throw new BadRequestHttpException('Invalid user ID: ' . $user);
         }
 
+        // Set the User element field values
+        $user->username = $request->getParam('username', $user->username);
+        $user->firstName = $request->getParam('firstName', $user->firstName);
+        $user->lastName = $request->getParam('lastName', $user->lastName);
+        $user->email = $request->getParam('email', $user->email);
+        $user->slug = $request->getParam('slug', $user->slug);
+
+        // And the *custom* field values
         $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
         $user->setFieldValuesFromRequest($fieldsLocation);
 
