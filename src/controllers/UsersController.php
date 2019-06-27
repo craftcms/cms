@@ -930,7 +930,7 @@ class UsersController extends Controller
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->isMobileBrowser(true)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#fields',
+                    'fields' => '#fields > div > div > .field, #photo-field, #username-field, #firstName-field, #lastname-field, #slug-field, #email-field',
                     'previewUrl' => $user->getUrl(),
                     'previewAction' => Craft::$app->getSecurity()->hashData('users/preview-user'),
                     'previewParams' => [

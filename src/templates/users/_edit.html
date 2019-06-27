@@ -48,6 +48,13 @@
         urlFormat: urlFormat
     } only %}
 {% endif %}
+
+<div class="flex-grow"></div>
+{% if showPreviewBtn is defined and showPreviewBtn == true %}
+<div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
+{% endif %}
+<div class="flex-grow"></div>
+
 {% endblock %}
 
 {% block actionButton %}
@@ -79,98 +86,102 @@
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
-        <div id="account">
-            {% include "users/_accountfields" %}
+            <div id="account">
+                {% include "users/_accountfields" %}
 
-            {% if not isNewUser %}
-                {{ forms.field({
-                    label: "Photo"|t('app'),
-                    id: 'photo'
-                }, include('users/_photo', {user: user}, with_context = false)) }}
-            {% endif %}
-
-            {{ forms.textField({
-                    label: "Slug"|t('app'),
-                    siteId: user.siteId,
-                    id: 'slug',
-                    name: 'slug',
-                    autocorrect: false,
-                    autocapitalize: false,
-                    value: user.slug,
-                    placeholder: "Enter slug"|t('app'),
-                    errors: (user.getErrors('slug')|merge(user.getErrors('uri')))
-                }) }}
-
-            <hr>
-
-            {% if isNewUser %}
-
-                {{ forms.textField({
-                    label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
-                    id: 'email',
-                    name: 'email',
-                    value: user.email,
-                    required: true,
-                    type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
-                }) }}
-
-                {% if requireEmailVerification and currentUser.admin %}
-                    {{ forms.checkboxField({
-                        label: "Send an activation email now?"|t('app'),
-                        name: 'sendVerificationEmail',
-                        checked: true
-                    }) }}
+                {% if not isNewUser %}
+                    {{ forms.field({
+                        label: "Photo"|t('app'),
+                        id: 'photo'
+                    }, include('users/_photo', {user: user}, with_context = false)) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
-
                 {{ forms.textField({
-                    label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t('app')),
-                    id: 'email',
-                    name: 'email',
-                    value: user.email,
-                    required: true,
-                    type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
-                }) }}
+                        label: "Slug"|t('app'),
+                        siteId: user.siteId,
+                        id: 'slug',
+                        name: 'slug',
+                        autocorrect: false,
+                        autocapitalize: false,
+                        value: user.slug,
+                        placeholder: "Enter slug"|t('app'),
+                        errors: (user.getErrors('slug')|merge(user.getErrors('uri')))
+                    }) }}
 
-                {% if user.getIsCurrent() %}
+                <hr>
+
+                {% if isNewUser %}
+
                     {{ forms.textField({
-                        label: "New Password"|t('app'),
-                        id: 'newPassword',
-                        name: 'newPassword',
-                        type: 'password',
-                        autocomplete: 'new-password',
-                        errors: user.getErrors('newPassword')
+                        label: "Email"|t('app'),
+                        instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
+                        id: 'email',
+                        name: 'email',
+                        value: user.email,
+                        required: true,
+                        type: 'email',
+                        errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                     }) }}
 
-                    {% js %}
-                        new Craft.PasswordInput('#newPassword');
-                    {% endjs %}
-                {% endif %}
+                    {% if requireEmailVerification and currentUser.admin %}
+                        {{ forms.checkboxField({
+                            label: "Send an activation email now?"|t('app'),
+                            name: 'sendVerificationEmail',
+                            checked: true
+                        }) }}
+                    {% endif %}
 
-                {% if currentUser.admin %}
-                    {{ forms.checkboxField({
-                        label: "Require a password reset on next login"|t('app'),
-                        name: 'passwordResetRequired',
-                        checked: user.passwordResetRequired
+                {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
+
+                    {{ forms.textField({
+                        label: "Email"|t('app'),
+                        instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t('app')),
+                        id: 'email',
+                        name: 'email',
+                        value: user.email,
+                        required: true,
+                        type: 'email',
+                        errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                     }) }}
+
+                    {% if user.getIsCurrent() %}
+                        {{ forms.textField({
+                            label: "New Password"|t('app'),
+                            id: 'newPassword',
+                            name: 'newPassword',
+                            type: 'password',
+                            autocomplete: 'new-password',
+                            errors: user.getErrors('newPassword')
+                        }) }}
+
+                        {% js %}
+                            new Craft.PasswordInput('#newPassword');
+                        {% endjs %}
+                    {% endif %}
+
+                    {% if currentUser.admin %}
+                        {{ forms.checkboxField({
+                            label: "Require a password reset on next login"|t('app'),
+                            name: 'passwordResetRequired',
+                            checked: user.passwordResetRequired
+                        }) }}
+                    {% endif %}
+
                 {% endif %}
-
-            {% endif %}
-        </div>
-
-        {% for tab in user.getFieldLayout().getTabs() %}
-            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
-                {% include "_includes/fields" with {
-                    fields:  tab.getFields(),
-                    element: user
-                } only %}
             </div>
-        {% endfor %}
+
+        <div id="fields">
+            <div>
+                {% for tab in user.getFieldLayout().getTabs() %}
+                    <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
+                        {% include "_includes/fields" with {
+                            fields:  tab.getFields(),
+                            element: user
+                        } only %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
             <div id="perms" class="hidden">
