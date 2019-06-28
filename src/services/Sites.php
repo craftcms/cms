@@ -15,6 +15,7 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
+use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -798,8 +799,12 @@ class Sites extends Component
                 GlobalSet::class,
                 Asset::class,
                 Category::class,
-                Tag::class,
+                Tag::class
             ];
+
+            if (User::enableRoutingAndMultisite()) {
+                $elementTypes[] = User::class;
+            }
 
             foreach ($elementTypes as $elementType) {
                 $queue->push(new PropagateElements([
