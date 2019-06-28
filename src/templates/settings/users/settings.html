@@ -72,7 +72,7 @@
 
             {{ forms.checkboxField({
                 label: "Enable routing and Localize users?"|t('app'),
-                instructions: "Should users content be stored in one language and should they get their own URL. Note if you are turning this from 'off' to 'on' it will take some time to propogate the content of the elements. View the Queue bar in the CP to see the progress."|t('app'),
+                instructions: "Should users custom fields be stored uniquely for each site and should they get their own URL. Note if you are turning this from 'off' to 'on' it will take some time to propagate the content of the elements. View the Queue bar in the CP to see the progress of this."|t('app'),
                 warning: "If you switch this setting from 'on' to 'off' Craft will delete the custom field content associated with the non-primary site(s)."|t('app'),
                 name: 'enableRoutingAndMultisite',
                 checked: settings.enableRoutingAndMultisite ?? false,
