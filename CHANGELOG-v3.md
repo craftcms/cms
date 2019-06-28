@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft no longer strips some punctuation symbols from slugs.
+
 ### Security
 - Fixed an XSS vulnerability.
 

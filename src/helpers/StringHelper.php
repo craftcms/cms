@@ -410,6 +410,9 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toKebabCase(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
         $words = self::toWords($string, $lower, $removePunctuation);
+        $words = array_filter(array_map(function($str) use ($glue) {
+            return trim($str, $glue);
+        }, $words));
 
         return implode($glue, $words);
     }
