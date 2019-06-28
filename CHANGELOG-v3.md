@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `Craft.randomString()` JavaScript method.
+
+### Changed
+- Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
+
 ## 3.2.0-RC2 - 2019-06-26
 
 ### Added

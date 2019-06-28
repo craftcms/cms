@@ -90,6 +90,7 @@ class Craft extends Yii2
         'setupDb' => null,
         'projectConfig' => null,
         'fullMock' => false,
+        'edition' => \Craft::Solo
     ];
 
     /**
@@ -165,8 +166,6 @@ class Craft extends Yii2
             return;
         }
 
-        // TODO: With this - if someone makes a sections fixture - their data will be overwritten by the project.yml file.
-        // TODO: They should probably define that section data within their project.yml file - but perhaps a docs note for this?
         // Re-apply project config
         if ($projectConfig = $this->_getConfig('projectConfig')) {
             // Tests just beginning. . Reset the project config to its original state.
@@ -181,6 +180,14 @@ class Craft extends Yii2
             // No project config - we are probably using DB based fixtures so we need to rebuild based on that.
             // Without rebuilding, Craft::$app->getProjectConfig()->get(); calls are unreliable
             \Craft::$app->getProjectConfig()->rebuild();
+
+            $edition = $this->_getConfig('edition');
+            // We also manually set the edition if desired by the current config
+            if (is_int($edition)) {
+                \Craft::$app->setEdition(
+                    $edition
+                );
+            }
         }
 
         $db = \Craft::createObject(
