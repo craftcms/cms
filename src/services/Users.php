@@ -1147,7 +1147,6 @@ class Users extends Component
                 return true;
             }
 
-            $sitesWithValidUris = [];
             $sitesNowWithoutUrls = [];
             $sitesWithNewUriFormats = [];
             $siteIdMap = Db::idsByUids(Table::SITES, array_keys($sitesData));
@@ -1166,12 +1165,9 @@ class Users extends Component
                     $siteSettingsRecord->siteId = $siteId;
                 }
 
-                if ($siteSetting['hasUrls']) {
-                    $siteSettingsRecord->hasUrls = $siteSetting['hasUrls'];
+                if ($siteSettingsRecord->hasUrls = $siteSetting['hasUrls']) {
                     $siteSettingsRecord->uriFormat = $siteSetting['uriFormat'];
                     $siteSettingsRecord->template = $siteSetting['template'];
-
-                    $sitesWithValidUris[] = $siteId;
                 } else {
                     $siteSettingsRecord->uriFormat = null;
                     $siteSettingsRecord->template = null;
@@ -1187,10 +1183,14 @@ class Users extends Component
                     if ($siteSetting['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
                         $sitesWithNewUriFormats[] = $siteId;
                     }
+                } else {
+                    // Prevents a bug where users don't have URL's because we are creating this site setting for the first time
+                    if ($siteSetting['hasUrls']) {
+                        $sitesWithNewUriFormats[] = $siteId;
+                    }
                 }
 
                 $siteSettingsRecord->save(false);
-
             }
 
             // Get all of the user IDs
@@ -1228,24 +1228,6 @@ class Users extends Component
                             Craft::$app->getElements()->updateElementSlugAndUri($user, false, false);
                         }
                     }
-                }
-            }
-
-            // Prevents a bug where users don't have URL's
-            foreach ($sitesWithValidUris as $siteId) {
-                $elementIds = (new Query())
-                    ->select('elementId')
-                    ->from(Table::ELEMENTS_SITES)
-                    ->where(['siteId' => $siteId])
-                    ->andWhere(['uri' => null])
-                    ->column();
-
-                $users = User::find()
-                    ->siteId($siteId)
-                    ->id($elementIds)
-                    ->all();
-                foreach ($users as $user) {
-                    Craft::$app->getElements()->updateElementSlugAndUri($user, false, false);
                 }
             }
 
