@@ -485,8 +485,10 @@ class Elements extends Component
                 $element->uid = StringHelper::UUID();
             }
 
-            // Let Matrix fields, etc., know they should be duplicating their values across all sites.
-            $element->propagateAll = true;
+            if (!$element->getIsDraft() && !$element->getIsRevision()) {
+                // Let Matrix fields, etc., know they should be duplicating their values across all sites.
+                $element->propagateAll = true;
+            }
         }
 
         // Fire a 'beforeSaveElement' event
