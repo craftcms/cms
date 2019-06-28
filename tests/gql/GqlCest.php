@@ -8,10 +8,11 @@
 namespace tests\gql;
 
 use Craft;
+use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
+use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
-use yii\base\Application;
 
 class GqlCest
 {
@@ -24,21 +25,28 @@ class GqlCest
             'gqlTokens' => [
                 'class' => GqlTokensFixture::class
             ],
+            'globalSets' => [
+                'class' => GlobalSetFixture::class
+            ]
         ];
     }
 
     public function _before(FunctionalTester $I)
     {
-        \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
-        $gqlService = Craft::$app->getGql();
-        $token = $gqlService->getTokenByAccessToken('My+voice+is+my+passport.+Verify me.');
-        $gqlService->setToken($token);
+        $this->_setToken('My+voice+is+my+passport.+Verify me.');
     }
 
     public function _after(FunctionalTester $I)
     {
         $gqlService = Craft::$app->getGql();
         $gqlService->flushCaches();
+    }
+
+    public function _setToken(string $accessToken)
+    {
+        $gqlService = Craft::$app->getGql();
+        $token = $gqlService->getTokenByAccessToken($accessToken);
+        $gqlService->setToken($token);
     }
 
     /**
@@ -105,8 +113,12 @@ class GqlCest
         $testData = file_get_contents(__DIR__ . '/data/gql.txt');
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
             list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
+            list ($token, $query) = explode('-----TOKEN DELIMITER-----', $query);
+            $this->_setToken(trim($token));
             $I->amOnPage('?action=gql&query='.urlencode(trim($query)));
             $I->see(trim($response));
+            $gqlService = Craft::$app->getGql();
+            $gqlService->flushCaches();
         }
     }
 }
