@@ -939,7 +939,7 @@ class UsersController extends Controller
         $userUrl = $user->getUrl();
         if ($enableRoutingAndMultisite && $userUrl && !Craft::$app->getRequest()->isMobileBrowser(true)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#fields > div > div > .field, #username-field, #firstName-field, #lastName-field, #slug-field, #email-field',
+                    'fields' => '#fields > div > .field, #username-field, #firstName-field, #lastName-field, #slug-field, #email-field',
                     'previewUrl' => $userUrl,
                     'previewAction' => Craft::$app->getSecurity()->hashData('users/preview-user'),
                     'previewParams' => [

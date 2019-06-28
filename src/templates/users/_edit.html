@@ -174,16 +174,14 @@
             </div>
 
         <div id="fields">
-            <div>
-                {% for tab in user.getFieldLayout().getTabs() %}
-                    <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
-                        {% include "_includes/fields" with {
-                            fields:  tab.getFields(),
-                            element: user
-                        } only %}
-                    </div>
-                {% endfor %}
+            {% for tab in user.getFieldLayout().getTabs() %}
+            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
+                {% include "_includes/fields" with {
+                    fields:  tab.getFields(),
+                    element: user
+                } only %}
             </div>
+            {% endfor %}
         </div>
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
