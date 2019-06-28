@@ -42,6 +42,7 @@ use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 use craft\records\User_SiteSettings as UserSiteSettingsRecord;
+use Throwable;
 
 /**
  * The Users service provides APIs for managing users.
@@ -1114,8 +1115,9 @@ class Users extends Component
     }
 
     /**
+     * @param ConfigEvent $event
      * @return bool
-     * @throws DbException
+     * @throws Throwable
      */
     public function handleChangedUserSiteSettings(ConfigEvent $event)
     {

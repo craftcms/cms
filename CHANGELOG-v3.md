@@ -26,7 +26,7 @@
 - `craft\controllers\UserController::actionEditUser()`'s first argument can now be set to `$siteHandle`
 - Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
 - `craft\elements\User::getCpEditUrl()` will now try to factor in the current site URL. 
-- When creating a new Site Craft will also propogate the content of of `User` elements if `users.enableRoutingAndMultisite` is set to true
+- When creating a new Site Craft will also propogate the content of `User` elements if `users.enableRoutingAndMultisite` is set to true
 - Users now have a slug.
 
 ## 3.2.0-RC2 - 2019-06-26
