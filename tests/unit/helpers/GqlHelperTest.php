@@ -67,31 +67,119 @@ class GqlHelperTest extends Unit
     /**
      * Test permission extraction from token.
      *
-     * @dataProvider tokenPermissionDataProvider
+     * @dataProvider tokenPermissionDataProviderForExtraction
      *
      * @param array $permissionSet list of permissions the token should have
      *
      * @throws GqlException
      * @throws \yii\base\Exception
      */
-    public function testTokenPermissionExtraction($permissionSet)
+    public function testTokenPermissionExtraction($permissionSet, $expectedPairs)
     {
         $this->_setTokenWithPermissions($permissionSet);
-
-        $expectedKeys = [];
-        foreach ($permissionSet as $permission) {
-            $expectedKeys[StringHelper::substr($permission, 0, StringHelper::indexOf($permission, '.'))] = true;
-        }
-
-        $this->assertEquals(array_keys($expectedKeys), array_keys(GqlHelper::extractAllowedEntitiesFromToken(false)));
+        $this->assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromToken());
     }
 
     public function tokenPermissionDataProvider()
     {
         return [
-            [['usergroups.allUsers:read', 'volumes.someVolume:read', 'globalsets.someSet:read', 'entrytypes.someEntry:read', 'sections.someSection:read'], 'volumes.someVolume', 'read', 'write'],
-            [['usergroups.allUsers:write', 'usergroups.allUsers:read', 'volumes.someVolume:write', 'globalsets.someSet:write', 'entrytypes.someEntry:write', 'sections.someSection:write'], 'volumes.someVolume', 'write', 'delete'],
-            [[], 'volumes.someVolume', 'write', 'delete', true],
+            [
+                [
+                    'usergroups.allUsers:read',
+                    'volumes.someVolume:read',
+                    'globalsets.someSet:read',
+                    'entrytypes.someEntry:read',
+                    'sections.someSection:read'
+                ],
+                'volumes.someVolume',
+                'read',
+                'write'
+            ],
+            [
+                [
+                    'usergroups.allUsers:write',
+                    'volumes.someVolume:read',
+                    'volumes.someVolume:write',
+                    'globalsets.someSet:write',
+                    'entrytypes.someEntry:write',
+                    'sections.someSection:write'
+                ],
+                'volumes.someVolume',
+                'write',
+                'delete'
+            ],
+            [
+                [],
+                'volumes.someVolume',
+                'write',
+                'delete',
+                true
+            ],
+        ];
+    }
+
+    public function tokenPermissionDataProviderForExtraction()
+    {
+        return [
+            [
+                [
+                    'usergroups.allUsers:read',
+                    'volumes.someVolume:read',
+                    'globalsets.someSet:read',
+                    'entrytypes.someEntry:read',
+                    'sections.someSection:read'
+                ],
+                [
+                    'usergroups' => ['allUsers'],
+                    'volumes' => ['someVolume'],
+                    'globalsets' => ['someSet'],
+                    'entrytypes' => ['someEntry'],
+                    'sections' => ['someSection'],
+                ]
+            ],
+            [
+                [
+                    'usergroups.allUsers:read',
+                    'usergroups.otherGroup:read',
+                ],
+                [
+                    'usergroups' => ['allUsers', 'otherGroup'],
+                ]
+            ],[
+                [
+                    'usergroups.allUsers:read',
+                    'usergroups.otherGroup:write',
+                ],
+                [
+                    'usergroups' => ['allUsers'],
+                ]
+            ],
+            [
+                [
+                    'usergroups.allUsers:write',
+                    'volumes.someVolume:write',
+                    'globalsets.someSet:write',
+                    'entrytypes.someEntry:write',
+                    'sections.someSection:write'
+                ],
+                []
+            ],
+            [
+                [
+                    'usergroups.allUsers:write',
+                    'volumes.someVolume:write',
+                    'globalsets.someSet:write',
+                    'entrytypes.someEntry:read',
+                    'sections.someSection:write'
+                ],
+                [
+                    'entrytypes' => ['someEntry'],
+                ]
+            ],
+            [
+                [],
+                []
+            ],
         ];
     }
 
