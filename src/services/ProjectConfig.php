@@ -666,7 +666,7 @@ class ProjectConfig extends Component
             }
 
             if ($this->_updateConfig) {
-                $info->config = serialize($this->_getConfigurationFromYaml());
+                $info->config = Json::encode($this->_getConfigurationFromYaml());
             }
 
             Craft::$app->saveInfo($info);
@@ -1125,7 +1125,13 @@ class ProjectConfig extends Component
         }
 
         $info = Craft::$app->getInfo();
-        return $this->_storedConfig = $info->config ? unserialize($info->config, ['allowed_classes' => false]) : [];
+        if (!$info->config) {
+            return $this->_storedConfig = [];
+        }
+        if ($info->config[0] === '{') {
+            return $this->_storedConfig = Json::decode($info->config);
+        }
+        return $this->_storedConfig = unserialize($info->config, ['allowed_classes' => false]);
     }
 
     /**
