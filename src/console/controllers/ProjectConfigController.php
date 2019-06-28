@@ -8,8 +8,11 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
+use craft\helpers\Db;
+use craft\models\Info;
 use craft\services\Plugins;
 use yii\console\Controller;
 use yii\console\ExitCode;
@@ -28,12 +31,28 @@ class ProjectConfigController extends Controller
     public $force = false;
 
     /**
-     * Syncs the project config.
+     * Syncs the project config. When run with the nuclear option, it will remove the current config and configMap from the database. ($nuclear = '')
      *
      * @return int
      */
-    public function actionSync(): int
+    public function actionSync(string $nuclear = ''): int
     {
+        // Remove current config and configMap from the db.
+        // This is unsafe but helpful when Project
+        // Config fails to resolve.
+        if ($nuclear === 'nuclear') {
+            $row = (new Query())
+                ->from([Table::INFO])
+                ->one();
+            $info = new Info($row);
+            $attributes = Db::prepareValuesForDb($info);
+            $attributes['config'] = '';
+            $attributes['configMap'] = '';
+            Craft::$app->getDb()->createCommand()
+                ->update(Table::INFO, $attributes)
+                ->execute();
+        }
+
         if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
             $this->stdout('Craft is not configured to use project.yaml. Please enable the \'useProjectConfigFile\' config setting in config/general.php.' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
