@@ -286,7 +286,10 @@ class Gql extends Component
             $tokenRecord->accessToken = $token->accessToken;
         }
 
-        return $tokenRecord->save();
+        $tokenRecord->save();
+        $token->id = $tokenRecord->id;
+
+        return true;
     }
 
     // Private Methods
