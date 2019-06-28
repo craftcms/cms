@@ -106,6 +106,16 @@ class GqlCest
     }
 
     /**
+     * Test whether querying with wrong parameters returns the correct error.
+     */
+    public function testMissingToken(FunctionalTester $I)
+    {
+        Craft::$app->getGql()->setToken(null);
+        $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
+        $I->see('Invalid authorization token');
+    }
+
+    /**
      * Test whether query results yield the expected results.
      */
     public function testQueryResults(FunctionalTester $I)
