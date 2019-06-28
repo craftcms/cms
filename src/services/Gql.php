@@ -141,14 +141,17 @@ class Gql extends Component
     /**
      * Set the GQL token to be used.
      *
-     * @param GqlToken $token
+     * @param GqlToken|null $token The token to set. Null to unset.
      * @throws \yii\base\Exception
      */
-    public function setToken(GqlToken $token)
+    public function setToken(GqlToken $token = null)
     {
         $this->_token = $token;
-        $token->lastUsed = DateTimeHelper::currentUTCDateTime();
-        $this->saveToken($token);
+
+        if ($token) {
+            $token->lastUsed = DateTimeHelper::currentUTCDateTime();
+            $this->saveToken($token);
+        }
     }
 
     /**
