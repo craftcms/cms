@@ -659,6 +659,16 @@ class Install extends Migration
             'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
+        $this->createTable(Table::USERS_SITES, [
+            'id' => $this->primaryKey(),
+            'siteId' => $this->integer()->notNull(),
+            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
+            'uriFormat' => $this->text(),
+            'template' => $this->string(500),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
         $this->createTable(Table::VOLUMEFOLDERS, [
             'id' => $this->primaryKey(),
             'parentId' => $this->integer(),
@@ -885,6 +895,7 @@ class Install extends Migration
      */
     public function addForeignKeys()
     {
+        $this->addForeignKey(null, Table::USERS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['folderId'], Table::VOLUMEFOLDERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
@@ -1171,6 +1182,7 @@ class Install extends Migration
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
                 'photoSubpath' => '',
+                'enableRoutingAndMultisite' => false,
             ],
         ];
     }
