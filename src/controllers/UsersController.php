@@ -1215,7 +1215,7 @@ class UsersController extends Controller
 
         // Don't allow slug changes from the frontend
         if ($request->isCpRequest && User::enableRoutingAndMultisite()) {
-            $user->slug = $request->getParam('slug');
+            $user->slug = $request->getParam('slug', $user->slug);
         }
 
         // Validate and save!
