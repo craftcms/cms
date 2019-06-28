@@ -935,10 +935,13 @@ class UsersController extends Controller
         // Enable Live Preview?
         $enableRoutingAndMultisite = User::enableRoutingAndMultisite();
         $showPreviewBtn = false;
-        if ($enableRoutingAndMultisite && !Craft::$app->getRequest()->isMobileBrowser(true)) {
+
+        // We also check that the user *has* a url that we can use.
+        $userUrl = $user->getUrl();
+        if ($enableRoutingAndMultisite && $userUrl && !Craft::$app->getRequest()->isMobileBrowser(true)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
                     'fields' => '#fields > div > div > .field, #username-field, #firstName-field, #lastName-field, #slug-field, #email-field',
-                    'previewUrl' => $user->getUrl(),
+                    'previewUrl' => $userUrl,
                     'previewAction' => Craft::$app->getSecurity()->hashData('users/preview-user'),
                     'previewParams' => [
                         'userId' => $user->id,
