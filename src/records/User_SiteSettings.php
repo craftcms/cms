@@ -16,6 +16,7 @@ use yii\db\ActiveQueryInterface;
  * Class Users_SiteSettings record.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
 class User_SiteSettings extends ActiveRecord

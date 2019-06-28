@@ -17,6 +17,7 @@ use yii\base\InvalidConfigException;
  * User_SiteSettings model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
 class User_SiteSettings extends Model
