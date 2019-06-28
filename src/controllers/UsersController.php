@@ -585,7 +585,6 @@ class UsersController extends Controller
         }
 
         if (Craft::$app->getIsMultiSite()) {
-            // Only use the sites that the user has access to
             $siteIds = Craft::$app->getSites()->getAllSiteIds();
         } else {
             /** @noinspection PhpUnhandledExceptionInspection */
