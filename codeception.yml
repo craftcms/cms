@@ -63,4 +63,6 @@ groups:
   app: [tests/unit/AppTest.php]
   gql:
     - 'tests/unit/gql'
+    - 'tests/unit/services/GqlTest'
+    - 'tests/unit/helpers/GqlHelperTest'
     - 'tests/gql/GqlCest'
