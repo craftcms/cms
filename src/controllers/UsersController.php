@@ -982,8 +982,6 @@ class UsersController extends Controller
      */
     public function actionPreviewUser()
     {
-        $this->requirePermission('moderateUsers');
-
         $this->requirePostRequest();
         $request = Craft::$app->getRequest();
         $userId = $request->getRequiredParam('userId');
@@ -994,6 +992,11 @@ class UsersController extends Controller
             ->one();
         if (!$user) {
             throw new BadRequestHttpException('Invalid user ID: ' . $user);
+        }
+
+        // Users can always preview themselves - they need editUsers to preview others. 
+        if (!$user->getIsCurrent()) {
+            $this->requirePermission('editUsers');
         }
 
         // Set the User element field values
