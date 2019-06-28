@@ -7,6 +7,7 @@
 
 ### Changed
 - Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
+- The `Craft.DraftEditor` JavaScript class now triggers a `createDraft` event when a draft is first created.
 
 ## 3.2.0-RC2 - 2019-06-26
 

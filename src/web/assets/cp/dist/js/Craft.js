@@ -1,4 +1,4 @@
-/*!   - 2019-06-27 */
+/*!   - 2019-06-28 */
 (function($){
 
 /** global: Craft */
@@ -13120,7 +13120,8 @@ Craft.DraftEditor = Garnish.Base.extend(
                     var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
 
                     // Did we just create a draft?
-                    if (!this.settings.draftId) {
+                    var draftCreated = !this.settings.draftId;
+                    if (draftCreated) {
                         var newHref;
                         var anchorPos = document.location.href.search('#');
                         if (anchorPos !== -1) {
@@ -13177,6 +13178,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                     }
 
                     this.afterUpdate(data);
+
+                    if (draftCreated) {
+                        this.trigger('createDraft');
+                    }
 
                     if (this.$nameTextInput) {
                         this.checkMetaValues();
