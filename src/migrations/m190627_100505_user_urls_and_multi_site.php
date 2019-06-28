@@ -38,7 +38,8 @@ class m190627_100505_user_urls_and_multi_site extends Migration
             null
         );
 
-        // TODO: Content migration - Trigger user resave e.t.c.?
+        // Just make sure our shiny new config setting is set to false.
+        Craft::$app->getProjectConfig()->set('users.enableRoutingAndMultisite', false);
     }
 
     /**

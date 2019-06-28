@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\elements\User;
 use craft\models\UserGroup;
+use craft\queue\jobs\ResaveElements;
 use craft\services\Users;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -132,27 +134,46 @@ class UserSettingsController extends Controller
         $settings['photoVolumeUid'] = $request->getBodyParam('photoVolumeUid') ?: null;
         $settings['photoSubpath'] = $request->getBodyParam('photoSubpath');
 
+        // Store this for later.
+        $oldRouteMultiSide = $settings['enableRoutingAndMultisite'] ?? false;
+
+        // Get the Pro based variables
+        $settings['enableRoutingAndMultisite'] = false;
         if (Craft::$app->getEdition() === Craft::Pro) {
             $settings['requireEmailVerification'] = (bool)$request->getBodyParam('requireEmailVerification');
             $settings['allowPublicRegistration'] = (bool)$request->getBodyParam('allowPublicRegistration');
             $settings['defaultGroup'] = $request->getBodyParam('defaultGroup');
+            $settings['enableRoutingAndMultisite'] = (bool)$request->getBodyParam('enableRoutingAndMultisite');
         }
 
         // Assemble the site settings
         $siteSettings = [];
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $siteSetting = $request->getParam('sites.'.$site->handle.'');
+        if ($settings['enableRoutingAndMultisite'] === true) {
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                $siteSetting = $request->getParam('sites.' . $site->handle . '');
 
-            $siteSettings[$site->uid] = [
-                'hasUrls' => !empty($siteSetting['uriFormat']),
-                'uriFormat' => $siteSetting['uriFormat'],
-                'template' => $siteSetting['template'],
-            ];
+                $siteSettings[$site->uid] = [
+                    'hasUrls' => !empty($siteSetting['uriFormat']),
+                    'uriFormat' => $siteSetting['uriFormat'],
+                    'template' => $siteSetting['template'],
+                ];
+            }
         }
 
         // Project config - do yo thang
         $projectConfig->set('users', $settings);
         $projectConfig->set(Users::CONFIG_USERSITES_KEY, $siteSettings);
+
+        // Has the enableRoutingAndMultisite changed? Let's resave the users so that the content table is updated and correct.
+        if ($oldRouteMultiSide !== $settings['enableRoutingAndMultisite']) {
+            Craft::$app->getQueue()->push(new ResaveElements([
+                    'elementType' => User::class,
+                    'criteria' => [
+                        'status' => null
+                    ]
+                ]
+            ));
+        }
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();

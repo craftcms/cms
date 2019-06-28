@@ -32,7 +32,7 @@
 {% hook "cp.users.edit" %}
 
 {% block contextMenu %}
-{% if craft.app.getIsMultiSite() %}
+{% if craft.app.getIsMultiSite() and enableRoutingAndMultisite %}
     {% if user.getIsCurrent() %}
         {% set urlFormat =
             url("myaccount/{handle}/")
@@ -82,7 +82,8 @@
 {% block content %}
     <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
         <input type="hidden" name="action" value="users/save-user">
-        <input type="hidden" name="siteId" value="{{site.id}}">
+        {% if enableRoutingAndMultisite %}<input type="hidden" name="siteId" value="{{site.id}}">{% endif %}
+
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
@@ -96,7 +97,8 @@
                     }, include('users/_photo', {user: user}, with_context = false)) }}
                 {% endif %}
 
-                {{ forms.textField({
+                {% if enableRoutingAndMultisite %}
+                    {{ forms.textField({
                         label: "Slug"|t('app'),
                         siteId: user.siteId,
                         id: 'slug',
@@ -107,6 +109,7 @@
                         placeholder: "Enter slug"|t('app'),
                         errors: (user.getErrors('slug')|merge(user.getErrors('uri')))
                     }) }}
+                {% endif %}
 
                 <hr>
 
@@ -396,7 +399,7 @@
         '#permissions input[type="checkbox"]:not(:checked)'
     ]);
 
-{% if not user.slug %}
+{% if not user.slug and enableRoutingAndMultisite %}
     window.slugGenerator = new Craft.SlugGenerator('#username', '#slug', {
         charMap: {{ craft.cp.getAsciiCharMap(user.site.language)|json_encode|raw }}
     });

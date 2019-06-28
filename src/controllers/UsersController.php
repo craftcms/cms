@@ -610,7 +610,12 @@ class UsersController extends Controller
                         }
                     } else {
                         // Get the current user
-                        $user = $userSession->getIdentity();
+                        $user = User::find()
+                            ->id($userSession->getId())
+                            ->siteId($site->id)
+                            ->anyStatus()
+                            ->addSelect('users.passwordResetRequired')
+                            ->one();
                     }
                 } else {
                     if ($user) {
@@ -928,7 +933,9 @@ class UsersController extends Controller
         $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
 
         // Enable Live Preview?
-        if (!Craft::$app->getRequest()->isMobileBrowser(true)) {
+        $enableRoutingAndMultisite = User::enableRoutingAndMultisite();
+        $showPreviewBtn = false;
+        if ($enableRoutingAndMultisite && !Craft::$app->getRequest()->isMobileBrowser(true)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
                     'fields' => '#fields > div > div > .field, #username-field, #firstName-field, #lastName-field, #slug-field, #email-field',
                     'previewUrl' => $user->getUrl(),
@@ -940,8 +947,6 @@ class UsersController extends Controller
                 ]) . ');');
 
             $showPreviewBtn = true;
-        } else {
-            $showPreviewBtn = false;
         }
 
         return $this->renderTemplate('users/_edit', compact(
@@ -958,7 +963,8 @@ class UsersController extends Controller
             'craftIdToken',
             'siteIds',
             'site',
-            'showPreviewBtn'
+            'showPreviewBtn',
+            'enableRoutingAndMultisite'
         ));
     }
 
@@ -1203,7 +1209,7 @@ class UsersController extends Controller
         $user->setFieldValuesFromRequest('fields');
 
         // Don't allow slug changes from the frontend
-        if ($request->isCpRequest) {
+        if ($request->isCpRequest && User::enableRoutingAndMultisite()) {
             $user->slug = $request->getParam('slug');
         }
 

@@ -145,11 +145,26 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Whether Users in Craft should be localized and should have their own URL.
+     *
+     * @return bool
+     */
+    public static function enableRoutingAndMultisite() : bool
+    {
+        $userSettings = Craft::$app->getProjectConfig()->get('users');
+        if (isset($userSettings['enableRoutingAndMultisite']) && $userSettings['enableRoutingAndMultisite']) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public static function isLocalized(): bool
     {
-        return true;
+        return self::enableRoutingAndMultisite();
     }
 
     /**
@@ -157,7 +172,7 @@ class User extends Element implements IdentityInterface
      */
     public static function hasUris(): bool
     {
-        return true;
+        return self::enableRoutingAndMultisite();
     }
 
     /**
@@ -165,6 +180,10 @@ class User extends Element implements IdentityInterface
      */
     public function getUriFormat()
     {
+        if (!self::enableRoutingAndMultisite()) {
+            return null;
+        }
+
         if (!$this->siteId) {
             return null;
         }
@@ -188,7 +207,7 @@ class User extends Element implements IdentityInterface
      */
     protected function route()
     {
-        if (Craft::$app->getEdition() !== Craft::Pro || $this->getStatus() !== User::STATUS_ACTIVE) {
+        if (!self::enableRoutingAndMultisite() || Craft::$app->getEdition() !== Craft::Pro || $this->getStatus() !== User::STATUS_ACTIVE) {
             return null;
         }
 
@@ -1189,16 +1208,20 @@ class User extends Element implements IdentityInterface
      */
     public function getCpEditUrl()
     {
+        $url = null;
         if ($this->getIsCurrent()) {
             $url =  'myaccount';
-        }
-
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        } elseif (Craft::$app->getEdition() === Craft::Pro) {
             $url = 'users/' . $this->id;
         }
 
+        // Determine the Current url factoring in if we need to use sites aswell.
         if ($url) {
-            return UrlHelper::cpUrl($url . '/' . $this->getSite()->handle);
+            if (self::enableRoutingAndMultisite()) {
+                $url = $url . '/' . $this->getSite()->handle;
+            }
+
+            return UrlHelper::cpUrl($url);
         }
 
         return null;
@@ -1352,7 +1375,7 @@ class User extends Element implements IdentityInterface
      */
     public function beforeSave(bool $isNew): bool
     {
-        if (!$this->slug) {
+        if (!$this->slug && self::enableRoutingAndMultisite()) {
             $this->slug = ElementHelper::createSlug(
                 $this->username
             );
