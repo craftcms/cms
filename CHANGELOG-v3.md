@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## Unreleased (3.2)
 
 ### Added
 - Added the `Craft.randomString()` JavaScript method.
@@ -374,6 +374,14 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+
+## Unreleased (3.1)
+
+### Changed
+- Craft no longer strips some punctuation symbols from slugs.
+
+### Security
+- Fixed an XSS vulnerability.
 
 ## 3.1.32.1 - 2019-06-25
 
