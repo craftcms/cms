@@ -994,7 +994,7 @@ class UsersController extends Controller
             throw new BadRequestHttpException('Invalid user ID: ' . $user);
         }
 
-        // Users can always preview themselves - they need editUsers to preview others. 
+        // Users can always preview themselves - they need editUsers to preview others.
         if (!$user->getIsCurrent()) {
             $this->requirePermission('editUsers');
         }

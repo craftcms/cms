@@ -32,7 +32,7 @@
 {% hook "cp.users.edit" %}
 
 {% block contextMenu %}
-{% if craft.app.getIsMultiSite() and enableRoutingAndMultisite %}
+{% if craft.app.getIsMultiSite() and enableRoutingAndMultisite and user.id %}
     {% if user.getIsCurrent() %}
         {% set urlFormat =
             url("myaccount/{handle}/")
