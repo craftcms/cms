@@ -50,7 +50,7 @@ class Gql
     /**
      * Extracts all the allowed entities from the token permissions for the action.
      *
-     * @param string $action The action for which the entities should be extracted. Defaults to "read"
+     * @param string|false $action The action for which the entities should be extracted. Defaults to "read". If false, then any action is accepted.
      * @return array
      */
     public static function extractAllowedEntitiesFromToken($action = 'read'): array
@@ -61,8 +61,8 @@ class Gql
 
             foreach ($permissions as $permission) {
                 // Check if this is for the requested action
-                if (StringHelper::endsWith($permission, ':' . $action)) {
-                    $permission = StringHelper::removeRight($permission, ':' . $action);
+                if ($action === false || StringHelper::endsWith($permission, ':' . $action)) {
+                    $permission = StringHelper::regexReplace($permission, '/\:' . ($action ? preg_quote($action, '/') : '.+') . '$/', '');
 
                     $parts = explode('.', $permission);
 
