@@ -8,6 +8,7 @@
 namespace craftunit\services;
 
 use Codeception\Test\Unit;
+use Codeception\Util\Fixtures;
 use Craft;
 use craft\elements\User;
 use craft\errors\GqlException;
@@ -17,9 +18,12 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
+use craft\models\GqlToken;
 use craft\services\Gql;
+use craft\test\Fixture;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
+use crafttests\fixtures\GqlTokensFixture;
 use GraphQL\Type\Definition\ObjectType;
 use yii\base\Event;
 
@@ -45,7 +49,7 @@ class GqlTest extends Unit
     /**
      * Test schema creation.
      */
-    public function testCreateSchema()
+    public function testCreatingSchema()
     {
         $schema = Craft::$app->getGql()->getSchema();
         $this->assertInstanceOf('GraphQL\Type\Schema', $schema);
@@ -54,7 +58,7 @@ class GqlTest extends Unit
     /**
      * Test adding custom queries to schema
      */
-    public function testRegisterQuery()
+    public function testRegisteringQuery()
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function (RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
@@ -71,7 +75,7 @@ class GqlTest extends Unit
     /**
      * Test schema validation by adding an invalid query.
      */
-    public function testValidateSchema()
+    public function testValidatingSchema()
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function (RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
@@ -80,14 +84,13 @@ class GqlTest extends Unit
         });
 
         $this->expectException('craft\errors\GqlException');
-        Craft::$app->getGql()->getSchema(true);
+        Craft::$app->getGql()->getSchema(null, true);
     }
 
     /**
      * Test adding custom directives to schema
-     * // todo: stub instead of mock?
      */
-    public function testRegisterDirective()
+    public function testRegisteringDirective()
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_DIRECTIVES, function (RegisterGqlDirectivesEvent $event) {
             $event->directives[] = MockDirective::class;
@@ -100,7 +103,7 @@ class GqlTest extends Unit
     /**
      * Test adding custom types to schema
      */
-    public function testRegisterType()
+    public function testRegisteringType()
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function (RegisterGqlTypesEvent $event) {
             $event->types[] = MockType::class;
@@ -113,7 +116,7 @@ class GqlTest extends Unit
     /**
      * Test if flushing works.
      */
-    public function testFlushing()
+    public function testFlushingCaches()
     {
         // Generate types by creating the interface.
         UserInterface::getType();
@@ -128,5 +131,56 @@ class GqlTest extends Unit
         $this->tester->expectException(GqlException::class, function () use ($typeName) {
             TypeLoader::loadType($typeName);
         });
+    }
+
+    /**
+     * Test if we're able to save and retrieve tokens.
+     *
+     * @throws \yii\base\Exception
+     */
+    public function testTokenSaveAndRetrieval()
+    {
+        $gqlService = Craft::$app->getGql();
+
+        $token = new GqlToken(['name' => 'Something', 'enabled' => true]);
+        $gqlService->saveToken($token);
+
+        $this->assertEquals($token->id, $gqlService->getTokenByAccessToken($token->accessToken)->id);
+        $this->assertEquals($token->accessToken, $gqlService->getTokenById($token->id)->accessToken);
+
+        $token = new GqlToken(['name' => 'Different', 'enabled' => true]);
+        $gqlService->saveToken($token);
+
+        $tokenList = $gqlService->getTokens();
+        $this->assertCount(2, $tokenList);
+    }
+
+    /**
+     * Test if token affects the schema.
+     *
+     * @throws GqlException
+     * @throws \yii\base\Exception
+     */
+    public function testTokenAffectSchema()
+    {
+        $gqlService = Craft::$app->getGql();
+
+        $token = new GqlToken(['name' => 'Something', 'enabled' => true, 'permissions' => ['usergroups.allUsers:read']]);
+        $gqlService->saveToken($token);
+        $schema = $gqlService->getSchema($token);
+
+        $gqlService->flushCaches();
+
+        $token = new GqlToken(['name' => 'Something', 'enabled' => true, 'permissions' => ['volumes.someVolume:read']]);
+        $gqlService->saveToken($token, true);
+        $this->assertNotEquals($schema, $gqlService->getSchema($token));
+    }
+
+    /**
+     * Test if permission list is being generated
+     */
+    public function testPermissionListGenerated()
+    {
+        $this->assertNotEmpty(Craft::$app->getGql()->getAllPermissions());
     }
 }
