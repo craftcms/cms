@@ -1122,108 +1122,116 @@ class Users extends Component
         $sitesData = $event->newValue;
         $db = Craft::$app->getDb();
 
-        // Nothing set - we can do this easily.
-        if (!$sitesData) {
-            $db->createCommand()
-                ->delete(Table::USERS_SITES)
-                ->execute();
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Nothing set - we can do this easily.
+            if (!$sitesData) {
+                $db->createCommand()
+                    ->delete(Table::USERS_SITES)
+                    ->execute();
+
+                // Get all of the user IDs
+                $userIds = User::find()
+                    ->anyStatus()
+                    ->ids();
+
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        Table::ELEMENTS_SITES,
+                        ['uri' => null],
+                        [
+                            'elementId' => $userIds
+                        ])
+                    ->execute();
+
+                return true;
+            }
+
+            $sitesNowWithoutUrls = [];
+            $sitesWithNewUriFormats = [];
+            $siteIdMap = Db::idsByUids(Table::SITES, array_keys($sitesData));
+
+            // Figure out what needs to be done
+            foreach ($sitesData as $siteUid => $siteSetting) {
+                $siteId = $siteIdMap[$siteUid];
+
+                $siteSettingsRecord = UserSiteSettingsRecord::find()
+                    ->where(['siteId' => $siteId])
+                    ->one();
+
+                // Was this already selected?
+                if (!$siteSettingsRecord) {
+                    $siteSettingsRecord = new UserSiteSettingsRecord();
+                    $siteSettingsRecord->siteId = $siteId;
+                }
+
+                if ($siteSettingsRecord->hasUrls = $siteSetting['hasUrls']) {
+                    $siteSettingsRecord->uriFormat = $siteSetting['uriFormat'];
+                    $siteSettingsRecord->template = $siteSetting['template'];
+                } else {
+                    $siteSettingsRecord->uriFormat = null;
+                    $siteSettingsRecord->template = null;
+                }
+
+                if (!$siteSettingsRecord->getIsNewRecord()) {
+                    // Did it used to have URLs, but not anymore?
+                    if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSetting['hasUrls']) {
+                        $sitesNowWithoutUrls[] = $siteId;
+                    }
+
+                    // Does it have URLs, and has its URI format changed?
+                    if ($siteSetting['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
+                        $sitesWithNewUriFormats[] = $siteId;
+                    }
+                }
+
+                $siteSettingsRecord->save(false);
+            }
 
             // Get all of the user IDs
             $userIds = User::find()
                 ->anyStatus()
                 ->ids();
 
-            Craft::$app->getDb()->createCommand()
-                ->update(
-                    Table::ELEMENTS_SITES,
-                    ['uri' => null],
-                    [
-                        'elementId' => $userIds
-                    ])
-                ->execute();
-
-            return true;
-        }
-
-        $sitesNowWithoutUrls = [];
-        $sitesWithNewUriFormats = [];
-        $siteIdMap = Db::idsByUids(Table::SITES, array_keys($sitesData));
-
-        // Figure out what needs to be done
-        foreach ($sitesData as $siteUid => $siteSetting) {
-            $siteId = $siteIdMap[$siteUid];
-
-            $siteSettingsRecord = UserSiteSettingsRecord::find()
-                ->where(['siteId' => $siteId])
-                ->one();
-
-            // Was this already selected?
-            if (!$siteSettingsRecord) {
-                $siteSettingsRecord = new UserSiteSettingsRecord();
-                $siteSettingsRecord->siteId = $siteId;
+            // Anything that doesn't have any more urls - Bye!
+            if ($sitesNowWithoutUrls) {
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        Table::ELEMENTS_SITES,
+                        ['uri' => null],
+                        [
+                            'elementId' => $userIds,
+                            'siteId' => $sitesNowWithoutUrls,
+                        ])
+                    ->execute();
             }
 
-            if ($siteSettingsRecord->hasUrls = $siteSetting['hasUrls']) {
-                $siteSettingsRecord->uriFormat = $siteSetting['uriFormat'];
-                $siteSettingsRecord->template = $siteSetting['template'];
-            } else {
-                $siteSettingsRecord->uriFormat = null;
-                $siteSettingsRecord->template = null;
-            }
+            // Anything that needs updating?
+            if ($sitesWithNewUriFormats) {
+                App::maxPowerCaptain();
 
-            if (!$siteSettingsRecord->getIsNewRecord()) {
-                // Did it used to have URLs, but not anymore?
-                if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSetting['hasUrls']) {
-                    $sitesNowWithoutUrls[] = $siteId;
-                }
+                // Loop through each of the changed sites and update all of the users’ slugs and
+                // URIs
+                foreach ($userIds as $userId) {
+                    foreach ($sitesWithNewUriFormats as $siteId) {
+                        $user = User::find()
+                            ->id($userId)
+                            ->siteId($siteId)
+                            ->anyStatus()
+                            ->one();
 
-                // Does it have URLs, and has its URI format changed?
-                if ($siteSetting['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
-                    $sitesWithNewUriFormats[] = $siteId;
-                }
-            }
-
-            $siteSettingsRecord->save(false);
-        }
-
-        // Get all of the user IDs
-        $userIds = User::find()
-            ->anyStatus()
-            ->ids();
-
-        // Anything that doesn't have any more urls - Bye!
-        if ($sitesNowWithoutUrls) {
-            Craft::$app->getDb()->createCommand()
-                ->update(
-                    Table::ELEMENTS_SITES,
-                    ['uri' => null],
-                    [
-                        'elementId' => $userIds,
-                        'siteId' => $sitesNowWithoutUrls,
-                    ])
-                ->execute();
-        }
-
-        // Anything that needs updating?
-        if ($sitesWithNewUriFormats) {
-            App::maxPowerCaptain();
-
-            // Loop through each of the changed sites and update all of the users’ slugs and
-            // URIs
-            foreach ($userIds as $userId) {
-                foreach ($sitesWithNewUriFormats as $siteId) {
-                    $user = User::find()
-                        ->id($userId)
-                        ->siteId($siteId)
-                        ->anyStatus()
-                        ->one();
-
-                    // Launch
-                    if ($user) {
-                        Craft::$app->getElements()->updateElementSlugAndUri($user, false, false);
+                        // Launch
+                        if ($user) {
+                            Craft::$app->getElements()->updateElementSlugAndUri($user, false, false);
+                        }
                     }
                 }
             }
+
+            $transaction->commit();
+        } catch (\Throwable $exception) {
+            $transaction->rollBack();
+            throw $exception;
         }
     }
 
