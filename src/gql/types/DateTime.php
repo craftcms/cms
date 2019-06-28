@@ -23,9 +23,6 @@ class DateTime extends ScalarType
 
     public function __construct(array $config = [])
     {
-        $config['resolve'] = function () {
-            return 'ok;';
-        };
         parent::__construct($config);
     }
 
