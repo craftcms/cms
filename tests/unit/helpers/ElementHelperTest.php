@@ -171,8 +171,11 @@ class ElementHelperTest extends Unit
             ['word[separator-here]word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
-            ['abc--dfg', 'abc...dfg'],
-            ['abc--dfg', 'abc...(dfg)'],
+            ['abc...dfg', 'abc...dfg'],
+            ['abc...dfg', 'abc...(dfg)'],
+            ['__home__', '__home__'], // https://github.com/craftcms/cms/issues/4096
+            ['A[separator-here]B[separator-here]C', 'A-B-C'], // https://github.com/craftcms/cms/issues/4266
+            ['test_slug', 'test_slug'],
         ];
     }
 
