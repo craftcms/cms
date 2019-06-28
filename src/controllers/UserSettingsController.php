@@ -135,7 +135,7 @@ class UserSettingsController extends Controller
         $settings['photoSubpath'] = $request->getBodyParam('photoSubpath');
 
         // Store this for later.
-        $oldRouteMultiSide = $settings['enableRoutingAndMultisite'] ?? false;
+        $oldRouteMultiSite = $settings['enableRoutingAndMultisite'] ?? false;
 
         // Get the Pro based variables
         $settings['enableRoutingAndMultisite'] = false;
@@ -165,7 +165,7 @@ class UserSettingsController extends Controller
         $projectConfig->set(Users::CONFIG_USERSITES_KEY, $siteSettings);
 
         // Has the enableRoutingAndMultisite changed? Let's resave the users so that the content table is updated and correct.
-        if ($oldRouteMultiSide !== $settings['enableRoutingAndMultisite']) {
+        if ($oldRouteMultiSite !== $settings['enableRoutingAndMultisite']) {
             Craft::$app->getQueue()->push(new ResaveElements([
                     'elementType' => User::class,
                     'criteria' => [
