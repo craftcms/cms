@@ -9,4 +9,5 @@ modules:
     enabled:
         - Asserts
         - \craft\test\Craft:
+              edition: 1
         - \Helper\Gql
