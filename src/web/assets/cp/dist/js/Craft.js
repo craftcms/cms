@@ -1,4 +1,4 @@
-/*!   - 2019-06-26 */
+/*!   - 2019-06-27 */
 (function($){
 
 /** global: Craft */
@@ -858,6 +858,16 @@ $.extend(Craft,
             }
 
             return asciiStr;
+        },
+
+        randomString: function(length) {
+            // h/t https://stackoverflow.com/a/1349426/1688568
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * 62));
+            }
+            return result;
         },
 
         /**
@@ -12979,40 +12989,54 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
         },
 
-        getPreviewToken: function(then) {
-            if (this.previewToken) {
-                then(this.previewToken);
-                return;
-            }
-
-            Craft.postActionRequest('preview/create-token', {
-                elementType: this.settings.elementType,
-                sourceId: this.settings.sourceId,
-                siteId: this.settings.siteId,
-                draftId: this.settings.draftId,
-                revisionId: this.settings.revisionId,
-            }, $.proxy(function(response, textStatus) {
-                if (textStatus === 'success') {
-                    this.previewToken = response.token;
-                    then(this.previewToken);
+        getPreviewToken: function() {
+            return new Promise(function(resolve, reject) {
+                if (this.previewToken) {
+                    resolve(this.previewToken);
+                    return;
                 }
-            }, this));
+
+                Craft.postActionRequest('preview/create-token', {
+                    elementType: this.settings.elementType,
+                    sourceId: this.settings.sourceId,
+                    siteId: this.settings.siteId,
+                    draftId: this.settings.draftId,
+                    revisionId: this.settings.revisionId,
+                }, function(response, textStatus) {
+                    if (textStatus === 'success') {
+                        this.previewToken = response.token;
+                        resolve(this.previewToken);
+                    } else {
+                        reject();
+                    }
+                }.bind(this));
+            }.bind(this));
         },
 
-        getTokenizedPreviewUrl: function(url, then) {
-            // No need for a token if we're looking at a live element
-            if (this.settings.isLive) {
-                then(url);
-                return;
-            }
+        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+            return new Promise(function(resolve, reject) {
+                var params = {};
 
-            this.getPreviewToken(function(token) {
-                then(Craft.getUrl(url, {token: token}));
-            });
+                if (forceRandomParam || !this.settings.isLive) {
+                    // Randomize the URL so CDNs don't return cached pages
+                    params.v = Craft.randomString(10);
+                }
+
+                // No need for a token if we're looking at a live element
+                if (this.settings.isLive) {
+                    resolve(Craft.getUrl(url, params));
+                    return;
+                }
+
+                this.getPreviewToken().then(function(token) {
+                    params[Craft.tokenParam] = token;
+                    resolve(Craft.getUrl(url, params));
+                }).catch(reject);
+            }.bind(this));
         },
 
         openShareLink: function(url) {
-            this.getTokenizedPreviewUrl(url, function(url) {
+            this.getTokenizedPreviewUrl(url).then(function(url) {
                 window.open(url);
             });
         },
@@ -17129,6 +17153,9 @@ Craft.Preview = Garnish.Base.extend(
         url: null,
         fields: null,
 
+        scrollLeft: 0,
+        scrollTop: 0,
+
         dragger: null,
         dragStartEditorWidth: null,
 
@@ -17385,14 +17412,24 @@ Craft.Preview = Garnish.Base.extend(
                 return false;
             }
 
+            // Ignore non-boolean resetScroll values
+            resetScroll = resetScroll === true;
+
             var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
 
-            this.draftEditor.getTokenizedPreviewUrl(url, $.proxy(function(url) {
-                // Possible to just refresh the iframe?
-                if (this.$iframe && url === this.url && Craft.isSameHost(url)) {
-                    this.$iframe[0].contentWindow.location.reload();
-                    this.afterUpdateIframe();
-                    return;
+            this.draftEditor.getTokenizedPreviewUrl(url, true).then(function(url) {
+                // Capture the current scroll position?
+                var sameHost;
+                if (resetScroll) {
+                    this.scrollLeft = 0;
+                    this.scrolllTop = 0;
+                } else {
+                    sameHost = Craft.isSameHost(url);
+                    if (sameHost && this.$iframe && this.$iframe[0].contentWindow) {
+                        var $doc = $(this.$iframe[0].contentWindow.document);
+                        this.scrollLeft = $doc.scrollLeft();
+                        this.scrollTop = $doc.scrollTop();
+                    }
                 }
 
                 var $iframe = $('<iframe/>', {
@@ -17400,6 +17437,14 @@ Craft.Preview = Garnish.Base.extend(
                     frameborder: 0,
                     src: url,
                 });
+
+                if (!resetScroll && sameHost) {
+                    $iframe.on('load', function() {
+                        var $doc = $($iframe[0].contentWindow.document);
+                        $doc.scrollLeft(this.scrollLeft);
+                        $doc.scrollTop(this.scrollTop);
+                    }.bind(this));
+                }
 
                 if (this.$iframe) {
                     this.$iframe.replaceWith($iframe);
@@ -17410,7 +17455,7 @@ Craft.Preview = Garnish.Base.extend(
                 this.url = url;
                 this.$iframe = $iframe;
                 this.afterUpdateIframe();
-            }, this));
+            }.bind(this));
         },
 
         afterUpdateIframe: function() {

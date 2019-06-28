@@ -857,6 +857,16 @@ $.extend(Craft,
             return asciiStr;
         },
 
+        randomString: function(length) {
+            // h/t https://stackoverflow.com/a/1349426/1688568
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * 62));
+            }
+            return result;
+        },
+
         /**
          * Prevents the outline when an element is focused by the mouse.
          *

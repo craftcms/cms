@@ -119,40 +119,54 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
         },
 
-        getPreviewToken: function(then) {
-            if (this.previewToken) {
-                then(this.previewToken);
-                return;
-            }
-
-            Craft.postActionRequest('preview/create-token', {
-                elementType: this.settings.elementType,
-                sourceId: this.settings.sourceId,
-                siteId: this.settings.siteId,
-                draftId: this.settings.draftId,
-                revisionId: this.settings.revisionId,
-            }, $.proxy(function(response, textStatus) {
-                if (textStatus === 'success') {
-                    this.previewToken = response.token;
-                    then(this.previewToken);
+        getPreviewToken: function() {
+            return new Promise(function(resolve, reject) {
+                if (this.previewToken) {
+                    resolve(this.previewToken);
+                    return;
                 }
-            }, this));
+
+                Craft.postActionRequest('preview/create-token', {
+                    elementType: this.settings.elementType,
+                    sourceId: this.settings.sourceId,
+                    siteId: this.settings.siteId,
+                    draftId: this.settings.draftId,
+                    revisionId: this.settings.revisionId,
+                }, function(response, textStatus) {
+                    if (textStatus === 'success') {
+                        this.previewToken = response.token;
+                        resolve(this.previewToken);
+                    } else {
+                        reject();
+                    }
+                }.bind(this));
+            }.bind(this));
         },
 
-        getTokenizedPreviewUrl: function(url, then) {
-            // No need for a token if we're looking at a live element
-            if (this.settings.isLive) {
-                then(url);
-                return;
-            }
+        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+            return new Promise(function(resolve, reject) {
+                var params = {};
 
-            this.getPreviewToken(function(token) {
-                then(Craft.getUrl(url, {token: token}));
-            });
+                if (forceRandomParam || !this.settings.isLive) {
+                    // Randomize the URL so CDNs don't return cached pages
+                    params.v = Craft.randomString(10);
+                }
+
+                // No need for a token if we're looking at a live element
+                if (this.settings.isLive) {
+                    resolve(Craft.getUrl(url, params));
+                    return;
+                }
+
+                this.getPreviewToken().then(function(token) {
+                    params[Craft.tokenParam] = token;
+                    resolve(Craft.getUrl(url, params));
+                }).catch(reject);
+            }.bind(this));
         },
 
         openShareLink: function(url) {
-            this.getTokenizedPreviewUrl(url, function(url) {
+            this.getTokenizedPreviewUrl(url).then(function(url) {
                 window.open(url);
             });
         },

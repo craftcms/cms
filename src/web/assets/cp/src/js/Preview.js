@@ -25,6 +25,9 @@ Craft.Preview = Garnish.Base.extend(
         url: null,
         fields: null,
 
+        scrollLeft: 0,
+        scrollTop: 0,
+
         dragger: null,
         dragStartEditorWidth: null,
 
@@ -281,14 +284,24 @@ Craft.Preview = Garnish.Base.extend(
                 return false;
             }
 
+            // Ignore non-boolean resetScroll values
+            resetScroll = resetScroll === true;
+
             var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
 
-            this.draftEditor.getTokenizedPreviewUrl(url, $.proxy(function(url) {
-                // Possible to just refresh the iframe?
-                if (this.$iframe && url === this.url && Craft.isSameHost(url)) {
-                    this.$iframe[0].contentWindow.location.reload();
-                    this.afterUpdateIframe();
-                    return;
+            this.draftEditor.getTokenizedPreviewUrl(url, true).then(function(url) {
+                // Capture the current scroll position?
+                var sameHost;
+                if (resetScroll) {
+                    this.scrollLeft = 0;
+                    this.scrolllTop = 0;
+                } else {
+                    sameHost = Craft.isSameHost(url);
+                    if (sameHost && this.$iframe && this.$iframe[0].contentWindow) {
+                        var $doc = $(this.$iframe[0].contentWindow.document);
+                        this.scrollLeft = $doc.scrollLeft();
+                        this.scrollTop = $doc.scrollTop();
+                    }
                 }
 
                 var $iframe = $('<iframe/>', {
@@ -296,6 +309,14 @@ Craft.Preview = Garnish.Base.extend(
                     frameborder: 0,
                     src: url,
                 });
+
+                if (!resetScroll && sameHost) {
+                    $iframe.on('load', function() {
+                        var $doc = $($iframe[0].contentWindow.document);
+                        $doc.scrollLeft(this.scrollLeft);
+                        $doc.scrollTop(this.scrollTop);
+                    }.bind(this));
+                }
 
                 if (this.$iframe) {
                     this.$iframe.replaceWith($iframe);
@@ -306,7 +327,7 @@ Craft.Preview = Garnish.Base.extend(
                 this.url = url;
                 this.$iframe = $iframe;
                 this.afterUpdateIframe();
-            }, this));
+            }.bind(this));
         },
 
         afterUpdateIframe: function() {

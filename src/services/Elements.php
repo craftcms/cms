@@ -325,7 +325,7 @@ class Elements extends Component
             ]);
 
         // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->andWhere(['elements.dateDeleted' => null]);
         }
@@ -966,7 +966,7 @@ class Elements extends Component
                         if ($behavior instanceof Behavior) {
                             $behavior = clone $behavior;
                         }
-                        $mainClone->attachBehavior($name, $behavior);
+                        $siteClone->attachBehavior($name, $behavior);
                     }
 
                     $siteClone->setAttributes($newAttributes, false);

@@ -21,6 +21,12 @@ The `projectConfig` setting accepts an object with the following parameters:
 - file (Required): What file the project config setting must be copied from. This is not the `project.yml` file in 
 `CRAFT_CONFIG_PATH` but instead the file whose contents will be copied into the `project.yml` file 
 located here. 
+
+::: warning
+If you have enabled `projectConfig`, regular DB based fixtures may cause syncing issues. It is recommended
+ to setup your environment using the `project.yml` file only. 
+:::
+
 ### `migrations`
 
 Accepts: Array|Object
@@ -52,6 +58,14 @@ It accepts an object with the following parameters.
 
 - clean (Required): Whether all tables should be deleted before any tests 
 - setupCraft (Required): Whether the `Install.php` migration should be run  before any tests. 
+
+### `edition`
+Accepts: int
+
+Determines what edition Craft must be in when running your tests and what is returned when calling 
+`Craft::$app->getEdition()`. Note if `projectConfig`
+is enabled the `edition` property will be ignored.
+To set an edition you must define the desired edition in the `project.yml` instead.
 
 ## PHP Constants
 Additionally, you will have to define several PHP Constants for the test suite to use. All of these

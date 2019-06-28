@@ -3,15 +3,28 @@
 ## Unreleased
 
 ### Added
+- Added the `Craft.randomString()` JavaScript method.
+
+### Changed
+- Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
+
+## 3.2.0-RC2 - 2019-06-26
+
+### Added
+- Added `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
 - Added `craft\services\Matrix::duplicateBlocks()`.
 
 ### Changed
 - `craft\services\Matrix::saveField()` no longer has a `$checkOtherSites` argument, and is no longer is responsible for duplicating blocks from other elements.
+- `fieldValues` is now reserved field handle. ([#4453](https://github.com/craftcms/cms/issues/4453))
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would show unnecessary page unload warnings in Chrome 75.
 - Fixed an error that could occur when editing entries on multi-site installs.
 - Fixed a bug where Matrix blocks weren’t getting duplicated for other sites when creating a new element. ([#4449](https://github.com/craftcms/cms/issues/4449))
+- Fixed a bug where new installs could be missing most project config values.
+- Fixed a bug where entries could get `-1` appended to their slugs when updated, for no good reason. ([#4448](https://github.com/craftcms/cms/issues/4448))
+- Fixed an error that could occur when creating entries programmatically, or via Feed Me. ([#4450](https://github.com/craftcms/cms/issues/4450))
 
 ## 3.2.0-RC1 - 2019-06-25
 

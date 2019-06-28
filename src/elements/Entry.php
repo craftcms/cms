@@ -1208,12 +1208,12 @@ EOD;
      */
     public function afterPropagate(bool $isNew)
     {
-        // Save a new revision
+        parent::afterPropagate($isNew);
+
+        // Save a new revision?
         if ($this->_shouldSaveRevision()) {
             Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
         }
-
-        parent::afterPropagate($isNew);
     }
 
     /**

@@ -217,6 +217,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'error',
                 'errors',
                 'fieldValue',
+                'fieldValues',
                 'id',
                 'level',
                 'lft',
