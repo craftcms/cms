@@ -37,21 +37,6 @@ class ProjectConfigController extends Controller
      */
     public function actionSync(string $nuclear = ''): int
     {
-        // Remove current config and configMap from the db.
-        // This is unsafe but helpful when Project
-        // Config fails to resolve.
-        if ($nuclear === 'nuclear') {
-            $row = (new Query())
-                ->from([Table::INFO])
-                ->one();
-            $info = new Info($row);
-            $attributes = Db::prepareValuesForDb($info);
-            $attributes['config'] = '';
-            $attributes['configMap'] = '';
-            Craft::$app->getDb()->createCommand()
-                ->update(Table::INFO, $attributes)
-                ->execute();
-        }
 
         if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
             $this->stdout('Craft is not configured to use project.yaml. Please enable the \'useProjectConfigFile\' config setting in config/general.php.' . PHP_EOL, Console::FG_YELLOW);
@@ -77,6 +62,22 @@ class ProjectConfigController extends Controller
             $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         } else {
+            // Remove current config and configMap from the db.
+            // This is unsafe but helpful when Project
+            // Config fails to resolve.
+            if ($nuclear === 'nuclear') {
+                $row = (new Query())
+                    ->from([Table::INFO])
+                    ->one();
+                $info = new Info($row);
+                $attributes = Db::prepareValuesForDb($info);
+                $attributes['config'] = '';
+                $attributes['configMap'] = '';
+                Craft::$app->getDb()->createCommand()
+                    ->update(Table::INFO, $attributes)
+                    ->execute();
+            }
+
             // Any plugins need to be installed/uninstalled?
             $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
