@@ -25,9 +25,11 @@ use craft\gql\types\User as UserGqlType;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
+use craft\models\GqlToken;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\Site;
+use craft\models\UserGroup;
 use craft\models\VolumeFolder;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -40,6 +42,17 @@ class ElementFieldResolverTest extends Unit
 
     protected function _before()
     {
+        // Mock the GQL token for the volumes below
+        $this->tester->mockMethods(
+            Craft::$app,
+            'gql',
+            ['getCurrentToken' => $this->make(GqlToken::class, [
+                'permissions' => [
+                    'usergroups.group-1-uid:read',
+                    'usergroups.group-2-uid:read',
+                ]
+            ])]
+        );
     }
 
     protected function _after()
@@ -203,6 +216,13 @@ class ElementFieldResolverTest extends Unit
                         'timeZone' => 'Fiji'
                     ];
                 },
+                'getGroups' => function () {
+                    return [
+                        new UserGroup(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
+                        new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
+                        new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
+                    ];
+                }
             ]
         );
 
@@ -292,6 +312,7 @@ class ElementFieldResolverTest extends Unit
             [UserGqlType::class, 'shortBio', true],
             [UserGqlType::class, 'username', true],
             [UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->getPreferences());}],
+            [UserGqlType::class, 'groupHandles', function () { return ['Group 1', 'Group 2'];}],
         ];
     }
 }
