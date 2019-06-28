@@ -5,6 +5,7 @@
 ### Changed
 - Craft no longer strips some punctuation symbols from slugs.
 - Improved the performance of saving project config updates. ([#4459](https://github.com/craftcms/cms/issues/4459))
+- The `craft update` command no longer updates Craft or plugins if not specified.
 
 ### Security
 - Fixed an XSS vulnerability.
