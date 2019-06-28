@@ -4,9 +4,30 @@
 
 ### Added
 - Added the `Craft.randomString()` JavaScript method.
+- Added `craft\services\Users::handleChangedUserSiteSettings()`
+- Added `craft\services\Users::getAllSiteSettings()`
+- Added `craft\services\Users::getSiteSettingsBySiteId()`
+- Added `craft\services\Users::getSiteSettingsByUid()`
+- Added `craft\services\Users::handleChangedUserSiteSettings()`
+- Added `craft\controllers\User::actionPreviewUser()`
+- Added `craft\elements\User::enableRoutingAndMultisite()`
+- Added `craft\elements\User::isLocalized()`
+- Added `craft\elements\User::hasUris()`
+- Added `craft\elements\User::getUriFormat()`
+- Added `craft\elements\User::route()`
+- Added `craft\elements\User::beforeSave()`
+- Added `craft\models\User_SiteSettings`
+- Added `craft\records\User_SiteSettings`
+- Users are now translatable
+- Enabled users now have their own unique URLS
+- Users now have live preview. 
 
 ### Changed
+- `craft\controllers\UserController::actionEditUser()`'s first argument can now be set to `$siteHandle`
 - Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
+- `craft\elements\User::getCpEditUrl()` will now try to factor in the current site URL. 
+- When creating a new Site Craft will also propogate the content of of `User` elements if `users.enableRoutingAndMultisite` is set to true
+- Users now have a slug.
 
 ## 3.2.0-RC2 - 2019-06-26
 
