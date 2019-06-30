@@ -55,7 +55,22 @@ Now open `site.php` in a text editor, and have it return an array that maps the 
 
 return [
     'Contact us' => 'Kontaktiere uns',
+    'Welcome back' => 'Willkommen zurück {name}',
 ];
 ```
 
 Now, when Craft is processing the message translation for a German site, “Contact us” will be replaced with  “Kontaktiere uns”.
+
+### Message Parameters
+
+Translated messages can have [placeholder values](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#message-parameters). For example, the 'Welcome back' message in the above `site.php` contains a placeholder for a person's name.
+
+To pass values to placeholders inside a template, use the `params` paramter.
+
+::: code
+```twig
+<p>{{ 'Welcome back'|t(params={
+  name: 'currentUser.friendlyName'
+}) }}</p>
+```
+:::
