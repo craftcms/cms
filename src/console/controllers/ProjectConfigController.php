@@ -31,11 +31,16 @@ class ProjectConfigController extends Controller
     public $force = false;
 
     /**
-     * Syncs the project config. When run with the nuclear option, it will remove the current config and configMap from the database. ($nuclear = '')
+     * @var bool Whether config and configMap columns should be erased in the database's info table.
+     */
+    public $nuclear = false;
+
+    /**
+     * Syncs the project config.
      *
      * @return int
      */
-    public function actionSync(string $nuclear = ''): int
+    public function actionSync(): int
     {
 
         if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
@@ -65,7 +70,7 @@ class ProjectConfigController extends Controller
             // Remove current config and configMap from the db.
             // This is unsafe but helpful when Project
             // Config fails to resolve.
-            if ($nuclear === 'nuclear') {
+            if ($this->nuclear) {
                 $row = (new Query())
                     ->from([Table::INFO])
                     ->one();
@@ -201,6 +206,7 @@ class ProjectConfigController extends Controller
 
         if ($actionID == 'sync') {
             $options[] = 'force';
+            $options[] = 'nuclear';
         }
 
         return $options;
