@@ -10,7 +10,7 @@
 - The `Craft.DraftEditor` JavaScript class now triggers a `createDraft` event when a draft is first created.
 
 ### Fixed
-- Fixed a bug where Matrix blocks were getting copied to all other sites when creating new entry drafts.
+- Fixed a bug where translatable content was getting copied to other sites when creating new entry drafts. ([#4448](https://github.com/craftcms/cms/issues/4448))
 
 ## 3.2.0-RC2 - 2019-06-26
 
