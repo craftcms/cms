@@ -186,7 +186,7 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'volume-uid-2',
                 'handle' => 'mockVolume2',
                 '__call' => function ($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'mockField'])] : parent::__get($name, $params);
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -204,7 +204,7 @@ class InterfaceAndGeneratorTest extends Unit
             $this->make(EntryType::class, [
                 'uid' => 'entrytype-uid-1',
                 'handle' => 'mockType1',
-                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1']),
+                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection1']),
                 '__call' => function ($name, $params) {
                     return $name == 'getFields' ? [] : parent::__get($name, $params);
                 },
@@ -212,9 +212,9 @@ class InterfaceAndGeneratorTest extends Unit
             $this->make(EntryType::class, [
                 'uid' => 'entrytype-uid-1',
                 'handle' => 'mockType2',
-                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1']),
+                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection2']),
                 '__call' => function ($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'mockField'])] : parent::__get($name, $params);
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -233,7 +233,7 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'globalset-uid-1',
                 'handle' => 'mockGlobal',
                 '__call' => function ($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'mockField'])] : parent::__get($name, $params);
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
