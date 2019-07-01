@@ -20,6 +20,7 @@
 
 ### Security
 - Fixed an XSS vulnerability.
+- Fixed a path disclosure vulnerability. ([#4468](https://github.com/craftcms/cms/issues/4468))
 - Added the `sameSiteCookieValue` config setting. ([#4462](https://github.com/craftcms/cms/issues/4462))
 
 ## 3.1.32.1 - 2019-06-25
