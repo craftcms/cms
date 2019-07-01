@@ -778,7 +778,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if ($generalConfig->enableCsrfProtection === true) {
-            return TemplateHelper::raw('<input type="hidden" name="' . $generalConfig->csrfTokenName . '" value="' . Craft::$app->getRequest()->getCsrfToken() . '">');
+            $request = Craft::$app->getRequest();
+            return TemplateHelper::raw('<input type="hidden" name="' . $request->csrfParam . '" value="' . $request->getCsrfToken() . '">');
         }
 
         return null;
