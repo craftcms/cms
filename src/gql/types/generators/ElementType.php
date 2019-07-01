@@ -1,11 +1,10 @@
 <?php
 namespace craft\gql\types\generators;
 
-use Craft;
 use craft\base\Element as BaseElement;
 use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\User;
+use craft\gql\types\Element;
 
 /**
  * Class UserType
@@ -23,7 +22,7 @@ class ElementType implements BaseGenerator
         $elementFields = ElementInterface::getFields();
 
         // Generate a type for each entry type
-        $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
+        $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Element([
             'name' => $typeName,
             'fields' => function () use ($elementFields) {
                 return $elementFields;
