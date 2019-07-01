@@ -17,6 +17,14 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
+    public static function getTypeGenerator(): string
+    {
+        return MatrixBlockType::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function getType($fields = null): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::class)) {
