@@ -19,6 +19,7 @@ use craft\gql\directives\BaseDirective;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\BaseInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -31,11 +32,6 @@ use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
-use craft\gql\types\generators\AssetType;
-use craft\gql\types\generators\EntryType;
-use craft\gql\types\generators\GlobalSetType;
-use craft\gql\types\generators\MatrixBlockType;
-use craft\gql\types\generators\UserType;
 use craft\gql\types\Query;
 use craft\helpers\DateTimeHelper;
 use craft\models\GqlToken;
@@ -119,13 +115,27 @@ class Gql extends Component
                 $this->_schema = new Schema($schemaConfig);
             } else {
                 // @todo: probably split out interfaces from types plugins can preload all the types for devmode schema
-                $schemaConfig['types'] = [
-                    EntryInterface::getType(),
-                    MatrixBlockInterface::getType(),
-                    AssetInterface::getType(),
-                    UserInterface::getType(),
-                    GlobalSetInterface::getType(),
+                $interfaces = [
+                    EntryInterface::class,
+                    MatrixBlockInterface::class,
+                    AssetInterface::class,
+                    UserInterface::class,
+                    GlobalSetInterface::class,
+                    ElementInterface::class,
                 ];
+
+                foreach ($interfaces as $interfaceClass) {
+                    if (!is_subclass_of($interfaceClass, BaseInterface::class)) {
+                        throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
+                    }
+
+                    $schemaConfig['types'][] = $interfaceClass::getType();
+                    $typeGeneratorClass = $interfaceClass::getTypeGenerator();
+
+                    foreach ($typeGeneratorClass::generateTypes() as $type) {
+                        $schemaConfig['types'][] = $type;
+                    }
+                }
                 try {
                     $this->_schema = new Schema($schemaConfig);
                     $this->_schema->assertValid();
