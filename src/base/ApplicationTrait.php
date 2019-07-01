@@ -582,62 +582,62 @@ trait ApplicationTrait
     public function saveInfo(Info $info): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($info->validate()) {
-            $attributes = Db::prepareValuesForDb($info);
-
-            // TODO: Remove this after the next breakpoint
-            unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
-
-            // TODO: Remove this after the next breakpoint
-            if (version_compare($info['version'], '3.1', '<')) {
-                unset($attributes['config'], $attributes['configMap']);
-            }
-
-            if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
-                unset($attributes['id']);
-            }
-
-            if (
-                isset($attributes['config']) &&
-                (
-                    !mb_check_encoding($attributes['config'], 'UTF-8') ||
-                    (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($attributes['config']))
-                )
-            ) {
-                $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
-            }
-
-            if ($this->getIsInstalled()) {
-                // TODO: Remove this after the next breakpoint
-                if (version_compare($info['version'], '3.0', '<')) {
-                    unset($attributes['fieldVersion']);
-                }
-
-                $this->getDb()->createCommand()
-                    ->update(Table::INFO, $attributes)
-                    ->execute();
-            } else {
-                $this->getDb()->createCommand()
-                    ->insert(Table::INFO, $attributes)
-                    ->execute();
-
-                $this->setIsInstalled();
-
-                $row = (new Query())
-                    ->from([Table::INFO])
-                    ->one();
-
-                // Reload from DB with the new ID and modified dates.
-                $info = new Info($row);
-            }
-
-            // Use this as the new cached Info
-            $this->_info = $info;
-
-            return true;
+        if (!$info->validate()) {
+            return false;
         }
 
-        return false;
+        $attributes = Db::prepareValuesForDb($info);
+
+        // TODO: Remove this after the next breakpoint
+        unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
+
+        // TODO: Remove this after the next breakpoint
+        if (version_compare($info['version'], '3.1', '<')) {
+            unset($attributes['config'], $attributes['configMap']);
+        }
+
+        if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
+            unset($attributes['id']);
+        }
+
+        if (
+            isset($attributes['config']) &&
+            (
+                !mb_check_encoding($attributes['config'], 'UTF-8') ||
+                (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($attributes['config']))
+            )
+        ) {
+            $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
+        }
+
+        if ($this->getIsInstalled()) {
+            // TODO: Remove this after the next breakpoint
+            if (version_compare($info['version'], '3.0', '<')) {
+                unset($attributes['fieldVersion']);
+            }
+
+            $this->getDb()->createCommand()
+                ->update(Table::INFO, $attributes)
+                ->execute();
+        } else {
+            $this->getDb()->createCommand()
+                ->insert(Table::INFO, $attributes)
+                ->execute();
+
+            $this->setIsInstalled();
+
+            $row = (new Query())
+                ->from([Table::INFO])
+                ->one();
+
+            // Reload from DB with the new ID and modified dates.
+            $info = new Info($row);
+        }
+
+        // Use this as the new cached Info
+        $this->_info = $info;
+
+        return true;
     }
 
     /**

@@ -647,30 +647,32 @@ class ProjectConfig extends Component
             }
         }
 
-        if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
-            $previousConfig = $this->_getStoredConfig();
-            $value = ProjectConfigHelper::cleanupConfig($previousConfig);
-            ksort($value);
-            $this->_storeYamlHistory($value);
-
-            $info = Craft::$app->getInfo();
-
-            if ($this->_updateConfigMap && $this->_useConfigFile()) {
-                $configMap = $this->_generateConfigMap();
-
-                foreach ($configMap as &$filePath) {
-                    $filePath = Craft::alias($filePath);
-                }
-
-                $info->configMap = Json::encode($configMap);
-            }
-
-            if ($this->_updateConfig) {
-                $info->config = Json::encode($this->_getConfigurationFromYaml());
-            }
-
-            Craft::$app->saveInfo($info);
+        if (!$this->_updateConfig && !($this->_updateConfigMap && $this->_useConfigFile())) {
+            return;
         }
+
+        $previousConfig = $this->_getStoredConfig();
+        $value = ProjectConfigHelper::cleanupConfig($previousConfig);
+        ksort($value);
+        $this->_storeYamlHistory($value);
+
+        $info = Craft::$app->getInfo();
+
+        if ($this->_updateConfigMap && $this->_useConfigFile()) {
+            $configMap = $this->_generateConfigMap();
+
+            foreach ($configMap as &$filePath) {
+                $filePath = Craft::alias($filePath);
+            }
+
+            $info->configMap = Json::encode($configMap);
+        }
+
+        if ($this->_updateConfig) {
+            $info->config = Json::encode($this->_getConfigurationFromYaml());
+        }
+
+        Craft::$app->saveInfo($info);
     }
 
     /**
