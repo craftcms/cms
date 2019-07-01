@@ -15,6 +15,9 @@
 - Removed `craft\services\ProjectConfig::saveDataAfterRequest()`.
 - Removed `craft\services\ProjectConfig::preventSavingDataAfterRequest()`.
 
+### Fixed
+- Fixed a PHP error that occurred when deleting an asset transform. ([#4473](https://github.com/craftcms/cms/issues/4473))
+
 ### Security
 - Fixed an XSS vulnerability.
 - Added the `sameSiteCookieValue` config setting. ([#4462](https://github.com/craftcms/cms/issues/4462))

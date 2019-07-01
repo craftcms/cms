@@ -361,7 +361,7 @@ class AssetTransforms extends Component
         // Fire a 'beforeApplyTransformDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
             $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new AssetTransformEvent([
-                'transform' => $transform,
+                'assetTransform' => $transform,
             ]));
         }
 
