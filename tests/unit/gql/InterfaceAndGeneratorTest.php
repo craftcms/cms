@@ -103,8 +103,12 @@ class InterfaceAndGeneratorTest extends Unit
 
         foreach ($getAllContexts() as $context) {
             $typeName = $getTypeNameByContext($context);
-            $this->assertNotFalse(GqlEntityRegistry::getEntity($typeName));
+
+            // Make sure the specific type entity exists and can be loaded.
             $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
+
+            // Make sure the generated types are pre-loaded, when asserting valid.
+            $this->assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchema(null, true)->getTypeMap()));
         }
     }
 
