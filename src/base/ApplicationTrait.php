@@ -43,7 +43,9 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\View;
+use yii\base\Application;
 use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\caching\Cache;
 use yii\mutex\Mutex;
@@ -173,6 +175,12 @@ trait ApplicationTrait
      * @var bool
      */
     private $_gettingLanguage = false;
+
+    /**
+     * @var bool Whether we’re listening for the request end, to update the application info
+     * @see saveInfoAfterRequest()
+     */
+    private $_waitingToSaveInfo = false;
 
     // Public Methods
     // =========================================================================
@@ -571,6 +579,44 @@ trait ApplicationTrait
         }
 
         return $this->_info = new Info($row);
+    }
+
+    /**
+     * Updates the info row at the end of the request.
+     *
+     * @since 3.1.33
+     */
+    public function saveInfoAfterRequest()
+    {
+        if (!$this->_waitingToSaveInfo) {
+            $this->_waitingToSaveInfo = true;
+
+            // If the request is already over, trigger this immediately
+            if (in_array($this->state, [
+                Application::STATE_AFTER_REQUEST,
+                Application::STATE_SENDING_RESPONSE,
+                Application::STATE_END,
+            ], true)) {
+                $this->saveInfoAfterRequestHandler();
+            } else {
+                Craft::$app->on(WebApplication::EVENT_AFTER_REQUEST, [$this, 'saveInfoAfterRequestHandler']);
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     * @throws ServerErrorHttpException
+     * @since 3.1.33
+     * @internal
+     */
+    public function saveInfoAfterRequestHandler()
+    {
+        $info = $this->getInfo();
+        if (!$this->saveInfo($info)) {
+            throw new Exception("Unable to save new application info: " . implode(', ', $info->getErrorSummary(true)));
+        }
+        $this->_waitingToSaveInfo = false;
     }
 
     /**
