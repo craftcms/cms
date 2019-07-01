@@ -651,6 +651,18 @@ class GeneralConfig extends BaseObject
      */
     public $runQueueAutomatically = true;
     /**
+     * @var string The [SameSite](https://www.owasp.org/index.php/SameSite) value that should be set on Craft cookies, if any.
+     *
+     * This can be set to `'Lax'`, `'Strict'`, or `null`.
+     *
+     * ::: note
+     * This setting requires PHP 7.3 or later.
+     * :::
+     *
+     * @since 3.1.33
+     */
+    public $sameSiteCookieValue = null;
+    /**
      * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
      *
      * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.

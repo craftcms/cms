@@ -1912,6 +1912,36 @@ Here is an example of how you would setup a queue runner from a cron job that ra
 
 
 
+### `sameSiteCookieValue`
+
+Allowed types
+
+:   [string](http://php.net/language.types.string)
+
+Default value
+
+:   `null`
+
+Defined by
+
+:   [GeneralConfig::$sameSiteCookieValue](api:craft\config\GeneralConfig::$sameSiteCookieValue)
+
+Since
+
+:   3.1.33
+
+
+
+The [SameSite](https://www.owasp.org/index.php/SameSite) value that should be set on Craft cookies, if any.
+
+This can be set to `'Lax'`, `'Strict'`, or `null`.
+
+::: note
+This setting requires PHP 7.3 or later.
+:::
+
+
+
 ### `sanitizeSvgUploads`
 
 Allowed types
