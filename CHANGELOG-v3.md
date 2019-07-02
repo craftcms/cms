@@ -3,9 +3,11 @@
 ## Unreleased (3.2)
 
 ### Added
+- Added `craft\queue\jobs\UpdateSearchIndex`.
 - Added the `Craft.randomString()` JavaScript method.
 
 ### Changed
+- Improved the performance of saving elements.
 - Craft now adds a random `v` param to the URL for preview URLs, so CDNs don’t ever return cached pages.
 - The `Craft.DraftEditor` JavaScript class now triggers a `createDraft` event when a draft is first created.
 

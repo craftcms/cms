@@ -43,6 +43,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
+use craft\queue\jobs\UpdateSearchIndex;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
@@ -479,6 +480,9 @@ class Elements extends Component
         /** @var Element $element */
         $isNewElement = !$element->id;
 
+        // Force propagation for new elements
+        $propagate = ($isNewElement || $propagate) && $element::isLocalized() && Craft::$app->getIsMultiSite();
+
         if ($isNewElement) {
             // Give it a UID right away
             if (!$element->uid) {
@@ -531,75 +535,77 @@ class Elements extends Component
         // Validate
         if ($runValidation && !$element->validate()) {
             Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
-
             return false;
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Get the element record
-            if (!$isNewElement) {
-                $elementRecord = ElementRecord::findOne($element->id);
+            // No need to save the element record multiple times
+            if (!$element->propagating) {
+                // Get the element record
+                if (!$isNewElement) {
+                    $elementRecord = ElementRecord::findOne($element->id);
 
-                if (!$elementRecord) {
-                    throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
+                    if (!$elementRecord) {
+                        throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
+                    }
+                } else {
+                    $elementRecord = new ElementRecord();
+                    $elementRecord->type = get_class($element);
+                    $elementRecord->uid = $element->uid;
                 }
-            } else {
-                $elementRecord = new ElementRecord();
-                $elementRecord->type = get_class($element);
+
+                // Set the attributes
                 $elementRecord->uid = $element->uid;
-            }
+                $elementRecord->draftId = $element->draftId;
+                $elementRecord->revisionId = $element->revisionId;
+                $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
+                $elementRecord->enabled = (bool)$element->enabled;
+                $elementRecord->archived = (bool)$element->archived;
 
-            // Set the attributes
-            $elementRecord->uid = $element->uid;
-            $elementRecord->draftId = $element->draftId;
-            $elementRecord->revisionId = $element->revisionId;
-            $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
-            $elementRecord->enabled = (bool)$element->enabled;
-            $elementRecord->archived = (bool)$element->archived;
-
-            if ($isNewElement) {
-                if (isset($element->dateCreated)) {
-                    $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                if ($isNewElement) {
+                    if (isset($element->dateCreated)) {
+                        $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                    }
+                    if (isset($element->dateUpdated)) {
+                        $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
+                    }
+                } else if ($element->propagating || $element->resaving) {
+                    // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
+                    $elementRecord->markAttributeDirty('dateUpdated');
+                } else {
+                    // Force a new dateUpdated value
+                    $elementRecord->dateUpdated = Db::prepareValueForDb(new \DateTime());
                 }
-                if (isset($element->dateUpdated)) {
-                    $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
+
+                // Save the element record
+                $elementRecord->save(false);
+
+                $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+
+                if ($dateCreated === false) {
+                    throw new Exception('There was a problem calculating dateCreated.');
                 }
-            } else if ($element->propagating || $element->resaving) {
-                // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
-                $elementRecord->markAttributeDirty('dateUpdated');
-            } else {
-                // Force a new dateUpdated value
-                $elementRecord->dateUpdated = Db::prepareValueForDb(new \DateTime());
-            }
 
-            // Save the element record
-            $elementRecord->save(false);
+                $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
 
-            $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+                if ($dateUpdated === false) {
+                    throw new Exception('There was a problem calculating dateUpdated.');
+                }
 
-            if ($dateCreated === false) {
-                throw new Exception('There was a problem calculating dateCreated.');
-            }
+                // Save the new dateCreated and dateUpdated dates on the model
+                $element->dateCreated = $dateCreated;
+                $element->dateUpdated = $dateUpdated;
 
-            $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+                if ($isNewElement) {
+                    // Save the element ID on the element model
+                    $element->id = $elementRecord->id;
 
-            if ($dateUpdated === false) {
-                throw new Exception('There was a problem calculating dateUpdated.');
-            }
-
-            // Save the new dateCreated and dateUpdated dates on the model
-            $element->dateCreated = $dateCreated;
-            $element->dateUpdated = $dateUpdated;
-
-            if ($isNewElement) {
-                // Save the element ID on the element model
-                $element->id = $elementRecord->id;
-
-                // If there's a temp ID, update the URI
-                if ($element->tempId && $element->uri) {
-                    $element->uri = str_replace($element->tempId, $element->id, $element->uri);
-                    $element->tempId = null;
+                    // If there's a temp ID, update the URI
+                    if ($element->tempId && $element->uri) {
+                        $element->uri = str_replace($element->tempId, $element->id, $element->uri);
+                        $element->tempId = null;
+                    }
                 }
             }
 
@@ -614,14 +620,17 @@ class Elements extends Component
             if (empty($siteSettingsRecord)) {
                 // First time we've saved the element for this site
                 $siteSettingsRecord = new Element_SiteSettingsRecord();
-
                 $siteSettingsRecord->elementId = $element->id;
                 $siteSettingsRecord->siteId = $element->siteId;
             }
 
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
-            $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
+
+            // Avoid `enabled` getting marked as dirty if it's not really changing
+            if ($siteSettingsRecord->enabled != $element->enabledForSite) {
+                $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
+            }
 
             if (!$siteSettingsRecord->save(false)) {
                 throw new Exception('Couldn’t save elements’ site settings record.');
@@ -635,13 +644,8 @@ class Elements extends Component
             // It is now officially saved
             $element->afterSave($isNewElement);
 
-            // Update search index
-            if (!ElementHelper::isDraftOrRevision($element)) {
-                Craft::$app->getSearch()->indexElementAttributes($element);
-            }
-
             // Update the element across the other sites?
-            if (($isNewElement || $propagate) && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
+            if ($propagate) {
                 foreach ($supportedSites as $siteInfo) {
                     // Skip the master site
                     if ($siteInfo['siteId'] != $element->siteId) {
@@ -687,6 +691,15 @@ class Elements extends Component
         // Delete any caches involving this element. (Even do this for new elements, since they
         // might pop up in a cached criteria.)
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+
+        // Update search index
+        if (!$element->propagating && !ElementHelper::isDraftOrRevision($element)) {
+            Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                'elementType' => get_class($element),
+                'elementId' => $element->id,
+                'siteId' => $propagate ? '*' : $element->siteId,
+            ]));
+        }
 
         // Fire an 'afterSaveElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {

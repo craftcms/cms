@@ -89,6 +89,7 @@
 - Added `craft\helpers\ElementHelper::isDraftOrRevision()`.
 - Added `craft\helpers\ElementHelper::rootElement()`.
 - Added `craft\models\Section::$propagationMethod`.
+- Added `craft\queue\jobs\UpdateSearchIndex`.
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
 - Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))
 - Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RESAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
@@ -108,6 +109,7 @@
 - Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
 - Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))
 - Improved the button layout of Edit Entry pages. ([#2325](https://github.com/craftcms/cms/issues/2325))
+- Improved the performance of saving elements.
 - The Control Panel now shows the sidebar on screens that are at least 1,000 pixels wide. ([#4079](https://github.com/craftcms/cms/issues/4079))
 - The `_layouts/cp` template now supports a `showHeader` variable that can be set to `false` to remove the header.
 - The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.

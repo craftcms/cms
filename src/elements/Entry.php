@@ -1165,39 +1165,41 @@ EOD;
      */
     public function afterSave(bool $isNew)
     {
-        $section = $this->getSection();
+        if (!$this->propagating) {
+            $section = $this->getSection();
 
-        // Get the entry record
-        if (!$isNew) {
-            $record = EntryRecord::findOne($this->id);
+            // Get the entry record
+            if (!$isNew) {
+                $record = EntryRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid entry ID: ' . $this->id);
-            }
-        } else {
-            $record = new EntryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->sectionId = $this->sectionId;
-        $record->typeId = $this->typeId;
-        $record->authorId = $this->authorId;
-        $record->postDate = $this->postDate;
-        $record->expiryDate = $this->expiryDate;
-        $record->save(false);
-
-        if ($section->type == Section::TYPE_STRUCTURE) {
-            // Has the parent changed?
-            if ($this->_hasNewParent()) {
-                if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
-                } else {
-                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                if (!$record) {
+                    throw new Exception('Invalid entry ID: ' . $this->id);
                 }
+            } else {
+                $record = new EntryRecord();
+                $record->id = (int)$this->id;
             }
 
-            // Update the entry's descendants, who may be using this entry's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            $record->sectionId = (int)$this->sectionId;
+            $record->typeId = (int)$this->typeId;
+            $record->authorId = (int)$this->authorId ?: null;
+            $record->postDate = $this->postDate;
+            $record->expiryDate = $this->expiryDate;
+            $record->save(false);
+
+            if ($section->type == Section::TYPE_STRUCTURE) {
+                // Has the parent changed?
+                if ($this->_hasNewParent()) {
+                    if (!$this->newParentId) {
+                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                    } else {
+                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                    }
+                }
+
+                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            }
         }
 
         parent::afterSave($isNew);

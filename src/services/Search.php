@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\SiteNotFoundException;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
@@ -102,7 +103,7 @@ class Search extends Component
      *
      * @param ElementInterface $element
      * @return bool Whether the indexing was a success.
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function indexElementAttributes(ElementInterface $element): bool
     {
@@ -121,6 +122,23 @@ class Search extends Component
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
+        // Custom fields too?
+        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+            $keywords = [];
+
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field->searchable) {
+                    // Set the keywords for the content's site
+                    $fieldValue = $element->getFieldValue($field->handle);
+                    $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+                    $keywords[$field->id] = $fieldSearchKeywords;
+                }
+            }
+
+            $this->indexElementFields($element->id, $element->siteId, $keywords);
+        }
+
         return true;
     }
 
@@ -131,7 +149,7 @@ class Search extends Component
      * @param int $siteId The site ID of the content getting indexed.
      * @param array $fields The field values, indexed by field ID.
      * @return bool Whether the indexing was a success.
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
@@ -278,7 +296,7 @@ class Search extends Component
      * @param string $fieldId
      * @param int $siteId
      * @param string $dirtyKeywords
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
     {
