@@ -276,7 +276,7 @@ class GeneralConfig extends BaseObject
     public $disabledPlugins = [];
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
-     * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
+     * will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is need, which may
      * degrade site performance.
      * @see enableCsrfProtection
@@ -634,6 +634,18 @@ class GeneralConfig extends BaseObject
      * ```
      */
     public $runQueueAutomatically = true;
+    /**
+     * @var string The [SameSite](https://www.owasp.org/index.php/SameSite) value that should be set on Craft cookies, if any.
+     *
+     * This can be set to `'Lax'`, `'Strict'`, or `null`.
+     *
+     * ::: note
+     * This setting requires PHP 7.3 or later.
+     * :::
+     *
+     * @since 3.1.33
+     */
+    public $sameSiteCookieValue = null;
     /**
      * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
      *

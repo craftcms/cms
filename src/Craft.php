@@ -144,21 +144,19 @@ class Craft extends Yii
         if (self::$_baseCookieConfig === null) {
             $generalConfig = static::$app->getConfig()->getGeneral();
 
-            $defaultCookieDomain = $generalConfig->defaultCookieDomain;
-            $useSecureCookies = $generalConfig->useSecureCookies;
-
-            if ($useSecureCookies === 'auto') {
+            if ($generalConfig->useSecureCookies === 'auto') {
                 if ($request === null) {
                     $request = static::$app->getRequest();
                 }
 
-                $useSecureCookies = $request->getIsSecureConnection();
+                $generalConfig->useSecureCookies = $request->getIsSecureConnection();
             }
 
             self::$_baseCookieConfig = [
-                'domain' => $defaultCookieDomain,
-                'secure' => $useSecureCookies,
-                'httpOnly' => true
+                'domain' => $generalConfig->defaultCookieDomain,
+                'secure' => $generalConfig->useSecureCookies,
+                'httpOnly' => true,
+                'sameSite' => $generalConfig->sameSiteCookieValue,
             ];
         }
 

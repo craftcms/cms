@@ -1408,7 +1408,7 @@ class Fields extends Component
 
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
-        Craft::$app->saveInfo($info);
+        Craft::$app->saveInfoAfterRequest();
     }
 
     /**

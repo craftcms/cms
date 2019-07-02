@@ -426,7 +426,7 @@ class UpdateController extends Controller
         $composerService->disablePackagist = false;
 
         try {
-            $composerService->install($requirements, $io, false);
+            $composerService->install($requirements, $io);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);

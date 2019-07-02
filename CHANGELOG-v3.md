@@ -1,5 +1,28 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.33 - 2019-07-02
+
+### Added
+- Added `craft\base\ApplicationTrait::saveInfoAfterRequest()`.
+
+### Changed
+- Craft no longer strips some punctuation symbols from slugs.
+- Improved the performance of saving project config updates. ([#4459](https://github.com/craftcms/cms/issues/4459))
+- Improved the performance of saving fields. ([#4459](https://github.com/craftcms/cms/issues/4459))
+- The `craft update` command no longer updates Craft or plugins if not specified.
+
+### Removed
+- Removed `craft\services\ProjectConfig::saveDataAfterRequest()`.
+- Removed `craft\services\ProjectConfig::preventSavingDataAfterRequest()`.
+
+### Fixed
+- Fixed a PHP error that occurred when deleting an asset transform. ([#4473](https://github.com/craftcms/cms/issues/4473))
+
+### Security
+- Fixed an XSS vulnerability.
+- Fixed a path disclosure vulnerability. ([#4468](https://github.com/craftcms/cms/issues/4468))
+- Added the `sameSiteCookieValue` config setting. ([#4462](https://github.com/craftcms/cms/issues/4462))
+
 ## 3.1.32.1 - 2019-06-25
 
 ### Fixed

@@ -45,7 +45,7 @@ Possible values include:
     .all() %}
 ```
 
-### Working with Assets Field Data
+### Working with Matrix Field Data
 
 To output your Matrix blocks in a template, use a [for-loop](https://twig.symfony.com/doc/tags/for.html) pointed at your Matrix field:
 
