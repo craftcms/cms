@@ -423,7 +423,6 @@ class Table extends Field
         return Type::listOf(array_pop($typeArray));
     }
 
-
     // Private Methods
     // =========================================================================
 
