@@ -9,6 +9,9 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\GqlException;
+use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeLoader;
+use GraphQL\Type\Definition\UnionType;
 
 /**
  * Class Gql
@@ -137,5 +140,26 @@ class Gql
     public static function canQueryUsers(): bool
     {
         return isset(self::extractAllowedEntitiesFromToken()['usergroups']);
+    }
+
+    /**
+     * Get (and create if needed) a union type by name, included types and a resolver funcion.
+     *
+     * @param string $typeName The union type name.
+     * @param array $includedTypes The type the union should include
+     * @param callable $resolveFunction The resolver function to use to resolve a specific type.
+     * @return mixed
+     */
+    public static function getUnionType(string $typeName, array $includedTypes, callable $resolveFunction)
+    {
+        $unionType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+            'name' => $typeName,
+            'types' => $includedTypes,
+            'resolveType' => $resolveFunction,
+        ]));
+
+        TypeLoader::registerType($typeName, function () use ($unionType) { return $unionType ;});
+
+        return $unionType;
     }
 }
