@@ -19,13 +19,14 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
+use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\events\BlockTypesEvent;
-use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
-use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
+use craft\gql\GqlEntityRegistry;
+use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
@@ -936,12 +937,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getContentGqlType()
     {
-        return [
-            'name' => $this->handle,
-            'type' => Type::listOf(MatrixBlockInterface::getType()),
-            'args' => MatrixBlockArguments::getArguments(),
-            'resolve' => MatrixBlockResolver::class . '::resolve',
-        ];
+        $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
+        $typeName = $this->handle . '_MatrixField';
+        $resolver = function (MatrixBlockElement $value) {
+            return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+        };
+
+        return Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver));
     }
 
     // Private Methods
