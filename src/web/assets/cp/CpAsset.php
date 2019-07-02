@@ -296,8 +296,8 @@ JS;
         ];
 
         if ($generalConfig->enableCsrfProtection) {
+            $data['csrfTokenName'] = $request->csrfParam;
             $data['csrfTokenValue'] = $request->getCsrfToken();
-            $data['csrfTokenName'] = $generalConfig->csrfTokenName;
         }
 
         return $data;

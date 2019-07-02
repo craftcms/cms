@@ -377,7 +377,7 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased (3.1)
+## 3.1.33 - 2019-07-02
 
 ### Added
 - Added `craft\base\ApplicationTrait::saveInfoAfterRequest()`.
@@ -392,8 +392,12 @@
 - Removed `craft\services\ProjectConfig::saveDataAfterRequest()`.
 - Removed `craft\services\ProjectConfig::preventSavingDataAfterRequest()`.
 
+### Fixed
+- Fixed a PHP error that occurred when deleting an asset transform. ([#4473](https://github.com/craftcms/cms/issues/4473))
+
 ### Security
 - Fixed an XSS vulnerability.
+- Fixed a path disclosure vulnerability. ([#4468](https://github.com/craftcms/cms/issues/4468))
 - Added the `sameSiteCookieValue` config setting. ([#4462](https://github.com/craftcms/cms/issues/4462))
 
 ## 3.1.32.1 - 2019-06-25

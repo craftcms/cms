@@ -619,12 +619,12 @@ Some `redirect` param tokens have been renamed:
 
 ### CSRF Token Params
 
-CSRF protection is enabled by default in Craft 3. If you didn’t already have it enabled (via the `enableCsrfProtection` config setting), each of your front-end `<form>`s and JS scripts that submit to a controller action will need to be updated with a new CSRF token param, named after your `csrfTokenName` config setting value (set to `'CRAFT_CSRF_TOKEN'` by default).
+CSRF protection is enabled by default in Craft 3. If you didn’t already have it enabled (via the `enableCsrfProtection` config setting), each of your front-end `<form>`s and JS scripts that submit to a controller action will need to be updated with a new CSRF token param.
 
 ```twig
-{% set csrfTokenName = craft.app.config.general.csrfTokenName %}
+{% set csrfParam = craft.app.request.csrfParam %}
 {% set csrfToken = craft.app.request.csrfToken %}
-<input type="hidden" name="{{ csrfTokenName }}" value="{{ csrfToken }}">
+<input type="hidden" name="{{ csrfParam }}" value="{{ csrfToken }}">
 ```
 
 The `csrfInput()` function is provided as a shortcut.

@@ -15,6 +15,7 @@ use GuzzleHttp\Exception\ClientException;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -187,7 +188,11 @@ abstract class Controller extends \yii\web\Controller
         } catch (\Throwable $e) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
-                $message = $e->getMessage();
+                if (!YII_DEBUG && !$e instanceof UserException) {
+                    $message = Craft::t('app', 'An unknown error occurred.');
+                } else {
+                    $message = $e->getMessage();
+                }
                 if ($e instanceof ClientException) {
                     $statusCode = $e->getCode();
                     if (($response = $e->getResponse()) !== null) {

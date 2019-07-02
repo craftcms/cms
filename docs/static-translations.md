@@ -24,10 +24,10 @@ The first step is to run all of your static messages through the translator. If 
 ```
 ```php
 // old
-$label = 'Contact us';
+echo 'Contact us';
 
 // new
-$label = Craft::t('site', 'Contact us');
+echo Craft::t('site', 'Contact us');
 ```
 :::
 
@@ -59,3 +59,30 @@ return [
 ```
 
 Now, when Craft is processing the message translation for a German site, “Contact us” will be replaced with  “Kontaktiere uns”.
+
+### Message Parameters
+
+Static messages can have [placeholder values](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#message-parameters). For example:
+
+```php
+<?php
+
+return [
+    'Welcome back, {name}' => 'Willkommen zurück {name}',
+];
+```
+
+To replace the placeholder values with dynamic values when translating the message, pass the `params` argument when using the [translate](dev/filters.md#translate-or-t) filter or calling [Craft::t()](api:yii\BaseYii::t()):
+
+::: code
+```twig
+<a href="/contact">{{ 'Welcome back, {name}'|t(params={
+    'name' => currentUser.friendlyName,
+}) }}</a>
+```
+```php
+echo Craft::t('site', 'Welcome back, {name}', [
+    'name' => Craft::$app->user->identity->friendlyName,
+]);
+```
+:::

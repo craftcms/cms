@@ -809,7 +809,7 @@ Defined by
 
 
 Whether to use a cookie to persist the CSRF token if [enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#enablecsrfprotection) is enabled. If false, the CSRF token
-will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
+will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
 session increases security, it requires starting a session for every page that a CSRF token is need, which may
 degrade site performance.
 
