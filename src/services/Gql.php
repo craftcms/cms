@@ -91,17 +91,17 @@ class Gql extends Component
      * Returns the GraphQL schema.
      *
      * @param GqlToken $token
-     * @param bool $validateSchema should the schema be deep-scanned and validated
+     * @param bool $prebuildSchema should the schema be deep-scanned and pre-built instead of lazy-loaded
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchema($token = null, $validateSchema = false): Schema
+    public function getSchema($token = null, $prebuildSchema = false): Schema
     {
         if ($token) {
             $this->setToken($token);
         }
 
-        if (!$this->_schema || $validateSchema) {
+        if (!$this->_schema || $prebuildSchema) {
             $this->_registerGqlTypes();
             $this->_registerGqlQueries();
 
@@ -111,7 +111,7 @@ class Gql extends Component
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
-            if (!$validateSchema) {
+            if (!$prebuildSchema) {
                 $this->_schema = new Schema($schemaConfig);
             } else {
                 // @todo: probably split out interfaces from types plugins can preload all the types for devmode schema
@@ -129,7 +129,6 @@ class Gql extends Component
                         throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
                     }
 
-                    $schemaConfig['types'][] = $interfaceClass::getType();
                     $typeGeneratorClass = $interfaceClass::getTypeGenerator();
 
                     foreach ($typeGeneratorClass::generateTypes() as $type) {
@@ -138,7 +137,7 @@ class Gql extends Component
                 }
                 try {
                     $this->_schema = new Schema($schemaConfig);
-                    $this->_schema->assertValid();
+                    $this->_schema->getTypeMap();
                 } catch (\Throwable $exception) {
                     throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
                 }
