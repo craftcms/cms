@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.2)
+## 3.2.0-RC3 - 2019-07-02
 
 ### Added
 - Added `craft\queue\jobs\UpdateSearchIndex`.
