@@ -36,7 +36,7 @@ class Element extends BaseInterface
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (ElementInterface $value) {
-                return $value->getGqlTypeName();
+                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }
         ]));
 
