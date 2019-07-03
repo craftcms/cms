@@ -166,7 +166,7 @@ class ExtensionTest extends Unit
         );
 
         // Custom name - just to be sure.
-        Craft::$app->getConfig()->getGeneral()->csrfTokenName = 'HACKER_POOF';
+        Craft::$app->getRequest()->csrfParam = 'HACKER_POOF';
         $this->extensionRenderTest(
             '{{ csrfInput() }}',
             '<input type="hidden" name="HACKER_POOF" value="'.Craft::$app->getRequest()->getCsrfToken().'">'
