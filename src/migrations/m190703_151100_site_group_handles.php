@@ -16,7 +16,7 @@ class m190703_151100_site_group_handles extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%sitegroups}}', 'handle', $this->text());
+        $this->addColumn('{{%sitegroups}}', 'handle', $this->string());
 
         // Set handles on all.
         $siteGroups = Craft::$app->getSites()->getAllGroups();
@@ -35,7 +35,9 @@ class m190703_151100_site_group_handles extends Migration
         }
 
         // *Now* this is fine.
-        $this->alterColumn('{{%sitegroups}}', 'handle', $this->text()->notNull());
+        $this->alterColumn('{{%sitegroups}}', 'handle', $this->string()->notNull());
+        $this->createIndex(null, '{{%sitegroups}}', ['handle'], true);
+
     }
 
     /**

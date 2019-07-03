@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\helpers\ArrayHelper;
 use craft\records\SiteGroup as SiteGroupRecord;
+use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 
 /**
@@ -65,7 +66,8 @@ class SiteGroup extends Model
         $rules = parent::rules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         $rules[] = [['name'], 'string', 'max' => 255];
-        $rules[] = [['name'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class];
+        $rules[] = [['handle'], HandleValidator::class];
         $rules[] = [['name'], 'required'];
         return $rules;
     }
