@@ -68,7 +68,7 @@
                 var oldName = this.$selectedGroup.text(),
                     data = this.promptForGroupName(oldName);
 
-                if (newName && newName !== oldName) {
+                if (data && data.name !== oldName) {
                     var data = {
                         id: this.$selectedGroup.data('id'),
                         name: data.name,
