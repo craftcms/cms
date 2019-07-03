@@ -514,6 +514,7 @@ class Install extends Migration
         $this->createTable(Table::SITEGROUPS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
