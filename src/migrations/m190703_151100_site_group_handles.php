@@ -38,7 +38,7 @@ class m190703_151100_site_group_handles extends Migration
                 ]);
         }
 
-        // Not this is fine.
+        // *Now* this is fine.
         $this->alterColumn('{{%sitegroups}}', 'handle', $this->text()->notNull());
     }
 
