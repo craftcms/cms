@@ -72,6 +72,7 @@ use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
+use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -329,9 +330,8 @@ class TestSetup
     }
 
     /**
-     * @todo the $mergeExistingConfig is not being used by us - deprecate it?
      * @param string $projectConfigFile
-     * @param bool $mergeExistingConfig
+     * @throws ErrorException
      */
     public static function setupProjectConfig(string $projectConfigFile)
     {
