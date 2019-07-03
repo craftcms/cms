@@ -703,6 +703,12 @@ class View extends \yii\web\View
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
+
+            // Add the site group handle
+            $siteGroupPath = $this->_templatesPath . DIRECTORY_SEPARATOR . Craft::$app->getSites()->getCurrentSite()->getGroup()->handle;
+            if (is_dir($siteGroupPath)) {
+                $basePaths[] = $siteGroupPath;
+            }
         }
 
         $basePaths[] = $this->_templatesPath;
