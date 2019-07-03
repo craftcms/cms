@@ -11,7 +11,7 @@ use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 
 /**
- * m190624_234204_matrix_propagation_method migration.
+ * m190703_151100_site_group_handles migration.
  */
 class m190703_151100_site_group_handles extends Migration
 {
@@ -47,7 +47,7 @@ class m190703_151100_site_group_handles extends Migration
      */
     public function safeDown()
     {
-        echo "m190624_234204_matrix_propagation_method cannot be reverted.\n";
+        echo "m190703_151100_site_group_handles cannot be reverted.\n";
         return false;
     }
 }
