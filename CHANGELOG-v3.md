@@ -6,10 +6,10 @@
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yml` file.
 
 ## Fixed
-- Fixed a bug where where Functional tests could cause 404 errors ([#4472](https://github.com/craftcms/cms/issues/4472))
+- Fixed a bug where where functional tests could cause 404 errors. ([#4472](https://github.com/craftcms/cms/issues/4472))
 
 ## Removed
-- Removed the `$mergeExistingConfig` option on `craft\test\TestSetup::setupProjectConfig()` 
+- Removed the `$mergeExistingConfig` option on `craft\test\TestSetup::setupProjectConfig()`.
 
 ## 3.2.0-RC3 - 2019-07-02
 
