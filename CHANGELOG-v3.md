@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+## Added
+- Craft will now also attempt to find templates by the SiteGroup `handle` property ([#3101](https://github.com/craftcms/cms/issues/3101))
+- Added `craft\services\Sites::getGroupByHandle()`
+
 ## Changed
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yml` file.
+- `craft\models\SiteGroup` now have a `handle` property.
 
 ## Fixed
 - Fixed a bug where where functional tests could cause 404 errors. ([#4472](https://github.com/craftcms/cms/issues/4472))
