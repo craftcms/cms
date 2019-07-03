@@ -4,11 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Table;
-use craft\helpers\ElementHelper;
-use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
-use craft\validators\HandleValidator;
 
 /**
  * m190703_151100_site_group_handles migration.
