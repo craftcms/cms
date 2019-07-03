@@ -424,7 +424,8 @@ class ViewTest extends TestCase
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/index.twig'],
             ['@craftunittemplates/testSite3/index.twig', 'testSite3'],
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
-            ['@craftunittemplates/craftCmsTesting/site-group-template.twig', 'site-group-template'],
+            ['@craftunittemplates/craftTestSite/site-group-template.twig', 'craftTestSite/site-group-template'],
+            ['@craftunittemplates/craftTestSite/site-group-template.twig', 'site-group-template'],
 
             // Cp Paths
             ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
