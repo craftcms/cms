@@ -127,6 +127,8 @@ abstract class ElementFixture extends ActiveFixture
                 if (!$elementRecord->save()) {
                     throw new Exception('Unable to set element as deleted');
                 }
+            } else {
+                Craft::$app->getSearch()->indexElementAttributes($element);
             }
 
             $this->ids[] = $element->id;

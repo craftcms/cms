@@ -106,6 +106,7 @@
 - Added the `Craft.Preview` JavaScript class.
 
 ### Changed
+- Craft will now also attempt to find templates by the SiteGroup `handle` property ([#3101](https://github.com/craftcms/cms/issues/3101))
 - Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
 - Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))
 - Improved the button layout of Edit Entry pages. ([#2325](https://github.com/craftcms/cms/issues/2325))
