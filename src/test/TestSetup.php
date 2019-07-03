@@ -14,6 +14,7 @@ use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\MigrationHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
@@ -332,7 +333,7 @@ class TestSetup
      * @param string $projectConfigFile
      * @param bool $mergeExistingConfig
      */
-    public static function setupProjectConfig(string $projectConfigFile, bool $mergeExistingConfig = false)
+    public static function setupProjectConfig(string $projectConfigFile)
     {
         if (!is_file($projectConfigFile)) {
             throw new InvalidArgumentException('Project config is not a file');
@@ -342,14 +343,8 @@ class TestSetup
         $contents = file_get_contents($projectConfigFile);
         $arrayContents = Yaml::parse($contents);
 
-        // Do we need to take into account the existing project config file?
-        if ($mergeExistingConfig === true && is_file($testSuiteProjectConfigPath)) {
-            $existingConfig = file_get_contents($testSuiteProjectConfigPath);
-            $arrayContents = array_merge($arrayContents, $existingConfig);
-        }
-
         // Write to the file.
-        file_put_contents($testSuiteProjectConfigPath, Yaml::dump($arrayContents));
+        FileHelper::writeToFile($testSuiteProjectConfigPath, Yaml::dump($arrayContents));
     }
 
     /**
