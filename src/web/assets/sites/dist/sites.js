@@ -38,11 +38,12 @@
             },
 
             addNewGroup: function() {
-                var name = this.promptForGroupName('');
+                var data = this.promptForGroupName('');
 
-                if (name) {
+                if (data) {
                     var data = {
-                        name: name
+                        name: data.name,
+                        handle: data.handle
                     };
 
                     Craft.postActionRequest('sites/save-group', data, $.proxy(function(response, textStatus) {
@@ -65,12 +66,13 @@
 
             renameSelectedGroup: function() {
                 var oldName = this.$selectedGroup.text(),
-                    newName = this.promptForGroupName(oldName);
+                    data = this.promptForGroupName(oldName);
 
                 if (newName && newName !== oldName) {
                     var data = {
                         id: this.$selectedGroup.data('id'),
-                        name: newName
+                        name: data.name,
+                        handle: data.handle
                     };
 
                     Craft.postActionRequest('sites/save-group', data, $.proxy(function(response, textStatus) {
@@ -93,7 +95,11 @@
             },
 
             promptForGroupName: function(oldName) {
-                return prompt(Craft.t('app', 'What do you want to name the group?'), oldName);
+                let name = prompt(Craft.t('app', 'What do you want to name the group?'), oldName);
+                let handleAttempt =  new Craft.HandleGenerator().generateTargetValue(name);
+                let handle = prompt(Craft.t('app', 'What must the handle be set to?'), handleAttempt)
+
+                return {name, handle}
             },
 
             deleteSelectedGroup: function() {
