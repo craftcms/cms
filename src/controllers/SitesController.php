@@ -106,6 +106,7 @@ class SitesController extends Controller
         $group = new SiteGroup();
         $group->id = Craft::$app->getRequest()->getBodyParam('id');
         $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+        $group->handle = Craft::$app->getRequest()->getRequiredBodyParam('handle');
 
         $isNewGroup = empty($group->id);
 
