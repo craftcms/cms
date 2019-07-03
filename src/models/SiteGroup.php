@@ -35,7 +35,7 @@ class SiteGroup extends Model
     public $name;
 
     /**
-     * @var string|null Name
+     * @var string|null Handle
      */
     public $handle;
 
