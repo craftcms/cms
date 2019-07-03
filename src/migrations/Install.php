@@ -1145,6 +1145,7 @@ class Install extends Migration
             'siteGroups' => [
                 $siteGroupUid => [
                     'name' => $this->site->name,
+                    'handle' => StringHelper::toCamelCase($this->site->name)
                 ],
             ],
             'sites' => [
