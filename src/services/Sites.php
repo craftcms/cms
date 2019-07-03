@@ -296,7 +296,7 @@ class Sites extends Component
         }
 
         $groupRecord->name = $data['name'];
-        $groupRecord->handle = $data['handle'];
+        $groupRecord->handle = $data['handle'] ?? StringHelper::toCamelCase($data['name']);
 
         if ($groupRecord->dateDeleted) {
             $groupRecord->restore();
