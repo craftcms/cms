@@ -1273,6 +1273,7 @@ class Sites extends Component
             ->select([
                 'id',
                 'name',
+                'handle',
                 'uid',
             ])
             ->from([Table::SITEGROUPS])
