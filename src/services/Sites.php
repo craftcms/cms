@@ -221,6 +221,17 @@ class Sites extends Component
     }
 
     /**
+     * Returns a site group by its handle.
+     *
+     * @param string $groupId The site group’s handle
+     * @return SiteGroup|null The site group, or null if it doesn’t exist
+     */
+    public function getGroupByHandle(string $handle)
+    {
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'handle', $handle);
+    }
+
+    /**
      * Saves a site group.
      *
      * @param SiteGroup $group The site group to be saved
@@ -246,7 +257,8 @@ class Sites extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
         $configData = [
-            'name' => $group->name
+            'name' => $group->name,
+            'handle' => $group->handle
         ];
 
         if ($isNewGroup) {
@@ -284,6 +296,7 @@ class Sites extends Component
         }
 
         $groupRecord->name = $data['name'];
+        $groupRecord->handle = $data['handle'];
 
         if ($groupRecord->dateDeleted) {
             $groupRecord->restore();

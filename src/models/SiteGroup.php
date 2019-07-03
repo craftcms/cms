@@ -35,6 +35,11 @@ class SiteGroup extends Model
     public $name;
 
     /**
+     * @var string|null Name
+     */
+    public $handle;
+
+    /**
      * @var string|null UID
      */
     public $uid;
