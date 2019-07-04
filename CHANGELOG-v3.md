@@ -9,6 +9,7 @@
 - Removed the `$mergeExistingConfig` argument on `craft\test\TestSetup::setupProjectConfig()`.
 
 ## Fixed
+- Fixed an infinite loop that could occur when saving an element with a circular relation. ([#4482](https://github.com/craftcms/cms/issues/4482))
 - Fixed a bug where where functional tests could cause 404 errors. ([#4472](https://github.com/craftcms/cms/issues/4472))
 
 ## 3.2.0-RC3 - 2019-07-02

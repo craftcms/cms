@@ -18,11 +18,14 @@ use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
+use craft\events\ElementEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
+use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use yii\base\Event;
 use yii\base\NotSupportedException;
 
 /**
@@ -83,6 +86,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         return ElementQueryInterface::class;
     }
+
+    /**
+     * @var array Related elements that have been validated
+     * @see _validateRelatedElement()
+     */
+    private static $_relatedElementValidates = [];
+
+    /**
+     * @var bool Whether we're listening for related element saves yet
+     * @see _validateRelatedElement()
+     */
+    private static $_listeningForRelatedElementSave = false;
 
     // Properties
     // =========================================================================
@@ -259,6 +274,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function validateRelatedElements(ElementInterface $element)
     {
         /** @var Element $element */
+        // Prevent circular relations from worrying about this entry
+        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+
         /** @var ElementQueryInterface $query */
         $query = $element->getFieldValue($this->handle);
         $errorCount = 0;
@@ -266,13 +284,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         foreach ($query->all() as $i => $related) {
             /** @var Element $related */
             if ($related->enabled && $related->enabledForSite) {
-                $related->setScenario(Element::SCENARIO_LIVE);
-                if (!$related->validate()) {
+                if (!self::_validateRelatedElement($related)) {
                     $element->addModelErrors($related, "{$this->handle}[{$i}]");
                     $errorCount++;
                 }
             }
         }
+
+        unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
 
         if ($errorCount) {
             /** @var ElementInterface|string $elementType */
@@ -281,6 +300,37 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'type' => mb_strtolower($errorCount === 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
             ]));
         }
+    }
+
+    /**
+     * Returns whether a related element validates.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    private static function _validateRelatedElement(ElementInterface $element): bool
+    {
+        /** @var Element $element */
+        if (isset(self::$_relatedElementValidates[$element->id][$element->siteId])) {
+            return self::$_relatedElementValidates[$element->id][$element->siteId];
+        }
+
+        // If this is the first time we are validating a related element,
+        // listen for future element saves so we can clear our cache
+        if (!self::$_listeningForRelatedElementSave) {
+            Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
+                /** @var Element $element */
+                $element = $e->element;
+                unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
+            });
+            self::$_listeningForRelatedElementSave = true;
+        }
+
+        // Prevent an infinite loop if there are circular relations
+        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+
+        $element->setScenario(Element::SCENARIO_LIVE);
+        return self::$_relatedElementValidates[$element->id][$element->siteId] = $element->validate();
     }
 
     /**
