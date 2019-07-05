@@ -966,7 +966,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getGqlTypeNameByContext($context)
+    public static function getGqlTypeNameByContext($context): string
     {
         /** @var EntryType $context */
         return $context->getSection()->handle . '_' . $context->handle . '_Entry';

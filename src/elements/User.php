@@ -1276,7 +1276,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getGqlTypeNameByContext($context)
+    public static function getGqlTypeNameByContext($context): string
     {
         return 'User';
     }

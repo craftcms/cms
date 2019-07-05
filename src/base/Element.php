@@ -2028,7 +2028,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getGqlTypeNameByContext($context)
+    public static function getGqlTypeNameByContext($context): string
     {
         // Default to same type.
         return 'Element';
