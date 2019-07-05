@@ -21,6 +21,8 @@ use GraphQL\Type\Definition\UnionType;
  */
 class Gql
 {
+    private static $cachedPairs = null;
+
     /**
      * Returns true if the current token is aware of the provided scope(s).
      *
@@ -58,28 +60,32 @@ class Gql
      */
     public static function extractAllowedEntitiesFromToken($action = 'read'): array
     {
-        try {
-            $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
-            $pairs = [];
+        if (self::$cachedPairs === null) {
+            try {
+                $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+                $pairs = [];
 
-            foreach ($permissions as $permission) {
-                // Check if this is for the requested action
-                if (StringHelper::endsWith($permission, ':' . $action)) {
-                    $permission = StringHelper::removeRight($permission, ':' . $action);
+                foreach ($permissions as $permission) {
+                    // Check if this is for the requested action
+                    if (StringHelper::endsWith($permission, ':' . $action)) {
+                        $permission = StringHelper::removeRight($permission, ':' . $action);
 
-                    $parts = explode('.', $permission);
+                        $parts = explode('.', $permission);
 
-                    if (count($parts) === 2) {
-                        $pairs[$parts[0]][] = $parts[1];
+                        if (count($parts) === 2) {
+                            $pairs[$parts[0]][] = $parts[1];
+                        }
                     }
                 }
-            }
 
-            return $pairs;
-        } catch (GqlException $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
-            return [];
+                self::$cachedPairs = $pairs;
+            } catch (GqlException $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                return [];
+            }
         }
+
+        return self::$cachedPairs;
     }
 
     /**
