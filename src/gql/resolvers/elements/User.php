@@ -16,18 +16,20 @@ class User extends BaseElement
     /**
      * @inheritdoc
      */
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function prepareQuery($source, array $arguments, $fieldName = null)
     {
-        // If this is the begining of a resolver chain, start fresh
+        // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = UserElement::find();
         // If not, get the prepared element query
         } else {
-            $fieldName = $resolveInfo->fieldName;
             $query = $source->$fieldName;
         }
 
-        $arguments = self::prepareArguments($arguments);
+        // If it's preloaded, it's preloaded.
+        if (is_array($query)) {
+            return $query;
+        }
 
         foreach ($arguments as $key => $value) {
             $query->$key($value);
@@ -51,6 +53,6 @@ class User extends BaseElement
             $query->groupBy = ['users.id'];
         }
 
-        return $query->all();
+        return $query;
     }
 }

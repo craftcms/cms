@@ -15,18 +15,20 @@ class Entry extends BaseElement
     /**
      * @inheritdoc
      */
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function prepareQuery($source, array $arguments, $fieldName = null)
     {
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
         // If not, get the prepared element query
         } else {
-            $fieldName = $resolveInfo->fieldName;
             $query = $source->$fieldName;
         }
 
-        $arguments = self::prepareArguments($arguments);
+        // If it's preloaded, it's preloaded.
+        if (is_array($query)) {
+            return $query;
+        }
 
         foreach ($arguments as $key => $value) {
             $query->$key($value);
@@ -41,6 +43,6 @@ class Entry extends BaseElement
         $query->andWhere(['in', 'entries.sectionId', array_values(Db::idsByUids(Table::SECTIONS, $pairs['sections']))]);
         $query->andWhere(['in', 'entries.typeId', array_values(Db::idsByUids(Table::ENTRYTYPES, $pairs['entrytypes']))]);
 
-        return $query->all();
+        return $query;
     }
 }

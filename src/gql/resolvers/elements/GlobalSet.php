@@ -13,11 +13,9 @@ class GlobalSet extends BaseElement
     /**
      * @inheritdoc
      */
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function prepareQuery($source, array $arguments, $fieldName = null)
     {
         $query = GlobalSetElement::find();
-
-        $arguments = self::prepareArguments($arguments);
 
         foreach ($arguments as $key => $value) {
             $query->$key($value);
@@ -31,6 +29,6 @@ class GlobalSet extends BaseElement
 
         $query->andWhere(['in', 'globalsets.uid', $pairs['globalsets']]);
 
-        return $query->all();
+        return $query;
     }
 }
