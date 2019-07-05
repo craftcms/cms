@@ -89,9 +89,9 @@
         {% else %}
             <div class="spacer"></div>
             {% if isUnsavedDraft %}
-                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Save {type}'|t('app', { type: element.displayName()|lower }) }}">
+                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
             {% else %}
-                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName()|lower }) }}">
+                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
             {% endif %}
         {% endif %}
     {% endif %}
