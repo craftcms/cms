@@ -37,8 +37,7 @@ abstract class BaseElement extends BaseResolver
         }
 
         /** @var ElementQuery $query */
-        $subSelections = self::extractSubSelections($resolveInfo->fieldNodes[0]);
-        $preload = static::getPreloadableFIelds($subSelections);
+        $preload = self::extractEagerLoadCondition($resolveInfo);
         return $query->with($preload)->all();
     }
 

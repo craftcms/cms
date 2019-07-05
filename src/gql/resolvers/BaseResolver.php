@@ -4,8 +4,10 @@ namespace craft\gql\resolvers;
 use Craft;
 use craft\base\Field;
 use craft\base\EagerLoadingFieldInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
 use craft\helpers\StringHelper;
 use GraphQL\Language\AST\FieldNode;
+use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -20,7 +22,7 @@ abstract class BaseResolver
      *
      * @var array
      */
-    protected static $fieldsByContext;
+    protected static $eagerLoadableFieldsByContext;
 
     /**
      * Resolve a field to its value.
@@ -71,48 +73,87 @@ abstract class BaseResolver
      * @param Node $parentNode
      * @return array
      */
-    protected static function extractSubSelections(Node $parentNode) {
-        $subSelections = [];
-        $subNodes = $parentNode->selectionSet->selections ?? [];
+    protected static function extractEagerLoadCondition(ResolveInfo $resolveInfo) {
+        $startingNode = $resolveInfo->fieldNodes[0];
+        $fragments = $resolveInfo->fragments;
 
-        foreach ($subNodes as $subNode) {
-            if ($subNode instanceof FieldNode) {
-                $subSelections[$subNode->name->value] = true;
-            } else if ($subNode instanceof InlineFragmentNode) {
-                $fragmentSubNodes = $subNode->selectionSet->selections ?? [];
+        /**
+         * Traverse child nodes of a GQL query formed as AST.
+         *
+         * This method traverses all the child descendant nodes recursively for a GQL query AST node,
+         * keeping track of where in the three it currently resides to correctly build the `with` clause
+         * for the resulting element query.
+         *
+         * @param Node $parentNode the parent node being traversed.
+         * @param string $prefix the current eager loading prefix to use
+         * @param string $context the context in which to search fields
+         * @param null $parentField the current parent field, that we are in.
+         * @return array
+         */
+        $traverseNodes = function (Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments)
+        {
+            $eagerLoadNodes = [];
+            $subNodes = $parentNode->selectionSet->selections ?? [];
 
-                foreach ($fragmentSubNodes as $fragmentSubNode) {
-                    $subSelections[$fragmentSubNode->name->value] = true;
+            // For each subnode that is a direct descendant
+            foreach ($subNodes as $subNode) {
+                $nodeName = $subNode->name->value ?? null;
+
+                // If that's a GQL field
+                if ($subNode instanceof FieldNode) {
+
+                    // That is a Craft field that can be eager-loaded
+                    if ($field = static::getPreloadableField($subNode->name->value, $context)) {
+                        // Add it to the list
+                        $eagerLoadNodes[$prefix.$nodeName] = true;
+
+                        // If it has any more selections, build the prefix further and proceed in a recursive manner
+                        if (!empty($subNode->selectionSet)) {
+                            $eagerLoadNodes += $traverseNodes($subNode, $prefix . $field->handle . '.', $field->context, $field);
+                        }
+                    }
+                // If not, see if it's an inline fragment
+                } else if ($subNode instanceof InlineFragmentNode) {
+                    $nodeName = $subNode->typeCondition->name->value;
+
+                    // If we are inside a field that supports different subtypes, it should implement the appropriate interface
+                    if ($parentField instanceof GqlInlineFragmentFieldInterface) {
+                        // Get the Craft entity that correlates to the fragment
+                        // Build the prefix, load the context and proceed in a recursive manner
+                        $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
+                        $eagerLoadNodes += $traverseNodes($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField);
+                    // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
+                    } else {
+                        $eagerLoadNodes += $traverseNodes($subNode, $prefix, $context, $parentField);
+                    }
+                // Finally, if this is a named fragment, expand it and traverse it as if on the same level in the query tree
+                } else if ($subNode instanceof FragmentSpreadNode) {
+                    $fragmentDefinition = $fragments[$nodeName];
+                    $eagerLoadNodes += $traverseNodes($fragmentDefinition, $prefix, $context, $parentField);
                 }
             }
-        }
 
-        return array_keys($subSelections);
+            return $eagerLoadNodes;
+        };
+
+        // Remember to array_keys() it, since the values will be stored as keys.
+        return array_keys($traverseNodes($startingNode));
     }
 
     /**
-     * Return a list of preloadable fields from a list of fields and the context
+     * Get the preloadable field for the context or null if the field doesn't exist or is not preloadable.
      *
      * @param array $subFields
      * @param string $context
-     * @return array
+     * @return Field|null
      */
-    protected static function getPreloadableFields(array $subFields, $context = 'global')
+    protected static function getPreloadableField($fieldHandle, $context = 'global')
     {
-        if (static::$fieldsByContext === null) {
-            self::_loadFields();
+        if (static::$eagerLoadableFieldsByContext === null) {
+            self::_loadEagerLoadableFields();
         }
 
-        $preloadable = [];
-
-        foreach (self::$fieldsByContext[$context] as $field)
-        {
-            if ($field instanceof EagerLoadingFieldInterface && in_array($field->handle, $subFields, true)) {
-                $preloadable[] = $field->handle;
-            }
-        }
-
-        return $preloadable;
+        return self::$eagerLoadableFieldsByContext[$context][$fieldHandle] ?? null;
     }
 
     // Private methods
@@ -121,14 +162,16 @@ abstract class BaseResolver
     /**
      * Load all the fields
      */
-    private static function _loadFields()
+    private static function _loadEagerLoadableFields()
     {
         $allFields = Craft::$app->getFields()->getAllFields(false);
-        self::$fieldsByContext = [];
+        self::$eagerLoadableFieldsByContext = [];
 
         /** @var Field $field */
         foreach ($allFields as $field) {
-            self::$fieldsByContext[$field->context][] = $field;
+            if ($field instanceof EagerLoadingFieldInterface) {
+                self::$eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
+            }
         }
     }
 }
