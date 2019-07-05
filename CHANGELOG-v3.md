@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Project Config `rebuild` command now _mostly_ replaces existing config, instead of merging.  The `system` and `routes` keys are preserved, while the `plugin` key still gets merged.
+
 ## 3.1.33 - 2019-07-02
 
 ### Added
