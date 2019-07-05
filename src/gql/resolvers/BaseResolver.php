@@ -68,7 +68,7 @@ abstract class BaseResolver
     }
 
     /**
-     * Extract sub-selections for a parent field node.
+     * Extract eager load conditions for a given resolve information. Preferrably at the very top of the query.
      *
      * @param Node $parentNode
      * @return array
