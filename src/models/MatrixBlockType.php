@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Field;
+use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
@@ -22,7 +23,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlockType extends Model
+class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 {
     // Properties
     // =========================================================================
@@ -131,5 +132,22 @@ class MatrixBlockType extends Model
 
         return $field;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldContext(): string
+    {
+        return 'matrixBlockType:' . $this->uid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return $this->handle;
+    }
+
 
 }

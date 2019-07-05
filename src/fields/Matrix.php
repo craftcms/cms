@@ -13,6 +13,8 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
+use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
 use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
@@ -47,7 +49,7 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Matrix extends Field implements EagerLoadingFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
     // Constants
     // =========================================================================
@@ -951,6 +953,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
+    {
+        if (!preg_match('/^(?P<fieldHandle>[\w]+)_(?P<blockTypeHandle>[\w]+)_BlockType$/i', $fragmentName, $matches)) {
+            return null;
+        }
+
+        if ($this->handle !== $matches['fieldHandle']) {
+            return null;
+        }
+
+        $blockTypes = $this->getBlockTypes();
+
+        foreach ($blockTypes as $blockType) {
+            if ($blockType->handle === $matches['blockTypeHandle']) {
+                return $blockType;
+            }
+        }
     }
 
     // Private Methods
