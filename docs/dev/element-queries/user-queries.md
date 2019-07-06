@@ -59,7 +59,7 @@ Narrows the query results to only users that have admin accounts.
 ::: code
 ```twig
 {# Fetch admins #}
-{% set elements = {twig-function}
+{% set elements = craft.queryFunction()
     .admin()
     .all() %}
 ```
@@ -134,7 +134,7 @@ See [Users](https://docs.craftcms.com/v3/users.html) for a full list of availabl
 ::: code
 ```twig
 {# Fetch users that can access the Control Panel #}
-{% set elements = {twig-function}
+{% set elements = craft.queryFunction()
     .can('accessCp')
     .all() %}
 ```
@@ -655,7 +655,7 @@ Possible values include:
 ::: code
 ```twig
 {# Fetch active and locked elements #}
-{% set elements = {twig-function}
+{% set elements = craft.queryFunction()
     .status(['active', 'locked'])
     .all() %}
 ```
@@ -680,7 +680,7 @@ Narrows the query results to only elements that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed elements #}
-{% set elements = {twig-function}
+{% set elements = craft.queryFunction()
     .trashed()
     .all() %}
 ```
