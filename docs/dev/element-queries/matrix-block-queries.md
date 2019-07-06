@@ -664,7 +664,7 @@ Narrows the query results to only Matrix blocks that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed Matrix blocks #}
-{% set MatrixBlocks = {twig-function}
+{% set MatrixBlocks = craft.matrixBlocks()
     .trashed()
     .all() %}
 ```

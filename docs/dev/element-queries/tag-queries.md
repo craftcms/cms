@@ -571,7 +571,7 @@ Narrows the query results to only tags that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed tags #}
-{% set tags = {twig-function}
+{% set tags = craft.tags()
     .trashed()
     .all() %}
 ```

@@ -759,7 +759,7 @@ Narrows the query results to only assets that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed assets #}
-{% set assets = {twig-function}
+{% set assets = craft.assets()
     .trashed()
     .all() %}
 ```
