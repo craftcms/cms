@@ -3,6 +3,7 @@
 ## Unreleased
 
 ## Changed
+- Element selector modals now always show source headings, and list sources in the configured order. ([craftcms/redactor#139](https://github.com/craftcms/redactor/issues/139))
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yaml` file.
 
 ## Removed

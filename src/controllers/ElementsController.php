@@ -51,13 +51,21 @@ class ElementsController extends BaseElementsController
         }
 
         if (is_array($sourceKeys)) {
+            $sourceKeys = array_flip($sourceKeys);
+            $allSources = Craft::$app->getElementIndexes()->getSources($elementType);
             $sources = [];
+            $nextHeading = null;
 
-            foreach ($sourceKeys as $key) {
-                $source = ElementHelper::findSource($elementType, $key, $context);
-
-                if ($source !== null) {
-                    $sources[$key] = $source;
+            foreach ($allSources as $source) {
+                if (isset($source['heading'])) {
+                    // Queue the heading up to be included only if one of the following sources were requested
+                    $nextHeading = $source;
+                } else if (isset($sourceKeys[$source['key']])) {
+                    if ($nextHeading !== null) {
+                        $sources[] = $nextHeading;
+                        $nextHeading = null;
+                    }
+                    $sources[] = $source;
                 }
             }
         } else {
