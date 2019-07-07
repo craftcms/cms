@@ -2,14 +2,14 @@
 
 ## Unreleased
 
-## Changed
+### Changed
 - Element selector modals now always show source headings, and list sources in the configured order. ([craftcms/redactor#139](https://github.com/craftcms/redactor/issues/139))
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yaml` file.
 
-## Removed
+### Removed
 - Removed the `$mergeExistingConfig` argument on `craft\test\TestSetup::setupProjectConfig()`.
 
-## Fixed
+### Fixed
 - Fixed an infinite loop that could occur when saving an element with a circular relation. ([#4482](https://github.com/craftcms/cms/issues/4482))
 - Fixed a bug where where functional tests could cause 404 errors. ([#4472](https://github.com/craftcms/cms/issues/4472))
 - Fixed an error that occurred when previewing an unsaved category.
