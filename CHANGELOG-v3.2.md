@@ -108,7 +108,7 @@
 
 ### Changed
 - Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
-- Element selector modals now always show source headings, and list sources in the configured order. ([craftcms/redactor#139](https://github.com/craftcms/redactor/issues/139))
+- Element selector modals now always show source headings, and list sources in the configured order. ([#4494](https://github.com/craftcms/cms/issues/4494))
 - Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))
 - Improved the button layout of Edit Entry pages. ([#2325](https://github.com/craftcms/cms/issues/2325))
 - Improved the performance of saving elements.
