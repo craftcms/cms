@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementTrait::$dateDeleted`. ([#4493](https://github.com/craftcms/cms/issues/4493))
+
 ### Changed
 - Element selector modals now always show source headings, and list sources in the configured order. ([craftcms/redactor#139](https://github.com/craftcms/redactor/issues/139))
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yaml` file.

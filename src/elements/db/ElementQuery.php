@@ -2653,7 +2653,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (array_key_exists('dateDeleted', $row)) {
             $row['trashed'] = $row['dateDeleted'] !== null;
-            unset($row['dateDeleted']);
         }
 
         $behaviors = [];

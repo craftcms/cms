@@ -106,6 +106,11 @@ trait ElementTrait
     public $dateUpdated;
 
     /**
+     * @var DateTime|null The date that the element was trashed
+     */
+    public $dateDeleted;
+
+    /**
      * @var int|null The element’s structure’s root ID
      */
     public $root;

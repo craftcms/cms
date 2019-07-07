@@ -61,6 +61,7 @@
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
 - Added `craft\base\ElementInterface::setRevisionCreatorId()`.
 - Added `craft\base\ElementInterface::setRevisionNotes()`.
+- Added `craft\base\ElementTrait::$dateDeleted`. ([#4493](https://github.com/craftcms/cms/issues/4493))
 - Added `craft\base\ElementTrait::$draftId`.
 - Added `craft\base\ElementTrait::$hardDelete`.
 - Added `craft\base\ElementTrait::$previewing`.
