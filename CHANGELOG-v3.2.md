@@ -147,6 +147,9 @@
 - Removed the Search Indexes utility. ([#3698](https://github.com/craftcms/cms/issues/3698))
 - Removed the `--batch-size` option from `resave/*` actions.
 - Removed the `craft.entryRevisions` Twig component.
+- Removed `craft\controllers\EntriesController::actionPreviewEntry()`.
+- Removed `craft\controllers\EntriesController::actionShareEntry()`.
+- Removed `craft\controllers\EntriesController::actionViewSharedEntry()`.
 - Removed `craft\events\VersionEvent`.
 - Removed `craft\records\Entry::getVersions()`.
 - Removed `craft\records\EntryDraft`.
@@ -160,6 +163,7 @@
 
 ### Deprecated
 - Deprecated the `ownerSite` and `ownerSiteId` Matrix block query params.
+- Deprecated `craft\controllers\EntriesController::EVENT_PREVIEW_ENTRY`.
 - Deprecated `craft\controllers\LivePreviewController`.
 - Deprecated `craft\elements\MatrixBlock::$ownerSiteId`.
 - Deprecated `craft\events\DefineComponentsEvent`.

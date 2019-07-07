@@ -6,8 +6,14 @@
 - Element selector modals now always show source headings, and list sources in the configured order. ([craftcms/redactor#139](https://github.com/craftcms/redactor/issues/139))
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yaml` file.
 
+### Deprecated
+- Deprecated `craft\controllers\EntriesController::EVENT_PREVIEW_ENTRY`.
+
 ### Removed
 - Removed the `$mergeExistingConfig` argument on `craft\test\TestSetup::setupProjectConfig()`.
+- Removed `craft\controllers\EntriesController::actionPreviewEntry()`.
+- Removed `craft\controllers\EntriesController::actionShareEntry()`.
+- Removed `craft\controllers\EntriesController::actionViewSharedEntry()`.
 
 ### Fixed
 - Fixed an infinite loop that could occur when saving an element with a circular relation. ([#4482](https://github.com/craftcms/cms/issues/4482))
