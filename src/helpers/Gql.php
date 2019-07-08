@@ -23,7 +23,7 @@ class Gql
 {
     /**
      * Cached permission pairs for the current token, as it's impossible for tokens to change during a request.
-     * 
+     *
      * @var null
      */
     private static $cachedPairs = null;
