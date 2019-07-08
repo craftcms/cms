@@ -267,7 +267,9 @@ class Asset extends Element
             );
 
             // Copy URL
-            $actions[] = CopyAssetUrl::class;
+            if ($volume->hasUrls) {
+                $actions[] = CopyAssetUrl::class;
+            }
 
             // Edit Image
             if ($canDeleteAndSave) {
