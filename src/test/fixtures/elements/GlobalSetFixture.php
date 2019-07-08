@@ -59,7 +59,7 @@ abstract class GlobalSetFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

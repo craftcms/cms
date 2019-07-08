@@ -80,7 +80,7 @@ abstract class ElementFixture extends ActiveFixture
 
         foreach ($this->getData() as $alias => $data) {
             /* @var Element $element */
-            $element = $this->getElement();
+            $element = $this->getElement($data) ?: new $this->modelClass;
 
             // If they want to add a date deleted. Store it but dont set that as an element property
             $dateDeleted = null;
@@ -138,12 +138,8 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->getData() as $id) {
-            $element = $this->modelClass::find()
-                ->id($id)
-                ->anyStatus()
-                ->trashed(null)
-                ->one();
+        foreach ($this->getData() as $data) {
+            $element = $this->getElement($data);
 
             if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
                 throw new InvalidElementException($element, 'Unable to delete element.');
@@ -171,7 +167,7 @@ abstract class ElementFixture extends ActiveFixture
 
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {
-                $query = $query->$key($value);
+                $query = $query->$key(addcslashes($value, ','));
             }
         }
 
