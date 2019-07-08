@@ -57,12 +57,13 @@ class SettingsEditCest
 
     /**
      * @dataProvider editOptionsDataProvider
+     *
      * @param FunctionalTester $I
      * @param Example $example
      */
     public function testEditData(FunctionalTester $I, Example $example)
     {
-        $I->amOnPage('/'.$this->cpTrigger.''.$example['url'].'');
+        $I->amOnPage('/'.$this->cpTrigger.$example['url']);
         $I->click($example['linkPropValue']);
         $I->see($example['linkPropValue']);
         $I->seeInTitle($example['linkPropValue']);
@@ -76,8 +77,9 @@ class SettingsEditCest
         }
 
         $I->submitForm('#main-form', $postData);
-
+        //Craft::$app->saveInfoAfterRequestHandler();
         $data = Craft::$app->{$example['craftAppProp']}->{$example['methodInvoker']}($example['methodProp']);
+        //Craft::$app->saveInfoAfterRequestHandler();
         $I->assertSame($randString, $data->{$example['propName']});
     }
 
@@ -103,7 +105,7 @@ class SettingsEditCest
             ],
             [
                 'url' => '/settings/sites',
-                'linkPropValue' => 'Craft CMS testing',
+                'linkPropValue' => 'Craft CMS Test Site',
                 'propName' => 'name',
                 'craftAppProp' => 'sites',
                 'methodInvoker' => 'getSiteByHandle',
@@ -127,7 +129,7 @@ class SettingsEditCest
             ],
             [
                 'url' => '/settings/sections',
-                'linkPropValue' => 'Craft CMS Test section',
+                'linkPropValue' => 'Craft CMS Test Section',
                 'propName' => 'name',
                 'craftAppProp' => 'sections',
                 'methodInvoker' => 'getSectionByHandle',

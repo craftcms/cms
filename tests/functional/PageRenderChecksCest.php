@@ -61,7 +61,7 @@ class PageRenderChecksCest
      */
     public function test200Page(FunctionalTester $I, Example $example)
     {
-        $I->amOnPage('/'.$this->cpTrigger.''.$example['url']);
+        $I->amOnPage('/'.$this->cpTrigger.$example['url']);
         $I->seeInTitle($example['title']);
         $I->seeResponseCodeIs(200);
 
@@ -98,7 +98,7 @@ class PageRenderChecksCest
                 'Login Page Logo'
             ]],
             ['url' => '/settings/sections', 'title' => 'Sections', 'extraContent' => [
-                'Craft CMS Test section'
+                'Craft CMS Test Section'
             ]],
             ['url' => '/settings/users', 'title' => 'User Settings', 'extraContent' => [
                 'User Groups',
@@ -121,7 +121,7 @@ class PageRenderChecksCest
             ]],
             ['url' => '/settings/plugins', 'title' => 'Plugins'],
             ['url' => '/settings/sites', 'title' => 'Sites', 'extraContent' => [
-                'Craft CMS testing'
+                'Craft CMS Test Site'
             ]],
             ['url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
                 '_includes/route-handler'
