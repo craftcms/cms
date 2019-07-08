@@ -13,6 +13,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Table;
+use craft\elements\actions\CopyAssetUrl;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -264,6 +265,9 @@ class Asset extends Element
                     'elementType' => static::class,
                 ]
             );
+
+            // Copy URL
+            $actions[] = CopyAssetUrl::class;
 
             // Edit Image
             if ($canDeleteAndSave) {
