@@ -78,9 +78,6 @@ class GqlController extends Controller
             throw new ForbiddenHttpException('Invalid authorization token.');
         }
 
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-        $schema = $gqlService->getSchema($token, $devMode);
-
         if ($request->getIsPost() && $query= $request->post('query')) {
             $input = $query;
         } else if ($request->getIsGet() && $query= $request->get('query')) {
@@ -92,6 +89,9 @@ class GqlController extends Controller
         }
 
         if ($input) {
+            $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+            $schema = $gqlService->getSchema($token, $devMode, $input);
+
             $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
         } else {
             throw new BadRequestHttpException('Request missing required param');
