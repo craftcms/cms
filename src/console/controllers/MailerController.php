@@ -26,7 +26,7 @@ use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
 /**
- * Mailer actions.
+ * Allows for testing mailer settings via the CLI.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>

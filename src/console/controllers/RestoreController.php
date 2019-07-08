@@ -26,7 +26,7 @@ class RestoreController extends Controller
     public $defaultAction = 'db';
 
     /**
-     * Restores a database backup
+     * Allows you to restore a database from a backup.
      *
      * @param string|null The path to the database backup file.
      * @return int

@@ -15,7 +15,7 @@ use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
- * Manages the project config.
+ * Manages the Project Config.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
