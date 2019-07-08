@@ -81,7 +81,7 @@ abstract class BaseResolver
          * Traverse child nodes of a GQL query formed as AST.
          *
          * This method traverses all the child descendant nodes recursively for a GQL query AST node,
-         * keeping track of where in the three it currently resides to correctly build the `with` clause
+         * keeping track of where in the tree it currently resides to correctly build the `with` clause
          * for the resulting element query.
          *
          * @param Node $parentNode the parent node being traversed.
