@@ -12,7 +12,7 @@ use craft\base\ElementAction;
 use craft\helpers\Json;
 
 /**
- * CopyAssetUrl represents a Download Asset element action.
+ * CopyAssetUrl represents a Copy Asset URL element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
