@@ -276,7 +276,7 @@ trait ApplicationTrait
      */
     public function getInstalledSchemaVersion(): string
     {
-        return $this->getProjectConfig()->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY) ?? $this->schemaVersion;
+        return $this->getInfo()->schemaVersion ?: $this->schemaVersion;
     }
 
     /**
