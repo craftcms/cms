@@ -36,11 +36,6 @@ abstract class ElementFixture extends ActiveFixture
      */
     protected $siteIds = [];
 
-    /**
-     * @var array
-     */
-    protected $ids = [];
-
     // Public Methods
     // =========================================================================
 
@@ -131,7 +126,6 @@ abstract class ElementFixture extends ActiveFixture
                 Craft::$app->getSearch()->indexElementAttributes($element);
             }
 
-            $this->ids[] = $element->id;
             $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
     }
@@ -144,19 +138,15 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->ids as $id) {
+        foreach ($this->getData() as $id) {
             $element = $this->modelClass::find()
                 ->id($id)
                 ->anyStatus()
                 ->trashed(null)
                 ->one();
 
-            if ($id && !$element) {
-                throw new InvalidArgumentException("Unable to delete element $id. We were unable to find it.");
-            }
-
             if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
-                throw new InvalidElementException($element, 'Unable to delete element');
+                throw new InvalidElementException($element, 'Unable to delete element.');
             }
         }
 

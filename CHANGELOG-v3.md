@@ -8,6 +8,7 @@
 ### Changed
 - Element selector modals now always show source headings, and list sources in the configured order. ([#4494](https://github.com/craftcms/cms/issues/4494))
 - `craft\test\TestSetup::setupProjectConfig()` will now throw an exception if it fails to write the `project.yaml` file.
+- Test fixtures can now be unloaded without having to go through `craft\test\fixtures\elements\ElementFixture::load()` first.
 
 ### Deprecated
 - Deprecated `craft\controllers\EntriesController::EVENT_PREVIEW_ENTRY`.
