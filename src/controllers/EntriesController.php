@@ -10,35 +10,25 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
+use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
-use craft\events\ElementEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\models\EntryDraft;
-use craft\models\EntryVersion;
 use craft\models\Section;
-use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\web\assets\editentry\EditEntryAsset;
-use DateTime;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
-
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
- * swapping between entry types, previewing, deleting and sharing entries.
- * Note that all actions in the controller except [[actionViewSharedEntry]] require an authenticated Craft session
- * via [[allowAnonymous]].
+ * swapping between entry types, and deleting entries.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -50,16 +40,9 @@ class EntriesController extends BaseEntriesController
 
     /**
      * @event ElementEvent The event that is triggered when an entry’s template is rendered for Live Preview.
+     * @deprecated in 3.2
      */
     const EVENT_PREVIEW_ENTRY = 'previewEntry';
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected $allowAnonymous = ['view-shared-entry'];
 
     // Public Methods
     // =========================================================================
@@ -67,26 +50,27 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string $sectionHandle The section’s handle
+     * @param string $section The section’s handle
      * @param int|null $entryId The entry’s ID, if editing an existing entry.
      * @param int|null $draftId The entry draft’s ID, if editing an existing draft.
-     * @param int|null $versionId The entry version’s ID, if editing an existing version.
-     * @param string|null $siteHandle The site handle, if specified.
+     * @param int|null $revisionId The entry revision’s ID, if editing an existing revision.
+     * @param string|null $site The site handle, if specified.
      * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, string $siteHandle = null, Entry $entry = null): Response
+    public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, Entry $entry = null): Response
     {
         $variables = [
-            'sectionHandle' => $sectionHandle,
+            'sectionHandle' => $section,
             'entryId' => $entryId,
             'draftId' => $draftId,
-            'versionId' => $versionId,
+            'revisionId' => $revisionId,
             'entry' => $entry
         ];
 
-        if ($siteHandle !== null) {
+        if ($site !== null) {
+            $siteHandle = $site;
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$variables['site']) {
@@ -145,11 +129,19 @@ class EntriesController extends BaseEntriesController
         ) {
             $variables['elementType'] = Entry::class;
 
+            // Prevent the current entry, or any of its descendants, from being options
+            $excludeIds = Entry::find()
+                ->descendantOf($entry)
+                ->anyStatus()
+                ->ids();
+            $excludeIds[] = $entry->id;
+
             $variables['parentOptionCriteria'] = [
                 'siteId' => $site->id,
                 'sectionId' => $section->id,
                 'status' => null,
                 'enabledForSite' => false,
+                'where' => ['not in', 'elements.id', $excludeIds]
             ];
 
             if ($section->maxLevels) {
@@ -169,25 +161,10 @@ class EntriesController extends BaseEntriesController
                 $variables['parentOptionCriteria']['level'] = '<= ' . ($section->maxLevels - $depth);
             }
 
-            if ($entry->id !== null) {
-                // Prevent the current entry, or any of its descendants, from being options
-                $excludeIds = Entry::find()
-                    ->descendantOf($entry)
-                    ->anyStatus()
-                    ->ids();
-
-                $excludeIds[] = $entry->id;
-                $variables['parentOptionCriteria']['where'] = [
-                    'not in',
-                    'elements.id',
-                    $excludeIds
-                ];
-            }
-
             // Get the initially selected parent
             $parentId = $request->getParam('parentId');
 
-            if ($parentId === null && $entry->id !== null) {
+            if ($parentId === null) {
                 // Is it already set on the model (e.g. if we're loading a draft)?
                 if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
@@ -211,18 +188,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (Craft::$app->getIsMultiSite()) {
-            if ($entry->id !== null) {
-                $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement($entry->id);
-            } else {
-                // Set defaults based on the section settings
-                $variables['enabledSiteIds'] = [];
-
-                foreach ($section->getSiteSettings() as $siteSettings) {
-                    if ($siteSettings->enabledByDefault) {
-                        $variables['enabledSiteIds'][] = $siteSettings->siteId;
-                    }
-                }
-            }
+            $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement($entry->id);
         }
 
         // Other variables
@@ -231,39 +197,9 @@ class EntriesController extends BaseEntriesController
         // Body class
         $variables['bodyClass'] = 'edit-entry site--' . $site->handle;
 
-        // Page title w/ revision label
-        $variables['showSites'] = (
-            $variables['showSiteLabel'] &&
-            ($section->propagateEntries || $entry->id === null)
-        );
-
-        if ($variables['showSiteLabel']) {
-            $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name) . ' – ';
-        } else {
-            $variables['revisionLabel'] = '';
-        }
-        switch (get_class($entry)) {
-            case EntryDraft::class:
-                /** @var EntryDraft $entry */
-                $variables['revisionLabel'] .= $entry->name;
-                break;
-            case EntryVersion::class:
-                /** @var EntryVersion $entry */
-                $variables['revisionLabel'] .= Craft::t('app', 'Version {num}', ['num' => $entry->num]);
-                break;
-            default:
-                $variables['revisionLabel'] .= Craft::t('app', 'Current');
-        }
-
-        if ($entry->id === null) {
-            $variables['title'] = Craft::t('app', 'Create a new entry');
-        } else {
-            $variables['docTitle'] = $variables['title'] = trim($entry->title) ?: Craft::t('app', 'Edit Entry');
-
-            if (get_class($entry) !== Entry::class) {
-                $variables['docTitle'] .= ' (' . $variables['revisionLabel'] . ')';
-            }
-        }
+        // Page title
+        $variables['docTitle'] = $this->docTitle($entry);
+        $variables['title'] = $this->pageTitle($entry);
 
         // Breadcrumbs
         $variables['crumbs'] = [
@@ -313,84 +249,11 @@ class EntriesController extends BaseEntriesController
             $variables['showEntryTypes'] = false;
         }
 
-        // Enable Live Preview?
-        if (!$request->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
-            $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#title-field, #fields > div > div > .field',
-                    'extraFields' => '#settings',
-                    'previewUrl' => $entry->getUrl(),
-                    'previewAction' => Craft::$app->getSecurity()->hashData('entries/preview-entry'),
-                    'previewParams' => [
-                        'sectionId' => $section->id,
-                        'entryId' => $entry->id,
-                        'siteId' => $entry->siteId,
-                        'versionId' => $entry instanceof EntryVersion ? $entry->versionId : null,
-                    ]
-                ]) . ');');
-
-            $variables['showPreviewBtn'] = true;
-
-            // Should we show the Share button too?
-            if ($entry->id !== null) {
-                $className = get_class($entry);
-
-                // If we're looking at the live version of an entry, just use
-                // the entry's main URL as its share URL
-                if ($className === Entry::class && $entry->getStatus() === Entry::STATUS_LIVE) {
-                    $variables['shareUrl'] = $entry->getUrl();
-                } else {
-                    switch ($className) {
-                        case EntryDraft::class:
-                            /** @var EntryDraft $entry */
-                            $shareParams = ['draftId' => $entry->draftId];
-                            break;
-                        case EntryVersion::class:
-                            /** @var EntryVersion $entry */
-                            $shareParams = ['versionId' => $entry->versionId];
-                            break;
-                        default:
-                            $shareParams = [
-                                'entryId' => $entry->id,
-                                'siteId' => $entry->siteId
-                            ];
-                            break;
-                    }
-
-                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', $shareParams);
-                }
-            }
-        } else {
-            $variables['showPreviewBtn'] = false;
-        }
-
-        // Set the base CP edit URL
-
-        // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
-        $variables['baseCpEditUrl'] = "entries/{$section->handle}/{id}-{slug}";
-
-        // Set the "Continue Editing" URL
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $siteSegment = (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? "/{$site->handle}" : '');
-        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
-            (isset($variables['draftId']) ? '/drafts/' . $variables['draftId'] : '') .
-            $siteSegment;
-
-        // Set the "Save and add another" URL
-        $variables['nextEntryUrl'] = "entries/{$section->handle}/new{$siteSegment}";
-
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (
-            get_class($entry) === Entry::class &&
-            $entry->id !== null &&
-            (
-                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
-                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
-            )
+            ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
+            ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
         );
-
-        // Full page form variables
-        $variables['fullPageForm'] = true;
-        $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
@@ -430,47 +293,6 @@ class EntriesController extends BaseEntriesController
             'headHtml',
             'bodyHtml'
         ));
-    }
-
-    /**
-     * Previews an entry.
-     *
-     * @return Response
-     * @throws NotFoundHttpException if the requested entry version cannot be found
-     */
-    public function actionPreviewEntry(): Response
-    {
-        $this->requirePostRequest();
-
-        // Are we previewing a version?
-        $versionId = Craft::$app->getRequest()->getBodyParam('versionId');
-
-        if ($versionId) {
-            $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry version not found');
-            }
-
-            $this->enforceEditEntryPermissions($entry);
-        } else {
-            $entry = $this->_getEntryModel();
-            $this->enforceEditEntryPermissions($entry);
-
-            // Set the language to the user's preferred language so DateFormatter returns the right format
-            Craft::$app->updateTargetLanguage(true);
-
-            $this->_populateEntryModel($entry);
-        }
-
-        // Fire a 'previewEntry' event
-        if ($this->hasEventHandlers(self::EVENT_PREVIEW_ENTRY)) {
-            $this->trigger(self::EVENT_PREVIEW_ENTRY, new ElementEvent([
-                'element' => $entry,
-            ]));
-        }
-
-        return $this->_showEntry($entry);
     }
 
     /**
@@ -646,100 +468,6 @@ class EntriesController extends BaseEntriesController
         return $this->redirectToPostedUrl($entry);
     }
 
-    /**
-     * Redirects the client to a URL for viewing an entry/draft/version on the front end.
-     *
-     * @param int|null $entryId
-     * @param int|null $siteId
-     * @param int|null $draftId
-     * @param int|null $versionId
-     * @return Response
-     * @throws Exception
-     * @throws NotFoundHttpException if the requested entry/revision cannot be found
-     * @throws ServerErrorHttpException if the section is not configured properly
-     */
-    public function actionShareEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
-    {
-        if ($entryId !== null) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry not found');
-            }
-
-            $params = ['entryId' => $entryId, 'siteId' => $entry->siteId];
-        } else if ($draftId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry draft not found');
-            }
-
-            $params = ['draftId' => $draftId];
-        } else if ($versionId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry version not found');
-            }
-
-            $params = ['versionId' => $versionId];
-        } else {
-            throw new NotFoundHttpException('Entry not found');
-        }
-
-        // Make sure they have permission to be viewing this entry
-        $this->enforceEditEntryPermissions($entry);
-
-        // Make sure the entry actually can be viewed
-        if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection(), $entry->siteId)) {
-            throw new ServerErrorHttpException('Section not configured properly');
-        }
-
-        // Create the token and redirect to the entry URL with the token in place
-        $token = Craft::$app->getTokens()->createToken([
-            'entries/view-shared-entry',
-            $params
-        ]);
-
-        if ($token === false) {
-            throw new Exception('There was a problem generating the token.');
-        }
-
-        $url = UrlHelper::urlWithToken($entry->getUrl(), $token);
-
-        return Craft::$app->getResponse()->redirect($url);
-    }
-
-    /**
-     * Shows an entry/draft/version based on a token.
-     *
-     * @param int|null $entryId
-     * @param int|null $siteId
-     * @param int|null $draftId
-     * @param int|null $versionId
-     * @return Response
-     * @throws NotFoundHttpException if the requested entry cannot be found
-     */
-    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
-    {
-        $this->requireToken();
-
-        if ($entryId !== null) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
-        } else if ($draftId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
-        } else if ($versionId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
-        }
-
-        if (empty($entry)) {
-            throw new NotFoundHttpException('Entry not found');
-        }
-
-        return $this->_showEntry($entry);
-    }
-
     // Private Methods
     // =========================================================================
 
@@ -767,31 +495,10 @@ class EntriesController extends BaseEntriesController
             throw new NotFoundHttpException('Section not found');
         }
 
-        $variables['showSiteLabel'] = (
-            Craft::$app->getIsMultiSite() &&
-            count($variables['section']->getSiteSettings()) > 1
-        );
-        $variables['showSiteStatus'] = (
-            $variables['showSiteLabel'] &&
-            $variables['section']->propagateEntries
-        );
-
         // Get the site
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getIsMultiSite()) {
-            // Only use the sites that the user has access to
-            $sectionSiteIds = array_keys($variables['section']->getSiteSettings());
-            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-            $variables['siteIds'] = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
-        } else {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
-        }
-
-        if (!$variables['siteIds']) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any sites supported by this section');
-        }
+        $variables['siteIds'] = $this->editableSiteIds($variables['section']);
 
         if (empty($variables['site'])) {
             /** @noinspection PhpUnhandledExceptionInspection */
@@ -815,54 +522,61 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (empty($variables['entry'])) {
-            if (!empty($variables['entryId'])) {
-                if (!empty($variables['draftId'])) {
-                    $variables['entry'] = Craft::$app->getEntryRevisions()->getDraftById($variables['draftId']);
-                } else if (!empty($variables['versionId'])) {
-                    $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
-                } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $site->id);
-                }
+            if (empty($variables['entryId'])) {
+                throw new BadRequestHttpException('Request missing required entryId param');
+            }
 
-                if (!$variables['entry']) {
-                    throw new NotFoundHttpException('Entry not found');
-                }
+            // Get the structure ID
+            $structureId = (new Query())
+                ->select(['sections.structureId'])
+                ->from(['{{%entries}} entries'])
+                ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]')
+                ->where(['entries.id' => $variables['entryId']])
+                ->scalar();
+
+            if (!empty($variables['draftId'])) {
+                $variables['entry'] = Entry::find()
+                    ->draftId($variables['draftId'])
+                    ->structureId($structureId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
+            } else if (!empty($variables['revisionId'])) {
+                $variables['entry'] = Entry::find()
+                    ->revisionId($variables['revisionId'])
+                    ->structureId($structureId)
+                    ->structureId($structureId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
             } else {
-                $variables['entry'] = new Entry();
-                $variables['entry']->sectionId = $variables['section']->id;
-                $variables['entry']->authorId = $request->getQueryParam('authorId', Craft::$app->getUser()->getId());
-                $variables['entry']->siteId = $site->id;
+                $variables['entry'] = Entry::find()
+                    ->id($variables['entryId'])
+                    ->structureId($structureId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
+            }
 
-                // Set the default status based on the section's settings
-                /** @var Section_SiteSettings $siteSettings */
-                $siteSettings = ArrayHelper::firstWhere($variables['section']->getSiteSettings(), 'siteId', $variables['entry']->siteId);
-                if ($variables['showSiteStatus']) {
-                    $variables['entry']->enabled = true;
-                    $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
-                } else {
-                    $variables['entry']->enabled = $siteSettings->enabledByDefault;
-                    $variables['entry']->enabledForSite = true;
-                }
+            if (!$variables['entry']) {
+                throw new NotFoundHttpException('Entry not found');
             }
         }
 
-        if ($variables['entry']->id) {
-            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entry']->id, $site->id, 1, true);
-            /** @var EntryVersion $currentVersion */
-            $currentVersion = reset($versions);
+        // Determine whether we're showing the site label & site-specific entry status
+        // ---------------------------------------------------------------------
 
-            if ($currentVersion !== false) {
-                if ($currentVersion->creatorId) {
-                    $variables['currentVersionCreator'] = $currentVersion->getCreator();
-                }
-                $variables['currentVersionEditTime'] = $currentVersion->dateUpdated;
+        // Show the site label in the revision menu as long as the section is enabled for multiple sites,
+        // even if the entry itself is only enabled for one site
+        $variables['showSiteLabel'] = (
+            Craft::$app->getIsMultiSite() &&
+            count($variables['section']->getSiteSettings()) > 1
+        );
 
-                // Are we editing the "current" version?
-                if (get_class($variables['entry']) === Entry::class) {
-                    $variables['entry']->revisionNotes = $currentVersion->revisionNotes;
-                }
-            }
-        }
+        $variables['isMultiSiteEntry'] = (
+            Craft::$app->getIsMultiSite() &&
+            count($variables['entry']->getSupportedSites()) > 1
+        );
 
         // Get the entry type
         // ---------------------------------------------------------------------
@@ -916,7 +630,7 @@ class EntriesController extends BaseEntriesController
     private function _getEntryModel(): Entry
     {
         $request = Craft::$app->getRequest();
-        $entryId = $request->getBodyParam('entryId');
+        $entryId = $request->getRequiredBodyParam('entryId');
         $siteId = $request->getBodyParam('siteId');
 
         if ($entryId) {
@@ -956,9 +670,7 @@ class EntriesController extends BaseEntriesController
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
         $entry->enabled = (bool)$request->getBodyParam('enabled', $entry->enabled);
-        $entry->enabledForSite = $entry->getSection()->getHasMultiSiteEntries()
-            ? (bool)$request->getBodyParam('enabledForSite', $entry->enabledForSite)
-            : true;
+        $entry->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $entry->enabledForSite);
         $entry->title = $request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
@@ -991,44 +703,6 @@ class EntriesController extends BaseEntriesController
         }
 
         // Revision notes
-        $entry->revisionNotes = $request->getBodyParam('revisionNotes');
-    }
-
-    /**
-     * Displays an entry.
-     *
-     * @param Entry $entry
-     * @return Response
-     * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
-     */
-    private function _showEntry(Entry $entry): Response
-    {
-        $sectionSiteSettings = $entry->getSection()->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The entry ' . $entry->id . ' doesn’t have a URL for the site ' . $entry->siteId . '.');
-        }
-
-        $site = Craft::$app->getSites()->getSiteById($entry->siteId);
-
-        if (!$site) {
-            throw new ServerErrorHttpException('Invalid site ID: ' . $entry->siteId);
-        }
-
-        Craft::$app->language = $site->language;
-        Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
-
-        if (!$entry->postDate) {
-            $entry->postDate = new DateTime();
-        }
-
-        // Have this entry override any freshly queried entries with the same ID/site ID
-        Craft::$app->getElements()->setPlaceholderElement($entry);
-
-        $this->getView()->getTwig()->disableStrictVariables();
-
-        return $this->renderTemplate($sectionSiteSettings[$entry->siteId]->template, [
-            'entry' => $entry
-        ]);
+        $entry->setRevisionNotes($request->getBodyParam('revisionNotes'));
     }
 }

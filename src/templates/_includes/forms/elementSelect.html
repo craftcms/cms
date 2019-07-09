@@ -10,6 +10,7 @@
 {% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
 {% set viewMode = (viewMode is defined ? viewMode : 'list') %}
 {% set sortable = (sortable is defined ? sortable : true) %}
+{% set prevalidate = prevalidate ?? false %}
 {% set fieldId = (fieldId is defined ? fieldId : null) %}
 
 <div id="{{ id }}" class="elementselect"
@@ -38,7 +39,8 @@
     showSiteMenu: showSiteMenu ?? false,
     modalStorageKey: storageKey,
     fieldId: fieldId,
-    sortable: sortable
+    sortable: sortable,
+    prevalidate: prevalidate,
 } %}
 
 {% js %}

@@ -40,6 +40,8 @@ class PluginStoreController extends Controller
     {
         // All plugin store actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

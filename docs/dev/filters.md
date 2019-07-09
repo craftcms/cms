@@ -705,3 +705,16 @@ Returns an array without the specified element(s).
 {% set firstEntry = entries[0] %}
 {% set remainingEntries = entries|without(firstEntry) %}
 ```
+
+## `withoutKey`
+
+Returns an array without the specified key.
+
+```twig
+{% set array = {
+    foo: 'foo',
+    bar: 'bar',
+    baz: 'baz'
+} %}
+{% set filtered = array|withoutKey('baz') %}
+```

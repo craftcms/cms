@@ -981,20 +981,6 @@ class Sites extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            Table::ENTRYDRAFTS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::ENTRYVERSIONS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
                             Table::RELATIONS,
                             ['sourceSiteId' => $transferContentTo],
                             [
@@ -1012,17 +998,6 @@ class Sites extends Component
                         ->column();
 
                     if (!empty($blockIds)) {
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                Table::MATRIXBLOCKS,
-                                ['ownerSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['id' => $blockIds],
-                                    ['not', ['ownerSiteId' => null]]
-                                ])
-                            ->execute();
-
                         Craft::$app->getDb()->createCommand()
                             ->delete(
                                 Table::ELEMENTS_SITES,

@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.1.34",
+  "version": "3.2.0",
   "keywords": [
     "cms",
     "craftcms",
@@ -29,7 +29,7 @@
     "ext-zip": "*",
     "composer/composer": "1.6.3",
     "craftcms/oauth2-craftid": "~1.0.0",
-    "craftcms/plugin-installer": "~1.5.0",
+    "craftcms/plugin-installer": "~1.5.3",
     "craftcms/server-check": "~1.1.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "danielstjules/stringy": "^3.1.0",
@@ -49,13 +49,17 @@
     "yiisoft/yii2-debug": "^2.0.10",
     "yiisoft/yii2-swiftmailer": "^2.1.0",
     "yiisoft/yii2-queue": "2.1.0",
+    "phpoffice/phpspreadsheet": "^1.6.0",
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "^2.4",
-    "codeception/mockery-module": "~0.2.2",
-    "codeception/specify": "~0.4.6",
-    "codeception/verify": "~0.3.3"
+    "codeception/codeception": "^3.0",
+    "codeception/mockery-module": "^0.3",
+    "codeception/specify": "^0.4",
+    "codeception/verify": "^1.0",
+    "vlucas/phpdotenv": "^3.0",
+    "league/factory-muffin": "^3.0",
+    "fzaninotto/faker": "^1.8"
   },
   "provide": {
     "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",

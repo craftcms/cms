@@ -650,7 +650,7 @@ return [
     'New user group' => 'Yeni kullanıcı grubu',
     'New volume' => 'Yeni birim',
     'New widget' => 'Yeni Bileşen',
-    'New {class}' => 'Yeni {class}',
+    'New {type}' => 'Yeni {type}',
     'New {group} category' => 'Yeni {group} kategori',
     'New {section} entry' => 'Yeni {section} giriş',
     'Next' => 'Sonraki',

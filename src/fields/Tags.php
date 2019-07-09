@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use craft\models\TagGroup;
 
@@ -49,8 +50,26 @@ class Tags extends BaseRelationField
         return Craft::t('app', 'Add a tag');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return TagQuery::class;
+    }
+
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $allowMultipleSources = false;
+
+    /**
+     * @inheritdoc
+     */
+    public $allowLimit = false;
 
     /**
      * @var
@@ -59,16 +78,6 @@ class Tags extends BaseRelationField
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->allowMultipleSources = false;
-        $this->allowLimit = false;
-    }
 
     /**
      * @inheritdoc

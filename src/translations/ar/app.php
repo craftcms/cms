@@ -650,7 +650,7 @@ return [
     'New user group' => 'مجموعة مستخدمين جديدة',
     'New volume' => 'وحدة تخزين جديدة',
     'New widget' => 'عنصر واجهة جديد',
-    'New {class}' => '{class} جديدة',
+    'New {type}' => '{type} جديدة',
     'New {group} category' => 'فئة جديدة في {group}',
     'New {section} entry' => 'إدخال جديد في {section}',
     'Next' => 'التالي',

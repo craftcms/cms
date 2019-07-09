@@ -13,11 +13,14 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\behaviors\DraftBehavior;
 use craft\behaviors\ElementQueryBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
@@ -29,8 +32,10 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 
 /**
@@ -112,6 +117,49 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $asArray = false;
 
+    // Drafts and revisions
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var bool Whether draft elements should be returned.
+     */
+    public $drafts = false;
+
+    /**
+     * @var int|null The ID of the draft to return (from the `drafts` table)
+     */
+    public $draftId;
+
+    /**
+     * @var int|null The source element ID that drafts should be returned for
+     */
+    public $draftOf;
+
+    /**
+     * @var int|null The drafts’ creator ID
+     */
+    public $draftCreator;
+
+    /**
+     * @var bool Whether revision elements should be returned.
+     */
+    public $revisions = false;
+
+    /**
+     * @var int|null The ID of the revision to return (from the `revisions` table)
+     */
+    public $revisionId;
+
+    /**
+     * @var int|null The source element ID that revisions should be returned for
+     */
+    public $revisionOf;
+
+    /**
+     * @var int|null The revisions’ creator ID
+     */
+    public $revisionCreator;
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -165,11 +213,26 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $dateUpdated;
 
     /**
-     * @var int|null The site ID that the elements should be returned in.
+     * @var int|int[]|string|null The site ID(s) that the elements should be returned in, or `'*'` if elements
+     * should be returned in all supported sites.
      * @used-by site()
      * @used-by siteId()
      */
     public $siteId;
+
+    /**
+     * @var bool Whether only elements with unique IDs should be returned by the query.
+     * @used-by unique()
+     * @since 3.2
+     */
+    public $unique = false;
+
+    /**
+     * @var array|null Determines which site should be selected when querying multi-site elements.
+     * @used-by preferSites()
+     * @since 3.2
+     */
+    public $preferSites = false;
 
     /**
      * @var bool Whether the elements must be enabled for the chosen site.
@@ -582,6 +645,124 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $drafts
+     */
+    public function drafts(bool $value = true)
+    {
+        $this->drafts = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $draftId
+     * @uses $drafts
+     */
+    public function draftId(int $value = null)
+    {
+        $this->draftId = $value;
+        $this->drafts = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $draftOf
+     * @uses $drafts
+     */
+    public function draftOf($value)
+    {
+        if ($value instanceof ElementInterface) {
+            /** @var Element $value */
+            $this->draftOf = $value->getSourceId();
+        } else if (is_numeric($value)) {
+            $this->draftOf = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid draftOf value');
+        }
+        $this->drafts = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $draftCreator
+     * @uses $drafts
+     */
+    public function draftCreator($value)
+    {
+        if ($value instanceof User) {
+            $this->draftCreator = $value->id;
+        } else if (is_numeric($value)) {
+            $this->draftCreator = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid draftCreator value');
+        }
+        $this->drafts = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisions
+     */
+    public function revisions(bool $value = true)
+    {
+        $this->revisions = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisionId
+     * @uses $revisions
+     */
+    public function revisionId(int $value = null)
+    {
+        $this->revisionId = $value;
+        $this->revisions = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisionOf
+     * @uses $revisions
+     */
+    public function revisionOf($value)
+    {
+        if ($value instanceof ElementInterface) {
+            /** @var Element $value */
+            $this->revisionOf = $value->getSourceId();
+        } else if (is_numeric($value)) {
+            $this->revisionOf = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid revisionOf value');
+        }
+        $this->revisions = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisionCreator
+     * @uses $revisions
+     */
+    public function revisionCreator($value)
+    {
+        if ($value instanceof User) {
+            $this->revisionCreator = $value->id;
+        } else if (is_numeric($value)) {
+            $this->revisionCreator = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid revisionCreator value');
+        }
+        $this->revisions = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $id
      */
     public function id($value)
@@ -700,21 +881,34 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if $value is an invalid site handle
+     * @throws InvalidArgumentException if $value is invalid
      * @uses $siteId
      */
     public function site($value)
     {
-        if ($value instanceof Site) {
+        if ($value === '*' || $value === null) {
+            $this->siteId = $value;
+        } else if ($value instanceof Site) {
             $this->siteId = $value->id;
-        } else {
+        } else if (is_string($value)) {
             $site = Craft::$app->getSites()->getSiteByHandle($value);
-
             if (!$site) {
-                throw new Exception('Invalid site handle: ' . $value);
+                throw new InvalidArgumentException('Invalid site handle: ' . $value);
             }
-
             $this->siteId = $site->id;
+        } else {
+            if ($not = (strtolower(reset($value)) === 'not')) {
+                array_shift($value);
+            }
+            $this->siteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (in_array($site->handle, $value, true) === !$not) {
+                    $this->siteId[] = $site->id;
+                }
+            }
+            if (empty($this->siteId)) {
+                throw new InvalidArgumentException('Invalid site param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
+            }
         }
 
         return $this;
@@ -724,7 +918,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siteId
      */
-    public function siteId(int $value = null)
+    public function siteId($value)
     {
         $this->siteId = $value;
         return $this;
@@ -741,6 +935,28 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
         $this->site($value);
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $unique
+     * @since 3.2
+     */
+    public function unique(bool $value = true)
+    {
+        $this->unique = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $preferSites
+     * @since 3.2
+     */
+    public function preferSites(array $value = null)
+    {
+        $this->preferSites = $value;
         return $this;
     }
 
@@ -1068,11 +1284,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             ])
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
-            ->andWhere(['elements_sites.siteId' => $this->siteId])
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params);
+
+        if ($this->siteId !== '*') {
+            $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
+        }
 
         if ($class::hasContent() && $this->contentTable !== null) {
             $this->customFields = $this->customFields();
@@ -1105,7 +1324,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             if ($this->trashed === false) {
                 $this->subQuery->andWhere(['elements.dateDeleted' => null]);
@@ -1140,6 +1359,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
+        $this->_applyRevisionParams();
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
@@ -1149,6 +1369,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
         }
+
+        $this->_applyUniqueParam($builder->db);
 
         // Pass the query back
         return $this->query;
@@ -1624,9 +1846,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         /** @var ElementInterface|string $class */
         // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable . ' content', '[[content.elementId]] = [[elements.id]]');
-        $this->subQuery->addSelect(['contentId' => 'content.id']);
-        $this->subQuery->andWhere(['content.siteId' => $this->siteId]);
+        $this->subQuery
+            ->innerJoin($this->contentTable . ' content', [
+                'and',
+                '[[content.elementId]] = [[elements.id]]',
+                '[[content.siteId]] = [[elements_sites.siteId]]',
+            ])
+            ->addSelect(['contentId' => 'content.id']);
 
         $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
 
@@ -1808,7 +2034,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->from([Table::STRUCTURES])
                 ->where('[[id]] = [[structureelements.structureId]]');
             // todo: remove schema version condition after next beakpoint
-            $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
             if (version_compare($schemaVersion, '3.1.0', '>=')) {
                 $existsQuery->andWhere(['dateDeleted' => null]);
             }
@@ -1943,6 +2169,73 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
     }
 
+
+    /**
+     * Applies draft and revision params to the query being prepared.
+     */
+    private function _applyRevisionParams()
+    {
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+        if (version_compare($schemaVersion, '3.2.6', '<')) {
+            return;
+        }
+
+        if ($this->drafts) {
+            $this->subQuery->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]');
+            $this->query
+                ->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]')
+                ->addSelect([
+                    'elements.draftId',
+                    'drafts.sourceId as draftSourceId',
+                    'drafts.creatorId as draftCreatorId',
+                    'drafts.name as draftName',
+                    'drafts.notes as draftNotes',
+                ]);
+
+            if ($this->draftId) {
+                $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
+            }
+
+            if ($this->draftOf) {
+                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
+            }
+
+            if ($this->draftCreator) {
+                $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
+            }
+        } else {
+            $this->subQuery->andWhere(['elements.draftId' => null]);
+        }
+
+        if ($this->revisions) {
+            $this->subQuery->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]');
+            $this->query
+                ->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]')
+                ->addSelect([
+                    'elements.revisionId',
+                    'revisions.sourceId as revisionSourceId',
+                    'revisions.creatorId as revisionCreatorId',
+                    'revisions.num as revisionNum',
+                    'revisions.notes as revisionNotes',
+                ]);
+
+            if ($this->revisionId) {
+                $this->subQuery->andWhere(['elements.revisionId' => $this->revisionId]);
+            }
+
+            if ($this->revisionOf) {
+                $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+            }
+
+            if ($this->revisionCreator) {
+                $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
+            }
+        } else {
+            $this->subQuery->andWhere(['elements.revisionId' => null]);
+        }
+    }
+
     /**
      * Normalizes a structure param value to either an Element object or false.
      *
@@ -2001,7 +2294,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->select = ['elements.id' => 'elements.id'];
             $elementIds = $this->query->column();
             $this->query->select = $select;
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
+            $siteId = $this->siteId === '*' ? null : $this->siteId;
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $siteId, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
@@ -2156,6 +2450,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'elements_sites.slug' => 'elements_sites.slug',
+                'elements_sites.siteId' => 'elements_sites.siteId',
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
@@ -2185,6 +2480,66 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->join[] = $join;
             }
         }
+    }
+
+    /**
+     * Applies the 'unique' param to the query being prepared
+     *
+     * @param Connection $db
+     */
+    private function _applyUniqueParam(Connection $db)
+    {
+        if (!$this->unique || (
+            $this->siteId &&
+            $this->siteId !== '*' &&
+            (!is_array($this->siteId) || count($this->siteId) === 1)
+        )) {
+            return;
+        }
+
+        $sitesService = Craft::$app->getSites();
+
+        if (!$this->preferSites) {
+            $preferSites = [$sitesService->getCurrentSite()->id];
+        } else {
+            $preferSites = [];
+            foreach ($this->preferSites as $preferSite) {
+                if (is_numeric($preferSite)) {
+                    $preferSites[] = $preferSite;
+                } else if ($site = $sitesService->getSiteByHandle($preferSite)) {
+                    $preferSites[] = $site->id;
+                }
+            }
+        }
+
+        $caseSql = 'case';
+        $caseParams = [];
+        foreach ($preferSites as $index => $siteId) {
+            $param = 'preferSites' . $index;
+            $caseSql .= " when [[elements_sites.siteId]] = :{$param} then {$index}";
+            $caseParams[$param] = $siteId;
+        }
+        $caseSql .= ' else ' . count($preferSites) . ' end';
+
+        $subSelectSql = (clone $this->subQuery)
+            ->select(['elements_sites.id'])
+            ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
+            ->orderBy([
+                new Expression($caseSql, $caseParams),
+                'elements_sites.id' => SORT_ASC
+            ])
+            ->limit(1)
+            ->getRawSql();
+
+        // `elements` => `subElements`
+        $qElements = $db->quoteTableName('elements');
+        $qSubElements = $db->quoteTableName('subElements');
+        $qTmpElements = $db->quoteTableName('tmpElements');
+        $subSelectSql = str_replace($qElements, $qSubElements, $subSelectSql);
+        $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
+        $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
+
+        $this->subQuery->where(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
     }
 
     /**
@@ -2258,10 +2613,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param array $row
      * @return ElementInterface
      */
-    private function _createElement(array $row)
+    private function _createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?
-        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId)) !== null) {
+        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null) {
             return $element;
         }
 
@@ -2269,8 +2624,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         $class = $this->elementType;
 
         // Instantiate the element
-        $row['siteId'] = $this->siteId;
-
         if ($this->structureId) {
             $row['structureId'] = $this->structureId;
         }
@@ -2300,11 +2653,31 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (array_key_exists('dateDeleted', $row)) {
             $row['trashed'] = $row['dateDeleted'] !== null;
-            unset($row['dateDeleted']);
+        }
+
+        $behaviors = [];
+
+        if ($this->drafts) {
+            $behaviors['draft'] = new DraftBehavior([
+                'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
+                'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
+                'draftName' => ArrayHelper::remove($row, 'draftName'),
+                'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+            ]);
+        }
+
+        if ($this->revisions) {
+            $behaviors['revision'] = new RevisionBehavior([
+                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
+                'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
+                'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
+                'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+            ]);
         }
 
         /** @var Element $element */
         $element = new $class($row);
+        $element->attachBehaviors($behaviors);
 
         // Set the custom field values
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */

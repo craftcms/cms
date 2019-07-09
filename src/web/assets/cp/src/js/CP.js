@@ -137,17 +137,11 @@ Craft.CP = Garnish.Base.extend(
                 return;
             }
 
-            if (!Craft.forceConfirmUnload) {
-                this.initialFormValues = [];
-            }
+            var $form;
 
             for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                var $form = $(this.$confirmUnloadForms);
-
-                if (!Craft.forceConfirmUnload) {
-                    this.initialFormValues[i] = $form.serialize();
-                }
-
+                $form = this.$confirmUnloadForms.eq(i);
+                $form.data('initialSerializedValue', $form.serialize());
                 this.addListener($form, 'submit', function() {
                     this.removeListener(Garnish.$win, 'beforeunload');
                 });
@@ -155,17 +149,18 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
-                if (
-                    Craft.forceConfirmUnload ||
-                    (
-                        typeof Craft.livePreview !== 'undefined' &&
-                        Craft.livePreview.inPreviewMode
-                    )
-                ) {
+                var $form, serialized;
+                if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
                     confirmUnload = true;
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                        if (this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()) {
+                        $form = this.$confirmUnloadForms.eq(i);
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        if ($form.data('initialSerializedValue') !== serialized) {
                             confirmUnload = true;
                             break;
                         }
@@ -613,6 +608,7 @@ Craft.CP = Garnish.Base.extend(
                 this.displayedJobInfo &&
                 oldInfo.id === this.displayedJobInfo.id &&
                 oldInfo.progress === this.displayedJobInfo.progress &&
+                oldInfo.progressLabel === this.displayedJobInfo.progressLabel &&
                 oldInfo.status === this.displayedJobInfo.status
             ) {
                 this.displayedJobInfoUnchanged++;
@@ -1014,6 +1010,7 @@ QueueHUD.Job = Garnish.Base.extend(
         $container: null,
         $statusContainer: null,
         $descriptionContainer: null,
+        $progressLabel: null,
 
         _progressBar: null,
 
@@ -1023,9 +1020,10 @@ QueueHUD.Job = Garnish.Base.extend(
             this.id = info.id;
             this.description = info.description;
 
-            this.$container = $('<div class="job"/>');
-            this.$statusContainer = $('<div class="job-status"/>').appendTo(this.$container);
-            this.$descriptionContainer = $('<div class="job-description"/>').appendTo(this.$container).text(info.description);
+            this.$container = $('<div/>', { 'class': 'job' });
+            var $flex = $('<div/>', { 'class': 'flex' }).appendTo(this.$container);
+            $('<div/>', { 'class': 'flex-grow' }).text(info.description).appendTo($flex);
+            this.$statusContainer = $('<div class="job-status"/>').appendTo($flex);
 
             this.$container.data('job', this);
 
@@ -1074,6 +1072,16 @@ QueueHUD.Job = Garnish.Base.extend(
 
             if (this.status === Craft.CP.JOB_STATUS_RESERVED) {
                 this._progressBar.setProgressPercentage(info.progress);
+
+                if (info.progressLabel) {
+                    if (!this.$progressLabel) {
+                        this.$progressLabel = $('<div class="light smalltext"/>').appendTo(this.$container);
+                    }
+                    this.$progressLabel.text(info.progressLabel);
+                }
+            } else if (this.$progressLabel) {
+                this.$progressLabel.remove();
+                this.$progressLabel = null;
             }
         },
 

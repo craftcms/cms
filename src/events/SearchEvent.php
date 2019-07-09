@@ -34,7 +34,7 @@ class SearchEvent extends BaseEvent
     public $query;
 
     /**
-     * @var int|null The site ID to filter by
+     * @var int|int[]|null The site ID(s) to filter by
      */
     public $siteId;
 }

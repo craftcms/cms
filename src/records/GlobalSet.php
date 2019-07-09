@@ -48,7 +48,7 @@ class GlobalSet extends ActiveRecord
         $query = parent::find();
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query
                 ->where(['exists', (new Query())

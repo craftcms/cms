@@ -9,20 +9,26 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\console\Controller;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
+use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\helpers\App;
+use craft\events\BatchElementActionEvent;
+use craft\fields\Matrix;
+use craft\services\Elements;
 use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\console\Controller;
-use craft\elements\Entry;
-use craft\elements\Category;
 
 /**
- * Bulk-saves elements
+ * Allows you to bulk-saves elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15
@@ -60,11 +66,6 @@ class ResaveController extends Controller
     public $limit;
 
     /**
-     * @var int The batch size to query elements in.
-     */
-    public $batchSize = 100;
-
-    /**
      * @var bool Whether to save the elements across all their enabled sites.
      */
     public $propagate = true;
@@ -80,7 +81,7 @@ class ResaveController extends Controller
     public $section;
 
     /**
-     * @var string|null The entry type handle(s) of the entries to resave.
+     * @var string|null The type handle(s) of the elements to resave.
      */
     public $type;
 
@@ -88,6 +89,11 @@ class ResaveController extends Controller
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
     public $volume;
+
+    /**
+     * @var string|null The field handle to save Matrix blocks for.
+     */
+    public $field;
 
     /**
      * @inheritdoc
@@ -101,7 +107,6 @@ class ResaveController extends Controller
         $options[] = 'status';
         $options[] = 'offset';
         $options[] = 'limit';
-        $options[] = 'batchSize';
         $options[] = 'propagate';
 
         switch ($actionID) {
@@ -113,6 +118,10 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'type';
+                break;
+            case 'matrix-blocks':
+                $options[] = 'field';
                 $options[] = 'type';
                 break;
             case 'tags':
@@ -137,7 +146,7 @@ class ResaveController extends Controller
         if ($this->volume !== null) {
             $query->volume(explode(',', $this->volume));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -151,7 +160,7 @@ class ResaveController extends Controller
         if ($this->group !== null) {
             $query->group(explode(',', $this->group));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -168,7 +177,34 @@ class ResaveController extends Controller
         if ($this->type !== null) {
             $query->type(explode(',', $this->type));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
+    }
+
+    /**
+     * Re-saves Matrix blocks.
+     *
+     * @return int
+     * @since 3.2
+     */
+    public function actionMatrixBlocks(): int
+    {
+        $query = MatrixBlock::find();
+        if ($this->field !== null) {
+            $fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(['type' => Matrix::class, 'handle' => $this->field])
+                ->scalar();
+            if (!$fieldId) {
+                $this->stderr("No Matrix field exists with the handle \"{$this->field}\"." . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+            $query->fieldId($fieldId);
+        }
+        if ($this->type !== null) {
+            $query->type(explode(',', $this->type));
+        }
+        return $this->saveElements($query);
     }
 
     /**
@@ -182,7 +218,7 @@ class ResaveController extends Controller
         if ($this->group !== null) {
             $query->group(explode(',', $this->group));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -196,17 +232,20 @@ class ResaveController extends Controller
         if ($this->group !== null) {
             $query->group(explode(',', $this->group));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
      * @param ElementQueryInterface $query
      * @return int
      */
-    private function _saveElements(ElementQueryInterface $query): int
+    public function saveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
-        $type = App::humanizeClass($query->elementType);
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        $type = mb_strtolower($elementType::displayName());
+        $pType = mb_strtolower($elementType::pluralDisplayName());
 
         if ($this->elementId) {
             $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
@@ -237,38 +276,49 @@ class ResaveController extends Controller
         $count = (int)$query->count();
 
         if ($count === 0) {
-            $this->stdout("No {$type} elements exist for that criteria." . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout("No {$pType} exist for that criteria." . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
-        $elementsText = $count === 1 ? 'element' : 'elements';
-        $this->stdout("Resaving {$count} {$type} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
+        $elementsText = $count === 1 ? $type : $pType;
+        $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        foreach ($query->each($this->batchSize) as $element) {
-            /** @var Element $element */
-            $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
-            $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            $element->resaving = true;
-            try {
-                if (!$elementsService->saveElement($element)) {
+        $beforeCallback = function(BatchElementActionEvent $e) use ($query) {
+            if ($e->query === $query) {
+                /** @var Element $element */
+                $element = $e->element;
+                $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
+            }
+        };
+
+        $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
+            if ($e->query === $query) {
+                /** @var Element $element */
+                $element = $e->element;
+                if ($e->exception) {
+                    $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
+                    $fail = true;
+                } else if ($element->hasErrors()) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                    continue;
+                } else {
+                    $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 }
-            } catch (\Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
-                $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-                $fail = true;
-                continue;
             }
+        };
 
-            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        }
+        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+        $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $this->stdout("Done resaving {$type} elements." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $elementsService->resaveElements($query, true);
+
+        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+        $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+
+        $this->stdout("Done resaving {$elementsText}." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 }

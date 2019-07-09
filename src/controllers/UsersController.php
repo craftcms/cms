@@ -90,14 +90,14 @@ class UsersController extends Controller
      * @inheritdoc
      */
     protected $allowAnonymous = [
-        'login',
-        'logout',
-        'get-remaining-session-time',
-        'send-password-reset-email',
-        'send-activation-email',
-        'save-user',
-        'set-password',
-        'verify-email'
+        'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'save-user' => self::ALLOW_ANONYMOUS_LIVE,
+        'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     // Public Methods
@@ -131,7 +131,6 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getRequest()->getIsPost()) {
-            $this->_enforceOfflineLoginPage();
             return null;
         }
 
@@ -177,11 +176,11 @@ class UsersController extends Controller
      * Logs a user in for impersonation. Requires you to be an administrator.
      *
      * @return Response|null
+     * @throws ForbiddenHttpException
      */
     public function actionImpersonate()
     {
         $this->requireLogin();
-        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
@@ -189,6 +188,13 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
 
         $userId = $request->getBodyParam('userId');
+
+        // Make sure they're allowed to impersonate this user
+        $usersService = Craft::$app->getUsers();
+        $impersonatee = $usersService->getUserById($userId);
+        if (!$usersService->canImpersonate($userSession->getIdentity(), $impersonatee)) {
+            throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
+        }
 
         // Save the original user ID to the session now so User::findIdentity()
         // knows not to worry if the user isn't active yet
@@ -698,7 +704,7 @@ class UsersController extends Controller
             }
 
             if (!$isCurrentUser) {
-                if ($userSession->getIsAdmin()) {
+                if (Craft::$app->getUsers()->canImpersonate($currentUser, $user)) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
@@ -1629,7 +1635,6 @@ class UsersController extends Controller
             'errorMessage' => $event->message,
         ]);
 
-        $this->_enforceOfflineLoginPage();
         return null;
     }
 
@@ -1669,27 +1674,6 @@ class UsersController extends Controller
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
-    }
-
-    /**
-     * Ensures that either the site is online or the user is specifically requesting the login path.
-     *
-     * @throws ServiceUnavailableHttpException
-     */
-    private function _enforceOfflineLoginPage()
-    {
-        if (!Craft::$app->getIsLive()) {
-            $request = Craft::$app->getRequest();
-            if ($request->getIsCpRequest()) {
-                $loginPath = 'login';
-            } else {
-                $loginPath = trim(Craft::$app->getConfig()->getGeneral()->getLoginPath(), '/');
-            }
-
-            if ($request->getPathInfo() !== $loginPath) {
-                throw new ServiceUnavailableHttpException();
-            }
-        }
     }
 
     /**

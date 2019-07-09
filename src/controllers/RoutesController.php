@@ -31,6 +31,8 @@ class RoutesController extends Controller
     {
         // All route actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

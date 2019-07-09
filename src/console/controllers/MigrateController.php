@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Plugin;
+use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
@@ -23,6 +24,7 @@ use yii\helpers\Console;
 
 /**
  * Manages Craft and plugin migrations.
+ *
  * A migration means a set of persistent changes to the application environment that is shared among different
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
@@ -43,6 +45,11 @@ use yii\helpers\Console;
  */
 class MigrateController extends BaseMigrateController
 {
+    // Traits
+    // =========================================================================
+
+    use ControllerTrait;
+
     // Properties
     // =========================================================================
 

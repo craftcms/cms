@@ -31,7 +31,6 @@ class EditEntryAsset extends AssetBundle
         ];
 
         $this->js = [
-            'EntryDraftEditor' . $this->dotJs(),
             'EntryTypeSwitcher' . $this->dotJs(),
         ];
 

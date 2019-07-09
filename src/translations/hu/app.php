@@ -650,7 +650,7 @@ return [
     'New user group' => 'Új felhasználói csapat',
     'New volume' => 'Új kötet',
     'New widget' => 'Új minialkalmazás',
-    'New {class}' => 'Új {class}',
+    'New {type}' => 'Új {type}',
     'New {group} category' => 'Új {group} kategória',
     'New {section} entry' => 'Új {section} bejegyzés',
     'Next' => 'Következő',

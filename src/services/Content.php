@@ -15,7 +15,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -184,6 +183,18 @@ class Content extends Component
             }
         }
 
+        if (!$element->contentId) {
+            // It could be a draft that's getting published
+            $element->contentId = (new Query())
+                ->select(['id'])
+                ->from([$this->contentTable])
+                ->where([
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId
+                ])
+                ->scalar();
+        }
+
         // Insert/update the DB row
         if ($element->contentId) {
             // Update the existing row
@@ -196,10 +207,6 @@ class Content extends Component
                 ->insert($this->contentTable, $values)
                 ->execute();
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
-        }
-
-        if ($fieldLayout) {
-            $this->_updateSearchIndexes($element, $fieldLayout);
         }
 
         // Fire an 'afterSaveContent' event
@@ -218,32 +225,6 @@ class Content extends Component
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Updates the search indexes based on the new content values.
-     *
-     * @param ElementInterface $element
-     * @param FieldLayout $fieldLayout
-     */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
-    {
-        /** @var Element $element */
-        $searchKeywordsBySiteId = [];
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            if ($field->searchable) {
-                // Set the keywords for the content's site
-                $fieldValue = $element->getFieldValue($field->handle);
-                $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-            }
-        }
-
-        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
-        }
-    }
 
     /**
      * Removes the column prefixes from a given row.

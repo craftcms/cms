@@ -13,6 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
 use yii\db\Schema;
 
 /**
@@ -635,6 +636,7 @@ class Db
      * @param string $type
      * @param Connection|null $db
      * @return bool
+     * @throws NotSupportedException
      */
     public static function isTypeSupported(string $type, Connection $db = null): bool
     {

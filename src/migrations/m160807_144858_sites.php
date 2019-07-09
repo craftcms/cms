@@ -422,7 +422,7 @@ class m160807_144858_sites extends Migration
             $localized = ($field['translationMethod'] === 'site');
 
             if ($field['type'] === 'craft\fields\Matrix') {
-                $settings['localizeBlocks'] = $localized;
+                $settings['propagationMethod'] = $localized ? 'none' : 'all';
             } else {
                 // Exception: Cannot use a scalar value as an array
                 $settings['localizeRelations'] = $localized;

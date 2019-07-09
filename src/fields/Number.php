@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
@@ -21,7 +22,7 @@ use craft\i18n\Locale;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Number extends Field implements PreviewableFieldInterface
+class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     // Static
     // =========================================================================
@@ -32,6 +33,14 @@ class Number extends Field implements PreviewableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Number');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'int|float|null';
     }
 
     // Properties

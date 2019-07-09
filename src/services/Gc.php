@@ -56,6 +56,8 @@ class Gc extends Component
             return;
         }
 
+        Craft::$app->getDrafts()->purgeUnsavedDrafts();
+        Craft::$app->getTemplateCaches()->deleteExpiredCaches();
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
 

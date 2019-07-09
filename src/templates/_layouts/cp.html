@@ -26,12 +26,12 @@
 │ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │#sidebar│ │ │                  │ │ │#details│ │ │ │ │ │
-│ │        │ │ │ │ │ │  (?)   │ │ │                  │ │ │  (?)   │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │     #content     │ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │  (?)   │ │ │     #content     │ │ │  (?)   │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │        │ │ │   #footer (?)    │ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ └────────┘ └──────────────────────┘ └────────┘ │ │ │ │ │
 │ │        │ │ │ │ └────────────────────────────────────────────────┘ │ │ │ │
@@ -59,8 +59,6 @@
 {% endjs %}
 
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
-
-{% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
@@ -69,7 +67,13 @@
 
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set details = (details ?? block('details') ?? '')|trim %}
+{% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
+
+{% set showHeader = showHeader ?? true %}
+{% if not showHeader %}
+    {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ 'no-header' -%}
+{% endif %}
 
 {% block body %}
     <div id="global-container">
@@ -219,23 +223,25 @@
                         {{- csrfInput() }}
                 {%- endif %}
 
-                {# main-header #}
-                <header id="header">
-                    {% block header %}
-                        {% block pageTitle %}
-                            {% if title is defined and title|length %}
-                                <h1>{{ title }}</h1>
-                            {% endif %}
+                {# header #}
+                {% if showHeader %}
+                    <header id="header">
+                        {% block header %}
+                            {% block pageTitle %}
+                                {% if title is defined and title|length %}
+                                    <h1>{{ title }}</h1>
+                                {% endif %}
+                            {% endblock %}
+                            {% block contextMenu %}{% endblock %}
+                            <div class="flex-grow"></div>
+                            {% block actionButton %}
+                                {% if fullPageForm %}
+                                    <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+                                {% endif %}
+                            {% endblock %}
                         {% endblock %}
-                        {% block contextMenu %}{% endblock %}
-                        <div class="flex-grow"></div>
-                        {% block actionButton %}
-                            {% if fullPageForm %}
-                                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                            {% endif %}
-                        {% endblock %}
-                    {% endblock %}
-                </header>
+                    </header>
+                {% endif %}
 
                 {# main-content #}
                 <div id="main-content" class="{% if sidebar %}has-sidebar{% endif %} {% if details %}has-details{% endif %}">
@@ -261,6 +267,13 @@
                                     {{ content is defined ? content }}
                                 {% endblock %}
                             </div>
+
+                            {# footer #}
+                            {% if footer is not empty %}
+                                <div id="footer" class="flex">
+                                    {{ footer|raw }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         {# details #}

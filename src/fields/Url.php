@@ -34,6 +34,14 @@ class Url extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'URL');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
     // Properties
     // =========================================================================
 

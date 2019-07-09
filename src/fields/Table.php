@@ -15,9 +15,11 @@ use craft\fields\data\ColorData;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
@@ -36,6 +38,14 @@ class Table extends Field
     public static function displayName(): string
     {
         return Craft::t('app', 'Table');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'array|null';
     }
 
     // Properties
@@ -93,6 +103,19 @@ class Table extends Field
 
         if (!is_array($this->columns)) {
             $this->columns = [];
+        } else {
+            foreach ($this->columns as $colId => &$column) {
+                if ($column['type'] === 'select') {
+                    if (!isset($column['options'])) {
+                        $column['options'] = [];
+                    } else if (is_string($column['options'])) {
+                        $column['options'] = Json::decode($column['options']);
+                    }
+                } else {
+                    unset($column['options']);
+                }
+            }
+            unset($column);
         }
 
         if (!is_array($this->defaults)) {
@@ -184,11 +207,14 @@ class Table extends Field
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
             'date' => Craft::t('app', 'Date'),
+            'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
             'singleline' => Craft::t('app', 'Single-line text'),
             'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -219,6 +245,38 @@ class Table extends Field
             ],
         ];
 
+        $dropdownSettingsCols = [
+            'label' => [
+                'heading' => Craft::t('app', 'Option Label'),
+                'type' => 'singleline',
+                'autopopulate' => 'value',
+                'class' => 'option-label',
+            ],
+            'value' => [
+                'heading' => Craft::t('app', 'Value'),
+                'type' => 'singleline',
+                'class' => 'option-value code',
+            ],
+            'default' => [
+                'heading' => Craft::t('app', 'Default?'),
+                'type' => 'checkbox',
+                'radioMode' => true,
+                'class' => 'option-default thin',
+            ],
+        ];
+
+        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
+            [
+                'label' => Craft::t('app', 'Dropdown Options'),
+                'instructions' => Craft::t('app', 'Define the available options.'),
+                'id' => '__ID__',
+                'name' => '__NAME__',
+                'addRowLabel' => Craft::t('app', 'Add an option'),
+                'cols' => $dropdownSettingsCols,
+                'initJs' => false,
+            ]
+        ]);
+
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TimepickerAsset::class);
@@ -228,21 +286,14 @@ class Table extends Field
             Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
             ');');
 
-        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Table Columns'),
-                'instructions' => Craft::t('app', 'Define the columns your table should have.'),
-                'id' => 'columns',
-                'name' => 'columns',
-                'cols' => $columnSettings,
-                'rows' => $this->columns,
-                'addRowLabel' => Craft::t('app', 'Add a column'),
-                'initJs' => false,
-                'errors' => $this->getErrors('columns'),
-            ]
+        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
+            'cols' => $columnSettings,
+            'rows' => $this->columns,
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -253,7 +304,8 @@ class Table extends Field
                 'name' => 'defaults',
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
-                'initJs' => false
+                'initJs' => false,
+                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
@@ -414,15 +466,28 @@ class Table extends Field
      */
     private function _validateCellValue(string $type, $value, string &$error = null): bool
     {
-        if ($type === 'color' && $value !== null) {
-            /** @var ColorData $value */
-            $validator = new ColorValidator();
-            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-            $hex = $value->getHex();
-            return $validator->validate($hex, $error);
+        if ($value === null || $value === '') {
+            return true;
         }
 
-        return true;
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
+        }
+
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        return $validator->validate($value, $error);
     }
 
     /**

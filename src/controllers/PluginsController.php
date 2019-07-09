@@ -33,6 +33,8 @@ class PluginsController extends Controller
     {
         // All plugin actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
