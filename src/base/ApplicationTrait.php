@@ -32,6 +32,7 @@ use craft\services\Categories;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Matrix;
+use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
@@ -71,10 +72,10 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Content $content The content service
  * @property-read \craft\services\Dashboard $dashboard The dashboard service
  * @property-read \craft\services\Deprecator $deprecator The deprecator service
+ * @property-read \craft\services\Drafts $drafts The drafts service
  * @property-read \craft\services\ElementIndexes $elementIndexes The element indexes service
  * @property-read \craft\services\Elements $elements The elements service
  * @property-read \craft\services\Entries $entries The entries service
- * @property-read \craft\services\EntryRevisions $entryRevisions The entry revisions service
  * @property-read \craft\services\Fields $fields The fields service
  * @property-read \craft\services\Gc $gc The garbage collection service
  * @property-read \craft\services\Globals $globals The globals service
@@ -85,6 +86,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\PluginStore $pluginStore The plugin store service
  * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read \craft\services\Relations $relations The relations service
+ * @property-read \craft\services\Revisions $revisions The revisions service
  * @property-read \craft\services\Routes $routes The routes service
  * @property-read \craft\services\Search $search The search service
  * @property-read \craft\services\Sections $sections The sections service
@@ -115,6 +117,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Queue|QueueInterface $queue The job queue
  * @property-read Security $security The security component
+ * @property-read string $installedSchemaVersion The installed schema version
  * @property-read View $view The view component
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection getDb() Returns the database connection component.
@@ -264,6 +267,16 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $this->_isInstalled = $value;
+    }
+
+    /**
+     * Returns the installed schema version.
+     *
+     * @return string
+     */
+    public function getInstalledSchemaVersion(): string
+    {
+        return $this->getInfo()->schemaVersion ?: $this->schemaVersion;
     }
 
     /**
@@ -474,7 +487,7 @@ trait ApplicationTrait
             return $on;
         }
 
-        return $this->getProjectConfig()->get('system.live');
+        return (bool)$this->getProjectConfig()->get('system.live');
     }
 
     /**
@@ -862,6 +875,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the drafts service.
+     *
+     * @return \craft\services\Drafts The drafts service
+     * @since 3.2
+     */
+    public function getDrafts()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('drafts');
+    }
+
+    /**
      * Returns the element indexes service.
      *
      * @return \craft\services\ElementIndexes The element indexes service
@@ -909,6 +934,7 @@ trait ApplicationTrait
      * Returns the entry revisions service.
      *
      * @return \craft\services\EntryRevisions The entry revisions service
+     * @deprecated in 3.2.
      */
     public function getEntryRevisions()
     {
@@ -1078,6 +1104,18 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('relations');
+    }
+
+    /**
+     * Returns the revisions service.
+     *
+     * @return \craft\services\Revisions The revisions service
+     * @since 3.2
+     */
+    public function getRevisions()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('revisions');
     }
 
     /**

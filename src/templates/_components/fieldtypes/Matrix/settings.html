@@ -184,11 +184,18 @@
 </div>
 
 {% if craft.app.getIsMultiSite() %}
-    {{ forms.checkboxField({
-        label: "Manage blocks on a per-site basis"|t('app'),
-        id: 'localize-blocks',
-        name: 'localizeBlocks',
-        checked: matrixField.localizeBlocks
+    {{ forms.selectField({
+        label: 'Propagation Method'|t('app'),
+        instructions: 'Which sites should blocks be saved to?'|t('app'),
+        id: 'propagationMethod',
+        name: 'propagationMethod',
+        options: [
+            { value: 'none', label: 'Only save blocks to the site they were created in'|t('app') },
+            { value: 'siteGroup', label: 'Save blocks to other sites in the same site group'|t('app') },
+            { value: 'language', label: 'Save blocks to other sites with the same language'|t('app') },
+            { value: 'all', label: 'Save blocks to all sites the owner element is saved in'|t('app') },
+        ],
+        value: matrixField.propagationMethod
     }) }}
 {% endif %}
 

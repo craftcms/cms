@@ -42,7 +42,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     // Public Methods
     // =========================================================================
@@ -57,6 +57,8 @@ class InstallController extends Controller
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
+
+        parent::init();
     }
 
     /**

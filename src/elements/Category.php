@@ -52,6 +52,14 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Categories');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'category';
@@ -256,6 +264,7 @@ class Category extends Element
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
@@ -484,32 +493,34 @@ class Category extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Get the category record
-        if (!$isNew) {
-            $record = CategoryRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the category record
+            if (!$isNew) {
+                $record = CategoryRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid category ID: ' . $this->id);
-            }
-        } else {
-            $record = new CategoryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->groupId = $this->groupId;
-        $record->save(false);
-
-        // Has the parent changed?
-        if ($this->_hasNewParent()) {
-            if (!$this->newParentId) {
-                Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                if (!$record) {
+                    throw new Exception('Invalid category ID: ' . $this->id);
+                }
             } else {
-                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                $record = new CategoryRecord();
+                $record->id = (int)$this->id;
             }
-        }
 
-        // Update the category's descendants, who may be using this category's URI in their own URIs
-        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            $record->groupId = (int)$this->groupId;
+            $record->save(false);
+
+            // Has the parent changed?
+            if ($this->_hasNewParent()) {
+                if (!$this->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                } else {
+                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                }
+            }
+
+            // Update the category's descendants, who may be using this category's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+        }
 
         parent::afterSave($isNew);
     }

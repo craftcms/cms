@@ -18,11 +18,14 @@ use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
+use craft\events\ElementEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
+use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use yii\base\Event;
 use yii\base\NotSupportedException;
 
 /**
@@ -76,6 +79,26 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         return Craft::t('app', 'Choose');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return ElementQueryInterface::class;
+    }
+
+    /**
+     * @var array Related elements that have been validated
+     * @see _validateRelatedElement()
+     */
+    private static $_relatedElementValidates = [];
+
+    /**
+     * @var bool Whether we're listening for related element saves yet
+     * @see _validateRelatedElement()
+     */
+    private static $_listeningForRelatedElementSave = false;
+
     // Properties
     // =========================================================================
 
@@ -108,6 +131,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var string|null The label that should be used on the selection input
      */
     public $selectionLabel;
+
+    /**
+     * @var bool Whether related elements should be validated when the source element is saved.
+     */
+    public $validateRelatedElements = false;
 
     /**
      * @var int Whether each site should get its own unique set of relations
@@ -199,6 +227,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'localizeRelations';
+        $attributes[] = 'validateRelatedElements';
 
         return $attributes;
     }
@@ -208,8 +237,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getSettingsHtml()
     {
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType();
+
         return Craft::$app->getView()->renderTemplate($this->settingsTemplate, [
             'field' => $this,
+            'pluralElementType' => $elementType::pluralDisplayName(),
         ]);
     }
 
@@ -218,13 +251,86 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getElementValidationRules(): array
     {
-        return [
+        $rules = [
             [
                 ArrayValidator::class,
                 'max' => $this->allowLimit && $this->limit ? $this->limit : null,
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
             ],
         ];
+
+        if ($this->validateRelatedElements) {
+            $rules[] = ['validateRelatedElements', 'on' => [Element::SCENARIO_LIVE]];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Validates the related elements.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateRelatedElements(ElementInterface $element)
+    {
+        /** @var Element $element */
+        // Prevent circular relations from worrying about this entry
+        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+
+        /** @var ElementQueryInterface $query */
+        $query = $element->getFieldValue($this->handle);
+        $errorCount = 0;
+
+        foreach ($query->all() as $i => $related) {
+            /** @var Element $related */
+            if ($related->enabled && $related->enabledForSite) {
+                if (!self::_validateRelatedElement($related)) {
+                    $element->addModelErrors($related, "{$this->handle}[{$i}]");
+                    $errorCount++;
+                }
+            }
+        }
+
+        unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
+
+        if ($errorCount) {
+            /** @var ElementInterface|string $elementType */
+            $elementType = static::elementType();
+            $element->addError($this->handle, Craft::t('app', 'Fix validation errors on the related {type}.', [
+                'type' => mb_strtolower($errorCount === 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            ]));
+        }
+    }
+
+    /**
+     * Returns whether a related element validates.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    private static function _validateRelatedElement(ElementInterface $element): bool
+    {
+        /** @var Element $element */
+        if (isset(self::$_relatedElementValidates[$element->id][$element->siteId])) {
+            return self::$_relatedElementValidates[$element->id][$element->siteId];
+        }
+
+        // If this is the first time we are validating a related element,
+        // listen for future element saves so we can clear our cache
+        if (!self::$_listeningForRelatedElementSave) {
+            Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
+                /** @var Element $element */
+                $element = $e->element;
+                unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
+            });
+            self::$_listeningForRelatedElementSave = true;
+        }
+
+        // Prevent an infinite loop if there are circular relations
+        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+
+        $element->setScenario(Element::SCENARIO_LIVE);
+        return self::$_relatedElementValidates[$element->id][$element->siteId] = $element->validate();
     }
 
     /**
@@ -253,8 +359,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
-        $query = $class::find()
-            ->siteId($this->targetSiteId($element));
+        $query = $class::find();
+
+        $targetSite = $this->targetSiteId($element);
+        if ($this->targetSiteId) {
+            $query->siteId($targetSite);
+        } else {
+            $query
+                ->siteId('*')
+                ->unique()
+                ->preferSites([$targetSite]);
+        }
 
         // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
@@ -482,7 +597,9 @@ JS;
             'elementType' => static::elementType(),
             'map' => $map,
             'criteria' => [
-                'siteId' => $targetSite
+                'siteId' => '*',
+                'unique' => true,
+                'preferSites' => [$targetSite],
             ],
         ];
     }
@@ -676,6 +793,7 @@ JS;
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
+        /** @var Element|null $element */
         if ($value instanceof ElementQueryInterface) {
             $value = $value
                 ->anyStatus()
@@ -684,9 +802,21 @@ JS;
             $value = [];
         }
 
+        if ($this->validateRelatedElements) {
+            // Pre-validate related elements
+            foreach ($value as $related) {
+                if ($related->enabled && $related->enabledForSite) {
+                    $related->setScenario(Element::SCENARIO_LIVE);
+                    $related->validate();
+                }
+            }
+        }
+
         $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        $selectionCriteria['siteId'] = $this->targetSiteId($element);
+        if ($this->targetSiteId) {
+            $selectionCriteria['siteId'] = $this->targetSiteId($element);
+        }
 
         return [
             'jsClass' => $this->inputJsClass,
@@ -698,11 +828,13 @@ JS;
             'elements' => $value,
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
+            'showSiteMenu' => $this->targetSiteId ? false : 'auto',
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'limit' => $this->allowLimit ? $this->limit : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,
+            'prevalidate' => $this->validateRelatedElements,
         ];
     }
 

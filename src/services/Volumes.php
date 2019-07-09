@@ -157,7 +157,7 @@ class Volumes extends Component
     public function getViewableVolumes(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::filterByValue($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
+        return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
             /** @var Volume $volume */
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
         });
@@ -180,7 +180,7 @@ class Volumes extends Component
      */
     public function getPublicVolumes(): array
     {
-        return ArrayHelper::filterByValue($this->getAllVolumes(), 'hasUrls');
+        return ArrayHelper::where($this->getAllVolumes(), 'hasUrls');
     }
 
     /**
@@ -723,7 +723,7 @@ class Volumes extends Component
             ->orderBy(['sortOrder' => SORT_ASC]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['dateDeleted' => null]);
         }

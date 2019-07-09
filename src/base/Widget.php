@@ -46,7 +46,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return null;
     }
@@ -55,6 +55,17 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      * @inheritdoc
      */
     public static function maxColspan()
+    {
+        return null;
+    }
+
+    /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null
+     * @deprecated in 3.2. Use [[icon()]] instead.
+     */
+    public static function iconPath()
     {
         return null;
     }

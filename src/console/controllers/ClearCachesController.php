@@ -8,67 +8,23 @@
 namespace craft\console\controllers;
 
 use craft\console\actions\ClearCacheAction;
+use craft\console\Controller;
 use craft\helpers\Console;
-use craft\helpers\FileHelper;
 use craft\utilities\ClearCaches;
 use yii\base\InvalidRouteException;
-use yii\console\Controller;
 use yii\console\Exception;
 use yii\console\ExitCode;
 
 /**
- * Clear caches via the CLI
+ * Allows you to clear various Craft caches.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.37
  */
 class ClearCachesController extends Controller
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var array
-     */
-    private $_actions = [];
-
-    /**
-     * @var \Reflection
-     */
-    private $_dummyReflection;
-
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Set up the actions array
-        $cacheOptions = ClearCaches::cacheOptions();
-        foreach ($cacheOptions as $cacheOption) {
-            $this->_actions[$cacheOption['key']] = [
-                'class' => ClearCacheAction::class,
-                'action' => $cacheOption['action'],
-                'label' => $cacheOption['label'],
-                'params' => $cacheOption['params'] ?? null,
-                'controller' => $this,
-            ];
-        }
-        // Set up a reflection for this class to handle closures
-        $this->_dummyReflection = new \ReflectionMethod($this, 'dummyMethod');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function actions()
-    {
-        return $this->_actions;
-    }
 
     /**
      * Lists the caches that can be cleared.
@@ -80,15 +36,19 @@ class ClearCachesController extends Controller
         $this->stdout("The following caches can be cleared:\n\n", Console::FG_YELLOW);
 
         $lengths = [];
-        foreach ($this->_actions as $action) {
-            $lengths[] = strlen($action['label']);
+        foreach ($this->actions() as $action) {
+            if (($action['class'] ?? null) === ClearCacheAction::class) {
+                $lengths[] = strlen($action['label']);
+            }
         }
         $maxLength = max($lengths);
 
-        foreach ($this->_actions as $id => $action) {
-            $this->stdout('- ');
-            $this->stdout(str_pad($id, $maxLength, ' '), Console::FG_YELLOW);
-            $this->stdout('  ' . $action['label'] . PHP_EOL);
+        foreach ($this->actions() as $id => $action) {
+            if (($action['class'] ?? null) === ClearCacheAction::class) {
+                $this->stdout('- ');
+                $this->stdout(str_pad($id, $maxLength, ' '), Console::FG_YELLOW);
+                $this->stdout('  ' . $action['label'] . PHP_EOL);
+            }
         }
 
         $this->stdout(PHP_EOL);
@@ -104,36 +64,12 @@ class ClearCachesController extends Controller
      */
     public function actionAll(): int
     {
-        foreach ($this->_actions as $id => $action) {
-            $this->runAction($id);
+        foreach ($this->actions() as $id => $action) {
+            if (($action['class'] ?? null) === ClearCacheAction::class) {
+                $this->runAction($id);
+            }
         }
         return ExitCode::OK;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getActionHelpSummary($action)
-    {
-        $help = parent::getActionHelpSummary($action);
-        if (empty($help) && array_key_exists($action->id, $this->_actions)) {
-            $help = $this->_actions[$action->id]['label'];
-        }
-
-        return $help;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getActionHelp($action)
-    {
-        $help = parent::getActionHelp($action);
-        if (empty($help) && array_key_exists($action->id, $this->_actions)) {
-            $help = $this->_actions[$action->id]['label'];
-        }
-
-        return $help;
     }
 
     // Protected Methods
@@ -142,27 +78,22 @@ class ClearCachesController extends Controller
     /**
      * @inheritdoc
      */
-    protected function getActionMethodReflection($action)
+    protected function defineActions(): array
     {
-        if (array_key_exists($action->id, $this->_actions)) {
-            if (is_string($this->_actions[$action->id]['action'])) {
-                return new \ReflectionMethod(FileHelper::class, 'clearDirectory');
-            } else {
-                if (is_array($this->_actions[$action->id]['action'])) {
-                    return new \ReflectionMethod(
-                        $this->_actions[$action->id]['action'][0],
-                        $this->_actions[$action->id]['action'][1]
-                    );
-                } else {
-                    return $this->_dummyReflection;
-                }
-            }
+        $actions = [];
+
+        foreach (ClearCaches::cacheOptions() as $option) {
+            $actions[$option['key']] = [
+                'helpSummary' => $option['label'],
+                'action' => [
+                    'class' => ClearCacheAction::class,
+                    'action' => $option['action'],
+                    'label' => $option['label'],
+                    'params' => $option['params'] ?? null,
+                ],
+            ];
         }
 
-        return parent::getActionMethodReflection($action);
-    }
-
-    protected function dummyMethod()
-    {
+        return array_merge($actions, parent::defineActions());
     }
 }

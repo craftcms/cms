@@ -1,37 +1,63 @@
 actor: Tester
 paths:
-    tests: tests
-    log: tests/_output
-    data: tests/_data
-    support: tests/_support
-    envs: tests/_envs
+  tests: tests
+  log: tests/_output
+  data: tests/_data
+  support: tests/_support
+  envs: tests/_envs
 settings:
-    bootstrap: _bootstrap.php
-    colors: true
+  bootstrap: _bootstrap.php
+  colors: true
+  memory_limit: 2048M
 coverage:
-    enabled: true
-    include:
-      - src/*
-    exclude:
-      - tests/_support/_generated/*
-      - src/config/*
-      - src/icons/*
-      - src/migrations/*
-      - src/templates/*
-      - src/translations/*
-      - src/migration.php.template
+  enabled: true
+  include:
+    - src/*
+  exclude:
+    - src/config/*
+    - src/icons/*
+    - src/test/internal/*
+    - src/migrations/*
+    - src/templates/*
+    - src/translations/*
+    - src/views/*
+    - src/web/assets/*
+    - bootstrap/*
+    - docs/*
+    - lib/*
+    - tests/*
+    - vendor/*
 params:
   - env
+  - tests/.env
 modules:
   config:
-    Yii2:
+    \craft\test\Craft:
       configFile: 'tests/_craft/config/test.php'
-  enabled:
-    - Db:
-        dsn: 'mysql:host=127.0.0.1;dbname=%TEST_DB_NAME%;'
-        user: '%TEST_DB_USER%'
-        password: '%TEST_DB_PASS%'
-        dump: 'tests/_data/dump.sql'
-        populate: true
-        cleanup: true
-        reconnect: true
+      entryUrl: 'https://test.craftcms.test/index.php'
+      projectConfig: {}
+      migrations: []
+      plugins: []
+      cleanup: true # Should tests and fixtures be cleaned
+      transaction: true # Wrap in transaction
+      dbSetup: {clean: true, setupCraft: true} # What DB setup work do we need to do.
+      fullMock: false
+  DataFactory:
+    factories: tests/_craft/config/factories
+    depends: \craft\test\Craft
+groups:
+  base: [tests/unit/base]
+  behaviors: [tests/unit/behaviors]
+  composer: [tests/unit/composer]
+  console: [tests/unit/console]
+  db: [tests/unit/db]
+  elements: [tests/unit/elements]
+  helpers: [tests/unit/helpers]
+  log: [tests/unit/log]
+  mail: [tests/unit/mail]
+  search: [tests/unit/search]
+  services: [tests/unit/services]
+  test: [tests/unit/test]
+  validators: [tests/unit/validators]
+  web: [tests/unit/web]
+  app: [tests/unit/AppTest.php]

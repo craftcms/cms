@@ -130,6 +130,14 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Assets');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'asset';
@@ -187,9 +195,13 @@ class Asset extends Element
 
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
 
-        // Add the customized temporary upload source
-        if ($context !== 'settings' && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+        // Add the Temporary Uploads location, if that's not set to a real volume
+        if (
+            $context !== 'settings' &&
+            !Craft::$app->getRequest()->getIsConsoleRequest() &&
+            !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
+        ) {
+            $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
         }
@@ -313,6 +325,7 @@ class Asset extends Element
             'height' => ['label' => Craft::t('app', 'Image Height')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
@@ -1267,7 +1280,6 @@ class Asset extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // If this is just an element being propagated, there's absolutely no need for re-saving this.
         if (!$this->propagating) {
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
@@ -1290,16 +1302,16 @@ class Asset extends Element
                 }
             } else {
                 $record = new AssetRecord();
-                $record->id = $this->id;
+                $record->id = (int)$this->id;
             }
 
             $record->filename = $this->filename;
-            $record->volumeId = $this->volumeId;
-            $record->folderId = $this->folderId;
+            $record->volumeId = (int)$this->volumeId ?: null;
+            $record->folderId = (int)$this->folderId;
             $record->kind = $this->kind;
-            $record->size = $this->size;
-            $record->width = $this->_width;
-            $record->height = $this->_height;
+            $record->size = (int)$this->size ?: null;
+            $record->width = (int)$this->_width ?: null;
+            $record->height = (int)$this->_height ?: null;
             $record->dateModified = $this->dateModified;
 
             if ($this->getHasFocalPoint()) {

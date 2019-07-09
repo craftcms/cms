@@ -411,7 +411,7 @@ New:
 | すべて | `relatedTo.sourceLocale` | `relatedTo.sourceSite` |
 | アセット | `source` | `volume` |
 | アセット | `sourceId` | `volumeId` |
-| 行列ブロック | `ownerLocale` | `ownerSite` または `ownerSiteId` |
+| 行列ブロック | `ownerLocale` | `site` または `siteId` |
 
 #### `limit` パラメータ
 

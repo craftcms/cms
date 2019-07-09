@@ -14,6 +14,8 @@ use craft\db\Table;
  * Element record class.
  *
  * @property int $id ID
+ * @property int|null $draftId Draft ID
+ * @property int|null $revisionId Revision ID
  * @property int $fieldLayoutId ID
  * @property string $type Type
  * @property bool $enabled Enabled

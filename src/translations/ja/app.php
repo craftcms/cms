@@ -650,7 +650,7 @@ return [
     'New user group' => '新しいユーザーグループ',
     'New volume' => '新しいボリューム',
     'New widget' => '新規ウィジェット',
-    'New {class}' => '新規 {class}',
+    'New {type}' => '新規 {type}',
     'New {group} category' => '新しい{group}カテゴリー',
     'New {section} entry' => '新しい {section} の入力',
     'Next' => '次',

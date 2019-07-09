@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 
@@ -48,30 +49,54 @@ class Categories extends BaseRelationField
         return Craft::t('app', 'Add a category');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return CategoryQuery::class;
+    }
+
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $allowLimit = false;
+
+    /**
+     * @inheritdoc
+     */
+    public $allowMultipleSources = false;
 
     /**
      * @var int|null Branch limit
      */
     public $branchLimit;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    protected $settingsTemplate = '_components/fieldtypes/Categories/settings';
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->allowLimit = false;
-        $this->allowMultipleSources = false;
-        $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
-        $this->inputTemplate = '_components/fieldtypes/Categories/input';
-        $this->inputJsClass = 'Craft.CategorySelectInput';
-        $this->sortable = false;
-    }
+    protected $inputTemplate = '_components/fieldtypes/Categories/input';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputJsClass = 'Craft.CategorySelectInput';
+
+    /**
+     * @inheritdoc
+     */
+    protected $sortable = false;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

@@ -21,6 +21,30 @@ Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which 
 <img src="{{ alias('@assetBaseUrl/images/logo.png') }}">
 ```
 
+### `attr`
+
+Generates a list of HTML attributes based on the given object, using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
+
+```twig
+{% set myAttributes = {
+    class: ['one', 'two'],
+    disabled: true,
+    readonly: false,
+    data: {
+        baz: 'Escape this "',
+        qux: {
+            some: ['data', '"quoted"']
+        }
+    },
+    style: {
+        'background-color': 'red',
+        'font-size': '20px'
+    },
+} %}
+
+<div {{ attr(myAttributes) }}></div>
+```
+
 ## `attribute`
 
 Accesses a dynamic attribute of a variable.

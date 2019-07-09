@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
@@ -172,6 +173,8 @@ class ElementHelper
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $element->siteId,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
                 'elements.dateDeleted' => null,
             ]);
 
@@ -186,8 +189,10 @@ class ElementHelper
             ]);
         }
 
-        if ($element->id) {
-            $query->andWhere(['not', ['elements.id' => $element->id]]);
+        if (($sourceId = $element->getSourceId()) !== null) {
+            $query->andWhere(['not', [
+                'elements.id' => $sourceId,
+            ]]);
         }
 
         return (int)$query->count() === 0;
@@ -283,6 +288,33 @@ class ElementHelper
         }
 
         return $siteIds;
+    }
+
+    /**
+     * Returns the root element of a given element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     */
+    public static function rootElement(ElementInterface $element): ElementInterface
+    {
+        if ($element instanceof BlockElementInterface) {
+            return static::rootElement($element->getOwner());
+        }
+        return $element;
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a draft or revision.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public static function isDraftOrRevision(ElementInterface $element): bool
+    {
+        /** @var Element $root */
+        $root = ElementHelper::rootElement($element);
+        return $root->getIsDraft() || $root->getIsRevision();
     }
 
     /**

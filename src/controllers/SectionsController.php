@@ -39,6 +39,8 @@ class SectionsController extends Controller
     {
         // All section actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -144,7 +146,8 @@ class SectionsController extends Controller
         $section->handle = $request->getBodyParam('handle');
         $section->type = $request->getBodyParam('type');
         $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
-        $section->propagateEntries = $request->getBodyParam('propagateEntries', true);
+        $section->propagationMethod = $request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
+        $section->previewTargets = $request->getBodyParam('previewTargets') ?: [];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $request->getBodyParam('maxLevels');

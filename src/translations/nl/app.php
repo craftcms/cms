@@ -650,7 +650,7 @@ return [
     'New user group' => 'Nieuwe gebruikersgroep',
     'New volume' => 'Nieuw volume',
     'New widget' => 'Nieuwe widget',
-    'New {class}' => 'Nieuwe klasse {class}',
+    'New {type}' => 'Nieuwe klasse {type}',
     'New {group} category' => 'Nieuwe {group} categorie',
     'New {section} entry' => 'Nieuwe {section} vermelding',
     'Next' => 'Volgende',

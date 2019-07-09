@@ -1,0 +1,192 @@
+{#
+    "Edit Element" layout template
+
+    The following variables should be defined by the sub-template:
+
+    - element: the source element or one of its drafts/revisions
+    - canDeleteDraft (optional): whether the current user is allowed to delete the draft (if it is one).
+      If the current user created the draft, then it will be deletable regardless.
+    - canUpdateSource (optional): whether the current user is allowed to update the source element
+      (e.g. by publishing a draft or reverting the element to a prior revision).
+    - shareUrl (optional): the URL that the Share button should link to.
+    - saveDraftAction: the controller action that should be used to save a draft
+    - deleteDraftAction: the controller action that should be used to delete a draft
+    - applyDraftAction: the controller action that should be used to apply a draft onto the source element
+    - revertSourceAction: the controller action that should be used to revert the source element to a revision
+    - showStatusToggles: whether the “Enabled” / “Enabled” for <Site>” fields should be added to the details pane
+#}
+
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
+{% set isDraft = element.getIsDraft() %}
+{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
+{% set isRevision = element.getIsRevision() %}
+
+{% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
+{% if element.uri %}
+    {% set previewTargets = [{
+        label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
+        url: element.uri == '__home__' ? '' : element.uri
+    }]|merge(previewTargets) %}
+{% endif %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
+
+{% set canDeleteDraft = isDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
+{% set canUpdateSource = canUpdateSource ?? false %}
+{% set shareUrl = shareUrl ?? null %}
+{% set revertSourceAction = revertSourceAction ?? null %}
+
+{% if not isRevision %}
+    {% set fullPageForm = true %}
+{% endif %}
+
+{% if isDraft %}
+    {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
+{% elseif isRevision %}
+    {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
+{% else %}
+    {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
+{% endif %}
+
+{% set showStatusToggles = element.hasStatuses() and (showStatusToggles ?? true) %}
+
+{% block header %}
+    {{ block('pageTitle') }}
+    {{ block('contextMenu') }}
+    <div class="flex-grow"></div>
+    {% if previewTargets %}
+        <div class="btngroup">
+            {% if enablePreview %}
+                <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
+            {% endif %}
+            <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
+        </div>
+    {% endif %}
+    {{ block('actionButton') }}
+{% endblock %}
+
+{% block contextMenu %}
+    {% include "_includes/revisionmenu" %}
+{% endblock %}
+
+{% block actionButton %}
+    {% if canUpdateSource %}
+        {% if isRevision %}
+            {% if revertSourceAction %}
+                <div class="spacer"></div>
+                <form method="post" accept-charset="UTF-8">
+                    {{ csrfInput() }}
+                    <input type="hidden" name="action" value="{{ revertSourceAction }}">
+                    {{ redirectInput(element.cpEditUrl) }}
+                    <input type="hidden" name="revisionId" value="{{ element.revisionId }}">
+                    <div class="secondary-buttons">
+                        <input type="button" class="btn submit formsubmit" value="{{ 'Revert {type} to this revision'|t('app', { type: element.displayName()|lower }) }}">
+                    </div>
+                </form>
+            {% endif %}
+        {% else %}
+            <div class="spacer"></div>
+            {% if isUnsavedDraft %}
+                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
+            {% else %}
+                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    {{ redirectInput(element.cpEditUrl) }}
+    {% if fullPageForm and craft.app.isMultiSite %}
+        <input type="hidden" name="siteId" value="{{ element.siteId }}">
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
+
+{% block details %}
+    <div id="settings" class="meta">
+        {% block settings %}
+            {% if showStatusToggles %}
+                {{ forms.lightswitchField({
+                    label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+                    id: 'enabled',
+                    name: 'enabled',
+                    on: element.enabled,
+                    disabled: isRevision,
+                    toggle: 'enabledForSite-field'
+                }) }}
+
+                {% if isMultiSiteElement %}
+                    {{ forms.lightswitchField({
+                        fieldClass: not element.enabled ? 'hidden',
+                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
+                        id: 'enabledForSite',
+                        name: 'enabledForSite',
+                        on: element.enabledForSite,
+                        disabled: isRevision
+                    }) }}
+                {% endif %}
+            {% endif %}
+        {% endblock %}
+    </div>
+    <div class="meta read-only">
+        {% block meta %}
+            <div class="data">
+                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                <div class="value">{{ element.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                <div class="value">{{ element.dateUpdated|datetime('short') }}</div>
+            </div>
+            {% if isRevision %}
+                {% set revisionNotes = element.revisionNotes %}
+            {% elseif not isDraft and element.currentRevision %}
+                {% set revisionNotes = element.currentRevision.revisionNotes %}
+            {% else %}
+                {% set revisionNotes = null %}
+            {% endif %}
+            {% if revisionNotes %}
+                <div class="data">
+                    <h5 class="heading">{{ "Notes"|t('app') }}</h5>
+                    <div class="value">{{ revisionNotes }}</div>
+                </div>
+            {% endif %}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+{% set normalizedPreviewTargets = [] %}
+{% set scheme = craft.app.request.isSecureConnection ? 'https': null %}
+{% for target in previewTargets %}
+    {% set path = target.url ?? view.renderObjectTemplate(target.urlFormat, element) %}
+    {% set normalizedPreviewTargets = normalizedPreviewTargets|merge([{
+        label: target.label|t('site'),
+        url: siteUrl(path, scheme=scheme, siteId=element.siteId)
+    }]) %}
+{% endfor %}
+
+{% set settings = {
+    elementType: className(element),
+    sourceId: element.getSourceId(),
+    siteId: element.siteId,
+    isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),
+    cpEditUrl: element.cpEditUrl,
+    draftId: element.draftId,
+    revisionId: element.revisionId,
+    draftName: isDraft ? element.draftName : null,
+    draftNotes: isDraft ? element.draftNotes : null,
+    propagateAll: isUnsavedDraft and craft.app.request.getQueryParam('fresh'),
+    canDeleteDraft: canDeleteDraft,
+    canUpdateSource: canUpdateSource,
+    saveDraftAction: saveDraftAction,
+    deleteDraftAction: deleteDraftAction,
+    applyDraftAction: applyDraftAction,
+    enablePreview: enablePreview,
+    previewTargets: normalizedPreviewTargets,
+} %}
+{% js %}
+    new Craft.DraftEditor({{ settings|json_encode|raw }});
+{% endjs %}

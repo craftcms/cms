@@ -28,7 +28,7 @@ As a convenience, you can extend <api:craft\base\Element>, which provides a base
 
 Create an `elements/` directory within your plugin’s source directory, and create a PHP class file within it, named after the class name you want to give your element type (e.g. `Product.php`).
 
-Define the class within the file, and give it some public properties for any custom attributes your elements will have.
+Define the class within the file, and give a display name and some public properties for any custom attributes your elements will have.
 
 ```php
 <?php
@@ -38,6 +38,22 @@ use craft\base\Element;
 
 class Product extends Element
 {
+    /**
+     * @inheritdoc
+     */
+    public static function displayName(): string
+    {
+        return 'Product';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return 'Products';
+    }
+
     /**
      * @var int Price
      */
@@ -525,7 +541,7 @@ protected static function defineTableAttributes(): array
 ```
 
 ::: tip
-The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will be the element string representations (whatever their `__toString()` methods return).
+The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will come from your elements’ <api:craft\base\ElementInterface::getUiLabel()> method.
 :::
 
 If it’s a big list, you can also limit which columns should be visible by default for new [sources](#sources) by adding a protected `defineDefaultTableAttributes()` method to your element class:

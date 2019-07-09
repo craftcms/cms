@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
@@ -17,6 +18,8 @@ use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
+use craft\models\Section;
+use craft\models\Site;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\validators\SiteIdValidator;
 use craft\web\assets\matrix\MatrixAsset;
@@ -26,12 +29,12 @@ use yii\base\InvalidConfigException;
 /**
  * MatrixBlock represents a matrix block element.
  *
- * @property ElementInterface|null $owner the owner
+ * @property ElementInterface $owner the owner
  * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlock extends Element
+class MatrixBlock extends Element implements BlockElementInterface
 {
     // Static
     // =========================================================================
@@ -42,6 +45,14 @@ class MatrixBlock extends Element
     public static function displayName(): string
     {
         return Craft::t('app', 'Matrix Block');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix Blocks');
     }
 
     /**
@@ -137,6 +148,7 @@ class MatrixBlock extends Element
 
     /**
      * @var int|null Owner site ID
+     * @deprecated in 3.2. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 
@@ -162,7 +174,7 @@ class MatrixBlock extends Element
     public $deletedWithOwner = false;
 
     /**
-     * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
+     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
 
@@ -173,6 +185,16 @@ class MatrixBlock extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'owner';
+        return $names;
+    }
 
     /**
      * @inheritdoc
@@ -192,7 +214,6 @@ class MatrixBlock extends Element
     {
         $rules = parent::rules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        $rules[] = [['ownerSiteId'], SiteIdValidator::class];
         return $rules;
     }
 
@@ -201,25 +222,17 @@ class MatrixBlock extends Element
      */
     public function getSupportedSites(): array
     {
-        // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
-        // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
-
-        if ($this->ownerSiteId !== null) {
-            return [$this->ownerSiteId];
+        try {
+            $owner = $this->getOwner();
+        } catch (InvalidConfigException $e) {
+            $owner = $this->duplicateOf;
         }
 
-        if (($owner = $this->getOwner()) || $this->duplicateOf) {
-            // Just send back an array of site IDs -- don't pass along enabledByDefault configs
-            $siteIds = [];
-
-            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
-                $siteIds[] = $siteInfo['siteId'];
-            }
-
-            return $siteIds;
+        if (!$owner) {
+            return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return [Craft::$app->getSites()->getPrimarySite()->id];
+        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_getField(), $owner);
     }
 
     /**
@@ -252,26 +265,19 @@ class MatrixBlock extends Element
     }
 
     /**
-     * Returns the owner.
-     *
-     * @return ElementInterface|null
+     * @inheritdoc
+     * @throws InvalidConfigException
      */
-    public function getOwner()
+    public function getOwner(): ElementInterface
     {
-        if ($this->_owner !== null) {
-            return $this->_owner !== false ? $this->_owner : null;
-        }
+        if ($this->_owner === null) {
+            if ($this->ownerId === null) {
+                throw new InvalidConfigException('Matrix block is missing its owner ID');
+            }
 
-        if ($this->ownerId === null) {
-            return null;
-        }
-
-        if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
-            // Be forgiving of invalid ownerId's in this case, since the field
-            // could be in the process of being saved to a new element/site
-            $this->_owner = false;
-
-            return null;
+            if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
+                throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
+            }
         }
 
         return $this->_owner;
@@ -363,9 +369,11 @@ class MatrixBlock extends Element
     public function getHasFreshContent(): bool
     {
         // Defer to the owner element
-        $owner = $this->getOwner();
-
-        return $owner ? $owner->getHasFreshContent() : false;
+        try {
+            return $this->getOwner()->getHasFreshContent();
+        } catch (InvalidConfigException $e) {
+            return false;
+        }
     }
 
     // Events
@@ -377,24 +385,25 @@ class MatrixBlock extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Get the block record
-        if (!$isNew) {
-            $record = MatrixBlockRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the block record
+            if (!$isNew) {
+                $record = MatrixBlockRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                if (!$record) {
+                    throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                }
+            } else {
+                $record = new MatrixBlockRecord();
+                $record->id = (int)$this->id;
             }
-        } else {
-            $record = new MatrixBlockRecord();
-            $record->id = $this->id;
-        }
 
-        $record->fieldId = $this->fieldId;
-        $record->ownerId = $this->ownerId;
-        $record->ownerSiteId = $this->ownerSiteId;
-        $record->typeId = $this->typeId;
-        $record->sortOrder = $this->sortOrder;
-        $record->save(false);
+            $record->fieldId = (int)$this->fieldId;
+            $record->ownerId = (int)$this->ownerId;
+            $record->typeId = (int)$this->typeId;
+            $record->sortOrder = (int)$this->sortOrder ?: null;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }
