@@ -60,22 +60,38 @@ const getters = {
             const features = {
                 "solo": [
                     {
-                        name: "All core CMS features",
-                        description: "Core Craft CMS features include live preview, muti-site, matrix, localization, one-click updating, custom fields, section types, image editor, relations, plugin store, debug toolbar, categories and tags"
+                        name: "Ultra-flexible content modeling",
+                        description: "Define custom content types, fields, and relations needed to perfectly contain your unique content requirements."
+                    },
+                    {
+                        name: "Powerful front-end tools",
+                        description: "Develop custom front-end templates with Twig, or use Craft as a headless CMS."
+                    },
+                    {
+                        name: "Multi-Site",
+                        description: "Run multiple related sites from a single installation, with shared content and user accounts."
+                    },
+                    {
+                        name: "Localization",
+                        description: "Cater to distinct audiences from around the world with Craft’s best-in-class localization capabilities."
                     },
                     {
                         name: "Single admin account",
-                        description: "Admin/user account"
+                        description: "The Solo edition is limited to a single admin account."
                     }
                 ],
                 "pro": [
+                    {
+                        name: "Enhanced content previewing",
+                        description: "Preview your content from multiple targets, including single-page applications.",
+                    },
                     {
                         name: "Unlimited user accounts",
                         description: "Create unlimited user accounts, user groups, user permissions, and public user registration.",
                     },
                     {
-                        name: "System branding features",
-                        description: "Customize your dashboard specifically to your brand.",
+                        name: "System branding",
+                        description: "Personalize the Control Panel for your brand.",
                     },
                     {
                         name: "Developer support",

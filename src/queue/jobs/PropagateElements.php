@@ -12,8 +12,13 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
+use craft\events\BatchElementActionEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
+use craft\elements\db\ElementQueryInterface;
 use craft\queue\BaseJob;
+use craft\services\Elements;
 
 /**
  * PropagateElements job
@@ -37,7 +42,9 @@ class PropagateElements extends BaseJob
     public $criteria;
 
     /**
-     * @var int|int[] The site ID(s) that the elements should be propagated to
+     * @var int|int[]|null The site ID(s) that the elements should be propagated to
+     *
+     * If this is `null`, then elements will be propagated to all supported sites, except the one they were queried in.
      */
     public $siteId;
 
@@ -49,38 +56,26 @@ class PropagateElements extends BaseJob
      */
     public function execute($queue)
     {
-        $class = $this->elementType;
-
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
 
-        // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find();
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
+        $query = $this->_query();
+        $total = $query->count();
+        $elementsService = Craft::$app->getElements();
 
-        $totalElements = $query->count();
-        $currentElement = 0;
-
-        try {
-            foreach ($query->each() as $element) {
-                $this->setProgress($queue, $currentElement++ / $totalElements);
-
-                /** @var Element $element */
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                foreach ((array)$this->siteId as $siteId) {
-                    Craft::$app->getElements()->propagateElement($element, $siteId);
-                }
+        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
+            if ($e->query === $query) {
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                    'step' => $e->position,
+                    'total' => $total,
+                ]));
             }
-        } catch (QueryAbortedException $e) {
-            // Fail silently
-        }
+        };
+
+        $elementsService->on(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
+        $elementsService->propagateElements($query, $this->siteId);
+        $elementsService->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
     }
 
     // Protected Methods
@@ -91,8 +86,37 @@ class PropagateElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('app', 'Propagating {class} elements', [
-            'class' => App::humanizeClass($this->elementType)
+        /** @var ElementQuery $query */
+        $query = $this->_query();
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        $total = $query->count();
+        return Craft::t('app', 'Propagating {type}', [
+            'type' => mb_strtolower($total == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
         ]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the element query based on the criteria.
+     *
+     * @return ElementQueryInterface
+     */
+    private function _query(): ElementQueryInterface
+    {
+        $query = $this->elementType::find();
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $query
+            ->offset(null)
+            ->limit(null)
+            ->orderBy(null);
+
+        return $query;
     }
 }

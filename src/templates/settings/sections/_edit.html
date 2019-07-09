@@ -142,13 +142,18 @@
 
     {% if craft.app.getIsMultiSite() %}
         <div class="field type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
-            {{ forms.checkboxField({
-                label: 'Propagate entries across all enabled sites?'|t('app'),
-                instructions: 'Whether entries should be propagated across all the sites the section is enabled in. If this is disabled, each entry will only belong to the site it was created in.'|t('app'),
-                id: 'propagateEntries',
-                name: 'propagateEntries',
-                checked: section.propagateEntries,
-                warning: section.id and section.propagateEntries ? 'Changing this may result in data loss.'|t('app')
+            {{ forms.selectField({
+                label: 'Propagation Method'|t('app'),
+                instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
+                id: 'propagationMethod',
+                name: 'propagationMethod',
+                options: [
+                    { value: 'none', label: 'Only save entries to the site they were created in'|t('app') },
+                    { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
+                    { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
+                    { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
+                ],
+                value: section.propagationMethod
             }) }}
         </div>
     {% endif %}
@@ -164,6 +169,29 @@
             errors: section.getErrors('maxLevels')
         }) }}
     </div>
+
+    {% if CraftEdition == CraftPro %}
+        {{ forms.editableTableField({
+            label: 'Preview Targets'|t('app'),
+            instructions: 'Additional locations that should be available for previewing entries in this section.',
+            id: 'previewTargets',
+            name: 'previewTargets',
+            cols: {
+                label: {
+                    type: 'singleline',
+                    heading: 'Label'|t('app'),
+                },
+                urlFormat: {
+                    type: 'singleline',
+                    heading: 'URL Format'|t('app'),
+                    info: 'The URL/URI to use for this target.'|t('app'),
+                    code: true,
+                }
+            },
+            rows: section.previewTargets,
+            errors: section.getErrors('previewTargets')
+        }) }}
+    {% endif %}
 {% endblock %}
 
 

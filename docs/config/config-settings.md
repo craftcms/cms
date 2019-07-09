@@ -1243,6 +1243,28 @@ locked.
 
 
 
+### `maxRevisions`
+
+Allowed types
+
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+
+Default value
+
+:   `50`
+
+Defined by
+
+:   [GeneralConfig::$maxRevisions](api:craft\config\GeneralConfig::$maxRevisions)
+
+
+
+The maximum number of revisions that should be stored for each element.
+
+Set to `0` if you want to store an unlimited number of revisions.
+
+
+
 ### `maxSlugIncrement`
 
 Allowed types
@@ -1645,6 +1667,30 @@ Defined by
 The amount of time to wait before Craft purges pending users from the system that have not activated.
 
 Note that any content assigned to a pending user will be deleted as well when the given time interval passes.
+
+Set to `0` to disable this feature.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
+### `purgeUnsavedDraftsDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `2592000`
+
+Defined by
+
+:   [GeneralConfig::$purgeUnsavedDraftsDuration](api:craft\config\GeneralConfig::$purgeUnsavedDraftsDuration)
+
+
+
+The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
 
 Set to `0` to disable this feature.
 

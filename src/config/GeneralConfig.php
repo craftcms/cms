@@ -422,6 +422,12 @@ class GeneralConfig extends BaseObject
      */
     public $maxInvalidLogins = 5;
     /**
+     * @var int|null The maximum number of revisions that should be stored for each element.
+     *
+     * Set to `0` if you want to store an unlimited number of revisions.
+     */
+    public $maxRevisions = 50;
+    /**
      * @var int The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
      */
     public $maxSlugIncrement = 100;
@@ -467,6 +473,8 @@ class GeneralConfig extends BaseObject
      * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
      * in your `.htaccess` file to match your new `pathParam` value.
      * :::
+     *
+     * @see getPageTrigger()
      */
     public $pageTrigger = 'p';
     /**
@@ -564,6 +572,14 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $purgePendingUsersDuration = 0;
+    /**
+     * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $purgeUnsavedDraftsDuration = 2592000;
     /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
@@ -1109,5 +1125,35 @@ class GeneralConfig extends BaseObject
     public function getBackupOnUpdate(): bool
     {
         return ($this->backupOnUpdate && $this->backupCommand !== false);
+    }
+
+    /**
+     * Returns the normalized page trigger.
+     *
+     * @return string
+     * @see pageTrigger
+     * @since 3.2.0
+     */
+    public function getPageTrigger(): string
+    {
+        $pageTrigger = $this->pageTrigger;
+
+        if (!is_string($pageTrigger) || $pageTrigger === '') {
+            $pageTrigger = 'p';
+        }
+
+        // Is this query string-based pagination?
+        if (strpos($pageTrigger, '?') === 0) {
+            $pageTrigger = trim($pageTrigger, '?=');
+
+            // Avoid conflict with the path param
+            if ($pageTrigger === $this->pathParam) {
+                $pageTrigger = $this->pathParam === 'p' ? 'pg' : 'p';
+            }
+
+            return '?' . $pageTrigger . '=';
+        }
+
+        return $pageTrigger;
     }
 }

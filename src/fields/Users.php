@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\elements\db\UserQuery;
 use craft\elements\User;
 
 /**
@@ -43,5 +44,13 @@ class Users extends BaseRelationField
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a user');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return UserQuery::class;
     }
 }

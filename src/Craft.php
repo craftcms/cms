@@ -5,10 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
@@ -187,35 +189,54 @@ class Craft extends Yii
             return;
         }
 
+
+        $fieldHandles = [];
+
         if (self::$app->getIsInstalled()) {
             // Properties are case-sensitive, so get all the binary-unique field handles
             if (self::$app->getDb()->getIsMysql()) {
-                $column = new Expression('binary [[handle]] as [[handle]]');
+                $handleColumn = new Expression('binary [[handle]] as [[handle]]');
             } else {
-                $column = 'handle';
+                $handleColumn = 'handle';
             }
 
-            $fieldHandles = (new Query())
-                ->distinct(true)
+            // Create an array of field handles and their types
+            $fields = (new Query())
                 ->from([Table::FIELDS])
-                ->select([$column])
-                ->column();
-        } else {
-            $fieldHandles = [];
+                ->select([$handleColumn, 'type'])
+                ->all();
+            foreach ($fields as $field) {
+                /** @var FieldInterface|string $fieldClass */
+                $fieldClass = $field['type'];
+                if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
+                    $types = explode('|', $fieldClass::valueType());
+                } else {
+                    $types = ['mixed'];
+                }
+                foreach ($types as $type) {
+                    $type = trim($type, ' \\');
+                    // Add a leading `\` if there is a namespace
+                    if (strpos($type, '\\') !== false) {
+                        $type = '\\' . $type;
+                    }
+                    $fieldHandles[$field['handle']][$type] = true;
+                }
+            }
         }
 
         if (!$isContentBehaviorFileValid) {
             $handles = [];
             $properties = [];
 
-            foreach ($fieldHandles as $handle) {
+            foreach ($fieldHandles as $handle => $types) {
+                $phpDocTypes = implode('|', array_keys($types));
                 $handles[] = <<<EOD
         '{$handle}' => true,
 EOD;
 
                 $properties[] = <<<EOD
     /**
-     * @var mixed Value for field with the handle “{$handle}”.
+     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
@@ -232,7 +253,7 @@ EOD;
         if (!$isElementQueryBehaviorFileValid) {
             $methods = [];
 
-            foreach ($fieldHandles as $handle) {
+            foreach (array_keys($fieldHandles) as $handle) {
                 $methods[] = <<<EOD
  * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;

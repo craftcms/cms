@@ -46,11 +46,19 @@
 {% endblock %}
 
 
+{% block footer %}
+    <div id="count-container" class="light flex-grow">&nbsp;</div>
+    <div id="export-btn" class="btn">{{ 'Export…'|t('app') }}</div>
+{% endblock %}
+
+
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
-        context:        '{{ context }}',
-        storageKey:     'elementindex.{{ elementType|e("js") }}',
-        criteria:       Craft.defaultIndexCriteria
+        elementTypeName: '{{ elementInstance.displayName()|e("js") }}',
+        elementTypePluralName: '{{ elementInstance.pluralDisplayName()|e("js") }}',
+        context: '{{ context }}',
+        storageKey: 'elementindex.{{ elementType|e("js") }}',
+        criteria: Craft.defaultIndexCriteria
     });
 {% endblock %}
 

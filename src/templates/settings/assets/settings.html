@@ -1,0 +1,73 @@
+{% requireAdmin %}
+
+{% extends "settings/assets/_layout" %}
+{% set selectedNavItem = 'settings' %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% if settings is not defined %}
+    {% set settings = craft.app.projectConfig.get('assets') %}
+{% endif %}
+
+{% set allVolumes = craft.app.volumes.getAllVolumes() %}
+
+{% set volumeOptions = [
+    { value: '', label: 'In the local temp folder'|t('app') }
+] %}
+{% for volume in allVolumes %}
+    {% set volumeOptions = volumeOptions|merge([
+        { value: volume.uid, label: volume.name }
+    ]) %}
+{% endfor %}
+
+{% set tempVolumeInput %}
+    {% import "_includes/forms" as forms %}
+    <div class="flex">
+        <div>
+            {{ forms.select({
+                id: 'tempVolumeUid',
+                name: 'tempVolumeUid',
+                options: volumeOptions,
+                value: settings.tempVolumeUid ?? null
+            }) }}
+        </div>
+        <div class="flex-grow">
+            {{ forms.text({
+                id: 'tempSubpath',
+                class: 'ltr' ~ (not (settings.tempVolumeUid ?? null) ? ' hidden'),
+                name: 'tempSubpath',
+                value: settings.tempSubpath ?? null,
+                placeholder: 'path/to/subfolder'|t('app')
+            }) }}
+        </div>
+    </div>
+{% endset %}
+
+{% block content %}
+    <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
+        <input type="hidden" name="action" value="asset-settings/save-asset-settings">
+        {{ csrfInput() }}
+
+        {{ forms.field({
+            first: true,
+            label: 'Temp Uploads Location'|t('app'),
+            instructions: 'Where do you want to store temporary asset uploads?'|t('app'),
+            warning: allVolumes is empty ? 'No volumes exist yet.'|t('app')
+        }, tempVolumeInput) }}
+
+        <div class="buttons">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+        </div>
+    </form>
+{% endblock %}
+
+{% js %}
+    $('#tempVolumeUid').change(function() {
+        if ($(this).val()) {
+            $('#tempSubpath').removeClass('hidden');
+        } else {
+            $('#tempSubpath').addClass('hidden');
+        }
+    })
+{% endjs %}

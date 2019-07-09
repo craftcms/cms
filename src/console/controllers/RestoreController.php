@@ -8,9 +8,8 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\helpers\Console;
-use craft\helpers\FileHelper;
-use yii\console\Controller;
 use yii\console\ExitCode;
 
 /**
@@ -27,7 +26,7 @@ class RestoreController extends Controller
     public $defaultAction = 'db';
 
     /**
-     * Restores a database backup
+     * Allows you to restore a database from a backup.
      *
      * @param string|null The path to the database backup file.
      * @return int

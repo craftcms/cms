@@ -128,6 +128,9 @@ class UserPermissions extends Component
                             'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
                         ],
+                        'impersonateUsers' => [
+                            'label' => Craft::t('app', 'Impersonate users'),
+                        ],
                     ],
                 ],
                 'deleteUsers' => [
@@ -599,6 +602,9 @@ class UserPermissions extends Component
                     ],
                     "deleteFilesAndFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Remove files and folders'),
+                    ],
+                    "editImagesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Edit images'),
                     ]
                 ]
             ]

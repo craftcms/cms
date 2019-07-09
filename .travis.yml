@@ -1,0 +1,81 @@
+language: php
+dist: trusty
+env:
+  global:
+  - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
+branches:
+  only:
+  - 3.2
+  - feature/tests
+services:
+- mysql
+- postgresql
+matrix:
+  fast_finish: true
+  include:
+  - php: 7.3
+    env: DB=mysql
+  - php: 7.3
+    env: DB=pgsql
+  - php: 7.2
+    env: DB=mysql
+  - php: 7.2
+    env: DB=pgsql
+  - php: 7.1
+    env: TASK_TESTS_COVERAGE=1 DB=mysql
+  - php: 7.1
+    env: TASK_TESTS_COVERAGE=1 DB=pgsql
+cache:
+  directories:
+  - vendor
+  - "$HOME/.composer/cache"
+  - "$HOME/.npm"
+addons:
+  postgresql: '9.6'
+  apt:
+    sources:
+    - mysql-5.7-trusty
+    packages:
+    - mysql-server
+install:
+- |
+  if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+    # disable xdebug for performance reasons when code coverage is not needed.
+    phpenv config-rm xdebug.ini || echo "xdebug is not installed"
+  fi
+
+  # install composer dependencies
+  export PATH="$HOME/.composer/vendor/bin:$PATH"
+  travis_retry composer install $DEFAULT_COMPOSER_FLAGS
+before_script:
+- |
+  # show some version and environment information
+  php --version
+  composer --version
+  php -r "echo INTL_ICU_VERSION . \"\n\";"
+  php -r "echo INTL_ICU_DATA_VERSION . \"\n\";"
+  psql --version
+  mysql --version
+- travis_retry mysql -e 'CREATE DATABASE `craft-test`;';
+- mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
+- psql -U postgres -c 'CREATE DATABASE "craft-test";';
+- pear config-set preferred_state beta
+- pecl channel-update pecl.php.net
+- yes | pecl install imagick
+- cp tests/.env.example.$DB tests/.env
+script:
+- |
+  if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+    vendor/bin/codecept run unit,functional
+  else
+    mkdir -p build/logs
+    vendor/bin/codecept run unit,functional --coverage-xml coverage.xml;
+  fi
+after_script:
+- |
+  if [ $TASK_TESTS_COVERAGE == 1 ]; then
+    bash <(curl -s https://codecov.io/bash)
+  fi
+
+notifications:
+  slack: 'pixelandtonic:HtwOY10EF6IzlvGEdicr3GHP#travis'

@@ -19,6 +19,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
+ * @deprecated in 3.2
  */
 class LivePreviewController extends Controller
 {
@@ -109,7 +110,7 @@ class LivePreviewController extends Controller
 
         if (Craft::$app->getRequest()->getIsOptions()) {
             // This is just a preflight request, no need to route to the real controller action yet.
-            return '1';
+            return '';
         }
 
         return Craft::$app->runAction($previewAction);

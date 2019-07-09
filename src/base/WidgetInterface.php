@@ -20,11 +20,12 @@ interface WidgetInterface extends SavableComponentInterface
     // =========================================================================
 
     /**
-     * Returns the path to the widget’s SVG icon.
+     * Returns the path to the widget’s SVG icon, or the actual SVG contents.
      *
-     * @return string|null The path to the widget’s SVG icon
+     * @return string|null
+     * @since 3.2
      */
-    public static function iconPath();
+    public static function icon();
 
     /**
      * Returns the widget’s maximum colspan.

@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\SiteNotFoundException;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
@@ -102,7 +103,7 @@ class Search extends Component
      *
      * @param ElementInterface $element
      * @return bool Whether the indexing was a success.
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function indexElementAttributes(ElementInterface $element): bool
     {
@@ -121,6 +122,23 @@ class Search extends Component
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
+        // Custom fields too?
+        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+            $keywords = [];
+
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field->searchable) {
+                    // Set the keywords for the content's site
+                    $fieldValue = $element->getFieldValue($field->handle);
+                    $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+                    $keywords[$field->id] = $fieldSearchKeywords;
+                }
+            }
+
+            $this->indexElementFields($element->id, $element->siteId, $keywords);
+        }
+
         return true;
     }
 
@@ -131,7 +149,7 @@ class Search extends Component
      * @param int $siteId The site ID of the content getting indexed.
      * @param array $fields The field values, indexed by field ID.
      * @return bool Whether the indexing was a success.
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
@@ -148,11 +166,11 @@ class Search extends Component
      * @param int[] $elementIds The list of element IDs to filter by the search query.
      * @param string|array|SearchQuery $query The search query (either a string or a SearchQuery instance)
      * @param bool $scoreResults Whether to order the results based on how closely they match the query.
-     * @param int|null $siteId The site ID to filter by.
+     * @param int|int[]|null $siteId The site ID(s) to filter by.
      * @param bool $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, int $siteId = null, bool $returnScores = false): array
+    public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, $siteId = null, bool $returnScores = false): array
     {
         if (is_string($query)) {
             $query = new SearchQuery($query, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
@@ -195,7 +213,14 @@ class Search extends Component
         }
 
         if ($siteId !== null) {
-            $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('siteId'), Craft::$app->getDb()->quoteValue($siteId));
+            if (is_array($siteId)) {
+                $where .= sprintf(' AND %s IN (%s)',
+                    Craft::$app->getDb()->quoteColumnName('siteId'),
+                    implode(',', $siteId)
+                );
+            } else {
+                $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('siteId'), Craft::$app->getDb()->quoteValue($siteId));
+            }
         }
 
         // Begin creating SQL
@@ -271,7 +296,7 @@ class Search extends Component
      * @param string $fieldId
      * @param int $siteId
      * @param string $dirtyKeywords
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
     {
@@ -429,10 +454,10 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
-     * @param int|null $siteId The site ID to search within
+     * @param int|int[]|null $siteId The site ID(s) to search within
      * @return string|false
      */
-    private function _getWhereClause(int $siteId = null)
+    private function _getWhereClause($siteId)
     {
         $where = [];
 
@@ -467,11 +492,11 @@ class Search extends Component
      *
      * @param array $tokens
      * @param bool $inclusive
-     * @param int|null $siteId
+     * @param int|int[]|null $siteId
      * @return string|false
      * @throws \Throwable
      */
-    private function _processTokens(array $tokens = [], bool $inclusive = true, int $siteId = null)
+    private function _processTokens(array $tokens, bool $inclusive, $siteId)
     {
         $glue = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -526,11 +551,11 @@ class Search extends Component
      * or returns keywords to use in a full text search clause
      *
      * @param SearchQueryTerm $term
-     * @param int|null $siteId
+     * @param int|int[]|null $siteId
      * @return array
      * @throws \Throwable
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term, int $siteId = null): array
+    private function _getSqlFromTerm(SearchQueryTerm $term, $siteId): array
     {
         // Initiate return value
         $sql = null;
@@ -730,10 +755,10 @@ class Search extends Component
      * Get SQL bit for sub-selects.
      *
      * @param string $where
-     * @param int|null $siteId
+     * @param int|int[]|null $siteId
      * @return string|false
      */
-    private function _sqlSubSelect(string $where, int $siteId = null)
+    private function _sqlSubSelect(string $where, $siteId)
     {
         $query = (new Query())
             ->select(['elementId'])

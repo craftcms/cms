@@ -583,10 +583,10 @@ class Fields extends Component
         }
 
         if (is_string($context)) {
-            return ArrayHelper::filterByValue($this->_fields, 'context', $context, true);
+            return ArrayHelper::where($this->_fields, 'context', $context, true);
         }
 
-        return ArrayHelper::filterByValue($this->_fields, function(FieldInterface $field) use ($context) {
+        return ArrayHelper::where($this->_fields, function(FieldInterface $field) use ($context) {
             /** @var Field $field */
             return in_array($field->context, $context, true);
         });
@@ -599,7 +599,7 @@ class Fields extends Component
      */
     public function getFieldsWithContent(): array
     {
-        return ArrayHelper::filterByValue($this->getAllFields(), function(FieldInterface $field) {
+        return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
             return $field::hasContentColumn();
         });
     }
@@ -667,7 +667,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return ArrayHelper::filterByValue($this->getAllFields(false), 'groupId', $groupId);
+        return ArrayHelper::where($this->getAllFields(false), 'groupId', $groupId);
     }
 
     /**
@@ -1610,7 +1610,7 @@ class Fields extends Component
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->addSelect(['fields.searchable']);
         }
@@ -1634,7 +1634,7 @@ class Fields extends Component
             ->from([Table::FIELDLAYOUTS]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->where(['dateDeleted' => null]);
         }

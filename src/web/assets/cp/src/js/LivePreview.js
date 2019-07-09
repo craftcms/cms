@@ -136,15 +136,16 @@ Craft.LivePreview = Garnish.Base.extend(
             $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
-                this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
-                this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod);
-                this.$editor = $('<div class="lp-editor"/>').appendTo(this.$editorContainer);
-                this.$iframeContainer = $('<div class="lp-iframe-container"/>').appendTo(Garnish.$bod);
-                this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
+                this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
+                this.$iframeContainer =$('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
 
-                var $header = $('<header class="header"></header>').appendTo(this.$editor),
-                    $closeBtn = $('<div class="btn">' + Craft.t('app', 'Close Live Preview') + '</div>').appendTo($header),
-                    $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($header);
+                var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
+                this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
+                this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
+                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
+                var $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($editorHeader);
 
                 this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                     axis: Garnish.X_AXIS,
@@ -362,7 +363,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
 
             // Create a new iframe
-            var $iframe = $('<iframe class="lp-iframe" frameborder="0"/>');
+            var $iframe = $('<iframe class="lp-preview" frameborder="0"/>');
             if (this.$iframe) {
                 $iframe.insertBefore(this.$iframe);
             } else {

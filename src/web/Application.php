@@ -150,15 +150,22 @@ class Application extends \yii\web\Application
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
+     * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
+     * the normal routing logic
      * @return Response the resulting response
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     * @throws \craft\errors\DbConnectException
-     * @throws ForbiddenHttpException
-     * @throws \yii\web\NotFoundHttpException
+     * @throws \Throwable if reasons
      */
-    public function handleRequest($request): Response
+    public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
+        if ($skipSpecialHandling) {
+            try {
+                return parent::handleRequest($request);
+            } catch (\Throwable $e) {
+                $this->_unregisterDebugModule();
+                throw $e;
+            }
+        }
+
         // Process resource requests before anything else
         $this->_processResourceRequest($request);
 
@@ -248,32 +255,21 @@ class Application extends \yii\web\Application
             return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }
 
-        // If the system is offline, make sure they have permission to be here
-        $this->_enforceSystemStatusPermissions($request);
-
+        // If this is a plugin template request, make sure the user has access to the plugin
         // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-        if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {
+        if (
+            $request->getIsCpRequest() &&
+            !$request->getIsActionRequest() &&
+            ($firstSeg = $request->getSegment(1)) !== null &&
+            ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+        ) {
+            /** @var Plugin $plugin */
             $user = $this->getUser();
-
-            // Make sure the user has access to the CP
             if ($user->getIsGuest()) {
                 return $user->loginRequired();
             }
-
-            if (!$user->checkPermission('accessCp')) {
+            if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
                 throw new ForbiddenHttpException();
-            }
-
-            // If they're accessing a plugin's section, make sure that they have permission to do so
-            $firstSeg = $request->getSegment(1);
-
-            if ($firstSeg !== null) {
-                /** @var Plugin|null $plugin */
-                $plugin = $this->getPlugins()->getPlugin($firstSeg);
-
-                if ($plugin && !$user->checkPermission('accessPlugin-' . $plugin->id)) {
-                    throw new ForbiddenHttpException();
-                }
             }
         }
 
@@ -283,7 +279,12 @@ class Application extends \yii\web\Application
         }
 
         // If we're still here, finally let Yii do it's thing.
-        return parent::handleRequest($request);
+        try {
+            return parent::handleRequest($request);
+        } catch (\Throwable $e) {
+            $this->_unregisterDebugModule();
+            throw $e;
+        }
     }
 
     /**
@@ -551,7 +552,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @return Response|null
-     * @throws NotFoundHttpException if the requested action route is invalid
+     * @throws \Throwable if reasons
      */
     private function _processActionRequest(Request $request)
     {
@@ -561,53 +562,17 @@ class Application extends \yii\web\Application
             try {
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
-
                 return $this->runAction($route, $_GET);
-            } catch (InvalidRouteException $e) {
-                throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+            } catch (\Throwable $e) {
+                $this->_unregisterDebugModule();
+                if ($e instanceof InvalidRouteException) {
+                    throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+                }
+                throw $e;
             }
         }
 
         return null;
-    }
-
-    /**
-     * Returns whether this is a special case request (something dealing with user sessions or updating)
-     * where system status / CP permissions shouldn't be taken into effect.
-     *
-     * @param Request $request
-     * @return bool
-     */
-    private function _isSpecialCaseActionRequest(Request $request): bool
-    {
-        $actionSegs = $request->getActionSegments();
-
-        if (empty($actionSegs)) {
-            return false;
-        }
-
-        return (
-            $actionSegs === ['app', 'migrate'] ||
-            $actionSegs === ['users', 'login'] ||
-            $actionSegs === ['users', 'forgot-password'] ||
-            $actionSegs === ['users', 'send-password-reset-email'] ||
-            $actionSegs === ['users', 'get-remaining-session-time'] ||
-            (
-                $request->getIsSingleActionRequest() &&
-                (
-                    $actionSegs === ['users', 'logout'] ||
-                    $actionSegs === ['users', 'set-password'] ||
-                    $actionSegs === ['users', 'verify-email']
-                )
-            ) ||
-            (
-                $request->getIsCpRequest() &&
-                (
-                    $actionSegs[0] === 'update' ||
-                    $actionSegs[0] === 'manualupdate'
-                )
-            )
-        );
     }
 
     /**
@@ -755,51 +720,5 @@ class Application extends \yii\web\Application
         // If an exception gets throw during the rendering of the 503 template, let
         // TemplatesController->actionRenderError() take care of it.
         throw new ServiceUnavailableHttpException();
-    }
-
-    /**
-     * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
-     *
-     * @param Request $request
-     * @throws ServiceUnavailableHttpException
-     */
-    private function _enforceSystemStatusPermissions(Request $request)
-    {
-        if (!$this->_checkSystemStatusPermissions($request)) {
-            $error = null;
-
-            if (!$this->getUser()->getIsGuest()) {
-                if ($request->getIsCpRequest()) {
-                    $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
-                } else {
-                    $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
-                }
-            } else {
-                // If this is a CP request, redirect to the Login page
-                if ($this->getRequest()->getIsCpRequest()) {
-                    $this->getUser()->loginRequired();
-                    $this->end();
-                }
-            }
-
-            $this->_unregisterDebugModule();
-            throw new ServiceUnavailableHttpException($error);
-        }
-    }
-
-    /**
-     * Returns whether the user has permission to be accessing the site/CP while it's offline, if it is.
-     *
-     * @param Request $request
-     * @return bool
-     */
-    private function _checkSystemStatusPermissions(Request $request): bool
-    {
-        if ($this->getIsLive() || $this->_isSpecialCaseActionRequest($request)) {
-            return true;
-        }
-
-        $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
-        return $this->getUser()->checkPermission($permission);
     }
 }

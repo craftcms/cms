@@ -1,4 +1,4 @@
-/*!   - 2019-06-04 */
+/*!   - 2019-06-28 */
 (function($){
 
 /** global: Craft */
@@ -160,16 +160,9 @@ $.extend(Craft,
                 path = '';
             }
 
-            // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path[0] === '/') {
-                return path;
-            }
-
-            path = Craft.trim(path, '/');
-
+            // Normalize the params
             var anchor = '';
 
-            // Normalize the params
             if ($.isPlainObject(params)) {
                 var aParams = [];
 
@@ -204,6 +197,13 @@ $.extend(Craft,
                 params = path.substr(qpos + 1) + (params ? '&' + params : '');
                 path = path.substr(0, qpos);
             }
+
+            // Return path if it appears to be an absolute URL.
+            if (path.search('://') !== -1 || path[0] === '/') {
+                return path + (params ? '?' + params : '');
+            }
+
+            path = Craft.trim(path, '/');
 
             // Put it all together
             var url;
@@ -755,6 +755,34 @@ $.extend(Craft,
             return str.charAt(0).toLowerCase() + str.slice(1);
         },
 
+        parseUrl: function(url) {
+            var m = url.match(/^(?:(https?):\/\/|\/\/)([^\/\:]*)(?:\:(\d+))?(\/[^\?]*)?(?:\?([^#]*))?(#.*)?/);
+            if (!m) {
+                return {};
+            }
+            return {
+                scheme: m[1],
+                host: m[2] + (m[3] ? ':' + m[3] : ''),
+                hostname: m[2],
+                port: m[3] || null,
+                path: m[4] || '/',
+                query: m[5] || null,
+                hash: m[6] || null,
+            };
+        },
+
+        isSameHost: function(url) {
+            var requestUrlInfo = this.parseUrl(document.location.href);
+            if (!requestUrlInfo) {
+                return false;
+            }
+            var urlInfo = this.parseUrl(url);
+            if (!urlInfo) {
+                return false;
+            }
+            return requestUrlInfo.host === urlInfo.host;
+        },
+
         /**
          * Converts a number of seconds into a human-facing time duration.
          */
@@ -830,6 +858,16 @@ $.extend(Craft,
             }
 
             return asciiStr;
+        },
+
+        randomString: function(length) {
+            // h/t https://stackoverflow.com/a/1349426/1688568
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * 62));
+            }
+            return result;
         },
 
         /**
@@ -1349,7 +1387,10 @@ $.extend($.fn,
                         .appendTo($form);
                 }
 
-                $form.trigger('submit');
+                $form.trigger({
+                    type: 'submit',
+                    customTrigger: true,
+                });
             });
         },
 
@@ -1447,6 +1488,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             if (this.settings.attributes) {
                 data.attributes = this.settings.attributes;
+            }
+
+            if (this.settings.prevalidate) {
+                data.prevalidate = 1;
             }
 
             return data;
@@ -1685,6 +1730,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             siteId: null,
             attributes: null,
             params: null,
+            prevalidate: false,
             elementIndex: null,
 
             onShowHud: $.noop,
@@ -1766,6 +1812,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewMode: null,
         view: null,
         _autoSelectElements: null,
+        $countContainer: null,
+        page: 1,
+        $exportBtn: null,
 
         actions: null,
         actionsHeadHtml: null,
@@ -1819,6 +1868,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
+            this.$countContainer = this.$container.find('#count-container');
+            this.$exportBtn = this.$container.find('#export-btn');
 
             // Hide sidebar if needed
             if (this.settings.hideSidebar) {
@@ -1871,8 +1922,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($option.length) {
                     this._setSite($option.data('site-id'));
-                }
-                else {
+                } else {
                     // No site options -- they must not have any site permissions
                     this.settings.criteria = {id: '0'};
                 }
@@ -1893,8 +1943,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
                     }
                 }
-            }
-            else if (this.settings.criteria && this.settings.criteria.siteId) {
+            } else if (this.settings.criteria && this.settings.criteria.siteId) {
                 this._setSite(this.settings.criteria.siteId);
             } else {
                 this._setSite(Craft.siteId);
@@ -1907,8 +1956,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.addListener(this.$search, 'textchange', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
-                }
-                else if (this.searching && !this.$search.val()) {
+                } else if (this.searching && !this.$search.val()) {
                     this.stopSearching();
                 }
 
@@ -1967,6 +2015,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.sortMenu.on('optionselect', $.proxy(this, '_handleSortChange'));
             }
 
+            // Initialize the Export button
+            // ---------------------------------------------------------------------
+
+            this.addListener(this.$exportBtn, 'click', '_showExportHud');
+
             // Let everyone know that the UI is initialized
             // ---------------------------------------------------------------------
 
@@ -1981,7 +2034,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Load the first batch of elements!
             // ---------------------------------------------------------------------
 
-            this.updateElements();
+            // Default to whatever page is in the URL
+            if (this.settings.context === 'index') {
+                this.setPage(Craft.pageNum);
+            }
+
+            this.updateElements(true);
         },
 
         afterInit: function() {
@@ -2064,8 +2122,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.getSourceContainer().replaceWith(response.html);
                     this.initSources();
                     this.selectDefaultSource();
-                }
-                else {
+                } else {
                     Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                 }
 
@@ -2087,8 +2144,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         width: this.$main.width()
                     });
                 }
-            }
-            else {
+            } else {
                 if (this.$toolbar.hasClass('fixed')) {
                     this.$toolbar.removeClass('fixed');
                     this.$toolbar.css('width', '');
@@ -2184,8 +2240,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         setInstanceState: function(key, value) {
             if (typeof key === 'object') {
                 $.extend(this.instanceState, key);
-            }
-            else {
+            } else {
                 this.instanceState[key] = value;
             }
 
@@ -2206,11 +2261,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (typeof key === 'undefined') {
                 return this.sourceStates[source];
-            }
-            else if (typeof this.sourceStates[source][key] !== 'undefined') {
+            } else if (typeof this.sourceStates[source][key] !== 'undefined') {
                 return this.sourceStates[source][key];
-            }
-            else {
+            } else {
                 return (typeof defaultValue !== 'undefined' ? defaultValue : null);
             }
         },
@@ -2224,8 +2277,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (typeof key === 'object') {
                 $.extend(viewState, key);
-            }
-            else {
+            } else {
                 viewState[key] = value;
             }
 
@@ -2247,6 +2299,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         /**
+         * Sets the page number.
+         */
+        setPage: function(page) {
+            page = Math.max(page, 1);
+            this.page = page;
+
+            // Update the URL
+            var url = document.location.href
+                .replace(/\?.*$/, '')
+                .replace(new RegExp('/' + Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+$'), '')
+                .replace(/\/+$/, '');
+
+            if (this.page !== 1) {
+                if (Craft.pageTrigger[0] !== '?') {
+                    url += '/';
+                }
+                url += Craft.pageTrigger + this.page;
+            }
+
+            history.replaceState({}, '', url);
+        },
+
+        /**
          * Returns the data that should be passed to the elementIndex/getElements controller action
          * when loading elements.
          */
@@ -2254,6 +2329,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var criteria = {
                 siteId: this.siteId,
                 search: this.searchText,
+                offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
                 trashed: this.trashed ? 1 : 0
             };
@@ -2287,7 +2363,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             return params;
         },
 
-        updateElements: function() {
+        updateElements: function(preservePagination) {
             // Ignore if we're not fully initialized yet
             if (!this.initialized) {
                 return;
@@ -2303,15 +2379,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.$elements.html('');
 
+            if (preservePagination !== true) {
+                this.$countContainer.html('&nbsp;');
+                this.setPage(1);
+            }
+
             var params = this.getViewParams();
 
             Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus === 'success') {
+                    // Have we gone too far?
+                    var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+                    if (this.page > totalPages) {
+                        this.setPage(totalPages);
+                        this.updateElements(true);
+                        return;
+                    }
+
                     this._updateView(params, response);
-                }
-                else {
+                } else {
                     Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                 }
 
@@ -2340,8 +2428,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (!this._$triggers) {
                 this._createTriggers();
-            }
-            else {
+            } else {
                 this._$triggers.insertAfter(this.$selectAllContainer);
             }
 
@@ -2395,8 +2482,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
 
                         this.afterAction(action, params);
-                    }
-                    else {
+                    } else {
                         Craft.cp.displayError(response.message);
                     }
                 }
@@ -2438,16 +2524,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         this.$selectAllCheckbox.removeClass('indeterminate');
                         this.$selectAllCheckbox.addClass('checked');
                         this.$selectAllBtn.attr('aria-checked', 'true');
-                    }
-                    else {
+                    } else {
                         this.$selectAllCheckbox.addClass('indeterminate');
                         this.$selectAllCheckbox.removeClass('checked');
                         this.$selectAllBtn.attr('aria-checked', 'mixed');
                     }
 
                     this.showActionTriggers();
-                }
-                else {
+                } else {
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
                     this.$selectAllBtn.attr('aria-checked', 'false');
                     this.hideActionTriggers();
@@ -2487,8 +2571,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
-                }
-                else {
+                } else {
                     this.$sortDirectionsList.find('a').removeClass('disabled');
                 }
             }
@@ -2561,8 +2644,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 this.$structureSortAttribute.prependTo(this.$sortAttributesList);
-            }
-            else if (this.$structureSortAttribute) {
+            } else if (this.$structureSortAttribute) {
                 this.$structureSortAttribute.removeClass('sel').detach();
             }
 
@@ -2642,8 +2724,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if ($source) {
                 return this.selectSource($source);
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -2674,8 +2755,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Does the source specify what to do?
             if (this.$source && Garnish.hasAttr(this.$source, 'data-default-sort')) {
                 return this.$source.attr('data-default-sort').split(':');
-            }
-            else {
+            } else {
                 // Default to whatever's first
                 return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
             }
@@ -2794,8 +2874,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($element && $element.length) {
                     this.enableElements($element);
-                }
-                else {
+                } else {
                     this.forgetDisabledElementId(id);
                 }
             }
@@ -2810,8 +2889,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($element && $element.length) {
                     this.disableElements($element);
-                }
-                else {
+                } else {
                     this.rememberDisabledElementId(id);
                 }
             }
@@ -2841,8 +2919,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Is there a predesignated place where buttons should go?
             if (this.settings.buttonContainer) {
                 return $(this.settings.buttonContainer);
-            }
-            else {
+            } else {
                 var $container = $('#button-container');
 
                 if (!$container.length) {
@@ -3076,8 +3153,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Is this an attribute or a direction?
             if ($option.parent().parent().is(this.$sortAttributesList)) {
                 this.setSortAttribute($option.data('attr'));
-            }
-            else {
+            } else {
                 this.setSortDirection($option.data('dir'));
             }
 
@@ -3152,8 +3228,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _toggleSource: function($source) {
             if ($source.parent('li').hasClass('expanded')) {
                 this._collapseSource($source);
-            }
-            else {
+            } else {
                 this._expandSource($source);
             }
         },
@@ -3202,6 +3277,58 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$selectAllContainer.detach();
             }
 
+            // Update the count text
+            // -------------------------------------------------------------
+
+            this.$countContainer.html('');
+            var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
+
+            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.count + ' ' + elementTypeName);
+            } else {
+                var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
+                var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+
+                var $prevBtn = $('<div/>', {
+                    'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
+                    'data-icon': 'leftangle',
+                    title: Craft.t('app', 'Previous Page')
+                }).appendTo($paginationContainer);
+                var $nextBtn = $('<div/>', {
+                    'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
+                    'data-icon': 'rightangle',
+                    title: Craft.t('app', 'Next Page')
+                }).appendTo($paginationContainer);
+
+                var first = Math.min((this.settings.batchSize * (this.page - 1)) + 1, response.count);
+                $('<div/>', {
+                    'class': 'page-info',
+                    text: Craft.t('app', '{first}-{last} of {total}', {
+                        first: Craft.formatNumber(first),
+                        last: Craft.formatNumber(Math.min(first + (this.settings.batchSize - 1), response.count)),
+                        total: Craft.formatNumber(response.count)
+                    }) + ' ' + elementTypeName
+                }).appendTo($paginationContainer);
+
+                if (this.page > 1) {
+                    this.addListener($prevBtn, 'click', function() {
+                        this.removeListener($prevBtn, 'click');
+                        this.removeListener($nextBtn, 'click');
+                        this.setPage(this.page - 1);
+                        this.updateElements(true);
+                    });
+                }
+
+                if (this.page < totalPages) {
+                    this.addListener($nextBtn, 'click', function() {
+                        this.removeListener($prevBtn, 'click');
+                        this.removeListener($nextBtn, 'click');
+                        this.setPage(this.page + 1);
+                        this.updateElements(true);
+                    });
+                }
+            }
+
             // Batch actions setup
             // -------------------------------------------------------------
 
@@ -3226,8 +3353,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.addListener(this.$selectAllBtn, 'click', function() {
                         if (this.view.getSelectedElements().length === 0) {
                             this.view.selectAllElements();
-                        }
-                        else {
+                        } else {
                             this.view.deselectAllElements();
                         }
                     });
@@ -3239,8 +3365,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             $(ev.currentTarget).trigger('click');
                         }
                     });
-                }
-                else {
+                } else {
                     // Reset the select all button
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
 
@@ -3266,7 +3391,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.view = this.createView(this.getSelectedViewMode(), {
                 context: this.settings.context,
-                batchSize: this.settings.batchSize,
+                batchSize: this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
@@ -3310,12 +3435,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                     this.addListener($form, 'submit', '_handleActionTriggerSubmit');
                     triggers.push($form);
-                }
-                else {
+                } else {
                     if (!action.destructive) {
                         safeMenuActions.push(action);
-                    }
-                    else {
+                    } else {
                         destructiveMenuActions.push(action);
                     }
                 }
@@ -3365,6 +3488,99 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
         },
 
+        _showExportHud: function() {
+            this.$exportBtn.addClass('active');
+
+            var $form = $('<form/>', {
+                'class': 'export-form'
+            });
+
+            var $fmtContainer = $('<div/>', {
+                'class': 'btngroup'
+            })
+            var formats = ['csv', 'xls', 'xlsx', 'ods'];
+            var format = 'csv';
+            for (var i = 0; i < formats.length; i++) {
+                $('<div/>', {
+                    'class': 'btn' + (i === 0 ? ' active' : ''),
+                    role: 'button',
+                    pressed: (i === 0) ? 'true' : 'false',
+                    text: formats[i].toUpperCase(),
+                    'data-format': formats[i]
+                })
+                    .appendTo($fmtContainer)
+                    .on('click', function() {
+                        $fmtContainer.children()
+                            .removeClass('active')
+                            .attr('pressed', 'false');
+                        format = $(this)
+                            .addClass('active')
+                            .attr('pressed', 'true')
+                            .data('format');
+                    });
+            }
+            var $fmtField = Craft.ui.createField($fmtContainer, {
+                label: Craft.t('app', 'Format')
+            }).appendTo($form);
+
+            var $limitField = Craft.ui.createTextField({
+                label: Craft.t('app', 'Limit'),
+                placeholder: Craft.t('app', 'No limit'),
+                type: 'number',
+                min: 0
+            }).appendTo($form);
+
+            $('<input/>', {
+                type: 'submit',
+                'class': 'btn submit fullwidth',
+                value: Craft.t('app', 'Export')
+            }).appendTo($form)
+
+            var $spinner = $('<div/>', {
+                'class': 'spinner hidden'
+            }).appendTo($form);
+
+            var hud = new Garnish.HUD(this.$exportBtn, $form);
+
+            hud.on('hide', $.proxy(function() {
+                this.$exportBtn.removeClass('active');
+            }, this));
+
+            var submitting = false;
+
+            this.addListener($form, 'submit', function(ev) {
+                ev.preventDefault();
+                if (submitting) {
+                    return;
+                }
+
+                submitting = true;
+                $spinner.removeClass('hidden');
+
+                var params = this.getViewParams();
+                params.criteria.limit = $limitField.find('input').val();
+                if (!params.criteria.limit) {
+                    delete params.criteria.limit;
+                }
+                params.format = format;
+
+                Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
+                    submitting = false;
+                    $spinner.addClass('hidden');
+
+                    if (textStatus === 'success') {
+                        var url = Craft.getCpUrl('', {
+                            token: response.token
+                        });
+                        document.location.href = url;
+                    } else {
+                        Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    }
+
+                }, this));
+            });
+        },
+
         _createMenuTriggerList: function(actions, destructive) {
             if (actions && actions.length) {
                 var $ul = $('<ul/>');
@@ -3404,6 +3620,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             submitActionsAction: 'element-indexes/perform-action',
             toolbarFixed: null,
 
+            elementTypeName: Craft.t('app', 'Element'),
+            elementTypePluralName: Craft.t('app', 'Elements'),
+
             onAfterInit: $.noop,
             onSelectSource: $.noop,
             onSelectSite: $.noop,
@@ -3414,7 +3633,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             onAfterAction: $.noop
         }
     });
-
 
 /** global: Craft */
 /** global: Garnish */
@@ -4024,8 +4242,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             this.updateAddElementsBtn();
         },
 
-        createElementEditor: function($element) {
-            return Craft.createElementEditor(this.settings.elementType, $element);
+        createElementEditor: function($element, settings) {
+            if (!settings) {
+                settings = {};
+            }
+            settings.prevalidate = this.settings.prevalidate;
+            return Craft.createElementEditor(this.settings.elementType, $element, settings);
         },
 
         removeElements: function($elements) {
@@ -4247,6 +4469,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             sortable: true,
             selectable: true,
             editable: true,
+            prevalidate: false,
             editorSettings: {}
         }
     });
@@ -8871,7 +9094,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
          * Create the element editor
          */
         createElementEditor: function($element) {
-            return Craft.createElementEditor(this.settings.elementType, $element, {
+            return this.base($element, {
                 params: {
                     defaultFieldLayoutId: this.settings.defaultFieldLayoutId
                 }
@@ -10975,17 +11198,11 @@ Craft.CP = Garnish.Base.extend(
                 return;
             }
 
-            if (!Craft.forceConfirmUnload) {
-                this.initialFormValues = [];
-            }
+            var $form;
 
             for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                var $form = $(this.$confirmUnloadForms);
-
-                if (!Craft.forceConfirmUnload) {
-                    this.initialFormValues[i] = $form.serialize();
-                }
-
+                $form = this.$confirmUnloadForms.eq(i);
+                $form.data('initialSerializedValue', $form.serialize());
                 this.addListener($form, 'submit', function() {
                     this.removeListener(Garnish.$win, 'beforeunload');
                 });
@@ -10993,17 +11210,18 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
-                if (
-                    Craft.forceConfirmUnload ||
-                    (
-                        typeof Craft.livePreview !== 'undefined' &&
-                        Craft.livePreview.inPreviewMode
-                    )
-                ) {
+                var $form, serialized;
+                if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
                     confirmUnload = true;
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                        if (this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()) {
+                        $form = this.$confirmUnloadForms.eq(i);
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        if ($form.data('initialSerializedValue') !== serialized) {
                             confirmUnload = true;
                             break;
                         }
@@ -11451,6 +11669,7 @@ Craft.CP = Garnish.Base.extend(
                 this.displayedJobInfo &&
                 oldInfo.id === this.displayedJobInfo.id &&
                 oldInfo.progress === this.displayedJobInfo.progress &&
+                oldInfo.progressLabel === this.displayedJobInfo.progressLabel &&
                 oldInfo.status === this.displayedJobInfo.status
             ) {
                 this.displayedJobInfoUnchanged++;
@@ -11852,6 +12071,7 @@ QueueHUD.Job = Garnish.Base.extend(
         $container: null,
         $statusContainer: null,
         $descriptionContainer: null,
+        $progressLabel: null,
 
         _progressBar: null,
 
@@ -11861,9 +12081,10 @@ QueueHUD.Job = Garnish.Base.extend(
             this.id = info.id;
             this.description = info.description;
 
-            this.$container = $('<div class="job"/>');
-            this.$statusContainer = $('<div class="job-status"/>').appendTo(this.$container);
-            this.$descriptionContainer = $('<div class="job-description"/>').appendTo(this.$container).text(info.description);
+            this.$container = $('<div/>', { 'class': 'job' });
+            var $flex = $('<div/>', { 'class': 'flex' }).appendTo(this.$container);
+            $('<div/>', { 'class': 'flex-grow' }).text(info.description).appendTo($flex);
+            this.$statusContainer = $('<div class="job-status"/>').appendTo($flex);
 
             this.$container.data('job', this);
 
@@ -11912,6 +12133,16 @@ QueueHUD.Job = Garnish.Base.extend(
 
             if (this.status === Craft.CP.JOB_STATUS_RESERVED) {
                 this._progressBar.setProgressPercentage(info.progress);
+
+                if (info.progressLabel) {
+                    if (!this.$progressLabel) {
+                        this.$progressLabel = $('<div class="light smalltext"/>').appendTo(this.$container);
+                    }
+                    this.$progressLabel.text(info.progressLabel);
+                }
+            } else if (this.$progressLabel) {
+                this.$progressLabel.remove();
+                this.$progressLabel = null;
             }
         },
 
@@ -12640,6 +12871,566 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 /** global: Craft */
 /** global: Garnish */
 /**
+ * Element Monitor
+ */
+Craft.DraftEditor = Garnish.Base.extend(
+    {
+        $revisionBtn: null,
+        $revisionLabel: null,
+        $spinner: null,
+        $savedIcon: null,
+
+        $editMetaBtn: null,
+        metaHud: null,
+        $nameTextInput: null,
+        $notesTextInput: null,
+        $saveMetaBtn: null,
+
+        timeout: null,
+        saving: false,
+        checkFormAfterUpdate: false,
+
+        duplicatedElements: null,
+        applying: false,
+
+        preview: null,
+        previewToken: null,
+
+        init: function(settings) {
+            this.setSettings(settings, Craft.DraftEditor.defaults);
+
+            this.duplicatedElements = {};
+
+            this.$revisionBtn = $('#revision-btn');
+            this.$revisionLabel = $('#revision-label');
+            this.$spinner = $('#revision-spinner');
+            this.$savedIcon = $('#revision-saved');
+
+            if (this.settings.draftId) {
+                this.createEditMetaBtn();
+            }
+
+            if (this.settings.previewTargets.length) {
+                if (this.settings.enablePreview) {
+                    this.addListener($('#preview-btn'), 'click', 'openPreview');
+                }
+
+                var $shareBtn = $('#share-btn');
+
+                if (this.settings.previewTargets.length === 1) {
+                    this.addListener($shareBtn, 'click', function() {
+                        this.openShareLink(this.settings.previewTargets[0].url);
+                    });
+                } else {
+                    this.createShareMenu($shareBtn);
+                }
+            }
+
+            // If this is a revision, then we're done here
+            if (this.settings.revisionId) {
+                return;
+            }
+
+            // Just to be safe
+            Craft.cp.$primaryForm.data('initialSerializedValue', this.serializeForm());
+
+            // Override the serializer to use our own
+            Craft.cp.$primaryForm.data('serializer', $.proxy(this, 'serializeForm'));
+
+            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+            });
+
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+        },
+
+        spinners: function() {
+            return this.isPreviewActive()
+                ? this.$spinner.add(this.preview.$spinner)
+                : this.$spinner;
+        },
+
+        savedIcons: function() {
+            return this.isPreviewActive()
+                ? this.$savedIcon.add(this.preview.$savedIcon)
+                : this.$savedIcon;
+        },
+
+        createEditMetaBtn: function() {
+            this.$editMetaBtn = $('<a/>', {
+                'class': 'btn edit icon',
+                title: Craft.t('app', 'Edit draft settings'),
+            }).appendTo($('#revision-btngroup'));
+            this.addListener(this.$editMetaBtn, 'click', 'showMetaHud');
+        },
+
+        createShareMenu: function($shareBtn) {
+            $shareBtn.addClass('menubtn');
+
+            var $menu = $('<div/>', {'class': 'menu'}).insertAfter($shareBtn);
+            var $ul = $('<ul/>').appendTo($menu);
+            var $li, $a;
+            var $a;
+
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
+                $li = $('<li/>').appendTo($ul);
+                $a = $('<a/>', {
+                    text: this.settings.previewTargets[i].label,
+                    data: {
+                        url: this.settings.previewTargets[i].url,
+                    }
+                }).appendTo($li);
+                this.addListener($a, 'click', {
+                    url: this.settings.previewTargets[i].url,
+                }, function(ev) {
+                    this.openShareLink(ev.data.url);
+                });
+            }
+        },
+
+        getPreviewToken: function() {
+            return new Promise(function(resolve, reject) {
+                if (this.previewToken) {
+                    resolve(this.previewToken);
+                    return;
+                }
+
+                Craft.postActionRequest('preview/create-token', {
+                    elementType: this.settings.elementType,
+                    sourceId: this.settings.sourceId,
+                    siteId: this.settings.siteId,
+                    draftId: this.settings.draftId,
+                    revisionId: this.settings.revisionId,
+                }, function(response, textStatus) {
+                    if (textStatus === 'success') {
+                        this.previewToken = response.token;
+                        resolve(this.previewToken);
+                    } else {
+                        reject();
+                    }
+                }.bind(this));
+            }.bind(this));
+        },
+
+        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+            return new Promise(function(resolve, reject) {
+                var params = {};
+
+                if (forceRandomParam || !this.settings.isLive) {
+                    // Randomize the URL so CDNs don't return cached pages
+                    params.v = Craft.randomString(10);
+                }
+
+                // No need for a token if we're looking at a live element
+                if (this.settings.isLive) {
+                    resolve(Craft.getUrl(url, params));
+                    return;
+                }
+
+                this.getPreviewToken().then(function(token) {
+                    params[Craft.tokenParam] = token;
+                    resolve(Craft.getUrl(url, params));
+                }).catch(reject);
+            }.bind(this));
+        },
+
+        openShareLink: function(url) {
+            this.getTokenizedPreviewUrl(url).then(function(url) {
+                window.open(url);
+            });
+        },
+
+        getPreview: function() {
+            if (!this.preview) {
+                this.preview = new Craft.Preview(this);
+            }
+            return this.preview;
+        },
+
+        openPreview: function() {
+            this.getPreview().open();
+        },
+
+        serializeForm: function() {
+            var data = Craft.cp.$primaryForm.serialize();
+
+            if (this.isPreviewActive()) {
+                // Replace the temp input with the preview form data
+                data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
+            }
+
+            return data;
+        },
+
+        checkForm: function(force) {
+            this.timeout = null;
+
+            // Has anything changed?
+            var data = this.serializeForm();
+            if (force || data !== Craft.cp.$primaryForm.data('initialSerializedValue')) {
+                this.saveDraft(data);
+            }
+        },
+
+        isPreviewActive: function() {
+            return this.preview && this.preview.isActive;
+        },
+
+        saveDraft: function(data) {
+            if (this.applying) {
+                return;
+            }
+
+            if (this.saving) {
+                this.checkFormAfterUpdate = true;
+                return;
+            }
+
+            this.saving = true;
+            this.spinners().removeClass('hidden');
+            this.savedIcons().removeClass('invisible').addClass('hidden');
+            if (this.$saveMetaBtn) {
+                this.$saveMetaBtn.addClass('active');
+            }
+
+            var url = Craft.getActionUrl(this.settings.saveDraftAction);
+
+            Craft.postActionRequest(url, this.prepareData(data), $.proxy(function(response, textStatus) {
+                this.spinners().addClass('hidden');
+                if (this.$saveMetaBtn) {
+                    this.$saveMetaBtn.removeClass('active');
+                }
+                this.saving = false;
+
+                if (textStatus === 'success') {
+                    if (response.title) {
+                        $('#header h1').text(response.title);
+                    }
+
+                    if (response.docTitle) {
+                        document.title = response.docTitle;
+                    }
+
+                    this.$revisionLabel.text(response.draftName);
+
+                    this.settings.draftName = response.draftName;
+                    this.settings.draftNotes = response.draftNotes;
+
+                    var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
+
+                    // Did we just create a draft?
+                    var draftCreated = !this.settings.draftId;
+                    if (draftCreated) {
+                        var newHref;
+                        var anchorPos = document.location.href.search('#');
+                        if (anchorPos !== -1) {
+                            newHref = document.location.href.substr(0, anchorPos);
+                        } else {
+                            newHref = document.location.href;
+                        }
+                        newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
+                        if (anchorPos !== -1) {
+                            newHref += document.location.href.substr(anchorPos);
+                        }
+                        history.replaceState({}, '', newHref);
+                        this.settings.draftId = response.draftId;
+                        this.settings.isLive = false;
+                        this.settings.canDeleteDraft = true;
+                        this.previewToken = null;
+                        this.createEditMetaBtn();
+                        $('#apply-btn').removeClass('disabled');
+
+                        // Add it to the revision menu
+                        if (revisionMenu) {
+                            revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
+                            var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
+                            if (!$draftsUl.length) {
+                                var $draftHeading = $('<h6/>', {
+                                    text: Craft.t('app', 'Drafts'),
+                                }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
+                                $draftsUl = $('<ul/>', {
+                                    'class': 'padded revision-group-drafts',
+                                }).insertAfter($draftHeading);
+                            }
+                            var $draftLi = $('<li/>').appendTo($draftsUl);
+                            var $draftA = $('<a/>', {
+                                'class': 'sel',
+                                html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
+                            }).appendTo($draftLi);
+                            revisionMenu.addOptions($draftA);
+                            revisionMenu.selectOption($draftA);
+
+                            // Update the site URLs
+                            var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
+                            for (var i = 0; i < $siteOptions.length; i++) {
+                                var $siteOption = $siteOptions.eq(i);
+                                $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
+                            }
+                        }
+                    }
+
+                    if (revisionMenu) {
+                        revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
+                        revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
+                            creator: response.creator
+                        }));
+                    }
+
+                    this.afterUpdate(data);
+
+                    if (draftCreated) {
+                        this.trigger('createDraft');
+                    }
+
+                    if (this.$nameTextInput) {
+                        this.checkMetaValues();
+                    }
+
+                    $.extend(this.duplicatedElements, response.duplicatedElements);
+                }
+            }, this));
+        },
+
+        prepareData: function(data) {
+            // Swap out element IDs with their duplicated ones
+            for (var oldId in this.duplicatedElements) {
+                if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                    data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
+                        '][' + this.duplicatedElements[oldId] + ']');
+                }
+            }
+
+            // Add the draft info
+            if (this.settings.draftId) {
+                data += '&draftId=' + this.settings.draftId
+                    + '&draftName=' + encodeURIComponent(this.settings.draftName)
+                    + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
+
+                if (this.settings.propagateAll) {
+                    data += '&propagateAll=1';
+                }
+            }
+
+            return data;
+        },
+
+        afterUpdate: function(data) {
+            Craft.cp.$primaryForm.data('initialSerializedValue', data);
+            this.savedIcons().removeClass('hidden');
+
+            this.trigger('update');
+
+            if (this.checkFormAfterUpdate) {
+                this.checkFormAfterUpdate = false;
+
+                // Only actually check the form if there's no active timeout for it
+                if (!this.timeout) {
+                    this.checkForm();
+                }
+            }
+        },
+
+        showMetaHud: function() {
+            if (!this.metaHud) {
+                this.createMetaHud();
+                this.onMetaHudShow();
+            } else {
+                this.metaHud.show();
+            }
+
+            if (!Garnish.isMobileBrowser(true)) {
+                this.$nameTextInput.trigger('focus');
+            }
+        },
+
+        createMetaHud: function() {
+            var $hudBody = $('<div/>');
+            var $field, $inputContainer;
+
+            // Add the Name field
+            $field = $('<div class="field"><div class="heading"><label for="draft-name">' + Craft.t('app', 'Draft Name') + '</label></div></div>').appendTo($hudBody);
+            $inputContainer = $('<div class="input"/>').appendTo($field);
+            this.$nameTextInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.settings.draftName);
+
+            // Add the Notes field
+            $field = $('<div class="field"><div class="heading"><label for="draft-notes">' + Craft.t('app', 'Notes') + '</label></div></div>').appendTo($hudBody);
+            $inputContainer = $('<div class="input"/>').appendTo($field);
+            this.$notesTextInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.settings.draftNotes);
+
+            // HUD footer
+            var $footer = $('<div class="hud-footer flex flex-center"/>').appendTo($hudBody);
+
+            // Delete button
+            if (this.settings.canDeleteDraft) {
+                var $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
+            }
+
+            $('<div class="flex-grow"></div>').appendTo($footer);
+            this.$saveMetaBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Save') + '"/>').appendTo($footer);
+
+            this.metaHud = new Garnish.HUD(this.$editMetaBtn, $hudBody, {
+                onSubmit: $.proxy(this, 'saveMeta')
+            });
+
+            new Garnish.NiceText(this.$notesTextInput);
+
+            this.addListener(this.$notesTextInput, 'keydown', 'onNotesKeydown');
+
+            this.addListener(this.$nameTextInput, 'textchange', 'checkMetaValues');
+            this.addListener(this.$notesTextInput, 'textchange', 'checkMetaValues');
+
+            this.metaHud.on('show', $.proxy(this, 'onMetaHudShow'));
+            this.metaHud.on('hide', $.proxy(this, 'onMetaHudHide'));
+            this.metaHud.on('escape', $.proxy(this, 'onMetaHudEscape'));
+
+            if ($deleteLink) {
+                this.addListener($deleteLink, 'click', 'deleteDraft');
+            }
+        },
+
+        onMetaHudShow: function() {
+            this.$editMetaBtn.addClass('active');
+        },
+
+        onMetaHudHide: function() {
+            this.$editMetaBtn.removeClass('active');
+        },
+
+        onMetaHudEscape: function() {
+            this.$nameTextInput.val(this.settings.draftName);
+            this.$notesTextInput.val(this.settings.draftNotes);
+        },
+
+        onNotesKeydown: function(ev) {
+            if (ev.keyCode === Garnish.RETURN_KEY) {
+                ev.preventDefault();
+                this.metaHud.submit();
+            }
+        },
+
+        checkMetaValues: function() {
+            if (
+                this.$nameTextInput.val() && (
+                    this.$nameTextInput.val() !== this.settings.draftName ||
+                    this.$notesTextInput.val() !== this.settings.draftNotes
+                )
+            ) {
+                this.$saveMetaBtn.removeClass('disabled');
+                return true;
+            }
+
+            this.$saveMetaBtn.addClass('disabled');
+            return false;
+        },
+
+        shakeMetaHud: function() {
+            Garnish.shake(this.metaHud.$hud);
+        },
+
+        saveMeta: function() {
+            if (!this.checkMetaValues()) {
+                this.shakeMetaHud();
+                return;
+            }
+
+            this.settings.draftName = this.$nameTextInput.val();
+            this.settings.draftNotes = this.$notesTextInput.val();
+
+            this.metaHud.hide();
+            this.checkForm(true);
+        },
+
+        deleteDraft: function() {
+            if (!confirm(Craft.t('app', 'Are you sure you want to delete this draft?'))) {
+                return;
+            }
+
+            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, $.proxy(function(response, textStatus) {
+                if (textStatus === 'success') {
+                    window.location.href = this.settings.cpEditUrl;
+                }
+            }, this))
+        },
+
+        handleFormSubmit: function(ev) {
+            ev.preventDefault();
+
+            // Don't allow a form submit under any circumstances if we’re currently applying a draft
+            if (this.applying) {
+                return;
+            }
+
+            if (!ev.customTrigger) {
+                // return;
+                if (!this.settings.draftId) {
+                    return;
+                }
+                $('#apply-btn').addClass('disabled');
+            }
+
+            this.applying = true;
+
+            // Duplicate the form with normalized data
+            var $form = $('<form/>', {
+                attr: {
+                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
+                    'action': Craft.cp.$primaryForm.attr('action'),
+                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
+                    'method': Craft.cp.$primaryForm.attr('method'),
+                    'target': Craft.cp.$primaryForm.attr('target'),
+                }
+            });
+            var data = this.prepareData(this.serializeForm());
+            var values = data.split('&');
+            var chunks;
+            for (var i = 0; i < values.length; i++) {
+                chunks = values[i].split('=', 2);
+                $('<input/>', {
+                    type: 'hidden',
+                    name: decodeURIComponent(chunks[0]),
+                    value: decodeURIComponent(chunks[1] || '')
+                }).appendTo($form);
+            }
+
+            if (!ev.customTrigger) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    value: this.settings.applyDraftAction
+                }).appendTo($form);
+            }
+
+            $form.appendTo(Garnish.$bod);
+            $form.submit();
+        },
+    },
+    {
+        defaults: {
+            elementType: null,
+            sourceId: null,
+            siteId: null,
+            isLive: false,
+            cpEditUrl: null,
+            draftId: null,
+            revisionId: null,
+            draftName: null,
+            draftNotes: null,
+            propagateAll: false,
+            canDeleteDraft: false,
+            canUpdateSource: false,
+            saveDraftAction: null,
+            deleteDraftAction: null,
+            applyDraftAction: null,
+            enablePreview: false,
+            previewTargets: [],
+        }
+    }
+);
+
+/** global: Craft */
+/** global: Garnish */
+/**
  * Handle Generator
  */
 Craft.DynamicGenerator = Craft.BaseInputGenerator.extend(
@@ -12725,7 +13516,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
         initialize: function() {
             if (this.initialized) {
-                return;
+                return false;
             }
 
             this.initialized = true;
@@ -12734,12 +13525,13 @@ Craft.EditableTable = Garnish.Base.extend(
             var $rows = this.$tbody.children();
 
             for (var i = 0; i < $rows.length; i++) {
-                new Craft.EditableTable.Row(this, $rows[i]);
+                this.createRowObj($rows[i]);
             }
 
             this.$addRowBtn = this.$table.next('.add');
             this.updateAddRowButton();
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
+            return true;
         },
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
@@ -12775,6 +13567,8 @@ Craft.EditableTable = Garnish.Base.extend(
             this.updateAddRowButton();
             // onDeleteRow callback
             this.settings.onDeleteRow(row.$tr);
+
+            row.destroy();
         },
         canAddRow: function() {
             if (this.settings.staticRows) {
@@ -12801,7 +13595,7 @@ Craft.EditableTable = Garnish.Base.extend(
                 $tr.appendTo(this.$tbody);
             }
 
-            var row = new Craft.EditableTable.Row(this, $tr);
+            var row = this.createRowObj($tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
@@ -12820,6 +13614,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
+        },
+
+        createRowObj: function($tr) {
+            return new Craft.EditableTable.Row(this, $tr);
         },
 
         focusOnPrevRow: function($tr, tdIndex, blurTd) {
@@ -12893,6 +13691,7 @@ Craft.EditableTable = Garnish.Base.extend(
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
+            staticRows: false,
             minRows: null,
             maxRows: null,
             onAddRow: $.noop,
@@ -12973,7 +13772,14 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createSelect({
                                 name: name,
                                 options: col.options,
-                                value: value,
+                                value: value || (function() {
+                                    for (var key in col.options) {
+                                        if (col.options.hasOwnProperty(key) && col.options[key].default) {
+                                            return typeof col.options[key].value !== 'undefined' ? col.options[key].value : key;
+                                        }
+                                    }
+                                    return null;
+                                })(),
                                 'class': 'small'
                             }).appendTo($cell);
                             break;
@@ -13031,6 +13837,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
         $tr: null,
         $tds: null,
+        tds: null,
         $textareas: null,
         $deleteBtn: null,
 
@@ -13038,11 +13845,13 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.table = table;
             this.$tr = $(tr);
             this.$tds = this.$tr.children();
+            this.tds = [];
+            this.id = this.$tr.attr('data-id');
 
             this.$tr.data('editable-table-row', this);
 
             // Get the row ID, sans prefix
-            var id = parseInt(this.$tr.attr('data-id').substr(this.table.settings.rowIdPrefix.length));
+            var id = parseInt(this.id.substr(this.table.settings.rowIdPrefix.length));
 
             if (id > this.table.biggestId) {
                 this.table.biggestId = id;
@@ -13053,7 +13862,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var textareasByColId = {};
 
             var i = 0;
-            var colId, col;
+            var colId, col, td, $textarea, $checkbox;
 
             for (colId in this.table.columns) {
                 if (!this.table.columns.hasOwnProperty(colId)) {
@@ -13061,9 +13870,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 }
 
                 col = this.table.columns[colId];
+                td = this.tds[colId] = this.$tds[i];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea, input.text', this.$tds[i]);
+                    $textarea = $('textarea, input.text', td);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -13078,14 +13888,22 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     $textarea.trigger('textchange');
 
                     textareasByColId[colId] = $textarea;
-                } else if (col.type === 'checkbox' && col.radioMode) {
-                    var $checkbox = $('input[type="checkbox"]', this.$tds[i]);
-                    if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
-                        this.table.radioCheckboxes[colId] = [];
-                    }
-                    this.table.radioCheckboxes[colId].push($checkbox[0]);
+                } else if (col.type === 'checkbox') {
+                    $checkbox = $('input[type="checkbox"]', td);
 
-                    this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    if (col.radioMode) {
+                        if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
+                            this.table.radioCheckboxes[colId] = [];
+                        }
+                        this.table.radioCheckboxes[colId].push($checkbox[0]);
+                        this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    }
+
+                    if (col.toggle) {
+                        this.addListener($checkbox, 'change', {colId: colId}, function(ev) {
+                            this.applyToggleCheckbox(ev.data.colId);
+                        });
+                    }
                 }
 
                 i++;
@@ -13093,6 +13911,17 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             // Now that all of the text cells have been nice-ified, let's normalize the heights
             this.onTextareaHeightChange();
+
+            // See if we need to apply any checkbox toggles now that we've indexed all the TDs
+            for (colId in this.table.columns) {
+                if (!this.table.columns.hasOwnProperty(colId)) {
+                    continue;
+                }
+                col = this.table.columns[colId];
+                if (col.type === 'checkbox' && col.toggle) {
+                    this.applyToggleCheckbox(colId);
+                }
+            }
 
             // Now look for any autopopulate columns
             for (colId in this.table.columns) {
@@ -13133,6 +13962,28 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 for (var i = 0; i < this.table.radioCheckboxes[ev.data.colId].length; i++) {
                     var checkbox = this.table.radioCheckboxes[ev.data.colId][i];
                     checkbox.checked = (checkbox === ev.currentTarget);
+                }
+            }
+        },
+
+        applyToggleCheckbox: function(checkboxColId) {
+            var checkboxCol = this.table.columns[checkboxColId];
+            var checked = $('input[type="checkbox"]', this.tds[checkboxColId]).prop('checked');
+            var colId, colIndex, neg;
+            for (var i = 0; i < checkboxCol.toggle.length; i++) {
+                colId = checkboxCol.toggle[i];
+                colIndex = this.table.colum;
+                if (neg = colId[0] === '!') {
+                    colId = colId.substr(1);
+                }
+                if ((checked && !neg) || (!checked && neg))  {
+                    $(this.tds[colId])
+                        .removeClass('disabled')
+                        .find('textarea, input').prop('disabled', false);
+                } else {
+                    $(this.tds[colId])
+                        .addClass('disabled')
+                        .find('textarea, input').prop('disabled', true);
                 }
             }
         },
@@ -13799,14 +14650,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
                 var uri = 'entries/' + section.handle + '/new';
-                if (this.siteId && this.siteId != Craft.siteId) {
+                params = {};
+                if (this.siteId) {
                     for (var i = 0; i < Craft.sites.length; i++) {
                         if (Craft.sites[i].id == this.siteId) {
-                            uri += '/'+Craft.sites[i].handle;
+                            params.site = Craft.sites[i].handle;
                         }
                     }
                 }
-                return 'href="' + Craft.getUrl(uri) + '"';
+                return 'href="' + Craft.getUrl(uri, params) + '"';
             } else {
                 return 'data-id="' + section.id + '"';
             }
@@ -15814,15 +16666,16 @@ Craft.LivePreview = Garnish.Base.extend(
             $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
-                this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
-                this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod);
-                this.$editor = $('<div class="lp-editor"/>').appendTo(this.$editorContainer);
-                this.$iframeContainer = $('<div class="lp-iframe-container"/>').appendTo(Garnish.$bod);
-                this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
+                this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
+                this.$iframeContainer =$('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
 
-                var $header = $('<header class="header"></header>').appendTo(this.$editor),
-                    $closeBtn = $('<div class="btn">' + Craft.t('app', 'Close Live Preview') + '</div>').appendTo($header),
-                    $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($header);
+                var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
+                this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
+                this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
+                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
+                var $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($editorHeader);
 
                 this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                     axis: Garnish.X_AXIS,
@@ -16040,7 +16893,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
 
             // Create a new iframe
-            var $iframe = $('<iframe class="lp-iframe" frameborder="0"/>');
+            var $iframe = $('<iframe class="lp-preview" frameborder="0"/>');
             if (this.$iframe) {
                 $iframe.insertBefore(this.$iframe);
             } else {
@@ -16276,6 +17129,389 @@ Craft.PasswordInput = Garnish.Base.extend(
         defaults: {
             onToggleInput: $.noop
         }
+    });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Preview
+ */
+Craft.Preview = Garnish.Base.extend(
+    {
+        draftEditor: null,
+
+        $shade: null,
+        $editorContainer: null,
+        $editor: null,
+        $spinner: null,
+        $savedIcon: null,
+        $dragHandle: null,
+        $previewContainer: null,
+        $targetBtn: null,
+        $targetMenu: null,
+        $iframe: null,
+        $tempInput: null,
+        $fieldPlaceholder: null,
+
+        isActive: false,
+        activeTarget: 0,
+        url: null,
+        fields: null,
+
+        scrollLeft: 0,
+        scrollTop: 0,
+
+        dragger: null,
+        dragStartEditorWidth: null,
+
+        _slideInOnIframeLoad: false,
+        _updateIframeProxy: null,
+
+        _editorWidth: null,
+        _editorWidthInPx: null,
+
+        init: function(draftEditor) {
+            this.draftEditor = draftEditor;
+
+            this._updateIframeProxy = $.proxy(this,'updateIframe');
+
+            this.$tempInput = $('<input/>', {type: 'hidden', name: '__PREVIEW_FIELDS__', value: '1'});
+            this.$fieldPlaceholder = $('<div/>');
+
+            // Set the initial editor width
+            this.editorWidth = Craft.getLocalStorage('LivePreview.editorWidth', Craft.Preview.defaultEditorWidth);
+        },
+
+        get editorWidth() {
+            return this._editorWidth;
+        },
+
+        get editorWidthInPx() {
+            return this._editorWidthInPx;
+        },
+
+        set editorWidth(width) {
+            var inPx;
+
+            // Is this getting set in pixels?
+            if (width >= 1) {
+                inPx = width;
+                width /= Garnish.$win.width();
+            } else {
+                inPx = Math.round(width * Garnish.$win.width());
+            }
+
+            // Make sure it's no less than the minimum
+            if (inPx < Craft.Preview.minEditorWidthInPx) {
+                inPx = Craft.Preview.minEditorWidthInPx;
+                width = inPx / Garnish.$win.width();
+            }
+
+            this._editorWidth = width;
+            this._editorWidthInPx = inPx;
+        },
+
+        open: function() {
+            if (this.isActive) {
+                return;
+            }
+
+            this.isActive = true;
+            this.trigger('beforeOpen');
+
+            $(document.activeElement).trigger('blur');
+
+            if (!this.$editor) {
+                this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
+                this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
+
+                var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
+                this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
+                this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
+                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
+                this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
+                this.$savedIcon = $('<div/>', {'class': 'checkmark-icon invisible', title: Craft.t('app', 'Saved')}).appendTo($editorHeader);
+
+                if (this.draftEditor.settings.previewTargets.length > 1) {
+                    var $previewHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$previewContainer);
+                    this.$targetBtn = $('<div/>', {
+                        'class': 'btn menubtn',
+                        text: this.draftEditor.settings.previewTargets[0].label,
+                        role: 'btn',
+                    }).appendTo($previewHeader);
+                    this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
+                    var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
+                    var $li, $a;
+                    for (var i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+                        $li = $('<li/>').appendTo($ul)
+                        $a = $('<a/>', {
+                            data: {target: i},
+                            text: this.draftEditor.settings.previewTargets[i].label,
+                            'class': i === 0 ? 'sel' : null,
+                        }).appendTo($li);
+                    }
+                    new Garnish.MenuBtn(this.$targetBtn, {
+                        onOptionSelect: $.proxy(function(option) {
+                            this.switchTarget($(option).data('target'));
+                        }, this)
+                    });
+                }
+
+                this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
+                    axis: Garnish.X_AXIS,
+                    onDragStart: $.proxy(this, '_onDragStart'),
+                    onDrag: $.proxy(this, '_onDrag'),
+                    onDragStop: $.proxy(this, '_onDragStop')
+                });
+
+                this.addListener($closeBtn, 'click', 'close');
+            }
+
+            // Set the sizes
+            this.handleWindowResize();
+            this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
+
+            this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.Preview.dragHandleWidth) + 'px');
+            this.$previewContainer.css(Craft.right, -this.getIframeWidth());
+
+            // Find the fields, excluding nested fields
+            this.fields = [];
+            var $fields = $('#content .field').not($('#content .field .field'));
+
+            if ($fields.length) {
+                // Insert our temporary input before the first field so we know where to swap in the serialized form values
+                this.$tempInput.insertBefore($fields.get(0));
+
+                // Move all the fields into the editor rather than copying them
+                // so any JS that's referencing the elements won't break.
+                for (var i = 0; i < $fields.length; i++) {
+                    var $field = $($fields[i]),
+                        $clone = this._getClone($field);
+
+                    // It's important that the actual field is added to the DOM *after* the clone,
+                    // so any radio buttons in the field get deselected from the clone rather than the actual field.
+                    this.$fieldPlaceholder.insertAfter($field);
+                    $field.detach();
+                    this.$fieldPlaceholder.replaceWith($clone);
+                    $field.appendTo(this.$editor);
+
+                    this.fields.push({
+                        $field: $field,
+                        $clone: $clone
+                    });
+                }
+
+            }
+
+            this._slideInOnIframeLoad = true;
+            this.updateIframe();
+
+            this.draftEditor.on('update', this._updateIframeProxy);
+            Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
+            Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
+
+            this.trigger('open');
+        },
+
+        switchTarget: function(i) {
+            this.activeTarget = i;
+            this.$targetBtn.text(this.draftEditor.settings.previewTargets[i].label);
+            this.$targetMenu.find('a.sel').removeClass('sel');
+            this.$targetMenu.find('a').eq(i).addClass('sel');
+            this.updateIframe(true);
+        },
+
+        handleWindowResize: function() {
+            // Reset the width so the min width is enforced
+            this.editorWidth = this.editorWidth;
+
+            // Update the editor/iframe sizes
+            this.updateWidths();
+        },
+
+        slideIn: function() {
+            $('html').addClass('noscroll');
+            this.$shade.velocity('fadeIn');
+
+            this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function() {
+                this.trigger('slideIn');
+                Garnish.$win.trigger('resize');
+            }, this));
+
+            this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function() {
+                this.addListener(Garnish.$bod, 'keyup', function(ev) {
+                    if (ev.keyCode === Garnish.ESC_KEY) {
+                        this.close();
+                    }
+                });
+            }, this));
+        },
+
+        close: function() {
+            if (!this.isActive) {
+                return;
+            }
+
+            this.trigger('beforeClose');
+
+            $('html').removeClass('noscroll');
+
+            this.removeListener(Garnish.$win, 'resize');
+            this.removeListener(Garnish.$bod, 'keyup');
+
+            // Remove our temporary input and move the preview fields back into place
+            this.$tempInput.detach();
+            this.moveFieldsBack();
+
+            this.$shade.delay(200).velocity('fadeOut');
+
+            this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.Preview.dragHandleWidth), 'slow', $.proxy(function() {
+                for (var i = 0; i < this.fields.length; i++) {
+                    this.fields[i].$newClone.remove();
+                }
+                this.$editorContainer.hide();
+                this.trigger('slideOut');
+            }, this));
+
+            this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
+                this.$previewContainer.hide();
+            }, this));
+
+            this.draftEditor.off('update', this._updateIframeProxy);
+            Garnish.off(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
+            Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
+
+            this.isActive = false;
+            this.trigger('close');
+        },
+
+        moveFieldsBack: function() {
+            for (var i = 0; i < this.fields.length; i++) {
+                var field = this.fields[i];
+                field.$newClone = this._getClone(field.$field);
+
+                // It's important that the actual field is added to the DOM *after* the clone,
+                // so any radio buttons in the field get deselected from the clone rather than the actual field.
+                this.$fieldPlaceholder.insertAfter(field.$field);
+                field.$field.detach();
+                this.$fieldPlaceholder.replaceWith(field.$newClone);
+                field.$clone.replaceWith(field.$field);
+            }
+
+            Garnish.$win.trigger('resize');
+        },
+
+        getIframeWidth: function() {
+            return Garnish.$win.width() - (this.editorWidthInPx + Craft.Preview.dragHandleWidth);
+        },
+
+        updateWidths: function() {
+            this.$editorContainer.css('width', this.editorWidthInPx + 'px');
+            this.$previewContainer.width(this.getIframeWidth());
+        },
+
+        updateIframe: function(resetScroll) {
+            if (!this.isActive) {
+                return false;
+            }
+
+            // Ignore non-boolean resetScroll values
+            resetScroll = resetScroll === true;
+
+            var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
+
+            this.draftEditor.getTokenizedPreviewUrl(url, true).then(function(url) {
+                // Capture the current scroll position?
+                var sameHost;
+                if (resetScroll) {
+                    this.scrollLeft = 0;
+                    this.scrolllTop = 0;
+                } else {
+                    sameHost = Craft.isSameHost(url);
+                    if (sameHost && this.$iframe && this.$iframe[0].contentWindow) {
+                        var $doc = $(this.$iframe[0].contentWindow.document);
+                        this.scrollLeft = $doc.scrollLeft();
+                        this.scrollTop = $doc.scrollTop();
+                    }
+                }
+
+                var $iframe = $('<iframe/>', {
+                    'class': 'lp-preview',
+                    frameborder: 0,
+                    src: url,
+                });
+
+                if (!resetScroll && sameHost) {
+                    $iframe.on('load', function() {
+                        var $doc = $($iframe[0].contentWindow.document);
+                        $doc.scrollLeft(this.scrollLeft);
+                        $doc.scrollTop(this.scrollTop);
+                    }.bind(this));
+                }
+
+                if (this.$iframe) {
+                    this.$iframe.replaceWith($iframe);
+                } else {
+                    $iframe.appendTo(this.$previewContainer);
+                }
+
+                this.url = url;
+                this.$iframe = $iframe;
+                this.afterUpdateIframe();
+            }.bind(this));
+        },
+
+        afterUpdateIframe: function() {
+            this.trigger('afterUpdateIframe');
+
+            if (this._slideInOnIframeLoad) {
+                this.slideIn();
+                this._slideInOnIframeLoad = false;
+            }
+        },
+
+        _getClone: function($field) {
+            var $clone = $field.clone();
+
+            // clone() won't account for input values that have changed since the original HTML set them
+            Garnish.copyInputValues($field, $clone);
+
+            // Remove any id= attributes
+            $clone.attr('id', '');
+            $clone.find('[id]').attr('id', '');
+
+            // Disable anything with a name attribute
+            $clone.find('[name]').prop('disabled', true);
+
+            return $clone;
+        },
+
+        _onDragStart: function() {
+            this.dragStartEditorWidth = this.editorWidthInPx;
+            this.$previewContainer.addClass('dragging');
+        },
+
+        _onDrag: function() {
+            if (Craft.orientation === 'ltr') {
+                this.editorWidth = this.dragStartEditorWidth + this.dragger.mouseDistX;
+            } else {
+                this.editorWidth = this.dragStartEditorWidth - this.dragger.mouseDistX;
+            }
+
+            this.updateWidths();
+        },
+
+        _onDragStop: function() {
+            this.$previewContainer.removeClass('dragging');
+            Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
+        }
+    },
+    {
+        defaultEditorWidth: 0.33,
+        minEditorWidthInPx: 320,
+        dragHandleWidth: 2,
     });
 
 /** global: Craft */
@@ -18843,7 +20079,10 @@ Craft.ui =
                     disabled: this.getDisabledValue(config.disabled),
                     readonly: config.readonly,
                     title: config.title,
-                    placeholder: config.placeholder
+                    placeholder: config.placeholder,
+                    step: config.step,
+                    min: config.min,
+                    max: config.max
                 }
             });
 

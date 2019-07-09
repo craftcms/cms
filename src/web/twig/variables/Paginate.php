@@ -118,27 +118,14 @@ class Paginate extends BaseObject
         }
 
         $path = $this->getBasePath();
-        $params = [];
-        $qsPageTrigger = null;
+        $params = null;
 
         if ($page != 1) {
-            $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-            if (!is_string($pageTrigger) || $pageTrigger === '') {
-                $pageTrigger = 'p';
-            }
+            $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
 
             // Is this query string-based pagination?
-            if ($pageTrigger[0] === '?') {
-                $pageTrigger = $qsPageTrigger = trim($pageTrigger, '?=');
-
-                // Avoid conflict with the path param
-                $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-                if ($pageTrigger === $pathParam) {
-                    $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-                }
-
-                $params = [$pageTrigger => $page];
+            if (strpos($pageTrigger, '?') === 0) {
+                $params = [trim($pageTrigger, '?=') => $page];
             } else {
                 if ($path) {
                     $path .= '/';
@@ -149,23 +136,10 @@ class Paginate extends BaseObject
         }
 
         // Build the URL with the same query string as the current request
-        // todo: remove this condition and go straight to `else` in Craft 3.2
-        if ($qsPageTrigger !== null) {
-            $queryString = Craft::$app->getRequest()->getQueryString();
-            $parts = explode('&', $queryString);
-            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-            foreach ($parts as $key => $part) {
-                if (strpos($part, $pathParam . '=') === 0 || strpos($part, $qsPageTrigger . '=') === 0) {
-                    unset($parts[$key]);
-                }
-            }
-            $url = UrlHelper::url($path, implode('&', $parts));
-        } else {
-            $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
-        }
+        $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
 
         // Then add the page param if there is one
-        if (!empty($params)) {
+        if ($params !== null) {
             $url = UrlHelper::urlWithParams($url, $params);
         }
 

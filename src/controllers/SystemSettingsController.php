@@ -46,6 +46,8 @@ class SystemSettingsController extends Controller
     {
         // All system setting actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

@@ -1482,7 +1482,7 @@ class ProjectConfig extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
-                'sections.propagateEntries',
+                'sections.propagationMethod',
                 'sections.uid',
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
@@ -1508,7 +1508,6 @@ class ProjectConfig extends Component
             $uid = $section['uid'];
             unset($section['id'], $section['structureMaxLevels'], $section['uid']);
 
-            $section['propagateEntries'] = (bool)$section['propagateEntries'];
             $section['enableVersioning'] = (bool)$section['enableVersioning'];
 
             $sectionData[$uid] = $section;

@@ -173,6 +173,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     'dateReserved' => null,
                     'timeUpdated' => null,
                     'progress' => 0,
+                    'progressLabel' => null,
                     'attempt' => 0,
                     'fail' => false,
                     'dateFailed' => null,
@@ -200,6 +201,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     'dateReserved' => null,
                     'timeUpdated' => null,
                     'progress' => 0,
+                    'progressLabel' => null,
                     'attempt' => 0,
                     'fail' => false,
                     'dateFailed' => null,
@@ -225,19 +227,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress)
+    public function setProgress(int $progress, string $label = null)
     {
+        $data = [
+            'progress' => $progress,
+            'timeUpdated' => time(),
+        ];
+
+        if ($label !== null) {
+            $data['progressLabel'] = $label;
+        }
+
         Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::QUEUE,
-                [
-                    'progress' => $progress,
-                    'timeUpdated' => time(),
-                ],
-                ['id' => $this->_executingJobId],
-                [],
-                false
-            )
+            ->update(Table::QUEUE, $data, ['id' => $this->_executingJobId], [], false)
             ->execute();
     }
 
@@ -324,7 +326,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->_moveExpired();
 
         $results = $this->_createJobQuery()
-            ->select(['id', 'description', 'progress', 'timeUpdated', 'fail', 'error'])
+            ->select(['id', 'description', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
             ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
@@ -337,6 +339,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $result['id'],
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
+                'progressLabel' => $result['progressLabel'],
                 'description' => $result['description'],
                 'error' => $result['error'],
             ];
@@ -529,6 +532,7 @@ EOD;
                         'dateReserved' => null,
                         'timeUpdated' => null,
                         'progress' => 0,
+                        'progressLabel' => null,
                     ],
                     '[[timeUpdated]] < :time - [[ttr]]',
                     [':time' => $this->_reserveTime],
