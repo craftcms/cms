@@ -900,7 +900,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::CRAFTIDTOKENS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CONTENT, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::DRAFTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::DRAFTS, ['revisionId'], Table::REVISIONS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::DRAFTS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
