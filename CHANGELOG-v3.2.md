@@ -39,7 +39,7 @@
 - The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
 - Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
-- Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
+- Jobs can now set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added the `_layouts/element` template, which can be extended by element edit pages that wish to support drafts, revisions, and content previewing.
 - Added the `_special/sitepicker` template.
 - It’s now possible for plugins and modules to define custom actions on console controllers.
