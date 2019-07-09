@@ -403,6 +403,11 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
+## 3.1.34 - 2019-07-09
+
+### Changed
+- The `project-config/rebuild` command now rebuilds the existing project config wherever possible, instead of merging database data with the existing project config.
+
 ## 3.1.33 - 2019-07-02
 
 ### Added

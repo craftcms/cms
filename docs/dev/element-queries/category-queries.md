@@ -1072,7 +1072,7 @@ Narrows the query results to only categories that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed categories #}
-{% set categories = {twig-function}
+{% set categories = craft.categories()
     .trashed()
     .all() %}
 ```

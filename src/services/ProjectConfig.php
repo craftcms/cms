@@ -880,7 +880,11 @@ class ProjectConfig extends Component
         $this->trigger(self::EVENT_REBUILD, $event);
 
         // Merge the new data over the existing one.
-        $configData = array_replace_recursive($currentConfig, $event->config);
+        $configData = array_replace_recursive([
+            'system' => $currentConfig['system'],
+            'routes' => $currentConfig['routes'] ?? [],
+            'plugins' => $currentConfig['plugins'] ?? []
+        ], $event->config);
 
         $this->muteEvents = true;
 

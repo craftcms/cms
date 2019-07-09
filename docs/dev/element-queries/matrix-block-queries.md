@@ -39,7 +39,7 @@ We can display content from all the Matrix blocks of an element by doing the fol
 {% set matrixBlocks = myMatrixBlockQuery.all() %}
 
 {# Display their contents #}
-{% for block in blocks %}
+{% for block in matrixBlocks %}
     <p>{{ block.text }}</p>
 {% endfor %}
 ```
@@ -600,7 +600,7 @@ Narrows the query results to only Matrix blocks that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed Matrix blocks #}
-{% set MatrixBlocks = {twig-function}
+{% set MatrixBlocks = craft.matrixBlocks()
     .trashed()
     .all() %}
 ```

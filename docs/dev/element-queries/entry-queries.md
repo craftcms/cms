@@ -1246,7 +1246,7 @@ Possible values include:
 ::: code
 ```twig
 {# Fetch disabled entries #}
-{% set entries = {twig-function}
+{% set entries = craft.entries()
     .status('disabled')
     .all() %}
 ```
@@ -1308,7 +1308,7 @@ Narrows the query results to only entries that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed entries #}
-{% set entries = {twig-function}
+{% set entries = craft.entries()
     .trashed()
     .all() %}
 ```

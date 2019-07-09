@@ -510,7 +510,7 @@ Narrows the query results to only global sets that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed global sets #}
-{% set globalSets = {twig-function}
+{% set globalSets = craft.globalSets()
     .trashed()
     .all() %}
 ```

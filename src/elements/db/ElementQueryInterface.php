@@ -445,7 +445,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```twig
      * {# Fetch trashed {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .trashed()
      *     .all() %}
      * ```
