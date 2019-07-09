@@ -116,12 +116,16 @@ class Drafts extends Component
         $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
-            $totalDrafts = $source::find()
-                ->draftOf($source)
-                ->siteId($source->siteId)
-                ->anyStatus()
-                ->count();
-            $name = Craft::t('app', 'Draft {num}', ['num' => $totalDrafts + 1]);
+            $draftNames = (new Query())
+                ->select(['name'])
+                ->from([Table::DRAFTS])
+                ->where(['sourceId' => $source->id])
+                ->column();
+            $draftNames = array_flip($draftNames);
+            $num = count($draftNames);
+            do {
+                $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
+            } while (isset($draftNames[$name]));
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();

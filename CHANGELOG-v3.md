@@ -24,6 +24,7 @@
 - Fixed a bug where where functional tests could cause 404 errors. ([#4472](https://github.com/craftcms/cms/issues/4472))
 - Fixed an error that occurred when previewing an unsaved category.
 - Fixed a bug where drafts could be deleted when pruning revisions per the `maxRevisions` config setting.
+- Fixed a bug where drafts could be created with the same name as another draft. ([#4502](https://github.com/craftcms/cms/issues/4502))
 
 ## 3.2.0-RC3 - 2019-07-02
 
