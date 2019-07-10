@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+### Changed
+- If a draft can’t be saved, an alert icon is now shown in the Control Panel header, which can be clicked on to reveal more information.
+
 ### Fixed
 - Fixed a bug where Feed widget items weren’t getting hyperlinked.
 - Fixed a bug where the `app/migrate` controller wasn’t applying new `project.yaml` changes if there were no pending migrations.
+- Fixed a SQL error that could occur when saving an entry draft. ([#4508](https://github.com/craftcms/cms/issues/4508))
 
 ## 3.2.0 - 2019-07-09
 

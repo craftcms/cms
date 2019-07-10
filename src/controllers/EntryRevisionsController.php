@@ -176,6 +176,8 @@ class EntryRevisionsController extends BaseEntriesController
             /** @var Entry|DraftBehavior $draft */
             $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
         } else {
+            $transaction = null;
+
             if ($draftId) {
                 $draft = Entry::find()
                     ->draftId($draftId)
@@ -201,6 +203,10 @@ class EntryRevisionsController extends BaseEntriesController
                     throw new NotFoundHttpException('Entry not found');
                 }
                 $this->enforceEditEntryPermissions($entry);
+
+                // Create the draft in a transaction so we can undo it if something goes wrong
+                $transaction = Craft::$app->getDb()->beginTransaction();
+
                 /** @var Entry|DraftBehavior $draft */
                 $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
             }
@@ -215,9 +221,13 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             if (!$elementsService->saveElement($draft)) {
+                if ($transaction !== null) {
+                    $transaction->rollBack();
+                }
+
                 if ($request->getAcceptsJson()) {
                     return $this->asJson([
-                        'errors' => $draft->getErrors(),
+                        'errors' => $draft->getErrorSummary(true),
                     ]);
                 }
 
@@ -226,6 +236,10 @@ class EntryRevisionsController extends BaseEntriesController
                     'entry' => $draft,
                 ]);
                 return null;
+            }
+
+            if ($transaction !== null) {
+                $transaction->commit();
             }
         }
 
