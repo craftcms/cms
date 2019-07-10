@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where Feed widget items weren’t getting hyperlinked.
+- Fixed a bug where the `app/migrate` controller wasn’t applying new `project.yaml` changes if there were no pending migrations.
 
 ## 3.2.0 - 2019-07-09
 
