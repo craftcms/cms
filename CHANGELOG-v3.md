@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.1 - 2019-07-11
 
 ### Added
 - Added `craft\console\Request::getIsPreview()`.
