@@ -1632,7 +1632,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHasDescendants(): bool
     {
-        return ($this->lft !== null && $this->rgt !== null && $this->rgt > $this->lft + 1);
+        $descendants = $this->getDescendants();
+        if (is_array($descendants)) {
+            return !empty($descendants);
+        }
+        return $descendants->exists();
     }
 
     /**
@@ -1640,11 +1644,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTotalDescendants(): int
     {
-        if ($this->getHasDescendants()) {
-            return ($this->rgt - $this->lft - 1) / 2;
+        $descendants = $this->getDescendants();
+        if (is_array($descendants)) {
+            return count($descendants);
         }
-
-        return 0;
+        return $descendants->count();
     }
 
     /**
