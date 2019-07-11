@@ -9,6 +9,7 @@
 - Fixed a bug where Feed widget items weren’t getting hyperlinked.
 - Fixed a bug where the `app/migrate` controller wasn’t applying new `project.yaml` changes if there were no pending migrations.
 - Fixed a SQL error that could occur when saving an entry draft. ([#4508](https://github.com/craftcms/cms/issues/4508))
+- Fixed a bug where Assets fields set to restrict uploads to a single folder could have empty selector modals. ([#4522](https://github.com/craftcms/cms/issues/4522))
 
 ## 3.2.0 - 2019-07-09
 
