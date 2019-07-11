@@ -66,6 +66,17 @@ class ElementsController extends BaseElementsController
                         $nextHeading = null;
                     }
                     $sources[] = $source;
+                    unset($sourceKeys[$source['key']]);
+                }
+            }
+
+            // Did we miss any source keys? (This could happen if some are nested)
+            if (!empty($sourceKeys)) {
+                foreach (array_keys($sourceKeys) as $key) {
+                    $source = ElementHelper::findSource($elementType, $key, $context);
+                    if ($source !== null) {
+                        $sources[$key] = $source;
+                    }
                 }
             }
         } else {

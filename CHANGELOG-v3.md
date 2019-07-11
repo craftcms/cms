@@ -1,5 +1,26 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.1 - 2019-07-11
+
+### Added
+- Added `craft\console\Request::getIsPreview()`.
+- Added `craft\web\Request::getIsPreview()`.
+
+### Changed
+- If a draft can’t be saved, an alert icon is now shown in the Control Panel header, which can be clicked on to reveal more information.
+- Element revisions no longer store snapshot data.
+
+### Fixed
+- Fixed a bug where Feed widget items weren’t getting hyperlinked.
+- Fixed a bug where the `app/migrate` controller wasn’t applying new `project.yaml` changes if there were no pending migrations.
+- Fixed a SQL error that could occur when saving an entry or entry draft. ([#4508](https://github.com/craftcms/cms/issues/4508))
+- Fixed a bug where Assets fields set to restrict uploads to a single folder could have empty selector modals. ([#4522](https://github.com/craftcms/cms/issues/4522))
+- Fixed an error that could occur if a template was accessing the deprecated `locale` property of an element query, but `siteId` wasn’t set to an integer. ([#4531](https://github.com/craftcms/cms/issues/4531))
+- Fixed a bug where users without the “Publish live changes” permission for a section weren’t able to create new entries. ([#4528](https://github.com/craftcms/cms/issues/4529))
+- Fixed a PHP error that could occur when uploading files to Assets fields on the front-end. ([#4382](https://github.com/craftcms/cms/issues/4382))
+- Fixed a bug where elements listed in a Structure view could show descendant toggles even if they had no descendants. ([#4504](https://github.com/craftcms/cms/issues/4504))
+- Fixed a backwards compatibility issue. ([#4523](https://github.com/craftcms/cms/issues/4523))
+
 ## 3.2.0 - 2019-07-09
 
 > {warning} If you’ve ever run the `project-config/rebuild` command, it’s highly recommended that you run it again with Craft 3.1.34, before updating to Craft 3.2.

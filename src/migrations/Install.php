@@ -262,7 +262,6 @@ class Install extends Migration
             'creatorId' => $this->integer(),
             'num' => $this->integer()->notNull(),
             'notes' => $this->text(),
-            'snapshot' => $this->mediumText(),
         ]);
         $this->createTable(Table::SEQUENCES, [
             'name' => $this->string()->notNull(),

@@ -5,7 +5,7 @@ env:
   - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
 branches:
   only:
-  - 3.2
+  - develop
   - feature/tests
 services:
 - mysql

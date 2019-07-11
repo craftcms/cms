@@ -3,6 +3,7 @@
 return [
     '"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
     '"{filename}" is too large.' => '"{filename}" is te groot.',
+    '{first}-{last} of {total}' => '{first}-{last} van {total}',
     '(blank)' => '(leeg)',
     '/path/to/folder' => '/pad/naar/map',
     '1 Available Update' => '1 update beschikbaar',

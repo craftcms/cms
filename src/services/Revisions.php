@@ -134,12 +134,6 @@ class Revisions extends Component
         $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
         $notes = $event->revisionNotes;
 
-        // Create the source snapshot
-        $snapshot = ArrayHelper::toArray(array_merge(
-            $source->toArray([], [], false),
-            $source->getSerializedFieldValues()
-        ));
-
         $elementsService = Craft::$app->getElements();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -152,7 +146,6 @@ class Revisions extends Component
                     'creatorId' => $creatorId,
                     'num' => $num,
                     'notes' => $notes,
-                    'snapshot' => Json::encode($snapshot),
                 ], false)
                 ->execute();
 

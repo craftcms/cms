@@ -356,17 +356,35 @@ li.sel a {
   box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
 
-/* checkmark icon */
-.checkmark-icon {
+/* status icons */
+.checkmark-icon,
+.alert-icon {
   padding: 5px;
+  margin-bottom: 0 !important;
   line-height: 10px;
   border-radius: 20px;
-  background: darken($bgColor, 10%);
+  cursor: pointer;
 
   &:before {
     @include icon;
+  }
+}
+
+.checkmark-icon {
+  background: darken($bgColor, 10%);
+
+  &:before {
     content: 'check';
     color: $successColor;
+  }
+}
+
+.alert-icon {
+  background: darken($bgColor, 10%);
+
+  &:before {
+    content: 'alert';
+    color: $errorColor;
   }
 }
 

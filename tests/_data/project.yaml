@@ -73,7 +73,7 @@ system:
   edition: pro
   name: 'Craft CMS Test Site'
   live: true
-  schemaVersion: 3.2.12
+  schemaVersion: 3.2.13
   timeZone: America/Los_Angeles
 users:
   allowPublicRegistration: false

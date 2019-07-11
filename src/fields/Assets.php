@@ -578,6 +578,10 @@ class Assets extends BaseRelationField
         /** @var Element $element */
         $uploadedFiles = [];
 
+        if (ElementHelper::rootElement($element)->getIsRevision()) {
+            return $uploadedFiles;
+        }
+
         // Grab data strings
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
             foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {

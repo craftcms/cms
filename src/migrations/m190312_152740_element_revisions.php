@@ -33,7 +33,6 @@ class m190312_152740_element_revisions extends Migration
             'creatorId' => $this->integer()->notNull(),
             'num' => $this->integer()->notNull(),
             'notes' => $this->text(),
-            'snapshot' => $this->mediumText(),
         ]);
 
         $this->addForeignKey(null, Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], 'CASCADE', null);

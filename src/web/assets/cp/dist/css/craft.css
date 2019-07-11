@@ -177,9 +177,15 @@ body.rtl #revision-btngroup { margin-left: 7px; }
 
 #revision-btn.disabled { opacity: 1; color: #576575; background: transparent; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); }
 
-/* checkmark icon */
-.checkmark-icon { padding: 5px; line-height: 10px; border-radius: 20px; background: #cfdde7; }
-.checkmark-icon:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; content: 'check'; color: #00b007; }
+/* status icons */
+.checkmark-icon, .alert-icon { padding: 5px; margin-bottom: 0 !important; line-height: 10px; border-radius: 20px; cursor: pointer; }
+.checkmark-icon:before, .alert-icon:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+
+.checkmark-icon { background: #cfdde7; }
+.checkmark-icon:before { content: 'check'; color: #00b007; }
+
+.alert-icon { background: #cfdde7; }
+.alert-icon:before { content: 'alert'; color: #da5a47; }
 
 /* toggles */
 .toggle, a.fieldtoggle:before { width: 20px; height: 20px; line-height: 20px; text-align: center; -webkit-transition: -webkit-transform linear 100ms; transition: -webkit-transform linear 100ms; transition: transform linear 100ms; transition: transform linear 100ms, -webkit-transform linear 100ms; }
