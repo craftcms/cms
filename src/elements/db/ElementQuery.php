@@ -455,7 +455,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         switch ($name) {
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
-                if ($this->siteId && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
+                if ($this->siteId && is_numeric($this->siteId) && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
                     return $site->handle;
                 }
 
