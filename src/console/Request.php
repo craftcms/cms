@@ -104,6 +104,17 @@ class Request extends \yii\console\Request
     }
 
     /**
+     * Returns whether this is an element preview request.
+     *
+     * @return bool
+     * @since 3.2.1
+     */
+    public function getIsPreview(): bool
+    {
+        return false;
+    }
+
+    /**
      * Returns whether this is a Live Preview request. (Narrator: It isn't.)
      *
      * @return bool Whether this is a Live Preview request.

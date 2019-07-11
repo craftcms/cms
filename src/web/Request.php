@@ -34,6 +34,7 @@ use yii\web\NotFoundHttpException;
  * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
  * @property bool $isLivePreview Whether this is a Live Preview request.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
+ * @property-read bool $isPreview Whether this is an element preview request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -473,6 +474,25 @@ class Request extends \yii\web\Request
         $this->_checkRequestType();
 
         return $this->_actionSegments;
+    }
+
+    /**
+     * Returns whether this is an element preview request.
+     *
+     * ---
+     * ```php
+     * $isPreviewRequest = Craft::$app->request->isPreview;
+     * ```
+     * ```twig
+     * {% set isPreviewRequest = craft.app.request.isPreview %}
+     * ```
+     *
+     * @return bool
+     * @since 3.2.1
+     */
+    public function getIsPreview(): bool
+    {
+        return $this->getQueryParam('x-craft-preview') !== null;
     }
 
     /**

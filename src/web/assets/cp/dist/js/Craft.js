@@ -1,4 +1,4 @@
-/*!   - 2019-07-10 */
+/*!   - 2019-07-11 */
 (function($){
 
 /** global: Craft */
@@ -13053,7 +13053,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
                 if (forceRandomParam || !this.settings.isLive) {
                     // Randomize the URL so CDNs don't return cached pages
-                    params.v = Craft.randomString(10);
+                    params['x-craft-preview'] = Craft.randomString(10);
                 }
 
                 // No need for a token if we're looking at a live element

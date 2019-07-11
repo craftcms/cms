@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\console\Request::getIsPreview()`.
+- Added `craft\web\Request::getIsPreview()`.
+
 ### Changed
 - If a draft can’t be saved, an alert icon is now shown in the Control Panel header, which can be clicked on to reveal more information.
 - Element revisions no longer store snapshot data.
