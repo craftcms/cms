@@ -50,7 +50,11 @@
     {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
 {% endif %}
 
-{% set showStatusToggles = element.hasStatuses() and (showStatusToggles ?? true) %}
+{# If this is an unsaved draft, then we should only show status toggles if the
+   user actually has permission to publish chanegs #}
+{% set showStatusToggles = element.hasStatuses() and
+    (not isUnsavedDraft or canUpdateSource) and
+    (showStatusToggles ?? true) %}
 
 {% block header %}
     {{ block('pageTitle') }}
@@ -72,7 +76,7 @@
 {% endblock %}
 
 {% block actionButton %}
-    {% if canUpdateSource %}
+    {% if canUpdateSource or isUnsavedDraft %}
         {% if isRevision %}
             {% if revertSourceAction %}
                 <div class="spacer"></div>
