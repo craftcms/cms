@@ -8,7 +8,6 @@
 namespace craftunit\services;
 
 use Codeception\Test\Unit;
-use Codeception\Util\Fixtures;
 use Craft;
 use craft\elements\User;
 use craft\errors\GqlException;
@@ -20,10 +19,8 @@ use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\models\GqlToken;
 use craft\services\Gql;
-use craft\test\Fixture;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
-use crafttests\fixtures\GqlTokensFixture;
 use GraphQL\Type\Definition\ObjectType;
 use yii\base\Event;
 
@@ -37,6 +34,8 @@ class GqlTest extends Unit
     protected function _before()
     {
         Craft::$app->getGql()->flushCaches();
+        $gql = Craft::$app->getGql();
+        $gql->setToken(new GqlToken());
     }
 
     protected function _after()
@@ -47,9 +46,22 @@ class GqlTest extends Unit
     // =========================================================================
 
     /**
+     * Test schema creation without token.
+     *
+     * @expectedException \craft\errors\GqlException
+     * @expectedExceptionMessage No access token set.
+     */
+    public function testCreatingSchemaFail()
+    {
+        $gqlService = Craft::$app->getGql();
+        $gqlService->setToken(null);
+        $gqlService->getSchema();
+    }
+
+    /**
      * Test schema creation.
      */
-    public function testCreatingSchema()
+    public function testCreatingSchemaSuccess()
     {
         $schema = Craft::$app->getGql()->getSchema();
         $this->assertInstanceOf('GraphQL\Type\Schema', $schema);
@@ -165,14 +177,14 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlToken(['name' => 'Something', 'enabled' => true, 'permissions' => ['usergroups.allUsers:read']]);
-        $gqlService->saveToken($token);
+        $token = new GqlToken(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['usergroups.allUsers:read']]);
+        $gqlService->setToken($token);
         $schema = $gqlService->getSchema($token);
 
         $gqlService->flushCaches();
 
-        $token = new GqlToken(['name' => 'Something', 'enabled' => true, 'permissions' => ['volumes.someVolume:read']]);
-        $gqlService->saveToken($token, true);
+        $token = new GqlToken(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['volumes.someVolume:read']]);
+        $gqlService->setToken($token);
         $this->assertNotEquals($schema, $gqlService->getSchema($token));
     }
 
