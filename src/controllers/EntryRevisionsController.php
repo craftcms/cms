@@ -15,7 +15,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\StringHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -93,7 +93,7 @@ class EntryRevisionsController extends BaseEntriesController
         $entry->sectionId = $section->id;
         $entry->typeId = $request->getQueryParam('typeId', $section->getEntryTypes()[0]->id);
         $entry->authorId = $request->getQueryParam('authorId', Craft::$app->getUser()->getId());
-        $entry->slug = '__temp_' . StringHelper::randomString();
+        $entry->slug = ElementHelper::tempSlug();
 
         // Set the default status based on the section's settings
         /** @var Section_SiteSettings $siteSettings */
@@ -464,8 +464,8 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->typeId = $request->getBodyParam('typeId');
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
-        // Default to the current draft slug (maybe __temp_X) to avoid slug validation errors
-        $draft->slug = $request->getBodyParam('slug') ?: $draft->slug;
+        // Default to a temp slug to avoid slug validation errors
+        $draft->slug = $request->getBodyParam('slug') ?: ElementHelper::tempSlug();
         if (($postDate = $request->getBodyParam('postDate')) !== null) {
             $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
