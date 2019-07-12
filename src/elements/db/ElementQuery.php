@@ -452,7 +452,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function __get($name)
     {
-        switch ($name) {
+        // We must ensure $name is a string; if it is 0 then each of these cases could match.
+        // (https://stackoverflow.com/a/8146455)
+        switch ((string)$name) {
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
                 if ($this->siteId && is_numeric($this->siteId) && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
