@@ -13,6 +13,7 @@
 - Fixed a bug where multi-site element queries with the `unique` and `offset` params set weren’t returning any results.
 - Fixed an error that could occur when creating a draft. ([#4515](https://github.com/craftcms/cms/issues/4515))
 - Fixed a bug where Craft wasn’t generating a new slug for entries that were saved with a blank Slug field. ([#4518](https://github.com/craftcms/cms/issues/4518))
+- Fixed a bug where disabled select options could lose their disabled text styling in Firefox. ([#4526](https://github.com/craftcms/cms/issues/4526))
 
 ## 3.2.1 - 2019-07-11
 
