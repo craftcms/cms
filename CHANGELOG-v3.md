@@ -14,6 +14,7 @@
 - Fixed an error that could occur when creating a draft. ([#4515](https://github.com/craftcms/cms/issues/4515))
 - Fixed a bug where Craft wasn’t generating a new slug for entries that were saved with a blank Slug field. ([#4518](https://github.com/craftcms/cms/issues/4518))
 - Fixed a bug where disabled select options could lose their disabled text styling in Firefox. ([#4526](https://github.com/craftcms/cms/issues/4526))
+- Fixed a bug where entry forms could miss the fact that a file had been uploaded to an Assets field. ([#4534](https://github.com/craftcms/cms/issues/4534))
 
 ## 3.2.1 - 2019-07-11
 

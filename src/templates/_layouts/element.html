@@ -192,5 +192,5 @@
     previewTargets: normalizedPreviewTargets,
 } %}
 {% js %}
-    new Craft.DraftEditor({{ settings|json_encode|raw }});
+    window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});
 {% endjs %}

@@ -1,4 +1,4 @@
-/*!   - 2019-07-11 */
+/*!   - 2019-07-12 */
 (function($){
 
 /** global: Craft */
@@ -9214,6 +9214,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                     if (this.uploader.isLastUpload()) {
                         this.progressBar.hideProgressBar();
                         this.$container.removeClass('uploading');
+
+                        if (window.draftEditor) {
+                            window.draftEditor.checkForm();
+                        }
                     }
                 }.bind(this));
 
@@ -12945,7 +12949,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                     return;
                 }
                 clearTimeout(this.timeout);
-                this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+                // If they are typing, wait half a second before checking the form
+                if (Craft.inArray(ev.type, ['keypress', 'keyup', 'change'])) {
+                    this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+                } else {
+                    this.checkForm();
+                }
             });
 
             this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
@@ -13098,6 +13107,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         checkForm: function(force) {
+            clearTimeout(this.timeout);
             this.timeout = null;
 
             // Has anything changed?
