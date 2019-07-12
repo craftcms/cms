@@ -49,15 +49,15 @@ use yii\base\Component;
  *   + gql/*
  *   + Description for *every* field on GQL types. For hard-coded types this goes in definition files. For actual Craft fields can reuse the `instructions` property.
  * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
- * 3) Maybe move out token permissions to a separate service?
- * 4) Speaking of, maybe put the token settings somewhere else on the Craft settings page and definitely add an icon
- * 5) Figure out and add query complexity costs per GQL type.
- * 6) Configurable limits on both query complexity and nesting level.
- * 7) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
+ * 3) Eager-loading currently ignores the passed arguments. Some tests are borked because of that. This includes the `limit` argument to subqueries.
+ * 4) Maybe move out token permissions to a separate service?
+ * 5) Speaking of, maybe put the token settings somewhere else on the Craft settings page and definitely add an icon
+ * 6) Figure out and add query complexity costs per GQL type.
+ * 7) Configurable limits on both query complexity and nesting level.
+ * 8) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
  *     should apply - element changes invalidate a cached response and structural changes (when project config gets updated) invalidates
  *     cached responses. Cached by token by query.
- * 8) Pretty sure the test coverage went down with the last dev iteration - circle back and check.
- * 9) Eager-loading currently ignores the passed arguments. Add those as filters to eager-loading.
+ * 9) Pretty sure the test coverage went down with the last dev iteration - circle back and check.
  * 10) Tests for disabled and expired tokens.
  * 11) Tests for matrix blocks returning correct union types.
  * 12) Expose site structure over GQL as well
