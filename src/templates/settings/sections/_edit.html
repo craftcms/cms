@@ -120,7 +120,7 @@
             enabledByDefault: {
                 type: 'lightswitch',
                 heading: "Default Status"|t('app'),
-                class: 'thin type-channel type-structure'
+                class: 'thin type-channel type-structure'~(section.type == 'single' ? ' hidden')
             }
         },
         rows: siteRows,
