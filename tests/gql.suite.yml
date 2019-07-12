@@ -11,3 +11,7 @@ modules:
         - \craft\test\Craft:
               edition: 1
         - \Helper\Gql
+        - REST:
+            url: 'http://testing.craft.local/'
+            depends: PhpBrowser
+            part: Json
