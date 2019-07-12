@@ -41,8 +41,31 @@ use GraphQL\Type\Schema;
 use yii\base\Component;
 
 /**
+ * Rolling list of todos:
+ *
+ * 1) Obviously, docs for every method (including exceptions)
+ *   + This class
+ *   + helpers/Gql
+ *   + gql/*
+ *   + Description for *every* field on GQL types. For hard-coded types this goes in definition files. For actual Craft fields can reuse the `instructions` property.
+ * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
+ * 3) Maybe move out token permissions to a separate service?
+ * 4) Speaking of, maybe put the token settings somewhere else on the Craft settings page and definitely add an icon
+ * 5) Figure out and add query complexity costs per GQL type.
+ * 6) Configurable limits on both query complexity and nesting level.
+ * 7) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
+ *     should apply - element changes invalidate a cached response and structural changes (when project config gets updated) invalidates
+ *     cached responses. Cached by token by query.
+ * 8) Pretty sure the test coverage went down with the last dev iteration - circle back and check.
+ * 9) Eager-loading currently ignores the passed arguments. Add those as filters to eager-loading.
+ * 10) Tests for disabled and expired tokens.
+ * 11) Tests for matrix blocks returning correct union types.
+ * 12) Expose site structure over GQL as well
+ * 13) Once (12) is in place, get rid of, say, `sectionId` and `sectionUid` fields and replace with a `section` type that has `uid` and `id` fields.
+ * 14) MAYBE change all closures to static method and make schema itself cacheable per token per query.
+ */
+/**
  * The Gql service provides GraphQL functionality.
- * @TODO Docs
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
@@ -114,7 +137,6 @@ class Gql extends Component
             if (!$prebuildSchema) {
                 $this->_schema = new Schema($schemaConfig);
             } else {
-                // @todo: probably split out interfaces from types plugins can preload all the types for devmode schema
                 $interfaces = [
                     EntryInterface::class,
                     MatrixBlockInterface::class,

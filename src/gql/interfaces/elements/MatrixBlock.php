@@ -63,7 +63,8 @@ class MatrixBlock extends Element
             'fieldUid' => Type::string(),
             'fieldId' => Type::int(),
             'ownerUid' => Type::string(),
-            // Todo make it possible to travel upwards (make element interface not abstract)
+            // Todo maybe get rid of this as matrix blocks are accessible only
+            // from parent element. So this is moot.
             'owner' => ElementInterface::getType(),
             'ownerId' => Type::int(),
             'ownerSiteId' => Type::int(),
