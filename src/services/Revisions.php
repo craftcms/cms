@@ -198,8 +198,8 @@ class Revisions extends Component
                 ->offset($maxRevisions + 1)
                 ->all();
 
-            foreach ($extraRevisions as $revision) {
-                $elementsService->deleteElement($revision, true);
+            foreach ($extraRevisions as $extraRevision) {
+                $elementsService->deleteElement($extraRevision, true);
             }
         }
 
