@@ -2528,6 +2528,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 new Expression($caseSql, $caseParams),
                 'elements_sites.id' => SORT_ASC
             ])
+            ->offset(0)
             ->limit(1)
             ->getRawSql();
 

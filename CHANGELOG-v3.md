@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where multi-site element queries with the `unique` and `offset` params set weren’t returning any results.
+
 ## 3.2.1 - 2019-07-11
 
 ### Added
