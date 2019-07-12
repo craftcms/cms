@@ -77,6 +77,10 @@ abstract class BaseResolver
         $startingNode = $resolveInfo->fieldNodes[0];
         $fragments = $resolveInfo->fragments;
 
+        if ($startingNode === null) {
+            return [];
+        }
+
         /**
          * Traverse child nodes of a GQL query formed as AST.
          *
