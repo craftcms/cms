@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft no longer ensures a recent revision exists before creating a draft for an element.
+
 ### Fixed
 - Fixed a bug where multi-site element queries with the `unique` and `offset` params set weren’t returning any results.
 - Fixed an error that could occur when creating a draft. ([#4515](https://github.com/craftcms/cms/issues/4515))
