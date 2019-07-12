@@ -75,13 +75,9 @@
                     value: site.id,
                     small: true
                 }),
-                singleUri: {
-                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
-                    hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
-                },
                 uriFormat: {
                     value: siteSettings ? siteSettings.uriFormat,
-                    hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                    hasErrors: siteSettings.hasErrors('uriFormat')
                 },
                 template: {
                     value: siteSettings ? siteSettings.template,
@@ -107,21 +103,13 @@
                 type: 'heading',
                 class: 'thin'~(not craft.app.getIsMultiSite() ? ' hidden')
             },
-            singleUri: {
-                type: 'singleline',
-                heading: "URI"|t('app'),
-                info: "What the entry URI should be for the site. Leave blank if this is the homepage."|t('app'),
-                placeholder: "Leave blank if this is the homepage"|t('app'),
-                code: true,
-                class: 'type-single'~(section.type != 'single' ? ' hidden')
-            },
             uriFormat: {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 placeholder: "Leave blank if entries don’t have URLs"|t('app'),
                 code: true,
-                class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
+                class: 'type-channel type-structure'
             },
             template: {
                 type: 'template',
@@ -132,7 +120,7 @@
             enabledByDefault: {
                 type: 'lightswitch',
                 heading: "Default Status"|t('app'),
-                class: 'thin type-channel type-structure'~(section.type == 'single' ? ' hidden')
+                class: 'thin type-channel type-structure'
             }
         },
         rows: siteRows,
