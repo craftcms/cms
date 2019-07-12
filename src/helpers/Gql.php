@@ -22,11 +22,11 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * Cached permission pairs for the current token, as it's impossible for tokens to change during a request.
+     * Cached permission pairs for tokens by id.
      *
-     * @var null
+     * @var array
      */
-    private static $cachedPairs = null;
+    private static $cachedPairs = [];
 
     /**
      * Returns true if the current token is aware of the provided scope(s).
@@ -65,9 +65,11 @@ class Gql
      */
     public static function extractAllowedEntitiesFromToken($action = 'read'): array
     {
-        if (self::$cachedPairs === null) {
+        $token = Craft::$app->getGql()->getCurrentToken();
+
+        if (empty(self::$cachedPairs[$token->id])) {
             try {
-                $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+                $permissions = (array) $token->permissions;
                 $pairs = [];
 
                 foreach ($permissions as $permission) {
@@ -83,14 +85,14 @@ class Gql
                     }
                 }
 
-                self::$cachedPairs = $pairs;
+                self::$cachedPairs[$token->id] = $pairs;
             } catch (GqlException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 return [];
             }
         }
 
-        return self::$cachedPairs;
+        return self::$cachedPairs[$token->id];
     }
 
     /**

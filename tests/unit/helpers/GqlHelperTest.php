@@ -189,7 +189,7 @@ class GqlHelperTest extends Unit
     public function _setTokenWithPermissions($permissionSet)
     {
         $gqlService = Craft::$app->getGql();
-        $token = new GqlToken(['name' => 'Something', 'enabled' => true, 'permissions' => $permissionSet]);
+        $token = new GqlToken(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => $permissionSet]);
         $gqlService->setToken($token);
     }
 }
