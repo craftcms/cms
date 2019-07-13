@@ -1,8 +1,5 @@
 # Testing
 
-## What is it? 
-TODO: 
-
 ## Types of tests
 
 There are a variety of tests each providing pros and cons to specific use cases and
