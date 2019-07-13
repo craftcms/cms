@@ -168,11 +168,21 @@ class SectionsController extends Controller
             $siteSettings->siteId = $site->id;
 
 
-            $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
+            if ($section->type === Section::TYPE_SINGLE) {
+                $siteSettings->hasUrls = false;
 
-            if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
-                $siteSettings->uriFormat = $postedSettings['uriFormat'];
-                $siteSettings->template = $postedSettings['template'];
+                if ($postedSettings['hasUrls']) {
+                    $siteSettings->hasUrls = true;
+                    $siteSettings->template = $postedSettings['template'];
+                    $siteSettings->uriFormat = $postedSettings['singleUri'] ?: '__home__';
+                }
+            } else {
+                $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
+
+                if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
+                    $siteSettings->uriFormat = $postedSettings['uriFormat'];
+                    $siteSettings->template = $postedSettings['template'];
+                }
             }
 
             $allSiteSettings[$site->id] = $siteSettings;
