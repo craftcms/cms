@@ -1781,7 +1781,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 label: Craft.t('app', 'Limit'),
                 placeholder: Craft.t('app', 'No limit'),
                 type: 'number',
-                min: 0
+                min: 1
             }).appendTo($form);
 
             $('<input/>', {
@@ -1812,9 +1812,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
-                params.criteria.limit = $limitField.find('input').val();
-                if (!params.criteria.limit) {
-                    delete params.criteria.limit;
+                var limit = parseInt($limitField.find('input').val());
+                if (limit && !isNaN(limit)) {
+                    params.criteria.limit = limit;
                 }
                 params.format = format;
 

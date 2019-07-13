@@ -81,7 +81,7 @@ class ExportController extends Controller
 
         /** @var array $results */
         $results = $query->asArray()->all();
-        $columns = array_keys(reset($results));
+        $columns = !empty($results) ? array_keys(reset($results)) : [];
 
         foreach ($results as &$result) {
             $result = array_values($result);
