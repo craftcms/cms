@@ -340,7 +340,7 @@ class AssetIndexer extends Component
             ->column();
 
         // What if there were no files at all?
-        if (empty($volumeIds)) {
+        if (empty($volumeIds) && !Craft::$app->getRequest()->getIsConsoleRequest()) {
             $volumeIds = Craft::$app->getSession()->get('assetsVolumesBeingIndexed');
         }
 

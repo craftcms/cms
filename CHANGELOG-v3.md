@@ -20,6 +20,7 @@
 - Fixed a bug where it wasn’t possible to set test-specific config settings. ([#4539](https://github.com/craftcms/cms/pull/4539))
 - Fixed an error that occurred when exporting elements if Limit was set to `0`. ([#4547](https://github.com/craftcms/cms/issues/4547))
 - Fixed a bug where the `{% paginate %}` tag wouldn’t generate links to the first page correctly when using query string pagination. ([#4550](https://github.com/craftcms/cms/issues/4550))
+- Fixed an error that occurred when indexing assets from a console request, if no volumes were defined yet. ([#2798](https://github.com/craftcms/cms/issues/2798))
 
 ## 3.2.1 - 2019-07-11
 
