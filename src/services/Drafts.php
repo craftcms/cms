@@ -130,12 +130,8 @@ class Drafts extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Create a new revision for the source element, or get the latest if nothing has changed since then
-            /** @var Element|RevisionBehavior $revision */
-            $revision = Craft::$app->getRevisions()->createRevision($source, $creatorId, 'Created automatically for draft');
-
             // Create the draft row
-            $draftId = $this->_insertDraftRow($source->id, $revision->revisionId, $creatorId, $name, $notes);
+            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes);
 
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -187,7 +183,7 @@ class Drafts extends Component
         }
 
         // Create the draft row
-        $draftId = $this->_insertDraftRow(null, null, $creatorId, $name, $notes);
+        $draftId = $this->_insertDraftRow(null, $creatorId, $name, $notes);
 
         /** @var Element $element */
         $element->draftId = $draftId;
@@ -339,17 +335,15 @@ class Drafts extends Component
      * @param string|null $name
      * @param string|null $notes
      * @param int|null $sourceId
-     * @param int|null $revisionId
      * @return int The new draft ID
      * @throws DbException
      */
-    private function _insertDraftRow(int $sourceId = null, int $revisionId = null, int $creatorId, string $name = null, string $notes = null): int
+    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null): int
     {
         $db = Craft::$app->getDb();
         $db->createCommand()
             ->insert(Table::DRAFTS, [
                 'sourceId' => $sourceId,
-                'revisionId' => $revisionId,
                 'creatorId' => $creatorId,
                 'name' => $name,
                 'notes' => $notes,

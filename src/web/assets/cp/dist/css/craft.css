@@ -1447,7 +1447,6 @@ body.rtl .select:not(.selectize):after { left: 9px; }
 body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px; }
 body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
 .select:not(.selectize) select::-ms-expand { display: none; }
-.select:not(.selectize) select:-moz-focusring { color: transparent; text-shadow: 0 0 0 #29323d; }
 .select:not(.selectize) select option { background: #fff; }
 
 .select:not(.selectize).fullwidth select { min-width: 100%; }
@@ -1479,7 +1478,6 @@ body.rtl .selectize.select .selectize-control:after { left: 9px; }
 body.ltr .selectize.select .selectize-control .selectize-input { padding: 7px 22px 7px 10px; }
 body.rtl .selectize.select .selectize-control .selectize-input { padding: 7px 10px 7px 22px; }
 .selectize.select .selectize-control .selectize-input::-ms-expand { display: none; }
-.selectize.select .selectize-control .selectize-input:-moz-focusring { color: transparent; text-shadow: 0 0 0 #29323d; }
 
 .selectize.select.fullwidth .selectize-control, .selectize.select.fullwidth .selectize-control .selectize-input { min-width: 100%; }
 

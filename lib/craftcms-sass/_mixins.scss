@@ -402,11 +402,6 @@ $elementBorderRadius: 2px;
   &::-ms-expand {
     display: none;
   }
-  // from https://stackoverflow.com/a/19451423/1688568
-  &:-moz-focusring {
-    color: transparent;
-    text-shadow: 0 0 0 $textColor;
-  }
 }
 
 @mixin select-input-fullwidth-styles {

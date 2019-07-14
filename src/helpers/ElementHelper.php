@@ -27,6 +27,29 @@ class ElementHelper
     // =========================================================================
 
     /**
+     * Generates a new temporary slug.
+     *
+     * @return string
+     * @since 3.2.2
+     */
+    public static function tempSlug(): string
+    {
+        return '__temp_' . StringHelper::randomString();
+    }
+
+    /**
+     * Returns whether the given slug is temporary.
+     *
+     * @param string $slug
+     * @return bool
+     * @since 3.2.2
+     */
+    public static function isTempSlug(string $slug): bool
+    {
+        return strpos($slug, '__temp_') === 0;
+    }
+
+    /**
      * Creates a slug based on a given string.
      *
      * @param string $str

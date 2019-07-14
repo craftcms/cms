@@ -33,7 +33,7 @@
 {% endif %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
-{% set canDeleteDraft = isDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
+{% set canDeleteDraft = isDraft and not isUnsavedDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
 {% set shareUrl = shareUrl ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
@@ -192,5 +192,5 @@
     previewTargets: normalizedPreviewTargets,
 } %}
 {% js %}
-    new Craft.DraftEditor({{ settings|json_encode|raw }});
+    window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});
 {% endjs %}

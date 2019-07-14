@@ -353,7 +353,7 @@ class Entry extends Element
                         $newChildUrl = 'entries/' . $section->handle . '/new';
 
                         if (Craft::$app->getIsMultiSite()) {
-                            $newChildUrl .= '/' . $site->handle;
+                            $newChildUrl .= '?site=' . $site->handle;
                         }
 
                         $actions[] = $elementsService->createAction([

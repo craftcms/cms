@@ -207,15 +207,10 @@ class TestSetup
 
         $configService = self::createConfigService();
 
-        // Load the config
         $config = ArrayHelper::merge(
             [
                 'components' => [
-                    'config' => [
-                        'class' => Config::class,
-                        'configDir' => CRAFT_CONFIG_PATH,
-                        'appDefaultsDir' => $srcPath . '/config/defaults',
-                    ],
+                'config' => $configService
                 ],
             ],
             require $srcPath . '/config/app.php',
