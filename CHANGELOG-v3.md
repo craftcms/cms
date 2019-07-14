@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\helpers\ElementHelper::isTempSlug()`.
 - Added `craft\helpers\ElementHelper::tempSlug()`.
+- Added `craft\helpers\UrlHelper::removeParam()`.
 
 ### Changed
 - Craft no longer ensures a recent revision exists before creating a draft for an element.
@@ -18,6 +19,7 @@
 - Fixed a bug where selecting “Create a new child entry” in a Structure section on a multi-site install would result in a 404 error. ([#4541](https://github.com/craftcms/cms/issues/4541))
 - Fixed a bug where it wasn’t possible to set test-specific config settings. ([#4539](https://github.com/craftcms/cms/pull/4539))
 - Fixed an error that occurred when exporting elements if Limit was set to `0`. ([#4547](https://github.com/craftcms/cms/issues/4547))
+- Fixed a bug where the `{% paginate %}` tag wouldn’t generate links to the first page correctly when using query string pagination. ([#4550](https://github.com/craftcms/cms/issues/4550))
 
 ## 3.2.1 - 2019-07-11
 
