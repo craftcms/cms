@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.2 - 2019-07-14
 
 ### Added
 - Added `craft\helpers\ElementHelper::isTempSlug()`.
