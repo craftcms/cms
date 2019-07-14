@@ -1,4 +1,4 @@
-/*!   - 2019-07-13 */
+/*!   - 2019-07-14 */
 (function($){
 
 /** global: Craft */
@@ -3495,34 +3495,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 'class': 'export-form'
             });
 
-            var $fmtContainer = $('<div/>', {
-                'class': 'btngroup'
-            })
-            var formats = ['csv', 'xls', 'xlsx', 'ods'];
-            var format = 'csv';
-            for (var i = 0; i < formats.length; i++) {
-                $('<div/>', {
-                    'class': 'btn' + (i === 0 ? ' active' : ''),
-                    role: 'button',
-                    pressed: (i === 0) ? 'true' : 'false',
-                    text: formats[i].toUpperCase(),
-                    'data-format': formats[i]
-                })
-                    .appendTo($fmtContainer)
-                    .on('click', function() {
-                        $fmtContainer.children()
-                            .removeClass('active')
-                            .attr('pressed', 'false');
-                        format = $(this)
-                            .addClass('active')
-                            .attr('pressed', 'true')
-                            .data('format');
-                    });
-            }
-            var $fmtField = Craft.ui.createField($fmtContainer, {
-                label: Craft.t('app', 'Format')
-            }).appendTo($form);
-
             var $limitField = Craft.ui.createTextField({
                 label: Craft.t('app', 'Limit'),
                 placeholder: Craft.t('app', 'No limit'),
@@ -3558,11 +3530,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+
                 var limit = parseInt($limitField.find('input').val());
                 if (limit && !isNaN(limit)) {
                     params.criteria.limit = limit;
                 }
-                params.format = format;
 
                 Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
                     submitting = false;

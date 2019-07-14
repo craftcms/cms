@@ -9,6 +9,7 @@
 
 ### Changed
 - Craft no longer ensures a recent revision exists before creating a draft for an element.
+- Element exports are limited to CSV files now, to avoid the GD requirement imposed by the PHPSpreadsheet library. ([#4553](https://github.com/craftcms/cms/issues/4553))
 
 ### Fixed
 - Fixed a bug where multi-site element queries with the `unique` and `offset` params set weren’t returning any results.

@@ -273,7 +273,7 @@ class ElementIndexesController extends BaseElementsController
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
                 'criteria' => $request->getBodyParam('criteria', []),
-                'format' => $request->getRequiredBodyParam('format'),
+                'format' => $request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
 
