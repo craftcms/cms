@@ -12,7 +12,7 @@
 - Element exports are limited to CSV files now, to avoid the GD requirement imposed by the PHPSpreadsheet library. ([#4553](https://github.com/craftcms/cms/issues/4553))
 
 ### Fixed
-- Fixed a bug where multi-site element queries with the `unique` and `offset` params set weren’t returning any results.
+- Fixed a bug where multi-site element queries with the `unique` and `offset` params set weren’t returning any results. ([#4560](https://github.com/craftcms/cms/issues/4560))
 - Fixed an error that could occur when creating a draft. ([#4515](https://github.com/craftcms/cms/issues/4515))
 - Fixed a bug where Craft wasn’t generating a new slug for entries that were saved with a blank Slug field. ([#4518](https://github.com/craftcms/cms/issues/4518))
 - Fixed a bug where disabled select options could lose their disabled text styling in Firefox. ([#4526](https://github.com/craftcms/cms/issues/4526))
