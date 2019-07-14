@@ -278,7 +278,7 @@ class ElementIndexesController extends BaseElementsController
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+            throw new ServerErrorHttpException('Could not create an export token.');
         }
 
         return $this->asJson(compact('token'));
