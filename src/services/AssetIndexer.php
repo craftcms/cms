@@ -332,7 +332,7 @@ class AssetIndexer extends Component
             ])
             ->column();
 
-        // Load the processed volume IDs for that sessions.
+        // Load the processed volume IDs for that session.
         $volumeIds = (new Query())
             ->select(['DISTINCT([[volumeId]])'])
             ->from([Table::ASSETINDEXDATA])
