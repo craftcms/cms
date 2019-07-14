@@ -1259,7 +1259,6 @@ return [
     '{attribute} cannot contain spaces.' => '{attribute}에는 공백을 포함할 수 없습니다.',
     'Some entries restored.' => '일부 항목이 복원되었습니다.',
     'Trashed' => '삭제됨',
-    'Could not create a Live Preview token.' => '실시간 프리뷰 토큰을 생성할 수 없습니다.',
     'Use the loaded project config' => '로드된 프로젝트 구성 사용',
     'Edit Category Group' => '카테고리 그룹 편집',
     'No plugins are enabled.' => '플러그인이 활성화되어 있지 않습니다.',

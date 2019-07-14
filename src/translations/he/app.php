@@ -1259,7 +1259,6 @@ return [
     '{attribute} cannot contain spaces.' => '{attribute} לא יכול להכיל רווחים.',
     'Some entries restored.' => 'חלק מהרשומות שוחזרו.',
     'Trashed' => 'הושלך לפח',
-    'Could not create a Live Preview token.' => 'לא ניתן ליצור אסימון תצוגה מקדימה חיה.',
     'Use the loaded project config' => 'השתמש בתצורת הפרויקט שנטענה',
     'Edit Category Group' => 'ערוך קבוצת קטגוריות',
     'No plugins are enabled.' => 'אין תוספים מופעלים.',

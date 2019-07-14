@@ -1259,7 +1259,6 @@ return [
     '{attribute} cannot contain spaces.' => '{attribute}にスペースを含めることはできません。',
     'Some entries restored.' => '一部のエントリーが復元されました。',
     'Trashed' => '破棄済み',
-    'Could not create a Live Preview token.' => 'ライブプレビュートークンを作成できませんでした。',
     'Use the loaded project config' => 'ロードされたプロジェクト構成を使用する',
     'Edit Category Group' => 'カテゴリーグループの編集',
     'No plugins are enabled.' => '有効なプラグインはありません。',

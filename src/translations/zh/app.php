@@ -1259,7 +1259,6 @@ return [
     '{attribute} cannot contain spaces.' => '{attribute} 不能包含空格。',
     'Some entries restored.' => '一些条目已恢复。',
     'Trashed' => '已丢弃',
-    'Could not create a Live Preview token.' => '无法创建实时预览令牌。',
     'Use the loaded project config' => '使用已加载项目配置',
     'Edit Category Group' => '编辑分类组',
     'No plugins are enabled.' => '没有启用插件。',

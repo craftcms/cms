@@ -1259,7 +1259,6 @@ return [
     '{attribute} cannot contain spaces.' => '{attribute} не может содержать пробелы.',
     'Some entries restored.' => 'Удалось восстановить некоторые записи.',
     'Trashed' => 'Отправлено в корзину',
-    'Could not create a Live Preview token.' => 'Не удалось создать маркер предварительного просмотра в реальном времени.',
     'Use the loaded project config' => 'Использовать загруженную конфигурацию проекта',
     'Edit Category Group' => 'Редактировать группу категорий',
     'No plugins are enabled.' => 'Нет активированных плагинов.',

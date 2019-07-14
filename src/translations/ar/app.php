@@ -1259,7 +1259,6 @@ return [
     '{attribute} cannot contain spaces.' => 'لا يمكن أن تحتوي {attribute} على مسافات.',
     'Some entries restored.' => 'تم استعادة بعض الإدخالات.',
     'Trashed' => 'تم الإرسال إلى سلة المهملات',
-    'Could not create a Live Preview token.' => 'تعذر إنشاء رمز المعاينة المباشرة.',
     'Use the loaded project config' => 'استخدام تكوين المشروع الذي تم تحميله',
     'Edit Category Group' => 'تحرير مجموعة الفئة',
     'No plugins are enabled.' => 'لا توجد ملحقات ممكَّنة.',

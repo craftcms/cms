@@ -1257,7 +1257,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     '{attribute} cannot contain spaces.' => 'A(z) {attribute} nem tartalmazhat szóközt.',
     'Some entries restored.' => 'Néhány bejegyzés vissza lett állítva.',
     'Trashed' => 'Kukába helyezve',
-    'Could not create a Live Preview token.' => 'Nem lehetett Élő előnézet tokent létrehozni.',
     'Use the loaded project config' => 'Használja a betöltött projektkonfigurációt',
     'Edit Category Group' => 'Kategóriacsoport szerkesztése',
     'No plugins are enabled.' => 'Nincs engedélyezett beépülő modul.',
