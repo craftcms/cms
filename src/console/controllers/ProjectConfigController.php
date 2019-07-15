@@ -76,6 +76,7 @@ class ProjectConfigController extends Controller
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                $this->stderr($e);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
