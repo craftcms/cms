@@ -167,7 +167,6 @@ class SectionsController extends Controller
             $siteSettings = new Section_SiteSettings();
             $siteSettings->siteId = $site->id;
 
-
             if ($section->type === Section::TYPE_SINGLE) {
                 $siteSettings->hasUrls = false;
 
