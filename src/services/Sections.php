@@ -963,20 +963,10 @@ class Sections extends Component
         $sectionSiteSettings = $section->getSiteSettings();
 
         if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
-            // Set Craft to the site template mode
             $view = Craft::$app->getView();
-            $oldTemplateMode = $view->getTemplateMode();
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+            $template = (string)$sectionSiteSettings[$siteId]->template;
 
-            // Does the template exist?
-            $templateExists = Craft::$app->getView()->doesTemplateExist((string)$sectionSiteSettings[$siteId]->template);
-
-            // Restore the original template mode
-            $view->setTemplateMode($oldTemplateMode);
-
-            if ($templateExists) {
-                return true;
-            }
+            return $view->doesTemplateExist($template, $view::TEMPLATE_MODE_SITE);
         }
 
         return false;
