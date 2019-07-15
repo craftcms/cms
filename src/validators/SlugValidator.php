@@ -64,7 +64,7 @@ class SlugValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         $slug = $originalSlug = (string)$model->$attribute;
-        $isTemp = strpos($slug, '__temp_') === 0;
+        $isTemp = ElementHelper::isTempSlug($slug);
         $isDraft = $model instanceof ElementInterface && $model->getIsDraft();
 
         // If this is a draft with a temp slug, leave it alone

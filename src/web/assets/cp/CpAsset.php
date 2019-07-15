@@ -121,7 +121,6 @@ JS;
             'Close Live Preview',
             'Close',
             'Continue',
-            'Could not create a Live Preview token.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',

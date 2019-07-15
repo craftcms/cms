@@ -18,10 +18,8 @@ class m190605_223807_unsaved_drafts extends Migration
     {
         if ($this->db->getIsPgsql()) {
             $this->execute('alter table ' . Table::DRAFTS . ' alter column [[sourceId]] drop not null');
-            $this->execute('alter table ' . Table::DRAFTS . ' alter column [[revisionId]] drop not null');
         } else {
             $this->alterColumn(Table::DRAFTS, 'sourceId', $this->integer());
-            $this->alterColumn(Table::DRAFTS, 'revisionId', $this->integer());
         }
     }
 

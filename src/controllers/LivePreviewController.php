@@ -69,7 +69,7 @@ class LivePreviewController extends Controller
         $token = Craft::$app->getTokens()->createToken($route, null, $expiryDate);
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+            throw new ServerErrorHttpException('Could not create a Live Preview token.');
         }
 
         return $this->asJson(compact('token'));
