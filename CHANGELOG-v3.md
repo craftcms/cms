@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- It is now possible to create Sections without URL's ([#3883](https://github.com/craftcms/cms/issues/3883))
+
 ## 3.2.2 - 2019-07-14
 
 ### Added
