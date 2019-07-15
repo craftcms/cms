@@ -569,20 +569,10 @@ class Categories extends Component
         $categoryGroupSiteSettings = $group->getSiteSettings();
 
         if (isset($categoryGroupSiteSettings[$siteId]) && $categoryGroupSiteSettings[$siteId]->hasUrls) {
-            // Set Craft to the site template mode
             $view = Craft::$app->getView();
-            $oldTemplateMode = $view->getTemplateMode();
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+            $template = (string)$categoryGroupSiteSettings[$siteId]->template;
 
-            // Does the template exist?
-            $templateExists = Craft::$app->getView()->doesTemplateExist((string)$categoryGroupSiteSettings[$siteId]->template);
-
-            // Restore the original template mode
-            $view->setTemplateMode($oldTemplateMode);
-
-            if ($templateExists) {
-                return true;
-            }
+            return $view->doesTemplateExist($template, $view::TEMPLATE_MODE_SITE);
         }
 
         return false;
