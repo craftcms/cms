@@ -256,7 +256,6 @@ class EntryRevisionsController extends BaseEntriesController
                 'draftNotes' => $draft->draftNotes,
                 'docTitle' => $this->docTitle($draft),
                 'title' => $this->pageTitle($draft),
-                'duplicatedElements' => $elementsService::$duplicatedElementIds,
             ]);
         }
 

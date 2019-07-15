@@ -5,6 +5,11 @@
 ### Added
 - Added `craft\web\UrlManager::setMatchedElement()`.
 
+### Changed
+- Craft no longer creates drafts automatically when editing entries. The user must click a “Save as a Draft” button to create one. ([#4549](https://github.com/craftcms/cms/issues/4549))
+- Entries are now immediately savable, whether or not any changes were made. ([#4535](https://github.com/craftcms/cms/issues/4535))
+- It’s no longer possible to preview entries’ Current revision. A draft must be created first.
+
 ### Fixed
 - Fixed a bug where it wasn’t possible to delete Matrix blocks if Min Blocks and Max Blocks were set to the same value, and an element already had more than that many blocks. ([#4562](https://github.com/craftcms/cms/issues/4562))
 - Fixed a bug where `craft\web\UrlManager::getMatchedElement()` could return the incorrect result on preview requests. ([#4542](https://github.com/craftcms/cms/issues/4542))
