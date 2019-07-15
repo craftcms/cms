@@ -29,6 +29,11 @@ class TemplateEvent extends CancelableEvent
     public $variables;
 
     /**
+     * @var string|null The template mode that was passed to [[\craft\web\View::renderTemplate()]].
+     */
+    public $templateMode;
+
+    /**
      * @var string The rendering result of [[\craft\web\View::renderTemplate()]].
      *
      * Event handlers may modify this property and the modified output will be
