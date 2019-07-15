@@ -79,13 +79,13 @@
                     value: siteSettings ? siteSettings.hasUrls,
                     hasErrors: siteSettings.hasErrors('hasUrls')
                 },
+                singleUri: {
+                   value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
+                   hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                },
                 uriFormat: {
                     value: siteSettings ? siteSettings.uriFormat,
                     hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
-                },
-                singleUri: {
-                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
-                   hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
                 template: {
                     value: siteSettings ? siteSettings.template,
@@ -116,14 +116,6 @@
                 heading: "Has urls"|t('app'),
                 class: 'thin '~(section.type != 'single' ? ' hidden')
             },
-            uriFormat: {
-                type: 'singleline',
-                heading: "Entry URI Format"|t('app'),
-                info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
-                placeholder: "Leave blank if entries don’t have URLs"|t('app'),
-                code: true,
-                class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
-            },
             singleUri: {
                 type: 'singleline',
                 heading: "URI"|t('app'),
@@ -131,6 +123,14 @@
                 placeholder: "Leave blank if this is the homepage. Turn the toggle to the left off if this there are no URLs."|t('app'),
                 code: true,
                 class: 'type-single'~(section.type != 'single' ? ' hidden')
+            },
+            uriFormat: {
+                type: 'singleline',
+                heading: "Entry URI Format"|t('app'),
+                info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
+                placeholder: "Leave blank if entries don’t have URLs"|t('app'),
+                code: true,
+                class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
             },
             template: {
                 type: 'template',
