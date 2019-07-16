@@ -638,7 +638,7 @@ class UrlHelper
         }
 
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . urldecode(http_build_query($params));
         }
 
         if ($fragment !== null) {

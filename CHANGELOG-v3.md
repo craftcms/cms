@@ -7,6 +7,7 @@
 - Fixed a bug where draft forms could become unresponsive if the user attempted to navigate away from the page or submit the form in the middle of an autosave. ([#4578](https://github.com/craftcms/cms/issues/4578))
 - Fixed a SQL error that could occur when passing `:empty:` or `:notempty:` to a relational field’s element query param. ([#4529](https://github.com/craftcms/cms/issues/4529))
 - Fixed a bug where Number fields weren’t getting set to their default values for new entries. ([#4586](https://github.com/craftcms/cms/issues/4586))
+- Fixed a bug where the `{% paginate %}` tag could excessively URL encode querystring params when generated links for `prevUrl` and `nextUrl`.
 
 ## 3.2.3 - 2019-07-16
 
