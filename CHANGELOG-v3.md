@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a JavaScript error that could occur after uploading a file directly onto an Assets field when editing the Current revision of an entry.
 - Fixed a bug where draft forms could become unresponsive if the user attempted to navigate away from the page or submit the form in the middle of an autosave. ([#4578](https://github.com/craftcms/cms/issues/4578))
+- Fixed a SQL error that could occur when using `:empty:` or `:notempty:` on a relational field. ([#4529](https://github.com/craftcms/cms/issues/4529))
 
 ## 3.2.3 - 2019-07-16
 
