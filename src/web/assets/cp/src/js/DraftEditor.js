@@ -21,7 +21,6 @@ Craft.DraftEditor = Garnish.Base.extend(
         saving: false,
         checkFormAfterUpdate: false,
 
-        applying: false,
         errors: null,
 
         preview: null,
@@ -250,10 +249,6 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         saveDraft: function(data) {
-            if (this.applying) {
-                return;
-            }
-
             if (this.saving) {
                 this.checkFormAfterUpdate = true;
                 return;
@@ -472,13 +467,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         handleFormSubmit: function(ev) {
             ev.preventDefault();
-
-            // Don't allow a form submit under any circumstances if we’re currently applying a draft
-            if (this.applying) {
-                return;
-            }
-
-            this.applying = true;
 
             // Duplicate the form with normalized data
             var $form = $('<form/>', {
