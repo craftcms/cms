@@ -17,6 +17,7 @@
 - Fixed a bug where it wasn’t possible to delete Matrix blocks if Min Blocks and Max Blocks were set to the same value, and an element already had more than that many blocks. ([#4562](https://github.com/craftcms/cms/issues/4562))
 - Fixed a bug where `craft\web\UrlManager::getMatchedElement()` could return the incorrect result on preview requests. ([#4542](https://github.com/craftcms/cms/issues/4542))
 - Fixed an error that occurred on the Settings → Email page if email settings were missing from the project config. ([#4552](https://github.com/craftcms/cms/issues/4552))
+- Fixed a bug where it wasn’t possible to toggle site-specific entry statuses when editing drafts. ([#4577](https://github.com/craftcms/cms/issues/4577))
 
 ## 3.2.2 - 2019-07-14
 

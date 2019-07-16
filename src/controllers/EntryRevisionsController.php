@@ -472,6 +472,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
         $draft->enabled = (bool)$request->getBodyParam('enabled');
+        $draft->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $draft->enabledForSite);
         $draft->title = $request->getBodyParam('title');
 
         if (!$draft->typeId) {
