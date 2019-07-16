@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.3 - 2019-07-16
 
 ### Added
 - Added `craft\controllers\EntriesController::actionDuplicateEntry()`.
