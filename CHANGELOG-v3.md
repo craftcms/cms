@@ -3,11 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added `craft\controllers\EntriesController::actionDuplicateEntry()`.
 - Added `craft\web\UrlManager::setMatchedElement()`.
 
 ### Changed
 - Craft no longer creates drafts automatically when editing entries. The user must click a “Save as a Draft” button to create one. ([#4549](https://github.com/craftcms/cms/issues/4549))
 - Entries are now immediately savable, whether or not any changes were made. ([#4535](https://github.com/craftcms/cms/issues/4535))
+- The “Save Entry” button now redirects the user to the Entries index page. ([#4575](https://github.com/craftcms/cms/issues/4575))
+- Brought back the “Save and continue editing” and “Save and add another” options for entries.
 - It’s no longer possible to preview entries’ Current revision. A draft must be created first.
 
 ### Fixed
