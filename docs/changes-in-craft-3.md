@@ -586,6 +586,7 @@ Some controller actions have been renamed:
 | `categories/create-category` | `categories/save-category`
 | `users/validate`             | `users/verify-email`
 | `users/save-profile`         | `users/save-user`
+| `users/forgotPassword`       | `users/send-password-reset-email`
 
 ### `redirect` Params
 
