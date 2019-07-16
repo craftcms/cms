@@ -26,18 +26,26 @@
 <div class="main">
     <div class="toolbar">
         <div class="flex">
-            {% if showStatusMenu %}
+            {% if showStatusMenu or context == 'index' %}
                 <div>
                     <div class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</div>
                     <div class="menu">
                         <ul class="padded">
                             <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
-                            {% for status, info in elementInstance.statuses() %}
-                                {% set label = info.label ?? info %}
-                                {% set color = info.color ?? '' %}
-                                <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
-                            {% endfor %}
+                            {% if showStatusMenu %}
+                                {% for status, info in elementInstance.statuses() %}
+                                    {% set label = info.label ?? info %}
+                                    {% set color = info.color ?? '' %}
+                                    <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
+                                {% endfor %}
+                            {% endif %}
                         </ul>
+                        {% if context == 'index' %}
+                            {% if showStatusMenu %}<hr class="padded">{% endif %}
+                            <ul class="padded">
+                                <li><a data-trashed><span class="icon" data-icon="trash"></span>{{ "Trashed"|t('app') }}</a></li>
+                            </ul>
+                      {% endif %}
                     </div>
                 </div>
             {% endif %}

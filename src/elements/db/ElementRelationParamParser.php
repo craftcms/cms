@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\helpers\StringHelper;
@@ -302,15 +303,17 @@ class ElementRelationParamParser extends BaseObject
 
                         $sourcesAlias = 'sources' . $this->_relateSourcesCount;
                         $targetMatrixBlocksAlias = 'target_matrixblocks' . $this->_relateTargetMatrixBlocksCount;
+                        $targetMatrixElementsAlias = 'target_matrixelements' . $this->_relateTargetMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourcesAlias . '.targetId'])
-                            ->from([$sourcesAlias => '{{%relations}}'])
-                            ->innerJoin('{{%matrixblocks}} ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
+                            ->from([$sourcesAlias => Table::RELATIONS])
+                            ->innerJoin(Table::MATRIXBLOCKS . ' ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
+                            ->innerJoin(Table::ELEMENTS . ' ' . $targetMatrixElementsAlias, "[[{$targetMatrixElementsAlias}.id]] = [[{$targetMatrixBlocksAlias}.id]]")
                             ->where([
-                                'and',
-                                ['in', $targetMatrixBlocksAlias . '.ownerId', $relElementIds],
-                                [$targetMatrixBlocksAlias . '.fieldId' => $fieldModel->id]
+                                $targetMatrixBlocksAlias . '.ownerId' => $relElementIds,
+                                $targetMatrixBlocksAlias . '.fieldId' => $fieldModel->id,
+                                $targetMatrixElementsAlias . '.dateDeleted' => null,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
@@ -322,21 +325,23 @@ class ElementRelationParamParser extends BaseObject
                         }
 
                         if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere(['in', $sourcesAlias . '.fieldId', $blockTypeFieldIds]);
+                            $subQuery->andWhere([$sourcesAlias . '.fieldId' => $blockTypeFieldIds]);
                         }
                     } else {
                         $this->_relateSourceMatrixBlocksCount++;
                         $sourceMatrixBlocksAlias = 'source_matrixblocks' . $this->_relateSourceMatrixBlocksCount;
+                        $sourceMatrixElementsAlias = 'source_matrixelements' . $this->_relateSourceMatrixBlocksCount;
                         $matrixBlockTargetsAlias = 'matrixblock_targets' . $this->_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourceMatrixBlocksAlias . '.ownerId'])
-                            ->from([$sourceMatrixBlocksAlias => '{{%matrixblocks}}'])
-                            ->innerJoin('{{%relations}} ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
+                            ->innerJoin(Table::ELEMENTS . ' ' . $sourceMatrixElementsAlias, "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->innerJoin(Table::RELATIONS . ' ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
-                                'and',
-                                ['in', $matrixBlockTargetsAlias . '.targetId', $relElementIds],
-                                [$sourceMatrixBlocksAlias . '.fieldId' => $fieldModel->id]
+                                $sourceMatrixElementsAlias . '.dateDeleted' => null,
+                                $matrixBlockTargetsAlias . '.targetId' => $relElementIds,
+                                $sourceMatrixBlocksAlias . '.fieldId' => $fieldModel->id
                             ]);
 
                         if ($relCriteria['sourceSite']) {
@@ -348,11 +353,11 @@ class ElementRelationParamParser extends BaseObject
                         }
 
                         if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere(['in', $matrixBlockTargetsAlias . '.fieldId', $blockTypeFieldIds]);
+                            $subQuery->andWhere([$matrixBlockTargetsAlias . '.fieldId' => $blockTypeFieldIds]);
                         }
                     }
 
-                    $conditions[] = ['in', 'elements.id', $subQuery];
+                    $conditions[] = ['elements.id' => $subQuery];
                     unset($subQuery);
                 } else {
                     Craft::warning('Attempting to load relations for a non-relational field: ' . $fieldModel->handle);
@@ -379,8 +384,8 @@ class ElementRelationParamParser extends BaseObject
 
             $subQuery = (new Query())
                 ->select([$relTableAlias . '.' . $relElementColumn])
-                ->from([$relTableAlias => '{{%relations}}'])
-                ->where(['in', $relTableAlias . '.' . $relConditionColumn, $relElementIds]);
+                ->from([$relTableAlias => Table::RELATIONS])
+                ->where([$relTableAlias . '.' . $relConditionColumn => $relElementIds]);
 
             if ($relCriteria['sourceSite']) {
                 $subQuery->andWhere([
@@ -391,10 +396,10 @@ class ElementRelationParamParser extends BaseObject
             }
 
             if (!empty($relationFieldIds)) {
-                $subQuery->andWhere(['in', $relTableAlias . '.fieldId', $relationFieldIds]);
+                $subQuery->andWhere([$relTableAlias . '.fieldId' => $relationFieldIds]);
             }
 
-            $conditions[] = ['in', 'elements.id', $subQuery];
+            $conditions[] = ['elements.id' => $subQuery];
         }
 
         if (empty($conditions)) {

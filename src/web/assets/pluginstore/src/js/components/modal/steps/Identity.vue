@@ -1,7 +1,7 @@
 <template>
     <step>
         <template slot="header">
-            <div class="btn-left"><a @click="$emit('back')">← Back</a></div>
+            <div class="btn-left"><a @click="$emit('back')">{{ "Back"|t('app') }}</a></div>
             <h1>Identity</h1>
         </template>
         <template slot="main">
@@ -14,34 +14,33 @@
                             <li>{{ craftId.name }}</li>
                             <li>{{ craftId.email }}</li>
                         </ul>
-                        <input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+                        <btn kind="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
                     </template>
 
-                    <p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
+                    <p v-else>
+                        <btn kind="primary" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</btn>
+                    </p>
                 </template>
 
                 <p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'guest'">
-                    <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
-                    <input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+                    <textbox id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
+                    <btn kind="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
                 </template>
-
-                <div v-if="loading" class="spinner"></div>
             </form>
         </template>
     </step>
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState} from 'vuex'
-    import TextField from '../../fields/TextField'
     import Step from '../Step'
 
     export default {
-
         components: {
-            TextField,
             Step,
         },
 
@@ -54,7 +53,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
@@ -66,7 +64,7 @@
                 },
 
                 set(value) {
-                    this.$store.commit("CHANGE_IDENTITY_MODE", value)
+                    this.$store.commit('cart/changeIdentityMode', value)
                 }
             },
 
@@ -84,7 +82,6 @@
         },
 
         methods: {
-
             connectCraftId() {
                 let width = 800
                 let height = 600
@@ -110,7 +107,7 @@
                         email: this.guestEmail,
                     }
 
-                    this.$store.dispatch('saveCart', data)
+                    this.$store.dispatch('cart/saveCart', data)
                         .then(() => {
                             this.loading = false
                             this.$root.openModal('payment')
@@ -124,7 +121,6 @@
                     this.$root.openModal('payment')
                 }
             }
-
         },
 
         mounted() {
@@ -136,6 +132,5 @@
 
             this.guestEmail = this.cart.email
         }
-
     }
 </script>

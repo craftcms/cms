@@ -34,7 +34,7 @@
                     '<form id="login-form" method="post" accept-charset="UTF-8" {% if hasLogo -%}
             {%- set logo = craft.rebrand.logo -%}
             {%- set padding = logo.height + 30 -%}
-        class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
+        class="has-logo" style="background-image: url(\'{{ logo.url|e('css')|e('js') }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
                 {%- endif %}>' +
             '{% if not hasLogo -%}<h1>{{ systemName }}</h1>{%- endif %}'+
             "{{ forms.textField({ id: 'loginName', name: 'username', placeholder: usernamePlaceholder, value: username, autocomplete: 'username', type: usernameType })|e('js') }}" +
@@ -63,16 +63,9 @@
         else
         {
             document.write(
-                '<div class="no-access">' +
-                    '<div class="pane">' +
-                        '<div class="pane-body">' +
-                            '<div class="notice">' +
-                                '<div class="icon"></div>' +
-                                '<p>{{ "Cookies must be enabled to access the Craft CMS control panel."|t('app') }}<br>' +
-                                    '<a class="go nowrap" href="">{{ "See how"|t('app') }}</a>' +
-                                '</p>' +
-                            '</div>' +
-                        '</div>' +
+                '<div class="message-container no-access">' +
+                    '<div class="pane notice">' +
+                        '<p>{{ "Cookies must be enabled to access the Craft CMS Control Panel."|t('app') }}</p>' +
                     '</div>' +
                 '</div>'
             );

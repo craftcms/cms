@@ -10,6 +10,9 @@
             loadingActions: null,
             queue: null,
 
+            cacheImages: false,
+            sessionId: null,
+
             init: function(formId) {
                 this.$form = $('#' + formId);
                 this.$trigger = $('input.submit', this.$form);
@@ -25,17 +28,14 @@
                 if (!this.$trigger.hasClass('disabled')) {
                     if (!this.progressBar) {
                         this.progressBar = new Craft.ProgressBar(this.$status, true);
-                    }
-                    else {
+                    } else {
                         this.progressBar.resetProgressBar();
                     }
 
-                    this.totalActions = 1;
+                    this.totalActions = 0;
+                    this.loadingActions = 0;
                     this.completedActions = 0;
                     this.queue = [];
-
-                    this.loadingActions = 0;
-                    this.currentBatchQueue = [];
 
                     this.progressBar.$progressBar.removeClass('hidden');
                     this.progressBar.$progressBarStatus.removeClass('hidden');
@@ -48,12 +48,37 @@
                             complete: $.proxy(function() {
                                 var postData = Garnish.getPostData(this.$form),
                                     params = Craft.expandPostArray(postData);
-                                params.start = true;
+                                    params.start = true;
 
-                                this.loadAction({
-                                    params: params
-                                });
+                                this.cacheImages = params.cacheImages;
 
+                                Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function (response) {
+                                    if (response.indexingData) {
+                                        this.sessionId = response.indexingData.sessionId;
+
+                                        // Load up all the data
+                                        for (var i = 0; i < response.indexingData.volumes.length; i++) {
+                                            var volumeData = response.indexingData.volumes[i];
+
+                                            for (var requestCounter = 0; requestCounter < volumeData.total; requestCounter++) {
+                                                this.queue.push({
+                                                    process: true,
+                                                    sessionId: this.sessionId,
+                                                    volumeId: volumeData.volumeId,
+                                                    cacheImages: this.cacheImages
+                                                });
+                                                this.totalActions++;
+                                            }
+                                        }
+
+                                        if (this.totalActions > 0) {
+                                            this.processIndexing();
+                                        } else {
+                                            this.onComplete();
+                                        }
+
+                                    }
+                                }.bind(this));
                             }, this)
                         });
 
@@ -72,14 +97,30 @@
                 this.progressBar.updateProgressBar();
             },
 
-            loadAction: function(data) {
-                this.loadingActions++;
+            processIndexing: function() {
+                if (this.completedActions + this.loadingActions < this.totalActions && this.loadingActions < Craft.AssetIndexesUtility.maxConcurrentActions) {
+                    this.loadingActions++;
 
-                if (typeof data.confirm !== 'undefined' && data.confirm) {
-                    this.showConfirmDialog(data);
-                }
-                else {
-                    this.postActionRequest(data.params);
+                    var params = this.queue.shift();
+                    Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function (response) {
+                        this.loadingActions--;
+                        this.completedActions++;
+
+                        this.updateProgressBar();
+
+                        if (response && response.error) {
+                            alert(response.error);
+                        }
+
+                        if (this.completedActions == this.totalActions) {
+                            this.finishIndexing();
+                        } else {
+                            this.processIndexing();
+                        }
+                    }.bind(this));
+
+                    // Try again, in case we have more space.
+                    this.processIndexing();
                 }
             },
 
@@ -111,64 +152,26 @@
                     var params = Craft.expandPostArray(postData);
 
                     $.extend(params, data.params);
+                    params.finish = true;
 
-                    this.postActionRequest(params);
+                    Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, $.noop);
+                    this.onComplete();
                 });
             },
 
-            postActionRequest: function(params) {
-                var data = {
-                    params: params
+            finishIndexing: function() {
+                var params = {
+                    sessionId: this.sessionId,
+                    overview: true
                 };
 
-                Craft.postActionRequest('utilities/asset-index-perform-action', data, $.proxy(this, 'onActionResponse'),
-                    {
-                        complete: $.noop
-                    });
-            },
-
-            onActionResponse: function(response, textStatus) {
-                this.loadingActions--;
-                this.completedActions++;
-
-                // Add any new batches to the queue?
-                if (textStatus === 'success' && response && response.batches) {
-                    for (var i = 0; i < response.batches.length; i++) {
-                        if (response.batches[i].length) {
-                            this.totalActions += response.batches[i].length;
-                            this.queue.push(response.batches[i]);
-                        }
+                Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function (response) {
+                    if (response.confirm) {
+                        this.showConfirmDialog(response);
+                    } else {
+                        this.onComplete();
                     }
-                }
-
-                if (response && response.error) {
-                    alert(response.error);
-                }
-
-                this.updateProgressBar();
-
-                // Load as many additional items in the current batch as possible
-                while (this.loadingActions < Craft.AssetIndexesUtility.maxConcurrentActions && this.currentBatchQueue.length) {
-                    this.loadNextAction();
-                }
-
-                // Was that the end of the batch?
-                if (!this.loadingActions) {
-                    // Is there another batch?
-                    if (this.queue.length) {
-                        this.currentBatchQueue = this.queue.shift();
-                        this.loadNextAction();
-                    }
-                    else {
-                        // Quick delay so things don't look too crazy.
-                        setTimeout($.proxy(this, 'onComplete'), 300);
-                    }
-                }
-            },
-
-            loadNextAction: function() {
-                var data = this.currentBatchQueue.shift();
-                this.loadAction(data);
+                }.bind(this));
             },
 
             onComplete: function() {

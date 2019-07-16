@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -21,6 +22,8 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
+ * @property EntryType[] $entryTypes Entry types
+ * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
 {
@@ -30,6 +33,11 @@ class Section extends Model
     const TYPE_SINGLE = 'single';
     const TYPE_CHANNEL = 'channel';
     const TYPE_STRUCTURE = 'structure';
+
+    const PROPAGATION_METHOD_NONE = 'none';
+    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    const PROPAGATION_METHOD_ALL = 'all';
 
     // Properties
     // =========================================================================
@@ -70,9 +78,32 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
+     * @var string Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     * - `none` – Only save entries in the site they were created in
+     * - `siteGroup` – Save entries to other sites in the same site group
+     * - `language` – Save entries to other sites with the same language
+     * - `all` – Save entries to all sites enabled for this section
+     */
+    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+
+    /**
      * @var bool Propagate entries
+     * @deprecated in 3.2. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
+
+    /**
+     * @var array Preview targets
+     */
+    public $previewTargets = [];
+
+    /**
+     * @var string|null Section's UID
+     */
+    public $uid;
 
     /**
      * @var Section_SiteSettings[]|null
@@ -86,6 +117,18 @@ class Section extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        // todo: remove this in 4.0
+        // Set propagateEntries in case anything is still checking it
+        $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc
@@ -104,15 +147,30 @@ class Section extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
-            [['name', 'handle', 'type', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [['siteSettings'], 'validateSiteSettings'],
+        $rules = parent::rules();
+        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [
+            ['type'], 'in', 'range' => [
+                self::TYPE_SINGLE,
+                self::TYPE_CHANNEL,
+                self::TYPE_STRUCTURE
+            ]
         ];
+        $rules[] = [
+            ['propagationMethod'], 'in', 'range' => [
+                self::PROPAGATION_METHOD_NONE,
+                self::PROPAGATION_METHOD_SITE_GROUP,
+                self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_ALL
+            ]
+        ];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        $rules[] = [['previewTargets'], 'validatePreviewTargets'];
+        return $rules;
     }
 
     /**
@@ -125,7 +183,7 @@ class Section extends Model
         if ($this->id) {
             $currentSiteIds = (new Query())
                 ->select(['siteId'])
-                ->from(['{{%sections_sites}}'])
+                ->from([Table::SECTIONS_SITES])
                 ->where(['sectionId' => $this->id])
                 ->column();
 
@@ -142,13 +200,36 @@ class Section extends Model
     }
 
     /**
+     * Validates the preview targets.
+     */
+    public function validatePreviewTargets()
+    {
+        $hasErrors = false;
+
+        foreach ($this->previewTargets as &$target) {
+            $target['label'] = trim($target['label']);
+            $target['urlFormat'] = trim($target['urlFormat']);
+
+            if ($target['label'] === '') {
+                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
+                $hasErrors = true;
+            }
+        }
+        unset($target);
+
+        if ($hasErrors) {
+            $this->addError('previewTargets', Craft::t('app', 'All targets must have a label.'));
+        }
+    }
+
+    /**
      * Use the translated section name as the string representation.
      *
      * @return string
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name);
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
@@ -230,5 +311,29 @@ class Section extends Model
         $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
+    }
+
+    /**
+     * Sets the section's entry types.
+     *
+     * @param EntryType[] $entryTypes
+     */
+    public function setEntryTypes(array $entryTypes)
+    {
+        $this->_entryTypes = $entryTypes;
+    }
+
+    /**
+     * Returns whether entries in this section support multiple sites.
+     *
+     * @return bool
+     */
+    public function getHasMultiSiteEntries(): bool
+    {
+        return (
+            Craft::$app->getIsMultiSite() &&
+            count($this->getSiteSettings()) > 1 &&
+            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
+        );
     }
 }

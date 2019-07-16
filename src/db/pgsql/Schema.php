@@ -119,20 +119,9 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand()
     {
-        $defaultTableIgnoreList = [
-            '{{%assetindexdata}}',
-            '{{%assettransformindex}}',
-            '{{%cache}}',
-            '{{%sessions}}',
-            '{{%templatecaches}}',
-            '{{%templatecachecriteria}}',
-            '{{%templatecacheelements}}',
-        ];
-
-        $dbSchema = Craft::$app->getDb()->getSchema();
-
-        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
-            $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}." . $dbSchema->getRawTableName($ignoreTable) . "'";
+        $ignoredTableArgs = [];
+        foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
+            $ignoredTableArgs[] = "--exclude-table-data '{schema}.{$table}'";
         }
 
         return $this->_pgpasswordCommand() .
@@ -143,9 +132,12 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}' .
             ' --if-exists' .
             ' --clean' .
+            ' --no-owner' .
+            ' --no-privileges' .
+            ' --no-acl' .
             ' --file="{file}"' .
             ' --schema={schema}' .
-            implode('', $defaultTableIgnoreList);
+            ' ' . implode(' ', $ignoredTableArgs);
     }
 
     /**
@@ -170,8 +162,10 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * ```php
      * [
-     *     'IndexName1' => ['col1' [, ...]],
-     *     'IndexName2' => ['col2' [, ...]],
+     *     'IndexName' => [
+     *         'columns' => ['col1' [, ...]],
+     *         'unique' => false
+     *     ],
      * ]
      * ```
      *
@@ -194,7 +188,9 @@ class Schema extends \yii\db\pgsql\Schema
                 // https://github.com/yiisoft/yii2/issues/10613
                 $column = substr($column, 1, -1);
             }
-            $indexes[$row['indexname']][] = $column;
+
+            $indexes[$row['indexname']]['columns'][] = $column;
+            $indexes[$row['indexname']]['unique'] = (bool)$row['isunique'];
         }
 
         return $indexes;
@@ -320,7 +316,8 @@ SQL;
     {
         $sql = 'SELECT
     i.relname as indexname,
-    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
+    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname,
+    indisunique as isunique
 FROM (
   SELECT *, generate_subscripts(indkey, 1) AS k
   FROM pg_index

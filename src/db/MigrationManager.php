@@ -66,7 +66,7 @@ class MigrationManager extends Component
     /**
      * @var string The migrations table name
      */
-    public $migrationTable = '{{%migrations}}';
+    public $migrationTable = Table::MIGRATIONS;
 
     // Public Methods
     // =========================================================================
@@ -369,6 +369,21 @@ class MigrationManager extends Component
                     'type' => $this->type,
                     'pluginId' => $this->pluginId,
                     'name' => $name
+                ])
+            ->execute();
+    }
+
+    /**
+     * Truncates the migration history.
+     */
+    public function truncateHistory()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                $this->migrationTable,
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
                 ])
             ->execute();
     }

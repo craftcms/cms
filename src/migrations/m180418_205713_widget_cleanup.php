@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m180418_205713_widget_cleanup migration.
@@ -15,22 +16,22 @@ class m180418_205713_widget_cleanup extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%users}}', 'hasDashboard', $this->boolean()->notNull()->defaultValue(false)->after('lockoutDate'));
+        $this->addColumn(Table::USERS, 'hasDashboard', $this->boolean()->notNull()->defaultValue(false)->after('lockoutDate'));
 
         $usersWithWidgets = (new Query())
             ->select(['userId'])
             ->distinct()
-            ->from(['{{%widgets}}'])
+            ->from([Table::WIDGETS])
             ->column();
 
-        $this->update('{{%users}}', [
+        $this->update(Table::USERS, [
             'hasDashboard' => true,
         ], [
             'id' => $usersWithWidgets,
         ], [], false);
 
-        $this->delete('{{%widgets}}', ['enabled' => false]);
-        $this->dropColumn('{{%widgets}}', 'enabled');
+        $this->delete(Table::WIDGETS, ['enabled' => false]);
+        $this->dropColumn(Table::WIDGETS, 'enabled');
     }
 
     /**

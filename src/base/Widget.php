@@ -46,7 +46,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return null;
     }
@@ -59,6 +59,17 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         return null;
     }
 
+    /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null
+     * @deprecated in 3.2. Use [[icon()]] instead.
+     */
+    public static function iconPath()
+    {
+        return null;
+    }
+
     // Public Methods
     // =========================================================================
 
@@ -67,7 +78,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      */
     public function rules()
     {
-        $rules = [];
+        $rules = parent::rules();
 
         // Only validate the ID if it's not a new widget
         if (!$this->getIsNew()) {

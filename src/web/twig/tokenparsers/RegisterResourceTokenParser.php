@@ -9,6 +9,10 @@ namespace craft\web\twig\tokenparsers;
 
 use Craft;
 use craft\web\twig\nodes\RegisterResourceNode;
+use Twig\Parser;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
+use Twig\TokenStream;
 
 /**
  * Class RegisterResourceTokenParser
@@ -16,7 +20,7 @@ use craft\web\twig\nodes\RegisterResourceNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RegisterResourceTokenParser extends \Twig_TokenParser
+class RegisterResourceTokenParser extends AbstractTokenParser
 {
     // Properties
     // =========================================================================
@@ -78,7 +82,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         // Is this the deprecated version?
         if ($this->newCode !== null) {
@@ -86,8 +90,11 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
-        $expressionParser = $this->parser->getExpressionParser();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+        $expressionParser = $parser->getExpressionParser();
+
         $nodes = [];
 
         // Is this a tag pair?
@@ -97,7 +104,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
                 $this->_testPositionParam($stream) ||
                 $this->_testOptionsParam($stream) ||
                 $this->_testFirstParam($stream) ||
-                $stream->test(\Twig_Token::BLOCK_END_TYPE)
+                $stream->test(Token::BLOCK_END_TYPE)
             )
         ) {
             $capture = true;
@@ -107,9 +114,9 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         // Is there a position param?
-        if ($this->allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) {
+        if ($this->allowPosition && $stream->test(Token::NAME_TYPE, 'at')) {
             $stream->next();
-            $nameToken = $stream->expect(\Twig_Token::NAME_TYPE, [
+            $nameToken = $stream->expect(Token::NAME_TYPE, [
                 'head',
                 'beginBody',
                 'endBody',
@@ -118,9 +125,9 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
                 'POS_END',
             ]);
             $position = $nameToken->getValue();
-        } else if ($this->allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on')) {
+        } else if ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
             $stream->next();
-            $nameToken = $stream->expect(\Twig_Token::NAME_TYPE, [
+            $nameToken = $stream->expect(Token::NAME_TYPE, [
                 'ready',
                 'load',
                 'POS_READY',
@@ -132,7 +139,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         // Is there an options param?
-        if ($this->allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with')) {
+        if ($this->allowOptions && $stream->test(Token::NAME_TYPE, 'with')) {
             $stream->next();
             $nodes['options'] = $expressionParser->parseExpression();
         }
@@ -140,12 +147,12 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         $first = $this->_getFirstValue($stream);
 
         // Close out the tag
-        $stream->expect(\Twig_Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
         if ($capture) {
             // Tag pair. Capture the value.
-            $nodes['value'] = $this->parser->subparse([$this, 'decideBlockEnd'], true);
-            $stream->expect(\Twig_Token::BLOCK_END_TYPE);
+            $nodes['value'] = $parser->subparse([$this, 'decideBlockEnd'], true);
+            $stream->expect(Token::BLOCK_END_TYPE);
         }
 
         // Pass everything off to the RegisterResourceNode
@@ -170,10 +177,10 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * @param \Twig_Token $token
+     * @param Token $token
      * @return bool
      */
-    public function decideBlockEnd(\Twig_Token $token): bool
+    public function decideBlockEnd(Token $token): bool
     {
         return $token->test('end' . strtolower($this->tag));
     }
@@ -184,46 +191,46 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     /**
      * Returns whether the next token in the stream is a position param.
      *
-     * @param \Twig_TokenStream $stream The Twig token stream
+     * @param TokenStream $stream The Twig token stream
      * @return bool
      */
-    private function _testPositionParam(\Twig_TokenStream $stream): bool
+    private function _testPositionParam(TokenStream $stream): bool
     {
         return (
-            ($this->allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) ||
-            ($this->allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on'))
+            ($this->allowPosition && $stream->test(Token::NAME_TYPE, 'at')) ||
+            ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on'))
         );
     }
 
     /**
      * Returns whether the next token in the stream is an options param.
      *
-     * @param \Twig_TokenStream $stream The Twig token stream
+     * @param TokenStream $stream The Twig token stream
      * @return bool
      */
-    private function _testOptionsParam(\Twig_TokenStream $stream): bool
+    private function _testOptionsParam(TokenStream $stream): bool
     {
-        return ($this->allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with'));
+        return ($this->allowOptions && $stream->test(Token::NAME_TYPE, 'with'));
     }
 
     /**
      * Returns whether the next token in the stream is the deprecated `first` param
      *
-     * @param \Twig_TokenStream $stream The Twig token stream
+     * @param TokenStream $stream The Twig token stream
      * @return bool
      */
-    private function _testFirstParam(\Twig_TokenStream $stream): bool
+    private function _testFirstParam(TokenStream $stream): bool
     {
-        return ($this->newCode !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
+        return ($this->newCode !== null && $first = $stream->test(Token::NAME_TYPE, 'first'));
     }
 
     /**
      * Returns whether the next token in the stream is the deprecated `first` param.
      *
-     * @param \Twig_TokenStream $stream The Twig token stream
+     * @param TokenStream $stream The Twig token stream
      * @return bool
      */
-    private function _getFirstValue(\Twig_TokenStream $stream): bool
+    private function _getFirstValue(TokenStream $stream): bool
     {
         if ($this->_testFirstParam($stream)) {
             $stream->next();

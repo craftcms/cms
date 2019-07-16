@@ -18,6 +18,7 @@ use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 use yii\base\Module;
 
 /**
@@ -49,6 +50,19 @@ class Plugin extends Module implements PluginInterface
      * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved
      */
     const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
+
+    // Static
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static function editions(): array
+    {
+        return [
+            'standard',
+        ];
+    }
 
     // Properties
     // =========================================================================
@@ -243,6 +257,56 @@ class Plugin extends Module implements PluginInterface
         }
 
         return $ret;
+    }
+
+    // Editions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Compares the active edition with the given edition.
+     *
+     * @param string $edition The edition to compare the active edition against
+     * @param string $operator The comparison operator to use. `=` by default,
+     * meaning the method will return `true` if the active edition is equal to
+     * the passed-in edition.
+     * @return bool
+     * @throws InvalidArgumentException if `$edition` is an unsupported edition,
+     * or if `$operator` is an invalid operator.
+     */
+    public function is(string $edition, string $operator = '='): bool
+    {
+        $editions = static::editions();
+        $activeIndex = array_search($this->edition, $editions, true);
+        $otherIndex = array_search($edition, $editions, true);
+
+        if ($otherIndex === false) {
+            throw new InvalidArgumentException('Unsupported edition: ' . $edition);
+        }
+
+        switch ($operator) {
+            case '<':
+            case 'lt':
+                return $activeIndex < $otherIndex;
+            case '<=':
+            case 'le':
+                return $activeIndex <= $otherIndex;
+            case '>':
+            case 'gt':
+                return $activeIndex > $otherIndex;
+            case '>=':
+            case 'ge':
+                return $activeIndex >= $otherIndex;
+            case '==':
+            case '=':
+            case 'eq':
+                return $activeIndex == $otherIndex;
+            case '!=':
+            case '<>':
+            case 'ne':
+                return $activeIndex != $otherIndex;
+            default:
+                throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator);
+        }
     }
 
     // Events

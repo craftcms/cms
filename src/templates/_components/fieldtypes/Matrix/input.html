@@ -15,7 +15,10 @@
                     <input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType().handle }}">
                     <input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
                     <div class="titlebar">
-                        <div class="blocktype">{{ block.getType().name|t('site') }}</div>
+                        <div class="blocktype{% if block.hasErrors() %} error{% endif %}">
+                            {{ block.getType().name|t('site') }}
+                            {% if block.hasErrors() %}<span data-icon="alert"></span>{% endif %}
+                        </div>
                         <div class="preview"></div>
                     </div>
                     <div class="checkbox" title="{{ 'Select'|t('app') }}"></div>

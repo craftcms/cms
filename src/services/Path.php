@@ -69,24 +69,77 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to `config/project.yaml`.
+     *
+     * @return string
+     */
+    public function getProjectConfigFilePath(): string
+    {
+        return $this->getConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+    }
+
+    /**
      * Returns the path to the `storage/` directory.
      *
+     * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
      * @throws Exception
      */
-    public function getStoragePath(): string
+    public function getStoragePath(bool $create = true): string
     {
-        if ($this->_storagePath !== null) {
-            return $this->_storagePath;
+        if ($this->_storagePath === null) {
+            $path = Craft::getAlias('@storage');
+
+            if ($path === false) {
+                throw new Exception('There was a problem getting the storage path.');
+            }
+
+            $this->_storagePath = FileHelper::normalizePath($path);
         }
 
-        $storagePath = Craft::getAlias('@storage');
-
-        if ($storagePath === false) {
-            throw new Exception('There was a problem getting the storage path.');
+        if ($create) {
+            FileHelper::createDirectory($this->_storagePath);
         }
 
-        return $this->_storagePath = FileHelper::normalizePath($storagePath);
+        return $this->_storagePath;
+    }
+
+    /**
+     * Returns the path to the `storage/composer-backups/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     */
+    public function getComposerBackupsPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'composer-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            $this->_createGitignore($path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the `storage/configs/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     */
+    public function getConfigBackupPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            $this->_createGitignore($path);
+        }
+
+        return $path;
     }
 
     /**
@@ -94,6 +147,7 @@ class Path extends Component
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
+     * @throws Exception
      */
     public function getRebrandPath(bool $create = true): string
     {
@@ -132,6 +186,7 @@ class Path extends Component
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
+     * @throws Exception
      */
     public function getRuntimePath(bool $create = true): string
     {
@@ -139,15 +194,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-
-            // Add a .gitignore file in there if there isn't one
-            $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
-            if (!is_file($gitignorePath)) {
-                FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
-                    // Prevent a segfault if this is called recursively
-                    'lock' => false,
-                ]);
-            }
+            $this->_createGitignore($path);
         }
 
         return $path;
@@ -158,6 +205,7 @@ class Path extends Component
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
+     * @throws Exception
      */
     public function getDbBackupPath(bool $create = true): string
     {
@@ -311,6 +359,7 @@ class Path extends Component
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
+     * @throws Exception
      */
     public function getLogPath(bool $create = true): string
     {
@@ -460,5 +509,24 @@ class Path extends Component
     public function getLicenseKeyPath(): string
     {
         return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
+    }
+
+    /**
+     * Creates a .gitignore file in the given directory if it doesn’t exist yet
+     *
+     * @param string $path
+     */
+    private function _createGitignore(string $path)
+    {
+        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+
+        if (is_file($gitignorePath)) {
+            return;
+        }
+
+        FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
+            // Prevent a segfault if this is called recursively
+            'lock' => false,
+        ]);
     }
 }

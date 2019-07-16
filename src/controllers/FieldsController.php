@@ -40,6 +40,8 @@ class FieldsController extends Controller
     {
         // All field actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     // Groups
@@ -264,6 +266,7 @@ class FieldsController extends Controller
             'name' => $request->getBodyParam('name'),
             'handle' => $request->getBodyParam('handle'),
             'instructions' => $request->getBodyParam('instructions'),
+            'searchable' => (bool)$request->getBodyParam('searchable', true),
             'translationMethod' => $request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
             'settings' => $request->getBodyParam('types.' . $type),

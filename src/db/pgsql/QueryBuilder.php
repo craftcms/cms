@@ -8,6 +8,8 @@
 namespace craft\db\pgsql;
 
 use craft\db\Connection;
+use yii\db\ExpressionInterface;
+use yii\db\Query;
 
 /**
  * @inheritdoc

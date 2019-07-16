@@ -111,6 +111,8 @@
             siteId: category.siteId,
             id: 'slug',
             name: 'slug',
+            autocorrect: false,
+            autocapitalize: false,
             value: category.slug,
             placeholder: "Enter slug"|t('app'),
             errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
@@ -123,7 +125,7 @@
                 name: 'parentId',
                 elementType: elementType,
                 selectionLabel: "Choose"|t('app'),
-                sources: ['group:'~group.id],
+                sources: ['group:'~group.uid],
                 criteria: parentOptionCriteria,
                 limit: 1,
                 elements: (parent is defined and parent ? [parent]),
@@ -160,6 +162,8 @@
 
 {% if not category.slug %}
     {% js %}
-        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
+            charMap: {{ craft.cp.getAsciiCharMap(category.site.language)|json_encode|raw }}
+        });
     {% endjs %}
 {% endif %}

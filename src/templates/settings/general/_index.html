@@ -21,29 +21,30 @@
     <input type="hidden" name="action" value="system-settings/save-general-settings">
     {{ redirectInput('settings') }}
 
-    {{ forms.textField({
+    {{ forms.autosuggestField({
         first: true,
         label: "System Name"|t('app'),
         id: 'name',
+        suggestEnvVars: true,
         name: 'name',
-        value: info.name
+        value: system.name
     }) }}
 
     {{ forms.lightswitchField({
         first: true,
         label: "System Status"|t('app'),
-        warning: (craft.app.config.general.isSystemOn is same as(true) or craft.app.config.general.isSystemOn is same as(false) ? configWarning('isSystemOn')),
-        id: 'on',
-        name: 'on',
-        on: info.on
+        warning: (craft.app.config.general.isSystemLive is same as(true) or craft.app.config.general.isSystemLive is same as(false) ? configWarning('isSystemLive')),
+        id: 'live',
+        name: 'live',
+        on: system.live
     }) }}
 
     {{ forms.selectField({
-        label: "Timezone"|t('app'),
+        label: "Time Zone"|t('app'),
         warning: (craft.app.config.general.timezone ? configWarning('timezone')),
-        id: 'timezone',
-        name: 'timezone',
-        value: info.timezone,
+        id: 'time-zone',
+        name: 'timeZone',
+        value: system.timeZone,
         options: timezoneOptions
     }) }}
 

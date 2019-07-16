@@ -1,0 +1,52 @@
+codecov:
+  notify:
+    require_ci_to_pass: yes
+
+coverage:
+  range: 20..100
+  round: down
+  precision: 2
+  status:
+    project:
+      default:
+        threshold: .1
+        base: pr
+
+  notify:
+    slack:
+      default:
+        url: "https://hooks.slack.com/services/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"
+        threshold: 1%
+        only_pulls: false
+        branches: 3.2
+        flags: null
+        attachments: "sunburst, diff"
+        paths: null
+        message: "Coverage {{changed}} for {{owner}}/{{repo}}"
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+comment: off
+
+ignore:
+  - "src/web/assets"
+  - "src/test/internal"
+  - "src/config"
+  - "src/icons"
+  - "src/test/internal"
+  - "src/migrations"
+  - "src/templates"
+  - "src/translations"
+  - "src/views"
+  - "src/web/assets"
+  - "bootstrap"
+  - "docs"
+  - "lib"
+  - "tests"
+  - "vendor"

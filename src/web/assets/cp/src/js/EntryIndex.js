@@ -22,7 +22,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.id)) {
+                if (this.getSourceByKey('section:' + section.uid)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -160,14 +160,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
                 var uri = 'entries/' + section.handle + '/new';
-                if (this.siteId && this.siteId != Craft.siteId) {
+                params = {};
+                if (this.siteId) {
                     for (var i = 0; i < Craft.sites.length; i++) {
                         if (Craft.sites[i].id == this.siteId) {
-                            uri += '/'+Craft.sites[i].handle;
+                            params.site = Craft.sites[i].handle;
                         }
                     }
                 }
-                return 'href="' + Craft.getUrl(uri) + '"';
+                return 'href="' + Craft.getUrl(uri, params) + '"';
             } else {
                 return 'data-id="' + section.id + '"';
             }
@@ -215,7 +216,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + sectionId;
+                    var sectionSourceKey = 'section:' + section.uid;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);

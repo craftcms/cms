@@ -73,6 +73,11 @@ class UrlManager extends \yii\web\UrlManager
     // =========================================================================
 
     /**
+     * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
+     */
+    public $checkToken = true;
+
+    /**
      * @var array Params that should be included in the
      */
     private $_routeParams = [];
@@ -186,11 +191,16 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Sets params to be passed to the routed controller action.
      *
-     * @param array $params
+     * @param array $params The route params
+     * @param bool $merge Whether these params should be merged with existing params
      */
-    public function setRouteParams(array $params)
+    public function setRouteParams(array $params, bool $merge = true)
     {
-        $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+        if ($merge) {
+            $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+        } else {
+            $this->_routeParams = $params;
+        }
     }
 
     /**
@@ -233,6 +243,32 @@ class UrlManager extends \yii\web\UrlManager
         $this->_getMatchedElementRoute($request->getPathInfo());
 
         return $this->_matchedElement;
+    }
+
+    /**
+     * Sets the matched element for the request.
+     *
+     * @param ElementInterface|false|null $element
+     * @since 3.2.3
+     */
+    public function setMatchedElement($element)
+    {
+        if ($element instanceof ElementInterface) {
+            if ($route = $element->getRoute()) {
+                if (is_string($route)) {
+                    $route = [$route, []];
+                }
+                $this->_matchedElement = $element;
+                $this->_matchedElementRoute = $route;
+                return;
+            }
+
+            // Element doesn't have a route so ignore it
+            $element = false;
+        }
+
+        $this->_matchedElement = $element;
+        $this->_matchedElementRoute = $element;
     }
 
     // Protected Methods
@@ -305,7 +341,7 @@ class UrlManager extends \yii\web\UrlManager
 
             $rules = array_merge(
                 $routesService->getConfigFileRoutes(),
-                $routesService->getDbRoutes()
+                $routesService->getProjectConfigRoutes()
             );
 
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
@@ -360,32 +396,20 @@ class UrlManager extends \yii\web\UrlManager
             return $this->_matchedElementRoute;
         }
 
-        $this->_matchedElement = false;
-        $this->_matchedElementRoute = false;
-
         if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
             /** @var Element $element */
             /** @noinspection PhpUnhandledExceptionInspection */
             $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
-
-            if ($element) {
-                $route = $element->getRoute();
-
-                if ($route) {
-                    if (is_string($route)) {
-                        $route = [$route, []];
-                    }
-
-                    $this->_matchedElement = $element;
-                    $this->_matchedElementRoute = $route;
-                }
-            }
+        } else {
+            $element = null;
         }
+
+        $this->setMatchedElement($element ?: false);
 
         if (YII_DEBUG) {
             Craft::debug([
                 'rule' => 'Element URI: ' . $path,
-                'match' => isset($element, $route),
+                'match' => $this->_matchedElement instanceof ElementInterface,
                 'parent' => null
             ], __METHOD__);
         }
@@ -488,6 +512,10 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getTokenRoute(Request $request)
     {
+        if (!$this->checkToken) {
+            return false;
+        }
+
         $token = $request->getToken();
 
         if (YII_DEBUG) {

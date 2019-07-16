@@ -8,6 +8,7 @@
 namespace craft\validators;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use yii\validators\Validator;
@@ -32,6 +33,11 @@ class SlugValidator extends Validator
      * @var bool|null Whether auto-generated slugs should be limited to ASCII characters. Defaults to the `limitAutoSlugsToAscii` config setting if left null.
      */
     public $limitAutoSlugsToAscii;
+
+    /**
+     * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
+     */
+    public $language;
 
     // Public Methods
     // =========================================================================
@@ -58,15 +64,22 @@ class SlugValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         $slug = $originalSlug = (string)$model->$attribute;
+        $isTemp = ElementHelper::isTempSlug($slug);
+        $isDraft = $model instanceof ElementInterface && $model->getIsDraft();
 
-        if ($slug === '' && $this->sourceAttribute !== null) {
+        // If this is a draft with a temp slug, leave it alone
+        if ($isTemp && $isDraft) {
+            return;
+        }
+
+        if (($slug === '' || $isTemp) && $this->sourceAttribute !== null) {
             // Create a slug for them, based on the element's title.
             // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
             // to mimic the default JavaScript-based slug generation.
             $slug = str_replace(['.', '_', '-'], ' ', $model->{$this->sourceAttribute});
 
             if ($this->limitAutoSlugsToAscii) {
-                $slug = StringHelper::toAscii($slug);
+                $slug = StringHelper::toAscii($slug, $this->language);
             }
         }
 
@@ -75,7 +88,7 @@ class SlugValidator extends Validator
 
         if ($slug !== '') {
             $model->$attribute = $slug;
-        } else {
+        } else if (!$isTemp) {
             if ($originalSlug !== '') {
                 $this->addError($model, $attribute, Craft::t('yii', '{attribute} is invalid.'));
             } else {

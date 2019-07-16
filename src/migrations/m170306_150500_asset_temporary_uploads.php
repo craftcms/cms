@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\FileHelper;
 
 /**
@@ -43,7 +44,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
             // Find the folder ID to move this to.
             if (empty($folderCache[$topFolderPath])) {
                 $folderCache[$topFolderPath] = (new Query())->select('id')
-                    ->from('{{%volumefolders}}')
+                    ->from(Table::VOLUMEFOLDERS)
                     ->where(['volumeId' => null])
                     ->andWhere(['path' => $topFolderPath . '/'])
                     ->scalar($this->db);
@@ -67,7 +68,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
 
             // If the file doesn't even exist, delete the record of it.
             if (!file_exists($from)) {
-                $this->delete('{{%elements}}', ['id' => $asset['id']]);
+                $this->delete(Table::ELEMENTS, ['id' => $asset['id']]);
                 continue;
             }
 
@@ -97,13 +98,13 @@ class m170306_150500_asset_temporary_uploads extends Migration
             copy($from, $to);
 
             // Change properties
-            $this->update('{{%assets}}', $updatedProperties, ['id' => $asset['id']]);
+            $this->update(Table::ASSETS, $updatedProperties, ['id' => $asset['id']]);
         }
 
         echo "    > Deleting obsolete folders \n";
 
         // Delete all the old volume folders
-        $this->delete('{{%volumefolders}}', ['id' => array_keys($previousFolderList)]);
+        $this->delete(Table::VOLUMEFOLDERS, ['id' => array_keys($previousFolderList)]);
 
         // And directories
         $basePath = Craft::$app->getPath()->getAssetsPath() . DIRECTORY_SEPARATOR . 'tempuploads' . DIRECTORY_SEPARATOR;

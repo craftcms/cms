@@ -7,6 +7,10 @@
 
 namespace craft\helpers;
 
+use Craft;
+use yii\base\InvalidConfigException;
+use yii\console\Controller;
+
 /**
  * Console helper
  *
@@ -34,9 +38,82 @@ class Console extends \yii\helpers\Console
         if (static::streamSupportsAnsiColors(\STDOUT)) {
             $args = func_get_args();
             array_shift($args);
-            $string = self::ansiFormat($string, $args);
+            if (!empty($args)) {
+                $string = self::ansiFormat($string, $args);
+            }
         }
 
         return parent::stdout($string);
+    }
+
+    /**
+     * Returns whether color is enabled.
+     *
+     * @return bool
+     */
+    public static function isColorEnabled(): bool
+    {
+        $controller = Craft::$app->controller;
+        return $controller instanceof Controller && $controller->isColorEnabled();
+    }
+
+    /**
+     * Outputs a terminal command.
+     *
+     * @param string $command The command to output
+     * @param bool $withScriptName Whether the current script name (e.g. `craft`) should be prepended to the command.
+     */
+    public static function outputCommand(string $command, bool $withScriptName = true)
+    {
+        if ($withScriptName) {
+            try {
+                $file = Craft::$app->getRequest()->getScriptFilename();
+            } catch (InvalidConfigException $e) {
+                $file = 'craft';
+            }
+            $command = $file . ' ' . $command;
+        }
+
+        if (static::isColorEnabled()) {
+            static::stdout($command, self::FG_CYAN);
+        } else {
+            static::stdout("`$command`");
+        }
+    }
+
+    /**
+     * Outputs a warning.
+     *
+     * @param string $text
+     */
+    public static function outputWarning(string $text)
+    {
+        $xPad = 4;
+        $lines = explode("\n", $text);
+        $width = 0;
+        foreach ($lines as $line) {
+            $width = max($width, strlen($line));
+        }
+        $width += $xPad * 2;
+
+        $isColorEnabled = static::isColorEnabled();
+        $format = $isColorEnabled ? [self::BG_RED, self::BOLD] : [];
+
+        static::output();
+
+        if ($isColorEnabled) {
+            static::output(static::ansiFormat(str_repeat(' ', $width), $format));
+        }
+
+        foreach ($lines as $line) {
+            $extra = $width - strlen($line);
+            static::output(static::ansiFormat(str_repeat(' ', floor($extra / 2)) . $text . str_repeat(' ', ceil($extra / 2)), $format));
+        }
+
+        if ($isColorEnabled) {
+            static::output(static::ansiFormat(str_repeat(' ', $width), $format));
+        }
+
+        static::output();
     }
 }

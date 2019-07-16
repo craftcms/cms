@@ -9,9 +9,13 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
@@ -21,6 +25,7 @@ use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
@@ -40,6 +45,7 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
+use Twig\Markup;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -65,7 +71,7 @@ use yii\validators\Validator;
  * @property bool $hasFreshContent Whether the element’s content is "fresh" (unsaved and without validation errors)
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the Control Panel
  * @property bool $isEditable Whether the current user can edit the element
- * @property \Twig_Markup|null $link An anchor pre-filled with this element’s URL and title
+ * @property Markup|null $link An anchor pre-filled with this element’s URL and title
  * @property Element|null $next The next element relative to this one, from a given set of criteria
  * @property Element|null $nextSibling The element’s next sibling
  * @property Element|null $parent The element’s parent
@@ -81,6 +87,8 @@ use yii\validators\Validator;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
+ * @property-write int|null $revisionCreatorId revision creator ID to be saved
+ * @property-write string|null $revisionNotes revision notes to be saved
  * @mixin ContentBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -142,6 +150,16 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
 
     /**
+     * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
+     */
+    const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
+
+    /**
+     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
+     */
+    const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
+
+    /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
     const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
@@ -162,7 +180,7 @@ abstract class Element extends Component implements ElementInterface
      *     if ($entry->uri === 'pricing') {
      *         $e->route = 'module/pricing/index';
      *     }
-     * }
+     * });
      * ```
      */
     const EVENT_SET_ROUTE = 'setRoute';
@@ -179,6 +197,11 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     */
+    const EVENT_AFTER_PROPAGATE = 'afterPropagate';
+
+    /**
      * @event ModelEvent The event that is triggered before the element is deleted
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
@@ -188,6 +211,17 @@ abstract class Element extends Component implements ElementInterface
      * @event \yii\base\Event The event that is triggered after the element is deleted
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is restored
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting restored.
+     */
+    const EVENT_BEFORE_RESTORE = 'beforeRestore';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is restored
+     */
+    const EVENT_AFTER_RESTORE = 'afterRestore';
 
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
@@ -203,6 +237,14 @@ abstract class Element extends Component implements ElementInterface
 
     // Static
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Elements');
+    }
 
     /**
      * @inheritdoc
@@ -438,6 +480,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
+        // Add custom fields to the fix
+        foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
+            /** @var Field $field */
+            if ($field instanceof SortableFieldInterface) {
+                $sortOptions[] = $field->getSortOption();
+            }
+        }
+
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
             'sortOptions' => $sortOptions
@@ -548,7 +598,7 @@ abstract class Element extends Component implements ElementInterface
 
             $structureData = (new Query())
                 ->select($selectColumns)
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where(['elementId' => $sourceElementIds])
                 ->all();
 
@@ -589,7 +639,7 @@ abstract class Element extends Component implements ElementInterface
             // Return any child elements
             $map = $query
                 ->select([$sourceSelectSql, 'elementId as target'])
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where($condition)
                 ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
                 ->all();
@@ -608,6 +658,21 @@ abstract class Element extends Component implements ElementInterface
             if ($field instanceof EagerLoadingFieldInterface) {
                 return $field->getEagerLoadingMap($sourceElements);
             }
+        }
+
+        // Give plugins a chance to provide custom mappings
+        $event = new DefineEagerLoadingMapEvent([
+            'sourceElements' => $sourceElements,
+            'handle' => $handle
+        ]);
+        Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
+
+        if ($event->elementType !== null) {
+            return [
+                'elementType' => $event->elementType,
+                'map' => $event->map,
+                'criteria' => $event->criteria,
+            ];
         }
 
         return false;
@@ -686,6 +751,18 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
+     * @var string|null Revision creator ID to be saved
+     * @see setRevisionCreatorId()
+     */
+    protected $revisionCreatorId;
+
+    /**
+     * @var string|null Revision notes to be saved
+     * @see setRevisionNotes()
+     */
+    protected $revisionNotes;
+
+    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -729,6 +806,12 @@ abstract class Element extends Component implements ElementInterface
      * @var ElementInterface[]|null
      */
     private $_eagerLoadedElements;
+
+    /**
+     * @var ElementInterface|false
+     * @see getCurrentRevision()
+     */
+    private $_currentRevision;
 
     // Public Methods
     // =========================================================================
@@ -948,19 +1031,25 @@ abstract class Element extends Component implements ElementInterface
      */
     public function rules()
     {
-        $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]],
-            [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]],
-            [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+        $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'trim' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], 'trim', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
         if (static::hasUris()) {
-            $rules[] = [['slug'], SlugValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            try {
+                $language = $this->getSite()->language;
+            } catch (InvalidConfigException $e) {
+                $language = null;
+            }
+
+            $rules[] = [['slug'], SlugValidator::class, 'language' => $language, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
             $rules[] = [['slug'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
@@ -1036,7 +1125,7 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
             }
         }
 
@@ -1148,6 +1237,61 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsDraft(): bool
+    {
+        return !empty($this->draftId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsRevision(): bool
+    {
+        return !empty($this->revisionId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceId()
+    {
+        /** @var DraftBehavior|RevisionBehavior|null $behavior */
+        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
+        return $behavior->sourceId ?? $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceUid(): string
+    {
+        $sourceId = $this->getSourceId();
+        if ($sourceId === $this->id) {
+            return $this->uid;
+        }
+        return static::find()
+            ->id($sourceId)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->select(['elements.uid'])
+            ->scalar();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsUnsavedDraft(): bool
+    {
+        if (!$this->getIsDraft()) {
+            return false;
+        }
+        $sourceId = $this->getSourceId();
+        return !$sourceId || $sourceId == $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         if ($this->fieldLayoutId) {
@@ -1223,12 +1367,20 @@ abstract class Element extends Component implements ElementInterface
         $url = $this->getUrl();
 
         if ($url !== null) {
-            $link = '<a href="' . $url . '">' . Html::encode($this->__toString()) . '</a>';
+            $link = '<a href="' . $url . '">' . Html::encode($this->getUiLabel()) . '</a>';
 
             return Template::raw($link);
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return (string)$this;
     }
 
     /**
@@ -1253,6 +1405,24 @@ abstract class Element extends Component implements ElementInterface
     public function getCpEditUrl()
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewTargets(): array
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
+        }
+
+        // Give plugins a chance to modify them
+        $event = new RegisterPreviewTargetsEvent([
+            'previewTargets' => $this->previewTargets(),
+        ]);
+        $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+
+        return $event->previewTargets;
     }
 
     /**
@@ -1462,7 +1632,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHasDescendants(): bool
     {
-        return ($this->lft !== null && $this->rgt !== null && $this->rgt > $this->lft + 1);
+        $descendants = $this->getDescendants();
+        if (is_array($descendants)) {
+            return !empty($descendants);
+        }
+        return $descendants->exists();
     }
 
     /**
@@ -1470,11 +1644,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTotalDescendants(): int
     {
-        if ($this->getHasDescendants()) {
-            return ($this->rgt - $this->lft - 1) / 2;
+        $descendants = $this->getDescendants();
+        if (is_array($descendants)) {
+            return count($descendants);
         }
-
-        return 0;
+        return $descendants->count();
     }
 
     /**
@@ -1646,6 +1820,9 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $this->setFieldValue($field->handle, $value);
+
+            // Normalize it now in case the system language changes later
+            $this->normalizeFieldValue($field->handle);
         }
     }
 
@@ -1734,6 +1911,43 @@ abstract class Element extends Component implements ElementInterface
     public function getHasFreshContent(): bool
     {
         return ($this->contentId === null && !$this->hasErrors());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionCreatorId(int $creatorId = null)
+    {
+        $this->revisionCreatorId = $creatorId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionNotes(string $notes = null)
+    {
+        $this->revisionNotes = $notes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrentRevision()
+    {
+        if (!$this->id) {
+            return null;
+        }
+
+        if ($this->_currentRevision === null) {
+            $this->_currentRevision = static::find()
+                ->revisionOf($this->getSourceId())
+                ->dateCreated($this->dateUpdated)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->one() ?: false;
+        }
+
+        return $this->_currentRevision ?: null;
     }
 
     // Indexes, etc.
@@ -1851,6 +2065,24 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function afterPropagate(bool $isNew)
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementPropagate($this, $isNew);
+        }
+
+        // Trigger an 'afterPropagate' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
+            $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeDelete(): bool
     {
         // Tell the fields about it
@@ -1880,6 +2112,41 @@ abstract class Element extends Component implements ElementInterface
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeRestore(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementRestore($this)) {
+                return false;
+            }
+        }
+
+        // Trigger a 'beforeRestore' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore()
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementRestore($this);
+        }
+
+        // Trigger an 'afterRestore' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE)) {
+            $this->trigger(self::EVENT_AFTER_RESTORE);
         }
     }
 
@@ -2122,6 +2389,20 @@ abstract class Element extends Component implements ElementInterface
     protected function route()
     {
         return null;
+    }
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @see getPreviewTargets()
+     * @since 3.2
+     */
+    protected function previewTargets(): array
+    {
+        return [];
     }
 
     /**

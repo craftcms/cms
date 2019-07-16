@@ -1,42 +1,36 @@
 <p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
+<p align="center">
+<a href="https://travis-ci.com/craftcms/cms"><img src="https://img.shields.io/travis/com/craftcms/cms/3.2.svg?label=build" alt="Build Status"></a>
+<a href="https://packagist.org/packages/craftcms/cms"><img src="https://img.shields.io/packagist/dt/craftcms/cms.svg?label=downloads" alt="Total Packagist Downloads"></a>
+<a href="https://github.com/craftcms/cms/releases"><img src="https://img.shields.io/github/tag/craftcms/cms.svg?label=stable" alt="Latest Stable Version"></a>
+</p>
+
 ## About Craft CMS
 
-Craft is a flexible and scalable CMS for creating bespoke digital experiences on the web and beyond.
+Craft is a flexible, user-friendly CMS for creating custom digital experiences on the web and beyond.
 
 It features:
 
-- An intuitive Control Panel for administration tasks and content creation.
-- A clean-slate approach to content modeling and [front-end development](https://docs.craftcms.com/v3/dev/).
-- A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/).
+- An intuitive, user-friendly Control Panel for content creation and administrative tasks.
+- A clean-slate approach to content modeling and [front-end development](https://docs.craftcms.com/v3/dev/) that doesn’t make any assumptions about your content or how it should be consumed.
+- A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/), all just a click away.
 - A robust framework for [module and plugin development](https://docs.craftcms.com/v3/extend/).
+- An active, vibrant [community](https://craftcms.com/community).
 
-Learn more about it at [craftcms.com](https://craftcms.com).
+You can learn all about it at [craftcms.com](https://craftcms.com), and documentation is available at [docs.craftcms.com](https://docs.craftcms.com/v3/).
 
 ## Tech Specs
 
-Craft is written in PHP (7+), and built on the [Yii 2 framework](https://www.yiiframework.com/). It can connect to MySQL (5.5+) and PostgreSQL (9.5+) for content storage.
+Craft is a self-hosted PHP 7 application, built on [Yii 2](https://www.yiiframework.com/). It can connect to MySQL and PostgreSQL for content storage. Templating is powered by [Twig](https://twig.symfony.com).
 
-## Installation
+## Popular Resources
 
-See the following documentation pages for help installing Craft 3:
-
-- [Server Requirements](https://docs.craftcms.com/v3/requirements.html)
-- [Installation Instructions](https://docs.craftcms.com/v3/installation.html)
-- [Upgrading from Craft 2](https://docs.craftcms.com/v3/upgrade.html)
-
-## Resources
-
-#### Official Resources
-- [Documentation](https://docs.craftcms.com/v3/) – Everything from usage instructions to plugin guides. 
-- [Class Reference](https://docs.craftcms.com/api/v3/) – Full API and class reference for plugin and module developers.
-- [Demo site](https://demo.craftcms.com/) – Quickly launch a personalized demo of a Craft site.
-- [Craft Slack](https://craftcms.com/community#slack) – Join one of the most friendly and helpful Slack groups around.
-- [Craft Commerce](https://craftcommerce.com/) – First-party e-commerce platform for Craft.
-
-#### Community Resources
-- [CraftQuest](https://craftquest.io/) – Unlimited access to Craft training (and more) from Mijingo.
-- [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) – Video courses.
-- [nystudio107 Blog](https://nystudio107.com/blog) – Articles about Craft and modern web development.
-- [Craft Link List](http://craftlinklist.com/) – Bimonthly newsletter about the Craft ecosystem.
-- [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/) – Community-run Q&A for Craft developers.
+- **[Documentation](http://docs.craftcms.com/v3/)** – Read the official docs.
+- **[Guides](https://craftcms.com/guides)** – Follow along with the official guides.
+- **[#craftcms](https://twitter.com/hashtag/craftcms)** – See the latest tweets about Craft.
+- **[Discord](https://craftcms.com/discord)** – Meet the community.
+- **[Stack Exchange](http://craftcms.stackexchange.com/)** – Get help and help others.
+- **[CraftQuest](https://craftquest.io/)** – Watch unlimited video lessons and courses.
+- **[Craft Link List](http://craftlinklist.com/)** – Stay in-the-know.
+- **[nystudio107 Blog](https://nystudio107.com/blog)** – Learn Craft and modern web development.

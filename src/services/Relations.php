@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\fields\BaseRelationField;
 use yii\base\Component;
 
@@ -40,8 +41,8 @@ class Relations extends Component
             $targetIds = [];
         }
 
-        // Prevent duplicate target IDs.
-        $targetIds = array_unique($targetIds);
+        // Prevent duplicate/empty target IDs.
+        $targetIds = array_unique(array_filter($targetIds));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -64,7 +65,7 @@ class Relations extends Component
             }
 
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%relations}}', $oldRelationConditions)
+                ->delete(Table::RELATIONS, $oldRelationConditions)
                 ->execute();
 
             // Add the new ones
@@ -95,7 +96,7 @@ class Relations extends Component
                     'sortOrder'
                 ];
                 Craft::$app->getDb()->createCommand()
-                    ->batchInsert('{{%relations}}', $columns, $values)
+                    ->batchInsert(Table::RELATIONS, $columns, $values)
                     ->execute();
             }
 

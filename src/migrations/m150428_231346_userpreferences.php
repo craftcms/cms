@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 use craft\helpers\Localization;
 use craft\helpers\MigrationHelper;
@@ -28,8 +29,8 @@ class m150428_231346_userpreferences extends Migration
      */
     public function safeUp()
     {
-        $this->_usersTable = $this->db->getSchema()->getRawTableName('{{%users}}');
-        $this->_prefsTable = $this->db->getSchema()->getRawTableName('{{%userpreferences}}');
+        $this->_usersTable = $this->db->getSchema()->getRawTableName(Table::USERS);
+        $this->_prefsTable = $this->db->getSchema()->getRawTableName(Table::USERPREFERENCES);
 
         // In case this was run in a previous update attempt
         $this->dropTableIfExists($this->_prefsTable);

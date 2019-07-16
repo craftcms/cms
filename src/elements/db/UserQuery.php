@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\UserGroup;
@@ -30,6 +31,11 @@ class UserQuery extends ElementQuery
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['users.username' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -140,11 +146,6 @@ class UserQuery extends ElementQuery
      */
     public function __construct($elementType, array $config = [])
     {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'users.username';
-        }
-
         // Default status
         if (!isset($config['status'])) {
             $config['status'] = [User::STATUS_ACTIVE];
@@ -172,7 +173,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch admins #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .admin()
      *     .all() %}
      * ```
@@ -203,7 +204,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch users that can access the Control Panel #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .can('accessCp')
      *     .all() %}
      * ```
@@ -265,7 +266,7 @@ class UserQuery extends ElementQuery
         } else if ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
-                ->from(['{{%usergroups}}'])
+                ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {
@@ -488,7 +489,7 @@ class UserQuery extends ElementQuery
      *
      * ```php
      * // Fetch {elements} that logged in recently
-     * $aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+     * $aWeekAgo = (new \DateTime('7 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->lastLoginDate(">= {$aWeekAgo}")
@@ -513,17 +514,17 @@ class UserQuery extends ElementQuery
      * | Value | Fetches {elements}…
      * | - | -
      * | `'active'` _(default)_ | with active accounts.
-     * | `'locked'` | with locked accounts.
      * | `'suspended'` | with suspended accounts.
      * | `'pending'` | with accounts that are still pending activation.
-     * | `['active', 'locked']` | with active or locked accounts.
+     * | `'locked'` | with locked accounts (regardless of whether they’re active or suspended).
+     * | `['active', 'suspended']` | with active or suspended accounts.
      *
      * ---
      *
      * ```twig
      * {# Fetch active and locked {elements} #}
-     * {% set {elements-var} = {twig-function}
-     *     .status(['active', 'locked')
+     * {% set {elements-var} = {twig-method}
+     *     .status(['active', 'locked'])
      *     .all() %}
      * ```
      *
@@ -589,17 +590,11 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $userIds = (new Query())
-                ->select(['userId'])
-                ->from(['{{%usergroups_users}}'])
-                ->where(Db::parseParam('groupId', $this->groupId))
-                ->column();
-
-            if (!empty($userIds)) {
-                $this->subQuery->andWhere(['elements.id' => $userIds]);
-            } else {
-                return false;
-            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['ugu' => Table::USERGROUPS_USERS])
+                ->where('[[elements.id]] = [[ugu.userId]]')
+                ->andWhere(Db::parseParam('groupId', $this->groupId))
+            ]);
         }
 
         if ($this->email) {
@@ -634,20 +629,21 @@ class UserQuery extends ElementQuery
             case User::STATUS_ACTIVE:
                 return [
                     'users.suspended' => false,
-                    'users.locked' => false,
-                    'users.pending' => false
+                    'users.pending' => false,
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.pending' => true
+                    'users.suspended' => false,
+                    'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.locked' => true
+                    'users.suspended' => false,
+                    'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:
                 return [
-                    'users.suspended' => true
+                    'users.suspended' => true,
                 ];
             default:
                 return parent::statusCondition($status);
@@ -672,7 +668,7 @@ class UserQuery extends ElementQuery
             // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
             $this->can = (new Query())
                 ->select(['id'])
-                ->from(['{{%userpermissions}}'])
+                ->from([Table::USERPERMISSIONS])
                 ->where(['name' => strtolower($this->can)])
                 ->scalar();
         }
@@ -682,7 +678,7 @@ class UserQuery extends ElementQuery
             // Get the users that have that permission directly
             $permittedUserIds = (new Query())
                 ->select(['userId'])
-                ->from(['{{%userpermissions_users}}'])
+                ->from([Table::USERPERMISSIONS_USERS])
                 ->where(['permissionId' => $this->can])
                 ->column();
 

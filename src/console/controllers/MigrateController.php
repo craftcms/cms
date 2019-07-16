@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Plugin;
+use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
@@ -23,6 +24,7 @@ use yii\helpers\Console;
 
 /**
  * Manages Craft and plugin migrations.
+ *
  * A migration means a set of persistent changes to the application environment that is shared among different
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
@@ -43,6 +45,11 @@ use yii\helpers\Console;
  */
 class MigrateController extends BaseMigrateController
 {
+    // Traits
+    // =========================================================================
+
+    use ControllerTrait;
+
     // Properties
     // =========================================================================
 
@@ -57,6 +64,11 @@ class MigrateController extends BaseMigrateController
      * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
+
+    /**
+     * @var bool Exclude pending content migrations.
+     */
+    public $noContent;
 
     /**
      * @var MigrationManager|null The migration manager that will be used in this request
@@ -100,6 +112,10 @@ class MigrateController extends BaseMigrateController
         // Global options
         $options[] = 'type';
         $options[] = 'plugin';
+
+        if ($actionID === 'all') {
+            $options[] = 'noContent';
+        }
 
         return $options;
     }
@@ -216,7 +232,7 @@ class MigrateController extends BaseMigrateController
         $db = Craft::$app->getDb();
 
         // Get the handles in need of an update
-        $handles = $updatesService->getPendingMigrationHandles(true);
+        $handles = $updatesService->getPendingMigrationHandles(!$this->noContent);
 
         // Anything to update?
         if (!empty($handles)) {
@@ -392,5 +408,13 @@ class MigrateController extends BaseMigrateController
     protected function removeMigrationHistory($version)
     {
         $this->getMigrator()->removeMigrationHistory($version);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function truncateDatabase()
+    {
+        $this->getMigrator()->truncateHistory();
     }
 }

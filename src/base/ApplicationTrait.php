@@ -9,25 +9,46 @@ namespace craft\base;
 
 use Craft;
 use craft\console\Application as ConsoleApplication;
+use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
 use craft\queue\Queue;
 use craft\queue\QueueInterface;
+use craft\services\AssetTransforms;
+use craft\services\Categories;
+use craft\services\Fields;
+use craft\services\Globals;
+use craft\services\Matrix;
+use craft\services\ProjectConfig;
+use craft\services\Sections;
 use craft\services\Security;
+use craft\services\Sites;
+use craft\services\Tags;
+use craft\services\UserGroups;
+use craft\services\Users;
+use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
+use craft\web\Request as WebRequest;
 use craft\web\View;
+use yii\base\Application;
+use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\caching\Cache;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -51,18 +72,21 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Content $content The content service
  * @property-read \craft\services\Dashboard $dashboard The dashboard service
  * @property-read \craft\services\Deprecator $deprecator The deprecator service
+ * @property-read \craft\services\Drafts $drafts The drafts service
  * @property-read \craft\services\ElementIndexes $elementIndexes The element indexes service
  * @property-read \craft\services\Elements $elements The elements service
  * @property-read \craft\services\Entries $entries The entries service
- * @property-read \craft\services\EntryRevisions $entryRevisions The entry revisions service
  * @property-read \craft\services\Fields $fields The fields service
+ * @property-read \craft\services\Gc $gc The garbage collection service
  * @property-read \craft\services\Globals $globals The globals service
  * @property-read \craft\services\Images $images The images service
  * @property-read \craft\services\Matrix $matrix The matrix service
  * @property-read \craft\services\Path $path The path service
  * @property-read \craft\services\Plugins $plugins The plugins service
  * @property-read \craft\services\PluginStore $pluginStore The plugin store service
+ * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read \craft\services\Relations $relations The relations service
+ * @property-read \craft\services\Revisions $revisions The revisions service
  * @property-read \craft\services\Routes $routes The routes service
  * @property-read \craft\services\Search $search The search service
  * @property-read \craft\services\Sections $sections The sections service
@@ -87,12 +111,13 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $isInitialized Whether Craft is fully initialized
  * @property-read bool $isInMaintenanceMode Whether someone is currently performing a system update
  * @property-read bool $isMultiSite Whether this site has multiple sites
- * @property-read bool $isSystemOn Whether the front end is accepting HTTP requests
+ * @property-read bool $isSystemLive Whether the system is live
  * @property-read Connection $db The database connection component
  * @property-read Formatter $formatter The formatter component
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Queue|QueueInterface $queue The job queue
  * @property-read Security $security The security component
+ * @property-read string $installedSchemaVersion The installed schema version
  * @property-read View $view The view component
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection getDb() Returns the database connection component.
@@ -155,10 +180,10 @@ trait ApplicationTrait
     private $_gettingLanguage = false;
 
     /**
-     * @var string|null The stored version
-     * @todo Remove this after the next breakpoint
+     * @var bool Whether we’re listening for the request end, to update the application info
+     * @see saveInfoAfterRequest()
      */
-    private $_storedVersion;
+    private $_waitingToSaveInfo = false;
 
     // Public Methods
     // =========================================================================
@@ -184,6 +209,7 @@ trait ApplicationTrait
         $this->_gettingLanguage = true;
 
         if ($useUserLanguage === null) {
+            /** @var WebRequest|ConsoleRequest $request */
             $request = $this->getRequest();
             $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
         }
@@ -228,7 +254,7 @@ trait ApplicationTrait
 
         return $this->_isInstalled = (
             $this->getIsDbConnectionValid() &&
-            $this->getDb()->tableExists('{{%info}}', false)
+            $this->getDb()->tableExists(Table::INFO, false)
         );
     }
 
@@ -244,6 +270,16 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the installed schema version.
+     *
+     * @return string
+     */
+    public function getInstalledSchemaVersion(): string
+    {
+        return $this->getInfo()->schemaVersion ?: $this->schemaVersion;
+    }
+
+    /**
      * Returns whether Craft has been fully initialized.
      *
      * @return bool
@@ -256,12 +292,13 @@ trait ApplicationTrait
     /**
      * Returns whether this Craft install has multiple sites.
      *
+     * @param bool $refresh Whether to ignore the cached result and check again
      * @return bool
      */
-    public function getIsMultiSite(): bool
+    public function getIsMultiSite(bool $refresh = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isMultiSite !== null) {
+        if (!$refresh && $this->_isMultiSite !== null) {
             return $this->_isMultiSite;
         }
 
@@ -276,7 +313,8 @@ trait ApplicationTrait
     public function getEdition(): int
     {
         /** @var WebApplication|ConsoleApplication $this */
-        return (int)$this->getInfo()->edition;
+        $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
+        return App::editionIdByHandle($handle);
     }
 
     /**
@@ -346,16 +384,13 @@ trait ApplicationTrait
     public function setEdition(int $edition): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $info = $this->getInfo();
-        $oldEdition = $info->edition;
-        $info->edition = $edition;
-
-        if (!$this->saveInfo($info)) {
-            return false;
-        }
+        $oldEdition = $this->getEdition();
+        $this->getProjectConfig()->set('system.edition', App::editionHandle($edition));
 
         // Fire an 'afterEditionChange' event
-        if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
+        /** @var WebRequest|ConsoleRequest $request */
+        $request = $this->getRequest();
+        if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
                 'oldEdition' => $oldEdition,
                 'newEdition' => $edition
@@ -375,7 +410,7 @@ trait ApplicationTrait
     public function requireEdition(int $edition, bool $orBetter = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getIsInstalled()) {
+        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingYamlChanges()) {
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
@@ -394,7 +429,10 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         // Only admin accounts can upgrade Craft
-        if ($this->getUser()->getIsAdmin()) {
+        if (
+            $this->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
@@ -417,8 +455,13 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return false;
+        }
 
-        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@' . $request->getHostName());
+        /** @var Cache $cache */
+        $cache = $this->getCache();
+        return $cache->get('editionTestableDomain@' . $request->getHostName());
     }
 
     /**
@@ -433,18 +476,30 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the front end is accepting HTTP requests.
+     * Returns whether the system is currently live.
      *
      * @return bool
+     */
+    public function getIsLive(): bool
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemLive)) {
+            return $on;
+        }
+
+        return (bool)$this->getProjectConfig()->get('system.live');
+    }
+
+    /**
+     * Returns whether the system is currently live.
+     *
+     * @return bool
+     * @deprecated in 3.1. Use [[getIsLive()]] instead.
      */
     public function getIsSystemOn(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemOn)) {
-            return $on;
-        }
-
-        return (bool)$this->getInfo()->on;
+        return $this->getIsLive();
     }
 
     /**
@@ -504,16 +559,15 @@ trait ApplicationTrait
         }
 
         $row = (new Query())
-            ->from(['{{%info}}'])
+            ->from([Table::INFO])
             ->one();
 
         if (!$row) {
-            $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
+            $tableName = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
             throw new ServerErrorHttpException("The {$tableName} table is missing its row");
         }
 
         // TODO: Remove this after the next breakpoint
-        $this->_storedVersion = $row['version'];
         if (isset($row['build'])) {
             $version = $row['version'];
 
@@ -531,12 +585,51 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
-        if (isset($row['siteName'])) {
-            $row['name'] = $row['siteName'];
+        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
+
+        if (Craft::$app->getDb()->getIsMysql() && isset($row['config'])) {
+            $row['config'] = StringHelper::decdec($row['config']);
         }
-        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         return $this->_info = new Info($row);
+    }
+
+    /**
+     * Updates the info row at the end of the request.
+     *
+     * @since 3.1.33
+     */
+    public function saveInfoAfterRequest()
+    {
+        if (!$this->_waitingToSaveInfo) {
+            $this->_waitingToSaveInfo = true;
+
+            // If the request is already over, trigger this immediately
+            if (in_array($this->state, [
+                Application::STATE_AFTER_REQUEST,
+                Application::STATE_SENDING_RESPONSE,
+                Application::STATE_END,
+            ], true)) {
+                $this->saveInfoAfterRequestHandler();
+            } else {
+                Craft::$app->on(WebApplication::EVENT_AFTER_REQUEST, [$this, 'saveInfoAfterRequestHandler']);
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     * @throws ServerErrorHttpException
+     * @since 3.1.33
+     * @internal
+     */
+    public function saveInfoAfterRequestHandler()
+    {
+        $info = $this->getInfo();
+        if (!$this->saveInfo($info)) {
+            throw new Exception("Unable to save new application info: " . implode(', ', $info->getErrorSummary(true)));
+        }
+        $this->_waitingToSaveInfo = false;
     }
 
     /**
@@ -548,51 +641,82 @@ trait ApplicationTrait
     public function saveInfo(Info $info): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($info->validate()) {
-            $attributes = Db::prepareValuesForDb($info);
-
-            // TODO: Remove this after the next breakpoint
-            unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
-
-            if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
-                unset($attributes['id']);
-            }
-
-            if ($this->getIsInstalled()) {
-                // TODO: Remove this after the next breakpoint
-                if (version_compare($this->_storedVersion, '3.0', '<')) {
-                    $infoTable = $this->getDb()->getTableSchema('{{%info}}');
-
-                    if ($infoTable->getColumn('siteName')) {
-                        $siteName = $attributes['name'];
-                        $attributes['siteName'] = $siteName;
-                        unset($attributes['name']);
-                    }
-
-                    unset($attributes['fieldVersion']);
-                }
-
-                $this->getDb()->createCommand()
-                    ->update('{{%info}}', $attributes)
-                    ->execute();
-            } else {
-                $this->getDb()->createCommand()
-                    ->insert('{{%info}}', $attributes)
-                    ->execute();
-
-                if (Craft::$app->getIsInstalled()) {
-                    // Set the new id
-                    $info->id = $this->getDb()->getLastInsertID('{{%info}}');
-                }
-            }
-
-            // Use this as the new cached Info
-            $this->_info = $info;
-
-            return true;
+        if (!$info->validate()) {
+            return false;
         }
 
-        return false;
+        $attributes = Db::prepareValuesForDb($info);
+
+        // TODO: Remove this after the next breakpoint
+        unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
+
+        // TODO: Remove this after the next breakpoint
+        if (version_compare($info['version'], '3.1', '<')) {
+            unset($attributes['config'], $attributes['configMap']);
+        }
+
+        if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
+            unset($attributes['id']);
+        }
+
+        if (
+            isset($attributes['config']) &&
+            (
+                !mb_check_encoding($attributes['config'], 'UTF-8') ||
+                (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($attributes['config']))
+            )
+        ) {
+            $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
+        }
+
+        if ($this->getIsInstalled()) {
+            // TODO: Remove this after the next breakpoint
+            if (version_compare($info['version'], '3.0', '<')) {
+                unset($attributes['fieldVersion']);
+            }
+
+            $this->getDb()->createCommand()
+                ->update(Table::INFO, $attributes)
+                ->execute();
+        } else {
+            $this->getDb()->createCommand()
+                ->insert(Table::INFO, $attributes)
+                ->execute();
+
+            $this->setIsInstalled();
+
+            $row = (new Query())
+                ->from([Table::INFO])
+                ->one();
+
+            // Reload from DB with the new ID and modified dates.
+            $info = new Info($row);
+        }
+
+        // Use this as the new cached Info
+        $this->_info = $info;
+
+        return true;
+    }
+
+    /**
+     * Returns the system name.
+     *
+     * @return string
+     */
+    public function getSystemName(): string
+    {
+        if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
+            return Craft::parseEnv($name);
+        }
+
+        try {
+            $name = $this->getSites()->getPrimarySite()->name;
+        } catch (SiteNotFoundException $e) {
+            $name = null;
+        }
+
+        return $name ?: 'Craft';
     }
 
     /**
@@ -618,8 +742,10 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         } catch (InvalidConfigException $e) {
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         }
     }
@@ -749,6 +875,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the drafts service.
+     *
+     * @return \craft\services\Drafts The drafts service
+     * @since 3.2
+     */
+    public function getDrafts()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('drafts');
+    }
+
+    /**
      * Returns the element indexes service.
      *
      * @return \craft\services\ElementIndexes The element indexes service
@@ -796,6 +934,7 @@ trait ApplicationTrait
      * Returns the entry revisions service.
      *
      * @return \craft\services\EntryRevisions The entry revisions service
+     * @deprecated in 3.2.
      */
     public function getEntryRevisions()
     {
@@ -823,6 +962,16 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('fields');
+    }
+
+    /**
+     * Returns the garbage collection service.
+     *
+     * @return \craft\services\Gc The garbage collection service
+     */
+    public function getGc()
+    {
+        return $this->get('gc');
     }
 
     /**
@@ -958,6 +1107,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the revisions service.
+     *
+     * @return \craft\services\Revisions The revisions service
+     * @since 3.2
+     */
+    public function getRevisions()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('revisions');
+    }
+
+    /**
      * Returns the routes service.
      *
      * @return \craft\services\Routes The routes service
@@ -1010,6 +1171,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('structures');
+    }
+
+    /**
+     * Returns the system config service.
+     *
+     * @return \craft\services\ProjectConfig The system config service
+     */
+    public function getProjectConfig()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('projectConfig');
     }
 
     /**
@@ -1144,6 +1316,9 @@ trait ApplicationTrait
      */
     private function _postInit()
     {
+        // Register all the listeners for config items
+        $this->_registerConfigListeners();
+
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
@@ -1153,6 +1328,9 @@ trait ApplicationTrait
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
         }
+
+        // Possibly run garbage collection
+        $this->getGc()->run();
     }
 
     /**
@@ -1164,7 +1342,7 @@ trait ApplicationTrait
         $timezone = $this->getConfig()->getGeneral()->timezone;
 
         if (!$timezone) {
-            $timezone = $this->getInfo()->timezone;
+            $timezone = $this->getProjectConfig()->get('system.timeZone');
         }
 
         if ($timezone) {
@@ -1229,5 +1407,126 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    /**
+     * Register event listeners for config changes.
+     */
+    private function _registerConfigListeners()
+    {
+        $projectConfigService = $this->getProjectConfig();
+
+        // Field groups
+        $fieldsService = $this->getFields();
+        $projectConfigService
+            ->onAdd(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleChangedGroup'])
+            ->onUpdate(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleChangedGroup'])
+            ->onRemove(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleDeletedGroup']);
+
+        // Fields
+        $projectConfigService
+            ->onAdd(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField'])
+            ->onUpdate(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField'])
+            ->onRemove(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleDeletedField']);
+
+        // Block Types
+        $matrixService = $this->getMatrix();
+        $projectConfigService
+            ->onAdd(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType'])
+            ->onUpdate(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType'])
+            ->onRemove(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleDeletedBlockType']);
+
+        // Volumes
+        $volumesService = $this->getVolumes();
+        $projectConfigService
+            ->onAdd(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleChangedVolume'])
+            ->onUpdate(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleChangedVolume'])
+            ->onRemove(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleDeletedVolume']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$volumesService, 'pruneDeletedField']);
+
+        // Transforms
+        $transformService = $this->getAssetTransforms();
+        $projectConfigService
+            ->onAdd(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', [$transformService, 'handleChangedTransform'])
+            ->onUpdate(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', [$transformService, 'handleChangedTransform'])
+            ->onRemove(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', [$transformService, 'handleDeletedTransform']);
+
+        // Site groups
+        $sitesService = $this->getSites();
+        $projectConfigService
+            ->onAdd(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup'])
+            ->onUpdate(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup'])
+            ->onRemove(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleDeletedGroup']);
+
+        // Sites
+        $projectConfigService
+            ->onAdd(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite'])
+            ->onUpdate(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite'])
+            ->onRemove(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleDeletedSite']);
+
+        // Routes
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [Craft::$app->getRoutes(), 'handleDeletedSite']);
+
+        // Tags
+        $tagsService = $this->getTags();
+        $projectConfigService
+            ->onAdd(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup'])
+            ->onUpdate(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup'])
+            ->onRemove(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleDeletedTagGroup']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$tagsService, 'pruneDeletedField']);
+
+        // Categories
+        $categoriesService = $this->getCategories();
+        $projectConfigService
+            ->onAdd(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleChangedCategoryGroup'])
+            ->onUpdate(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleChangedCategoryGroup'])
+            ->onRemove(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleDeletedCategoryGroup']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$categoriesService, 'pruneDeletedField']);
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [$categoriesService, 'pruneDeletedSite']);
+
+        // User group permissions
+        $userPermissionsService = $this->getUserPermissions();
+        $projectConfigService
+            ->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions'])
+            ->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions'])
+            ->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
+
+        // User groups
+        $userGroupsService = $this->getUserGroups();
+        $projectConfigService
+            ->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleChangedUserGroup'])
+            ->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleChangedUserGroup'])
+            ->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleDeletedUserGroup']);
+
+        // User field layout
+        $usersService = $this->getUsers();
+        $projectConfigService
+            ->onAdd(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout'])
+            ->onUpdate(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout'])
+            ->onRemove(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$usersService, 'pruneDeletedField']);
+
+        // Global sets
+        $globalsService = $this->getGlobals();
+        $projectConfigService
+            ->onAdd(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleChangedGlobalSet'])
+            ->onUpdate(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleChangedGlobalSet'])
+            ->onRemove(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleDeletedGlobalSet']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$globalsService, 'pruneDeletedField']);
+
+        // Sections
+        $sectionsService = $this->getSections();
+        $projectConfigService
+            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleChangedSection'])
+            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleChangedSection'])
+            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleDeletedSection']);
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [$sectionsService, 'pruneDeletedSite']);
+
+        // Entry Types
+        $projectConfigService
+            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
     }
 }

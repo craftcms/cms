@@ -40,7 +40,7 @@
                     data = {};
 
                 for (var i = 0; i < $routes.length; i++) {
-                    data['routeIds[' + i + ']'] = $($routes[i]).attr('data-id');
+                    data['routeUids[' + i + ']'] = $($routes[i]).attr('data-uid');
                 }
 
                 Craft.postActionRequest('routes/update-route-order', data, $.proxy(function(response, textStatus) {
@@ -66,8 +66,8 @@
     var Route = Garnish.Base.extend(
         {
             $container: null,
-            id: null,
-            siteId: null,
+            uid: null,
+            siteUid: null,
             $siteLabel: null,
             $uri: null,
             $template: null,
@@ -75,8 +75,8 @@
 
             init: function(container) {
                 this.$container = $(container);
-                this.id = this.$container.data('id');
-                this.siteId = this.$container.data('site-id');
+                this.uid = this.$container.data('uid');
+                this.siteUid = this.$container.data('site-uid');
                 this.$siteLabel = this.$container.find('.site:first');
                 this.$uri = this.$container.find('.uri:first');
                 this.$template = this.$container.find('.template:first');
@@ -97,9 +97,9 @@
                 var i;
 
                 if (Craft.isMultiSite) {
-                    if (this.siteId) {
+                    if (this.siteUid) {
                         for (i = 0; i < Craft.sites.length; i++) {
-                            if (Craft.sites[i].id == this.siteId) {
+                            if (Craft.sites[i].uid == this.siteUid) {
                                 this.$siteLabel.text(Craft.sites[i].name);
                                 break;
                             }
@@ -188,7 +188,7 @@
 
                     for (i = 0; i < Craft.sites.length; i++) {
                         var siteInfo = Craft.sites[i];
-                        containerHtml += '<option value="' + siteInfo.id + '">' + siteInfo.name + '</option>';
+                        containerHtml += '<option value="' + siteInfo.uid + '">' + siteInfo.name + '</option>';
                     }
 
                     containerHtml +=
@@ -252,7 +252,7 @@
 
                 if (this.route) {
                     // Set the site
-                    this.$siteInput.val(this.route.siteId);
+                    this.$siteInput.val(this.route.siteUid);
 
                     // Set the initial uri value
                     var uriNodes = this.route.$uri.prop('childNodes');
@@ -353,11 +353,11 @@
                 }
 
                 var data = {
-                    siteId: this.$siteInput.val()
+                    siteUid: this.$siteInput.val()
                 };
 
                 if (this.route) {
-                    data.routeId = this.route.id;
+                    data.routeUid = this.route.uid;
                 }
 
                 for (var i = 0; i < this.uriInput.elements.length; i++) {
@@ -388,7 +388,7 @@
                             // Is this a new route?
                             if (!this.route) {
                                 var routeHtml =
-                                    '<div class="route" data-id="' + response.routeId + '"' + (response.siteId ? ' data-site-id="' + response.siteId + '"' : '') + '>' +
+                                    '<div class="route" data-uid="' + response.routeUid + '"' + (response.siteUid ? ' data-site-uid="' + response.siteUid + '"' : '') + '>' +
                                     '<div class="uri-container">';
 
                                 if (Craft.isMultiSite) {
@@ -416,7 +416,7 @@
                                 }
                             }
 
-                            this.route.siteId = response.siteId;
+                            this.route.siteUid = response.siteUid;
                             this.route.updateHtmlFromModal();
                             this.hide();
 
@@ -440,7 +440,7 @@
 
             deleteRoute: function() {
                 if (confirm(Craft.t('app', ('Are you sure you want to delete this route?')))) {
-                    Craft.postActionRequest('routes/delete-route', {routeId: this.route.id}, function(response, textStatus) {
+                    Craft.postActionRequest('routes/delete-route', {routeUid: this.route.uid}, function(response, textStatus) {
                         if (textStatus === 'success') {
                             Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
                         }

@@ -8,6 +8,7 @@
 namespace craft\queue;
 
 use Craft;
+use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -167,11 +168,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%queue}}',
+                Table::QUEUE,
                 [
                     'dateReserved' => null,
                     'timeUpdated' => null,
                     'progress' => 0,
+                    'progressLabel' => null,
                     'attempt' => 0,
                     'fail' => false,
                     'dateFailed' => null,
@@ -185,31 +187,59 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * @inheritdoc
+     * Re-adds all failed jobs to the queue
      */
-    public function release(string $id)
+    public function retryAll()
     {
+        // Move expired messages into waiting list
+        $this->_moveExpired();
+
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%queue}}', ['id' => $id])
+            ->update(
+                Table::QUEUE,
+                [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                    'attempt' => 0,
+                    'fail' => false,
+                    'dateFailed' => null,
+                    'error' => null,
+                ],
+                ['fail' => true],
+                [],
+                false
+            )
             ->execute();
     }
 
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress)
+    public function release(string $id)
     {
         Craft::$app->getDb()->createCommand()
-            ->update(
-                '{{%queue}}',
-                [
-                    'progress' => $progress,
-                    'timeUpdated' => time(),
-                ],
-                ['id' => $this->_executingJobId],
-                [],
-                false
-            )
+            ->delete(Table::QUEUE, ['id' => $id])
+            ->execute();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setProgress(int $progress, string $label = null)
+    {
+        $data = [
+            'progress' => $progress,
+            'timeUpdated' => time(),
+        ];
+
+        if ($label !== null) {
+            $data['progressLabel'] = $label;
+        }
+
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::QUEUE, $data, ['id' => $this->_executingJobId], [], false)
             ->execute();
     }
 
@@ -296,7 +326,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->_moveExpired();
 
         $results = $this->_createJobQuery()
-            ->select(['id', 'description', 'progress', 'timeUpdated', 'fail', 'error'])
+            ->select(['id', 'description', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
             ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
@@ -309,6 +339,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $result['id'],
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
+                'progressLabel' => $result['progressLabel'],
                 'description' => $result['description'],
                 'error' => $result['error'],
             ];
@@ -322,6 +353,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function handleError($id, $job, $ttr, $attempt, $error)
     {
+        /** @var \Throwable $error */
         $this->_executingJobId = null;
 
         if (parent::handleError($id, $job, $ttr, $attempt, $error)) {
@@ -331,7 +363,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             // Mark the job as failed
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    '{{%queue}}',
+                    Table::QUEUE,
                     [
                         'fail' => true,
                         'dateFailed' => Db::prepareDateForDb(new \DateTime()),
@@ -417,7 +449,7 @@ EOD;
         $db = Craft::$app->getDb();
         $db->createCommand()
             ->insert(
-                '{{%queue}}',
+                Table::QUEUE,
                 [
                     'job' => $message,
                     'description' => $this->_jobDescription,
@@ -429,7 +461,7 @@ EOD;
                 false)
             ->execute();
 
-        return $db->getLastInsertID('{{%queue}}');
+        return $db->getLastInsertID(Table::QUEUE);
     }
 
     /**
@@ -460,7 +492,7 @@ EOD;
             $payload['attempt'] = (int)$payload['attempt'] + 1;
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    '{{%queue}}',
+                    Table::QUEUE,
                     [
                         'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
                         'timeUpdated' => $payload['timeUpdated'],
@@ -495,11 +527,12 @@ EOD;
             $this->_reserveTime = time();
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    '{{%queue}}',
+                    Table::QUEUE,
                     [
                         'dateReserved' => null,
                         'timeUpdated' => null,
                         'progress' => 0,
+                        'progressLabel' => null,
                     ],
                     '[[timeUpdated]] < :time - [[ttr]]',
                     [':time' => $this->_reserveTime],
@@ -517,7 +550,7 @@ EOD;
     private function _createJobQuery(): Query
     {
         return (new Query())
-            ->from('{{%queue}}');
+            ->from(Table::QUEUE);
     }
 
     /**

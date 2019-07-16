@@ -1,0 +1,137 @@
+{#
+    Shows a revision menu for an element.
+
+    Only an existing element should be passed to this.
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% set drafts = element.find()
+    .draftOf(element)
+    .siteId(element.siteId)
+    .anyStatus()
+    .all() %}
+
+{% set revisions = element.find()
+    .revisionOf(element.sourceId)
+    .siteId(element.siteId)
+    .anyStatus()
+    .offset(1)
+    .limit(10)
+    .orderBy('num desc')
+    .all() %}
+
+{% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
+{% set supportedSites = craft.app.isMultiSite ? element.supportedSites : [element.site] %}
+{% set isMultiSiteElement = supportedSites|length > 1 %}
+{% set isDraft = element.getIsDraft() %}
+{% set isRevision = element.getIsRevision() %}
+{% set showSiteLabel = showSiteLabel ?? isMultiSiteElement %}
+{% set cpEditUrl = element.getCpEditUrl() %}
+{% if isDraft %}
+    {% set baseUrl = url(cpEditUrl, baseParams|merge({ draftId: element.draftId })) %}
+{% elseif isRevision %}
+    {% set baseUrl = url(cpEditUrl, baseParams|merge({ revisionId: element.revisionId })) %}
+{% else %}
+    {% set baseUrl = cpEditUrl %}
+{% endif %}
+
+{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
+{% set enableMenu = not isUnsavedDraft or isMultiSiteElement %}
+
+<div id="revision-btngroup" class="btngroup">
+    <div id="revision-btn" class="btn {% if enableMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
+        {% if showSiteLabel %}{{ element.site.name|t('site') }} –{% endif %}
+        <span id="revision-label">
+            {%- if isDraft %}
+                {{- element.draftName }}
+            {%- elseif isRevision %}
+                {{- element.revisionLabel }}
+            {%- else %}
+                {{- 'Current'|t('app') }}
+            {%- endif -%}
+        </span>
+    </div>
+
+    {% if enableMenu %}
+        <div class="menu">
+            {% if isMultiSiteElement %}
+                {% set siteGroups = craft.app.sites.getAllGroups() %}
+                {% for group in siteGroups %}
+                    {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}
+                    {% if groupSiteIds %}
+                        {% if siteGroups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
+                        <ul class="padded">
+                            {% for siteId in groupSiteIds %}
+                                {% set site = craft.app.sites.getSiteById(siteId) %}
+                                {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+                                <li>
+                                    {% if siteId == element.siteId %}
+                                        <a class="site-option sel">
+                                            <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                                        </a>
+                                    {% else %}
+                                        {% set url = url(baseUrl, { site: site.handle }) %}
+                                        <a class="site-option" href="{{ url }}">
+                                            <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                                        </a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+                {% if not isUnsavedDraft %}<hr>{% endif %}
+            {% endif %}
+
+            {% if not isUnsavedDraft %}
+                <ul class="padded revision-group-current">
+                    {% set currentRevisionEditTime = element.currentRevision.dateCreated ?? element.dateUpdated %}
+                    <li>
+                        <a{% if not isDraft and not isRevision %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
+                            <span class="light">{{ currentRevisionEditTime|timestamp('short') }}
+                                {%- if element.currentRevision %}, {{ element.currentRevision.creator }}{% endif %}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if drafts %}
+                <h6>{{ "Drafts"|t('app') }}</h6>
+                <ul class="padded revision-group-drafts">
+                    {% for draft in drafts %}
+                        {% set url = url(cpEditUrl, baseParams|merge({ draftId: draft.draftId })) %}
+                        <li>
+                            <a{% if draft.draftId == element.draftId %} class="sel"{% endif %} href="{{ url }}">
+                                <span class="draft-name">{{ draft.draftName }}</span>
+                                <span class="draft-creator light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if revisions %}
+                <h6>{{ "Recent Revisions"|t('app') }}</h6>
+                <ul class="padded" id="revision-group-revisions">
+                    {% for revision in revisions %}
+                        <li>
+                            {% set url = url(cpEditUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
+                            <a{% if revision.revisionId == element.revisionId %} class="sel"{% endif %} href="{{ url }}">
+                                {{ revision.revisionLabel }}
+                                {% set creator = revision.getCreator() %}
+                                {% if creator %}
+                                    <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ creator }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<div id="revision-spinner" class="spinner hidden" title="{{ 'Saving'|t('app') }}"></div>
+<div id="revision-status" class="invisible"></div>

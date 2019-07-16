@@ -75,6 +75,242 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function asArray(bool $value = true);
 
     /**
+     * Narrows the query results to only drafts {elements}.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch a draft {element} #}
+     * {% set {elements-var} = {twig-function}
+     *     .drafts()
+     *     .id(123)
+     *     .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch a draft {element}
+     * ${elements-var} = {element-class}::find()
+     *     ->drafts()
+     *     ->id(123)
+     *     ->one();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function drafts(bool $value = true);
+
+    /**
+     * Narrows the query results based on the {elements}’ draft’s ID (from the `drafts` table).
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches drafts…
+     * | - | -
+     * | `1` | for the draft with an ID of 1.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch a draft #}
+     * {% set {elements-var} = {twig-method}
+     *     .draftId(10)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch a draft
+     * ${elements-var} = {php-method}
+     *     ->draftIf(10)
+     *     ->all();
+     * ```
+     *
+     * @param int|null $value The property value
+     * @return static self reference
+     */
+    public function draftId(int $value = null);
+
+    /**
+     * Narrows the query results to only drafts of a given {element}.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches drafts…
+     * | - | -
+     * | `1` | for the {element} with an ID of 1.
+     * | a [[{element-class}]] object | for the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch drafts of the {element} #}
+     * {% set {elements-var} = {twig-method}
+     *     .draftOf({myElement})
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch drafts of the {element}
+     * ${elements-var} = {php-method}
+     *     ->draftOf(${myElement})
+     *     ->all();
+     * ```
+     *
+     * @param int|ElementInterface|null $value The property value
+     * @return static self reference
+     */
+    public function draftOf($value);
+
+    /**
+     * Narrows the query results to only drafts created by a given user.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches drafts…
+     * | - | -
+     * | `1` | created by the user with an ID of 1.
+     * | a [[User]] object | by the user represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch drafts by the current user #}
+     * {% set {elements-var} = {twig-method}
+     *     .draftCreator(currentUser)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch drafts by the current user
+     * ${elements-var} = {php-method}
+     *     ->draftCreator(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param int|ElementInterface|null $value The property value
+     * @return static self reference
+     */
+    public function draftCreator($value);
+
+    /**
+     * Narrows the query results to only revision {elements}.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch a revision {element} #}
+     * {% set {elements-var} = {twig-function}
+     *     .revisions()
+     *     .id(123)
+     *     .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch a revision {element}
+     * ${elements-var} = {element-class}::find()
+     *     ->revisions()
+     *     ->id(123)
+     *     ->one();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function revisions(bool $value = true);
+
+    /**
+     * Narrows the query results based on the {elements}’ revision’s ID (from the `revisions` table).
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches revisions…
+     * | - | -
+     * | `1` | for the revision with an ID of 1.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch a revision #}
+     * {% set {elements-var} = {twig-method}
+     *     .revisionId(10)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch a revision
+     * ${elements-var} = {php-method}
+     *     ->revisionIf(10)
+     *     ->all();
+     * ```
+     *
+     * @param int|null $value The property value
+     * @return static self reference
+     */
+    public function revisionId(int $value = null);
+
+    /**
+     * Narrows the query results to only revisions of a given {element}.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches revisions…
+     * | - | -
+     * | `1` | for the {element} with an ID of 1.
+     * | a [[{element-class}]] object | for the {element} represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch revisions of the {element} #}
+     * {% set {elements-var} = {twig-method}
+     *     .revisionOf({myElement})
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch revisions of the {element}
+     * ${elements-var} = {php-method}
+     *     ->revisionOf(${myElement})
+     *     ->all();
+     * ```
+     *
+     * @param int|ElementInterface|null $value The property value
+     * @return static self reference
+     */
+    public function revisionOf($value);
+
+    /**
+     * Narrows the query results to only revisions created by a given user.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches revisions…
+     * | - | -
+     * | `1` | created by the user with an ID of 1.
+     * | a [[User]] object | by the user represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch revisions by the current user #}
+     * {% set {elements-var} = {twig-method}
+     *     .revisionCreator(currentUser)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch revisions by the current user
+     * ${elements-var} = {php-method}
+     *     ->revisionCreator(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param int|ElementInterface|null $value The property value
+     * @return static self reference
+     */
+    public function revisionCreator($value);
+
+    /**
      * Narrows the query results based on the {elements}’ IDs.
      *
      * Possible values include:
@@ -203,6 +439,30 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function archived(bool $value = true);
 
     /**
+     * Narrows the query results to only {elements} that have been soft-deleted.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch trashed {elements} #}
+     * {% set {elements-var} = {twig-method}
+     *     .trashed()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch trashed {elements}
+     * ${elements-var} = {element-class}::find()
+     *     ->trashed()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function trashed($value = true);
+
+    /**
      * Narrows the query results based on the {elements}’ creation dates.
      *
      * Possible values include:
@@ -227,8 +487,8 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```php
      * // Fetch {elements} created last month
-     * $start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-     * $end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+     * $start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+     * $end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -264,7 +524,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```php
      * // Fetch {elements} updated in the last week
-     * $lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+     * $lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->dateUpdated(">= {$lastWeek}")
@@ -277,7 +537,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function dateUpdated($value);
 
     /**
-     * Determines which site the {elements} should be queried in.
+     * Determines which site(s) the {elements} should be queried in.
      *
      * The current site will be used by default.
      *
@@ -286,7 +546,15 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches {elements}…
      * | - | -
      * | `'foo'` | from the site with a handle of `foo`.
+     * | `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
      * | a [[Site]] object | from the site represented by the object.
+     * | `'*'` | from any site.
+     *
+     * ::: tip
+     * If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+     * only want unique elements to be returned, use [[unique()]] in conjunction with this.
+     * :::
      *
      * ---
      *
@@ -304,13 +572,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param string|Site $value The property value
+     * @param string|string[]|Site $value The property value
      * @return static self reference
      */
     public function site($value);
 
     /**
-     * Determines which site the {elements} should be queried in, per the site’s ID.
+     * Determines which site(s) the {elements} should be queried in, per the site’s ID.
      *
      * The current site will be used by default.
      *
@@ -330,10 +598,75 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param int|int[]|string|null $value The property value
      * @return static self reference
      */
-    public function siteId(int $value = null);
+    public function siteId($value);
+
+    /**
+     * Determines whether only elements with unique IDs should be returned by the query.
+     *
+     * This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+     * desired.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} across all sites #}
+     * {% set {elements-var} = {twig-method}
+     *     .site('*')
+     *     .unique()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} across all sites
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 3.2
+     */
+    public function unique(bool $value = true);
+
+    /**
+     * If [[unique()]] is set, this determines which site should be selected when querying multi-site elements.
+     *
+     * For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+     * for Site B.
+     *
+     * If this isn’t set, then preference goes to the current site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A #}
+     * {% set {elements-var} = {twig-method}
+     *     .site('*')
+     *     .unique()
+     *     .preferSites(['a', 'b'])
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->preferSites(['a', 'b'])
+     *     ->all();
+     * ```
+     *
+     * @param array|null $value The property value
+     * @return static self reference
+     * @since 3.2
+     */
+    public function preferSites(array $value = null);
 
     /**
      * Narrows the query results based on whether the {elements} are enabled in the site they’re being queried in, per the [[site()]] parameter.
@@ -521,7 +854,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```twig
      * {# Get the search query from the 'q' query string param #}
-     * {% set searchQuery = craft.request.getQueryParam('q') %}
+     * {% set searchQuery = craft.app.request.getQueryParam('q') %}
      *
      * {# Fetch all {elements} that match the search query #}
      * {% set {elements-var} = {twig-method}

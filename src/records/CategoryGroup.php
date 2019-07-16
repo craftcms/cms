@@ -8,6 +8,8 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -27,6 +29,11 @@ use yii\db\ActiveQueryInterface;
  */
 class CategoryGroup extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 
@@ -36,7 +43,7 @@ class CategoryGroup extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%categorygroups}}';
+        return Table::CATEGORYGROUPS;
     }
 
     /**

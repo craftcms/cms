@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
@@ -31,6 +32,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
@@ -85,7 +87,12 @@ class Assets extends Component
     /**
      * @var
      */
-    private $_foldersById;
+    private $_foldersById = [];
+
+    /**
+     * @var
+     */
+    private $_foldersByUid = [];
 
     /**
      * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
@@ -104,10 +111,8 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, int $siteId = null)
     {
-        /** @var Asset|null $asset */
-        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
-
-        return $asset;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
     /**
@@ -145,11 +150,13 @@ class Assets extends Component
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
-            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+            $event = new ReplaceAssetEvent([
                 'asset' => $asset,
                 'replaceWith' => $pathOnServer,
                 'filename' => $filename
-            ]));
+            ]);
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+            $filename = $event->filename;
         }
 
         $asset->tempFilePath = $pathOnServer;
@@ -387,6 +394,29 @@ class Assets extends Component
     }
 
     /**
+     * Returns a folder by its UID.
+     *
+     * @param string $folderUid
+     * @return VolumeFolder|null
+     */
+    public function getFolderByUid(string $folderUid)
+    {
+        if ($this->_foldersByUid !== null && array_key_exists($folderUid, $this->_foldersByUid)) {
+            return $this->_foldersByUid[$folderUid];
+        }
+
+        $result = $this->_createFolderQuery()
+            ->where(['uid' => $folderUid])
+            ->one();
+
+        if (!$result) {
+            return $this->_foldersByUid[$folderUid] = null;
+        }
+
+        return $this->_foldersByUid[$folderUid] = new VolumeFolder($result);
+    }
+
+    /**
      * Finds folders that match a given criteria.
      *
      * @param mixed $criteria
@@ -509,7 +539,7 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->from(['{{%volumefolders}}']);
+            ->from([Table::VOLUMEFOLDERS]);
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -687,9 +717,15 @@ class Assets extends Component
 
             // hail Mary
             try {
-                Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
-                    ->scaleToFit($width, $height)
-                    ->saveAs($path);
+                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize);
+
+                // Prevent resize of all layers
+                if ($image instanceof Raster) {
+                    $image->disableAnimation();
+                }
+
+                $image->scaleToFit($width, $height);
+                $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
                 return $this->getIconPath($asset);
@@ -767,9 +803,13 @@ class Assets extends Component
 
         // Get a list from DB as well
         $fileList = (new Query())
-            ->select(['filename'])
-            ->from(['{{%assets}}'])
-            ->where(['folderId' => $folderId])
+            ->select(['assets.filename'])
+            ->from(['{{%assets}} assets'])
+            ->innerJoin(['{{%elements}} elements'], '[[assets.id]] = [[elements.id]]')
+            ->where([
+                'assets.folderId' => $folderId,
+                'elements.dateDeleted' => null
+            ])
             ->column();
 
         // Combine the indexed list and the actual file list to make the final potential conflict list.
@@ -899,26 +939,61 @@ class Assets extends Component
         $record->save();
 
         $folder->id = $record->id;
+        $folder->uid = $record->uid;
     }
 
     /**
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
+     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
-        return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
+        return $this->getUserTemporaryUploadFolder();
     }
 
     /**
-     * Get the user's temporary upload folder.
+     * Returns the given user's temporary upload folder.
      *
-     * @param User|null $userModel
+     * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
+     * the current session ID.
+     *
+     * @param User|null $user
      * @return VolumeFolder
+     * @throws VolumeException
      */
-    public function getUserTemporaryUploadFolder(User $userModel = null)
+    public function getUserTemporaryUploadFolder(User $user = null)
     {
+        if ($user === null) {
+            // Default to the logged-in user, if there is one
+            $user = Craft::$app->getUser()->getIdentity();
+        }
+
+        if ($user) {
+            $folderName = 'user_' . $user->id;
+        } else {
+            // A little obfuscation never hurt anyone
+            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
+        }
+
+        // Is there a designated temp uploads volume?
+        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
+        if (isset($assetSettings['tempVolumeUid'])) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
+            if (!$volume) {
+                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
+            }
+            /** @var Volume $volume */
+            $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
+                $folderName;
+            $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);
+            return $this->findFolder([
+                'volumeId' => $volume->id,
+                'id' => $folderId,
+            ]);
+        }
+
         $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
             'parentId' => ':empty:'
@@ -930,13 +1005,6 @@ class Assets extends Component
             $tempVolume = new Temp();
             $volumeTopFolder->name = $tempVolume->name;
             $this->storeFolderRecord($volumeTopFolder);
-        }
-
-        if ($userModel) {
-            $folderName = 'user_' . $userModel->id;
-        } else {
-            // A little obfuscation never hurt anyone
-            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
         }
 
         $folder = $this->findFolder([
@@ -954,9 +1022,6 @@ class Assets extends Component
 
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
-        /**
-         * @var VolumeFolder $folder ;
-         */
         return $folder;
     }
 
@@ -971,8 +1036,8 @@ class Assets extends Component
     private function _createFolderQuery(): Query
     {
         return (new Query())
-            ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
-            ->from(['{{%volumefolders}}']);
+            ->select(['id', 'parentId', 'volumeId', 'name', 'path', 'uid'])
+            ->from([Table::VOLUMEFOLDERS]);
     }
 
     /**
@@ -1025,6 +1090,10 @@ class Assets extends Component
 
         if ($criteria->name) {
             $query->andWhere(Db::parseParam('name', $criteria->name));
+        }
+
+        if ($criteria->uid) {
+            $query->andWhere(Db::parseParam('uid', $criteria->uid));
         }
 
         if ($criteria->path !== null) {

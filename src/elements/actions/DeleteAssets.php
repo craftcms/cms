@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Exception;
@@ -49,20 +50,20 @@ class DeleteAssets extends ElementAction
     }
 
     /**
-     * Performs the action on any elements that match the given criteria.
-     *
-     * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-     * @return bool Whether the action was performed successfully.
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {
+        $userSession = Craft::$app->getUser();
+        $elementsService = Craft::$app->getElements();
+
         try {
             foreach ($query->all() as $asset) {
-                /**
-                 * @var Asset $asset
-                 */
-                if (Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->volumeId)) {
-                    Craft::$app->getElements()->deleteElement($asset);
+                /*** @var Asset $asset */
+                /** @var Volume $volume */
+                $volume = $asset->getVolume();
+                if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
+                    $elementsService->deleteElement($asset);
                 }
             }
         } catch (Exception $exception) {

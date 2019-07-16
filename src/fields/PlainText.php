@@ -34,6 +34,14 @@ class PlainText extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Plain Text');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
     // Properties
     // =========================================================================
 
@@ -91,7 +99,6 @@ class PlainText extends Field implements PreviewableFieldInterface
         $rules = parent::rules();
         $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
         $rules[] = [['charLimit'], 'validateCharLimit'];
-
         return $rules;
     }
 

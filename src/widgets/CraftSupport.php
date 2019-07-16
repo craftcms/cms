@@ -53,7 +53,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/buoey.svg');
     }
@@ -72,7 +72,7 @@ class CraftSupport extends Widget
         }
 
         $view = Craft::$app->getView();
-        $view->registerAssetBundle(CraftSupportAsset::class);
+        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
@@ -97,6 +97,7 @@ class CraftSupport extends Widget
         $envInfoJs = Json::encode([
             'Craft version' => Craft::$app->getVersion() . ' (' . Craft::$app->getEditionName() . ')',
             'PHP version' => App::phpVersion(),
+            'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => $dbDriver . ' ' . $db->getVersion(),
             'Image driver & version' => $imageDriver . ' ' . $imagesService->getVersion(),
             'Plugins & versions' => $plugins,
@@ -116,7 +117,8 @@ class CraftSupport extends Widget
             'bullhornIcon' => file_get_contents($iconsDir . '/bullhorn.svg'),
             'seIcon' => file_get_contents($iconsDir . '/craft-stack-exchange.svg'),
             'ghIcon' => file_get_contents($iconsDir . '/github.svg'),
-            'showBackupOption' => $showBackupOption
+            'showBackupOption' => $showBackupOption,
+            'bundleUrl' => $assetBundle->baseUrl,
         ]);
     }
 }

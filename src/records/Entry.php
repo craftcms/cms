@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -16,14 +17,13 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $sectionId Section ID
  * @property int $typeId Type ID
- * @property int $authorId Author ID
+ * @property int|null $authorId Author ID
  * @property \DateTime $postDate Post date
  * @property \DateTime $expiryDate Expiry date
  * @property Element $element Element
  * @property Section $section Section
  * @property EntryType $type Type
  * @property User $author Author
- * @property EntryVersion[] $versions Versions
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -38,7 +38,7 @@ class Entry extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%entries}}';
+        return Table::ENTRIES;
     }
 
     /**
@@ -79,15 +79,5 @@ class Entry extends ActiveRecord
     public function getAuthor(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'authorId']);
-    }
-
-    /**
-     * Returns the entry’s versions.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getVersions(): ActiveQueryInterface
-    {
-        return $this->hasMany(EntryVersion::class, ['elementId' => 'id']);
     }
 }

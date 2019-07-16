@@ -12,6 +12,7 @@ use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
+use yii\db\ExpressionInterface;
 
 /**
  * Class Query

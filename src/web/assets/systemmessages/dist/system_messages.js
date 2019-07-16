@@ -135,7 +135,7 @@
 
                 var data = {
                     key: this.message.key,
-                    language: (this.$languageSelect.length ? this.$languageSelect.val() : Craft.language),
+                    language: (this.$languageSelect.length ? this.$languageSelect.val() : Craft.primarySiteLanguage),
                     subject: this.$subjectInput.val(),
                     body: this.$bodyInput.val()
                 };

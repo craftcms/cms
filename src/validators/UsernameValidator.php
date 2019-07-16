@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use Craft;
 use yii\validators\Validator;
 
 /**
@@ -27,7 +28,7 @@ class UsernameValidator extends Validator
     {
         // Don't allow whitespace in the username
         if (preg_match('/\s+/', $value)) {
-            return ['{attribute} cannot contain spaces.', []];
+            return [Craft::t('app', '{attribute} cannot contain spaces.'), []];
         }
 
         return null;

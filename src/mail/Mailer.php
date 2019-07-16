@@ -9,8 +9,8 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\helpers\Template;
-use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MessageInterface;
@@ -33,7 +33,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     public $template;
 
     /**
-     * @var string|array|User|User[]|null $from The default sender’s email address, or their user model(s).
+     * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).
      */
     public $from;
 
@@ -107,16 +107,17 @@ class Mailer extends \yii\swiftmailer\Mailer
             $language = Craft::$app->language;
             Craft::$app->language = $message->language;
 
-            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
+            $settings = App::mailSettings();
             $variables = ($message->variables ?: []) + [
                     'emailKey' => $message->key,
-                    'fromEmail' => $settings->fromEmail,
-                    'fromName' => $settings->fromName,
+                    'fromEmail' => Craft::parseEnv($settings->fromEmail),
+                    'fromName' => Craft::parseEnv($settings->fromName),
                 ];
 
             // Render the subject and textBody
-            $subject = $view->renderString($subjectTemplate, $variables);
+            $message->setSubject($view->renderString($subjectTemplate, $variables));
             $textBody = $view->renderString($textBodyTemplate, $variables);
+            $message->setTextBody($textBody);
 
             // Is there a custom HTML template set?
             if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
@@ -127,27 +128,19 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $template = '_special/email';
             }
 
-            $e = null;
             try {
-                $htmlBody = $view->renderTemplate($template, array_merge($variables, [
+                $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($textBody)),
-                ]));
+                ])));
             } catch (\Throwable $e) {
-                // Clean up before throwing
+                // Just log it and don't worry about the HTML body
+                Craft::warning('Error rendering email template: ' . $e->getMessage(), __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
             }
 
             // Set things back to normal
             Craft::$app->language = $language;
             $view->setTemplateMode($templateMode);
-
-            if ($e !== null) {
-                throw $e;
-            }
-
-            $message
-                ->setSubject($subject)
-                ->setHtmlBody($htmlBody)
-                ->setTextBody($textBody);
         }
 
         // Set the default sender if there isn't one already
@@ -156,10 +149,10 @@ class Mailer extends \yii\swiftmailer\Mailer
         }
 
         // Apply the testToEmailAddress config setting
-        $testToEmailAddress = (array)Craft::$app->getConfig()->getGeneral()->testToEmailAddress;
+        $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->testToEmailAddress;
         if (!empty($testToEmailAddress)) {
             $to = [];
-            foreach ($testToEmailAddress as $emailAddress => $name) {
+            foreach ((array)$testToEmailAddress as $emailAddress => $name) {
                 if (is_numeric($emailAddress)) {
                     $to[$name] = Craft::t('app', 'Test Recipient');
                 } else {
@@ -173,9 +166,15 @@ class Mailer extends \yii\swiftmailer\Mailer
 
         try {
             return parent::send($message);
-        } catch (Swift_TransportException $e) {
-            Craft::error('Error sending email: ' . $e->getMessage());
-            Craft::$app->getErrorHandler()->logException($e);
+        } catch (\Throwable $e) {
+            $eMessage = $e->getMessage();
+
+            // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug
+            // backlog in the exception message. :-/
+            $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
+            Craft::warning('Error sending email: ' . $eMessage);
+
+            $this->afterSend($message, false);
             return false;
         }
     }

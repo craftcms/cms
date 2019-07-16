@@ -45,7 +45,17 @@ class Assets
     // Properties
     // =========================================================================
 
+    /**
+     * @var array Supported file kinds
+     * @see getFileKinds()
+     */
     private static $_fileKinds;
+
+    /**
+     * @var array Allowed file kinds
+     * @see getAllowedFileKinds()
+     */
+    private static $_allowedFileKinds;
 
     // Public Methods
     // =========================================================================
@@ -132,21 +142,29 @@ class Assets
             $separator = null;
         }
 
-        if ($isFilename && !$preventPluginModifications) {
-            $event = new SetAssetFilenameEvent([
-                'filename' => $baseName
-            ]);
-            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
-            $baseName = $event->filename;
-        }
-
-        $baseName = FileHelper::sanitizeFilename($baseName, [
+        $baseNameSanitized = FileHelper::sanitizeFilename($baseName, [
             'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             'separator' => $separator
         ]);
 
+        // Give developers a chance to do their own sanitation
+        if ($isFilename && !$preventPluginModifications) {
+            $event = new SetAssetFilenameEvent([
+                'filename' => $baseNameSanitized,
+                'originalFilename' => $baseName,
+                'extension' => $extension
+            ]);
+            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+            $baseName = $event->filename;
+            $extension = $event->extension;
+        }
+
         if ($isFilename && empty($baseName)) {
             $baseName = '-';
+        }
+
+        if (!$isFilename) {
+            $baseName = $baseNameSanitized;
         }
 
         return $baseName . $extension;
@@ -160,9 +178,7 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        $filename = mb_strtolower($filename);
-        $filename = str_replace(['.', '_', '-'], ' ', $filename);
-        return StringHelper::toTitleCase($filename);
+        return StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
     }
 
     /**
@@ -273,8 +289,33 @@ class Assets
     public static function getFileKinds(): array
     {
         self::_buildFileKinds();
-
         return self::$_fileKinds;
+    }
+
+    /**
+     * Returns a list of file kinds that are allowed to be uploaded.
+     *
+     * @return array The allowed file kinds
+     */
+    public static function getAllowedFileKinds(): array
+    {
+        if (self::$_allowedFileKinds !== null) {
+            return self::$_allowedFileKinds;
+        }
+
+        self::$_allowedFileKinds = [];
+        $allowedExtensions = array_flip(Craft::$app->getConfig()->getGeneral()->allowedFileExtensions);
+
+        foreach (static::getFileKinds() as $kind => $info) {
+            foreach ($info['extensions'] as $extension) {
+                if (isset($allowedExtensions[$extension])) {
+                    self::$_allowedFileKinds[$kind] = $info;
+                    continue 2;
+                }
+            }
+        }
+
+        return self::$_allowedFileKinds;
     }
 
     /**
@@ -552,6 +593,9 @@ class Assets
                 ],
             ];
 
+            // Merge with the extraFileKinds setting
+            static::$_fileKinds = ArrayHelper::merge(static::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+
             // Allow plugins to modify file kinds
             $event = new RegisterAssetFileKindsEvent([
                 'fileKinds' => self::$_fileKinds,
@@ -559,6 +603,9 @@ class Assets
 
             Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
             self::$_fileKinds = $event->fileKinds;
+
+            // Sort by label
+            ArrayHelper::multisort(static::$_fileKinds, 'label');
         }
     }
 

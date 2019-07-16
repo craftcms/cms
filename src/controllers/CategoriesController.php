@@ -289,7 +289,20 @@ class CategoriesController extends Controller
             ];
 
             if ($variables['group']->maxLevels) {
-                $variables['parentOptionCriteria']['level'] = '< ' . $variables['group']->maxLevels;
+                if ($category->id) {
+                    // Figure out how deep the ancestors go
+                    $maxDepth = Category::find()
+                        ->select('level')
+                        ->descendantOf($category)
+                        ->anyStatus()
+                        ->leaves()
+                        ->scalar();
+                    $depth = 1 + ($maxDepth ?: $category->level) - $category->level;
+                } else {
+                    $depth = 1;
+                }
+
+                $variables['parentOptionCriteria']['level'] = '<= ' . ($variables['group']->maxLevels - $depth);
             }
 
             if ($category->id !== null) {
@@ -328,6 +341,9 @@ class CategoriesController extends Controller
         // Other variables
         // ---------------------------------------------------------------------
 
+        // Body class
+        $variables['bodyClass'] = 'edit-category site--' . $site->handle;
+
         // Page title
         if ($category->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new category');
@@ -361,7 +377,7 @@ class CategoriesController extends Controller
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
-                    'previewAction' => 'categories/preview-category',
+                    'previewAction' => Craft::$app->getSecurity()->hashData('categories/preview-category'),
                     'previewParams' => [
                         'groupId' => $variables['group']->id,
                         'categoryId' => $category->id,
@@ -535,7 +551,7 @@ class CategoriesController extends Controller
         }
 
         // Make sure they have permission to do this
-        $this->requirePermission('editCategories:' . $category->groupId);
+        $this->requirePermission('editCategories:' . $category->getGroup()->uid);
 
         // Delete it
         if (!Craft::$app->getElements()->deleteElement($category)) {
@@ -775,11 +791,11 @@ class CategoriesController extends Controller
     {
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
-            $this->requirePermission('editSite:' . $category->siteId);
+            $this->requirePermission('editSite:' . $category->getSite()->uid);
         }
 
         // Make sure the user is allowed to edit categories in this group
-        $this->requirePermission('editCategories:' . $category->groupId);
+        $this->requirePermission('editCategories:' . $category->getGroup()->uid);
     }
 
     /**
@@ -834,7 +850,9 @@ class CategoriesController extends Controller
         Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
 
         // Have this category override any freshly queried categories with the same ID/site
-        Craft::$app->getElements()->setPlaceholderElement($category);
+        if ($category->id) {
+            Craft::$app->getElements()->setPlaceholderElement($category);
+        }
 
         $this->getView()->getTwig()->disableStrictVariables();
 

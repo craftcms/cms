@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -15,13 +16,11 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $ownerId Owner ID
- * @property int $ownerSiteId Owner site ID
  * @property int $fieldId Field ID
  * @property int $typeId Type ID
  * @property int $sortOrder Sort order
  * @property Element $element Element
  * @property Element $owner Owner
- * @property Site $ownerSite Owner's site
  * @property Field $field Field
  * @property MatrixBlockType $type Type
  * @property Site $site Site
@@ -39,7 +38,7 @@ class MatrixBlock extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%matrixblocks}}';
+        return Table::MATRIXBLOCKS;
     }
 
     /**
@@ -60,16 +59,6 @@ class MatrixBlock extends ActiveRecord
     public function getOwner(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'ownerId']);
-    }
-
-    /**
-     * Returns the matrix block’s owner's site.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getOwnerSite(): ActiveQueryInterface
-    {
-        return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use yii\db\Expression;
 
 /**
@@ -15,20 +16,15 @@ class m170630_161028_deprecation_changes extends Migration
      */
     public function safeUp()
     {
-        $table = '{{%deprecationerrors}}';
-
-        // Copy this from m170821_180624_deprecation_line_nullable in case any template lines are null
-        $this->alterColumn($table, 'line', $this->smallInteger()->unsigned());
-
-        $this->update($table, [
+        $this->update(Table::DEPRECATIONERRORS, [
             'file' => new Expression('[[template]]'),
             'line' => new Expression('[[templateLine]]')
         ], ['not', ['template' => null]]);
 
-        $this->dropColumn($table, 'class');
-        $this->dropColumn($table, 'method');
-        $this->dropColumn($table, 'template');
-        $this->dropColumn($table, 'templateLine');
+        $this->dropColumn(Table::DEPRECATIONERRORS, 'class');
+        $this->dropColumn(Table::DEPRECATIONERRORS, 'method');
+        $this->dropColumn(Table::DEPRECATIONERRORS, 'template');
+        $this->dropColumn(Table::DEPRECATIONERRORS, 'templateLine');
     }
 
     /**

@@ -40,6 +40,14 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Global Sets');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'globalset';
@@ -93,7 +101,7 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**
@@ -164,10 +172,27 @@ class GlobalSet extends Element
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
         if (($fieldLayout = $this->getFieldLayout()) !== null) {
             Craft::$app->getFields()->deleteLayout($fieldLayout);
         }
 
-        return parent::beforeDelete();
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore()
+    {
+        // Restore the field layout too
+        if (!Craft::$app->getFields()->restoreLayoutById($this->fieldLayoutId)) {
+            Craft::warning("Global set {$this->id} restored, but its field layout ({$this->fieldLayoutId}) was not.");
+        }
+
+        parent::afterRestore();
     }
 }

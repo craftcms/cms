@@ -107,10 +107,10 @@ class AssetTransformIndex extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true],
-            [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true];
+        $rules[] = [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class];
+        return $rules;
     }
 
     /**

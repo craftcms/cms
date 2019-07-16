@@ -35,6 +35,8 @@ class AssetTransformsController extends Controller
     {
         // All asset transform actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -34,10 +35,10 @@ class m170523_190652_element_field_layout_ids extends Migration
         $this->_isMysql = $this->db->getIsMysql();
 
         // Add the elements.fieldLayoutId column + FK
-        if (!$this->db->columnExists('{{%elements}}', 'fieldLayoutId')) {
-            $this->addColumn('{{%elements}}', 'fieldLayoutId', $this->integer()->after('id'));
-            $this->createIndex(null, '{{%elements}}', ['fieldLayoutId'], false);
-            $this->addForeignKey(null, '{{%elements}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
+        if (!$this->db->columnExists(Table::ELEMENTS, 'fieldLayoutId')) {
+            $this->addColumn(Table::ELEMENTS, 'fieldLayoutId', $this->integer()->after('id'));
+            $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
+            $this->addForeignKey(null, Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         }
 
         // Update the elements

@@ -36,7 +36,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/clock.svg');
     }
@@ -81,7 +81,6 @@ class RecentEntries extends Widget
     {
         $rules = parent::rules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 

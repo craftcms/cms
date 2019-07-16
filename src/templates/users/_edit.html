@@ -14,7 +14,13 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
-{% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
+{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
+
+{% if craft.app.request.isPost %}
+    {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
+{% else %}
+    {% set currentGroupIds = user.getGroups()|column('id') %}
+{% endif %}
 
 {% set hiddenInputs %}
     {{ csrfInput() }}
@@ -86,7 +92,7 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
+            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
@@ -141,7 +147,6 @@
                     <h2>{{ "User Groups"|t('app') }}</h2>
 
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
-                    {% set currentGroupIds = user.getGroups()|column('id') %}
 
                     {% set userGroupsInput %}
                         <input type="hidden" name="groups" value="">
@@ -339,8 +344,10 @@
     {% endif %}
 
     new Craft.ElevatedSessionForm('#userform', [
+        {% if not isNewUser %}
         '#email',
         '#newPassword',
+        {% endif %}
         '#admin:not(:checked)',
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)'

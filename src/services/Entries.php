@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use yii\base\Component;
@@ -48,11 +49,9 @@ class Entries extends Component
             ->where(['entries.id' => $entryId])
             ->scalar();
 
-        $query = Entry::find();
-        $query->id($entryId);
-        $query->structureId($structureId);
-        $query->siteId($siteId);
-        $query->anyStatus();
-        return $query->one();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, [
+            'structureId' => $structureId,
+        ]);
     }
 }

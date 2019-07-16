@@ -171,14 +171,21 @@ class FileHelper extends \yii\helpers\FileHelper
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if ($separator !== null) {
-            $filename = preg_replace('/(\s|' . preg_quote($separator, '/') . ')+/u', $separator, $filename);
+        if (Craft::$app->getDb()->getIsMysql()) {
+            // Strip emojis
+            $filename = StringHelper::replaceMb4($filename, '');
         }
 
         // Nuke any trailing or leading .-_
         $filename = trim($filename, '.-_');
 
         $filename = $asciiOnly ? StringHelper::toAscii($filename) : $filename;
+
+        if ($separator !== null) {
+            $qSeparator = preg_quote($separator, '/');
+            $filename = preg_replace("/[\s{$qSeparator}]+/u", $separator, $filename);
+            $filename = preg_replace("/^{$qSeparator}+|{$qSeparator}+$/u", '', $filename);
+        }
 
         return $filename;
     }
@@ -259,11 +266,28 @@ class FileHelper extends \yii\helpers\FileHelper
         $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && in_array($mimeType, [null, 'text/plain', 'text/html', 'application/xml', 'text/xml'], true)) {
+        if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
         return $mimeType;
+    }
+
+    /**
+     * Returns whether a MIME type can be trusted, or whether we should double-check based on the file extension.
+     *
+     * @param string $mimeType
+     * @return bool
+     */
+    public static function canTrustMimeType(string $mimeType): bool
+    {
+        return !in_array($mimeType, [
+            'application/octet-stream',
+            'application/xml',
+            'text/html',
+            'text/plain',
+            'text/xml',
+        ], true);
     }
 
     /**
@@ -351,6 +375,11 @@ class FileHelper extends \yii\helpers\FileHelper
 
         if (file_put_contents($file, $contents, $flags) === false) {
             throw new ErrorException("Unable to write new contents to \"{$file}\".");
+        }
+
+        // Invalidate opcache
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($file, true);
         }
 
         if ($lock) {
@@ -528,5 +557,26 @@ class FileHelper extends \yii\helpers\FileHelper
         $cacheService->set('useFileLocks', $cachedValue, 5184000);
 
         return self::$_useFileLocks;
+    }
+
+    /**
+     * Moves existing files down to `*.1`, `*.2`, etc.
+     *
+     * @param string $basePath The base path to the first file (sans `.X`)
+     * @param int $max The most files that can coexist before we should start deleting them
+     */
+    public static function cycle(string $basePath, int $max = 50)
+    {
+        // Go through all of them and move them forward.
+        for ($i = $max; $i > 0; $i--) {
+            $thisFile = $basePath . ($i == 1 ? '' : '.' . ($i - 1));
+            if (file_exists($thisFile)) {
+                if ($i === $max) {
+                    @unlink($thisFile);
+                } else {
+                    @rename($thisFile, "$basePath.$i");
+                }
+            }
+        }
     }
 }

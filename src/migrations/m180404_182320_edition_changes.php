@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180404_182320_edition_changes migration.
@@ -15,15 +16,10 @@ class m180404_182320_edition_changes extends Migration
      */
     public function safeUp()
     {
-        $this->update('{{%info}}', ['edition' => 1], ['edition' => 2]);
-        $info = Craft::$app->getInfo();
-        if ($info->edition == 2) {
-            $info->edition = 1;
-            Craft::$app->saveInfo($info);
-        }
+        $this->update(Table::INFO, ['edition' => 1], ['edition' => 2]);
 
-        if ($this->db->columnExists('{{%users}}', 'client')) {
-            $this->dropColumn('{{%users}}', 'client');
+        if ($this->db->columnExists(Table::USERS, 'client')) {
+            $this->dropColumn(Table::USERS, 'client');
         }
 
         Craft::$app->getCache()->delete('licensedEdition');

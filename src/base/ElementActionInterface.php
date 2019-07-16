@@ -31,6 +31,13 @@ interface ElementActionInterface extends SavableComponentInterface
     // =========================================================================
 
     /**
+     * Sets the element type on the action.
+     *
+     * @param string $elementType
+     */
+    public function setElementType(string $elementType);
+
+    /**
      * Returns the action’s trigger label.
      *
      * @return string The action’s trigger label

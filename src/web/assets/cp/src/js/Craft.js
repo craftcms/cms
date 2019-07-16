@@ -69,6 +69,17 @@ $.extend(Craft,
         },
 
         /**
+         * Escapes special regular expression characters.
+         *
+         * @param {string} str
+         * @return string
+         */
+        escapeRegex: function(str) {
+            // h/t https://stackoverflow.com/a/9310752
+            return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        },
+
+        /**
          * Returns the text in a string that might contain HTML tags.
          *
          * @param {string} str
@@ -146,16 +157,9 @@ $.extend(Craft,
                 path = '';
             }
 
-            // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path[0] === '/') {
-                return path;
-            }
-
-            path = Craft.trim(path, '/');
-
+            // Normalize the params
             var anchor = '';
 
-            // Normalize the params
             if ($.isPlainObject(params)) {
                 var aParams = [];
 
@@ -191,6 +195,13 @@ $.extend(Craft,
                 path = path.substr(0, qpos);
             }
 
+            // Return path if it appears to be an absolute URL.
+            if (path.search('://') !== -1 || path[0] === '/') {
+                return path + (params ? '?' + params : '');
+            }
+
+            path = Craft.trim(path, '/');
+
             // Put it all together
             var url;
 
@@ -199,7 +210,7 @@ $.extend(Craft,
 
                 if (path) {
                     // Does baseUrl already contain a path?
-                    var pathMatch = url.match(/[&\?]p=[^&]+/);
+                    var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
                         url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
                         path = '';
@@ -227,8 +238,8 @@ $.extend(Craft,
                 else {
                     // Move the path into the query string params
 
-                    // Is the p= param already set?
-                    if (params && params.substr(0, 2) === 'p=') {
+                    // Is the path param already set?
+                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
                         var basePath,
                             endPath = params.indexOf('&');
 
@@ -248,7 +259,7 @@ $.extend(Craft,
                     }
 
                     // Now move the path into the params
-                    params = 'p=' + path + (params ? '&' + params : '');
+                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
                     path = null;
                 }
             }
@@ -741,6 +752,34 @@ $.extend(Craft,
             return str.charAt(0).toLowerCase() + str.slice(1);
         },
 
+        parseUrl: function(url) {
+            var m = url.match(/^(?:(https?):\/\/|\/\/)([^\/\:]*)(?:\:(\d+))?(\/[^\?]*)?(?:\?([^#]*))?(#.*)?/);
+            if (!m) {
+                return {};
+            }
+            return {
+                scheme: m[1],
+                host: m[2] + (m[3] ? ':' + m[3] : ''),
+                hostname: m[2],
+                port: m[3] || null,
+                path: m[4] || '/',
+                query: m[5] || null,
+                hash: m[6] || null,
+            };
+        },
+
+        isSameHost: function(url) {
+            var requestUrlInfo = this.parseUrl(document.location.href);
+            if (!requestUrlInfo) {
+                return false;
+            }
+            var urlInfo = this.parseUrl(url);
+            if (!urlInfo) {
+                return false;
+            }
+            return requestUrlInfo.host === urlInfo.host;
+        },
+
         /**
          * Converts a number of seconds into a human-facing time duration.
          */
@@ -803,18 +842,29 @@ $.extend(Craft,
          * Converts extended ASCII characters to ASCII.
          *
          * @param {string} str
+         * @param {object|undefined} charMap
          * @return string
          */
-        asciiString: function(str) {
+        asciiString: function(str, charMap) {
             var asciiStr = '';
             var char;
 
             for (var i = 0; i < str.length; i++) {
                 char = str.charAt(i);
-                asciiStr += Craft.asciiCharMap[char] || char;
+                asciiStr += (charMap || Craft.asciiCharMap)[char] || char;
             }
 
             return asciiStr;
+        },
+
+        randomString: function(length) {
+            // h/t https://stackoverflow.com/a/1349426/1688568
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * 62));
+            }
+            return result;
         },
 
         /**
@@ -1334,7 +1384,10 @@ $.extend($.fn,
                         .appendTo($form);
                 }
 
-                $form.trigger('submit');
+                $form.trigger({
+                    type: 'submit',
+                    customTrigger: true,
+                });
             });
         },
 

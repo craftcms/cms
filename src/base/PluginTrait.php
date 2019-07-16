@@ -123,4 +123,9 @@ trait PluginTrait
      * @var string The minimum required version the plugin has to be so it can be updated.
      */
     public $minVersionRequired;
+
+    /**
+     * @var string The active edition.
+     */
+    public $edition = 'standard';
 }

@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -17,7 +18,7 @@ class m160830_000000_asset_index_uri_increase extends Migration
     public function safeUp(): bool
     {
         echo "    > Changing asset index data table uri column to text.\n";
-        $this->alterColumn('{{%assetindexdata}}', 'uri', 'text');
+        $this->alterColumn(Table::ASSETINDEXDATA, 'uri', 'text');
 
         return true;
     }

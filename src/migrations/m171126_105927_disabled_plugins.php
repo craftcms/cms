@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m171126_105927_disabled_plugins migration.
@@ -14,12 +15,12 @@ class m171126_105927_disabled_plugins extends Migration
      */
     public function safeUp()
     {
-        if (!$this->db->columnExists('{{%plugins}}', 'enabled')) {
-            $this->addColumn('{{%plugins}}', 'enabled', $this->boolean()->after('licenseKeyStatus')->defaultValue(false)->notNull());
-            $this->update('{{%plugins}}', ['enabled' => true]);
+        if (!$this->db->columnExists(Table::PLUGINS, 'enabled')) {
+            $this->addColumn(Table::PLUGINS, 'enabled', $this->boolean()->after('licenseKeyStatus')->defaultValue(false)->notNull());
+            $this->update(Table::PLUGINS, ['enabled' => true]);
         }
 
-        $this->createIndex(null, '{{%plugins}}', ['enabled']);
+        $this->createIndex(null, Table::PLUGINS, ['enabled']);
     }
 
     /**

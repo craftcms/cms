@@ -34,7 +34,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/feed.svg');
     }
@@ -81,7 +81,6 @@ class Feed extends Widget
         $rules[] = [['url', 'title'], 'required'];
         $rules[] = [['url'], 'url'];
         $rules[] = [['limit'], 'integer', 'min' => 1];
-
         return $rules;
     }
 

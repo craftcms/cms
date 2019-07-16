@@ -30,6 +30,7 @@
             sources: {{ sources|json_encode|raw }},
             criteria: {{ criteria|json_encode|raw }},
             sourceElementId: {{ sourceElementId ?: 'null' }},
+            prevalidate: {{ (prevalidate ?? false) ? 'true' : 'false' }},
             branchLimit: {{ branchLimit ?: 'null' }},
             modalStorageKey: "{{ storageKey|e('js') }}",
             selectionLabel: "{{ selectionLabel|e('js') }}"

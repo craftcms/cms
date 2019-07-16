@@ -84,10 +84,10 @@ class AssetIndexData extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'volumeId', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true],
-            [['completed', 'inProgress'], 'boolean'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'volumeId', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true];
+        $rules[] = [['completed', 'inProgress'], 'boolean'];
+        return $rules;
     }
 
     /**

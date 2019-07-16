@@ -111,7 +111,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
             this.clearLoginError();
 
             var data = {
-                password: this.$passwordInput.val()
+                currentPassword: this.$passwordInput.val()
             };
 
             Craft.postActionRequest('users/start-elevated-session', data, $.proxy(function(response, textStatus) {
@@ -123,7 +123,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                         this.callback();
                     }
                     else {
-                        this.showPasswordError(Craft.t('app', 'Incorrect password.'));
+                        this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                         Garnish.shake(this.passwordModal.$container);
                         this.focusPasswordInput();
                     }

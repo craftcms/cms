@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -31,7 +32,7 @@ class Tag extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%tags}}';
+        return Table::TAGS;
     }
 
     /**

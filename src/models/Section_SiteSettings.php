@@ -143,11 +143,10 @@ class Section_SiteSettings extends Model
      */
     public function rules()
     {
-        $rules = [
-            [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteIdValidator::class],
-            [['template'], 'string', 'max' => 500],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
+        $rules[] = [['siteId'], SiteIdValidator::class];
+        $rules[] = [['template'], 'string', 'max' => 500];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
             $rules[] = ['uriFormat', SingleSectionUriValidator::class];

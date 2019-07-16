@@ -81,6 +81,11 @@ class AssetTransform extends Model
      */
     public $quality;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -105,63 +110,63 @@ class AssetTransform extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true],
-            [['dimensionChangeTime'], DateTimeValidator::class],
-            [['handle'], 'string', 'max' => 255],
-            [['name', 'handle', 'mode', 'position'], 'required'],
-            [['handle'], 'string', 'max' => 255],
-            [
-                ['mode'],
-                'in',
-                'range' => [
-                    'stretch',
-                    'fit',
-                    'crop',
-                ],
-            ],
-            [
-                ['position'],
-                'in',
-                'range' => [
-                    'top-left',
-                    'top-center',
-                    'top-right',
-                    'center-left',
-                    'center-center',
-                    'center-right',
-                    'bottom-left',
-                    'bottom-center',
-                    'bottom-right',
-                ],
-            ],
-            [
-                ['interlace'],
-                'in',
-                'range' => [
-                    'none',
-                    'line',
-                    'plane',
-                    'partition',
-                ],
-            ],
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title',
-                ],
-            ],
-            [
-                ['name', 'handle'],
-                UniqueValidator::class,
-                'targetClass' => AssetTransformRecord::class,
+        $rules = parent::rules();
+        $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
+        $rules[] = [['dimensionChangeTime'], DateTimeValidator::class];
+        $rules[] = [['handle'], 'string', 'max' => 255];
+        $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
+        $rules[] = [['handle'], 'string', 'max' => 255];
+        $rules[] = [
+            ['mode'],
+            'in',
+            'range' => [
+                'stretch',
+                'fit',
+                'crop',
             ],
         ];
+        $rules[] = [
+            ['position'],
+            'in',
+            'range' => [
+                'top-left',
+                'top-center',
+                'top-right',
+                'center-left',
+                'center-center',
+                'center-right',
+                'bottom-left',
+                'bottom-center',
+                'bottom-right',
+            ],
+        ];
+        $rules[] = [
+            ['interlace'],
+            'in',
+            'range' => [
+                'none',
+                'line',
+                'plane',
+                'partition',
+            ],
+        ];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => [
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+                'title',
+            ],
+        ];
+        $rules[] = [
+            ['name', 'handle'],
+            UniqueValidator::class,
+            'targetClass' => AssetTransformRecord::class,
+        ];
+        return $rules;
     }
 
     /**

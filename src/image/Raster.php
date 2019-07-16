@@ -175,7 +175,8 @@ class Raster extends Image
         }
 
         // For Imagick, convert CMYK to RGB, save and re-open.
-        if (!Craft::$app->getImages()->getIsGd()
+        if (
+            !Craft::$app->getImages()->getIsGd()
             && !Craft::$app->getConfig()->getGeneral()->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
@@ -597,6 +598,18 @@ class Raster extends Image
 
         $point = new Point($x, $y);
         $this->_image->draw()->text($text, $this->_font, $point, $angle);
+    }
+
+    /**
+     * Disable animation if this is an animated image.
+     *
+     * @return $this
+     */
+    public function disableAnimation()
+    {
+        $this->_isAnimatedGif = false;
+
+        return $this;
     }
 
     // Private Methods

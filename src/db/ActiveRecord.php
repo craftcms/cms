@@ -21,9 +21,6 @@ use craft\helpers\StringHelper;
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
-    // Static
-    // =========================================================================
-
     // Public Methods
     // =========================================================================
 
@@ -31,6 +28,15 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      */
     public function beforeSave($insert)
+    {
+        $this->prepareForDb();
+        return parent::beforeSave($insert);
+    }
+
+    /**
+     * Prepares record values for DB storage.
+     */
+    protected function prepareForDb()
     {
         foreach ($this->fields() as $attribute) {
             $this->$attribute = Db::prepareValueForDb($this->$attribute);
@@ -40,19 +46,26 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
         $now = Db::prepareDateForDb(new \DateTime());
 
         if ($this->getIsNewRecord()) {
-            if ($this->hasAttribute('dateCreated')) {
+            if ($this->hasAttribute('dateCreated') && !isset($this->dateCreated)) {
                 $this->dateCreated = $now;
             }
 
-            if ($this->hasAttribute('uid')) {
+            if ($this->hasAttribute('dateUpdated') && !isset($this->dateUpdated)) {
+                $this->dateUpdated = $now;
+            }
+
+            if ($this->hasAttribute('uid') && !isset($this->uid)) {
                 $this->uid = StringHelper::UUID();
             }
+        } else if (
+            !empty($this->getDirtyAttributes()) &&
+            $this->hasAttribute('dateUpdated')
+        ) {
+            if (!$this->isAttributeChanged('dateUpdated')) {
+                $this->dateUpdated = $now;
+            } else {
+                $this->markAttributeDirty('dateUpdated');
+            }
         }
-
-        if ($this->hasAttribute('dateUpdated')) {
-            $this->dateUpdated = $now;
-        }
-
-        return parent::beforeSave($insert);
     }
 }

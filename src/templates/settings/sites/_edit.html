@@ -20,7 +20,7 @@
         value: groupId
     }) }}
 
-    <div id="categorygroup-settings">
+    <div id="site-settings">
         {{ forms.textField({
             first: true,
             label: "Name"|t('app'),
@@ -37,8 +37,10 @@
             label: "Handle"|t('app'),
             instructions: "How you’ll refer to this site in the templates."|t('app'),
             id: 'handle',
-            class: 'code',
             name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
             value: site.handle,
             errors: site.getErrors('handle'),
             required: true
@@ -62,9 +64,9 @@
             warning: languageWarning ?? null
         }) }}
 
-        {% if craft.app.isMultiSite or not site.id %}
+        {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
             {{ forms.lightswitchField({
-                label: "Is this the primary site?"|t('app'),
+                label: "Make this the primary site?"|t('app'),
                 instructions: "The primary site will be loaded by default on the front end."|t('app'),
                 id: 'primary',
                 name: 'primary',
@@ -85,11 +87,13 @@
         }) }}
 
         <div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: "Base URL"|t('app'),
-                instructions: "The base URL for the site. It can begin with an alias, such as {ex}."|t('app', {ex: '`@web`'}),
+                instructions: "The base URL for the site."|t('app'),
                 id: 'base-url',
                 class: 'ltr',
+                suggestEnvVars: true,
+                suggestAliases: true,
                 name: 'baseUrl',
                 value: site.originalBaseUrl ?: site.baseUrl,
                 errors: site.getErrors('baseUrl')

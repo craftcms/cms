@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -38,8 +39,10 @@ use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
+use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
+use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -55,7 +58,7 @@ use yii\base\UnknownPropertyException;
  * @property VolumeFolder $folder the asset’s volume folder
  * @property bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property int|float|null $height the image height
- * @property \Twig_Markup|null $img an `<img>` tag based on this asset
+ * @property Markup|null $img an `<img>` tag based on this asset
  * @property string|null $mimeType the file’s MIME type, if it can be determined
  * @property string $path the asset's path in the volume
  * @property VolumeInterface $volume the asset’s volume
@@ -127,6 +130,14 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Assets');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'asset';
@@ -184,9 +195,13 @@ class Asset extends Element
 
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
 
-        // Add the customized temporary upload source
-        if ($context !== 'settings' && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+        // Add the Temporary Uploads location, if that's not set to a real volume
+        if (
+            $context !== 'settings' &&
+            !Craft::$app->getRequest()->getIsConsoleRequest() &&
+            !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
+        ) {
+            $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
         }
@@ -201,10 +216,10 @@ class Asset extends Element
     {
         $actions = [];
 
-        if (preg_match('/^folder:(\d+)/', $source, $matches)) {
+        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
             $folderId = $matches[1];
 
-            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
@@ -226,10 +241,10 @@ class Asset extends Element
                 ]
             );
 
-            $userSessionService = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
             $canDeleteAndSave = (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id) &&
-                $userSessionService->checkPermission('saveAssetInVolume:' . $volume->id)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
             );
 
             // Rename File
@@ -238,7 +253,7 @@ class Asset extends Element
             }
 
             // Replace File
-            if ($userSessionService->checkPermission('saveAssetInVolume:' . $volume->id)) {
+            if ($userSession->checkPermission('saveAssetInVolume:' . $volume->uid)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -256,7 +271,7 @@ class Asset extends Element
             }
 
             // Delete
-            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id)) {
+            if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -310,6 +325,7 @@ class Asset extends Element
             'height' => ['label' => Craft::t('app', 'Image Height')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
@@ -355,13 +371,17 @@ class Asset extends Element
      */
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
     {
+        /** @var Volume $volume */
+        $volume = $folder->getVolume();
         $source = [
-            'key' => 'folder:' . $folder->id,
+            'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
+            'defaultSort' => ['dateCreated', 'desc'],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $volume->uid),
+                'folder-id' => $folder->id
             ]
         ];
 
@@ -410,6 +430,11 @@ class Asset extends Element
     public $size;
 
     /**
+     * @var bool|null Whether the file was kept around when the asset was deleted
+     */
+    public $keptFile;
+
+    /**
      * @var \DateTime|null Date modified
      */
     public $dateModified;
@@ -456,7 +481,15 @@ class Asset extends Element
     public $conflictingFilename;
 
     /**
+     * @var bool Whether the asset was deleted along with its volume
+     * @see beforeDelete()
+     */
+    public $deletedWithVolume = false;
+
+    /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
+     * @see beforeDelete()
+     * @see afterDelete()
      */
     public $keepFileOnDelete = false;
 
@@ -499,8 +532,8 @@ class Asset extends Element
     public function __toString()
     {
         try {
-            if ($this->_transform !== null) {
-                return (string)$this->getUrl();
+            if ($this->_transform !== null && ($url = (string)$this->getUrl())) {
+                return $url;
             }
             return parent::__toString();
         } catch (\Exception $e) {
@@ -574,6 +607,7 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
+        $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
@@ -601,15 +635,17 @@ class Asset extends Element
      */
     public function getIsEditable(): bool
     {
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
         return Craft::$app->getUser()->checkPermission(
-            'saveAssetInVolume:' . $this->volumeId
+            'saveAssetInVolume:' . $volume->uid
         );
     }
 
     /**
      * Returns an `<img>` tag based on this asset.
      *
-     * @return \Twig_Markup|null
+     * @return Markup|null
      */
     public function getImg()
     {
@@ -1065,6 +1101,8 @@ class Asset extends Element
      */
     public function getEditorHtml(): string
     {
+        $view = Craft::$app->getView();
+
         if (!$this->fieldLayoutId) {
             $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
         }
@@ -1085,11 +1123,15 @@ class Asset extends Element
             }
 
             // Is the image editable, and is the user allowed to edit?
-            $user = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
+
+            /** @var Volume $volume */
+            $volume = $this->getVolume();
+
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $user->checkPermission('deleteFilesAndFoldersInVolume:' . $this->volumeId) &&
-                $user->checkPermission('saveAssetInVolume:' . $this->volumeId)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
@@ -1106,7 +1148,7 @@ class Asset extends Element
             // NBD
         }
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'newFilename',
@@ -1119,7 +1161,7 @@ class Asset extends Element
             ]
         ]);
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Title'),
                 'siteId' => $this->siteId,
@@ -1220,7 +1262,7 @@ class Asset extends Element
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
-        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
+        if (!$this->id && !$this->title) {
             $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
@@ -1238,7 +1280,6 @@ class Asset extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // If this is just an element being propagated, there's absolutely no need for re-saving this.
         if (!$this->propagating) {
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
@@ -1261,16 +1302,16 @@ class Asset extends Element
                 }
             } else {
                 $record = new AssetRecord();
-                $record->id = $this->id;
+                $record->id = (int)$this->id;
             }
 
             $record->filename = $this->filename;
-            $record->volumeId = $this->volumeId;
-            $record->folderId = $this->folderId;
+            $record->volumeId = (int)$this->volumeId ?: null;
+            $record->folderId = (int)$this->folderId;
             $record->kind = $this->kind;
-            $record->size = $this->size;
-            $record->width = $this->_width;
-            $record->height = $this->_height;
+            $record->size = (int)$this->size ?: null;
+            $record->width = (int)$this->_width ?: null;
+            $record->height = (int)$this->_height ?: null;
             $record->dateModified = $this->dateModified;
 
             if ($this->getHasFocalPoint()) {
@@ -1289,6 +1330,26 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the asset record
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::ASSETS, [
+                'deletedWithVolume' => $this->deletedWithVolume,
+                'keptFile' => $this->keepFileOnDelete,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterDelete()
     {
         if (!$this->keepFileOnDelete) {
@@ -1297,6 +1358,15 @@ class Asset extends Element
 
         Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeRestore(): bool
+    {
+        // Only allow the asset to be restored if the file was kept on delete
+        return $this->keptFile && parent::beforeRestore();
     }
 
     // Private Methods

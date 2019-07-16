@@ -18,7 +18,9 @@ use Composer\Package\Locker;
 use Composer\Util\Platform;
 use Craft;
 use craft\composer\Factory;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;
 use yii\base\Component;
@@ -50,6 +52,11 @@ class Composer extends Component
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
      */
     public $updateComposerClassMap = false;
+
+    /**
+     * @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/
+     */
+    public $maxBackups = 50;
 
     /**
      * @var string[]|null
@@ -93,12 +100,20 @@ class Composer extends Component
     /**
      * Installs a given set of packages with Composer.
      *
-     * @param array $requirements Package name/version pairs
+     * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
+     * @param array|bool $whitelist List of package names to whitelist, `true` if that should be determined
+     * dynamically, or `false` if no whitelist should be used.
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements, IOInterface $io = null)
+    public function install(array $requirements = null, IOInterface $io = null, $whitelist = true)
     {
+        App::maxPowerCaptain();
+
+        if ($requirements !== null) {
+            $this->backupComposerFiles();
+        }
+
         if ($io === null) {
             $io = new NullIO();
         }
@@ -117,7 +132,9 @@ class Composer extends Component
         $backup = file_get_contents($jsonPath);
 
         // Update composer.json
-        $this->updateRequirements($io, $jsonPath, $requirements);
+        if ($requirements !== null) {
+            $this->updateRequirements($io, $jsonPath, $requirements);
+        }
 
         if ($this->updateComposerClassMap) {
             // Start logging newly-autoloaded classes
@@ -128,20 +145,31 @@ class Composer extends Component
             $this->preloadComposerClasses();
         }
 
-        // Get the whitelist of packages to update
-        $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-
-        // Run the installer
+        // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
+        $config = $composer->getConfig();
+
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setUpdate()
-            ->setUpdateWhitelist($whitelist)
             ->setDumpAutoloader()
-            ->setOptimizeAutoloader(true);
+            ->setRunScripts(false)
+            ->setOptimizeAutoloader(true)
+            ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+
+        if ($requirements !== null) {
+            $installer->setUpdate();
+
+            if (is_array($whitelist)) {
+                $installer->setUpdateWhitelist($whitelist);
+            } else if ($whitelist === true) {
+                $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
+                $installer->setUpdateWhitelist($whitelist);
+            }
+        }
 
         try {
+            // Run the installer
             $status = $installer->run();
         } catch (\Throwable $exception) {
             $status = 1;
@@ -149,6 +177,16 @@ class Composer extends Component
 
         // Change the working directory back
         chdir($wd);
+
+        if ($status !== 0) {
+            file_put_contents($jsonPath, $backup);
+            throw $exception ?? new \Exception('An error occurred');
+        }
+
+        // Invalidate opcache
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
 
         if ($this->updateComposerClassMap) {
             // Generate a new composer-classes.php
@@ -161,11 +199,6 @@ class Composer extends Component
             $contents .= "];\n";
             FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
         }
-
-        if ($status !== 0) {
-            file_put_contents($jsonPath, $backup);
-            throw $exception ?? new \Exception('An error occurred');
-        }
     }
 
     /**
@@ -177,6 +210,9 @@ class Composer extends Component
      */
     public function uninstall(array $packages, IOInterface $io = null)
     {
+        App::maxPowerCaptain();
+        $this->backupComposerFiles();
+
         $packages = array_map('strtolower', $packages);
 
         if ($io === null) {
@@ -217,13 +253,16 @@ class Composer extends Component
 
             $composer = $this->createComposer($io, $jsonPath);
             $composer->getDownloadManager()->setOutputProgress(false);
+            $config = $composer->getConfig();
 
             // Run the installer
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
                 ->setUpdateWhitelist($packages)
                 ->setDumpAutoloader()
-                ->setOptimizeAutoloader(true);
+                ->setRunScripts(false)
+                ->setOptimizeAutoloader(true)
+                ->setClassMapAuthoritative($config->get('classmap-authoritative'));
 
             $status = $installer->run();
         } catch (\Throwable $exception) {
@@ -236,6 +275,11 @@ class Composer extends Component
         if ($status !== 0) {
             file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
+        }
+
+        // Invalidate opcache
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
         }
     }
 
@@ -328,7 +372,7 @@ class Composer extends Component
     protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements)
     {
         $requireKey = 'require';
-        $removeKey = 'require-dev';
+        $requireDevKey = 'require-dev';
 
         // First try using JsonManipulator
         $success = true;
@@ -336,11 +380,16 @@ class Composer extends Component
         $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
 
         foreach ($requirements as $package => $constraint) {
-            if (
-                !$manipulator->addLink($requireKey, $package, $constraint, $sortPackages) ||
-                !$manipulator->removeSubNode($removeKey, $package)
-            ) {
-                $success = false;
+            if ($constraint === false) {
+                $success = $manipulator->removeSubNode($requireKey, $package);
+            } else {
+                $success = $manipulator->addLink($requireKey, $package, $constraint, $sortPackages);
+            }
+
+            // Also remove the package from require-dev
+            $success = $success && $manipulator->removeSubNode($requireDevKey, $package);
+
+            if (!$success) {
                 break;
             }
         }
@@ -354,9 +403,15 @@ class Composer extends Component
         $json = new JsonFile($jsonPath);
         $config = $json->read();
 
-        foreach ($requirements as $package => $version) {
-            $config[$requireKey][$package] = $version;
-            unset($config[$removeKey][$package]);
+        foreach ($requirements as $package => $constraint) {
+            if ($constraint === false) {
+                unset($config[$requireKey][$package]);
+            } else {
+                $config[$requireKey][$package] = $constraint;
+            }
+
+            // Also remove the package from require-dev
+            unset($config[$requireDevKey][$package]);
         }
 
         $json->write($config);
@@ -478,6 +533,31 @@ class Composer extends Component
 
         foreach ($classes as $class) {
             class_exists($class, true);
+        }
+    }
+
+    /**
+     * Backs up the composer.json and composer.lock files to `storage/composer-backups/`
+     */
+    protected function backupComposerFiles()
+    {
+        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
+        $jsonBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.json';
+        $lockBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.lock';
+        FileHelper::cycle($jsonBackupPath, $this->maxBackups);
+        FileHelper::cycle($lockBackupPath, $this->maxBackups);
+
+        copy($this->getJsonPath(), $jsonBackupPath);
+
+        $lockPath = $this->getLockPath();
+        if (is_file($lockPath)) {
+            copy($lockPath, $lockBackupPath);
+        } else {
+            FileHelper::writeToFile($lockBackupPath, Json::encode([
+                '_readme' => [
+                    'No composer.lock file existed at the time of backup.',
+                ],
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
     }
 }

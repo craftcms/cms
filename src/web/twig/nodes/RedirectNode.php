@@ -8,6 +8,8 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\UrlHelper;
+use Twig\Compiler;
+use Twig\Node\Node;
 
 /**
  * Class RedirectNode
@@ -15,7 +17,7 @@ use craft\helpers\UrlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RedirectNode extends \Twig_Node
+class RedirectNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,10 +25,25 @@ class RedirectNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
+        $compiler->addDebugInfo($this);
+
+        if ($this->hasNode('error')) {
+            $compiler
+                ->write('\Craft::$app->getSession()->setError(')
+                ->subcompile($this->getNode('error'))
+                ->raw(");\n");
+        }
+
+        if ($this->hasNode('notice')) {
+            $compiler
+                ->write('\Craft::$app->getSession()->setNotice(')
+                ->subcompile($this->getNode('notice'))
+                ->raw(");\n");
+        }
+
         $compiler
-            ->addDebugInfo($this)
             ->write('\Craft::$app->getResponse()->redirect(' . UrlHelper::class . '::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')

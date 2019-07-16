@@ -17,7 +17,7 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
-use craft\utilities\SearchIndexes;
+use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
 use yii\base\Component;
@@ -70,8 +70,11 @@ class Utilities extends Component
             UpdatesUtility::class,
             SystemReport::class,
             PhpInfo::class,
-            SearchIndexes::class,
         ];
+
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            $utilityTypes[] = SystemMessagesUtility::class;
+        }
 
         if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {
             $utilityTypes[] = AssetIndexes::class;

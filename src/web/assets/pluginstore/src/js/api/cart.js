@@ -1,40 +1,29 @@
+/* global Craft */
+
 import axios from 'axios'
 
 export default {
-
     /**
      * Create cart.
      */
-    createCart(data, cb, errorCb) {
-        axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
+    createCart(data) {
+        return axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
                 headers: {
                     'X-CSRF-Token': Craft.csrfTokenValue,
                 }
-            })
-            .then(response => {
-                return cb(response.data)
-            })
-            .catch(response => {
-                return errorCb(response)
             })
     },
 
     /**
      * Update cart.
      */
-    updateCart(orderNumber, data, cb, errorCb) {
+    updateCart(orderNumber, data) {
         data.orderNumber = orderNumber
 
-        axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
+        return axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
                 headers: {
                     'X-CSRF-Token': Craft.csrfTokenValue,
                 }
-            })
-            .then(response => {
-                return cb(response.data)
-            })
-            .catch(response => {
-                return errorCb(response)
             })
     },
 
@@ -64,18 +53,12 @@ export default {
     /**
      * Get cart.
      */
-    getCart(orderNumber, cb, errorCb) {
+    getCart(orderNumber) {
         const data = {
             orderNumber
         }
 
-        axios.get(Craft.getActionUrl('plugin-store/get-cart', data))
-            .then(response => {
-                return cb(response.data)
-            })
-            .catch(response => {
-                return errorCb(response)
-            })
+        return axios.get(Craft.getActionUrl('plugin-store/get-cart', data))
     },
 
     /**
@@ -99,5 +82,4 @@ export default {
             }
         })
     },
-
 }

@@ -10,6 +10,8 @@ namespace craft\db\mysql;
 use Craft;
 use craft\db\Connection;
 use yii\base\NotSupportedException;
+use yii\db\ExpressionInterface;
+use yii\db\Query;
 
 /**
  * @inheritdoc

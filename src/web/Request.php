@@ -34,6 +34,7 @@ use yii\web\NotFoundHttpException;
  * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
  * @property bool $isLivePreview Whether this is a Live Preview request.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
+ * @property-read bool $isPreview Whether this is an element preview request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -58,6 +59,11 @@ class Request extends \yii\web\Request
         'Forwarded-For',
         'Forwarded',
     ];
+
+    /**
+     * @param int The highest page number that Craft should accept.
+     */
+    public $maxPageNum = 100000;
 
     /**
      * @var
@@ -97,12 +103,22 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
+    private $_isLoginRequest = false;
+
+    /**
+     * @var bool
+     */
     private $_checkedRequestType = false;
 
     /**
      * @var string[]|null
      */
     private $_actionSegments;
+
+    /**
+     * @var bool
+     */
+    private $_isLivePreview = false;
 
     /**
      * @var bool|null
@@ -134,6 +150,12 @@ class Request extends \yii\web\Request
      */
     private $_encodedBodyParams = false;
 
+    /**
+     * @var string|false
+     * @see getToken()
+     */
+    public $_token;
+
     // Public Methods
     // =========================================================================
 
@@ -148,9 +170,11 @@ class Request extends \yii\web\Request
         // in case a site's base URL requires @web, and so we can include the host info in @web
         if (Craft::getRootAlias('@webroot') === false) {
             Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+            $this->isWebrootAliasSetDynamically = true;
         }
         if (Craft::getRootAlias('@web') === false) {
             Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
+            $this->isWebAliasSetDynamically = true;
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -170,7 +194,7 @@ class Request extends \yii\web\Request
 
             // If the requested URI begins with the current site's base URL path,
             // make sure that our internal path doesn't include those segments
-            if ($site->baseUrl && ($siteBasePath = parse_url(Craft::getAlias($site->baseUrl), PHP_URL_PATH)) !== null) {
+            if ($site->baseUrl && ($siteBasePath = parse_url($site->getBaseUrl(), PHP_URL_PATH)) !== null) {
                 $siteBasePath = $this->_normalizePath($siteBasePath);
                 $baseUrl = $this->_normalizePath($this->getBaseUrl());
                 $fullUri = $baseUrl . ($baseUrl && $path ? '/' : '') . $path;
@@ -198,28 +222,16 @@ class Request extends \yii\web\Request
         }
 
         // Is this a paginated request?
-        $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-        if (!is_string($pageTrigger) || $pageTrigger === '') {
-            $pageTrigger = 'p';
-        }
+        $pageTrigger = $generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if ($pageTrigger[0] === '?') {
-            $pageTrigger = trim($pageTrigger, '?=');
-
-            // Avoid conflict with the path param
-            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-            if ($pageTrigger === $pathParam) {
-                $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-            }
-
-            $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
+        if (strpos($pageTrigger, '?') === 0) {
+            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
         } else if (!empty($this->_segments)) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
+            $pageTrigger = preg_quote($pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
@@ -232,6 +244,8 @@ class Request extends \yii\web\Request
                 $this->_segments = $this->_segments($newPath);
             }
         }
+
+        $this->_pageNum = min($this->_pageNum, $this->maxPageNum);
 
         // Now that we've chopped off the admin/page segments, set the path
         $this->_path = implode('/', $this->_segments);
@@ -374,7 +388,14 @@ class Request extends \yii\web\Request
      */
     public function getToken()
     {
-        return $this->getQueryParam(Craft::$app->getConfig()->getGeneral()->tokenParam);
+        if ($this->_token === null) {
+            $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
+            $this->_token = $this->getQueryParam($param)
+                ?? $this->getHeaders()->get('X-Craft-Token')
+                ?? false;
+        }
+
+        return $this->_token ?: null;
     }
 
     /**
@@ -420,9 +441,24 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request.
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
      */
-    public function getIsSingleActionRequest()
+    public function getIsLoginRequest(): bool
+    {
+        $this->_checkRequestType();
+        return $this->_isLoginRequest;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request.
+     *
+     * @return bool
+     * @deprecated in 3.2
+     */
+    public function getIsSingleActionRequest(): bool
     {
         $this->_checkRequestType();
         return $this->_isSingleActionRequest;
@@ -441,6 +477,25 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether this is an element preview request.
+     *
+     * ---
+     * ```php
+     * $isPreviewRequest = Craft::$app->request->isPreview;
+     * ```
+     * ```twig
+     * {% set isPreviewRequest = craft.app.request.isPreview %}
+     * ```
+     *
+     * @return bool
+     * @since 3.2.1
+     */
+    public function getIsPreview(): bool
+    {
+        return $this->getQueryParam('x-craft-preview') !== null;
+    }
+
+    /**
      * Returns whether this is a Live Preview request.
      *
      * ---
@@ -452,14 +507,21 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
+     * @deprecated in 3.2
      */
     public function getIsLivePreview(): bool
     {
-        return (
-            $this->getIsSiteRequest() &&
-            $this->getIsActionRequest() &&
-            $this->getBodyParam('livePreview')
-        );
+        return $this->_isLivePreview;
+    }
+
+    /**
+     * Sets whether this is a Live Preview request.
+     *
+     * @param bool $isLivePreview
+     */
+    public function setIsLivePreview(bool $isLivePreview)
+    {
+        $this->_isLivePreview = $isLivePreview;
     }
 
     /**
@@ -1077,13 +1139,21 @@ class Request extends \yii\web\Request
                 continue;
             }
 
-            if (($parsed = parse_url(Craft::getAlias($site->baseUrl))) === false) {
+            if (($parsed = parse_url($site->getBaseUrl())) === false) {
                 Craft::warning('Unable to parse the site base URL: ' . $site->baseUrl);
                 continue;
             }
 
             // Does the site URL specify a host name?
-            if (!empty($parsed['host']) && $hostName && $parsed['host'] !== $hostName) {
+            if (
+                !empty($parsed['host']) &&
+                $hostName &&
+                $parsed['host'] !== $hostName &&
+                (
+                    !function_exists('idn_to_ascii') ||
+                    idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
+                )
+            ) {
                 continue;
             }
 
@@ -1150,8 +1220,8 @@ class Request extends \yii\web\Request
         $configService = Craft::$app->getConfig();
         $generalConfig = $configService->getGeneral();
 
-        // If there's a token in the query string, then that should take precedence over everything else
-        if (!$this->getQueryParam($generalConfig->tokenParam)) {
+        // If there's a token on the request, then that should take precedence over everything else
+        if ($this->getToken() === null) {
             $firstSegment = $this->getSegment(1);
 
             // Is this an action request?
@@ -1187,6 +1257,7 @@ class Request extends \yii\web\Request
                     switch ($this->_path) {
                         case $loginPath:
                             $this->_actionSegments = ['users', 'login'];
+                            $this->_isLoginRequest = true;
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];

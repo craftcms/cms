@@ -7,8 +7,7 @@
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
             allowUpdates: null,
-            showUpdateAllBtn: true,
-            updates: null,
+            installableUpdates: null,
 
             init: function() {
                 this.$body = $('#content');
@@ -16,7 +15,7 @@
                 var $graphic = $('#graphic'),
                     $status = $('#status');
 
-                this.updates = [];
+                this.installableUpdates = [];
 
                 var data = {
                     forceRefresh: true,
@@ -66,11 +65,11 @@
                                 headingText = Craft.t('app', '{num} Available Updates', {num: this.totalAvailableUpdates});
                             }
 
-                            $('#page-title').find('h1').text(headingText);
+                            $('#header h1').text(headingText);
 
-                            if (this.allowUpdates && this.showUpdateAllBtn && this.updates.length > 1) {
-                                this.createUpdateForm(Craft.t('app', 'Update all'), this.updates)
-                                    .insertAfter($('#header').children('h1'));
+                            if (this.allowUpdates && this.installableUpdates.length > 1) {
+                                this.createUpdateForm(Craft.t('app', 'Update all'), this.installableUpdates)
+                                    .insertAfter($('#header h1 + .flex-grow'));
                             }
                         } else {
                             $graphic.addClass('success');
@@ -81,13 +80,16 @@
             },
 
             processUpdate: function(updateInfo, isPlugin) {
-                if (!updateInfo.releases.length && updateInfo.status !== 'expired') {
+                if (!updateInfo.releases.length) {
                     return;
                 }
 
                 this.totalAvailableUpdates++;
 
-                this.updates.push(new Update(this, updateInfo, isPlugin));
+                var update = new Update(this, updateInfo, isPlugin);
+                if (update.installable) {
+                    this.installableUpdates.push(update);
+                }
             },
 
             createUpdateForm: function(label, updates)
@@ -114,6 +116,11 @@
                         name: 'install['+updates[i].updateInfo.handle+']',
                         value: updates[i].updateInfo.latestVersion
                     }));
+                    $form.append($('<input/>', {
+                        type: 'hidden',
+                        name: 'packageNames['+updates[i].updateInfo.handle+']',
+                        value: updates[i].updateInfo.packageName
+                    }));
                 }
 
                 $form.append($('<input/>', {
@@ -131,6 +138,7 @@
         {
             updateInfo: null,
             isPlugin: null,
+            installable: true,
 
             $container: null,
             $header: null,
@@ -154,10 +162,10 @@
 
                 // Any ineligible releases?
                 if (this.updateInfo.status !== 'eligible') {
-                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p>').insertBefore(this.$releaseContainer);
+                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p></blockquote>').insertBefore(this.$releaseContainer);
 
                     if (this.updateInfo.status === 'expired' || this.updateInfo.latestVersion === null) {
-                        this.updatesPage.showUpdateAllBtn = false;
+                        this.installable = false;
                     }
                 }
             },

@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -19,7 +20,7 @@ class m150724_140822_adjust_quality_settings extends Migration
     {
         $transforms = (new Query())
             ->select(['id', 'quality'])
-            ->from(['{{%assettransforms}}'])
+            ->from([Table::ASSETTRANSFORMS])
             ->all($this->db);
 
         foreach ($transforms as $transform) {
@@ -40,7 +41,7 @@ class m150724_140822_adjust_quality_settings extends Migration
                 }
             }
 
-            $this->update('{{%assettransforms}}', ['quality' => $closest],
+            $this->update(Table::ASSETTRANSFORMS, ['quality' => $closest],
                 'id = :id', [':id' => $transform['id']]);
         }
 
