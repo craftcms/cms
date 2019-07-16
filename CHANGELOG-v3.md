@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a JavaScript error that could occur after uploading a file directly onto an Assets field when editing the Current revision of an entry.
 - Fixed a bug where draft forms could become unresponsive if the user attempted to navigate away from the page or submit the form in the middle of an autosave. ([#4578](https://github.com/craftcms/cms/issues/4578))
+- Fixed a bug where Number fields weren’t getting set to their default values for new entries. ([#4586](https://github.com/craftcms/cms/issues/4586))
 
 ## 3.2.3 - 2019-07-16
 
