@@ -419,7 +419,7 @@ class View extends \yii\web\View
 
         $output = ob_get_clean();
 
-        $this->afterRenderPageTemplate($template, $variables, $output);
+        $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
 
         return $output;
     }
