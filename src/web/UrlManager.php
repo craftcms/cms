@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\events\InterceptTokenRouteEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -47,6 +48,23 @@ class UrlManager extends \yii\web\UrlManager
      * ```
      */
     const EVENT_REGISTER_CP_URL_RULES = 'registerCpUrlRules';
+
+    /**
+     * @event InterceptTokenRouteEvent The event that is triggered when a routing
+     * token is present in the request query params
+     *
+     * ---
+     * ```php
+     * use craft\events\InterceptTokenRouteEvent;
+     * use craft\web\UrlManager;
+     * use yii\base\Event;
+     * Event::on(UrlManager::class, UrlManager::EVENT_INTERCEPT_TOKEN_ROUTE, function(InterceptTokenRouteEvent $e) {
+     *     $e->useTokenRoute => true/false; // false if token's route should not be used
+     *     $e->route = $alternateRoute; // regular rule routing will be used if you don't set this, leaving it null
+     * });
+     * ```
+     */
+    const EVENT_INTERCEPT_TOKEN_ROUTE = 'interceptTokenRoute';
 
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
@@ -328,8 +346,19 @@ class UrlManager extends \yii\web\UrlManager
     private function _getRequestRoute(Request $request)
     {
         // Is there a token in the URL?
-        if (($route = $this->_getTokenRoute($request)) !== false) {
-            return $route;
+        if (($tokenRoute = $this->_getTokenRoute($request)) !== false) {
+
+            $event = new InterceptTokenRouteEvent([
+                'useTokenRoute' => true,
+                'route' => null
+            ]);
+            $this->trigger(self::EVENT_INTERCEPT_TOKEN_ROUTE, $event);
+
+            if ($event->useTokenRoute) {
+                return $tokenRoute;
+            } else if ($event->route !== null) {
+                return $event->route;
+            }
         }
 
         $path = $request->getPathInfo();
