@@ -256,7 +256,6 @@ class EntryRevisionsController extends BaseEntriesController
                 'draftNotes' => $draft->draftNotes,
                 'docTitle' => $this->docTitle($draft),
                 'title' => $this->pageTitle($draft),
-                'duplicatedElements' => $elementsService::$duplicatedElementIds,
             ]);
         }
 
@@ -473,6 +472,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
         $draft->enabled = (bool)$request->getBodyParam('enabled');
+        $draft->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $draft->enabledForSite);
         $draft->title = $request->getBodyParam('title');
 
         if (!$draft->typeId) {

@@ -1,5 +1,24 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.3 - 2019-07-16
+
+### Added
+- Added `craft\controllers\EntriesController::actionDuplicateEntry()`.
+- Added `craft\web\UrlManager::setMatchedElement()`.
+
+### Changed
+- Craft no longer creates drafts automatically when editing entries. The user must click a “Save as a Draft” button to create one. ([#4549](https://github.com/craftcms/cms/issues/4549))
+- Entries are now immediately savable, whether or not any changes were made. ([#4535](https://github.com/craftcms/cms/issues/4535))
+- The “Save Entry” button now redirects the user to the Entries index page. ([#4575](https://github.com/craftcms/cms/issues/4575))
+- Brought back the “Save and continue editing” and “Save and add another” options for entries.
+- It’s no longer possible to preview entries’ Current revision. A draft must be created first.
+
+### Fixed
+- Fixed a bug where it wasn’t possible to delete Matrix blocks if Min Blocks and Max Blocks were set to the same value, and an element already had more than that many blocks. ([#4562](https://github.com/craftcms/cms/issues/4562))
+- Fixed a bug where `craft\web\UrlManager::getMatchedElement()` could return the incorrect result on preview requests. ([#4542](https://github.com/craftcms/cms/issues/4542))
+- Fixed an error that occurred on the Settings → Email page if email settings were missing from the project config. ([#4552](https://github.com/craftcms/cms/issues/4552))
+- Fixed a bug where it wasn’t possible to toggle site-specific entry statuses when editing drafts. ([#4577](https://github.com/craftcms/cms/issues/4577))
+
 ## 3.2.2 - 2019-07-14
 
 ### Added

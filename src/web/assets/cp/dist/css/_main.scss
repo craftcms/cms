@@ -1078,7 +1078,8 @@ ul.icons li a:hover {
   background-image: url(../images/spinner_submit.gif);
 }
 
-.secondary-buttons .btn.icon.add.loading.submit:after {
+.secondary-buttons .btn.icon.add.loading.submit:after,
+.btn.secondary.icon.add.loading.submit:after {
   background-image: url(../images/spinner_submit_secondary.gif);
 }
 
@@ -1215,10 +1216,14 @@ ul.icons li a:hover {
 }
 
 /* submit buttons */
-.btn.submit {
+.btn.submit,
+.btn.secondary {
   color: #fff;
-  background-image: linear-gradient($submitColor, #cc5643);
   @include light-on-dark-text;
+}
+
+.btn.submit {
+  background-image: linear-gradient($submitColor, #cc5643);
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
@@ -1231,17 +1236,22 @@ ul.icons li a:hover {
   background-image: linear-gradient($submitActiveColor, #994032);
 }
 
-.secondary-buttons .btn.submit {
+.secondary-buttons .btn.submit,
+.btn.secondary {
   background-image: linear-gradient($secondarySubmitColor, #878f99);
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
+.btn.secondary:not(.disabled):not(.inactive):hover,
+.btn.secondary:not(.disabled):not(.inactive).hover {
   background-image: linear-gradient($secondarySubmitHoverColor, #697480);
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active,
+.btn.secondary:not(.disabled):not(.inactive):active,
+.btn.secondary:not(.disabled):not(.inactive).active {
   background-image: linear-gradient($secondarySubmitActiveColor, #697380);
 }
 
@@ -4760,7 +4770,8 @@ only screen and (min-resolution: 1.5dppx) {
   .btn.icon.add.loading.submit:after {
     background-image: url(../images/spinner_submit_2x.gif);
   }
-  .secondary-buttons .btn.icon.add.loading.submit:after {
+  .secondary-buttons .btn.icon.add.loading.submit:after,
+  .btn.secondary.icon.add.loading.submit:after {
     background-image: url(../images/spinner_submit_secondary_2x.gif);
   }
 

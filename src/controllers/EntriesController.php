@@ -250,7 +250,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Can the user delete the entry?
-        $variables['canDeleteEntry'] = (
+        $variables['canDeleteSource'] = (
             ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
             ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
         );
@@ -298,18 +298,16 @@ class EntriesController extends BaseEntriesController
     /**
      * Saves an entry.
      *
+     * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      */
-    public function actionSaveEntry()
+    public function actionSaveEntry(bool $duplicate = false)
     {
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
         $request = Craft::$app->getRequest();
-
-        // Are we duplicating the entry?
-        $duplicate = (bool)$request->getBodyParam('duplicate');
 
         // Permission enforcement
         $this->enforceEditEntryPermissions($entry, $duplicate);
@@ -415,6 +413,18 @@ class EntriesController extends BaseEntriesController
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
         return $this->redirectToPostedUrl($entry);
+    }
+
+    /**
+     * Duplicates an entry.
+     *
+     * @return Response|null
+     * @throws ServerErrorHttpException if reasons
+     * @since 3.2.3
+     */
+    public function actionDuplicateEntry()
+    {
+        return $this->runAction('save-entry', ['duplicate' => true]);
     }
 
     /**

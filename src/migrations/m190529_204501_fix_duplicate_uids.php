@@ -18,6 +18,11 @@ class m190529_204501_fix_duplicate_uids extends Migration
      */
     public function safeUp()
     {
+        // No need to run this if we're updating from < 3.2.0-alpha.6
+        if (version_compare(Craft::$app->getInfo()->version, '3.2.0-alpha.6', '<')) {
+            return;
+        }
+
         $uids = [];
         $query = (new Query())
             ->select(['id', 'uid'])

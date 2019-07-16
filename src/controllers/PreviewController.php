@@ -143,6 +143,7 @@ class PreviewController extends Controller
         $urlManager = Craft::$app->getUrlManager();
         $urlManager->checkToken = false;
         $urlManager->setRouteParams([], false);
+        $urlManager->setMatchedElement(null);
         return Craft::$app->handleRequest(Craft::$app->getRequest(), true);
     }
 }

@@ -21,7 +21,6 @@ Craft.DraftEditor = Garnish.Base.extend(
         saving: false,
         checkFormAfterUpdate: false,
 
-        duplicatedElements: null,
         applying: false,
         errors: null,
 
@@ -31,16 +30,10 @@ Craft.DraftEditor = Garnish.Base.extend(
         init: function(settings) {
             this.setSettings(settings, Craft.DraftEditor.defaults);
 
-            this.duplicatedElements = {};
-
             this.$revisionBtn = $('#revision-btn');
             this.$revisionLabel = $('#revision-label');
             this.$spinner = $('#revision-spinner');
             this.$statusIcon = $('#revision-status');
-
-            if (this.settings.draftId) {
-                this.createEditMetaBtn();
-            }
 
             if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
@@ -58,10 +51,13 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             }
 
-            // If this is a revision, then we're done here
-            if (this.settings.revisionId) {
+            // If this isn't a draft, then we're done here
+            if (!this.settings.draftId) {
                 return;
             }
+
+            // Create the edit draft button
+            this.createEditMetaBtn();
 
             // Store the initial form value
             this.lastSerializedValue = this.serializeForm();
@@ -300,57 +296,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
                 var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
 
-                // Did we just create a draft?
-                var draftCreated = !this.settings.draftId;
-                if (draftCreated) {
-                    var newHref;
-                    var anchorPos = document.location.href.search('#');
-                    if (anchorPos !== -1) {
-                        newHref = document.location.href.substr(0, anchorPos);
-                    } else {
-                        newHref = document.location.href;
-                    }
-                    newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
-                    if (anchorPos !== -1) {
-                        newHref += document.location.href.substr(anchorPos);
-                    }
-                    history.replaceState({}, '', newHref);
-                    this.settings.draftId = response.draftId;
-                    this.settings.isLive = false;
-                    this.settings.canDeleteDraft = true;
-                    this.previewToken = null;
-                    this.createEditMetaBtn();
-                    $('#apply-btn').removeClass('disabled');
-
-                    // Add it to the revision menu
-                    if (revisionMenu) {
-                        revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
-                        var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
-                        if (!$draftsUl.length) {
-                            var $draftHeading = $('<h6/>', {
-                                text: Craft.t('app', 'Drafts'),
-                            }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
-                            $draftsUl = $('<ul/>', {
-                                'class': 'padded revision-group-drafts',
-                            }).insertAfter($draftHeading);
-                        }
-                        var $draftLi = $('<li/>').appendTo($draftsUl);
-                        var $draftA = $('<a/>', {
-                            'class': 'sel',
-                            html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
-                        }).appendTo($draftLi);
-                        revisionMenu.addOptions($draftA);
-                        revisionMenu.selectOption($draftA);
-
-                        // Update the site URLs
-                        var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
-                        for (var i = 0; i < $siteOptions.length; i++) {
-                            var $siteOption = $siteOptions.eq(i);
-                            $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
-                        }
-                    }
-                }
-
                 if (revisionMenu) {
                     revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
                     revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
@@ -360,36 +305,20 @@ Craft.DraftEditor = Garnish.Base.extend(
 
                 this.afterUpdate(data);
 
-                if (draftCreated) {
-                    this.trigger('createDraft');
-                }
-
                 if (this.$nameTextInput) {
                     this.checkMetaValues();
                 }
-
-                $.extend(this.duplicatedElements, response.duplicatedElements);
             }, this));
         },
 
         prepareData: function(data) {
-            // Swap out element IDs with their duplicated ones
-            for (var oldId in this.duplicatedElements) {
-                if (this.duplicatedElements.hasOwnProperty(oldId)) {
-                    data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
-                        '][' + this.duplicatedElements[oldId] + ']');
-                }
-            }
-
             // Add the draft info
-            if (this.settings.draftId) {
-                data += '&draftId=' + this.settings.draftId
-                    + '&draftName=' + encodeURIComponent(this.settings.draftName)
-                    + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
+            data += '&draftId=' + this.settings.draftId
+                + '&draftName=' + encodeURIComponent(this.settings.draftName)
+                + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
 
-                if (this.settings.propagateAll) {
-                    data += '&propagateAll=1';
-                }
+            if (this.settings.propagateAll) {
+                data += '&propagateAll=1';
             }
 
             return data;
@@ -542,14 +471,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Don't allow a form submit under any circumstances if we’re currently applying a draft
             if (this.applying) {
                 return;
-            }
-
-            if (!ev.customTrigger) {
-                // return;
-                if (!this.settings.draftId) {
-                    return;
-                }
-                $('#apply-btn').addClass('disabled');
             }
 
             this.applying = true;
