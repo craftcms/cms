@@ -229,6 +229,11 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         checkForm: function(force) {
+            // If this isn't a draft, then there's nothing to check
+            if (!this.settings.draftId) {
+                return;
+            }
+
             clearTimeout(this.timeout);
             this.timeout = null;
 
@@ -273,7 +278,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.saving = false;
 
                 if (textStatus !== 'success' || response.errors) {
-                    this.errors = response.errors || [];
+                    this.errors = (response ? response.errors : null) || [];
                     $statusIcons
                         .removeClass('hidden checkmark-icon')
                         .addClass('alert-icon')
