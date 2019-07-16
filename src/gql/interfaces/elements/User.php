@@ -79,7 +79,7 @@ class User extends Element
             'pending' => Type::boolean(),
             'lastLoginDate' => DateTime::getType(),
             'lastInvalidLoginDate' => DateTime::getType(),
-            'invalidLoginCounr' => Type::int(),
+            'invalidLoginCount' => Type::int(),
             'lockoutDate' => DateTime::getType(),
             'hasDashboard' => Type::boolean(),
             'passwordResetRequired' => Type::boolean(),
