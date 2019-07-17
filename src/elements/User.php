@@ -1188,13 +1188,13 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements, bool $withOne = false)
     {
         if ($handle === 'photo') {
             $photo = $elements[0] ?? null;
             $this->setPhoto($photo);
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $withOne);
         }
     }
 
