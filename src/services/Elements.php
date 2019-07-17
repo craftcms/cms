@@ -1770,8 +1770,9 @@ class Elements extends Component
      * @param string $elementType The root element type class
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param string|array $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param bool $withOne Whether one element should be eager loaded instead of an array
      */
-    public function eagerLoadElements(string $elementType, array $elements, $with)
+    public function eagerLoadElements(string $elementType, array $elements, $with, bool $withOne = false)
     {
         /** @var Element[] $elements */
         // Bail if there aren't even any elements
@@ -1907,7 +1908,7 @@ class Elements extends Component
                             }
                         }
 
-                        $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
+                        $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource, $withOne);
                     }
                 }
 
