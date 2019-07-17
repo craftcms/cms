@@ -302,10 +302,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $with;
 
     /**
-     * @var bool|null Whether one element should be eager-loaded instead of an array.
+     * @var bool Whether one element should be eager-loaded instead of an array.
      * @used-by withOne()
      */
-    public $withOne;
+    public $withOne = false;
 
     /**
      * @inheritdoc
