@@ -101,7 +101,7 @@
         {% if previewTargets or actionButton %}
             <div class="spacer"></div>
         {% endif %}
-        {% set draftRedirectUrl =  url(element.cpEditUrl, {draftId: '__DRAFT_ID__'})|replace('__DRAFT_ID__', '{draftId}') %}
+        {% set draftRedirectUrl =  url(element.cpEditUrl, {draftId: '{draftId}'}) %}
         {% if canUpdateSource and saveSourceAction %}
             <input type="hidden" name="action" value="{{ saveSourceAction }}">
             {{ redirectInput(redirectUrl) }}
