@@ -920,6 +920,14 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function andWith($value);
 
     /**
+     * Determines whether one related element should be eager-loaded instead of an array.
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function withOne(bool $value = true);
+
+    /**
      * Explicitly determines whether the query should join in the structure data.
      *
      * @param bool $value The property value (defaults to true)
