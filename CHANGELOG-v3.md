@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.4.1 - 2019-07-17
 
 ### Fixed
 - Fixed an error that occurred when attempting to share a disabled entry. ([#4596](https://github.com/craftcms/cms/issues/4596))
