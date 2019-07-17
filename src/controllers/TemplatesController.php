@@ -137,9 +137,9 @@ class TemplatesController extends Controller
      *
      * @return Response
      */
-    public function actionIncompatibleConfigAlert(): Response
+    public function actionIncompatibleConfigAlert(array $issues = []): Response
     {
-        return $this->renderTemplate('_special/incompatibleconfigs');
+        return $this->renderTemplate('_special/incompatibleconfigs', ['issues' => $issues]);
     }
 
     /**

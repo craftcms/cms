@@ -10,6 +10,9 @@
 - Fixed a bug query string parameters were getting URL-encoded when applied to generated pagination URLs.
 - Fixed a bug where Single entries had the option to be duplicated or deleted. ([#4590](https://github.com/craftcms/cms/issues/4590))
 
+### Added
+- A more detailed description is now displayed when `project.yaml` schema version conflict is encountered. ([#4568](https://github.com/craftcms/cms/issues/4568))
+
 ## 3.2.3 - 2019-07-16
 
 ### Added
