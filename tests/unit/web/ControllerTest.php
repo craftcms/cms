@@ -186,7 +186,7 @@ class ControllerTest extends Unit
     public function testRedirect()
     {
         $this->assertSame(
-            $this->_getBaseUrlForRedirect() . '?' . url_decode(http_build_query(['p' => 'do/stuff'])),
+            $this->_getBaseUrlForRedirect() . '?' . urldecode(http_build_query(['p' => 'do/stuff'])),
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 
