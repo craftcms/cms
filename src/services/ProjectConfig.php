@@ -673,9 +673,12 @@ class ProjectConfig extends Component
      * The schemas must match exactly to avoid unpredictable behavior that can occur when running migrations
      * and applying project config changes at the same time.
      *
-     * @return bool
+     * @param array $issues Passed by reference and populated with issues on error in
+     *                      the following format: `[$pluginName, $existingSchema, $incomingSchema]`
+     *
+     * @return bool|array
      */
-    public function getAreConfigSchemaVersionsCompatible(): bool
+    public function getAreConfigSchemaVersionsCompatible(&$issues = [])
     {
         // TODO remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
@@ -687,7 +690,11 @@ class ProjectConfig extends Component
 
         // Compare existing Craft schema version with the one that is being applied.
         if (!version_compare($existingSchema, $incomingSchema, '=')) {
-            return false;
+            $issues[] = [
+                'cause' => 'Craft CMS',
+                'existing' => $existingSchema,
+                'incoming' => $incomingSchema
+            ];
         }
 
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
@@ -699,11 +706,15 @@ class ProjectConfig extends Component
 
             // Compare existing plugin schema version with the one that is being applied.
             if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
-                return false;
+                $issues[] = [
+                    'cause' => $plugin->name,
+                    'existing' => $existingSchema,
+                    'incoming' => $incomingSchema
+                ];
             }
         }
 
-        return true;
+        return empty($issues);
     }
 
     // Config Change Event Registration

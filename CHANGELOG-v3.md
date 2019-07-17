@@ -9,6 +9,9 @@
 - Fixed a bug where Number fields weren’t getting set to their default values for new entries. ([#4586](https://github.com/craftcms/cms/issues/4586))
 - Fixed a bug query string parameters were getting URL-encoded when applied to generated pagination URLs.
 
+### Added
+- A more detailed description is now displayed when `project.yaml` schema version conflict is encountered. ([#4568](https://github.com/craftcms/cms/issues/4568))
+
 ## 3.2.3 - 2019-07-16
 
 ### Added
