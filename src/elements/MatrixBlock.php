@@ -352,14 +352,14 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements, bool $withOne = false)
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle . ':';
         if (strpos($handle, $blockTypeHandlePrefix) === 0) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $withOne);
         }
     }
 
