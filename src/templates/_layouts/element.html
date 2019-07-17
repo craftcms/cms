@@ -62,6 +62,8 @@
     {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
 {% elseif isRevision %}
     {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
+{% else %}
+    {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
 {% endif %}
 
 {# If this is an unsaved draft, then we should only show status toggles if the
