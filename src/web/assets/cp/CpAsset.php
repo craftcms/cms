@@ -220,6 +220,7 @@ JS;
             'This can be left blank if you just want an unlabeled separator.',
             'Transfer it to:',
             'Try again',
+            'Update {type}',
             'Upload failed for {filename}',
             'Upload files',
             'week',

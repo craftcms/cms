@@ -8,9 +8,11 @@
       If the current user created the draft, then it will be deletable regardless.
     - canUpdateSource (optional): whether the current user is allowed to update the source element
       (e.g. by publishing a draft or reverting the element to a prior revision)
+    - canDuplicateSource: whether the current user is allowed to duplicate the source element
+    - canAddAnother: whether the current user is allowed to create another source element after saving the current one
     - canDeleteSource: whether the current user is allowed to delete the source element
     - redirectUrl: the URL that the user should be redirected to after saving the source element
-    - saveAnotherRedirectUrl: the URL that the user should be redirected to after opting to save and add another
+    - addAnotherRedirectUrl: the URL that the user should be redirected to after opting to save and add another
     - saveSourceAction: the controller action that should be used to save the source element
     - duplicateSourceAction: the controller action that should be used to duplicate the source element
     - deleteSourceAction: the controller action that should be used to delete the source element
@@ -36,14 +38,20 @@
         url: element.uri == '__home__' ? '' : element.uri
     }]|merge(previewTargets) %}
 {% endif %}
-{% set enablePreview = (isDraft or isRevision) and previewTargets and not craft.app.request.isMobileBrowser(true) %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = isDraft and not isUnsavedDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
+{% set canDuplicateSource = canDuplicateSource ?? false %}
+{% set canAddAnother = canAddAnother ?? false %}
 {% set canDeleteSource = canDeleteSource ?? false %}
-{% set redirectUrl = redirectUrl is defined ? redirectUrl : element.cpEditUrl %}
+
+{% set redirectUrl = redirectUrl ?? element.cpEditUrl %}
+{% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
+
 {% set saveSourceAction = saveSourceAction ?? null %}
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
+{% set deleteSourceAction = deleteSourceAction ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
 
 {% if not isRevision %}
@@ -54,8 +62,6 @@
     {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
 {% elseif isRevision %}
     {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
-{% else %}
-    {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
 {% endif %}
 
 {# If this is an unsaved draft, then we should only show status toggles if the
@@ -95,17 +101,18 @@
         {% if previewTargets or actionButton %}
             <div class="spacer"></div>
         {% endif %}
-        {% set draftRedirectUrl =  url(element.cpEditUrl, {draftId: '__DRAFT_ID__'})|replace('__DRAFT_ID__', '{draftId}') %}
-        {% if canUpdateSource and saveSourceAction %}
-            <input type="hidden" name="action" value="{{ saveSourceAction }}">
-            {{ redirectInput(redirectUrl) }}
-            <input type="button" id="save-draft-btn" class="btn secondary formsubmit" value="{{ 'Save as a Draft'|t('app') }}"
-                   data-action="{{ saveDraftAction }}" data-redirect="{{ draftRedirectUrl|hash }}">
-        {% else %}
-            <input type="hidden" name="action" value="{{ saveDraftAction }}">
-            {{ redirectInput(draftRedirectUrl) }}
-            <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
-        {% endif %}
+        {% set draftRedirectUrl =  url(element.cpEditUrl, {draftId: '{draftId}'}) %}
+        <div id="save-draft-btn-container">
+            {% if canUpdateSource and saveSourceAction %}
+                <input type="hidden" name="action" value="{{ saveSourceAction }}">
+                {{ redirectInput(redirectUrl) }}
+                <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+            {% else %}
+                <input type="hidden" name="action" value="{{ saveDraftAction }}">
+                {{ redirectInput(draftRedirectUrl) }}
+                <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+            {% endif %}
+        </div>
     {% elseif isDraft %}
         {{ redirectInput(element.cpEditUrl) }}
     {% endif %}
@@ -119,8 +126,8 @@
     {% if isUnsavedDraft or not (isDraft or isRevision) %}
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
-            <div class="btngroup submit">
-                <input type="submit" id="apply-btn" class="btn submit" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
+            <div id="save-btn-container" class="btngroup submit">
+                <input type="submit" class="btn submit" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
                 <div class="btn submit menubtn"></div>
                 <div class="menu" data-align="right">
                     <ul>
@@ -131,14 +138,14 @@
                             </a>
                         </li>
                         {% if canUpdateSource %}
-                            {% if saveAnotherRedirectUrl is defined %}
+                            {% if canAddAnother and addAnotherRedirectUrl %}
                                 <li>
-                                    <a class="formsubmit" data-redirect="{{ saveAnotherRedirectUrl|hash }}">
+                                    <a class="formsubmit" data-redirect="{{ addAnotherRedirectUrl|hash }}">
                                         {{ "Save and add another"|t('app') }}
                                     </a>
                                 </li>
                             {% endif %}
-                            {% if duplicateSourceAction %}
+                            {% if canDuplicateSource and duplicateSourceAction %}
                                 <li>
                                     <a class="formsubmit" data-action="{{ duplicateSourceAction }}" data-redirect="{{ '{cpEditUrl}'|hash }}">
                                         {{ "Save as a new {type}"|t('app', { type: element.displayName()|lower }) }}
@@ -147,7 +154,7 @@
                             {% endif %}
                         {% endif %}
                     </ul>
-                    {% if canDeleteSource and deleteSourceAction is defined %}
+                    {% if canDeleteSource and deleteSourceAction %}
                         <hr>
                         <ul>
                             <li>
@@ -163,8 +170,8 @@
             </div>
         {% endif %}
     {% elseif isDraft %}
-        {% if canUpdateSource %}
-            <input type="submit" id="apply-btn" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
+        {% if canUpdateSource and saveSourceAction %}
+            <input type="submit" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
         {% endif %}
     {% elseif isRevision %}
         {% if canUpdateSource and revertSourceAction %}
@@ -253,6 +260,7 @@
 
 {% set settings = {
     elementType: className(element),
+    elementTypeDisplayName: element.displayName(),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
     isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),

@@ -18,6 +18,7 @@
     currentUser.can('publishEntries'~permissionSuffix) and
     (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 ) %}
+{% set canDuplicateSource = canUpdateSource and not isSingle %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
 
 {% if not isSingle and canUpdateSource %}
@@ -28,7 +29,9 @@
     {% if section.type == 'structure' %}
         {% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
     {% endif %}
-    {% set saveAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
+    {% set canDuplicateSource = true %}
+    {% set canAddAnother = true %}
+    {% set addAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
 {% endif %}
 
 

@@ -87,7 +87,7 @@ class UrlHelper
 
         // Append to the base URL and return
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . urldecode(http_build_query($params));
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -113,7 +113,7 @@ class UrlHelper
 
         // Rebuild
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . urldecode(http_build_query($params));
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -638,7 +638,7 @@ class UrlHelper
         }
 
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . urldecode(http_build_query($params));
         }
 
         if ($fragment !== null) {
