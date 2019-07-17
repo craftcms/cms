@@ -21,5 +21,6 @@ class InterceptTokenRouteEvent extends Event
     // =========================================================================
 
     public $useTokenRoute = true;
+    public $useReturnedRoute = false;
     public $route = null;
 }

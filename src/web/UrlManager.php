@@ -53,6 +53,13 @@ class UrlManager extends \yii\web\UrlManager
      * @event InterceptTokenRouteEvent The event that is triggered when a routing
      * token is present in the request query params
      *
+     * The current token route is passed, in case useful for decisioning.
+     * - if no setting is made, the tokenRoute will continue to be used
+     * - If $e->useTokenRoute is set false and $e->useReturnRoute remains false,
+     *   normal rules routing will be used. This is the primary intended case.
+     * - If $e->useTokenRoute is set false and $e->useReturnRoute is set true,
+     *   then $e->route can be set to a substitute route, which will be used.
+     *
      * ---
      * ```php
      * use craft\events\InterceptTokenRouteEvent;
@@ -60,7 +67,8 @@ class UrlManager extends \yii\web\UrlManager
      * use yii\base\Event;
      * Event::on(UrlManager::class, UrlManager::EVENT_INTERCEPT_TOKEN_ROUTE, function(InterceptTokenRouteEvent $e) {
      *     $e->useTokenRoute => true/false; // false if token's route should not be used
-     *     $e->route = $alternateRoute; // regular rule routing will be used if you don't set this, leaving it null
+     *     $e->useReturnedRoute => true/false; // true if returned route should be used
+     *     $e->route = $alternateRoute; // in: tokenRoute for decisioning, out: new route if useReturnedRoute true
      * });
      * ```
      */
@@ -350,13 +358,15 @@ class UrlManager extends \yii\web\UrlManager
 
             $event = new InterceptTokenRouteEvent([
                 'useTokenRoute' => true,
-                'route' => null
+                'useReturnedRoute' => false,
+                'route' => $tokenRoute
             ]);
             $this->trigger(self::EVENT_INTERCEPT_TOKEN_ROUTE, $event);
 
+            // if neither are true, normal rules routing in following code will be used
             if ($event->useTokenRoute) {
                 return $tokenRoute;
-            } else if ($event->route !== null) {
+            } else if ($event->useReturnedRoute) {
                 return $event->route;
             }
         }
