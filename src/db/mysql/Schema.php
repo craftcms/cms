@@ -154,7 +154,8 @@ class Schema extends \yii\db\mysql\Schema
             ' --no-autocommit' .
             ' --routines' .
             ' --set-charset' .
-            ' --triggers';
+            ' --triggers' . 
+            '--column-statistics=0';
 
         $ignoreTableArgs = [];
         foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
