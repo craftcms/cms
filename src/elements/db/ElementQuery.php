@@ -302,6 +302,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $with;
 
     /**
+     * @var bool|null Whether one element should be eager-loaded instead of an array.
+     * @used-by withOne()
+     */
+    public $withOne;
+
+    /**
      * @inheritdoc
      * @used-by orderBy()
      * @used-by addOrderBy()
@@ -1073,6 +1079,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $withOne
+     */
+    public function withOne(bool $value = true)
+    {
+        $this->withOne = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $withStructure
      */
     public function withStructure(bool $value = true)
@@ -1419,7 +1435,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with, $this->withOne);
             }
             return $cachedResult;
         }
@@ -2600,7 +2616,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with, $this->withOne);
             }
         }
 
