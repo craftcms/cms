@@ -38,7 +38,7 @@
         url: element.uri == '__home__' ? '' : element.uri
     }]|merge(previewTargets) %}
 {% endif %}
-{% set enablePreview = (isDraft or isRevision) and previewTargets and not craft.app.request.isMobileBrowser(true) %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = isDraft and not isUnsavedDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
@@ -102,16 +102,17 @@
             <div class="spacer"></div>
         {% endif %}
         {% set draftRedirectUrl =  url(element.cpEditUrl, {draftId: '{draftId}'}) %}
-        {% if canUpdateSource and saveSourceAction %}
-            <input type="hidden" name="action" value="{{ saveSourceAction }}">
-            {{ redirectInput(redirectUrl) }}
-            <input type="button" id="save-draft-btn" class="btn secondary formsubmit" value="{{ 'Save as a Draft'|t('app') }}"
-                   data-action="{{ saveDraftAction }}" data-redirect="{{ draftRedirectUrl|hash }}">
-        {% else %}
-            <input type="hidden" name="action" value="{{ saveDraftAction }}">
-            {{ redirectInput(draftRedirectUrl) }}
-            <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
-        {% endif %}
+        <div id="save-draft-btn-container">
+            {% if canUpdateSource and saveSourceAction %}
+                <input type="hidden" name="action" value="{{ saveSourceAction }}">
+                {{ redirectInput(redirectUrl) }}
+                <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+            {% else %}
+                <input type="hidden" name="action" value="{{ saveDraftAction }}">
+                {{ redirectInput(draftRedirectUrl) }}
+                <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+            {% endif %}
+        </div>
     {% elseif isDraft %}
         {{ redirectInput(element.cpEditUrl) }}
     {% endif %}
@@ -125,8 +126,8 @@
     {% if isUnsavedDraft or not (isDraft or isRevision) %}
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
-            <div class="btngroup submit">
-                <input type="submit" id="apply-btn" class="btn submit" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
+            <div id="save-btn-container" class="btngroup submit">
+                <input type="submit" class="btn submit" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
                 <div class="btn submit menubtn"></div>
                 <div class="menu" data-align="right">
                     <ul>
@@ -169,8 +170,8 @@
             </div>
         {% endif %}
     {% elseif isDraft %}
-        {% if canUpdateSource %}
-            <input type="submit" id="apply-btn" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
+        {% if canUpdateSource and saveSourceAction %}
+            <input type="submit" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
         {% endif %}
     {% elseif isRevision %}
         {% if canUpdateSource and revertSourceAction %}
@@ -259,6 +260,7 @@
 
 {% set settings = {
     elementType: className(element),
+    elementTypeDisplayName: element.displayName(),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
     isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),

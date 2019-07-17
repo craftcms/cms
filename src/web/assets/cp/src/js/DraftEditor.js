@@ -21,6 +21,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         saving: false,
         checkFormAfterUpdate: false,
 
+        duplicatedElements: null,
         errors: null,
 
         preview: null,
@@ -28,6 +29,8 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         init: function(settings) {
             this.setSettings(settings, Craft.DraftEditor.defaults);
+
+            this.duplicatedElements = {};
 
             this.$revisionBtn = $('#revision-btn');
             this.$revisionLabel = $('#revision-label');
@@ -50,20 +53,31 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             }
 
-            // If this isn't a draft, then we're done here
-            if (!this.settings.draftId) {
+            // If this is a revision, we're done here
+            if (this.settings.revisionId) {
                 return;
             }
-
-            // Create the edit draft button
-            this.createEditMetaBtn();
 
             // Store the initial form value
             this.lastSerializedValue = this.serializeForm();
             Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
 
             // Override the serializer to use our own
-            Craft.cp.$primaryForm.data('serializer', $.proxy(this, 'serializeForm'));
+            Craft.cp.$primaryForm.data('serializer', this.serializeForm.bind(this));
+
+            if (this.settings.draftId) {
+                this.initForDraft();
+            } else {
+                // If the "Save as a Draft" button is a secondary button, then add special handling for it
+                this.addListener($('#save-draft-btn.secondary'), 'click', function() {
+                    this.saveDraft(this.serializeForm());
+                }.bind(this));
+            }
+        },
+
+        initForDraft: function() {
+            // Create the edit draft button
+            this.createEditMetaBtn();
 
             this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
@@ -72,7 +86,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 clearTimeout(this.timeout);
                 // If they are typing, wait half a second before checking the form
                 if (Craft.inArray(ev.type, ['keypress', 'keyup', 'change'])) {
-                    this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+                    this.timeout = setTimeout(this.checkForm.bind(this), 500);
                 } else {
                     this.checkForm();
                 }
@@ -213,7 +227,26 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         openPreview: function() {
-            this.getPreview().open();
+            return new Promise(function(resolve, reject) {
+                this.ensureIsDraftOrRevision()
+                    .then(function() {
+                        this.getPreview().open();
+                        resolve();
+                    }.bind(this))
+                    .catch(reject);
+            }.bind(this))
+        },
+
+        ensureIsDraftOrRevision: function() {
+            return new Promise(function(resolve, reject) {
+                if (!this.settings.draftId && !this.settings.revisionid) {
+                    this.saveDraft(this.serializeForm())
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    resolve();
+                }
+            }.bind(this));
         },
 
         serializeForm: function() {
@@ -223,6 +256,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                 // Replace the temp input with the preview form data
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
+
+            // Remove action and redirect params
+            data = data.replace(/&action=[^&]*/, '');
+            data = data.replace(/&redirect=[^&]*/, '');
 
             return data;
         },
@@ -239,7 +276,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Has anything changed?
             var data = this.serializeForm();
             if (force || (data !== this.lastSerializedValue)) {
-                this.lastSerializedValue = data;
                 this.saveDraft(data);
             }
         },
@@ -249,76 +285,167 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         saveDraft: function(data) {
-            if (this.saving) {
-                this.checkFormAfterUpdate = true;
-                return;
-            }
+            return new Promise(function(resolve, reject) {
+                this.lastSerializedValue = data;
 
-            this.saving = true;
-            var $spinners = this.spinners().removeClass('hidden');
-            var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
-            if (this.$saveMetaBtn) {
-                this.$saveMetaBtn.addClass('active');
-            }
-            this.errors = null;
-
-            var url = Craft.getActionUrl(this.settings.saveDraftAction);
-            var i;
-
-            Craft.postActionRequest(url, this.prepareData(data), $.proxy(function(response, textStatus) {
-                $spinners.addClass('hidden');
-                if (this.$saveMetaBtn) {
-                    this.$saveMetaBtn.removeClass('active');
-                }
-                this.saving = false;
-
-                if (textStatus !== 'success' || response.errors) {
-                    this.errors = (response ? response.errors : null) || [];
-                    $statusIcons
-                        .removeClass('hidden checkmark-icon')
-                        .addClass('alert-icon')
-                        .attr('title', Craft.t('app', 'The draft could not be saved.'));
+                if (this.saving) {
+                    this.checkFormAfterUpdate = true;
                     return;
                 }
 
-                if (response.title) {
-                    $('#header h1').text(response.title);
+                this.saving = true;
+                var $spinners = this.spinners().removeClass('hidden');
+                var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
+                if (this.$saveMetaBtn) {
+                    this.$saveMetaBtn.addClass('active');
                 }
+                this.errors = null;
 
-                if (response.docTitle) {
-                    document.title = response.docTitle;
-                }
+                var url = Craft.getActionUrl(this.settings.saveDraftAction);
+                var i;
 
-                this.$revisionLabel.text(response.draftName);
+                Craft.postActionRequest(url, this.prepareData(data), function(response, textStatus) {
+                    $spinners.addClass('hidden');
+                    if (this.$saveMetaBtn) {
+                        this.$saveMetaBtn.removeClass('active');
+                    }
+                    this.saving = false;
 
-                this.settings.draftName = response.draftName;
-                this.settings.draftNotes = response.draftNotes;
+                    if (textStatus !== 'success' || response.errors) {
+                        this.errors = (response ? response.errors : null) || [];
+                        $statusIcons
+                            .removeClass('hidden checkmark-icon')
+                            .addClass('alert-icon')
+                            .attr('title', Craft.t('app', 'The draft could not be saved.'));
+                        reject();
+                        return;
+                    }
 
-                var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
+                    if (response.title) {
+                        $('#header h1').text(response.title);
+                    }
 
-                if (revisionMenu) {
-                    revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                    revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
-                        creator: response.creator
-                    }));
-                }
+                    if (response.docTitle) {
+                        document.title = response.docTitle;
+                    }
 
-                this.afterUpdate(data);
+                    this.$revisionLabel.text(response.draftName);
 
-                if (this.$nameTextInput) {
-                    this.checkMetaValues();
-                }
-            }, this));
+                    this.settings.draftName = response.draftName;
+                    this.settings.draftNotes = response.draftNotes;
+
+                    var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
+
+                    // Did we just create a draft?
+                    var draftCreated = !this.settings.draftId;
+                    if (draftCreated) {
+                        // Update the document location HREF
+                        var newHref;
+                        var anchorPos = document.location.href.search('#');
+                        if (anchorPos !== -1) {
+                            newHref = document.location.href.substr(0, anchorPos);
+                        } else {
+                            newHref = document.location.href;
+                        }
+                        newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
+                        if (anchorPos !== -1) {
+                            newHref += document.location.href.substr(anchorPos);
+                        }
+                        history.replaceState({}, '', newHref);
+
+                        // Replace the Save button with an Update button, if there is one.
+                        // Otherwise, the user must not have permission to update the source element
+                        var $saveBtnContainer = $('#save-btn-container');
+                        if ($saveBtnContainer.length) {
+                            $saveBtnContainer.replaceWith($('<input/>', {
+                                type: 'submit',
+                                'class': 'btn submit',
+                                value: Craft.t('app', 'Update {type}', {type: this.settings.elementTypeDisplayName})
+                            }));
+                        }
+
+                        // Remove the "Save as a Draft" button
+                        var $saveDraftBtn = $('#save-draft-btn-container');
+                        $saveDraftBtn.add($saveDraftBtn.prev('.spacer')).remove();
+
+                        // Update the editor settings
+                        this.settings.draftId = response.draftId;
+                        this.settings.isLive = false;
+                        this.settings.canDeleteDraft = true;
+                        this.previewToken = null;
+                        this.initForDraft();
+
+                        // Add the draft to the revision menu
+                        if (revisionMenu) {
+                            revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
+                            var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
+                            if (!$draftsUl.length) {
+                                var $draftHeading = $('<h6/>', {
+                                    text: Craft.t('app', 'Drafts'),
+                                }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
+                                $draftsUl = $('<ul/>', {
+                                    'class': 'padded revision-group-drafts',
+                                }).insertAfter($draftHeading);
+                            }
+                            var $draftLi = $('<li/>').appendTo($draftsUl);
+                            var $draftA = $('<a/>', {
+                                'class': 'sel',
+                                html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
+                            }).appendTo($draftLi);
+                            revisionMenu.addOptions($draftA);
+                            revisionMenu.selectOption($draftA);
+
+                            // Update the site URLs
+                            var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
+                            for (var i = 0; i < $siteOptions.length; i++) {
+                                var $siteOption = $siteOptions.eq(i);
+                                $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
+                            }
+                        }
+                    }
+
+                    if (revisionMenu) {
+                        revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
+                        revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
+                            creator: response.creator
+                        }));
+                    }
+
+                    this.afterUpdate(data);
+
+                    if (draftCreated) {
+                        this.trigger('createDraft');
+                    }
+
+                    if (this.$nameTextInput) {
+                        this.checkMetaValues();
+                    }
+
+                    $.extend(this.duplicatedElements, response.duplicatedElements);
+
+                    resolve();
+                }.bind(this));
+            }.bind(this));
         },
 
         prepareData: function(data) {
-            // Add the draft info
-            data += '&draftId=' + this.settings.draftId
-                + '&draftName=' + encodeURIComponent(this.settings.draftName)
-                + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
+            // Swap out element IDs with their duplicated ones
+            for (var oldId in this.duplicatedElements) {
+                if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                    data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
+                        '][' + this.duplicatedElements[oldId] + ']');
+                }
+            }
 
-            if (this.settings.propagateAll) {
-                data += '&propagateAll=1';
+            // Add the draft info
+            if (this.settings.draftId) {
+                data += '&draftId=' + this.settings.draftId
+                    + '&draftName=' + encodeURIComponent(this.settings.draftName)
+                    + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
+
+                if (this.settings.propagateAll) {
+                    data += '&propagateAll=1';
+                }
             }
 
             return data;
@@ -382,7 +509,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.$saveMetaBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Save') + '"/>').appendTo($footer);
 
             this.metaHud = new Garnish.HUD(this.$editMetaBtn, $hudBody, {
-                onSubmit: $.proxy(this, 'saveMeta')
+                onSubmit: this.saveMeta.bind(this)
             });
 
             new Garnish.NiceText(this.$notesTextInput);
@@ -392,9 +519,9 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.addListener(this.$nameTextInput, 'textchange', 'checkMetaValues');
             this.addListener(this.$notesTextInput, 'textchange', 'checkMetaValues');
 
-            this.metaHud.on('show', $.proxy(this, 'onMetaHudShow'));
-            this.metaHud.on('hide', $.proxy(this, 'onMetaHudHide'));
-            this.metaHud.on('escape', $.proxy(this, 'onMetaHudEscape'));
+            this.metaHud.on('show', this.onMetaHudShow.bind(this));
+            this.metaHud.on('hide', this.onMetaHudHide.bind(this));
+            this.metaHud.on('escape', this.onMetaHudEscape.bind(this));
 
             if ($deleteLink) {
                 this.addListener($deleteLink, 'click', 'deleteDraft');
@@ -458,15 +585,21 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, function(response, textStatus) {
                 if (textStatus === 'success') {
                     window.location.href = this.settings.cpEditUrl;
                 }
-            }, this))
+            }.bind(this))
         },
 
         handleFormSubmit: function(ev) {
             ev.preventDefault();
+
+            // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
+            // then ignore the submission
+            if (!ev.customTrigger && this.settings.draftId && !this.settings.canUpdateSource) {
+                return;
+            }
 
             // Duplicate the form with normalized data
             var $form = $('<form/>', {
