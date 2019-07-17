@@ -1,4 +1,4 @@
-/*!   - 2019-07-16 */
+/*!   - 2019-07-17 */
 (function($){
 
 /** global: Craft */
@@ -13059,7 +13059,24 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         openPreview: function() {
-            this.getPreview().open();
+            return new Promise(function(resolve, reject) {
+                this.ensureIsDraftOrRevision()
+                    .then(function() {
+                        this.getPreview().open();
+                        resolve();
+                    }.bind(this))
+                    .catch(reject);
+            }.bind(this))
+        },
+
+        ensureIsDraftOrRevision: function() {
+            return new Promise(function(resolve, reject) {
+                if (!this.settings.draftId && !this.settings.revisionid) {
+                    reject();
+                } else {
+                    resolve();
+                }
+            }.bind(this));
         },
 
         serializeForm: function() {
@@ -13085,7 +13102,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Has anything changed?
             var data = this.serializeForm();
             if (force || (data !== this.lastSerializedValue)) {
-                this.lastSerializedValue = data;
                 this.saveDraft(data);
             }
         },
@@ -13095,66 +13111,73 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         saveDraft: function(data) {
-            if (this.saving) {
-                this.checkFormAfterUpdate = true;
-                return;
-            }
+            return new Promise(function(resolve, reject) {
+                this.lastSerializedValue = data;
 
-            this.saving = true;
-            var $spinners = this.spinners().removeClass('hidden');
-            var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
-            if (this.$saveMetaBtn) {
-                this.$saveMetaBtn.addClass('active');
-            }
-            this.errors = null;
-
-            var url = Craft.getActionUrl(this.settings.saveDraftAction);
-            var i;
-
-            Craft.postActionRequest(url, this.prepareData(data), $.proxy(function(response, textStatus) {
-                $spinners.addClass('hidden');
-                if (this.$saveMetaBtn) {
-                    this.$saveMetaBtn.removeClass('active');
-                }
-                this.saving = false;
-
-                if (textStatus !== 'success' || response.errors) {
-                    this.errors = (response ? response.errors : null) || [];
-                    $statusIcons
-                        .removeClass('hidden checkmark-icon')
-                        .addClass('alert-icon')
-                        .attr('title', Craft.t('app', 'The draft could not be saved.'));
+                if (this.saving) {
+                    this.checkFormAfterUpdate = true;
                     return;
                 }
 
-                if (response.title) {
-                    $('#header h1').text(response.title);
+                this.saving = true;
+                var $spinners = this.spinners().removeClass('hidden');
+                var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
+                if (this.$saveMetaBtn) {
+                    this.$saveMetaBtn.addClass('active');
                 }
+                this.errors = null;
 
-                if (response.docTitle) {
-                    document.title = response.docTitle;
-                }
+                var url = Craft.getActionUrl(this.settings.saveDraftAction);
+                var i;
 
-                this.$revisionLabel.text(response.draftName);
+                Craft.postActionRequest(url, this.prepareData(data), $.proxy(function(response, textStatus) {
+                    $spinners.addClass('hidden');
+                    if (this.$saveMetaBtn) {
+                        this.$saveMetaBtn.removeClass('active');
+                    }
+                    this.saving = false;
 
-                this.settings.draftName = response.draftName;
-                this.settings.draftNotes = response.draftNotes;
+                    if (textStatus !== 'success' || response.errors) {
+                        this.errors = (response ? response.errors : null) || [];
+                        $statusIcons
+                            .removeClass('hidden checkmark-icon')
+                            .addClass('alert-icon')
+                            .attr('title', Craft.t('app', 'The draft could not be saved.'));
+                        reject();
+                        return;
+                    }
 
-                var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
+                    if (response.title) {
+                        $('#header h1').text(response.title);
+                    }
 
-                if (revisionMenu) {
-                    revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                    revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
-                        creator: response.creator
-                    }));
-                }
+                    if (response.docTitle) {
+                        document.title = response.docTitle;
+                    }
 
-                this.afterUpdate(data);
+                    this.$revisionLabel.text(response.draftName);
 
-                if (this.$nameTextInput) {
-                    this.checkMetaValues();
-                }
-            }, this));
+                    this.settings.draftName = response.draftName;
+                    this.settings.draftNotes = response.draftNotes;
+
+                    var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
+
+                    if (revisionMenu) {
+                        revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
+                        revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
+                            creator: response.creator
+                        }));
+                    }
+
+                    this.afterUpdate(data);
+
+                    if (this.$nameTextInput) {
+                        this.checkMetaValues();
+                    }
+
+                    resolve();
+                }, this));
+            }.bind(this));
         },
 
         prepareData: function(data) {
