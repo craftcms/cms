@@ -8,9 +8,11 @@
       If the current user created the draft, then it will be deletable regardless.
     - canUpdateSource (optional): whether the current user is allowed to update the source element
       (e.g. by publishing a draft or reverting the element to a prior revision)
+    - canDuplicateSource: whether the current user is allowed to duplicate the source element
+    - canAddAnother: whether the current user is allowed to create another source element after saving the current one
     - canDeleteSource: whether the current user is allowed to delete the source element
     - redirectUrl: the URL that the user should be redirected to after saving the source element
-    - saveAnotherRedirectUrl: the URL that the user should be redirected to after opting to save and add another
+    - addAnotherRedirectUrl: the URL that the user should be redirected to after opting to save and add another
     - saveSourceAction: the controller action that should be used to save the source element
     - duplicateSourceAction: the controller action that should be used to duplicate the source element
     - deleteSourceAction: the controller action that should be used to delete the source element
@@ -40,10 +42,16 @@
 
 {% set canDeleteDraft = isDraft and not isUnsavedDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
+{% set canDuplicateSource = canDuplicateSource ?? false %}
+{% set canAddAnother = canAddAnother ?? false %}
 {% set canDeleteSource = canDeleteSource ?? false %}
-{% set redirectUrl = redirectUrl is defined ? redirectUrl : element.cpEditUrl %}
+
+{% set redirectUrl = redirectUrl ?? element.cpEditUrl %}
+{% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
+
 {% set saveSourceAction = saveSourceAction ?? null %}
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
+{% set deleteSourceAction = deleteSourceAction ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
 
 {% if not isRevision %}
@@ -131,14 +139,14 @@
                             </a>
                         </li>
                         {% if canUpdateSource %}
-                            {% if saveAnotherRedirectUrl is defined %}
+                            {% if canAddAnother and addAnotherRedirectUrl %}
                                 <li>
-                                    <a class="formsubmit" data-redirect="{{ saveAnotherRedirectUrl|hash }}">
+                                    <a class="formsubmit" data-redirect="{{ addAnotherRedirectUrl|hash }}">
                                         {{ "Save and add another"|t('app') }}
                                     </a>
                                 </li>
                             {% endif %}
-                            {% if duplicateSourceAction %}
+                            {% if canDuplicateSource and duplicateSourceAction %}
                                 <li>
                                     <a class="formsubmit" data-action="{{ duplicateSourceAction }}" data-redirect="{{ '{cpEditUrl}'|hash }}">
                                         {{ "Save as a new {type}"|t('app', { type: element.displayName()|lower }) }}
@@ -147,7 +155,7 @@
                             {% endif %}
                         {% endif %}
                     </ul>
-                    {% if canDeleteSource and deleteSourceAction is defined %}
+                    {% if canDeleteSource and deleteSourceAction %}
                         <hr>
                         <ul>
                             <li>
