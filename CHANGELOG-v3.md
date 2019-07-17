@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.4.1 - 2019-07-17
+
+### Fixed
+- Fixed an error that occurred when attempting to share a disabled entry. ([#4596](https://github.com/craftcms/cms/issues/4596))
+- Fixed a bug where new Email and URL cells in Table fields weren’t getting the correct input type. ([#4595](https://github.com/craftcms/cms/issues/4595))
+
 ## 3.2.4 - 2019-07-17
 
 ### Changed

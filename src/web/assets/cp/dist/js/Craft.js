@@ -13770,7 +13770,7 @@ Craft.EditableTable = Garnish.Base.extend(
         },
     },
     {
-        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time'],
+        textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -13871,6 +13871,16 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createTimeInput({
                                 name: name,
                                 value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'email':
+                        case 'url':
+                            Craft.ui.createTextInput({
+                                name: name,
+                                value: value,
+                                type: col.type,
+                                placeholder: col.placeholder || null,
                             }).appendTo($cell);
                             break;
 
