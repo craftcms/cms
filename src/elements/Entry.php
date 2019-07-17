@@ -958,13 +958,13 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements, bool $withOne = false)
     {
         if ($handle === 'author') {
             $author = $elements[0] ?? null;
             $this->setAuthor($author);
         } else {
-            parent::setEagerLoadedElements($handle, $elements);
+            parent::setEagerLoadedElements($handle, $elements, $withOne);
         }
     }
 
