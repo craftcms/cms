@@ -2912,7 +2912,7 @@ ul.tree,
 .modal-shade,
 .hud-shade {
   z-index: 100;
-  position: fixed;
+  position: static;
   top: 0;
   left: 0;
   width: 100%;

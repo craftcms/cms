@@ -1072,7 +1072,7 @@ body.rtl .meta > .field > .input .select select { padding: 8px 0 8px 12px; }
 .pane .header, .modal .body .header { margin: -24px -24px 24px; }
 .pane .footer, .modal .body .footer { margin: 24px -24px -24px; }
 
-.modal-shade, .hud-shade { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+.modal-shade, .hud-shade { z-index: 100; position: static; top: 0; left: 0; width: 100%; height: 100%; display: none; }
 
 .modal-shade:not(.dark) { background: rgba(255, 255, 255, 0.75) !important; }
 .modal-shade.dark { background: rgba(0, 0, 0, 0.75) !important; }
