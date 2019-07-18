@@ -465,7 +465,9 @@ class EntryRevisionsController extends BaseEntriesController
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
         // Default to a temp slug to avoid slug validation errors
-        $draft->slug = $request->getBodyParam('slug') ?: ElementHelper::tempSlug();
+        $draft->slug = $request->getBodyParam('slug') ?: (ElementHelper::isTempSlug($draft->slug)
+            ? $draft->slug
+            : ElementHelper::tempSlug());
         if (($postDate = $request->getBodyParam('postDate')) !== null) {
             $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
