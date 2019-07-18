@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Elements::getPlaceholderElements()`.
+
 ### Changed
 - If an invalid entry draft or revision edit URL is accessed, but the source entry does exist, Craft now redirects the browser to the source entry’s edit page. ([#4574](https://github.com/craftcms/cms/issues/4574))
+- Preview requests now include the previewed entry in element queries even if the `status`, `drafts`, or `revisions` parameters are set to exclude it. ([#4581](https://github.com/craftcms/cms/issues/4581))
 
 ## 3.2.4.1 - 2019-07-17
 

@@ -1263,6 +1263,27 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->orderBy = $this->normalizeOrderBy($this->orderBy);
         }
 
+        // Get the placeholder element IDs we should be aware of
+        // ---------------------------------------------------------------------
+
+        $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+        if (!empty($placeholderElements)) {
+            // Filter down to just the elements of this query's element type, and site(s)
+            $siteIds = $this->siteId !== '*' ? array_flip((array)$this->siteId) : null;
+            $placeholderElements = ArrayHelper::where($placeholderElements, function(ElementInterface $element) use ($siteIds) {
+                /** @var Element $element */
+                return (
+                    $element instanceof $this->elementType &&
+                    ($siteIds === null || isset($siteIds[$element->siteId]))
+                );
+            });
+        }
+        if (!empty($placeholderElements)) {
+            $placeholderCondition = ['elements.id' => ArrayHelper::getColumn($placeholderElements, 'id')];
+        } else {
+            $placeholderCondition = null;
+        }
+
         // Build the query
         // ---------------------------------------------------------------------
 
@@ -1322,7 +1343,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
             $this->subQuery->andWhere(['elements.archived' => false]);
-            $this->_applyStatusParam($class);
+            $this->_applyStatusParam($class, $placeholderCondition);
         }
 
         // todo: remove schema version condition after next beakpoint
@@ -1361,7 +1382,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
-        $this->_applyRevisionParams();
+        $this->_applyRevisionParams($placeholderCondition);
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
@@ -1907,9 +1928,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the 'status' param to the query being prepared.
      *
      * @param string $class
+     * @param mixed $placeholderCondition
      * @throws QueryAbortedException
      */
-    private function _applyStatusParam(string $class)
+    private function _applyStatusParam(string $class, $placeholderCondition)
     {
         /** @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
@@ -1936,7 +1958,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $this->subQuery->andWhere($condition);
+        if ($placeholderCondition !== null) {
+            $this->subQuery->andWhere(['or', $condition, $placeholderCondition]);
+        } else {
+            $this->subQuery->andWhere($condition);
+        }
     }
 
     /**
@@ -2174,8 +2200,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies draft and revision params to the query being prepared.
+     *
+     * @param mixed $placeholderCondition
      */
-    private function _applyRevisionParams()
+    private function _applyRevisionParams($placeholderCondition)
     {
         // todo: remove schema version condition after next beakpoint
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
@@ -2206,6 +2234,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
+        } else if ($placeholderCondition !== null) {
+            $this->subQuery->andWhere(['or', ['elements.draftId' => null], $placeholderCondition]);
         } else {
             $this->subQuery->andWhere(['elements.draftId' => null]);
         }
@@ -2233,6 +2263,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->revisionCreator) {
                 $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
             }
+        } else if ($placeholderCondition !== null) {
+            $this->subQuery->andWhere(['or', ['elements.revisionId' => null], $placeholderCondition]);
         } else {
             $this->subQuery->andWhere(['elements.revisionId' => null]);
         }
