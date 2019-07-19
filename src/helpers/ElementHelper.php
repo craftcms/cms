@@ -65,12 +65,20 @@ class ElementHelper
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
 
-        // Convert to kebab case
-        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $lower = !Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
-        $str = StringHelper::toKebabCase($str, $glue, $lower, false);
+        // Remove inner-word punctuation
+        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $str);
 
-        return $str;
+        // Make it lowercase
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->allowUppercaseInSlug) {
+            $str = mb_strtolower($str);
+        }
+
+        // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
+        // Reference: http://www.regular-expressions.info/unicode.html
+        $words = array_filter(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/', $str));
+
+        return implode($generalConfig->slugWordSeparator, $words);
     }
 
     /**

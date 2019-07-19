@@ -1,5 +1,21 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.5 - 2019-07-19
+
+### Added
+- Added `craft\services\Elements::getPlaceholderElements()`.
+
+### Changed
+- If an invalid entry draft or revision edit URL is accessed, but the source entry does exist, Craft now redirects the browser to the source entry’s edit page. ([#4574](https://github.com/craftcms/cms/issues/4574))
+- Preview requests now include the previewed entry in element queries even if the `status`, `drafts`, or `revisions` parameters are set to exclude it. ([#4581](https://github.com/craftcms/cms/issues/4581))
+- Back-end slug generation now follows the same rules as JavaScript. ([#4607](https://github.com/craftcms/cms/issues/4607))
+- Unsaved entry drafts now get assigned a new ID when they are fully saved, so they are treated as new elements. ([#4589](https://github.com/craftcms/cms/issues/4589))
+
+### Fixed
+- Fixed a bug where each animated GIF frame would still be parsed when generating a thumbnail, even if the `transformGifs` setting was set to `false`. ([#4588](https://github.com/craftcms/cms/issues/4588))
+- Fixed some bugs with the “Save Entry” menu options, when editing an unsaved draft. ([#4614](https://github.com/craftcms/cms/issues/4614))
+- Fixed a bug where Craft could forget which site was being edited when updating an entry from a draft. ([#4615](https://github.com/craftcms/cms/issues/4615))
+
 ## 3.2.4.1 - 2019-07-17
 
 ### Fixed
@@ -206,7 +222,7 @@
 - Anonymous/offline/Control Panel access validation now takes place from `craft\web\Controller::beforeAction()` rather than `craft\web\Application::handleRequest()`, giving controllers a chance to do things like set CORS headers before a `ForbiddenHttpException` or `ServiceUnavailableHttpException` is thrown. ([#4008](https://github.com/craftcms/cms/issues/4008))
 - Controllers can now set `$allowAnonymous` to a combination of bitwise integers `self::ALLOW_ANONYMOUS_LIVE` and `self::ALLOW_ANONYMOUS_OFFLINE`, or an array of action ID/bitwise integer pairs, to define whether their actions should be accessible anonymously even when the system is offline.
 - Improved the error message when Project Config reaches the maximum deferred event count.
-- Craft now deletes expired template caches as part of its garbage collection routine.- Craft now deletes expired template caches as part of its garbage collection routine.
+- Craft now deletes expired template caches as part of its garbage collection routine.
 - Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 - `fieldValues` is now reserved field handle. ([#4453](https://github.com/craftcms/cms/issues/4453))
 - Improved the reliability of `craft\helpers\UrlHelper::rootRelativeUrl()` and `cpUrl()`.

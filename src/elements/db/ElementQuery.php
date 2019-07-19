@@ -398,6 +398,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @var mixed The placeholder condition for this query.
+     * @see _placeholderCondition()
+     */
+    private $_placeholderCondition;
+
+    /**
+     * @var mixed The [[siteId]] param used at the time the placeholder condition was generated.
+     * @see _placeholderCondition()
+     */
+    private $_placeholderSiteIds;
+
+    /**
      * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
@@ -1839,6 +1851,45 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     /**
+     * Combines the given condition with an alternative condition if there are any relevant placeholder elements.
+     *
+     * @param mixed $condition
+     * @return mixed
+     */
+    private function _placeholderCondition($condition)
+    {
+        if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
+            $placeholderSourceIds = [];
+            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            if (!empty($placeholderElements)) {
+                $siteIds = $this->siteId !== '*' ? array_flip((array)$this->siteId) : null;
+                foreach ($placeholderElements as $element) {
+                    /** @var Element $element */
+                    if (
+                        $element instanceof $this->elementType &&
+                        ($siteIds === null || isset($siteIds[$element->siteId]))
+                    ) {
+                        $placeholderSourceIds[] = $element->getSourceId();
+                    }
+                }
+            }
+
+            if (!empty($placeholderSourceIds)) {
+                $this->_placeholderCondition = ['elements.id' => $placeholderSourceIds];
+            } else {
+                $this->_placeholderCondition = false;
+            }
+            $this->_placeholderSiteIds = is_array($this->siteId) ? array_merge($this->siteId) : $this->siteId;
+        }
+
+        if ($this->_placeholderCondition === false) {
+            return $condition;
+        }
+
+        return ['or', $condition, $this->_placeholderCondition];
+    }
+
+    /**
      * Joins the content table into the query being prepared.
      *
      * @param string $class
@@ -1936,7 +1987,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $this->subQuery->andWhere($condition);
+        $this->subQuery->andWhere($this->_placeholderCondition($condition));
     }
 
     /**
@@ -2207,7 +2258,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
         } else {
-            $this->subQuery->andWhere(['elements.draftId' => null]);
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
 
         if ($this->revisions) {
@@ -2234,7 +2285,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
             }
         } else {
-            $this->subQuery->andWhere(['elements.revisionId' => null]);
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.revisionId' => null]));
         }
     }
 

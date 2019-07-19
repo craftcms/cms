@@ -72,8 +72,10 @@
     (not isUnsavedDraft or canUpdateSource) and
     (showStatusToggles ?? true) %}
 
-{% if not isDraft and not isRevision and canUpdateSource %}
-    {% set saveShortcutRedirect = element.cpEditUrl %}
+{% if not isDraft and not canUpdateSource %}
+    {% set saveShortcut = false %}
+{% elseif isUnsavedDraft or (not (isDraft or isRevision) and canUpdateSource) %}
+    {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
 {% set actionButton = block('actionButton')|trim %}
@@ -103,20 +105,13 @@
         {% if previewTargets or actionButton %}
             <div class="spacer"></div>
         {% endif %}
-        {% set draftRedirectUrl =  url(element.cpEditUrl, {draftId: '{draftId}'}) %}
         <div id="save-draft-btn-container">
             {% if canUpdateSource and saveSourceAction %}
-                <input type="hidden" name="action" value="{{ saveSourceAction }}">
-                {{ redirectInput(redirectUrl) }}
                 <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
             {% else %}
-                <input type="hidden" name="action" value="{{ saveDraftAction }}">
-                {{ redirectInput(draftRedirectUrl) }}
                 <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
             {% endif %}
         </div>
-    {% elseif isDraft %}
-        {{ redirectInput(element.cpEditUrl) }}
     {% endif %}
 {% endblock %}
 
@@ -134,7 +129,7 @@
                 <div class="menu" data-align="right">
                     <ul>
                         <li>
-                            <a class="formsubmit" data-redirect="{{ element.cpEditUrl|hash }}">
+                            <a class="formsubmit" data-redirect="{{ '{cpEditUrl}'|hash }}">
                                 {{ forms.optionShortcutLabel('S') }}
                                 {{ "Save and continue editing"|t('app') }}
                             </a>
@@ -147,7 +142,7 @@
                                     </a>
                                 </li>
                             {% endif %}
-                            {% if canDuplicateSource and duplicateSourceAction %}
+                            {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
                                 <li>
                                     <a class="formsubmit" data-action="{{ duplicateSourceAction }}" data-redirect="{{ '{cpEditUrl}'|hash }}">
                                         {{ "Save as a new {type}"|t('app', { type: element.displayName()|lower }) }}
@@ -156,7 +151,7 @@
                             {% endif %}
                         {% endif %}
                     </ul>
-                    {% if canDeleteSource and deleteSourceAction %}
+                    {% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
                         <hr>
                         <ul>
                             <li>
@@ -180,7 +175,7 @@
             <form method="post" accept-charset="UTF-8">
                 {{ csrfInput() }}
                 <input type="hidden" name="action" value="{{ revertSourceAction }}">
-                {{ redirectInput(element.cpEditUrl) }}
+                {{ redirectInput('{cpEditUrl}') }}
                 <input type="hidden" name="revisionId" value="{{ element.revisionId }}">
                 <div class="secondary-buttons">
                     <input type="button" class="btn submit formsubmit" value="{{ 'Revert {type} to this revision'|t('app', { type: element.displayName()|lower }) }}">
@@ -191,8 +186,18 @@
 {% endblock %}
 
 {% block main %}
-    {% if fullPageForm and craft.app.isMultiSite %}
-        <input type="hidden" name="siteId" value="{{ element.siteId }}">
+    {% if fullPageForm %}
+        {# action and redirect params #}
+        {% if not isDraft and canUpdateSource and saveSourceAction %}
+            {# current revision -- user can update source #}
+            <input type="hidden" name="action" value="{{ saveSourceAction }}">
+            {{ redirectInput(redirectUrl) }}
+        {% endif %}
+
+        {# siteId param #}
+        {% if craft.app.isMultiSite %}
+            <input type="hidden" name="siteId" value="{{ element.siteId }}">
+        {% endif %}
     {% endif %}
     {{ parent() }}
 {% endblock %}
@@ -265,8 +270,10 @@
     elementTypeDisplayName: element.displayName(),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
+    isUnsavedDraft: isUnsavedDraft,
     isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
+    hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     draftId: element.draftId,
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,

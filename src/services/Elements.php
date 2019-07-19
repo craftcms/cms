@@ -1752,6 +1752,21 @@ class Elements extends Component
     }
 
     /**
+     * Returns all placeholder elements.
+     *
+     * @return ElementInterface[]
+     * @since 3.2.5
+     */
+    public function getPlaceholderElements(): array
+    {
+        if ($this->_placeholderElements === null) {
+            return [];
+        }
+
+        return call_user_func_array('array_merge', $this->_placeholderElements);
+    }
+
+    /**
      * Returns a placeholder element by its ID and site ID.
      *
      * @param int $sourceId The element’s ID

@@ -1,4 +1,4 @@
-/*!   - 2019-07-17 */
+/*!   - 2019-07-19 */
 (function($){
 
 /** global: Craft */
@@ -1366,30 +1366,30 @@ $.extend($.fn,
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
-                if ($btn.attr('data-action')) {
+                if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
-                        .val($btn.attr('data-action'))
+                        .val($btn.data('action'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-redirect')) {
+                if ($btn.data('redirect')) {
                     $('<input type="hidden" name="redirect"/>')
-                        .val($btn.attr('data-redirect'))
+                        .val($btn.data('redirect'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-param')) {
+                if ($btn.data('param')) {
                     $('<input type="hidden"/>')
                         .attr({
-                            name: $btn.attr('data-param'),
-                            value: $btn.attr('data-value')
+                            name: $btn.data('param'),
+                            value: $btn.data('value')
                         })
                         .appendTo($form);
                 }
 
                 $form.trigger({
                     type: 'submit',
-                    customTrigger: true,
+                    customTrigger: $btn,
                 });
             });
         },
@@ -11242,7 +11242,10 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.trigger('submit');
+            this.$primaryForm.trigger({
+                type: 'submit',
+                saveShortcut: true,
+            });
         },
 
         updateSidebarMenuLabel: function() {
@@ -12912,19 +12915,34 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Store the initial form value
-            this.lastSerializedValue = this.serializeForm();
+            this.lastSerializedValue = this.serializeForm(true);
             Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
 
             // Override the serializer to use our own
-            Craft.cp.$primaryForm.data('serializer', this.serializeForm.bind(this));
+            Craft.cp.$primaryForm.data('serializer', function() {
+                return this.serializeForm(true)
+            }.bind(this));
 
             if (this.settings.draftId) {
                 this.initForDraft();
             } else {
                 // If the "Save as a Draft" button is a secondary button, then add special handling for it
-                this.addListener($('#save-draft-btn.secondary'), 'click', function() {
-                    this.saveDraft(this.serializeForm());
+                this.addListener($('#save-draft-btn'), 'click', function(ev) {
+                    ev.preventDefault();
+                    this.createDraft();
+                    this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
                 }.bind(this));
+
+                // If they're not allowed to update the source element, override the save shortcut to create a draft too
+                if (!this.settings.canUpdateSource) {
+                    this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', function(ev) {
+                        if (ev.saveShortcut) {
+                            ev.preventDefault();
+                            this.createDraft();
+                            this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
+                        }
+                    }.bind(this));
+                }
             }
         },
 
@@ -13093,7 +13111,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         ensureIsDraftOrRevision: function() {
             return new Promise(function(resolve, reject) {
                 if (!this.settings.draftId && !this.settings.revisionid) {
-                    this.saveDraft(this.serializeForm())
+                    this.createDraft()
                         .then(resolve)
                         .catch(reject);
                 } else {
@@ -13102,7 +13120,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this));
         },
 
-        serializeForm: function() {
+        serializeForm: function(removeActionParams) {
             var data = Craft.cp.$primaryForm.serialize();
 
             if (this.isPreviewActive()) {
@@ -13110,9 +13128,11 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
 
-            // Remove action and redirect params
-            data = data.replace(/&action=[^&]*/, '');
-            data = data.replace(/&redirect=[^&]*/, '');
+            if (removeActionParams && !this.settings.isUnsavedDraft) {
+                // Remove action and redirect params
+                data = data.replace(/&action=[^&]*/, '');
+                data = data.replace(/&redirect=[^&]*/, '');
+            }
 
             return data;
         },
@@ -13127,7 +13147,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.timeout = null;
 
             // Has anything changed?
-            var data = this.serializeForm();
+            var data = this.serializeForm(true);
             if (force || (data !== this.lastSerializedValue)) {
                 this.saveDraft(data);
             }
@@ -13135,6 +13155,14 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         isPreviewActive: function() {
             return this.preview && this.preview.isActive;
+        },
+
+        createDraft: function() {
+            return new Promise(function(resolve, reject) {
+                this.saveDraft(this.serializeForm(true))
+                    .then(resolve)
+                    .catch(reject);
+            }.bind(this));
         },
 
         saveDraft: function(data) {
@@ -13450,7 +13478,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
             // then ignore the submission
-            if (!ev.customTrigger && this.settings.draftId && !this.settings.canUpdateSource) {
+            if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
                 return;
             }
 
@@ -13464,7 +13492,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                     'target': Craft.cp.$primaryForm.attr('target'),
                 }
             });
-            var data = this.prepareData(this.serializeForm());
+            var data = this.prepareData(this.serializeForm(false));
             var values = data.split('&');
             var chunks;
             for (var i = 0; i < values.length; i++) {
@@ -13476,11 +13504,22 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            if (!ev.customTrigger) {
+            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
                 $('<input/>', {
                     type: 'hidden',
                     name: 'action',
                     value: this.settings.applyDraftAction
+                }).appendTo($form);
+            }
+
+            if (
+                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+            ) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'redirect',
+                    value: this.settings.hashedRedirectUrl
                 }).appendTo($form);
             }
 
