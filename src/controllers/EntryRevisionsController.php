@@ -384,7 +384,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Publish the draft (finally!)
         $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry updated.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
         if ($request->getAcceptsJson()) {
             return $this->asJson([
