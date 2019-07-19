@@ -1363,30 +1363,30 @@ $.extend($.fn,
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
-                if ($btn.attr('data-action')) {
+                if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
-                        .val($btn.attr('data-action'))
+                        .val($btn.data('action'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-redirect')) {
+                if ($btn.data('redirect')) {
                     $('<input type="hidden" name="redirect"/>')
-                        .val($btn.attr('data-redirect'))
+                        .val($btn.data('redirect'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-param')) {
+                if ($btn.data('param')) {
                     $('<input type="hidden"/>')
                         .attr({
-                            name: $btn.attr('data-param'),
-                            value: $btn.attr('data-value')
+                            name: $btn.data('param'),
+                            value: $btn.data('value')
                         })
                         .appendTo($form);
                 }
 
                 $form.trigger({
                     type: 'submit',
-                    customTrigger: true,
+                    customTrigger: $btn,
                 });
             });
         },

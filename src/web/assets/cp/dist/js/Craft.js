@@ -1,4 +1,4 @@
-/*!   - 2019-07-17 */
+/*!   - 2019-07-19 */
 (function($){
 
 /** global: Craft */
@@ -1366,30 +1366,30 @@ $.extend($.fn,
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
-                if ($btn.attr('data-action')) {
+                if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
-                        .val($btn.attr('data-action'))
+                        .val($btn.data('action'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-redirect')) {
+                if ($btn.data('redirect')) {
                     $('<input type="hidden" name="redirect"/>')
-                        .val($btn.attr('data-redirect'))
+                        .val($btn.data('redirect'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-param')) {
+                if ($btn.data('param')) {
                     $('<input type="hidden"/>')
                         .attr({
-                            name: $btn.attr('data-param'),
-                            value: $btn.attr('data-value')
+                            name: $btn.data('param'),
+                            value: $btn.data('value')
                         })
                         .appendTo($form);
                 }
 
                 $form.trigger({
                     type: 'submit',
-                    customTrigger: true,
+                    customTrigger: $btn,
                 });
             });
         },
@@ -13110,9 +13110,11 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
 
-            // Remove action and redirect params
-            data = data.replace(/&action=[^&]*/, '');
-            data = data.replace(/&redirect=[^&]*/, '');
+            if (!this.settings.isUnsavedDraft) {
+                // Remove action and redirect params
+                data = data.replace(/&action=[^&]*/, '');
+                data = data.replace(/&redirect=[^&]*/, '');
+            }
 
             return data;
         },
@@ -13476,7 +13478,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            if (!ev.customTrigger) {
+            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
                 $('<input/>', {
                     type: 'hidden',
                     name: 'action',

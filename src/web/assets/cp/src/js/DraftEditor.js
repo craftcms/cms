@@ -257,9 +257,11 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
 
-            // Remove action and redirect params
-            data = data.replace(/&action=[^&]*/, '');
-            data = data.replace(/&redirect=[^&]*/, '');
+            if (!this.settings.isUnsavedDraft) {
+                // Remove action and redirect params
+                data = data.replace(/&action=[^&]*/, '');
+                data = data.replace(/&redirect=[^&]*/, '');
+            }
 
             return data;
         },
@@ -623,7 +625,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            if (!ev.customTrigger) {
+            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
                 $('<input/>', {
                     type: 'hidden',
                     name: 'action',
