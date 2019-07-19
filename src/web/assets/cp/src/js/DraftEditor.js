@@ -635,7 +635,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            if (!ev.customTrigger || !ev.customTrigger.data('redirect')) {
+            if (
+                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+            ) {
                 $('<input/>', {
                     type: 'hidden',
                     name: 'redirect',

@@ -11242,7 +11242,10 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.trigger('submit');
+            this.$primaryForm.trigger({
+                type: 'submit',
+                saveShortcut: true,
+            });
         },
 
         updateSidebarMenuLabel: function() {
@@ -13488,7 +13491,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            if (!ev.customTrigger || !ev.customTrigger.data('redirect')) {
+            if (
+                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+            ) {
                 $('<input/>', {
                     type: 'hidden',
                     name: 'redirect',

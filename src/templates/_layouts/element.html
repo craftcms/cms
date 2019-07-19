@@ -73,7 +73,7 @@
     (showStatusToggles ?? true) %}
 
 {% if isUnsavedDraft or (not (isDraft or isRevision) and canUpdateSource) %}
-    {% set saveShortcutRedirect = element.cpEditUrl %}
+    {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
 {% set actionButton = block('actionButton')|trim %}
@@ -127,7 +127,7 @@
                 <div class="menu" data-align="right">
                     <ul>
                         <li>
-                            <a class="formsubmit" data-redirect="{{ element.cpEditUrl|hash }}">
+                            <a class="formsubmit" data-redirect="{{ '{cpEditUrl}'|hash }}">
                                 {{ forms.optionShortcutLabel('S') }}
                                 {{ "Save and continue editing"|t('app') }}
                             </a>
@@ -173,7 +173,7 @@
             <form method="post" accept-charset="UTF-8">
                 {{ csrfInput() }}
                 <input type="hidden" name="action" value="{{ revertSourceAction }}">
-                {{ redirectInput(element.cpEditUrl) }}
+                {{ redirectInput('{cpEditUrl}') }}
                 <input type="hidden" name="revisionId" value="{{ element.revisionId }}">
                 <div class="secondary-buttons">
                     <input type="button" class="btn submit formsubmit" value="{{ 'Revert {type} to this revision'|t('app', { type: element.displayName()|lower }) }}">
@@ -194,7 +194,7 @@
             {% else %}
                 {# current revision -- user can only save as a draft #}
                 <input type="hidden" name="action" value="{{ saveDraftAction }}">
-                {{ redirectInput(url(element.cpEditUrl, {draftId: '{draftId}'})) }}
+                {{ redirectInput(url('{cpEditUrl}', {draftId: '{draftId}'})) }}
             {% endif %}
         {% endif %}
 
@@ -277,7 +277,7 @@
     isUnsavedDraft: isUnsavedDraft,
     isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
-    hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : element.cpEditUrl)|hash,
+    hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     draftId: element.draftId,
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,

@@ -236,31 +236,23 @@ class Drafts extends Component
                     'draftId' => null,
                     'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
-
-                // Now delete the draft
-                $elementsService->deleteElement($draft, true);
             } else {
-                // Delete the draftId from the elements table
-                $db = Craft::$app->getDb();
-                $db->createCommand()
-                    ->update(Table::ELEMENTS, ['draftId' => null], ['id' => $draft->id], [], false)
-                    ->execute();
+                // Detach the draft behavior
+                $behavior = $draft->detachBehavior('draft');
 
-                // Delete the row from the drafts table
-                $db->createCommand()
-                    ->delete(Table::DRAFTS, ['id' => $draft->draftId])
-                    ->execute();
+                // Duplicate the draft as a new element
+                $newSource = $elementsService->duplicateElement($draft, [
+                    'draftId' => null,
+                ]);
 
-                // Resave the draft without its draftId
-                $draft->draftId = null;
-                $draft->detachBehavior('draft');
-                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!$elementsService->saveElement($draft)) {
-                    throw new InvalidElementException($draft, 'Couldn\'t save element.');
+                // Now reattach the draft behavior to the draft
+                if ($behavior !== null) {
+                    $draft->attachBehavior('draft', $behavior);
                 }
-
-                $newSource = $draft;
             }
+
+            // Now delete the draft
+            $elementsService->deleteElement($draft, true);
 
             $transaction->commit();
         } catch (\Throwable $e) {
