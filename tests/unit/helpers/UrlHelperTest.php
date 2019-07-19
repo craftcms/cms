@@ -513,7 +513,7 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             '4-spaces' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?++++=',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?    =',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    ',
                 'urlWithParams'
