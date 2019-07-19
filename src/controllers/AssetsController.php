@@ -950,10 +950,10 @@ class AssetsController extends Controller
     /**
      * Handles an error when generating a thumb/transform.
      *
-     * @param \Exception $e The exception that was thrown
+     * @param \Throwable $e The exception that was thrown
      * @return Response
      */
-    private function _handleImageException(\Exception $e): Response
+    private function _handleImageException(\Throwable $e): Response
     {
         Craft::$app->getErrorHandler()->logException($e);
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
