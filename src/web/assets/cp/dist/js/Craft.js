@@ -12912,18 +12912,20 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Store the initial form value
-            this.lastSerializedValue = this.serializeForm();
+            this.lastSerializedValue = this.serializeForm(true);
             Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
 
             // Override the serializer to use our own
-            Craft.cp.$primaryForm.data('serializer', this.serializeForm.bind(this));
+            Craft.cp.$primaryForm.data('serializer', function() {
+                return this.serializeForm(true)
+            }.bind(this));
 
             if (this.settings.draftId) {
                 this.initForDraft();
             } else {
                 // If the "Save as a Draft" button is a secondary button, then add special handling for it
                 this.addListener($('#save-draft-btn.secondary'), 'click', function() {
-                    this.saveDraft(this.serializeForm());
+                    this.saveDraft(this.serializeForm(true));
                 }.bind(this));
             }
         },
@@ -13093,7 +13095,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         ensureIsDraftOrRevision: function() {
             return new Promise(function(resolve, reject) {
                 if (!this.settings.draftId && !this.settings.revisionid) {
-                    this.saveDraft(this.serializeForm())
+                    this.saveDraft(this.serializeForm(true))
                         .then(resolve)
                         .catch(reject);
                 } else {
@@ -13102,7 +13104,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this));
         },
 
-        serializeForm: function() {
+        serializeForm: function(removeActionParams) {
             var data = Craft.cp.$primaryForm.serialize();
 
             if (this.isPreviewActive()) {
@@ -13110,7 +13112,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
 
-            if (!this.settings.isUnsavedDraft) {
+            if (removeActionParams && !this.settings.isUnsavedDraft) {
                 // Remove action and redirect params
                 data = data.replace(/&action=[^&]*/, '');
                 data = data.replace(/&redirect=[^&]*/, '');
@@ -13129,7 +13131,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.timeout = null;
 
             // Has anything changed?
-            var data = this.serializeForm();
+            var data = this.serializeForm(true);
             if (force || (data !== this.lastSerializedValue)) {
                 this.saveDraft(data);
             }
@@ -13466,7 +13468,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                     'target': Craft.cp.$primaryForm.attr('target'),
                 }
             });
-            var data = this.prepareData(this.serializeForm());
+            var data = this.prepareData(this.serializeForm(false));
             var values = data.split('&');
             var chunks;
             for (var i = 0; i < values.length; i++) {
@@ -13483,6 +13485,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                     type: 'hidden',
                     name: 'action',
                     value: this.settings.applyDraftAction
+                }).appendTo($form);
+            }
+
+            if (!ev.customTrigger || !ev.customTrigger.data('redirect')) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'redirect',
+                    value: this.settings.hashedRedirectUrl
                 }).appendTo($form);
             }
 

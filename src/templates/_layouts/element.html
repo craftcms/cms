@@ -186,10 +186,7 @@
 {% block main %}
     {% if fullPageForm %}
         {# action and redirect params #}
-        {% if isUnsavedDraft %}
-            {# unsaved draft -- JS will add the action #}
-            {{ redirectInput(redirectUrl) }}
-        {% elseif not isDraft %}
+        {% if not isDraft %}
             {% if canUpdateSource and saveSourceAction %}
                 {# current revision -- user can update source #}
                 <input type="hidden" name="action" value="{{ saveSourceAction }}">
@@ -199,9 +196,6 @@
                 <input type="hidden" name="action" value="{{ saveDraftAction }}">
                 {{ redirectInput(url(element.cpEditUrl, {draftId: '{draftId}'})) }}
             {% endif %}
-        {% elseif canUpdateSource %}
-            {# draft -- JS will add the action #}
-            {{ redirectInput(element.cpEditUrl) }}
         {% endif %}
 
         {# siteId param #}
@@ -283,6 +277,7 @@
     isUnsavedDraft: isUnsavedDraft,
     isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
+    hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : element.cpEditUrl)|hash,
     draftId: element.draftId,
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,

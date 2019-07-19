@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a bug where each GIF frame would still be parsed when generating thumbnail, even if the `transformGifs` setting was set to `false`. ([#4588](https://github.com/craftcms/cms/issues/4588))
 - Fixed some bugs with the “Save Entry” menu options, when editing an unsaved draft. ([#4614](https://github.com/craftcms/cms/issues/4614))
+- Fixed a bug where Craft could forget which site was being edited when updating an entry from a draft. ([#4615](https://github.com/craftcms/cms/issues/4615))
 
 ## 3.2.4.1 - 2019-07-17
 
