@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.5 - 2019-07-19
 
 ### Added
 - Added `craft\services\Elements::getPlaceholderElements()`.
