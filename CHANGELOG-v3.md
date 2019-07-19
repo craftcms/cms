@@ -215,7 +215,7 @@
 - Anonymous/offline/Control Panel access validation now takes place from `craft\web\Controller::beforeAction()` rather than `craft\web\Application::handleRequest()`, giving controllers a chance to do things like set CORS headers before a `ForbiddenHttpException` or `ServiceUnavailableHttpException` is thrown. ([#4008](https://github.com/craftcms/cms/issues/4008))
 - Controllers can now set `$allowAnonymous` to a combination of bitwise integers `self::ALLOW_ANONYMOUS_LIVE` and `self::ALLOW_ANONYMOUS_OFFLINE`, or an array of action ID/bitwise integer pairs, to define whether their actions should be accessible anonymously even when the system is offline.
 - Improved the error message when Project Config reaches the maximum deferred event count.
-- Craft now deletes expired template caches as part of its garbage collection routine.- Craft now deletes expired template caches as part of its garbage collection routine.
+- Craft now deletes expired template caches as part of its garbage collection routine.
 - Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 - `fieldValues` is now reserved field handle. ([#4453](https://github.com/craftcms/cms/issues/4453))
 - Improved the reliability of `craft\helpers\UrlHelper::rootRelativeUrl()` and `cpUrl()`.
