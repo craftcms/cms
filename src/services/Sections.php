@@ -1479,8 +1479,8 @@ class Sections extends Component
      * @param Section $section
      * @param array|null $siteSettings
      * @return Entry The
-     * @see saveSection()
      * @throws Exception if reasons
+     * @see saveSection()
      */
     private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
     {
@@ -1577,8 +1577,8 @@ class Sections extends Component
      * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
      *
      * @param SectionRecord $sectionRecord
-     * @see saveSection()
      * @throws Exception if reasons
+     * @see saveSection()
      */
     private function _populateNewStructure(SectionRecord $sectionRecord)
     {
