@@ -71,9 +71,22 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.initForDraft();
             } else {
                 // If the "Save as a Draft" button is a secondary button, then add special handling for it
-                this.addListener($('#save-draft-btn.secondary'), 'click', function() {
-                    this.saveDraft(this.serializeForm(true));
+                this.addListener($('#save-draft-btn'), 'click', function(ev) {
+                    ev.preventDefault();
+                    this.createDraft();
+                    this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
                 }.bind(this));
+
+                // If they're not allowed to update the source element, override the save shortcut to create a draft too
+                if (!this.settings.canUpdateSource) {
+                    this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', function(ev) {
+                        if (ev.saveShortcut) {
+                            ev.preventDefault();
+                            this.createDraft();
+                            this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
+                        }
+                    }.bind(this));
+                }
             }
         },
 
@@ -242,7 +255,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         ensureIsDraftOrRevision: function() {
             return new Promise(function(resolve, reject) {
                 if (!this.settings.draftId && !this.settings.revisionid) {
-                    this.saveDraft(this.serializeForm(true))
+                    this.createDraft()
                         .then(resolve)
                         .catch(reject);
                 } else {
@@ -286,6 +299,14 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         isPreviewActive: function() {
             return this.preview && this.preview.isActive;
+        },
+
+        createDraft: function() {
+            return new Promise(function(resolve, reject) {
+                this.saveDraft(this.serializeForm(true))
+                    .then(resolve)
+                    .catch(reject);
+            }.bind(this));
         },
 
         saveDraft: function(data) {
@@ -601,7 +622,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
             // then ignore the submission
-            if (!ev.customTrigger && this.settings.draftId && !this.settings.canUpdateSource) {
+            if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
                 return;
             }
 

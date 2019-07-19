@@ -72,7 +72,9 @@
     (not isUnsavedDraft or canUpdateSource) and
     (showStatusToggles ?? true) %}
 
-{% if isUnsavedDraft or (not (isDraft or isRevision) and canUpdateSource) %}
+{% if not isDraft and not canUpdateSource %}
+    {% set saveShortcut = false %}
+{% elseif isUnsavedDraft or (not (isDraft or isRevision) and canUpdateSource) %}
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
@@ -186,16 +188,10 @@
 {% block main %}
     {% if fullPageForm %}
         {# action and redirect params #}
-        {% if not isDraft %}
-            {% if canUpdateSource and saveSourceAction %}
-                {# current revision -- user can update source #}
-                <input type="hidden" name="action" value="{{ saveSourceAction }}">
-                {{ redirectInput(redirectUrl) }}
-            {% else %}
-                {# current revision -- user can only save as a draft #}
-                <input type="hidden" name="action" value="{{ saveDraftAction }}">
-                {{ redirectInput(url('{cpEditUrl}', {draftId: '{draftId}'})) }}
-            {% endif %}
+        {% if not isDraft and canUpdateSource and saveSourceAction %}
+            {# current revision -- user can update source #}
+            <input type="hidden" name="action" value="{{ saveSourceAction }}">
+            {{ redirectInput(redirectUrl) }}
         {% endif %}
 
         {# siteId param #}
