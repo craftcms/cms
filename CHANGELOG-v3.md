@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred if a plugin license key was set to an environment variable, which was set to an invalid key. ([#4604](https://github.com/craftcms/cms/issues/4604))
+
 ## 3.2.5 - 2019-07-19
 
 ### Added
