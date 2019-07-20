@@ -1546,6 +1546,7 @@ class Sections extends Component
         $otherEntriesQuery = Entry::find()
             ->sectionId($section->id)
             ->siteId('*')
+            ->unique()
             ->id(['not', $entry->id])
             ->anyStatus();
 
