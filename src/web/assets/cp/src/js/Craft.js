@@ -212,7 +212,7 @@ $.extend(Craft,
                     // Does baseUrl already contain a path?
                     var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
-                        url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
+                        url = url.replace(pathMatch[0], Craft.rtrim(pathMatch[0], '/') + '/' + path);
                         path = '';
                     }
                 }
