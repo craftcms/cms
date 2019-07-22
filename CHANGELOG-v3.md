@@ -10,6 +10,8 @@
 
 ### Fixed
 - Fixed a bug where Craft could load the same JavaScript and CSS files multiple times when opening element editor HUDs. ([#4620](https://github.com/craftcms/cms/issues/4620))
+- Fixed an error that prevented image thumbnails from generating in the Control Panel when using ImageMagick. ([#4609](https://github.com/craftcms/cms/issues/4609))
+- Fixed a bug where each animated GIF frame would still be parsed when generating a thumbnail, even if the `transformGifs` setting was set to `false`. ([#4588](https://github.com/craftcms/cms/issues/4588))
 
 ## 3.2.5.1 - 2019-07-19
 
@@ -28,7 +30,6 @@
 - Unsaved entry drafts now get assigned a new ID when they are fully saved, so they are treated as new elements. ([#4589](https://github.com/craftcms/cms/issues/4589))
 
 ### Fixed
-- Fixed a bug where each animated GIF frame would still be parsed when generating a thumbnail, even if the `transformGifs` setting was set to `false`. ([#4588](https://github.com/craftcms/cms/issues/4588))
 - Fixed some bugs with the “Save Entry” menu options, when editing an unsaved draft. ([#4614](https://github.com/craftcms/cms/issues/4614))
 - Fixed a bug where Craft could forget which site was being edited when updating an entry from a draft. ([#4615](https://github.com/craftcms/cms/issues/4615))
 
