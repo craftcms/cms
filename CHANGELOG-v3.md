@@ -6,9 +6,11 @@
 - When enabling a new site for a Single section, Craft now uses the primary site’s content as the starting point for the new site’s content, if the section was already enabled for it.
 - Swapped the position of the “Save as a Draft” and “Save Entry” buttons. ([#4622](https://github.com/craftcms/cms/issues/4622))
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports arrays created from `DateTime` objects. ([#4627](https://github.com/craftcms/cms/issues/4627))
+- Updated Imagine to 1.2.2.1.
 
 ### Fixed
 - Fixed a bug where Craft could load the same JavaScript and CSS files multiple times when opening element editor HUDs. ([#4620](https://github.com/craftcms/cms/issues/4620))
+- Fixed a bug where each animated GIF frame would still be parsed when generating a thumbnail, even if the `transformGifs` setting was set to `false`. ([#4588](https://github.com/craftcms/cms/issues/4588))
 - Fixed a bug where back-end slug validation wasn’t working correctly for slugs with unicode characters. ([#4628](https://github.com/craftcms/cms/issues/4628))
 
 ## 3.2.5.1 - 2019-07-19
