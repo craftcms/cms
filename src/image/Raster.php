@@ -608,6 +608,8 @@ class Raster extends Image
     public function disableAnimation()
     {
         $this->_isAnimatedGif = false;
+        $this->_image = $this->_image->layers()->get(0);
+
         return $this;
     }
 
