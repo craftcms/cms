@@ -2683,6 +2683,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($class::hasContent() && $this->contentTable !== null) {
+            if ($class::hasTitles()) {
+                // Ensure the title is a string
+                $row['title'] = (string)($row['title'] ?? '');
+            }
+
             // Separate the content values from the main element attributes
             $fieldValues = [];
 
