@@ -8,6 +8,7 @@
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports arrays created from `DateTime` objects. ([#4627](https://github.com/craftcms/cms/issues/4627))
 - Updated Imagine to 1.2.2.1.
 - The `preserveExifData` config setting is now also applied on image upload, not just on transform.
+- Plugin license key inputs are no longer limited to 29 characters, to make room for long environment variable names. ([#4393](https://github.com/craftcms/cms/issues/4393))
 
 ### Fixed
 - Fixed a bug where Craft could load the same JavaScript and CSS files multiple times when opening element editor HUDs. ([#4620](https://github.com/craftcms/cms/issues/4620))
