@@ -894,7 +894,9 @@ class ProjectConfig extends Component
         $configData = array_replace_recursive([
             'system' => $currentConfig['system'],
             'routes' => $currentConfig['routes'] ?? [],
-            'plugins' => $currentConfig['plugins'] ?? []
+            'plugins' => $currentConfig['plugins'] ?? [],
+            'users' => $currentConfig['users'] ?? [],
+            'email' => $currentConfig['email'] ?? [],
         ], $event->config);
 
         $this->muteEvents = true;
