@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the content area of some Control Panel pages weren’t getting any bottom padding. ([#4644](https://github.com/craftcms/cms/issues/4644))
+
 ## 3.2.6 - 2019-07-23
 
 ### Changed
