@@ -608,7 +608,13 @@ class Raster extends Image
     public function disableAnimation()
     {
         $this->_isAnimatedGif = false;
-        $this->_image = $this->_image->layers()->get(0);
+
+        if ($this->_image->layers()->count() > 1) {
+            // Fetching the first layer returns the built-in Imagick object
+            // So cycle that through the loading phase to get one that sports the
+            // `smartResize` functionality.
+            $this->_image = $this->_instance->load((string) $this->_image->layers()->get(0));
+        }
 
         return $this;
     }
