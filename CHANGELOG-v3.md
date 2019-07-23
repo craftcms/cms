@@ -1,14 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.6 - 2019-07-23
 
 ### Changed
 - When enabling a new site for a Single section, Craft now uses the primary site’s content as the starting point for the new site’s content, if the section was already enabled for it.
 - Swapped the position of the “Save as a Draft” and “Save Entry” buttons. ([#4622](https://github.com/craftcms/cms/issues/4622))
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports arrays created from `DateTime` objects. ([#4627](https://github.com/craftcms/cms/issues/4627))
-- Updated Imagine to 1.2.2.1.
-- The `preserveExifData` config setting is now also applied on image upload, not just on transform.
 - Plugin license key inputs are no longer limited to 29 characters, to make room for long environment variable names. ([#4393](https://github.com/craftcms/cms/issues/4393))
+- Updated Imagine to 1.2.2.1.
 
 ### Fixed
 - Fixed a bug where Craft could load the same JavaScript and CSS files multiple times when opening element editor HUDs. ([#4620](https://github.com/craftcms/cms/issues/4620))
@@ -16,6 +15,7 @@
 - Fixed a bug where back-end slug validation wasn’t working correctly for slugs with unicode characters. ([#4628](https://github.com/craftcms/cms/issues/4628))
 - Fixed a bug where it wasn’t possible to create new entries if the section handle matched the `pageTrigger` config setting, and the `pageTrigger` config setting had a trailing slash. ([#4631](https://github.com/craftcms/cms/issues/4631))
 - Fixed a bug where the `sections.previewTargets` database column was getting created as a `varchar` instead of `text` column for new Craft installs. ([#4638](https://github.com/craftcms/cms/issues/4638))
+- Fixed a bug where the `preserveExifData` config setting wasn’t being respected on image upload.
 
 ## 3.2.5.1 - 2019-07-19
 
