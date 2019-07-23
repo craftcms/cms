@@ -534,7 +534,7 @@ class GeneralConfig extends BaseObject
      */
     public $preserveCmykColorspace = false;
     /**
-     * @var bool Whether the EXIF data should be preserved when manipulating images.
+     * @var bool Whether the EXIF data should be preserved when manipulating and uploading images.
      *
      * Setting this to `true` will result in larger image file sizes.
      *

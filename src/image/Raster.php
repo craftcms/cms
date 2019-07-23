@@ -371,11 +371,9 @@ class Raster extends Image
             $this->_image = $gif;
         } else {
             if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
-                $config = Craft::$app->getConfig()->getGeneral();
-                $keepImageProfiles = $config->preserveImageColorProfiles;
-                $keepExifData = $config->preserveExifData;
+                $keepImageProfiles = Craft::$app->getConfig()->getGeneral()->preserveImageColorProfiles;
 
-                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, $keepExifData, $this->_quality);
+                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, true, $this->_quality);
             } else {
                 $this->_image->resize(new Box($targetWidth, $targetHeight), $this->_getResizeFilter());
             }
@@ -478,6 +476,9 @@ class Raster extends Image
                     Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": " . $e->getMessage(), __METHOD__);
                 }
             } else {
+                if (Craft::$app->getImages()->getIsImagick()) {
+                    ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+                }
                 $this->_image->save($targetPath, $options);
             }
         } catch (RuntimeException $e) {
@@ -655,6 +656,10 @@ class Raster extends Image
             clearstatcache();
 
             // Generate one last time.
+            if (Craft::$app->getImages()->getIsImagick()) {
+                ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+            }
+
             $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 
             return $tempFileName;
