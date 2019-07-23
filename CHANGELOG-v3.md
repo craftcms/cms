@@ -15,6 +15,7 @@
 - Fixed a bug where each animated GIF frame would still be parsed when generating a thumbnail, even if the `transformGifs` setting was set to `false`. ([#4588](https://github.com/craftcms/cms/issues/4588))
 - Fixed a bug where back-end slug validation wasn’t working correctly for slugs with unicode characters. ([#4628](https://github.com/craftcms/cms/issues/4628))
 - Fixed a bug where it wasn’t possible to create new entries if the section handle matched the `pageTrigger` config setting, and the `pageTrigger` config setting had a trailing slash. ([#4631](https://github.com/craftcms/cms/issues/4631))
+- Fixed a bug where the `sections.previewTargets` database column was getting created as a `varchar` instead of `text` column for new Craft installs. ([#4638](https://github.com/craftcms/cms/issues/4638))
 
 ## 3.2.5.1 - 2019-07-19
 
