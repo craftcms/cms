@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the `project-config/rebuild` command was discarding email and user settings.
+
 ## 3.1.34.1 - 2019-07-22
 
 ### Fixed
