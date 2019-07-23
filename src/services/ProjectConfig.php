@@ -1561,25 +1561,23 @@ class ProjectConfig extends Component
             ->andWhere(['entrytypes.dateDeleted' => null])
             ->all();
 
-        $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
+        $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($entryTypeRows as $entryType) {
-            if (empty($entryType['fieldLayoutId'])) {
-                continue;
-            }
-
-            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
-            $layoutUid = $layout['uid'];
-            $sectionUid = $entryType['sectionUid'];
-            $uid = $entryType['uid'];
-
-            unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+            $uid = ArrayHelper::remove($entryType, 'uid');
+            $sectionUid = ArrayHelper::remove($entryType, 'sectionUid');
+            $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
 
             $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
             $entryType['sortOrder'] = (int)$entryType['sortOrder'];
 
-            $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            if ($fieldLayoutId) {
+                $layout = array_merge($fieldLayouts[$fieldLayoutId]);
+                $layoutUid = ArrayHelper::remove($layout, 'uid');
+                $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            }
+
             $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
         }
 
