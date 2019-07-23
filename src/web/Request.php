@@ -219,6 +219,10 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
             array_shift($this->_segments);
+
+            // Force 'p' pageTrigger
+            // (all that really matters is that it doesn't have a trailing slash, but whatever.)
+            $generalConfig->pageTrigger = 'p';
         }
 
         // Is this a paginated request?

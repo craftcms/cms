@@ -386,6 +386,7 @@ class Images extends Component
 
         $image = new \Imagick($filePath);
         $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+        ImageHelper::cleanExifDataFromImagickImage($image);
         $image->writeImages($filePath, true);
 
         return true;

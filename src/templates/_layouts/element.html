@@ -30,6 +30,7 @@
 {% set isDraft = element.getIsDraft() %}
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set isRevision = element.getIsRevision() %}
+{% set isCurrent = not isDraft and not isRevision %}
 
 {% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
 {% if element.uri %}
@@ -74,7 +75,7 @@
 
 {% if not isDraft and not canUpdateSource %}
     {% set saveShortcut = false %}
-{% elseif isUnsavedDraft or (not (isDraft or isRevision) and canUpdateSource) %}
+{% elseif isUnsavedDraft or (isCurrent and canUpdateSource) %}
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
@@ -94,15 +95,8 @@
         </div>
     {% endif %}
 
-    {% if actionButton %}
+    {% if isCurrent %}
         {% if previewTargets %}
-            <div class="spacer"></div>
-        {% endif %}
-        {{ actionButton|raw }}
-    {% endif %}
-
-    {% if not isDraft and not isRevision %}
-        {% if previewTargets or actionButton %}
             <div class="spacer"></div>
         {% endif %}
         <div id="save-draft-btn-container">
@@ -113,6 +107,13 @@
             {% endif %}
         </div>
     {% endif %}
+
+    {% if actionButton %}
+        {% if previewTargets or isCurrent %}
+            <div class="spacer"></div>
+        {% endif %}
+        {{ actionButton|raw }}
+    {% endif %}
 {% endblock %}
 
 {% block contextMenu %}
@@ -120,7 +121,7 @@
 {% endblock %}
 
 {% block actionButton %}
-    {% if isUnsavedDraft or not (isDraft or isRevision) %}
+    {% if isUnsavedDraft or isCurrent %}
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
             <div id="save-btn-container" class="btngroup submit">
@@ -271,7 +272,7 @@
     sourceId: element.getSourceId(),
     siteId: element.siteId,
     isUnsavedDraft: isUnsavedDraft,
-    isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),
+    isLive: isCurrent and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
     hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     draftId: element.draftId,

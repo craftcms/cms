@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.2.5.1",
+  "version": "3.2.6",
   "keywords": [
     "cms",
     "craftcms",
@@ -39,7 +39,7 @@
     "league/flysystem": "^1.0.35",
     "league/oauth2-client": "^2.2.1",
     "mikehaertl/php-shellcommand": "^1.2.5",
-    "pixelandtonic/imagine": "~0.7.1.2",
+    "pixelandtonic/imagine": "~1.2.2.1",
     "seld/cli-prompt": "^1.0.3",
     "symfony/yaml": "^3.2|^4.0",
     "true/punycode": "^2.1.0",
