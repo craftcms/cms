@@ -1527,7 +1527,7 @@ class Sections extends Component
         if ($entry === null) {
             // Create one
             $entry = new Entry();
-            $entry->siteId = Db::idByUid(Table::SITES, $siteIds[0]);
+            $entry->siteId = $siteIds[0];
             $entry->sectionId = $section->id;
             $entry->typeId = $entryTypeIds[0];
             $entry->title = $section->name;
