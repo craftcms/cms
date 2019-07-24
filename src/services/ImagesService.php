@@ -211,19 +211,27 @@ class ImagesService extends BaseApplicationComponent
             return true;
         }
 
-		try
-		{
-			if (craft()->config->get('rotateImagesOnUploadByExifData'))
-			{
-				$cleanedByRotation = $this->rotateImageByExifData($filePath);
-			}
+        try
+        {
+            if (craft()->config->get('rotateImagesOnUploadByExifData'))
+            {
+                $cleanedByRotation = $this->rotateImageByExifData($filePath);
+            }
 
-			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-		}
-		catch (\Exception $e)
-		{
-			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
-		}
+            if (!craft()->config->get('preserveExifData'))
+            {
+                $cleanedByStripping = $this->stripExifData($filePath);
+            }
+            else
+            {
+                $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
+            }
+
+        }
+        catch (\Exception $e)
+        {
+            Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
+        }
 
 		// Image has already been cleaned if it had exif/orientation data
 		if ($cleanedByRotation || $cleanedByStripping)
@@ -350,4 +358,59 @@ class ImagesService extends BaseApplicationComponent
 
 		return false;
 	}
+
+    /**
+     * Strip all EXIF data for an image at a path.
+     *
+     * @param $filePath
+     *
+     * @return bool
+     */
+    public function stripExifData($filePath)
+    {
+        if (!ImageHelper::canHaveExifData($filePath))
+        {
+            return null;
+        }
+
+        // Quick and dirty, if possible
+        if ($this->isImagick())
+        {
+            $imagick = new \Imagick($filePath);
+
+            $iccProfiles = null;
+            $supportsImageProfiles = method_exists($imagick, 'getimageprofiles');
+
+            if ($supportsImageProfiles && craft()->config->get('preserveImageColorProfiles'))
+            {
+                $iccProfiles = $imagick->getImageProfiles('icc', true);
+            }
+
+            $imagick->stripImage();
+
+            if (!empty($iccProfiles))
+            {
+                $imagick->profileImage('icc', !empty($iccProfiles['icc']) ? $iccProfiles['icc'] : '');
+            }
+
+            $imagick->writeImages($filePath, true);
+            return true;
+        }
+
+        $data = new PelDataWindow(IOHelper::getFileContents($filePath));
+
+        // Is this a valid JPEG?
+        if (PelJpeg::isValid($data))
+        {
+            $jpeg = $file = new PelJpeg();
+            $jpeg->load($data);
+            $jpeg->clearExif();
+
+            // PEL's saveFile won't strip malicious embedded code, so fall-through to
+            // return false on purpose, so it gets cleansed later.
+            $file->saveFile($filePath);
+        }
+
+        return false;
+    }
 }

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The `preserveExifData` config setting is now also applied on image upload, not just on transform.
+
 ## 2.7.9 - 2019-06-18
 
 ### Fixed
