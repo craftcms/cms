@@ -65,12 +65,12 @@ abstract class Image extends BaseObject
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param int $targetWidth
+     * @param int|null $targetWidth
      * @param int|null $targetHeight
      * @param bool $scaleIfSmaller
      * @return static Self reference
      */
-    abstract public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true);
+    abstract public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true);
 
     /**
      * Scale and crop image to exactly fit the specified size.
@@ -86,11 +86,11 @@ abstract class Image extends BaseObject
     /**
      * Resizes the image.
      *
-     * @param int $targetWidth The target width
+     * @param int|null $targetWidth The target width
      * @param int|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
      * @return static Self reference
      */
-    abstract public function resize(int $targetWidth, int $targetHeight = null);
+    abstract public function resize(int $targetWidth = null, int $targetHeight = null);
 
     /**
      * Saves the image to the target path.
