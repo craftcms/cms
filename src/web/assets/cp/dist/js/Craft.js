@@ -4352,10 +4352,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             }
 
             this.onSelectElements(elements);
-
-            if (window.draftEditor) {
-                window.draftEditor.checkForm();
-            }
         },
 
         createNewElement: function(elementInfo) {
@@ -4418,6 +4414,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         onSelectElements: function(elements) {
             this.trigger('selectElements', {elements: elements});
             this.settings.onSelectElements(elements);
+
+            if (window.draftEditor) {
+                window.draftEditor.checkForm();
+            }
         },
 
         onRemoveElements: function() {
