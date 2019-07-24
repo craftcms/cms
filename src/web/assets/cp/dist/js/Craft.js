@@ -1,4 +1,4 @@
-/*!   - 2019-07-22 */
+/*!   - 2019-07-24 */
 (function($){
 
 /** global: Craft */
@@ -4352,6 +4352,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             }
 
             this.onSelectElements(elements);
+
+            if (window.draftEditor) {
+                window.draftEditor.checkForm();
+            }
         },
 
         createNewElement: function(elementInfo) {

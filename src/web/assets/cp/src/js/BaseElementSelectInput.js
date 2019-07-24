@@ -361,6 +361,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             }
 
             this.onSelectElements(elements);
+
+            if (window.draftEditor) {
+                window.draftEditor.checkForm();
+            }
         },
 
         createNewElement: function(elementInfo) {
