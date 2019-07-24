@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.10 - 2019-07-24
+
 ### Security
 - The `preserveExifData` config setting is now also applied on image upload, not just on transform.
 
