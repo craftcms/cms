@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed an error where it was impossible to scale SVG Assets using only height. ([#4643](https://github.com/craftcms/cms/pull/4643))
+- Fixed an error where it wasn’t possible to scale SVGs using only height. ([#4643](https://github.com/craftcms/cms/pull/4643))
 - Fixed a bug where the content area of some Control Panel pages weren’t getting any bottom padding. ([#4644](https://github.com/craftcms/cms/issues/4644))
 - Fixed a bug where installing a plugin immediately after installing Craft from the console could corrupt the project config if `useProjectConfigFile` was enabled. ([#3870](https://github.com/craftcms/cms/issues/3870))
 
