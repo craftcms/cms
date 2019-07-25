@@ -9,6 +9,7 @@
 - Fixed a bug where entry forms could overlook changes made to Categories fields. ([#4648](https://github.com/craftcms/cms/issues/4648))
 - Fixed a bug where element search indexes weren’t being updated right away after an element was created or updated from an element editor HUD.
 - Fixed a bug where back-end slug validation wasn’t working correctly for slugs with some unicode characters. ([#1535](https://github.com/craftcms/cms/issues/1535))
+- Fixed a bug where Craft was attempting to delete template caches even when saving a draft or revision.
 
 ## 3.2.6 - 2019-07-23
 
