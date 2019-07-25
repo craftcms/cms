@@ -622,7 +622,6 @@ return [
     'Name' => '名称',
     'Never' => '从不',
     'New' => '新建',
-    'New Element' => '新元素',
     'New Password' => '新密码',
     'New Tab' => '新建选项卡',
     'New Users' => '新建用户',
