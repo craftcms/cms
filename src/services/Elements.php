@@ -597,6 +597,7 @@ class Elements extends Component
         $mainClone->setAttributes($newAttributes, false);
         $mainClone->duplicateOf = $element;
         $mainClone->id = null;
+        $mainClone->uid = null;
         $mainClone->contentId = null;
 
         // Make sure the element actually supports its own site ID
