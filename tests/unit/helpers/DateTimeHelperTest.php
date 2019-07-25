@@ -441,7 +441,6 @@ class DateTimeHelperTest extends Unit
      *
      * @param $result
      * @param $input
-     * @expectedException ErrorException
      */
     public function testIsValidIntervalString($result, $input)
     {
