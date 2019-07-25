@@ -444,6 +444,10 @@ class DateTimeHelperTest extends Unit
      */
     public function testIsValidIntervalString($result, $input)
     {
+        if (getenv('TRAVIS') && $result === false) {
+            $this->expectException('ErrorException');
+        }
+
         $isValid = DateTimeHelper::isValidIntervalString($input);
         $this->assertSame($result, $isValid);
     }
