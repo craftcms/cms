@@ -178,6 +178,7 @@ class ElementHelperTest extends Unit
             ['test_slug', 'test_slug'],
             ['Audi[separator-here]S8[separator-here]4E[separator-here]2006-2010', 'Audi S8 4E (2006-2010)'], // https://github.com/craftcms/cms/issues/4607
             ['こんにちは', 'こんにちは'], // https://github.com/craftcms/cms/issues/4628
+            ['Сертификация', 'Сертификация'], // https://github.com/craftcms/cms/issues/1535
         ];
     }
 
