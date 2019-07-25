@@ -622,7 +622,6 @@ return [
     'Name' => 'Nom',
     'Never' => 'Jamais',
     'New' => 'Nouveau',
-    'New Element' => 'Nouvel élément',
     'New Password' => 'Nouveau mot de passe',
     'New Tab' => 'Nouvel onglet',
     'New Users' => 'Nouveaux utilisateurs',
