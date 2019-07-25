@@ -622,7 +622,6 @@ return [
     'Name' => 'İsim',
     'Never' => 'Hiçbir Zaman',
     'New' => 'Yeni',
-    'New Element' => 'Yeni Eleman',
     'New Password' => 'Yeni Şifre',
     'New Tab' => 'Yeni Sekme',
     'New Users' => 'Yeni Kullanıcılar',
