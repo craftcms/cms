@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `utils/fix-element-uids` command, which ensures all elements have unique UIDs. ([#4653[(https://github.com/craftcms/cms/issues/4653)]])
+
 ## 3.2.7 - 2019-07-25
 
 ### Fixed
