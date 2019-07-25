@@ -122,7 +122,7 @@ class ImagesTest extends Unit
 
         $this->images->cleanImage($this->sandboxPath . 'image-rotated-180.jpg');
         $currentExif = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
-        $this->assertSame(Imagick::ORIENTATION_UNDEFINED, $currentExif['ifd0.Orientation']);
+        $this->assertArrayNotHasKey('ifd0.Orientation', $currentExif);
     }
 
     /**

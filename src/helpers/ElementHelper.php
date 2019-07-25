@@ -66,7 +66,7 @@ class ElementHelper
         $str = StringHelper::stripHtml($str);
 
         // Remove inner-word punctuation
-        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $str);
+        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $str);
 
         // Make it lowercase
         $generalConfig = Craft::$app->getConfig()->getGeneral();

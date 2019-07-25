@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.7 - 2019-07-25
+
+### Fixed
+- Fixed an error where it wasn’t possible to scale SVGs using only height. ([#4643](https://github.com/craftcms/cms/pull/4643))
+- Fixed a bug where the content area of some Control Panel pages weren’t getting any bottom padding. ([#4644](https://github.com/craftcms/cms/issues/4644))
+- Fixed a bug where installing a plugin immediately after installing Craft from the console could corrupt the project config if `useProjectConfigFile` was enabled. ([#3870](https://github.com/craftcms/cms/issues/3870))
+- Fixed a bug where entry forms could overlook changes made to Categories fields. ([#4648](https://github.com/craftcms/cms/issues/4648))
+- Fixed a bug where element search indexes weren’t being updated right away after an element was created or updated from an element editor HUD.
+- Fixed a bug where back-end slug validation wasn’t working correctly for slugs with some unicode characters. ([#1535](https://github.com/craftcms/cms/issues/1535))
+- Fixed a bug where Craft was attempting to delete template caches even when saving a draft or revision.
+
 ## 3.2.6 - 2019-07-23
 
 ### Changed
@@ -15,6 +26,8 @@
 - Fixed a bug where back-end slug validation wasn’t working correctly for slugs with unicode characters. ([#4628](https://github.com/craftcms/cms/issues/4628))
 - Fixed a bug where it wasn’t possible to create new entries if the section handle matched the `pageTrigger` config setting, and the `pageTrigger` config setting had a trailing slash. ([#4631](https://github.com/craftcms/cms/issues/4631))
 - Fixed a bug where the `sections.previewTargets` database column was getting created as a `varchar` instead of `text` column for new Craft installs. ([#4638](https://github.com/craftcms/cms/issues/4638))
+
+### Security
 - Fixed a bug where the `preserveExifData` config setting wasn’t being respected on image upload.
 
 ## 3.2.5.1 - 2019-07-19

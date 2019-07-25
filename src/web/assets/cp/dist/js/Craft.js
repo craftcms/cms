@@ -1,4 +1,4 @@
-/*!   - 2019-07-22 */
+/*!   - 2019-07-24 */
 (function($){
 
 /** global: Craft */
@@ -1717,6 +1717,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.trigger('saveElement', {
                 response: response
             });
+
+            // There may be a new background job that needs to be run
+            Craft.cp.runQueue();
         },
 
         onCreateForm: function($form) {
@@ -2493,7 +2496,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         afterAction: function(action, params) {
 
-            // There may be a new background task that needs to be run
+            // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
@@ -4414,6 +4417,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         onSelectElements: function(elements) {
             this.trigger('selectElements', {elements: elements});
             this.settings.onSelectElements(elements);
+
+            if (window.draftEditor) {
+                window.draftEditor.checkForm();
+            }
         },
 
         onRemoveElements: function() {

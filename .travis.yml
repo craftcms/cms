@@ -1,5 +1,7 @@
 language: php
-dist: trusty
+dist: bionic
+sudo: required
+group: edge
 env:
   global:
   - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
@@ -32,11 +34,6 @@ cache:
   - "$HOME/.npm"
 addons:
   postgresql: '9.6'
-  apt:
-    sources:
-    - mysql-5.7-trusty
-    packages:
-    - mysql-server
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
@@ -56,6 +53,7 @@ before_script:
   php -r "echo INTL_ICU_DATA_VERSION . \"\n\";"
   psql --version
   mysql --version
+  sudo mysql_upgrade || echo "MySQL is already up to date"
 - travis_retry mysql -e 'CREATE DATABASE `craft-test`;';
 - mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
 - psql -U postgres -c 'CREATE DATABASE "craft-test";';

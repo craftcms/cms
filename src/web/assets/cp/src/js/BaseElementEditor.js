@@ -297,6 +297,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.trigger('saveElement', {
                 response: response
             });
+
+            // There may be a new background job that needs to be run
+            Craft.cp.runQueue();
         },
 
         onCreateForm: function($form) {

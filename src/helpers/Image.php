@@ -349,7 +349,7 @@ class Image
             $imagick->stripImage();
 
             if (!empty($iccProfiles)) {
-                $imagick->profileImage("icc", $iccProfiles['icc'] ?? []);
+                $imagick->profileImage("icc", $iccProfiles['icc'] ?? '');
             }
         }
     }
