@@ -1,4 +1,5 @@
 # Getting started
+
 In order to get started please ensure you have a basic understanding of the following:
 - Craft CMS 3.2 or higher
 - [Codeception](https://codeception.com/docs/01-Introduction)
@@ -155,7 +156,7 @@ return [
 ];
 ```
 
-The `tests/_craft/config` dir acts entirely the same as a normal [config directory](../config/README.md) in a Craft application. 
+The `tests/_craft/config` dir acts entirely the same as a normal `config/` folder in a Craft application. 
 The only difference is you cannot create a different configuration for web and console requests (I.E `app.web.php` vs `app.console.php`). 
 If, for example, the project you are testing defines custom routes you can create a `routes.php` file
 which will be included in the craft configuration when setting up the test environment. 
