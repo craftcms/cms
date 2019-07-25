@@ -444,7 +444,7 @@ class DateTimeHelperTest extends Unit
      */
     public function testIsValidIntervalString($result, $input)
     {
-        if (getenv('TRAVIS') && $result === false) {
+        if (getenv('TRAVIS') && $result === false && PHP_VERSION_ID >= 70200) {
             $this->expectException('ErrorException');
         }
 
