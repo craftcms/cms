@@ -622,7 +622,6 @@ return [
     'Name' => '名前',
     'Never' => 'ない',
     'New' => '新規',
-    'New Element' => '新しい要素',
     'New Password' => '新しいパスワード',
     'New Tab' => '新規タブ',
     'New Users' => '新しいユーザー',
