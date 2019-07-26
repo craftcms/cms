@@ -734,7 +734,7 @@ Possible values include:
 | `'*Foo'` | with a title that ends with `Foo`.
 | `'*Foo*'` | with a title that contains `Foo`.
 | `'not *Foo*'` | with a title that doesn’t contain `Foo`.
-| `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+| `['*Foo*', '*Bar*']` | with a title that contains `Foo` or `Bar`.
 | `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
 
 
