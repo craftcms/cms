@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
+    '"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld..',
     '"{filename}" is too large.' => '"{filename}" is te groot.',
     '(blank)' => '(leeg)',
     '/path/to/folder' => '/pad/naar/map',
