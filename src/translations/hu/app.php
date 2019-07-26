@@ -622,7 +622,6 @@ return [
     'Name' => 'Név',
     'Never' => 'Soha',
     'New' => 'Új',
-    'New Element' => 'Új elem',
     'New Password' => 'Új jelszó',
     'New Tab' => 'Új lap',
     'New Users' => 'Új felhasználók',
