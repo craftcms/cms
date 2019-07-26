@@ -622,7 +622,6 @@ return [
     'Name' => 'Navn',
     'Never' => 'Aldri',
     'New' => 'Ny',
-    'New Element' => 'Nytt element',
     'New Password' => 'Nytt passord',
     'New Tab' => 'Ny fane',
     'New Users' => 'Nye brukere',
