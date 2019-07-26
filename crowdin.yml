@@ -24,7 +24,7 @@ files: [
   # files or directories for ignore
   # e.g. ["/**/?.txt", "/**/[0-9].txt", "/**/*\?*.txt"]
   #
-  "ignore" : ["/en/app.php"],
+  # "ignore" : ["/en/app.php"],
 
   #
   # File type
