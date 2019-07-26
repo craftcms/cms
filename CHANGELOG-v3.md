@@ -5,6 +5,9 @@
 ### Added
 - Added the `utils/fix-element-uids` command, which ensures all elements have unique UIDs. ([#4653[(https://github.com/craftcms/cms/issues/4653)]])
 
+### Fixed
+- Fixed a bug where it wasn’t possible to create a homepage Single section if a prior entry revisions’ URI had been set to `__home__`. ([#4657](https://github.com/craftcms/cms/issues/4657))
+
 ## 3.2.7 - 2019-07-25
 
 ### Fixed

@@ -48,6 +48,8 @@ class SingleSectionUriValidator extends Validator
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $model->siteId,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
                 'elements.dateDeleted' => null,
             ]);
 
