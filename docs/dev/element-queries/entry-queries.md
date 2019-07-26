@@ -1199,7 +1199,7 @@ Possible values include:
 | `'*foo'` | with a slug that ends with `foo`.
 | `'*foo*'` | with a slug that contains `foo`.
 | `'not *foo*'` | with a slug that doesn’t contain `foo`.
-| `['*foo*', '*bar*'` | with a slug that contains `foo` or `bar`.
+| `['*foo*', '*bar*']` | with a slug that contains `foo` or `bar`.
 | `['not', '*foo*', '*bar*']` | with a slug that doesn’t contain `foo` or `bar`.
 
 
