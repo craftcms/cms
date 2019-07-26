@@ -622,7 +622,6 @@ return [
     'Name' => 'Jméno',
     'Never' => 'Nikdy',
     'New' => 'Nový',
-    'New Element' => 'Nový prvek',
     'New Password' => 'Nové heslo',
     'New Tab' => 'Nová záložka',
     'New Users' => 'Noví uživatelé',
