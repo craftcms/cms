@@ -78,7 +78,9 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        $this->_prepEditEntryVariables($variables);
+        if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
+            return $response;
+        }
 
         $this->getView()->registerAssetBundle(EditEntryAsset::class);
 
@@ -250,7 +252,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Can the user delete the entry?
-        $variables['canDeleteEntry'] = (
+        $variables['canDeleteSource'] = $section->type !== Section::TYPE_SINGLE && (
             ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
             ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
         );
@@ -279,7 +281,9 @@ class EntriesController extends BaseEntriesController
         $variables['entry'] = $entry;
         $variables['showEntryTypes'] = true;
 
-        $this->_prepEditEntryVariables($variables);
+        if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
+            return $response;
+        }
 
         $view = $this->getView();
         $tabsHtml = !empty($variables['tabs']) ? $view->renderTemplate('_includes/tabs', $variables) : null;
@@ -298,18 +302,16 @@ class EntriesController extends BaseEntriesController
     /**
      * Saves an entry.
      *
+     * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      */
-    public function actionSaveEntry()
+    public function actionSaveEntry(bool $duplicate = false)
     {
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
         $request = Craft::$app->getRequest();
-
-        // Are we duplicating the entry?
-        $duplicate = (bool)$request->getBodyParam('duplicate');
 
         // Permission enforcement
         $this->enforceEditEntryPermissions($entry, $duplicate);
@@ -418,6 +420,18 @@ class EntriesController extends BaseEntriesController
     }
 
     /**
+     * Duplicates an entry.
+     *
+     * @return Response|null
+     * @throws ServerErrorHttpException if reasons
+     * @since 3.2.3
+     */
+    public function actionDuplicateEntry()
+    {
+        return $this->runAction('save-entry', ['duplicate' => true]);
+    }
+
+    /**
      * Deletes an entry.
      *
      * @return Response|null
@@ -475,6 +489,7 @@ class EntriesController extends BaseEntriesController
      * Preps entry edit variables.
      *
      * @param array &$variables
+     * @return Response|null
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -559,6 +574,17 @@ class EntriesController extends BaseEntriesController
             }
 
             if (!$variables['entry']) {
+                // If they're just accessing an invalid draft/revision ID, redirect them to the source
+                if (!empty($variables['draftId']) || !empty($variables['revisionId'])) {
+                    $sourceEntry = Entry::find()
+                        ->id($variables['entryId'])
+                        ->siteId($site->id)
+                        ->anyStatus()
+                        ->one();
+                    if ($sourceEntry) {
+                        return $this->redirect($sourceEntry->getCpEditUrl(), 301);
+                    }
+                }
                 throw new NotFoundHttpException('Entry not found');
             }
         }
@@ -619,6 +645,8 @@ class EntriesController extends BaseEntriesController
                 'class' => $hasErrors ? 'error' : null
             ];
         }
+
+        return null;
     }
 
     /**

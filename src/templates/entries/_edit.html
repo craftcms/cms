@@ -6,6 +6,10 @@
 {% set isRevision = entry.getIsRevision() %}
 
 {% set element = entry %}
+{% set redirectUrl = 'entries/' ~ (isSingle ? 'singles' : section.handle) %}
+{% set saveSourceAction = 'entries/save-entry' %}
+{% set duplicateSourceAction = 'entries/duplicate-entry' %}
+{% set deleteSourceAction = 'entries/delete-entry' %}
 {% set saveDraftAction = 'entry-revisions/save-draft' %}
 {% set deleteDraftAction = 'entry-revisions/delete-draft' %}
 {% set applyDraftAction = 'entry-revisions/publish-draft' %}
@@ -14,45 +18,24 @@
     currentUser.can('publishEntries'~permissionSuffix) and
     (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 ) %}
+{% set canDuplicateSource = canUpdateSource and not isSingle %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
+
+{% if not isSingle and canUpdateSource %}
+    {% set nextEntryParams = ["siteId=#{entry.siteId}"] %}
+    {% if showEntryTypes %}
+        {% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
+    {% endif %}
+    {% if section.type == 'structure' %}
+        {% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
+    {% endif %}
+    {% set canDuplicateSource = true %}
+    {% set canAddAnother = true %}
+    {% set addAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
+{% endif %}
 
 
 {% hook "cp.entries.edit" %}
-
-
-{% block actionButton %}
-    {{ parent() }}
-    {% if not isSingle and not isRevision and (canUpdateSource or canDeleteEntry) and not entry.isUnsavedDraft %}
-        <div class="spacer"></div>
-        <div>
-            <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
-            <div class="menu">
-                <ul>
-                    {% if canUpdateSource %}
-                        {% set duplicateRedirect = "entries/#{section.handle}/{id}-{slug}#" %}
-                        <li>
-                            <a class="formsubmit" data-action="entries/save-entry" data-param="duplicate" data-value="1"
-                               data-redirect="{{ duplicateRedirect|hash }}">
-                                {{ 'Save as a new entry'|t('app') }}
-                            </a>
-                        </li>
-                    {% endif %}
-                    {% if canDeleteEntry %}
-                        {% if canUpdateSource %}<hr>{% endif %}
-                        <li>
-                            <a class="error formsubmit" data-action="entries/delete-entry"
-                               data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}"
-                               data-redirect="{{ 'entries'|hash }}">
-                                {{ 'Delete entry'|t('app') }}
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-            <div id="action-spinner" class="spinner hidden"></div>
-        </div>
-    {% endif %}
-{% endblock %}
 
 
 {% block content %}

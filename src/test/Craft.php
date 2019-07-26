@@ -177,9 +177,8 @@ class Craft extends Yii2
 
             \Craft::$app->getProjectConfig()->saveModifiedConfigData();
         } else {
-            // No project config - we are probably using DB based fixtures so we need to rebuild based on that.
-            // Without rebuilding, Craft::$app->getProjectConfig()->get(); calls are unreliable
             \Craft::$app->getProjectConfig()->rebuild();
+
 
             $edition = $this->_getConfig('edition');
             // We also manually set the edition if desired by the current config
@@ -257,6 +256,8 @@ class Craft extends Yii2
 
             // Trigger the end of a 'request'. This lets project config do its stuff.
             // TODO: Probably Craft::$app->getProjectConfig->saveModifiedConfigData() but i feel the below is more solid.
+
+            \Craft::$app->state = Application::STATE_END;
             \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
         } catch (Throwable $exception) {
             // Get clean and throw a tantrum.

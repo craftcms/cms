@@ -732,13 +732,9 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           flex: 1;
           background: #fff;
           background-clip: padding-box;
-          padding: 24px 24px 0;
+          padding: 24px 24px 48px;
           word-wrap: break-word;
           @include border-right(1px solid $hairlineColorAlpha);
-
-          & > *:last-child {
-            padding-bottom: 48px;
-          }
         }
 
         #footer {

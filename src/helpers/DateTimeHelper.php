@@ -85,7 +85,7 @@ class DateTimeHelper
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
-     *      - `date` – a date string in `YYYY-MM-DD` format or the current locale’s short date format
+     *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` (24-hour) format or the current locale’s short time format
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
      *      - `timezone` – A [valid PHP timezone](http://php.net/manual/en/timezones.php). If set, this will override
@@ -597,9 +597,13 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        // First see if it's in YYYY-MM-DD format
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-            return [$value, 'Y-m-d'];
+        // First see if it's in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS.MU formats
+        if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2}\.\d+)?$/', $value, $match)) {
+            $format = 'Y-m-d';
+            if (!empty($match[1])) {
+                $format .= ' H:i:s.u';
+            }
+            return [$value, $format];
         }
 
         // Get the locale's short date format

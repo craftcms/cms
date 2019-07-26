@@ -328,6 +328,32 @@ class Image
         return [$width, $height];
     }
 
+    /**
+     * Clean EXIF data from an image loaded inside an Imagick instance, taking
+     * care not to wipe the ICC profile.
+     *
+     * @param \Imagick $imagick
+     */
+    public static function cleanExifDataFromImagickImage(\Imagick $imagick)
+    {
+        $config = Craft::$app->getConfig()->getGeneral();
+
+        if (!$config->preserveExifData) {
+            $iccProfiles = null;
+            $supportsImageProfiles = method_exists($imagick, 'getimageprofiles');
+
+            if ($config->preserveImageColorProfiles && $supportsImageProfiles) {
+                $iccProfiles = $imagick->getImageProfiles("icc", true);
+            }
+
+            $imagick->stripImage();
+
+            if (!empty($iccProfiles)) {
+                $imagick->profileImage("icc", $iccProfiles['icc'] ?? '');
+            }
+        }
+    }
+
     // Private Methods
     // =========================================================================
 

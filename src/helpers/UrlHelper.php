@@ -87,7 +87,33 @@ class UrlHelper
 
         // Append to the base URL and return
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . urldecode(http_build_query($params));
+        }
+        if ($fragment !== null) {
+            $url .= '#' . $fragment;
+        }
+        return $url;
+    }
+
+    /**
+     * Removes a query string param from a URL.
+     *
+     * @param string $url
+     * @param string $param
+     * @return string
+     * @since 3.2.2
+     */
+    public static function removeParam(string $url, string $param): string
+    {
+        // Extract any params/fragment from the base URL
+        list($url, $params, $fragment) = self::_extractParams($url);
+
+        // Remove the param
+        unset($params[$param]);
+
+        // Rebuild
+        if (!empty($params)) {
+            $url .= '?' . urldecode(http_build_query($params));
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -612,7 +638,7 @@ class UrlHelper
         }
 
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . urldecode(http_build_query($params));
         }
 
         if ($fragment !== null) {

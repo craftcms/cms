@@ -11,7 +11,7 @@ Craft.Preview = Garnish.Base.extend(
         $editorContainer: null,
         $editor: null,
         $spinner: null,
-        $savedIcon: null,
+        $statusIcon: null,
         $dragHandle: null,
         $previewContainer: null,
         $targetBtn: null,
@@ -99,7 +99,7 @@ Craft.Preview = Garnish.Base.extend(
                 var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
                 $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
                 this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
-                this.$savedIcon = $('<div/>', {'class': 'checkmark-icon invisible', title: Craft.t('app', 'Saved')}).appendTo($editorHeader);
+                this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
                 if (this.draftEditor.settings.previewTargets.length > 1) {
                     var $previewHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$previewContainer);
@@ -134,6 +134,9 @@ Craft.Preview = Garnish.Base.extend(
                 });
 
                 this.addListener($closeBtn, 'click', 'close');
+                this.addListener(this.$statusIcon, 'click', function() {
+                    this.draftEditor.showStatusHud(this.$statusIcon);
+                }.bind(this));
             }
 
             // Set the sizes

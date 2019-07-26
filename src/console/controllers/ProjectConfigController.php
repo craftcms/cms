@@ -48,8 +48,20 @@ class ProjectConfigController extends Controller
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (!$projectConfig->getAreConfigSchemaVersionsCompatible()) {
-            $this->stdout('Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed. Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+        $issues = [];
+        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+            $this->stderr('Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+
+            foreach ($issues as $issue) {
+                $this->stderr($issue['cause'], Console::FG_RED);
+                $this->stderr(' is installed with schema version of ', Console::FG_YELLOW);
+                $this->stderr($issue['existing'], Console::FG_RED);
+                $this->stderr(' while ', Console::FG_YELLOW);
+                $this->stderr($issue['incoming'], Console::FG_RED);
+                $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
+            }
+
+            $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
 

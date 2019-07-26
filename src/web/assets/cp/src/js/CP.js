@@ -137,11 +137,18 @@ Craft.CP = Garnish.Base.extend(
                 return;
             }
 
-            var $form;
+            var $form, serialized;
 
             for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                 $form = this.$confirmUnloadForms.eq(i);
-                $form.data('initialSerializedValue', $form.serialize());
+                if (!$form.data('initialSerializedValue')) {
+                    if (typeof $form.data('serializer') === 'function') {
+                        serialized = $form.data('serializer')();
+                    } else {
+                        serialized = $form.serialize();
+                    }
+                    $form.data('initialSerializedValue', serialized);
+                }
                 this.addListener($form, 'submit', function() {
                     this.removeListener(Garnish.$win, 'beforeunload');
                 });
@@ -198,7 +205,10 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.trigger('submit');
+            this.$primaryForm.trigger({
+                type: 'submit',
+                saveShortcut: true,
+            });
         },
 
         updateSidebarMenuLabel: function() {

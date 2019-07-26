@@ -153,15 +153,14 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth,
                 $this->getHeight() / $targetHeight);
-            $this->resize(round($this->getWidth() / $factor),
-                round($this->getHeight() / $factor));
+            $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
         }
 
         return $this;
@@ -212,7 +211,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth, int $targetHeight = null)
+    public function resize(int $targetWidth = null, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 

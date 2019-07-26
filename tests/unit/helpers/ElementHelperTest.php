@@ -167,15 +167,18 @@ class ElementHelperTest extends Unit
     public function createSlugDataProvider(): array
     {
         return [
-            ['word[separator-here]Word', 'wordWord'],
+            ['wordWord', 'wordWord'],
             ['word[separator-here]word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
             ['abc...dfg', 'abc...dfg'],
             ['abc...dfg', 'abc...(dfg)'],
             ['__home__', '__home__'], // https://github.com/craftcms/cms/issues/4096
-            ['A[separator-here]B[separator-here]C', 'A-B-C'], // https://github.com/craftcms/cms/issues/4266
+            ['A-B-C', 'A-B-C'], // https://github.com/craftcms/cms/issues/4266
             ['test_slug', 'test_slug'],
+            ['Audi[separator-here]S8[separator-here]4E[separator-here]2006-2010', 'Audi S8 4E (2006-2010)'], // https://github.com/craftcms/cms/issues/4607
+            ['こんにちは', 'こんにちは'], // https://github.com/craftcms/cms/issues/4628
+            ['Сертификация', 'Сертификация'], // https://github.com/craftcms/cms/issues/1535
         ];
     }
 
