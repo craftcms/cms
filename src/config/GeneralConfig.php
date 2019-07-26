@@ -573,6 +573,14 @@ class GeneralConfig extends BaseObject
      */
     public $purgePendingUsersDuration = 0;
     /**
+     * @var mixed The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $purgeStaleUserSessionDuration = 7776000;
+    /**
      * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
      *
      * Set to `0` to disable this feature.

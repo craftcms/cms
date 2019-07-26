@@ -1674,6 +1674,30 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 
 
+### `purgeStaleUserSessionDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `7776000`
+
+Defined by
+
+:   [GeneralConfig::$purgeStaleUserSessionDuration](api:craft\config\GeneralConfig::$purgeStaleUserSessionDuration)
+
+
+
+The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+
+Set to `0` to disable this feature.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
 ### `purgeUnsavedDraftsDuration`
 
 Allowed types

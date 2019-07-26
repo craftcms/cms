@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `purgeStaleUserSessionDuration` config setting that controls how long Craft should wait to purge stale user sessions in the database.
+
 ## 3.2.0 - 2019-07-09
 
 > {warning} If you’ve ever run the `project-config/rebuild` command, it’s highly recommended that you run it again with Craft 3.1.34, before updating to Craft 3.2.
