@@ -25,7 +25,7 @@ Craft adds its own layer of support to ensure Craft specific concepts such as El
 Ready to rock? Start by reading a description of what testing is
 within [Craft](testing.md) as well as how to test using 
 [Codeception](https://codeception.com/docs/01-Introduction). 
-Then there is a handy [get started guide](./getting-started.md) 
+Then there is a handy [get started guide](./testing-craft/getting-started.md) 
 to setup your test suite. 
 :::
 
