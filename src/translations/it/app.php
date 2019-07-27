@@ -1144,13 +1144,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Your system isn’t set up to save content for the site “{site}”.',
     'You’re all up-to-date!' => 'You’re all up-to-date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'You’re running Craft {edition} with a Craft {licensedEdition} license.',
-    'account_activation_body' => 'Hey {{user.friendlyName}},
+    'account_activation_body' => 'Ciao {{user.friendlyName}},
 
-Thanks for creating an account with {{siteName}}! To activate your account, click the following link:
+Grazie per aver creato un account con {{siteName}}! Per attivare il tuo account, clicca sul seguente link:
 
 <{{link}}>
 
-If you were not expecting this email, just ignore it.',
+Se non aspettavi questa email, ignorala semplicemente.',
     'account_activation_heading' => 'When someone creates an account:',
     'account_activation_subject' => 'Activate your account',
     'by {author}' => 'by {author}',
@@ -1162,13 +1162,13 @@ If you were not expecting this email, just ignore it.',
     'five' => 'five',
     'folders' => 'folders',
     'folders and files' => 'folders and files',
-    'forgot_password_body' => 'Hey {{user.friendlyName}},
+    'forgot_password_body' => 'Ciao {{user.friendlyName}},
 
-To reset your {{siteName}} password, click on this link:
+Per reimpostare la tua {{siteName}} password, clicca su questo link:
 
 <{{link}}>
 
-If you were not expecting this email, just ignore it.',
+Se non aspettavi questa email, ignorala semplicemente.',
     'forgot_password_heading' => 'When someone forgets their password:',
     'forgot_password_subject' => 'Reset your password',
     'four' => 'four',
@@ -1184,24 +1184,20 @@ If you were not expecting this email, just ignore it.',
     'seconds' => 'seconds',
     'seven' => 'seven',
     'six' => 'six',
-    'test_email_body' => 'Hey {{user.friendlyName}},
+    'test_email_body' => 'Ciao {{user.friendlyName}},
 
-Congratulations! Craft was successfully able to send an email.
-
-Here are the settings you used:
-
-{{ settings }}',
+Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazioni da te usate: {{ settings }}',
     'test_email_heading' => 'When you are testing your email settings:',
     'test_email_subject' => 'This is a test email from Craft',
     'three' => 'three',
     'two' => 'two',
-    'verify_new_email_body' => 'Hey {{user.friendlyName}},
+    'verify_new_email_body' => 'Ciao {{user.friendlyName}},
 
-Please verify your new email address by clicking on this link:
+Ti preghiamo di verificare il tuo nuovo indirizzo email cliccando su questo link:
 
 <{{link}}>
 
-If you were not expecting this email, just ignore it.',
+Se non aspettavi questa email, ignorala semplicemente.',
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
     'week' => 'week',
