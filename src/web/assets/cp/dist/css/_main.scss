@@ -2283,32 +2283,6 @@ table.editable {
           }
         }
 
-        &.code {
-          textarea::-webkit-input-placeholder {
-            @include sans-serif-font;
-          }
-
-          textareainput:-ms-input-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea::-ms-input-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea:-moz-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea::-moz-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea::placeholder {
-            @include sans-serif-font;
-          }
-        }
-
         .flex > * {
           margin-bottom: 0;
         }
