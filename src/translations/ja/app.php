@@ -86,7 +86,6 @@ return [
     'Are you sure you want to delete this block type?' => 'このブロックタイプを削除してもよろしいですか？',
     'Are you sure you want to delete this category?' => 'このカテゴリを削除してもよろしいですか？',
     'Are you sure you want to delete this draft?' => 'この下書きを削除してもよろしいですか？',
-    'Are you sure you want to delete this entry?' => 'このエントリを削除してもよろしいですか？',
     'Are you sure you want to delete this field?' => 'このフィールドを削除してもよろしいですか?',
     'Are you sure you want to delete this group and all its fields?' => 'このグループと関連のフィールドを削除してもよろしいですか？',
     'Are you sure you want to delete this group?' => 'このグループを削除してもよろしいですか？',
@@ -798,7 +797,6 @@ return [
     'Save and add another' => '保存してからもう一つを制作する',
     'Save and continue editing' => '保存して編集を続く',
     'Save as a new category' => '新しいカテゴリーとして保存',
-    'Save as a new entry' => '新しいエントリーとして保存',
     'Save as a new {type}' => '新しい{type}として保存',
     'Save as a Draft' => '下書きとして保存',
     'Scale and crop' => 'スケールとトリミング',
@@ -1386,7 +1384,6 @@ return [
     'Learn how' => '詳しく知る',
     'Price includes 1 year of updates.' => '価格には1年間のアップデートが含まれます。',
     '{name} should be at least {value}.' => '{name}は{value}以上である必要があります。',
-    'Entry updated.' => 'エントリを更新しました。',
     'Business Tax ID' => 'Business Tax ID',
     'Save {type}' => '{type}を保存',
     'Save entries to other sites in the same site group' => '同じサイトグループ内の他のサイトにエントリを保存する',
@@ -1395,7 +1392,6 @@ return [
     'This can be set to an environment variable.' => 'これは環境変数に設定することができます。',
     'Invalid verification code. Please login or reset your password.' => '無効な検証コード。ログインするか、パスワードを再設定してください。',
     'Impersonate users' => 'ユーザーを偽装する',
-    'Delete entry' => 'エントリを削除',
     'Update {type}' => '{type}を更新',
     'Please fix the following in your {file} file before proceeding:' => '先に進む前に、{file}ファイルで以下を修正してください:',
     'Label' => 'ラベル',
@@ -1467,5 +1463,7 @@ return [
     'Matrix Blocks' => '行列ブロック',
     'Address Line 1' => '住所1',
     'Choose a site' => 'サイトを選択',
-    'Address Line 2' => '住所2'
+    'Address Line 2' => '住所2',
+    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
