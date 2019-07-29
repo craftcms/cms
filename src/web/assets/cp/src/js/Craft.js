@@ -370,7 +370,7 @@ $.extend(Craft,
                     }
                 },
                 complete: function(jqXHR, textStatus) {
-                    if (textStatus !== 'success') {
+                    if (textStatus === 'error') {
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
                         }

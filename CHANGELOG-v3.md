@@ -10,6 +10,7 @@
 - Fixed a bug where it wasn’t possible to create a homepage Single section if a prior entry revisions’ URI had been set to `__home__`. ([#4657](https://github.com/craftcms/cms/issues/4657))
 - Fixed a bug where the user deletion confirmation dialog was including revisions and drafts when counting entries for the content summary.
 - Fixed an error that occurred when deleting a user, if another user had been chosen to inherit their content. ([#4670](https://github.com/craftcms/cms/issues/4670))
+- Fixed a bug where users could be warned about losing unsaved changes when updating an entry from a draft, while the draft was being autosaved. ([#4614](https://github.com/craftcms/cms/issues/4614))
 
 ## 3.2.7 - 2019-07-25
 
