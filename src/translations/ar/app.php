@@ -86,7 +86,6 @@ return [
     'Are you sure you want to delete this block type?' => 'هل تريد بالتأكيد حذف نوع الكتلة هذا؟',
     'Are you sure you want to delete this category?' => 'هل تريد بالتأكيد حذف هذه الفئة؟',
     'Are you sure you want to delete this draft?' => 'هل تريد بالتأكيد حذف هذه المسودة؟',
-    'Are you sure you want to delete this entry?' => 'هل تريد بالتأكيد حذف هذا الإدخال؟',
     'Are you sure you want to delete this field?' => 'هل تريد بالتأكيد حذف هذا الحقل؟',
     'Are you sure you want to delete this group and all its fields?' => 'هل تريد بالتأكيد حذف هذا الحساب وجميع الحقول المرتبطة به؟',
     'Are you sure you want to delete this group?' => 'هل تريد بالتأكيد حذف هذه المجموعة؟',
@@ -797,7 +796,6 @@ return [
     'Save and add another' => 'حفظ وإضافة آخر',
     'Save and continue editing' => 'حفظ وإكمال التحرير',
     'Save as a new category' => 'حفظ كفئة جديدة',
-    'Save as a new entry' => 'حفظ كإدخال جديد',
     'Scale and crop' => 'تغيير الحجم والاقتصاص',
     'Scale to fit' => 'تغيير الحجم للملاءمة',
     'Schema Name' => 'اسم المخطط',
@@ -1383,7 +1381,6 @@ return [
     'Learn how' => 'Learn how',
     'Price includes 1 year of updates.' => 'Price includes 1 year of updates.',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
-    'Entry updated.' => 'Entry updated.',
     'Business Tax ID' => 'Business Tax ID',
     'Save {type}' => 'Save {type}',
     'Save entries to other sites in the same site group' => 'Save entries to other sites in the same site group',
@@ -1392,7 +1389,6 @@ return [
     'This can be set to an environment variable.' => 'This can be set to an environment variable.',
     'Invalid verification code. Please login or reset your password.' => 'Invalid verification code. Please login or reset your password.',
     'Impersonate users' => 'Impersonate users',
-    'Delete entry' => 'Delete entry',
     'Update {type}' => 'Update {type}',
     'Please fix the following in your {file} file before proceeding:' => 'Please fix the following in your {file} file before proceeding:',
     'Label' => 'Label',
@@ -1464,5 +1460,10 @@ return [
     'Matrix Blocks' => 'Matrix Blocks',
     'Address Line 1' => 'Address Line 1',
     'Choose a site' => 'Choose a site',
-    'Address Line 2' => 'Address Line 2'
+    'Address Line 2' => 'Address Line 2',
+    'Save as a new {type}' => 'Save as a new {type}',
+    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    'Delete {type}' => 'Delete {type}',
+    'Save as a Draft' => 'Save as a Draft',
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
