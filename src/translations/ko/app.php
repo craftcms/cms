@@ -86,7 +86,6 @@ return [
     'Are you sure you want to delete this block type?' => '이 블록 유형을 삭제하시겠습니까?',
     'Are you sure you want to delete this category?' => '이 카테고리를 삭제하시겠습니까?',
     'Are you sure you want to delete this draft?' => '이 드래프트를 삭제하시겠습니까?',
-    'Are you sure you want to delete this entry?' => '이 항목을 삭제하시겠습니까?',
     'Are you sure you want to delete this field?' => '이 필드를 삭제하시겠습니까?',
     'Are you sure you want to delete this group and all its fields?' => '이 그룹과 이 그룹의 모든 필드를 삭제하시겠습니까?',
     'Are you sure you want to delete this group?' => '이 그룹을 삭제하시겠습니까?',
@@ -797,7 +796,6 @@ return [
     'Save and add another' => '저장하고 다른 것 추가하기',
     'Save and continue editing' => '저장하고 편집 계속하기',
     'Save as a new category' => '새 카테고리로 저장',
-    'Save as a new entry' => '새 항목으로 저장',
     'Scale and crop' => '크기 변경 및 잘라내기',
     'Scale to fit' => '크기 변경으로 맞추기',
     'Schema Name' => '스키마 이름',
@@ -1383,7 +1381,6 @@ return [
     'Learn how' => 'Learn how',
     'Price includes 1 year of updates.' => 'Price includes 1 year of updates.',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
-    'Entry updated.' => 'Entry updated.',
     'Business Tax ID' => 'Business Tax ID',
     'Save {type}' => 'Save {type}',
     'Save entries to other sites in the same site group' => 'Save entries to other sites in the same site group',
@@ -1392,7 +1389,6 @@ return [
     'This can be set to an environment variable.' => 'This can be set to an environment variable.',
     'Invalid verification code. Please login or reset your password.' => 'Invalid verification code. Please login or reset your password.',
     'Impersonate users' => 'Impersonate users',
-    'Delete entry' => 'Delete entry',
     'Update {type}' => 'Update {type}',
     'Please fix the following in your {file} file before proceeding:' => 'Please fix the following in your {file} file before proceeding:',
     'Label' => 'Label',
@@ -1464,5 +1460,10 @@ return [
     'Matrix Blocks' => 'Matrix Blocks',
     'Address Line 1' => 'Address Line 1',
     'Choose a site' => 'Choose a site',
-    'Address Line 2' => 'Address Line 2'
+    'Address Line 2' => 'Address Line 2',
+    'Save as a new {type}' => 'Save as a new {type}',
+    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    'Delete {type}' => 'Delete {type}',
+    'Save as a Draft' => 'Save as a Draft',
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
