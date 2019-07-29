@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to create a homepage Single section if a prior entry revisions’ URI had been set to `__home__`. ([#4657](https://github.com/craftcms/cms/issues/4657))
+- Fixed a bug where the user deletion confirmation dialog was including revisions and drafts when counting entries for the content summary.
 
 ## 3.2.7 - 2019-07-25
 
