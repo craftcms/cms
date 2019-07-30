@@ -1,8 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.8 - 2019-07-30
 
 ### Added
+- Element indexes with unsaved drafts now show a “Drafts” option in the status menu.
 - Added the `utils/fix-element-uids` command, which ensures all elements have unique UIDs. ([#4653[(https://github.com/craftcms/cms/issues/4653)]])
 
 ### Fixed
