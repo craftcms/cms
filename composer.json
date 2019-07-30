@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.2.7",
+  "version": "3.2.8",
   "keywords": [
     "cms",
     "craftcms",
@@ -54,6 +54,7 @@
   "require-dev": {
     "codeception/codeception": "^3.0",
     "codeception/mockery-module": "^0.3",
+    "codeception/phpunit-wrapper": "^7.7",
     "codeception/specify": "^0.4",
     "codeception/verify": "^1.0",
     "vlucas/phpdotenv": "^3.0",

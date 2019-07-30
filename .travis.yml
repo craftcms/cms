@@ -77,3 +77,7 @@ after_script:
 
 notifications:
   slack: 'pixelandtonic:HtwOY10EF6IzlvGEdicr3GHP#travis'
+  email:
+    recipients:
+      - brad@craftcms.com
+      - brandon@craftcms.com

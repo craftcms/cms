@@ -1388,7 +1388,7 @@ class User extends Element implements IdentityInterface
                             ],
                             [
                                 $column => $this->id
-                            ])
+                            ], [], false)
                         ->execute();
                 }
             } else {

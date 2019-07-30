@@ -269,21 +269,9 @@
                         }
                     }
 
-                    // Focus on the first element
-                    setTimeout($.proxy(function() {
-                        var $firstElem = this.uriInput.elements[0];
-                        this.uriInput.setFocus($firstElem);
-                        this.uriInput.setCarotPos($firstElem, 0);
-                    }, this), 1);
-
                     // Set the initial Template value
                     var templateVal = this.route.$template.text();
                     this.$templateInput.val(templateVal);
-                }
-                else {
-                    setTimeout($.proxy(function() {
-                        this.$uriInput.trigger('focus');
-                    }, this), 100);
                 }
 
                 this.base($container);
@@ -341,6 +329,17 @@
                     this.$heading.html(Craft.t('app', 'Edit Route'));
                     this.$deleteBtn.show();
                 }
+
+                // Focus on the first element
+                setTimeout(function() {
+                    if (this.uriInput.elements.length) {
+                        var $firstElem = this.uriInput.elements[0];
+                        this.uriInput.setFocus($firstElem);
+                        this.uriInput.setCarotPos($firstElem, 0);
+                    } else {
+                        this.$uriInput.trigger('focus');
+                    }
+                }.bind(this), 100);
 
                 this.base();
             },

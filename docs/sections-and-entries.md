@@ -94,6 +94,25 @@ The above template could also be expressed with this syntax:
 
 With the above Entry URI Format, a top-level entry’s URI might end up as `docs/templating`, whereas a nested entry’s URI might end up as `docs/templating/tags`.
 
+### Preview Targets
+
+Your entry content will likely show up in places other than just their main URLs. For example, the Blog index page will show excerpts of recent blog posts.
+
+With Craft Pro, your sections will have a “Preview Targets” setting, where you can list additional places your entries will show up on your site, so that authors can quickly preview entries everywhere they appear.
+
+Each preview target has Name and a URI. Give each of your targets a clear name that authors will understand, such as “Homepage” or “Blog Index”. Set the URI to the actual URI you want to load when the target is selected.
+
+The URI is a mini Twig template (just like Entry URI Formats), so you can make it dynamic if you need to. For example, if you are creating an “Archive” preview target, where the URI needs to include the year the entry was published, you can enter `archive/{postDate|date('Y')}`.  
+
+![A section’s Preview Targets setting.](./images/preview-targets.png)
+
+When an author is editing an entry from a section with custom preview targets, the “Share” button will be replaced with a menu that lists the “Primary entry page” (if the section has an Entry URI Format), plus the names of each preview target.
+
+![An entry’s Share menu with 3 custom preview targets.](./images/share-with-targets.png =294x)
+
+The targets will also be available within Live Preview.
+
+
 ## Entry Types
 
 Both Channel and Structure sections let you define multiple types of entries using Entry Types.
