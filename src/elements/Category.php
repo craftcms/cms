@@ -594,7 +594,9 @@ class Category extends Element
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];
 
-            $ancestorIds = $this->getAncestors()->ids();
+            $ancestorIds = $this->getAncestors()
+                ->anyStatus()
+                ->ids();
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
