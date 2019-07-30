@@ -951,6 +951,9 @@ class Entry extends Element
         if (Craft::$app->getIsMultiSite()) {
             $params['site'] = $this->getSite()->handle;
         }
+        if ($this->getIsDraft()) {
+            $params['draftId'] = $this->draftId;
+        }
 
         return UrlHelper::cpUrl($path, $params);
     }
