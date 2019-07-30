@@ -37,15 +37,17 @@ class Routes
         foreach ($results as $routeUid => $route) {
             $uriDisplayHtml = '';
 
-            foreach ($route['uriParts'] as $part) {
-                if (is_string($part)) {
-                    $uriDisplayHtml .= Html::encode($part);
-                } else {
-                    $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
-                        [
-                            'name' => $part[0],
-                            'value' => $part[1]
-                        ]);
+            if (!empty($route['uriParts'])) {
+                foreach ($route['uriParts'] as $part) {
+                    if (is_string($part)) {
+                        $uriDisplayHtml .= Html::encode($part);
+                    } else {
+                        $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
+                            [
+                                'name' => $part[0],
+                                'value' => $part[1]
+                            ]);
+                    }
                 }
             }
 

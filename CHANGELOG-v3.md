@@ -11,6 +11,7 @@
 - Fixed an error that occurred when deleting a user, if another user had been chosen to inherit their content. ([#4670](https://github.com/craftcms/cms/issues/4670))
 - Fixed a bug where users could be warned about losing unsaved changes when updating an entry from a draft, while the draft was being autosaved. ([#4614](https://github.com/craftcms/cms/issues/4614))
 - Fixed a bug where Categories fields weren’t always getting updated when a category they were related to got moved under another category. ([#4672](https://github.com/craftcms/cms/issues/4672))
+- Fixed an error that occurred on the Settings → Routes page, if one of the routes didn’t have a URI pattern. ([#4676](https://github.com/craftcms/cms/issues/4676))
 
 ## 3.2.7 - 2019-07-25
 
