@@ -937,7 +937,7 @@ return [
     'The primary site will be loaded by default on the front end.' => 'Il sito principale sarà caricato in primo piano per impostazione predefinita.',
     'The request could not be understood by the server due to malformed syntax.' => 'La richiesta non può essere compresa dal server a causa di sintassi non valida.',
     'The requested URL was not found on this server.' => 'L\'URL richiesto non è stato trovato su questo server.',
-    'The server doesn’t meet Craft’s new requirements:' => 'Il server non risponde ai nuovi requisiti di Craft.',
+    'The server doesn’t meet Craft’s new requirements:' => 'Il server non risponde ai nuovi requisiti di Craft:',
     'The table name prefix' => 'Prefisso del nome tabella',
     'The template Craft CMS will use for HTML emails' => 'Il modello Craft CMS verrà utilizzato per email HTML',
     'The text that will be shown if the field doesn’t have a value.' => 'Testo che verrà visualizzato se il campo non ha un valore.',
