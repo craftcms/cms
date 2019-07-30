@@ -11,6 +11,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -486,7 +487,12 @@ class Api extends Component
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled']) {
                 $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
-                if (($licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle)) !== null) {
+                try {
+                    $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
+                } catch (InvalidLicenseKeyException $e) {
+                    $licenseKey = null;
+                }
+                if ($licenseKey !== null) {
                     $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
                 }
             }

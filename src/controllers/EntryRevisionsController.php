@@ -15,7 +15,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\StringHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -93,7 +93,7 @@ class EntryRevisionsController extends BaseEntriesController
         $entry->sectionId = $section->id;
         $entry->typeId = $request->getQueryParam('typeId', $section->getEntryTypes()[0]->id);
         $entry->authorId = $request->getQueryParam('authorId', Craft::$app->getUser()->getId());
-        $entry->slug = '__temp_' . StringHelper::randomString();
+        $entry->slug = ElementHelper::tempSlug();
 
         // Set the default status based on the section's settings
         /** @var Section_SiteSettings $siteSettings */
@@ -176,6 +176,8 @@ class EntryRevisionsController extends BaseEntriesController
             /** @var Entry|DraftBehavior $draft */
             $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
         } else {
+            $transaction = null;
+
             if ($draftId) {
                 $draft = Entry::find()
                     ->draftId($draftId)
@@ -201,6 +203,10 @@ class EntryRevisionsController extends BaseEntriesController
                     throw new NotFoundHttpException('Entry not found');
                 }
                 $this->enforceEditEntryPermissions($entry);
+
+                // Create the draft in a transaction so we can undo it if something goes wrong
+                $transaction = Craft::$app->getDb()->beginTransaction();
+
                 /** @var Entry|DraftBehavior $draft */
                 $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
             }
@@ -215,9 +221,13 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             if (!$elementsService->saveElement($draft)) {
+                if ($transaction !== null) {
+                    $transaction->rollBack();
+                }
+
                 if ($request->getAcceptsJson()) {
                     return $this->asJson([
-                        'errors' => $draft->getErrors(),
+                        'errors' => $draft->getErrorSummary(true),
                     ]);
                 }
 
@@ -226,6 +236,10 @@ class EntryRevisionsController extends BaseEntriesController
                     'entry' => $draft,
                 ]);
                 return null;
+            }
+
+            if ($transaction !== null) {
+                $transaction->commit();
             }
         }
 
@@ -370,7 +384,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Publish the draft (finally!)
         $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry updated.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
         if ($request->getAcceptsJson()) {
             return $this->asJson([
@@ -450,8 +464,10 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->typeId = $request->getBodyParam('typeId');
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
-        // Default to the current draft slug (maybe __temp_X) to avoid slug validation errors
-        $draft->slug = $request->getBodyParam('slug') ?: $draft->slug;
+        // Default to a temp slug to avoid slug validation errors
+        $draft->slug = $request->getBodyParam('slug') ?: (ElementHelper::isTempSlug($draft->slug)
+            ? $draft->slug
+            : ElementHelper::tempSlug());
         if (($postDate = $request->getBodyParam('postDate')) !== null) {
             $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
@@ -459,6 +475,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
         $draft->enabled = (bool)$request->getBodyParam('enabled');
+        $draft->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $draft->enabledForSite);
         $draft->title = $request->getBodyParam('title');
 
         if (!$draft->typeId) {

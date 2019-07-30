@@ -1571,7 +1571,7 @@ Defined by
 
 
 
-Whether the EXIF data should be preserved when manipulating images.
+Whether the EXIF data should be preserved when manipulating and uploading images.
 
 Setting this to `true` will result in larger image file sizes.
 

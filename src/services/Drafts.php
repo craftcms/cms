@@ -130,12 +130,8 @@ class Drafts extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Create a new revision for the source element, or get the latest if nothing has changed since then
-            /** @var Element|RevisionBehavior $revision */
-            $revision = Craft::$app->getRevisions()->createRevision($source, $creatorId, 'Created automatically for draft');
-
             // Create the draft row
-            $draftId = $this->_insertDraftRow($source->id, $revision->revisionId, $creatorId, $name, $notes);
+            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes);
 
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -187,7 +183,7 @@ class Drafts extends Component
         }
 
         // Create the draft row
-        $draftId = $this->_insertDraftRow(null, null, $creatorId, $name, $notes);
+        $draftId = $this->_insertDraftRow(null, $creatorId, $name, $notes);
 
         /** @var Element $element */
         $element->draftId = $draftId;
@@ -240,31 +236,23 @@ class Drafts extends Component
                     'draftId' => null,
                     'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
-
-                // Now delete the draft
-                $elementsService->deleteElement($draft, true);
             } else {
-                // Delete the draftId from the elements table
-                $db = Craft::$app->getDb();
-                $db->createCommand()
-                    ->update(Table::ELEMENTS, ['draftId' => null], ['id' => $draft->id], [], false)
-                    ->execute();
+                // Detach the draft behavior
+                $behavior = $draft->detachBehavior('draft');
 
-                // Delete the row from the drafts table
-                $db->createCommand()
-                    ->delete(Table::DRAFTS, ['id' => $draft->draftId])
-                    ->execute();
+                // Duplicate the draft as a new element
+                $newSource = $elementsService->duplicateElement($draft, [
+                    'draftId' => null,
+                ]);
 
-                // Resave the draft without its draftId
-                $draft->draftId = null;
-                $draft->detachBehavior('draft');
-                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!$elementsService->saveElement($draft)) {
-                    throw new InvalidElementException($draft, 'Couldn\'t save element.');
+                // Now reattach the draft behavior to the draft
+                if ($behavior !== null) {
+                    $draft->attachBehavior('draft', $behavior);
                 }
-
-                $newSource = $draft;
             }
+
+            // Now delete the draft
+            $elementsService->deleteElement($draft, true);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -339,17 +327,15 @@ class Drafts extends Component
      * @param string|null $name
      * @param string|null $notes
      * @param int|null $sourceId
-     * @param int|null $revisionId
      * @return int The new draft ID
      * @throws DbException
      */
-    private function _insertDraftRow(int $sourceId = null, int $revisionId = null, int $creatorId, string $name = null, string $notes = null): int
+    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null): int
     {
         $db = Craft::$app->getDb();
         $db->createCommand()
             ->insert(Table::DRAFTS, [
                 'sourceId' => $sourceId,
-                'revisionId' => $revisionId,
                 'creatorId' => $creatorId,
                 'name' => $name,
                 'notes' => $notes,

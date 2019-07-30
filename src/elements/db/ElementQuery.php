@@ -398,6 +398,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @var mixed The placeholder condition for this query.
+     * @see _placeholderCondition()
+     */
+    private $_placeholderCondition;
+
+    /**
+     * @var mixed The [[siteId]] param used at the time the placeholder condition was generated.
+     * @see _placeholderCondition()
+     */
+    private $_placeholderSiteIds;
+
+    /**
      * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
@@ -452,10 +464,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function __get($name)
     {
-        switch ($name) {
+        // We must ensure $name is a string; if it is 0 then each of these cases could match.
+        // (https://stackoverflow.com/a/8146455)
+        switch ((string)$name) {
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
-                if ($this->siteId && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
+                if ($this->siteId && is_numeric($this->siteId) && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
                     return $site->handle;
                 }
 
@@ -1837,6 +1851,45 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     /**
+     * Combines the given condition with an alternative condition if there are any relevant placeholder elements.
+     *
+     * @param mixed $condition
+     * @return mixed
+     */
+    private function _placeholderCondition($condition)
+    {
+        if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
+            $placeholderSourceIds = [];
+            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            if (!empty($placeholderElements)) {
+                $siteIds = $this->siteId !== '*' ? array_flip((array)$this->siteId) : null;
+                foreach ($placeholderElements as $element) {
+                    /** @var Element $element */
+                    if (
+                        $element instanceof $this->elementType &&
+                        ($siteIds === null || isset($siteIds[$element->siteId]))
+                    ) {
+                        $placeholderSourceIds[] = $element->getSourceId();
+                    }
+                }
+            }
+
+            if (!empty($placeholderSourceIds)) {
+                $this->_placeholderCondition = ['elements.id' => $placeholderSourceIds];
+            } else {
+                $this->_placeholderCondition = false;
+            }
+            $this->_placeholderSiteIds = is_array($this->siteId) ? array_merge($this->siteId) : $this->siteId;
+        }
+
+        if ($this->_placeholderCondition === false) {
+            return $condition;
+        }
+
+        return ['or', $condition, $this->_placeholderCondition];
+    }
+
+    /**
      * Joins the content table into the query being prepared.
      *
      * @param string $class
@@ -1934,7 +1987,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $this->subQuery->andWhere($condition);
+        $this->subQuery->andWhere($this->_placeholderCondition($condition));
     }
 
     /**
@@ -2205,7 +2258,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
         } else {
-            $this->subQuery->andWhere(['elements.draftId' => null]);
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
 
         if ($this->revisions) {
@@ -2232,7 +2285,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
             }
         } else {
-            $this->subQuery->andWhere(['elements.revisionId' => null]);
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.revisionId' => null]));
         }
     }
 
@@ -2528,6 +2581,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 new Expression($caseSql, $caseParams),
                 'elements_sites.id' => SORT_ASC
             ])
+            ->offset(0)
             ->limit(1)
             ->getRawSql();
 
@@ -2539,7 +2593,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
         $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
 
-        $this->subQuery->where(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
+        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
     }
 
     /**
@@ -2629,6 +2683,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($class::hasContent() && $this->contentTable !== null) {
+            if ($class::hasTitles()) {
+                // Ensure the title is a string
+                $row['title'] = (string)($row['title'] ?? '');
+            }
+
             // Separate the content values from the main element attributes
             $fieldValues = [];
 

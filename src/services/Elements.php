@@ -688,17 +688,17 @@ class Elements extends Component
             }
         }
 
-        // Delete any caches involving this element. (Even do this for new elements, since they
-        // might pop up in a cached criteria.)
-        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
-
-        // Update search index
         if (!$element->propagating && !ElementHelper::isDraftOrRevision($element)) {
+            // Update search index
             Craft::$app->getQueue()->push(new UpdateSearchIndex([
                 'elementType' => get_class($element),
                 'elementId' => $element->id,
                 'siteId' => $propagate ? '*' : $element->siteId,
             ]));
+
+            // Delete any caches involving this element. (Even do this for new elements, since they
+            // might pop up in a cached criteria.)
+            Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
         }
 
         // Fire an 'afterSaveElement' event
@@ -1749,6 +1749,21 @@ class Elements extends Component
         if ($element->uri) {
             $this->_placeholderUris[$element->uri][$element->siteId] = $element;
         }
+    }
+
+    /**
+     * Returns all placeholder elements.
+     *
+     * @return ElementInterface[]
+     * @since 3.2.5
+     */
+    public function getPlaceholderElements(): array
+    {
+        if ($this->_placeholderElements === null) {
+            return [];
+        }
+
+        return call_user_func_array('array_merge', $this->_placeholderElements);
     }
 
     /**

@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
@@ -1443,9 +1444,11 @@ class UsersController extends Controller
 
         $summary = [];
 
-        $entryCount = (new Query())
-            ->from([Table::ENTRIES])
-            ->where(['authorId' => $userIds])
+        $entryCount = Entry::find()
+            ->authorId($userIds)
+            ->siteId('*')
+            ->unique()
+            ->anyStatus()
             ->count();
 
         if ($entryCount) {

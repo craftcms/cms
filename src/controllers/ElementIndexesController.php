@@ -273,12 +273,12 @@ class ElementIndexesController extends BaseElementsController
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
                 'criteria' => $request->getBodyParam('criteria', []),
-                'format' => $request->getRequiredBodyParam('format'),
+                'format' => $request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+            throw new ServerErrorHttpException('Could not create an export token.');
         }
 
         return $this->asJson(compact('token'));
