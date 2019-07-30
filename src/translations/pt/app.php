@@ -521,7 +521,7 @@ return [
     'Invalid transform handle: {handle}' => 'Identificador de transformação inválido: {handle}',
     'Invalid username or email.' => 'Nome de usuário inválido ou e-mail.',
     'Invalid username or password.' => 'Nome de usuário ou senha inválida.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Parece que alguém está atualmente a executar uma atualização do sistema.<br/>Continue apenas se tiver a certeza de que não é esse o caso.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Parece que alguém está atualmente a executar uma atualização do sistema.<br>Continue apenas se tiver a certeza de que não é esse o caso.',
     'It looks like these settings are being overridden by {paths}.' => 'Parece que estas definições estão a ser substituídas por {paths}.',
     'Item' => 'Item',
     'Items in your cart' => 'Itens no carrinho',
