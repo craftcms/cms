@@ -5,6 +5,9 @@
 ### Changed
 - Entry preview tokens now respect the `defaultTokenDuration` config setting, rather than always expiring after 24 hours. ([#4683](https://github.com/craftcms/cms/pull/4683))
 
+### Fixed
+- Fixed a bug where elements listed in a Structure view could be missing their descendant toggles even if all of their descendants were disabled. ([#4685](https://github.com/craftcms/cms/issues/4685))
+
 ## 3.2.8 - 2019-07-30
 
 ### Added
