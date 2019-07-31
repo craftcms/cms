@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Entry preview tokens now respect the `defaultTokenDuration` config setting, rather than always expiring after 24 hours. ([#4683](https://github.com/craftcms/cms/pull/4683))
+
 ## 3.2.8 - 2019-07-30
 
 ### Added
