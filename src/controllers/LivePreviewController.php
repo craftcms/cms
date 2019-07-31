@@ -65,8 +65,7 @@ class LivePreviewController extends Controller
             ]
         ];
 
-        $expiryDate = (new \DateTime())->add(new \DateInterval('P1D'));
-        $token = Craft::$app->getTokens()->createToken($route, null, $expiryDate);
+        $token = Craft::$app->getTokens()->createToken($route);
 
         if (!$token) {
             throw new ServerErrorHttpException('Could not create a Live Preview token.');
