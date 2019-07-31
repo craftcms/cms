@@ -227,18 +227,21 @@
                 {% if showHeader %}
                     <header id="header">
                         {% block header %}
-                            {% block pageTitle %}
-                                {% if title is defined and title|length %}
-                                    <h1>{{ title }}</h1>
-                                {% endif %}
-                            {% endblock %}
-                            {% block contextMenu %}{% endblock %}
-                            <div class="flex-grow"></div>
-                            {% block actionButton %}
-                                {% if fullPageForm %}
-                                    <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                                {% endif %}
-                            {% endblock %}
+                            <div class="flex flex-nowrap">
+                                {% block pageTitle %}
+                                    {% if title is defined and title|length %}
+                                        <h1 title="{{ title }}">{{ title }}</h1>
+                                    {% endif %}
+                                {% endblock %}
+                                {% block contextMenu %}{% endblock %}
+                            </div>
+                            <div class="flex">
+                                {% block actionButton %}
+                                    {% if fullPageForm %}
+                                        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+                                    {% endif %}
+                                {% endblock %}
+                            </div>
                         {% endblock %}
                     </header>
                 {% endif %}
