@@ -79,41 +79,33 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
-{% set actionButton = block('actionButton')|trim %}
-
 {% block header %}
-    {{ block('pageTitle') }}
-    {{ block('contextMenu') }}
-    <div class="flex-grow"></div>
-
-    {% if previewTargets %}
-        <div class="btngroup">
-            {% if enablePreview %}
-                <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
-            {% endif %}
-            <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
-        </div>
-    {% endif %}
-
-    {% if isCurrent %}
+    <div class="flex flex-nowrap">
+        {{ block('pageTitle') }}
+        {{ block('contextMenu') }}
+    </div>
+    <div class="flex">
         {% if previewTargets %}
-            <div class="spacer"></div>
+            <div class="btngroup">
+                {% if enablePreview %}
+                    <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
+                {% endif %}
+                <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
+            </div>
         {% endif %}
-        <div id="save-draft-btn-container">
-            {% if canUpdateSource and saveSourceAction %}
-                <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
-            {% else %}
-                <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
-            {% endif %}
-        </div>
-    {% endif %}
 
-    {% if actionButton %}
-        {% if previewTargets or isCurrent %}
-            <div class="spacer"></div>
+        {% if isCurrent %}
+            <div id="save-draft-btn-container">
+                {% if canUpdateSource and saveSourceAction %}
+                    <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+                {% else %}
+                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+                {% endif %}
+            </div>
         {% endif %}
-        {{ actionButton|raw }}
-    {% endif %}
+
+        {{ block('actionButton') }}
+    </div>
 {% endblock %}
 
 {% block contextMenu %}
@@ -125,7 +117,7 @@
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
             <div id="save-btn-container" class="btngroup submit">
-                <input type="submit" class="btn submit" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
+                <input type="submit" class="btn submit" value="{{ 'Save'|t('app', { type: element.displayName() }) }}">
                 <div class="btn submit menubtn"></div>
                 <div class="menu" data-align="right">
                     <ul>
