@@ -561,7 +561,12 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       }
 
       .flex {
+        flex-wrap: nowrap;
         max-width: 100%;
+
+        &.flex-nowrap {
+          min-width: 0;
+        }
 
         & > * {
           margin-bottom: 0;

@@ -1857,7 +1857,8 @@ body.fixed-header #main-container #main #header { position: fixed; z-index: 12; 
 body.fixed-header.ltr #main-container #main #header { left: 225px; }
 body.fixed-header.rtl #main-container #main #header { right: 225px; }
 body.fixed-header.focused #main-container #main #header { position: absolute; }
-#main-container #main #header .flex { max-width: 100%; }
+#main-container #main #header .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; max-width: 100%; }
+#main-container #main #header .flex.flex-nowrap { min-width: 0; }
 #main-container #main #header .flex > * { margin-bottom: 0; }
 #main-container #main #header h1 { line-height: 32px; margin-top: 0; margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.ltr #main-container #main #header h1:not(:last-child) { margin-right: 24px; }
