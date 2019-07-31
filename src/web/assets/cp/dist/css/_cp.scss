@@ -531,7 +531,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       display: flex;
       align-items: center;
       align-content: stretch;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: space-between;
       position: relative;
       z-index: 2;
@@ -564,14 +564,18 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         line-height: 32px;
         margin-top: 0;
         margin-bottom: 0;
-        display: inline;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        min-width: 0;
 
         &:not(:last-child) {
           @include margin-right(24px !important);
         }
+      }
+      
+      h1 > span {
+        display: block;  
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .buttons,
@@ -898,6 +902,10 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
   #main-container {
     #main {
+      #header {
+        flex-wrap: wrap;
+      }
+
       #main-content {
         flex-direction: column;
         max-height: none !important;
