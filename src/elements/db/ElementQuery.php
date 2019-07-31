@@ -131,7 +131,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftId;
 
     /**
-     * @var int|null The source element ID that drafts should be returned for
+     * @var int|false|null The source element ID that drafts should be returned for.
+     * Set to `false` to fetch unsaved drafts.
      */
     public $draftOf;
 
@@ -689,7 +690,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($value instanceof ElementInterface) {
             /** @var Element $value */
             $this->draftOf = $value->getSourceId();
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === false) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
@@ -2250,8 +2251,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf) {
-                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
+            if ($this->draftOf !== null) {
+                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {

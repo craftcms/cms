@@ -22,7 +22,7 @@ installing Codeception and its support libraries.
 
 ## Step 2: Setting up the required directories
 The Craft module requires a directory setup that is very similar to what an ordinary 
-Craft project [requires](../directory-structure.md)
+Craft project [requires](../../directory-structure.md)
 
 - In your `tests/` folder create a folder called `_craft` 
 - In the `_craft` folder create the following folders:
@@ -68,7 +68,7 @@ modules:
 ```
 
 ::: tip
-These variables are explained [here](./framework/config-options.md)
+These variables are explained [here](../framework/config-options.md)
 :::
 
 ### .env

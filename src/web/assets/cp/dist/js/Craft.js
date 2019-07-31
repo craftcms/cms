@@ -1,4 +1,4 @@
-/*!   - 2019-07-24 */
+/*!   - 2019-07-30 */
 (function($){
 
 /** global: Craft */
@@ -373,7 +373,7 @@ $.extend(Craft,
                     }
                 },
                 complete: function(jqXHR, textStatus) {
-                    if (textStatus !== 'success') {
+                    if (textStatus === 'error') {
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
                         }
@@ -1793,6 +1793,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         searching: false,
         searchText: null,
         trashed: false,
+        drafts: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -2336,7 +2337,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0
+                trashed: this.trashed ? 1 : 0,
+                drafts: this.drafts ? 1 : 0,
             };
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
@@ -3075,11 +3077,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
+            this.trashed = false;
+            this.drafts = false;
+            this.status = null;
+
             if (Garnish.hasAttr($option, 'data-trashed')) {
                 this.trashed = true;
-                this.status = null;
+            } else if (Garnish.hasAttr($option, 'data-drafts')) {
+                this.drafts = true;
             } else {
-                this.trashed = false;
                 this.status = $option.data('status');
             }
 
@@ -3188,7 +3194,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            if (this.trashed || this.searching) {
+            if (this.trashed || this.drafts || this.searching) {
                 $option.addClass('disabled');
                 if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
@@ -12884,7 +12890,9 @@ Craft.DraftEditor = Garnish.Base.extend(
         lastSerializedValue: null,
         timeout: null,
         saving: false,
+        saveXhr: null,
         checkFormAfterUpdate: false,
+        submittingForm: false,
 
         duplicatedElements: null,
         errors: null,
@@ -13176,6 +13184,12 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         saveDraft: function(data) {
             return new Promise(function(resolve, reject) {
+                // Ignore if we're already submitting the main form
+                if (this.submittingForm) {
+                    reject();
+                    return;
+                }
+
                 this.lastSerializedValue = data;
 
                 if (this.saving) {
@@ -13194,12 +13208,16 @@ Craft.DraftEditor = Garnish.Base.extend(
                 var url = Craft.getActionUrl(this.settings.saveDraftAction);
                 var i;
 
-                Craft.postActionRequest(url, this.prepareData(data), function(response, textStatus) {
+                this.saveXhr = Craft.postActionRequest(url, this.prepareData(data), function(response, textStatus) {
                     $spinners.addClass('hidden');
                     if (this.$saveMetaBtn) {
                         this.$saveMetaBtn.removeClass('active');
                     }
                     this.saving = false;
+
+                    if (textStatus === 'abort') {
+                        return;
+                    }
 
                     if (textStatus !== 'success' || response.errors) {
                         this.errors = (response ? response.errors : null) || [];
@@ -13485,10 +13503,23 @@ Craft.DraftEditor = Garnish.Base.extend(
         handleFormSubmit: function(ev) {
             ev.preventDefault();
 
+            // Prevent double form submits
+            if (this.submittingForm) {
+                return;
+            }
+
             // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
             // then ignore the submission
             if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
                 return;
+            }
+
+            // Prevent the normal unload confirmation dialog
+            Craft.cp.$confirmUnloadForms = Craft.cp.$confirmUnloadForms.not(Craft.cp.$primaryForm);
+
+            // Abort the current save request if there is one
+            if (this.saving) {
+                this.saveXhr.abort();
             }
 
             // Duplicate the form with normalized data
@@ -13534,6 +13565,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             $form.appendTo(Garnish.$bod);
             $form.submit();
+            this.submittingForm = true;
         },
     },
     {
