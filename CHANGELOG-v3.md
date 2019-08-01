@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `ignorePlaceholders` element query param.
 - Added `craft\base\ElementInterface::getSource()`.
 
 ### Changed

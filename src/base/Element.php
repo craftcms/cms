@@ -1290,6 +1290,7 @@ abstract class Element extends Component implements ElementInterface
             ->id($sourceId)
             ->siteId($this->siteId)
             ->anyStatus()
+            ->ignorePlaceholders()
             ->one();
     }
 
