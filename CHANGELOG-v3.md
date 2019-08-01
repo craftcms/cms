@@ -4,6 +4,8 @@
 
 ### Added
 - Added the `cp.entries.edit.meta` and `cp.entries.edit.settings` template hooks to the Edit Entry page.
+- Added the `ignorePlaceholders` element query param.
+- Added `craft\base\ElementInterface::getSource()`.
 
 ### Changed
 - Improved the Control Panel header styling for mobile and on pages with long titles. ([#4548](https://github.com/craftcms/cms/issues/4548))
@@ -11,10 +13,15 @@
 - Element editor HUDs now always show a header with the element’s site name on multi-site installs, even if the element is only editable in one site. ([#4690](https://github.com/craftcms/cms/issues/4690))
 - Entry preview tokens now respect the `defaultTokenDuration` config setting, rather than always expiring after 24 hours. ([#4683](https://github.com/craftcms/cms/pull/4683))
 
+### Deprecated
+- Deprecated `craft\behaviors\DraftBehavior::getSource()`.
+- Deprecated `craft\behaviors\RevisionBehavior::getSource()`.
+
 ### Fixed
 - Fixed a bug where elements listed in a Structure view could be missing their descendant toggles even if all of their descendants were disabled. ([#4685](https://github.com/craftcms/cms/issues/4685))
 - Fixed a bug where element CSV exports were limited to 50 elements if no limit was set. ([#4692](https://github.com/craftcms/cms/issues/4692))
 - Fixed a 400 error that occurred when submitting an entry form that didn’t have an `entryId` param. ([#4693](https://github.com/craftcms/cms/issues/4693))
+- Fixed a bug where `craft\base\Element::getDescendants()` and other structure methods could return the wrong results when called on a draft. ([#4694](https://github.com/craftcms/cms/issues/4694))
 
 ## 3.2.8 - 2019-07-30
 
