@@ -131,6 +131,14 @@
     {% endif %}
 
     {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.settings" %}
+{% endblock %}
+
+{% block meta %}
+    {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.meta" %}
 {% endblock %}
 
 {% block details %}
