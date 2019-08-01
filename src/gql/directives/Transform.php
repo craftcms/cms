@@ -32,38 +32,47 @@ class Transform extends BaseDirective
                 new FieldArgument([
                     'name' => 'handle',
                     'type' => Type::string(),
+                    'description' => 'The handle of the named transform to use.'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'width',
                     'type' => Type::int(),
+                    'description' => 'Width for the generated transform'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'height',
                     'type' => Type::int(),
+                    'description' => 'Height for the generated transform'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'mode',
                     'type' => Type::string(),
+                    'description' => 'The mode to use for the generated transform.'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'position',
                     'type' => Type::string(),
+                    'description' => 'The position to use when cropping, if no focal point specified.'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'interlace',
                     'type' => Type::string(),
+                    'description' => 'The interlace mode to use for the transform'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'quality',
                     'type' => Type::int(),
+                    'description' => 'The quality of the transform'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'format',
                     'type' => Type::string(),
+                    'description' => 'The format to use for the transform'
                 ]),
-             new FieldArgument([
+                new FieldArgument([
                     'name' => 'immediately',
                     'type' => Type::boolean(),
+                    'description' => 'Whether the transform should be generated immediately or only when the image is requested used the generated URL'
                 ]),
             ],
         ]));

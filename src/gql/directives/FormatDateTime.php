@@ -34,7 +34,8 @@ class FormatDateTime extends BaseDirective
                 new FieldArgument([
                     'name' => 'format',
                     'type' => Type::string(),
-                    'defaultValue' => self::DEFAULT_FORMAT
+                    'defaultValue' => self::DEFAULT_FORMAT,
+                    'description' => 'The date format to use'
                 ]),
                 new FieldArgument([
                     'name' => 'timezone',

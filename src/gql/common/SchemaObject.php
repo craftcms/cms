@@ -19,10 +19,26 @@ abstract class SchemaObject
     public static function getCommonFields(): array
     {
         return [
-            'id' => Type::id(),
-            'uid' => Type::string(),
-            'dateCreated' => DateTime::getType(),
-            'dateUpdated' =>  DateTime::getType(),
+            'id' => [
+                'name' => 'id',
+                'type' => Type::id(),
+                'description' => 'The id of the entity'
+            ],
+            'uid' => [
+                'name' => 'uid',
+                'type' => Type::string(),
+                'description' => 'The uid of the entity'
+            ],
+            'dateCreated' => [
+                'name' => 'dateCreated',
+                'type' => DateTime::getType(),
+                'description' => 'The date the entity was created'
+            ],
+            'dateUpdated' => [
+                'name' => 'dateUpdated',
+                'type' => DateTime::getType(),
+                'description' => 'The date the entity was last updated'
+            ],
         ];
     }
 
