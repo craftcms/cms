@@ -142,7 +142,7 @@ class Gql extends Component
      * ```
      */
     const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
-    
+
     /**
      * Currently loaded schema
      *
