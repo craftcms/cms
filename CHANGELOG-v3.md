@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `ignorePlaceholders` element query param.
+- Added the `cp.entries.edit.meta` and `cp.entries.edit.settings` template hooks to the Edit Entry page.
 - Added `craft\base\ElementInterface::getSource()`.
 
 ### Changed
