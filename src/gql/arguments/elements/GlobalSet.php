@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\gql\arguments\elements;
 
 use GraphQL\Type\Definition\Type;
@@ -14,8 +15,11 @@ class GlobalSet extends BaseElement
     public static function getArguments(): array
     {
         return array_merge(parent::getArguments(), [
-            'editable' => Type::boolean(),
-            'handle' => Type::listOf(Type::string()),
+            'handle' => [
+                'name' => 'handle',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on the global sets’ handles.'
+            ],
         ]);
     }
 }
