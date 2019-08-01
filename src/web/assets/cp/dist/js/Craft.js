@@ -1,4 +1,4 @@
-/*!   - 2019-07-30 */
+/*!   - 2019-07-31 */
 (function($){
 
 /** global: Craft */
@@ -3541,6 +3541,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+                delete params.criteria.limit;
 
                 var limit = parseInt($limitField.find('input').val());
                 if (limit && !isNaN(limit)) {
