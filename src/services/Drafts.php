@@ -209,8 +209,8 @@ class Drafts extends Component
         /** @var Element|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        /** @var Element|null $source */
-        $source = $behavior->getSource();
+        /** @var Element $source */
+        $source = $draft->getSource();
 
         // Fire a 'beforeApplyDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
@@ -227,7 +227,7 @@ class Drafts extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($source) {
+            if ($source !== $draft) {
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->duplicateElement($draft, [
                     'id' => $source->id,
@@ -323,10 +323,10 @@ class Drafts extends Component
     /**
      * Creates a new row in the `drafts` table.
      *
+     * @param int|null $sourceId
      * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
-     * @param int|null $sourceId
      * @return int The new draft ID
      * @throws DbException
      */

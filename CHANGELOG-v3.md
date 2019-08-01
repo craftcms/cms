@@ -2,11 +2,18 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementInterface::getSource()`.
+
 ### Changed
 - Improved the Control Panel header styling for mobile and on pages with long titles. ([#4548](https://github.com/craftcms/cms/issues/4548))
 - Element references in the Control Panel now reveal the site the element was fetched from in their tooltips, on multi-site installs. ([#4690](https://github.com/craftcms/cms/issues/4690))
 - Element editor HUDs now always show a header with the element’s site name on multi-site installs, even if the element is only editable in one site. ([#4690](https://github.com/craftcms/cms/issues/4690))
 - Entry preview tokens now respect the `defaultTokenDuration` config setting, rather than always expiring after 24 hours. ([#4683](https://github.com/craftcms/cms/pull/4683))
+
+### Deprecated
+- Deprecated `craft\behaviors\DraftBehavior::getSource()`.
+- Deprecated `craft\behaviors\RevisionBehavior::getSource()`.
 
 ### Fixed
 - Fixed a bug where elements listed in a Structure view could be missing their descendant toggles even if all of their descendants were disabled. ([#4685](https://github.com/craftcms/cms/issues/4685))

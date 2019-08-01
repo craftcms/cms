@@ -418,6 +418,14 @@ interface ElementInterface extends ComponentInterface
     public function getSourceUid(): string;
 
     /**
+     * Returns the element, or if it’s a draft/revision, the source element.
+     *
+     * @return ElementInterface
+     * @since 3.2.9
+     */
+    public function getSource(): ElementInterface;
+
+    /**
      * Returns whether the element is an unsaved draft.
      *
      * @return bool

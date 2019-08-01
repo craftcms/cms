@@ -1280,6 +1280,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getSource(): ElementInterface
+    {
+        $sourceId = $this->getSourceId();
+        if ($sourceId === $this->id) {
+            return $this;
+        }
+        return static::find()
+            ->id($sourceId)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->one();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsUnsavedDraft(): bool
     {
         if (!$this->getIsDraft()) {
