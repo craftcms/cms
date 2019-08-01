@@ -11,7 +11,7 @@ return [
     '1 hour' => '1 timme',
     '1 minute' => '1 minut',
     '1 month' => '1 månad',
-    '1 second' => '1 andra',
+    '1 second' => '1 sekund',
     '1 week' => '1 vecka',
     '1 year' => '1 år',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Din licens har gått ut!</strong> Förnya din {name}-licens för ytterligare ett år med fantastiska uppdateringar.',
