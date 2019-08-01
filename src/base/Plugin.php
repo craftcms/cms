@@ -377,9 +377,9 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs actions before the plugin is installed.
+     * Performs actions before the plugin is uninstalled.
      *
-     * @return bool Whether the plugin should be installed
+     * @return bool Whether the plugin should be uninstalled
      */
     protected function beforeUninstall(): bool
     {
@@ -387,7 +387,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs actions after the plugin is installed.
+     * Performs actions after the plugin is uninstalled.
      */
     protected function afterUninstall()
     {
