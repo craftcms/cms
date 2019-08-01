@@ -76,35 +76,85 @@ class Gql extends Component
     // =========================================================================
 
     /**
-     * @event RegisterGqlModelEvent The event that is triggered when registering GraphQL types.
+     * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
-     * @TODO: docs
+     * Plugins get a chance to add their own GQL types.
      * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     *
      * ---
      * ```php
      * use craft\events\RegisterGqlTypeEvent;
      * use craft\services\GraphQl;
      * use yii\base\Event;
      *
-     * Event::on(Gql::class,
-     *     Gql::EVENT_REGISTER_GQL_TYPES,
-     *     function(RegisterGqlModelEvent $event) {
-     *         $event->types[] = MyType::getType();
-     *     }
-     * );
+     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypeEvent $event) {
+     *     // Add my GQL types
+     *     $event->types[] = MyType::class;
+     * });
      * ```
      */
     const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
 
     /**
-     * @TODO docs
+     * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
+     *
+     * Plugins get a chance to add their own GQL queries.
+     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     *
+     * ---
+     * ```php
+     * use craft\events\RegisterGqlQueriesEvent;
+     * use craft\services\GraphQl;
+     * use yii\base\Event;
+     * use GraphQL\Type\Definition\Type;
+     *
+     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlQueriesEvent $event) {
+     *     // Add my GQL queries
+     *     $even->queries['queryPluginData'] =
+     *     [
+     *         'type' => Type::listOf(MyType::getType())),
+     *         'args' => MyArguments::getArguments(),
+     *         'resolve' => MyResolver::class . '::resolve'
+     *     ];
+     * });
+     * ```
      */
     const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
 
+    /**
+     * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
+     *
+     * Plugins get a chance to add their own GQL directives.
+     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     *
+     * ---
+     * ```php
+     * use craft\events\RegisterGqlDirectivesEvent;
+     * use craft\services\GraphQl;
+     * use yii\base\Event;
+     *
+     * Event::on(Gql::class,
+     *     Gql::EVENT_REGISTER_GQL_TYPES,
+     *     function(RegisterGqlModelEvent $event) {
+     *         $event->directives[] = MyDirective::class;
+     *     }
+     * );
+     * ```
+     */
     const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
-
+    
+    /**
+     * Currently loaded schema
+     *
+     * @var Schema
+     */
     private $_schema;
 
+    /**
+     * GQL token currently in user
+     *
+     * @var GqlToken
+     */
     private $_token;
 
     // Public Methods
@@ -328,6 +378,7 @@ class Gql extends Component
 
     // Private Methods
     // =========================================================================
+
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL
      *
