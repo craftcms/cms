@@ -1002,7 +1002,7 @@ return [
     'Try for free' => 'Try again',
     'Type' => 'Try for free',
     'UID' => 'UID',
-    'URI' => 'UID',
+    'URI' => 'URI',
     'URI Format' => 'URI Format',
     'URL' => 'URL',
     'Unable to find the template “{template}”.' => 'Unable to find the template “{template}”.',
