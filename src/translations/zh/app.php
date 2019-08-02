@@ -641,7 +641,7 @@ return [
     'New volume' => '新建存储卷',
     'New widget' => '添加小部件',
     'New {type}' => '新建 {type}',
-    'New {group} category' => '新的  {group} 分类',
+    'New {group} category' => '新的 {group} 分类',
     'New {section} entry' => '新的 {section} 记录',
     'Next' => '下一步',
     'No blocks.' => '无区块。',
@@ -1027,7 +1027,7 @@ return [
     'Upgrade Craft CMS' => '升级 Craft CMS',
     'Upload Location' => '上传位置',
     'Upload a photo' => '上传照片',
-    'Upload failed for {filename}' => '{filename}上传失败',
+    'Upload failed for {filename}' => '{filename} 上传失败',
     'Upload files' => '上传文件',
     'Upload icon' => '上传图标',
     'Upload logo' => '上传 logo',
@@ -1464,9 +1464,6 @@ return [
     'Address Line 1' => 'Address Line 1',
     'Choose a site' => 'Choose a site',
     'Address Line 2' => 'Address Line 2',
-    'Save as a new {type}' => 'Save as a new {type}',
     'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
-    'Delete {type}' => 'Delete {type}',
-    'Save as a Draft' => 'Save as a Draft',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
