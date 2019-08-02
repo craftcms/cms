@@ -1464,9 +1464,6 @@ return [
     'Address Line 1' => 'Address Line 1',
     'Choose a site' => 'Choose a site',
     'Address Line 2' => 'Address Line 2',
-    'Save as a new {type}' => 'Save as a new {type}',
     'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
-    'Delete {type}' => 'Delete {type}',
-    'Save as a Draft' => 'Save as a Draft',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
