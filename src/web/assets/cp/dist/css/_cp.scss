@@ -584,7 +584,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         text-overflow: ellipsis;
 
         &:not(:last-child) {
-          @include margin-right(24px);
+          @include margin-right(14px !important);
         }
       }
 
@@ -917,10 +917,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
         .flex {
           margin-top: 10px;
-        }
-
-        h1:not(:last-child) {
-          @include margin-right(7px);
         }
       }
 
