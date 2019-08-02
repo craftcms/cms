@@ -157,6 +157,11 @@ trait ElementTrait
     public $propagateAll = false;
 
     /**
+     * @var int[] The site IDs that the element was just propagated to for the first time.
+     */
+    public $newSiteIds = [];
+
+    /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
      */
     public $resaving = false;
