@@ -1460,6 +1460,6 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'Address Line 1' => 'Address Line 1',
     'Choose a site' => 'Choose a site',
     'Address Line 2' => 'Address Line 2',
-    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    'Are you sure you want to delete this {type}?' => 'Er du sikker på, at du vil slette denne {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
