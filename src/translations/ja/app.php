@@ -1464,6 +1464,6 @@ return [
     'Address Line 1' => '住所1',
     'Choose a site' => 'サイトを選択',
     'Address Line 2' => '住所2',
-    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    'Are you sure you want to delete this {type}?' => 'この{type}を削除してもよろしいですか？',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
