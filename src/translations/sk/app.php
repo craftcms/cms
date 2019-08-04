@@ -1465,5 +1465,5 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Choose a site' => 'Vyberte web',
     'Address Line 2' => 'Adresa, riadok 2',
     'Are you sure you want to delete this {type}?' => 'Naozaj chcete odstrániť tento {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>aktuálne nainštalované má verziu schémy {existing} (očakávaná {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>má aktuálne nainštalovanú verziu schémy {existing} (očakávaná {incoming})'
 ];
