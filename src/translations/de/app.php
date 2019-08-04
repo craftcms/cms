@@ -1461,5 +1461,5 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Choose a site' => 'Wähle eine Seite',
     'Address Line 2' => 'Adresszusatz',
     'Are you sure you want to delete this {type}?' => 'Sind Sie sicher, dass Sie diesen {type} löschen möchten?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> hat aktuell die Schemaversion von {existing} installiert ({incoming} erwartet)'
 ];
