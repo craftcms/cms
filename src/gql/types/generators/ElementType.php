@@ -7,7 +7,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Element;
 
 /**
- * Class UserType
+ * Class ElementType
  */
 class ElementType implements BaseGenerator
 {

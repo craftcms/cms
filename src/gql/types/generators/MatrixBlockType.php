@@ -11,7 +11,7 @@ use craft\gql\types\MatrixBlock;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**
- * Class MatrixBlockTypeGenerator
+ * Class MatrixBlockType
  */
 class MatrixBlockType implements BaseGenerator
 {

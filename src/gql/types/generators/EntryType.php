@@ -11,7 +11,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
 
 /**
- * Class EntryTypeGenerator
+ * Class EntryType
  */
 class EntryType implements BaseGenerator
 {

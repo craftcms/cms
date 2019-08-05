@@ -11,7 +11,7 @@ use craft\gql\types\Asset;
 use craft\helpers\Gql as GqlHelper;
 
 /**
- * Class AssetTypeGenerator
+ * Class AssetType
  */
 class AssetType implements BaseGenerator
 {
