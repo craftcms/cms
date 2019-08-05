@@ -7,6 +7,7 @@
 - Added the `cp.entries.edit.meta` and `cp.entries.edit.settings` template hooks to the Edit Entry page.
 - Added `craft\base\ElementInterface::getSource()`.
 - Added `craft\base\ElementTrait::$newSiteIds`.
+- Added `craft\models\Site::$dateCreated` and `$dateUpdated`. ([#4703](https://github.com/craftcms/cms/issues/4703))
 
 ### Changed
 - Improved the Control Panel header styling for mobile and on pages with long titles. ([#4548](https://github.com/craftcms/cms/issues/4548))
