@@ -58,23 +58,58 @@ class Entry extends Element
      * @inheritdoc
      */
     public static function getFields(): array {
-        // Todo section data under section type, same with type, author, revisionCreator
+        // Todo section data under section type, same with type, author
         return array_merge(parent::getCommonFields(), [
-            'sectionUid' => Type::string(),
-            'sectionId' => Type::int(),
-            'sectionHandle' => Type::string(),
-            'typeUid' => Type::string(),
-            'typeId' => Type::int(),
-            'typeHandle' => Type::string(),
-            'authorId' => Type::int(),
+            'sectionUid' => [
+                'name' => 'sectionUid',
+                'type' => Type::string(),
+                'description' => 'sectionUid'
+            ],
+            'sectionId' => [
+                'name' => 'sectionId',
+                'type' => Type::int(),
+                'description' => 'Section ID'
+            ],
+            'sectionHandle' => [
+                'name' => 'sectionHandle',
+                'type' => Type::string(),
+                'description' => 'sectionHandle'
+            ],
+            'typeUid' => [
+                'name' => 'typeUid',
+                'type' => Type::string(),
+                'description' => 'typeUid'
+            ],
+            'typeId' => [
+                'name' => 'typeId',
+                'type' => Type::int(),
+                'description' => 'Type ID'
+            ],
+            'typeHandle' => [
+                'name' => 'typeHandle',
+                'type' => Type::string(),
+                'description' => 'typeHandle'
+            ],
+            'authorId' => [
+                'name' => 'authorId',
+                'type' => Type::int(),
+                'description' => 'Author ID'
+            ],
             'author' => [
                 'name' => 'author',
                 'type' => User::getType(),
+                'description' => 'The entry\'s author.'
             ],
-            'postDate' => DateTime::getType(),
-            'expiryDate' => DateTime::getType(),
-            'revisionCreatorId' => Type::int(),
-            'revisionNotes' => Type::string(),
+            'postDate' => [
+                'name' => 'postDate',
+                'type' => DateTime::getType(),
+                'description' => 'Post date'
+            ],
+            'expiryDate' => [
+                'name' => 'expiryDate',
+                'type' => DateTime::getType(),
+                'description' => 'Expiry date'
+            ],
         ]);
     }
 }

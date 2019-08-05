@@ -59,35 +59,146 @@ class User extends Element
      */
     public static function getFields(): array {
         return array_merge(parent::getCommonFields(), [
-            'cooldownEndTime' => DateTime::getType(),
-            'friendlyName' => Type::string(),
-            'fullName' => Type::string(),
-            'groupHandles' => Type::listOf(Type::string()),
-            'name' => Type::string(),
-            'photo' => Asset::getType(),
-            'filename' => Type::string(),
-            'preferences' => Type::string(),
-            'preferredLanguage' => Type::string(),
-            'username' => Type::string(),
-            'photoId' => Type::int(),
-            'firstName' => Type::string(),
-            'lastName' => Type::string(),
-            'email' => Type::string(),
-            'admin' => Type::boolean(),
-            'locked' => Type::boolean(),
-            'suspended' => Type::boolean(),
-            'pending' => Type::boolean(),
-            'lastLoginDate' => DateTime::getType(),
-            'lastInvalidLoginDate' => DateTime::getType(),
-            'invalidLoginCount' => Type::int(),
-            'lockoutDate' => DateTime::getType(),
-            'hasDashboard' => Type::boolean(),
-            'passwordResetRequired' => Type::boolean(),
-            'lastPasswordChangeDate' => DateTime::getType(),
-            'unverifiedEmail' => Type::string(),
-            'verificationCodeIssuedDate' => DateTime::getType(),
-            'verificationCode' => Type::string(),
-            'lastLoginAttemptIp' => Type::string(),
+            'cooldownEndTime' => [
+                'name' => 'cooldownEndTime',
+                'type' => DateTime::getType(),
+                'description' => 'The time when the user will be over their cooldown period.'
+            ],
+            'friendlyName' => [
+                'name' => 'friendlyName',
+                'type' => Type::string(),
+                'description' => 'The user\'s first name or username'
+            ],
+            'fullName' => [
+                'name' => 'fullName',
+                'type' => Type::string(),
+                'description' => 'The user\'s full name'
+            ],
+            'groupHandles' => [
+                'name' => 'groupHandles',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'groupHandles'
+            ],
+            'name' => [
+                'name' => 'name',
+                'type' => Type::string(),
+                'description' => 'The user\'s full name or username'
+            ],
+            'photo' => [
+                'name' => 'photo',
+                'type' => Asset::getType(),
+                'description' => 'The user\'s photo'
+            ],
+            'preferences' => [
+                'name' => 'preferences',
+                'type' => Type::string(),
+                'description' => 'The user’s preferences'
+            ],
+            'preferredLanguage' => [
+                'name' => 'preferredLanguage',
+                'type' => Type::string(),
+                'description' => 'The user’s preferred language'
+            ],
+            'username' => [
+                'name' => 'username',
+                'type' => Type::string(),
+                'description' => 'Username'
+            ],
+            'photoId' => [
+                'name' => 'photoId',
+                'type' => Type::int(),
+                'description' => 'Photo asset id'
+            ],
+            'firstName' => [
+                'name' => 'firstName',
+                'type' => Type::string(),
+                'description' => 'First name'
+            ],
+            'lastName' => [
+                'name' => 'lastName',
+                'type' => Type::string(),
+                'description' => 'Last name'
+            ],
+            'email' => [
+                'name' => 'email',
+                'type' => Type::string(),
+                'description' => 'Email'
+            ],
+            'admin' => [
+                'name' => 'admin',
+                'type' => Type::boolean(),
+                'description' => 'Admin'
+            ],
+            'locked' => [
+                'name' => 'locked',
+                'type' => Type::boolean(),
+                'description' => 'Locked'
+            ],
+            'suspended' => [
+                'name' => 'suspended',
+                'type' => Type::boolean(),
+                'description' => 'Suspended'
+            ],
+            'pending' => [
+                'name' => 'pending',
+                'type' => Type::boolean(),
+                'description' => 'Pending'
+            ],
+            'lastLoginDate' => [
+                'name' => 'lastLoginDate',
+                'type' => DateTime::getType(),
+                'description' => 'Last login date'
+            ],
+            'lastInvalidLoginDate' => [
+                'name' => 'lastInvalidLoginDate',
+                'type' => DateTime::getType(),
+                'description' => 'Last invalid login date'
+            ],
+            'invalidLoginCount' => [
+                'name' => 'invalidLoginCount',
+                'type' => Type::int(),
+                'description' => 'Invalid login count'
+            ],
+            'lockoutDate' => [
+                'name' => 'lockoutDate',
+                'type' => DateTime::getType(),
+                'description' => 'Lockout date'
+            ],
+            'hasDashboard' => [
+                'name' => 'hasDashboard',
+                'type' => Type::boolean(),
+                'description' => 'Whether the user has a dashboard'
+            ],
+            'passwordResetRequired' => [
+                'name' => 'passwordResetRequired',
+                'type' => Type::boolean(),
+                'description' => 'Password reset required'
+            ],
+            'lastPasswordChangeDate' => [
+                'name' => 'lastPasswordChangeDate',
+                'type' => DateTime::getType(),
+                'description' => 'Last password change date'
+            ],
+            'unverifiedEmail' => [
+                'name' => 'unverifiedEmail',
+                'type' => Type::string(),
+                'description' => 'Unverified email'
+            ],
+            'verificationCodeIssuedDate' => [
+                'name' => 'verificationCodeIssuedDate',
+                'type' => DateTime::getType(),
+                'description' => 'Verification code issued date'
+            ],
+            'verificationCode' => [
+                'name' => 'verificationCode',
+                'type' => Type::string(),
+                'description' => 'Verification code'
+            ],
+            'lastLoginAttemptIp' => [
+                'name' => 'lastLoginAttemptIp',
+                'type' => Type::string(),
+                'description' => 'Last login attempt IP address'
+            ],
         ]);
     }
 }

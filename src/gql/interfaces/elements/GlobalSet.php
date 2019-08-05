@@ -58,8 +58,16 @@ class GlobalSet extends Element
      */
     public static function getFields(): array {
         return array_merge(parent::getCommonFields(), [
-            'name' => Type::string(),
-            'handle' => Type::string(),
+            'name' => [
+                'name' => 'name',
+                'type' => Type::string(),
+                'description' => 'Name'
+            ],
+            'handle' => [
+                'name' => 'handle',
+                'type' => Type::string(),
+                'description' => 'Handle'
+            ],
         ]);
     }
 }

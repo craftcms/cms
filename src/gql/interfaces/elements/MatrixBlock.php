@@ -60,18 +60,46 @@ class MatrixBlock extends Element
     public static function getFields(): array {
         // Todo nest nestable things. Such as field data under field subtype.
         return array_merge(parent::getCommonFields(), [
-            'fieldUid' => Type::string(),
-            'fieldId' => Type::int(),
-            'ownerUid' => Type::string(),
-            // Todo maybe get rid of this as matrix blocks are accessible only
-            // from parent element. So this is moot.
-            'owner' => ElementInterface::getType(),
-            'ownerId' => Type::int(),
-            'ownerSiteId' => Type::int(),
-            'typeUid' => Type::string(),
-            'typeId' => Type::int(),
-            'typeHandle' => Type::string(),
-            'sortOrder' => Type::int(),
+            'fieldUid' => [
+                'name' => 'fieldUid',
+                'type' => Type::string(),
+                'description' => 'fieldUid'
+            ],
+            'fieldId' => [
+                'name' => 'fieldId',
+                'type' => Type::int(),
+                'description' => 'Field ID'
+            ],
+            'ownerUid' => [
+                'name' => 'ownerUid',
+                'type' => Type::string(),
+                'description' => 'ownerUid'
+            ],
+            'ownerId' => [
+                'name' => 'ownerId',
+                'type' => Type::int(),
+                'description' => 'Owner ID'
+            ],
+            'typeUid' => [
+                'name' => 'typeUid',
+                'type' => Type::string(),
+                'description' => 'typeUid'
+            ],
+            'typeId' => [
+                'name' => 'typeId',
+                'type' => Type::int(),
+                'description' => 'Type ID'
+            ],
+            'typeHandle' => [
+                'name' => 'typeHandle',
+                'type' => Type::string(),
+                'description' => 'typeHandle'
+            ],
+            'sortOrder' => [
+                'name' => 'sortOrder',
+                'type' => Type::int(),
+                'description' => 'Sort order'
+            ],
         ]);
     }
 }

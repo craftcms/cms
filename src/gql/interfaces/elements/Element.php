@@ -53,16 +53,51 @@ class Element extends BaseInterface
     public static function getCommonFields(): array
     {
         return array_merge(parent::getCommonFields(), [
-            'title' => Type::string(),
-            'slug' => Type::string(),
-            'uri' => Type::string(),
-            'enabled' => Type::boolean(),
-            'archived' => Type::boolean(),
-            'siteUid' => Type::boolean(),
-            'searchScore' => Type::string(),
-            'trashed' => Type::boolean(),
-            'elementType' => Type::string(),
-            'status' => Type::string()
+            'title' => [
+                'name' => 'title',
+                'type' => Type::string(),
+                'description' => 'The element’s title'
+            ],
+            'slug' => [
+                'name' => 'slug',
+                'type' => Type::string(),
+                'description' => 'The element’s slug'
+            ],
+            'uri' => [
+                'name' => 'uri',
+                'type' => Type::string(),
+                'description' => 'The element’s URI'
+            ],
+            'enabled' => [
+                'name' => 'enabled',
+                'type' => Type::boolean(),
+                'description' => 'Whether the element is enabled'
+            ],
+            'archived' => [
+                'name' => 'archived',
+                'type' => Type::boolean(),
+                'description' => 'Whether the element is archived'
+            ],
+            'siteId' => [
+                'name' => 'siteId',
+                'type' => Type::int(),
+                'description' => 'The site ID the element is associated with'
+            ],
+            'searchScore' => [
+                'name' => 'searchScore',
+                'type' => Type::string(),
+                'description' => 'The element’s search score, if the `search` parameter was used when querying for the element'
+            ],
+            'trashed' => [
+                'name' => 'trashed',
+                'type' => Type::boolean(),
+                'description' => 'Whether the element has been soft-deleted'
+            ],
+            'status' => [
+                'name' => 'status',
+                'type' => Type::string(),
+                'description' => 'status'
+            ]
         ]);
     }
 
