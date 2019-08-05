@@ -43,11 +43,6 @@ use yii\base\Component;
 /**
  * Rolling list of todos:
  *
- * 1) Obviously, docs for every method (including exceptions)
- *   + This class
- *   + helpers/Gql
- *   + gql/*
- *   + Description for *every* field on GQL types. For hard-coded types this goes in definition files. For actual Craft fields can reuse the `instructions` property.
  * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
  * 3) Eager-loading currently ignores the passed arguments. Some tests are borked because of that. This includes the `limit` argument to subqueries.
  * 4) Maybe move out token permissions to a separate service?
