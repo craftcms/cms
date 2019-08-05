@@ -1461,5 +1461,5 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'Choose a site' => 'Bir site seçin',
     'Address Line 2' => 'Adres Satırı 2',
     'Are you sure you want to delete this {type}?' => 'Bu {type} öğesini silmek istediğinizden emin misiniz?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'Şu anda yüklü olan <strong>{cause}</strong> {existing} taslak sürümüne sahiptir (gelecek sürüm {incoming})'
 ];
