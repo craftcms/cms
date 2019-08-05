@@ -256,6 +256,15 @@ class Search extends Component
             // Sort found elementIds by score
             arsort($scoresByElementId);
 
+            // Fire an 'afterSearch' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+                $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
+                    'elementIds' => array_keys($scoresByElementId),
+                    'query' => $query,
+                    'siteId' => $siteId,
+                ]));
+            }
+
             if ($returnScores) {
                 return $scoresByElementId;
             }
