@@ -1404,7 +1404,7 @@ return [
     'Licensed' => '已许可',
     'The maximum length (in bytes) the field can hold.' => '字段可以容纳的最大长度（以字节为单位）。',
     'Find an official Craft Partner' => '查找官方 Craft 合作伙伴',
-    'Less' => '小于',
+    'Less' => '更少',
     'Resaving {type}' => '正在重新保存{type}',
     'Meet the Craft community' => '了解 Craft 社区',
     'Total Price' => '总价',
