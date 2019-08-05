@@ -1465,5 +1465,5 @@ return [
     'Choose a site' => 'Выбрать сайт',
     'Address Line 2' => 'Адресная строка 2',
     'Are you sure you want to delete this {type}?' => 'Вы уверены, что хотите удалить этот {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>, установленная в настоящий момент, имеет версию схемы h {existing} (expected {incoming})'
 ];
