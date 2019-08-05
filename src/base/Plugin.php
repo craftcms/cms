@@ -210,7 +210,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function setSettings(array $settings)
     {
-        $this->getSettings()->setAttributes($settings, false);
+        $settingsModel = $this->getSettings();
+
+        if ($settingsModel) {
+            $settingsModel->setAttributes($settings, false);
+        }
     }
 
     /**
