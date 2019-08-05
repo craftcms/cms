@@ -1424,7 +1424,7 @@ return [
     'URL Format' => 'Формат URL',
     'Checking environment…' => 'Проверка окружения…',
     'Edit images' => 'Изменить изображения',
-    'Includes Multiple locales, Section and entry locale targeting, Content translations' => 'Includes Multiple locales, Section and entry locale targeting, Content translations',
+    'Includes Multiple locales, Section and entry locale targeting, Content translations' => 'Включает множество локалей, таргетирование локалей для разделов и записей, перевод контента',
     'Optgroup?' => 'Optgroup?',
     'Use a new credit card' => 'Use a new credit card',
     'Element' => 'Element',
