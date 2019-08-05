@@ -1460,6 +1460,6 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'Address Line 1' => 'Address Line 1',
     'Choose a site' => 'Choose a site',
     'Address Line 2' => 'Address Line 2',
-    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    'Are you sure you want to delete this {type}?' => 'Opravdu chcete tento {type} vymazat?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
 ];
