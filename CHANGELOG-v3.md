@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.9 - 2019-08-06
 
 ### Added
 - Added the `ignorePlaceholders` element query param.
