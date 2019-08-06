@@ -1336,11 +1336,11 @@ return [
     'Version {version}' => 'גרסה {version}',
     'Package Name' => 'שם החבילה',
     'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.' => 'אתה משתמש כעת בגרסה ה{currentEdition}, והגרסה המורשית שלך היא {licensedEdition}.',
-    'Card number' => 'מסםר כרטיס',
+    'Card number' => 'מספר כרטיס',
     'Updates until {date} ({sign}{price})' => 'עדכונים עד ({date} ({sign}{price}',
     'Recent Revisions' => 'תיקונים אחרונים',
     'Save blocks to other sites in the same site group' => 'שמור בלוקים באתרים אחרים באותה קבוצת אתרים',
-    'This can be set to an environment variable, or begin with an alias.' => 'ניתן להגדיר את תיבת הטקסט nמשתנה סביבה או להתחל עם כינויים.',
+    'This can be set to an environment variable, or begin with an alias.' => 'ניתן להגדיר את תיבת הטקסט ממשתנה סביבה או להתחיל עם כינויים.',
     'Unknown' => 'לא ידוע',
     'Couldn’t add all items to the cart.' => 'לא ניתן להוסיף את כל הפריטים לעגלה.',
     'Add all to cart' => 'הוסף הכל לעגלה',
@@ -1465,5 +1465,5 @@ return [
     'Choose a site' => 'בחר אתר',
     'Address Line 2' => 'שורת כתובת 2',
     'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'ל<strong>{cause}</strong> המותקן כרגע יש גרסת סכימה של {existing}(צפוי{incoming})'
 ];
