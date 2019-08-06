@@ -29,6 +29,7 @@
 - Fixed a bug where the Database Backup could result in a 404 error on load-balanced environments. ([#4699](https://github.com/craftcms/cms/issues/4699))
 - Fixed a bug where the “Current” entry revision link wouldn’t always work. ([#4705](https://github.com/craftcms/cms/issues/4705))
 - Fixed a bug where the `craft\services\Search::EVENT_AFTER_SEARCH` event wasn’t always firing. ([#4710](https://github.com/craftcms/cms/issues/4710))
+- Fixed a bug where `craft\services\Users::purgeExpiredPendingUsers()` was attempting to delete already-trashed users.
 
 ## 3.2.8 - 2019-07-30
 
