@@ -166,6 +166,17 @@ class Craft extends Yii2
             return;
         }
 
+        $db = \Craft::createObject(
+            App::dbConfig(self::createDbConfig())
+        );
+
+        \Craft::$app->set('db', $db);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function loadFixtures($test) {
         // Re-apply project config
         if ($projectConfig = $this->_getConfig('projectConfig')) {
             // Tests just beginning. . Reset the project config to its original state.
@@ -189,11 +200,7 @@ class Craft extends Yii2
             }
         }
 
-        $db = \Craft::createObject(
-            App::dbConfig(self::createDbConfig())
-        );
-
-        \Craft::$app->set('db', $db);
+        return parent::loadFixtures($test);
     }
 
     /**
