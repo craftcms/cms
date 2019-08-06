@@ -1465,5 +1465,5 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'Choose a site' => 'Kies een site',
     'Address Line 2' => 'Adresregel 2',
     'Are you sure you want to delete this {type}?' => 'Weet u zeker dat u deze {type} wilt verwijderen?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'De momenteel geïnstalleerde <strong>{cause}</strong> heeft schemaversie {existing} ({incoming} verwacht)'
 ];
