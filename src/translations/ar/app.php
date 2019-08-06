@@ -1335,7 +1335,7 @@ return [
     'Duplicate' => 'تكرار',
     'Version {version}' => 'الإصدار {version}',
     'Package Name' => 'اسم الحزمة',
-    'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.' => 'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.',
+    'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.' => 'أنت تستخدم الآن النسخة {currentEdition}، ونسخة الترخيص الخاص بك هي {licensedEdition}.',
     'Card number' => 'رقم البطاقة',
     'Updates until {date} ({sign}{price})' => 'Updates until {date} ({sign}{price})',
     'Recent Revisions' => 'المراجعات الأخيرة',
@@ -1465,5 +1465,5 @@ return [
     'Choose a site' => 'اختر موقع',
     'Address Line 2' => 'العنوان 2',
     'Are you sure you want to delete this {type}?' => 'هل أنت متأكد أنك تريد حذف هذا {type}؟',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> المثبت حاليًا به إصدار المخطط من {existing} (متوقع {incoming})'
 ];
