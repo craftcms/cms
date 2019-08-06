@@ -1402,7 +1402,7 @@ return [
     'Customize element sources' => 'تخصيص عناصر المصادر',
     'The URL/URI to use for this target.' => 'عنوان URL / URL المراد استخدامه لهذا الهدف.',
     'Licensed' => 'تم الترخيص',
-    'The maximum length (in bytes) the field can hold.' => 'The maximum length (in bytes) the field can hold.',
+    'The maximum length (in bytes) the field can hold.' => 'الحد الأقصى للطول (بالبايت) الذي يمكن أن يحتوي عيه الحقل.',
     'Find an official Craft Partner' => 'العثور على شريك رسمي لـ Craft',
     'Less' => 'أقل',
     'Resaving {type}' => 'جاري إعادة حفظ {type}',
