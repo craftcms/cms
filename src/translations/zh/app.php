@@ -1340,7 +1340,7 @@ return [
     'Updates until {date} ({sign}{price})' => '更新截止日期：{date} ({sign}{price})',
     'Recent Revisions' => '最近修订版本',
     'Save blocks to other sites in the same site group' => '将区块保存至相同站点组中的其他站点',
-    'This can be set to an environment variable, or begin with an alias.' => '可以设置为环境变量，或以别名开头。',
+    'This can be set to an environment variable, or begin with an alias.' => '输入框可以设置为环境变量，或以别名开头。',
     'Unknown' => '未知',
     'Couldn’t add all items to the cart.' => '无法将全部商品添加到购物车。',
     'Add all to cart' => '全部添加到购物车',
