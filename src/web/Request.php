@@ -389,6 +389,7 @@ class Request extends \yii\web\Request
      * Returns the token submitted with the request, if there is one.
      *
      * @return string|null The token, or `null` if there isn’t one.
+     * @throws BadRequestHttpException if an invalid token is supplied
      */
     public function getToken()
     {
@@ -397,6 +398,10 @@ class Request extends \yii\web\Request
             $this->_token = $this->getQueryParam($param)
                 ?? $this->getHeaders()->get('X-Craft-Token')
                 ?? false;
+            if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
+                $this->_token = false;
+                throw new BadRequestHttpException('Invalid token');
+            }
         }
 
         return $this->_token ?: null;
