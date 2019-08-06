@@ -658,7 +658,7 @@ class EntriesController extends BaseEntriesController
     private function _getEntryModel(): Entry
     {
         $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('entryId');
+        $entryId = $request->getBodyParam('entryId');
         $siteId = $request->getBodyParam('siteId');
 
         if ($entryId) {

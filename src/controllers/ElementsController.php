@@ -382,19 +382,15 @@ class ElementsController extends BaseElementsController
         $response = [];
 
         if ($includeSites) {
-            if (count($siteIds) > 1) {
-                $response['siteIds'] = [];
+            $response['sites'] = [];
 
-                foreach ($siteIds as $siteId) {
-                    $site = Craft::$app->getSites()->getSiteById($siteId);
+            foreach ($siteIds as $siteId) {
+                $site = Craft::$app->getSites()->getSiteById($siteId);
 
-                    $response['sites'][] = [
-                        'id' => $siteId,
-                        'name' => Craft::t('site', $site->name),
-                    ];
-                }
-            } else {
-                $response['sites'] = null;
+                $response['sites'][] = [
+                    'id' => $siteId,
+                    'name' => Craft::t('site', $site->name),
+                ];
             }
         }
 

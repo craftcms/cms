@@ -334,13 +334,12 @@ class EntryRevisionsController extends BaseEntriesController
         // Permission enforcement
         /** @var Entry|null $entry */
         $entry = $draft->getSource();
-        $this->enforceEditEntryPermissions($entry ?? $draft);
-        $section = ($entry ?? $draft)->getSection();
+        $this->enforceEditEntryPermissions($entry);
+        $section = ($entry)->getSection();
 
         // Is this another user's entry (and it's not a Single)?
         $userId = Craft::$app->getUser()->getId();
         if (
-            $entry &&
             $entry->authorId != $userId &&
             $section->type != Section::TYPE_SINGLE &&
             $entry->enabled
@@ -419,12 +418,8 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry|RevisionBehavior $revision */
+        /** @var Entry $entry */
         $entry = $revision->getSource();
-
-        if (!$entry) {
-            throw new ServerErrorHttpException('Entry version is missing its entry');
-        }
 
         $this->enforceEditEntryPermissions($entry);
         $userId = Craft::$app->getUser()->getId();

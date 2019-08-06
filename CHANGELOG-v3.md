@@ -1,5 +1,39 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.9 - 2019-08-06
+
+### Added
+- Added the `ignorePlaceholders` element query param.
+- Added the `cp.entries.edit.meta` and `cp.entries.edit.settings` template hooks to the Edit Entry page.
+- Added `craft\base\ElementInterface::getSource()`.
+- Added `craft\base\ElementTrait::$newSiteIds`.
+- Added `craft\models\Site::$dateCreated` and `$dateUpdated`. ([#4703](https://github.com/craftcms/cms/issues/4703))
+
+### Changed
+- Improved the Control Panel header styling for mobile and on pages with long titles. ([#4548](https://github.com/craftcms/cms/issues/4548))
+- Element references in the Control Panel now reveal the site the element was fetched from in their tooltips, on multi-site installs. ([#4690](https://github.com/craftcms/cms/issues/4690))
+- Element editor HUDs now always show a header with the element’s site name on multi-site installs, even if the element is only editable in one site. ([#4690](https://github.com/craftcms/cms/issues/4690))
+- Entry preview tokens now respect the `defaultTokenDuration` config setting, rather than always expiring after 24 hours. ([#4683](https://github.com/craftcms/cms/pull/4683))
+- Improved disabled select field styling. ([#4709](https://github.com/craftcms/cms/pull/4709))
+
+### Deprecated
+- Deprecated `craft\behaviors\DraftBehavior::getSource()`.
+- Deprecated `craft\behaviors\RevisionBehavior::getSource()`.
+
+### Fixed
+- Fixed a bug where elements listed in a Structure view could be missing their descendant toggles even if all of their descendants were disabled. ([#4685](https://github.com/craftcms/cms/issues/4685))
+- Fixed a bug where element CSV exports were limited to 50 elements if no limit was set. ([#4692](https://github.com/craftcms/cms/issues/4692))
+- Fixed a 400 error that occurred when submitting an entry form that didn’t have an `entryId` param. ([#4693](https://github.com/craftcms/cms/issues/4693))
+- Fixed a bug where `craft\base\Element::getDescendants()` and other structure methods could return the wrong results when called on a draft. ([#4694](https://github.com/craftcms/cms/issues/4694))
+- Fixed a bug where Matrix blocks weren’t getting duplicated to newly-enabled sites for elements if the field’s Propagation Method setting wasn’t set to “Save blocks to all sites the owner element is saved in”. ([#4698](https://github.com/craftcms/cms/issues/4698))
+- Fixed a bug where the Database Backup could result in a 404 error on load-balanced environments. ([#4699](https://github.com/craftcms/cms/issues/4699))
+- Fixed a bug where the “Current” entry revision link wouldn’t always work. ([#4705](https://github.com/craftcms/cms/issues/4705))
+- Fixed a bug where the `craft\services\Search::EVENT_AFTER_SEARCH` event wasn’t always firing. ([#4710](https://github.com/craftcms/cms/issues/4710))
+- Fixed a bug where `craft\services\Users::purgeExpiredPendingUsers()` was attempting to delete already-trashed users.
+
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.2.8 - 2019-07-30
 
 ### Added

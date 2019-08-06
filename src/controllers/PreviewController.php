@@ -85,8 +85,7 @@ class PreviewController extends Controller
             ]
         ];
 
-        $expiryDate = (new \DateTime())->add(new \DateInterval('P1D'));
-        $token = Craft::$app->getTokens()->createToken($route, null, $expiryDate);
+        $token = Craft::$app->getTokens()->createToken($route);
 
         if (!$token) {
             throw new ServerErrorHttpException(Craft::t('app', 'Could not create a preview token.'));

@@ -117,6 +117,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $asArray = false;
 
+    /**
+     * @var bool Whether to ignore placeholder elements when populating the results.
+     * @used-by ignorePlaceholders()
+     */
+    public $ignorePlaceholders = false;
+
     // Drafts and revisions
     // -------------------------------------------------------------------------
 
@@ -655,6 +661,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function asArray(bool $value = true)
     {
         $this->asArray = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $asArray
+     */
+    public function ignorePlaceholders(bool $value = true)
+    {
+        $this->ignorePlaceholders = $value;
         return $this;
     }
 
@@ -1859,6 +1875,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _placeholderCondition($condition)
     {
+        if ($this->ignorePlaceholders) {
+            return $condition;
+        }
+
         if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
             $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
@@ -2671,7 +2691,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?
-        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null) {
+        if (
+            !$this->ignorePlaceholders &&
+            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+        ) {
             return $element;
         }
 

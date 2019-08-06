@@ -75,6 +75,14 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function asArray(bool $value = true);
 
     /**
+     * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
+     * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function ignorePlaceholders(bool $value = true);
+
+    /**
      * Narrows the query results to only drafts {elements}.
      *
      * ---

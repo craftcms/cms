@@ -1790,6 +1790,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+                delete params.criteria.limit;
 
                 var limit = parseInt($limitField.find('input').val());
                 if (limit && !isNaN(limit)) {

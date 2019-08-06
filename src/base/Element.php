@@ -1280,6 +1280,23 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getSource(): ElementInterface
+    {
+        $sourceId = $this->getSourceId();
+        if ($sourceId === $this->id) {
+            return $this;
+        }
+        return static::find()
+            ->id($sourceId)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->one();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsUnsavedDraft(): bool
     {
         if (!$this->getIsDraft()) {
@@ -1537,7 +1554,7 @@ abstract class Element extends Component implements ElementInterface
     {
         return static::find()
             ->structureId($this->structureId)
-            ->ancestorOf($this)
+            ->ancestorOf($this->getSource())
             ->siteId($this->siteId)
             ->ancestorDist($dist);
     }
@@ -1554,7 +1571,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf($this)
+            ->descendantOf($this->getSource())
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }
@@ -1579,7 +1596,7 @@ abstract class Element extends Component implements ElementInterface
     {
         return static::find()
             ->structureId($this->structureId)
-            ->siblingOf($this)
+            ->siblingOf($this->getSource())
             ->siteId($this->siteId);
     }
 
@@ -1592,7 +1609,7 @@ abstract class Element extends Component implements ElementInterface
             /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
             $query->structureId = $this->structureId;
-            $query->prevSiblingOf = $this;
+            $query->prevSiblingOf = $this->getSource();
             $query->siteId = $this->siteId;
             $query->anyStatus();
             $this->_prevSibling = $query->one();
@@ -1614,7 +1631,7 @@ abstract class Element extends Component implements ElementInterface
             /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
             $query->structureId = $this->structureId;
-            $query->nextSiblingOf = $this;
+            $query->nextSiblingOf = $this->getSource();
             $query->siteId = $this->siteId;
             $query->anyStatus();
             $this->_nextSibling = $query->one();
@@ -1656,8 +1673,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
+        return ($source->root == $element->root && $source->lft < $element->lft && $source->rgt > $element->rgt);
     }
 
     /**
@@ -1665,8 +1684,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isDescendantOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
+        return ($source->root == $element->root && $source->lft > $element->lft && $source->rgt < $element->rgt);
     }
 
     /**
@@ -1674,8 +1695,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
+        return ($source->root == $element->root && $source->level == $element->level - 1 && $source->isAncestorOf($element));
     }
 
     /**
@@ -1683,8 +1706,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isChildOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
+        return ($source->root == $element->root && $source->level == $element->level + 1 && $source->isDescendantOf($element));
     }
 
     /**
@@ -1692,13 +1717,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        if ($this->root == $element->root && $this->level !== null && $this->level == $element->level) {
-            if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
+        if ($source->root == $element->root && $source->level !== null && $source->level == $element->level) {
+            if ($source->level == 1 || $source->isPrevSiblingOf($element) || $source->isNextSiblingOf($element)) {
                 return true;
             }
 
-            $parent = $this->getParent();
+            $parent = $source->getParent();
 
             if ($parent) {
                 return $element->isDescendantOf($parent);
@@ -1713,8 +1740,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isPrevSiblingOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
+        return ($source->root == $element->root && $source->level == $element->level && $source->rgt == $element->lft - 1);
     }
 
     /**
@@ -1722,8 +1751,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isNextSiblingOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = $this->getSource();
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
+        return ($source->root == $element->root && $source->level == $element->level && $source->lft == $element->rgt + 1);
     }
 
     /**
@@ -2447,7 +2478,7 @@ abstract class Element extends Component implements ElementInterface
 
         /** @var ElementQuery $query */
         $elementIds = $query->ids();
-        $key = array_search($this->id, $elementIds, false);
+        $key = array_search($this->getSourceId(), $elementIds, false);
 
         if ($key === false || !isset($elementIds[$key + $dir])) {
             return null;
