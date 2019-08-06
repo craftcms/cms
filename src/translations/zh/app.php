@@ -1459,7 +1459,7 @@ return [
     'Only save entries to the site they were created in' => '只将条目保存到创建条目的站点',
     'The draft has been saved.' => '已保存草稿。',
     'Prefix Text' => '前缀文本',
-    'Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.' => '您的“project.yaml”文件是为与当前安装软件不同的 Craft 和/或插件版本创建的。',
+    'Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.' => '您的“project.yaml”文件是为与当前安装软件不同版本的 Craft 和/或插件创建的。',
     'Matrix Blocks' => '矩阵块',
     'Address Line 1' => '地址行 1',
     'Choose a site' => '选择站点',
