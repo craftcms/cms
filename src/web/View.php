@@ -17,6 +17,7 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
@@ -1775,6 +1776,12 @@ JS;
         $encodedLabel = HtmlHelper::encode($label);
 
         if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+            if ($element->getIsDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
+            } else if ($element->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+            }
+
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
             $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
         } else {
