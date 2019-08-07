@@ -1160,6 +1160,8 @@ class Request extends \yii\web\Request
                 $parsed['host'] !== $hostName &&
                 (
                     !function_exists('idn_to_ascii') ||
+                    !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
+                    !defined('INTL_IDNA_VARIANT_UTS46') ||
                     idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
                 )
             ) {
