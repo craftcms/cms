@@ -1395,7 +1395,7 @@ return [
     'Update {type}' => '{type} 업데이트',
     'Please fix the following in your {file} file before proceeding:' => '계속 진행하기 전에 {file} 파일에서 아래 항목을 수정해 주십시오.',
     'Label' => '라벨',
-    'Column handles can’t be in the format “{format}”.' => '컬럼 핸들은 “{format}” 형식이 될 수 없습니다.',
+    'Column handles can’t be in the format “{format}”.' => '열 핸들은 “{format}” 형식이 될 수 없습니다.',
     'Plugin edition changed.' => '플러그인 버전 변경됨.',
     'No limit' => '무제한',
     'This license is for the {name} edition.' => '이 라이선스는 {name} 버전용입니다.',
@@ -1465,5 +1465,5 @@ return [
     'Choose a site' => '사이트 선택',
     'Address Line 2' => '주소 입력 2',
     'Are you sure you want to delete this {type}?' => '이 {type}을(를) 삭제하시겠습니까?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '현재 설치되어 있는 <strong>{cause}</strong>의 스키마 버전은 {existing}입니다(필요한 버전 {incoming}).'
 ];
