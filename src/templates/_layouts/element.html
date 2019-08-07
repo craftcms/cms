@@ -191,6 +191,11 @@
         {% if craft.app.isMultiSite %}
             <input type="hidden" name="siteId" value="{{ element.siteId }}">
         {% endif %}
+
+        {# propagateAll param #}
+        {% if isUnsavedDraft and craft.app.request.getQueryParam('fresh') %}
+            <input type="hidden" name="propagateAll" value="1">
+        {% endif %}
     {% endif %}
     {{ parent() }}
 {% endblock %}
@@ -271,7 +276,6 @@
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,
     draftNotes: isDraft ? element.draftNotes : null,
-    propagateAll: isUnsavedDraft and craft.app.request.getQueryParam('fresh'),
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,

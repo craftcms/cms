@@ -371,6 +371,10 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
+        if ($draft->getIsUnsavedDraft() && $request->getBodyParam('propagateAll')) {
+            $draft->propagateAll = true;
+        }
+
         if (!Craft::$app->getElements()->saveElement($draft)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
 

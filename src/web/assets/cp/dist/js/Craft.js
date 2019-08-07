@@ -1,4 +1,4 @@
-/*!   - 2019-08-01 */
+/*!   - 2019-08-07 */
 (function($){
 
 /** global: Craft */
@@ -13356,10 +13356,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data += '&draftId=' + this.settings.draftId
                     + '&draftName=' + encodeURIComponent(this.settings.draftName)
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
-
-                if (this.settings.propagateAll) {
-                    data += '&propagateAll=1';
-                }
             }
 
             return data;
@@ -13585,7 +13581,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             revisionId: null,
             draftName: null,
             draftNotes: null,
-            propagateAll: false,
             canDeleteDraft: false,
             canUpdateSource: false,
             saveDraftAction: null,
