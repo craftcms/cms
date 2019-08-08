@@ -10,6 +10,7 @@
 - Fixed a bug where entry forms could miss the fact that a Matrix block had been deleted. ([#4727](https://github.com/craftcms/cms/issues/4727))
 - Fixed a PHP error that could occur on environments where the Intl PHP extension was installed but the `IDNA_NONTRANSITIONAL_TO_ASCII` or `INTL_IDNA_VARIANT_UTS46` constants weren’t defined. ([#4722](https://github.com/craftcms/cms/issues/4722))
 - Fixed a PHP error that could occur if a plugin was configured with settings even though it didn’t support settings. ([#4706](https://github.com/craftcms/cms/issues/4706))
+- Fixed an error that occurred when a validation error occurred on an entry while it was being created or updated from a draft. ([#4733](https://github.com/craftcms/cms/issues/4733))
 
 ## 3.2.9 - 2019-08-06
 

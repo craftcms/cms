@@ -241,13 +241,22 @@ class Drafts extends Component
                 $behavior = $draft->detachBehavior('draft');
 
                 // Duplicate the draft as a new element
-                $newSource = $elementsService->duplicateElement($draft, [
-                    'draftId' => null,
-                ]);
+                $e = null;
+                try {
+                    $newSource = $elementsService->duplicateElement($draft, [
+                        'draftId' => null,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Don't throw it just yet, until we reattach the draft behavior
+                }
 
                 // Now reattach the draft behavior to the draft
                 if ($behavior !== null) {
                     $draft->attachBehavior('draft', $behavior);
+                }
+
+                if ($e !== null) {
+                    throw $e;
                 }
             }
 
@@ -257,6 +266,12 @@ class Drafts extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+
+            if ($e instanceof InvalidElementException) {
+                // Add the errors from the duplicated element back onto the draft
+                $draft->addErrors($e->element->getErrors());
+            }
+
             throw $e;
         }
 
