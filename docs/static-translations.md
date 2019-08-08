@@ -77,7 +77,7 @@ To replace the placeholder values with dynamic values when translating the messa
 ::: code
 ```twig
 <a href="/contact">{{ 'Welcome back, {name}'|t(params={
-    'name' => currentUser.friendlyName,
+    'name' : currentUser.friendlyName,
 }) }}</a>
 ```
 ```php
