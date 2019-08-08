@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\fields\BaseRelationField::settingsTemplateVariables()`. ([#4732](https://github.com/craftcms/cms/issues/4732))
+
 ### Fixed
 - Fixed a bug where entry content wouldn’t get propagated to other sites if an entry was created and then saved before Craft had finished autosaving the draft. ([#4423](https://github.com/craftcms/cms/issues/4423))
 - Fixed a bug where entry forms could miss the fact that a Matrix block had been deleted. ([#4727](https://github.com/craftcms/cms/issues/4727))

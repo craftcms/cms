@@ -237,13 +237,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getSettingsHtml()
     {
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType();
-
-        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, [
-            'field' => $this,
-            'pluralElementType' => $elementType::pluralDisplayName(),
-        ]);
+        $variables = $this->settingsTemplateVariables();
+        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);
     }
 
     /**
@@ -783,6 +778,22 @@ JS;
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Returns an array of variables that should be passed to the settings template.
+     *
+     * @return array
+     */
+    protected function settingsTemplateVariables(): array
+    {
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType();
+
+        return [
+            'field' => $this,
+            'pluralElementType' => $elementType::pluralDisplayName(),
+        ];
+    }
 
     /**
      * Returns an array of variables that should be passed to the input template.
