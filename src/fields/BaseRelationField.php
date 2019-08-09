@@ -270,7 +270,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         /** @var Element $element */
         // Prevent circular relations from worrying about this entry
-        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+        $sourceId = $element->getSourceId();
+        $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
+        self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
         /** @var ElementQueryInterface $query */
         $query = $element->getFieldValue($this->handle);
@@ -286,7 +288,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
         }
 
-        unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
+        // Reset self::$_relatedElementValidates[$sourceId][$element->siteId] to its original value
+        if ($sourceValidates !== null) {
+            self::$_relatedElementValidates[$sourceId][$element->siteId] = $sourceValidates;
+        } else {
+            unset(self::$_relatedElementValidates[$sourceId][$element->siteId]);
+        }
 
         if ($errorCount) {
             /** @var ElementInterface|string $elementType */
