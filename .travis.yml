@@ -29,7 +29,6 @@ matrix:
     env: TASK_TESTS_COVERAGE=1 DB=pgsql
 cache:
   directories:
-  - vendor
   - "$HOME/.composer/cache"
   - "$HOME/.npm"
 addons:
@@ -43,6 +42,7 @@ install:
 
   # install composer dependencies
   export PATH="$HOME/.composer/vendor/bin:$PATH"
+  composer validate
   travis_retry composer install $DEFAULT_COMPOSER_FLAGS
 before_script:
 - |
