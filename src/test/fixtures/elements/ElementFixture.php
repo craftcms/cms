@@ -11,10 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
-use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -156,7 +154,7 @@ abstract class ElementFixture extends ActiveFixture
      * Get element model.
      *
      * @param array|null $data The data to get the element by
-     * @return Element|ElementInterface
+     * @return ElementInterface|null
      */
     public function getElement(array $data = null)
     {

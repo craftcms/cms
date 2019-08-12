@@ -8,10 +8,7 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\elements\Entry;
-use craft\helpers\ElementHelper;
 
 /**
  * Class EntryFixture
@@ -64,10 +61,10 @@ abstract class EntryFixture extends ElementFixture
     }
 
     /**
-     * Override to ensure we match for dynamic titles
+     * Override to ensure we match for `titleFormat` dynamic titles
      *
      * @param array|null $data
-     * @return ElementInterface
+     * @return Entry|null
      */
     public function getElement(array $data = null)
     {
@@ -84,9 +81,7 @@ abstract class EntryFixture extends ElementFixture
             $query->title = $entry->title;
         }
 
-        $q =  $query->one();
-
-        return $q;
+        return $query->one();
     }
     // Protected Methods
     // =========================================================================
