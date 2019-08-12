@@ -9,6 +9,7 @@
 ### Changed
 - Improved garbage collection performance when hard-deleting hundreds of thousands of elements. ([#4735](https://github.com/craftcms/cms/issues/4735))
 - Element queries’ `title` param will now accept a value of `'0'`.
+- `craft\services\Elements::deleteElementById()` now has a `$hardDelete` argument. ([#4747](https://github.com/craftcms/cms/pull/4747))
 
 ### Fixed
 - Fixed a bug where Entry fixtures wouldn’t get unloaded. ([#4663](https://github.com/craftcms/cms/issues/4663))
