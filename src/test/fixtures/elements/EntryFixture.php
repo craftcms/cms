@@ -61,8 +61,6 @@ abstract class EntryFixture extends ElementFixture
     }
 
     /**
-     * Override to ensure we match for `titleFormat` dynamic titles
-     *
      * @param array|null $data
      * @return Entry|null
      */
