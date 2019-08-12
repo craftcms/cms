@@ -9,6 +9,9 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use Throwable;
 use yii\base\InvalidArgumentException;
@@ -153,17 +156,24 @@ abstract class ElementFixture extends ActiveFixture
      * Get element model.
      *
      * @param array|null $data The data to get the element by
-     * @return Element
+     * @return Element|ElementInterface
      */
     public function getElement(array $data = null)
     {
-        $modelClass = $this->modelClass;
-
         if ($data === null) {
-            return new $modelClass();
+            return new $this->modelClass();
         }
 
-        $query = $modelClass::find()->anyStatus()->trashed(null);
+        return $this->generateElementQuery($data)->one();
+    }
+
+    /**
+     * @param array $data
+     * @return ElementQuery
+     */
+    public function generateElementQuery(array $data) : ElementQuery
+    {
+        $query = $this->modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {
@@ -171,7 +181,7 @@ abstract class ElementFixture extends ActiveFixture
             }
         }
 
-        return $query->one();
+        return $query;
     }
 
     // Protected Methods

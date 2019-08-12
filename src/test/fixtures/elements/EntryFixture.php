@@ -8,7 +8,10 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
+use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Entry;
+use craft\helpers\ElementHelper;
 
 /**
  * Class EntryFixture
@@ -60,6 +63,31 @@ abstract class EntryFixture extends ElementFixture
         }
     }
 
+    /**
+     * Override to ensure we match for dynamic titles
+     *
+     * @param array|null $data
+     * @return ElementInterface
+     */
+    public function getElement(array $data = null)
+    {
+        if ($data === null) {
+            return new Entry();
+        }
+
+        $query = $this->generateElementQuery($data);
+
+        // Ensure we match the titleFormat - https://github.com/craftcms/cms/issues/4663
+        if (isset($data['typeId'])) {
+            $entry = new Entry($data);
+            $entry->updateTitle();
+            $query->title = $entry->title;
+        }
+
+        $q =  $query->one();
+
+        return $q;
+    }
     // Protected Methods
     // =========================================================================
 
