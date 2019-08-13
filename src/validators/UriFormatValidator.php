@@ -50,7 +50,8 @@ class UriFormatValidator extends Validator
                 ]));
             }
 
-            if (ElementHelper::doesUriFormatHaveActionTrigger($uriFormat)) {
+            // https://github.com/craftcms/cms/issues/4154
+            if (ElementHelper::uriStartsWithActionTrigger($uriFormat)) {
                 $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the sites action trigger: {actionTrigger}', [
                     'attribute' => $model->$attribute,
                     'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger
