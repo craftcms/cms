@@ -85,7 +85,7 @@ class ElementHelper
      * @param string $uriFormat
      * @return bool
      */
-    public static function doesUriFormatHaveActionTrigger(string $uriFormat) : bool
+    public static function uriStartsWithActionTrigger(string $uriFormat) : bool
     {
         $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
         $parts = StringHelper::split($uriFormat, '/');

@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use craft\db\Query;
+use craft\helpers\ElementHelper;
 use craft\models\Section_SiteSettings;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -32,6 +33,13 @@ class SingleSectionUriValidator extends Validator
     {
         if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
+        }
+
+        // https://github.com/craftcms/cms/issues/4154
+        if (ElementHelper::uriStartsWithActionTrigger($model->uriFormat)) {
+            $this->addError($model, $attribute, Craft::t('app', 'The URI format cannot start with the sites action trigger: {actionTrigger}', [
+                'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger
+            ]));
         }
 
         /** @var Section_SiteSettings $model */
