@@ -78,6 +78,8 @@ class UriFormatValidatorTest extends Unit
             [true, ''],
             [true, '', true],
             [true, 'test', false],
+            [false, 'adminustriggerus/{slug}', true],
+            [false, 'adminustriggerus}', false],
             [true, 'slug', true],
             [false, 'entry/{test}/test', true],
 
