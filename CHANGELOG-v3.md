@@ -13,6 +13,7 @@
 - Element queries’ `title` param will now accept a value of `'0'`.
 - `craft\services\Elements::deleteElementById()` now has a `$hardDelete` argument. ([#4747](https://github.com/craftcms/cms/pull/4747))
 - It’s no longer possible to save routes or URI formats that begin with the `actionTrigger` or `cpTrigger` config settings. ([#4154](https://github.com/craftcms/cms/issues/4154))
+- Categories fields’ selection modals now show the site menu. ([#4749](https://github.com/craftcms/cms/issues/4749))
 
 ### Removed
 - Removed `craft\records\Route`.
