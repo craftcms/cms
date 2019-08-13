@@ -9,11 +9,9 @@ namespace craft\validators;
 
 use Craft;
 use craft\db\Query;
-use craft\helpers\ElementHelper;
 use craft\models\Section_SiteSettings;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\validators\Validator;
 
 /**
  * Will validate that the given attribute is a valid URI for a single section.
@@ -21,11 +19,8 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SingleSectionUriValidator extends Validator
+class SingleSectionUriValidator extends UriFormatValidator
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -35,8 +30,7 @@ class SingleSectionUriValidator extends Validator
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
 
-        // https://github.com/craftcms/cms/issues/4154
-        UriFormatValidator::validateActionTrigger($model, 'uriFormat');
+        parent::validateAttribute($model, $attribute);
 
         /** @var Section_SiteSettings $model */
         // Make sure it's a valid URI

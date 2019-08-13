@@ -5,15 +5,14 @@
 ### Added
 - Added `craft\fields\BaseRelationField::settingsTemplateVariables()`. ([#4732](https://github.com/craftcms/cms/issues/4732))
 - Added `craft\services\Search::deleteOrphanedIndexes()`.
-- Added `craft\validators\UriFormatValidator::validateActionTrigger()`.
+- Added `craft\validators\UriFormatValidator::$disallowTriggers`.
 - Added the `Craft.startsWith()` JavaScript method.
 
 ### Changed
 - Improved garbage collection performance when hard-deleting hundreds of thousands of elements. ([#4735](https://github.com/craftcms/cms/issues/4735))
 - Element queries’ `title` param will now accept a value of `'0'`.
 - `craft\services\Elements::deleteElementById()` now has a `$hardDelete` argument. ([#4747](https://github.com/craftcms/cms/pull/4747))
-- `craft\validators\UriFormatValidator` and `craft\validators\SingleSectionUriValidator` will now fail if the URI Format starts with the `actionTrigger` param. ([#4154](https://github.com/craftcms/cms/issues/4154))
-- The Settings → Routes page no longer allows routes to be saved if the URI begins with the `actionTrigger` or `cpTrigger` config settings. ([#4154](https://github.com/craftcms/cms/issues/4154))
+- It’s no longer possible to save routes or URI formats that begin with the `actionTrigger` or `cpTrigger` config settings. ([#4154](https://github.com/craftcms/cms/issues/4154))
 
 ### Removed
 - Removed `craft\records\Route`.

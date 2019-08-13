@@ -9,8 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
-use yii\base\Model;
 use yii\validators\Validator;
 
 /**
@@ -25,11 +23,15 @@ class UriFormatValidator extends Validator
     // =========================================================================
 
     /**
-     * Whether we should ensure that "{slug}" is used within the URI format.
-     *
-     * @var bool
+     * @var bool Whether we should ensure that "{slug}" is used within the URI format.
      */
     public $requireSlug = false;
+
+    /**
+     * @var bool Whether to ensure that the URI format doesn’t begin with the actionTrigger or cpTrigger.
+     * @since 3.2.10
+     */
+    public $disallowTriggers = true;
 
     // Protected Methods
     // =========================================================================
@@ -52,24 +54,20 @@ class UriFormatValidator extends Validator
                 ]));
             }
 
-            self::validateActionTrigger($model, $attribute);
-        }
-    }
+            if ($this->disallowTriggers) {
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $firstSeg = explode('/', $uriFormat, 2)[0];
 
-    /**
-     * @param Model $model - The model to run validation on
-     * @param $attribute - The name of the property on $model to validate
-     */
-    public static function validateActionTrigger(Model $model, $attribute)
-    {
-        $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
-
-        // https://github.com/craftcms/cms/issues/4154
-        if (StringHelper::startsWith($model->$attribute, $actionTrigger)) {
-            $model->addError($attribute, Craft::t('app', 'The {attribute} cannot start with the “actionTrigger”: {actionTrigger}', [
-                'actionTrigger' => $actionTrigger,
-                'attribute' => $attribute
-            ]));
+                if ($firstSeg === $generalConfig->actionTrigger) {
+                    $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
+                        'setting' => 'actionTrigger',
+                    ]));
+                } else if ($firstSeg === $generalConfig->cpTrigger) {
+                    $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
+                        'setting' => 'cpTrigger',
+                    ]));
+                }
+            }
         }
     }
 }
