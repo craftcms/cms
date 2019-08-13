@@ -49,6 +49,13 @@ class UriFormatValidator extends Validator
                     'attribute' => $model->$attribute
                 ]));
             }
+
+            if (ElementHelper::doesUriFormatHaveActionTrigger($uriFormat)) {
+                $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the sites action trigger: {actionTrigger}', [
+                    'attribute' => $model->$attribute,
+                    'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger
+                ]));
+            }
         }
     }
 }
