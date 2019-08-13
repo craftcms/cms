@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.10 - 2019-08-13
 
 ### Added
 - Added `craft\fields\BaseRelationField::settingsTemplateVariables()`. ([#4732](https://github.com/craftcms/cms/issues/4732))
