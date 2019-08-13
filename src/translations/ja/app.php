@@ -1384,7 +1384,7 @@ return [
     'Learn how' => '詳しく知る',
     'Price includes 1 year of updates.' => '価格には1年間のアップデートが含まれます。',
     '{name} should be at least {value}.' => '{name}は{value}以上である必要があります。',
-    'Business Tax ID' => 'Business Tax ID',
+    'Business Tax ID' => '会社法人番号',
     'Save {type}' => '{type}を保存',
     'Save entries to other sites in the same site group' => '同じサイトグループ内の他のサイトにエントリを保存する',
     'Showing results for “{searchQuery}”' => '「{searchQuery}」の結果を表示しています',
@@ -1464,6 +1464,6 @@ return [
     'Address Line 1' => '住所1',
     'Choose a site' => 'サイトを選択',
     'Address Line 2' => '住所2',
-    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    'Are you sure you want to delete this {type}?' => 'この{type}を削除してもよろしいですか？',
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '現在インストールされている<strong>{cause}</strong>のスキーマバージョンは {existing} です（予想：{incoming}）'
 ];

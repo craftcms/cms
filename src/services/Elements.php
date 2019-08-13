@@ -1305,10 +1305,11 @@ class Elements extends Component
      * @param string|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
+     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
-    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
+    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null, bool $hardDelete = false): bool
     {
         /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {
@@ -1339,7 +1340,7 @@ class Elements extends Component
             return false;
         }
 
-        return $this->deleteElement($element);
+        return $this->deleteElement($element, $hardDelete);
     }
 
     /**
@@ -1350,7 +1351,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
-    public function deleteElement(ElementInterface $element, $hardDelete = false): bool
+    public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event

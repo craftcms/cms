@@ -823,7 +823,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        if ($this->title) {
+        if ($this->title !== null && $this->title !== '') {
             return (string)$this->title;
         }
         return (string)$this->id ?: static::class;

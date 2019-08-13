@@ -76,7 +76,7 @@ class ElementHelper
 
         // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
         // Reference: http://www.regular-expressions.info/unicode.html
-        $words = array_filter(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
+        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
 
         return implode($generalConfig->slugWordSeparator, $words);
     }

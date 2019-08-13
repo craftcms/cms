@@ -1106,10 +1106,7 @@ class Request extends \yii\web\Request
      */
     private function _segments(string $path): array
     {
-        return array_values(array_filter(explode('/', $path), function($segment) {
-            // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
-            return $segment !== '';
-        }));
+        return array_values(ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)));
     }
 
     /**
@@ -1160,6 +1157,8 @@ class Request extends \yii\web\Request
                 $parsed['host'] !== $hostName &&
                 (
                     !function_exists('idn_to_ascii') ||
+                    !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
+                    !defined('INTL_IDNA_VARIANT_UTS46') ||
                     idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
                 )
             ) {

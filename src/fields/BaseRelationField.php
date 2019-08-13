@@ -237,13 +237,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getSettingsHtml()
     {
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType();
-
-        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, [
-            'field' => $this,
-            'pluralElementType' => $elementType::pluralDisplayName(),
-        ]);
+        $variables = $this->settingsTemplateVariables();
+        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);
     }
 
     /**
@@ -275,7 +270,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         /** @var Element $element */
         // Prevent circular relations from worrying about this entry
-        self::$_relatedElementValidates[$element->id][$element->siteId] = true;
+        $sourceId = $element->getSourceId();
+        $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
+        self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
         /** @var ElementQueryInterface $query */
         $query = $element->getFieldValue($this->handle);
@@ -291,7 +288,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
         }
 
-        unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
+        // Reset self::$_relatedElementValidates[$sourceId][$element->siteId] to its original value
+        if ($sourceValidates !== null) {
+            self::$_relatedElementValidates[$sourceId][$element->siteId] = $sourceValidates;
+        } else {
+            unset(self::$_relatedElementValidates[$sourceId][$element->siteId]);
+        }
 
         if ($errorCount) {
             /** @var ElementInterface|string $elementType */
@@ -783,6 +785,22 @@ JS;
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Returns an array of variables that should be passed to the settings template.
+     *
+     * @return array
+     */
+    protected function settingsTemplateVariables(): array
+    {
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType();
+
+        return [
+            'field' => $this,
+            'pluralElementType' => $elementType::pluralDisplayName(),
+        ];
+    }
 
     /**
      * Returns an array of variables that should be passed to the input template.
