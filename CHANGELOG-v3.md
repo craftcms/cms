@@ -11,6 +11,9 @@
 - Element queries’ `title` param will now accept a value of `'0'`.
 - `craft\services\Elements::deleteElementById()` now has a `$hardDelete` argument. ([#4747](https://github.com/craftcms/cms/pull/4747))
 
+### Removed
+- Removed `craft\records\Route`.
+
 ### Fixed
 - Fixed a bug where Entry fixtures wouldn’t get unloaded. ([#4663](https://github.com/craftcms/cms/issues/4663))
 - Fixed a bug where entry content wouldn’t get propagated to other sites if an entry was created and then saved before Craft had finished autosaving the draft. ([#4423](https://github.com/craftcms/cms/issues/4423))
