@@ -37,7 +37,7 @@ class SingleSectionUriValidator extends Validator
 
         // https://github.com/craftcms/cms/issues/4154
         if (ElementHelper::uriStartsWithActionTrigger($model->uriFormat)) {
-            $this->addError($model, $attribute, Craft::t('app', 'The URI format cannot start with the sites action trigger: {actionTrigger}', [
+            $this->addError($model, $attribute, Craft::t('app', 'The URI Format cannot start with this apps “actionTrigger”: {actionTrigger}', [
                 'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger
             ]));
         }
