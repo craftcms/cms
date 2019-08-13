@@ -67,7 +67,7 @@ class UriFormatValidator extends Validator
         // https://github.com/craftcms/cms/issues/4154
         if (StringHelper::startsWith($model->$attribute, $actionTrigger)) {
             $model->addError($attribute, Craft::t('app', 'The {attribute} cannot start with the “actionTrigger”: {actionTrigger}', [
-                'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger,
+                'actionTrigger' => $actionTrigger,
                 'attribute' => $attribute
             ]));
         }
