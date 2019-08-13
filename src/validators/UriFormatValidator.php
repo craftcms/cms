@@ -9,6 +9,8 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
+use yii\base\Model;
 use yii\validators\Validator;
 
 /**
@@ -50,12 +52,24 @@ class UriFormatValidator extends Validator
                 ]));
             }
 
-            // https://github.com/craftcms/cms/issues/4154
-            if (ElementHelper::uriStartsWithActionTrigger($uriFormat)) {
-                $this->addError($model, $attribute, Craft::t('app', 'The URI Format cannot start with this apps “actionTrigger”: {actionTrigger}', [
-                    'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger
-                ]));
-            }
+            self::validateActionTrigger($model, $attribute);
+        }
+    }
+
+    /**
+     * @param Model $model - The model to run validation on
+     * @param $attribute - The name of the property on $model to validate
+     */
+    public static function validateActionTrigger(Model $model, $attribute)
+    {
+        $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
+
+        // https://github.com/craftcms/cms/issues/4154
+        if (StringHelper::startsWith($model->$attribute, $actionTrigger)) {
+            $model->addError($attribute, Craft::t('app', 'The {attribute} cannot start with the “actionTrigger”: {actionTrigger}', [
+                'actionTrigger' => Craft::$app->getConfig()->getGeneral()->actionTrigger,
+                'attribute' => $attribute
+            ]));
         }
     }
 }

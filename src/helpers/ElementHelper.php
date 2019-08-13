@@ -82,21 +82,6 @@ class ElementHelper
     }
 
     /**
-     * @param string $uriFormat
-     * @return bool
-     */
-    public static function uriStartsWithActionTrigger(string $uriFormat) : bool
-    {
-        $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
-
-        if (StringHelper::startsWith($uriFormat, $actionTrigger)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
      *
      * @param ElementInterface $element
