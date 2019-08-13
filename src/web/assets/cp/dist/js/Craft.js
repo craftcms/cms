@@ -1,4 +1,4 @@
-/*!   - 2019-08-07 */
+/*!   - 2019-08-13 */
 (function($){
 
 /** global: Craft */
@@ -662,6 +662,17 @@ $.extend(Craft,
             str = Craft.ltrim(str, chars);
             str = Craft.rtrim(str, chars);
             return str;
+        },
+
+        /**
+         * Returns whether a string starts with another string.
+         *
+         * @param {string} str
+         * @param {string} substr
+         * @return boolean
+         */
+        startsWith: function(str, substr) {
+            return str.substr(0, substr.length) === substr;
         },
 
         /**
@@ -3558,9 +3569,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     $spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        var url = Craft.getCpUrl('', {
-                            token: response.token
-                        });
+                        var params = {};
+                        params[Craft.tokenParam] = response.token;
+                        var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));

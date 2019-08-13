@@ -6,12 +6,17 @@
 - Added `craft\fields\BaseRelationField::settingsTemplateVariables()`. ([#4732](https://github.com/craftcms/cms/issues/4732))
 - Added `craft\services\Search::deleteOrphanedIndexes()`.
 - Added `craft\validators\UriFormatValidator::validateActionTrigger()`.
+- Added the `Craft.startsWith()` JavaScript method.
 
 ### Changed
 - Improved garbage collection performance when hard-deleting hundreds of thousands of elements. ([#4735](https://github.com/craftcms/cms/issues/4735))
 - Element queries’ `title` param will now accept a value of `'0'`.
 - `craft\services\Elements::deleteElementById()` now has a `$hardDelete` argument. ([#4747](https://github.com/craftcms/cms/pull/4747))
 - `craft\validators\UriFormatValidator` and `craft\validators\SingleSectionUriValidator` will now fail if the URI Format starts with the `actionTrigger` param. ([#4154](https://github.com/craftcms/cms/issues/4154))
+- The Settings → Routes page no longer allows routes to be saved if the URI begins with the `actionTrigger` or `cpTrigger` config settings. ([#4154](https://github.com/craftcms/cms/issues/4154))
+
+### Removed
+- Removed `craft\records\Route`.
 
 ### Fixed
 - Fixed a bug where Entry fixtures wouldn’t get unloaded. ([#4663](https://github.com/craftcms/cms/issues/4663))
@@ -22,6 +27,7 @@
 - Fixed an error that occurred when a validation error occurred on an entry while it was being created or updated from a draft. ([#4733](https://github.com/craftcms/cms/issues/4733))
 - Fixed an infinite recursion bug that could occur when validating circular relations. ([#4482](https://github.com/craftcms/cms/issues/4482))
 - Fixed a bug where elements with a title of “0” would show their ID instead of their title in element indexes and relational fields. ([#4745](https://github.com/craftcms/cms/issues/4745))
+- Fixed a bug where Craft was redirecting to the Dashboard when attempting to export elements, if the `tokenParam` config setting was set to something besides `token`. ([#4737](https://github.com/craftcms/cms/issues/4737))
 
 ## 3.2.9 - 2019-08-06
 
