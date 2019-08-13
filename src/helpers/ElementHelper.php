@@ -88,9 +88,8 @@ class ElementHelper
     public static function uriStartsWithActionTrigger(string $uriFormat) : bool
     {
         $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
-        $parts = StringHelper::split($uriFormat, '/');
 
-        if ($parts[0] === $actionTrigger) {
+        if (StringHelper::startsWith($uriFormat, $actionTrigger)) {
             return true;
         }
 
