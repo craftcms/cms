@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\fields\BaseRelationField::settingsTemplateVariables()`. ([#4732](https://github.com/craftcms/cms/issues/4732))
 - Added `craft\services\Search::deleteOrphanedIndexes()`.
+- Added the `Craft.startsWith()` JavaScript method.
 
 ### Changed
 - Improved garbage collection performance when hard-deleting hundreds of thousands of elements. ([#4735](https://github.com/craftcms/cms/issues/4735))
