@@ -4,6 +4,8 @@
 
 ### Changed
 - Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
+
+### Fixed
 - Fixed an error that could occur if garbage collection was run while Craft 3.2 migrations were pending. ([#4720](https://github.com/craftcms/cms/issues/4720))
 
 ## 3.2.10 - 2019-08-13
