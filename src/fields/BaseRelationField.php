@@ -113,7 +113,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $source;
 
     /**
-     * @var string|null The site that this field should relate elements from
+     * @var string|null The UID of the site that this field should relate elements from
      */
     public $targetSiteId;
 
