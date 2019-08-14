@@ -361,17 +361,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
-        $query = $class::find();
-
-        $targetSite = $this->targetSiteId($element);
-        if ($this->targetSiteId) {
-            $query->siteId($targetSite);
-        } else {
-            $query
-                ->siteId('*')
-                ->unique()
-                ->preferSites([$targetSite]);
-        }
+        $query = $class::find()
+            ->siteId($this->targetSiteId($element));
 
         // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
@@ -483,6 +474,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var Element|null $element */
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
+        } else {
+            /** @var ElementQueryInterface $value */
+            $value
+                ->siteId('*')
+                ->unique()
+                ->preferSites([$this->targetSiteId($element)]);
         }
 
         /** @var ElementQuery|array $value */
