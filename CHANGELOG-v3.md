@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
+
 ## 3.2.10 - 2019-08-13
 
 ### Added

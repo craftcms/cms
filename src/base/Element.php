@@ -946,11 +946,9 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'awaitingFieldValues');
         ArrayHelper::removeValue($names, 'propagating');
 
-        $names[] = 'hasDescendants';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
-        $names[] = 'totalDescendants';
         $names[] = 'url';
 
         // Include custom field handles
@@ -974,6 +972,7 @@ abstract class Element extends Component implements ElementInterface
             'ancestors',
             'children',
             'descendants',
+            'hasDescendants',
             'next',
             'nextSibling',
             'parent',
@@ -981,6 +980,7 @@ abstract class Element extends Component implements ElementInterface
             'prevSibling',
             'siblings',
             'site',
+            'totalDescendants',
         ];
     }
 
