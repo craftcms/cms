@@ -944,11 +944,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
-     * @param string|null $class A CSS class name that should be added to the `<svg>` element.
+     * @param array|string|null $attributes A list of attributes that should be added to the `<svg>` element.
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $tags = [])
     {
+        // Deprate the $class argument
+        if (is_string($attributes)) {
+            $attributes = ['class' => $attributes];
+            Craft::$app->getDeprecator()->log('app', 'Passing a string $class argument is deprecated.');
+        }
+
         if ($svg instanceof Asset) {
             try {
                 $svg = $svg->getContents();
@@ -1017,12 +1023,21 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        if ($class !== null) {
-            $svg = preg_replace('/(<svg\b[^>]+\bclass=([\'"])[^\'"]+)(\\2)/i', "$1 {$class}$3", $svg, 1, $count);
+        // Load up attributes
+        foreach ($attributes as $key => $value) {
+            $svg = preg_replace('/(<svg\b[^>]+\b'.$key.'=([\'"])[^\'"]+)(\\2)/i', "$1 {$value}$3", $svg, 1, $count);
             if ($count === 0) {
-                $svg = preg_replace('/<svg\b/i', "$0 class=\"{$class}\"", $svg, 1);
+                $svg = preg_replace('/<svg\b/i', "$0 {$key}=\"{$value}\"", $svg, 1);
             }
         }
+
+        // Render the tags...
+        $tagContent = '';
+        foreach ($tags as $value) {
+            $tagContent .= Html::tag($value[0], $value[1], $value[2]);
+        }
+
+        $svg = preg_replace('/<\s*svg[^>]*>/', "$0 $tagContent", $svg, 1);
 
         return TemplateHelper::raw($svg);
     }
