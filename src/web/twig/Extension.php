@@ -1046,13 +1046,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
 
             // Empty content or no attributes is allowed...
+            $elementName = $elementConfig[0];
             $tag = Html::tag(
-                $elementConfig[0] ,
+                $elementName ,
                 $elementConfig[1] ?? '',
                 $elementConfig[2] ?? []
             );
 
-            $svg = preg_replace('/<title>.*?<\/title>\s*/is', $tag, $svg, 1, $count);
+            // Add it back...
+            $encName = Html::encode($elementName);
+            $svg = preg_replace('/<'.$encName.'>.*?<\/'.$encName.'>\s*/is', $tag, $svg, 1, $count);
 
             // If it didn't exist - we add it later.
             if ($count === 0) {
