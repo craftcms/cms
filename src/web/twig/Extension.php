@@ -1057,7 +1057,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $encName = Html::encode($elementName);
             $svg = preg_replace('/<'.$encName.'>.*?<\/'.$encName.'>\s*/is', $tag, $svg, 1, $count);
 
-            // If it didn't exist - we add it later.
+            // If it didn't exist - we save it to add later.
             if ($count === 0) {
                 $elementValue .= $tag;
             }
