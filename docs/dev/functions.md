@@ -346,10 +346,11 @@ By default, if you pass an asset or raw markup into the function, the SVG will b
 {{ svg(image, sanitize=false, namespace=false) }}
 ```
 
-You can also specify a custom class name that should be added to the root `<svg>` node using the `class` argument:
+You can also specify a custom attributes that should be added the root `<svg>` node using the `$attributes` argument. 
+The `$attributes` argument accepts an array where the `key` is the attribute and the `value` is the value of the argument. 
 
 ```twig
-{{ svg('@webroot/icons/lemon.svg', class='lemon-icon') }}
+{{ svg('@webroot/icons/lemon.svg', attributes={class: 'lemon-icon', 'aria-labelledby': 'title'}) }}
 ```
 
 ## `source`
