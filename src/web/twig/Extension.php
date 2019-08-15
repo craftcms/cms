@@ -1026,11 +1026,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
         // Load up the attributes
         foreach ($attributes as $key => $value) {
             if (is_string($key) && is_string($value)) {
-                $svg = preg_replace('/(<svg\b[^>]+\b' . $key . '=([\'"])[^\'"]+)(\\2)/i', "$1 {$value}$3", $svg, 1, $count);
+                $encKey = Html::encode($key);
+                $encVal = Html::encode($value);
+
+                $svg = preg_replace('/(<svg\b[^>]+\b' . $encKey . '=([\'"])[^\'"]+)(\\2)/i', "$1 {$encVal}$3", $svg, 1, $count);
                 if ($count === 0) {
-                    $svg = preg_replace('/<svg\b/i', "$0 {$key}=\"{$value}\"", $svg, 1);
+                    $svg = preg_replace('/<svg\b/i', "$0 {$encKey}=\"{$encVal}\"", $svg, 1);
                 }
             }
+
         }
 
         return TemplateHelper::raw($svg);
