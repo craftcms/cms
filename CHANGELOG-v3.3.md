@@ -5,4 +5,4 @@
 - Improved the `svg()` function to allow custom attributes and elements. ([#4660](https://github.com/craftcms/cms/issues/4660), [#3937](https://github.com/craftcms/cms/issues/3937))
 
 ## Deprecated
-- You can no longer pass a `string $class` argument to the twig svg function. Pass `array $attributes` instead. 
+- You can no longer pass a `string $class` argument to the twig `svg()` function. Pass `array $attributes` instead. 
