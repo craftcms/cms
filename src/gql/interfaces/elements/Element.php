@@ -57,47 +57,47 @@ class Element extends BaseInterface
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
-                'description' => 'The element’s title'
+                'description' => 'The element’s title.'
             ],
             'slug' => [
                 'name' => 'slug',
                 'type' => Type::string(),
-                'description' => 'The element’s slug'
+                'description' => 'The element’s slug.'
             ],
             'uri' => [
                 'name' => 'uri',
                 'type' => Type::string(),
-                'description' => 'The element’s URI'
+                'description' => 'The element’s URI.'
             ],
             'enabled' => [
                 'name' => 'enabled',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is enabled'
+                'description' => 'Whether the element is enabled or not.'
             ],
             'archived' => [
                 'name' => 'archived',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is archived'
+                'description' => 'Whether the element is archived or not.'
             ],
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::int(),
-                'description' => 'The site ID the element is associated with'
+                'description' => 'The ID of the site the element is associated with.'
             ],
             'searchScore' => [
                 'name' => 'searchScore',
                 'type' => Type::string(),
-                'description' => 'The element’s search score, if the `search` parameter was used when querying for the element'
+                'description' => 'The element’s search score, if the `search` parameter was used when querying for the element.'
             ],
             'trashed' => [
                 'name' => 'trashed',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element has been soft-deleted'
+                'description' => 'Whether the element has been soft-deleted or not.'
             ],
             'status' => [
                 'name' => 'status',
                 'type' => Type::string(),
-                'description' => 'status'
+                'description' => 'The element\'s status.'
             ]
         ]);
     }

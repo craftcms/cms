@@ -68,82 +68,82 @@ class User extends Element
             'friendlyName' => [
                 'name' => 'friendlyName',
                 'type' => Type::string(),
-                'description' => 'The user\'s first name or username'
+                'description' => 'The user\'s first name or username.'
             ],
             'fullName' => [
                 'name' => 'fullName',
                 'type' => Type::string(),
-                'description' => 'The user\'s full name'
+                'description' => 'The user\'s full name.'
             ],
             'groupHandles' => [
                 'name' => 'groupHandles',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'groupHandles'
+                'description' => 'A list of all the user group handles that the user belongs to.'
             ],
             'name' => [
                 'name' => 'name',
                 'type' => Type::string(),
-                'description' => 'The user\'s full name or username'
+                'description' => 'The user\'s full name or username.'
             ],
             'photo' => [
                 'name' => 'photo',
                 'type' => Asset::getType(),
-                'description' => 'The user\'s photo'
+                'description' => 'The user\'s photo.'
             ],
             'preferences' => [
                 'name' => 'preferences',
                 'type' => Type::string(),
-                'description' => 'The user’s preferences'
+                'description' => 'The user’s preferences.'
             ],
             'preferredLanguage' => [
                 'name' => 'preferredLanguage',
                 'type' => Type::string(),
-                'description' => 'The user’s preferred language'
+                'description' => 'The user’s preferred language.'
             ],
             'username' => [
                 'name' => 'username',
                 'type' => Type::string(),
-                'description' => 'Username'
+                'description' => 'The username.'
             ],
             'photoId' => [
                 'name' => 'photoId',
                 'type' => Type::int(),
-                'description' => 'Photo asset id'
+                'description' => 'The photo asset id.'
             ],
             'firstName' => [
                 'name' => 'firstName',
                 'type' => Type::string(),
-                'description' => 'First name'
+                'description' => 'The user\'s first name.'
             ],
             'lastName' => [
                 'name' => 'lastName',
                 'type' => Type::string(),
-                'description' => 'Last name'
+                'description' => 'The user\'s last name.'
             ],
             'email' => [
                 'name' => 'email',
                 'type' => Type::string(),
-                'description' => 'Email'
+                'description' => 'The user\'s email.'
             ],
             'admin' => [
                 'name' => 'admin',
                 'type' => Type::boolean(),
-                'description' => 'Admin'
+                'description' => 'Whether the user is an admin.'
             ],
             'locked' => [
                 'name' => 'locked',
                 'type' => Type::boolean(),
-                'description' => 'Locked'
+                'description' => 'Whether the user is locked.'
             ],
             'suspended' => [
                 'name' => 'suspended',
                 'type' => Type::boolean(),
-                'description' => 'Suspended'
+                'description' => 'Whether the user is suspended.'
             ],
             'pending' => [
                 'name' => 'pending',
                 'type' => Type::boolean(),
-                'description' => 'Pending'
+                'description' => 'Whether the user is pending activation.'
             ],
             'lastLoginDate' => [
                 'name' => 'lastLoginDate',
@@ -153,52 +153,52 @@ class User extends Element
             'lastInvalidLoginDate' => [
                 'name' => 'lastInvalidLoginDate',
                 'type' => DateTime::getType(),
-                'description' => 'Last invalid login date'
+                'description' => 'Last invalid login date for the user.'
             ],
             'invalidLoginCount' => [
                 'name' => 'invalidLoginCount',
                 'type' => Type::int(),
-                'description' => 'Invalid login count'
+                'description' => 'Invalid login count for the user.'
             ],
             'lockoutDate' => [
                 'name' => 'lockoutDate',
                 'type' => DateTime::getType(),
-                'description' => 'Lockout date'
+                'description' => 'The lockout date for the user.'
             ],
             'hasDashboard' => [
                 'name' => 'hasDashboard',
                 'type' => Type::boolean(),
-                'description' => 'Whether the user has a dashboard'
+                'description' => 'Whether the user has a dashboard or not.'
             ],
             'passwordResetRequired' => [
                 'name' => 'passwordResetRequired',
                 'type' => Type::boolean(),
-                'description' => 'Password reset required'
+                'description' => 'Whether a password reset required is required for the user.'
             ],
             'lastPasswordChangeDate' => [
                 'name' => 'lastPasswordChangeDate',
                 'type' => DateTime::getType(),
-                'description' => 'Last password change date'
+                'description' => 'Last password change date for the user.'
             ],
             'unverifiedEmail' => [
                 'name' => 'unverifiedEmail',
                 'type' => Type::string(),
-                'description' => 'Unverified email'
+                'description' => 'The unverified email for the user.'
             ],
             'verificationCodeIssuedDate' => [
                 'name' => 'verificationCodeIssuedDate',
                 'type' => DateTime::getType(),
-                'description' => 'Verification code issued date'
+                'description' => 'The date when the verification code was issued for the user.'
             ],
             'verificationCode' => [
                 'name' => 'verificationCode',
                 'type' => Type::string(),
-                'description' => 'Verification code'
+                'description' => 'The verification code issued for the user.'
             ],
             'lastLoginAttemptIp' => [
                 'name' => 'lastLoginAttemptIp',
                 'type' => Type::string(),
-                'description' => 'Last login attempt IP address'
+                'description' => 'The last login attempt IP address for this user.'
             ],
         ]);
     }

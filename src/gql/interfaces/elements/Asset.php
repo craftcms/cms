@@ -66,92 +66,92 @@ class Asset extends Element
             'volumeUid' => [
                 'name' => 'volumeUid',
                 'type' => Type::string(),
-                'description' => 'volumeUid'
+                'description' => 'The UID of the volume that the asset belongs to.'
             ],
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
-                'description' => 'Volume ID'
+                'description' => 'The ID of the volume that the asset belongs to.'
             ],
             'folderUid' => [
                 'name' => 'folderUid',
                 'type' => Type::string(),
-                'description' => 'folderUid'
+                'description' => 'The UID of the folder that the asset belongs to.'
             ],
             'folderId' => [
                 'name' => 'folderId',
                 'type' => Type::int(),
-                'description' => 'Folder ID'
+                'description' => 'The ID of the folder that the asset belongs to.'
             ],
             'folderPath' => [
                 'name' => 'folderPath',
                 'type' => Type::string(),
-                'description' => 'Folder path'
+                'description' => 'The folder path on the volume for the asset.'
             ],
             'filename' => [
                 'name' => 'filename',
                 'type' => Type::string(),
-                'description' => 'Filename'
+                'description' => 'The filename of the asset file.'
             ],
             'extension' => [
                 'name' => 'extension',
                 'type' => Type::string(),
-                'description' => 'The file extension'
+                'description' => 'The file extension for the asset file.'
             ],
             'hasFocalPoint' => [
                 'name' => 'hasFocalPoint',
                 'type' => Type::boolean(),
-                'description' => 'Whether a user-defined focal point is set on the asset'
+                'description' => 'Whether a user-defined focal point is set on the asset.'
             ],
             'focalPoint' => [
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
-                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it\'s not an image'
+                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it\'s not an image.'
             ],
             'kind' => [
                 'name' => 'kind',
                 'type' => Type::string(),
-                'description' => 'The file kind'
+                'description' => 'The file kind.'
             ],
             'size' => [
                 'name' => 'size',
                 'type' => Type::string(),
-                'description' => 'The file size in bytes'
+                'description' => 'The file size in bytes.'
             ],
             'height' => [
                 'name' => 'height',
                 'type' => Type::int(),
-                'description' => 'The height in pixels or null if it\'s not an image'
+                'description' => 'The height in pixels or null if it\'s not an image.'
             ],
             'width' => [
                 'name' => 'width',
                 'type' => Type::int(),
-                'description' => 'The width in pixels or null if it\'s not an image'
+                'description' => 'The width in pixels or null if it\'s not an image.'
             ],
             'img' => [
                 'name' => 'img',
                 'type' => Type::string(),
-                'description' => 'An `<img>` tag based on this asset'
+                'description' => 'An `<img>` tag based on this asset.'
             ],
             'url' => [
                 'name' => 'url',
                 'type' => Type::string(),
-                'description' => 'The full URL of the asset'
+                'description' => 'The full URL of the asset.'
             ],
             'mimeType' => [
                 'name' => 'mimeType',
                 'type' => Type::string(),
-                'description' => 'The file’s MIME type, if it can be determined'
+                'description' => 'The file’s MIME type, if it can be determined.'
             ],
             'path' => [
                 'name' => 'path',
                 'type' => Type::string(),
-                'description' => 'The asset\'s path in the volume'
+                'description' => 'The asset\'s path in the volume.'
             ],
             'dateModified' => [
                 'name' => 'dateModified',
                 'type' => DateTime::getType(),
-                'description' => 'The date the asset file was last modified'
+                'description' => 'The date the asset file was last modified.'
             ],
 
         ]);

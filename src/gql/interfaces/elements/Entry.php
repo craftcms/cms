@@ -64,37 +64,37 @@ class Entry extends Element
             'sectionUid' => [
                 'name' => 'sectionUid',
                 'type' => Type::string(),
-                'description' => 'sectionUid'
+                'description' => 'The UID of the section that contains the entry.'
             ],
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
-                'description' => 'Section ID'
+                'description' => 'The ID of the section that contains the entry.'
             ],
             'sectionHandle' => [
                 'name' => 'sectionHandle',
                 'type' => Type::string(),
-                'description' => 'sectionHandle'
+                'description' => 'The handle of the section that contains the entry.'
             ],
             'typeUid' => [
                 'name' => 'typeUid',
                 'type' => Type::string(),
-                'description' => 'typeUid'
+                'description' => 'The UID of the entry type that contains the entry.'
             ],
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::int(),
-                'description' => 'Type ID'
+                'description' => 'The ID of the entry type that contains the entry.'
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::string(),
-                'description' => 'typeHandle'
+                'description' => 'The handle of the entry type that contains the entry.'
             ],
             'authorId' => [
                 'name' => 'authorId',
                 'type' => Type::int(),
-                'description' => 'Author ID'
+                'description' => 'The ID of the author of this entry.'
             ],
             'author' => [
                 'name' => 'author',
@@ -104,12 +104,12 @@ class Entry extends Element
             'postDate' => [
                 'name' => 'postDate',
                 'type' => DateTime::getType(),
-                'description' => 'Post date'
+                'description' => 'The entry\'s post date.'
             ],
             'expiryDate' => [
                 'name' => 'expiryDate',
                 'type' => DateTime::getType(),
-                'description' => 'Expiry date'
+                'description' => 'The expiry date of the entry.'
             ],
         ]);
     }

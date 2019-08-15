@@ -64,42 +64,42 @@ class MatrixBlock extends Element
             'fieldUid' => [
                 'name' => 'fieldUid',
                 'type' => Type::string(),
-                'description' => 'fieldUid'
+                'description' => 'The UID of the field that owns the matrix block.'
             ],
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
-                'description' => 'Field ID'
+                'description' => 'The ID of the field that owns the matrix block.'
             ],
             'ownerUid' => [
                 'name' => 'ownerUid',
                 'type' => Type::string(),
-                'description' => 'ownerUid'
+                'description' => 'The UID of the element that owns the matrix block.'
             ],
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
-                'description' => 'Owner ID'
+                'description' => 'The ID of the element that owns the matrix block.'
             ],
             'typeUid' => [
                 'name' => 'typeUid',
                 'type' => Type::string(),
-                'description' => 'typeUid'
+                'description' => 'The UID of the matrix block\'s type.'
             ],
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::int(),
-                'description' => 'Type ID'
+                'description' => 'The ID of the matrix block\'s type.'
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::string(),
-                'description' => 'typeHandle'
+                'description' => 'The handle of the matrix block\'s type.'
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
                 'type' => Type::int(),
-                'description' => 'Sort order'
+                'description' => 'The sort order of the matrix block within the owner element field.'
             ],
         ]);
     }
