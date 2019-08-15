@@ -10,14 +10,14 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Entry
  */
-class Entry
+class Entry extends BaseQuery
 {
     /**
      * @inheritdoc
      */
-    public static function getQueries(): array
+    public static function getQueries($checkToken = true): array
     {
-        if (!GqlHelper::canQueryEntries()) {
+        if ($checkToken && !GqlHelper::canQueryEntries()) {
             return [];
         }
 
@@ -26,6 +26,7 @@ class Entry
                 'type' => Type::listOf(EntryInterface::getType()),
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolve',
+                'description' => 'This query is used to query for entries.'
             ],
         ];
     }

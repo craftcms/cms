@@ -10,14 +10,14 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Asset
  */
-class Asset
+class Asset extends BaseQuery
 {
     /**
      * @inheritdoc
      */
-    public static function getQueries(): array
+    public static function getQueries($checkToken = true): array
     {
-        if (!GqlHelper::canQueryAssets()) {
+        if ($checkToken && !GqlHelper::canQueryAssets()) {
             return [];
         }
 
@@ -26,6 +26,7 @@ class Asset
                 'type' => Type::listOf(AssetInterface::getType()),
                 'args' => AssetArguments::getArguments(),
                 'resolve' => AssetResolver::class . '::resolve',
+                'description' => 'This query is used to query for assets.'
             ],
         ];
     }

@@ -10,14 +10,14 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class GlobalSet
  */
-class GlobalSet
+class GlobalSet extends BaseQuery
 {
     /**
      * @inheritdoc
      */
-    public static function getQueries(): array
+    public static function getQueries($checkToken = true): array
     {
-        if (!GqlHelper::canQueryGlobalSets()) {
+        if ($checkToken && !GqlHelper::canQueryGlobalSets()) {
             return [];
         }
 
@@ -26,6 +26,7 @@ class GlobalSet
                 'type' => Type::listOf(GlobalSetInterface::getType()),
                 'args' => GlobalSetArguments::getArguments(),
                 'resolve' => GlobalSetResolver::class . '::resolve',
+                'description' => 'This query is used to query for global sets.'
             ],
         ];
     }

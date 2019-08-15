@@ -10,14 +10,14 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class User
  */
-class User
+class User extends BaseQuery
 {
     /**
      * @inheritdoc
      */
-    public static function getQueries(): array
+    public static function getQueries($checkToken = true): array
     {
-        if (!GqlHelper::canQueryUsers()) {
+        if ($checkToken && !GqlHelper::canQueryUsers()) {
             return [];
         }
 
@@ -26,6 +26,7 @@ class User
                 'type' => Type::listOf(UserInterface::getType()),
                 'args' => UserArguments::getArguments(),
                 'resolve' => UserResolver::class . '::resolve',
+                'description' => 'This query is used to query for users.'
             ],
         ];
     }

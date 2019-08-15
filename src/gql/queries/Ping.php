@@ -6,12 +6,12 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Ping
  */
-class Ping
+class Ping extends BaseQuery
 {
     /**
      * @inheritdoc
      */
-    public static function getQueries(): array
+    public static function getQueries($checkToken = true): array
     {
         return [
             'ping' => [
