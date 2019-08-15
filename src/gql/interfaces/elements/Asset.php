@@ -35,6 +35,7 @@ class Asset extends Element
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
+            'description' => 'This is the interface implemented by all assets.',
             'resolveType' => function (AssetElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }

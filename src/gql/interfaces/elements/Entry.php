@@ -34,6 +34,7 @@ class Entry extends Element
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
+            'description' => 'This is the interface implemented by all entries.',
             'resolveType' => function (EntryElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }

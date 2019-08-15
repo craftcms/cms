@@ -34,6 +34,7 @@ class MatrixBlock extends Element
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
+            'description' => 'This is the interface implemented by all matrix blocks.',
             'resolveType' => function (MatrixBlockElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }

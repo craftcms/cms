@@ -33,6 +33,7 @@ class GlobalSet extends Element
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
+            'description' => 'This is the interface implemented by all global sets.',
             'resolveType' => function (GlobalSetElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }

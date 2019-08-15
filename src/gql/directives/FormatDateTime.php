@@ -35,7 +35,7 @@ class FormatDateTime extends BaseDirective
                     'name' => 'format',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FORMAT,
-                    'description' => 'The date format to use'
+                    'description' => 'This specifies the format to use. It defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).'
                 ]),
                 new FieldArgument([
                     'name' => 'timezone',
@@ -44,6 +44,7 @@ class FormatDateTime extends BaseDirective
                     'defaultValue' => self::DEFAULT_TIMEZONE
                 ])
             ],
+            'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.'
         ]));
 
         return $type;

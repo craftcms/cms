@@ -34,6 +34,7 @@ class User extends Element
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
+            'description' => 'This is the interface implemented by all users.',
             'resolveType' => function (UserElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }

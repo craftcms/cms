@@ -35,6 +35,7 @@ class Element extends BaseInterface
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
+            'description' => 'This is the interface implemented by all elements.',
             'resolveType' => function (ElementInterface $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }

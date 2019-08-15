@@ -75,6 +75,7 @@ class Transform extends BaseDirective
                     'description' => 'Whether the transform should be generated immediately or only when the image is requested used the generated URL'
                 ]),
             ],
+            'description' => 'This directive is used to return a URL for an [asset tranform](https://docs.craftcms.com/v3/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.'
         ]));
 
         return $type;
