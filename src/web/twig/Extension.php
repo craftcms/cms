@@ -1037,7 +1037,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        // Render the tags...
+        // Render the elements...
         $elementValue = '';
         foreach ($elements as $elementConfig) {
             // Dont allow empty name
@@ -1047,7 +1047,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
             // Empty content or no attributes is allowed...
             $elementName = $elementConfig[0];
-            $tag = Html::tag(
+            $element = Html::tag(
                 $elementName ,
                 $elementConfig[1] ?? '',
                 $elementConfig[2] ?? []
@@ -1055,11 +1055,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
             // Add it back...
             $encName = Html::encode($elementName);
-            $svg = preg_replace('/<'.$encName.'>.*?<\/'.$encName.'>\s*/is', $tag, $svg, 1, $count);
+            $svg = preg_replace('/<'.$encName.'>.*?<\/'.$encName.'>\s*/is', $element, $svg, 1, $count);
 
             // If it didn't exist - we save it to add later.
             if ($count === 0) {
-                $elementValue .= $tag;
+                $elementValue .= $element;
             }
         }
         $svg = preg_replace('/<\s*svg[^>]*>/', "$0 $elementValue", $svg, 1);
