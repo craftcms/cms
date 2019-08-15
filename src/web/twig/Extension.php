@@ -949,10 +949,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [])
     {
-        // Deprate the $class argument
+        // Deprecate the $class argument
         if (is_string($attributes)) {
             $attributes = ['class' => $attributes];
-            Craft::$app->getDeprecator()->log('app', 'Passing a string $class argument is deprecated.');
+            Craft::$app->getDeprecator()->log('Extension::svgFunction()', 'Passing a string $class argument is deprecated. Pass an array with a `class` key instead.');
         }
 
         if ($svg instanceof Asset) {
