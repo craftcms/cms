@@ -1023,7 +1023,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        // Load up attributes
+        // Load up the attributes
         foreach ($attributes as $key => $value) {
             $svg = preg_replace('/(<svg\b[^>]+\b'.$key.'=([\'"])[^\'"]+)(\\2)/i', "$1 {$value}$3", $svg, 1, $count);
             if ($count === 0) {
