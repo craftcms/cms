@@ -945,9 +945,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param array|string|null $attributes A list of attributes that should be added to the `<svg>` element.
+     * @param array|null $elements Any elements that should be added under the `svg` element
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [])
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = null)
     {
         // Deprecate the $class argument
         if (is_string($attributes)) {
@@ -1034,8 +1035,31 @@ class Extension extends AbstractExtension implements GlobalsInterface
                     $svg = preg_replace('/<svg\b/i', "$0 {$encKey}=\"{$encVal}\"", $svg, 1);
                 }
             }
-
         }
+
+        // Render the tags...
+        $elementValue = '';
+        foreach ($elements as $elementConfig) {
+            // Dont allow empty name
+            if (!isset($elementConfig[0]) || !$elementConfig[0]) {
+                continue;
+            }
+
+            // Empty content or no attributes is allowed...
+            $tag = Html::tag(
+                $elementConfig[0] ,
+                $elementConfig[1] ?? '',
+                $elementConfig[2] ?? []
+            );
+
+            $svg = preg_replace('/<title>.*?<\/title>\s*/is', $tag, $svg, 1, $count);
+
+            // If it didn't exist - we add it later.
+            if ($count === 0) {
+                $elementValue .= $tag;
+            }
+        }
+        $svg = preg_replace('/<\s*svg[^>]*>/', "$0 $elementValue", $svg, 1);
 
         return TemplateHelper::raw($svg);
     }
