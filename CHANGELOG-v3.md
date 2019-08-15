@@ -6,6 +6,7 @@
 - Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
 - Relational fields without a specific target site will now only return related elements from the same site as the source element by default, as they did before Craft 3.2. ([#4751](https://github.com/craftcms/cms/issues/4751))
 - `source` is now a reserved field handle. ([#4754](https://github.com/craftcms/cms/issues/4754))
+- Improved the performance of element duplication on multi-site installs.
 
 ### Fixed
 - Fixed an error that could occur if garbage collection was run while Craft 3.2 migrations were pending. ([#4720](https://github.com/craftcms/cms/issues/4720))
