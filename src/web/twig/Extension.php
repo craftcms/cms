@@ -947,7 +947,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param array|string|null $attributes A list of attributes that should be added to the `<svg>` element.
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $tags = [])
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [])
     {
         // Deprate the $class argument
         if (is_string($attributes)) {
@@ -1030,14 +1030,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $svg = preg_replace('/<svg\b/i', "$0 {$key}=\"{$value}\"", $svg, 1);
             }
         }
-
-        // Render the tags...
-        $tagContent = '';
-        foreach ($tags as $value) {
-            $tagContent .= Html::tag($value[0], $value[1], $value[2]);
-        }
-
-        $svg = preg_replace('/<\s*svg[^>]*>/', "$0 $tagContent", $svg, 1);
 
         return TemplateHelper::raw($svg);
     }
