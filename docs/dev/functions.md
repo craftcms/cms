@@ -347,7 +347,7 @@ By default, if you pass an asset or raw markup into the function, the SVG will b
 ```
 
 You can also specify a custom attributes that should be added the root `<svg>` node using the `$attributes` argument. 
-The `$attributes` argument accepts an array where the `key` is the attribute and the `value` is the value of the argument. 
+The `$attributes` argument accepts an array where the `key` is the attributes name and the `value` is the attributes value: 
 
 ```twig
 {{ svg('@webroot/icons/lemon.svg', attributes={class: 'lemon-icon', 'aria-labelledby': 'title'}) }}
