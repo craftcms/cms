@@ -12,6 +12,7 @@ use Codeception\Lib\Connector\Yii2;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
+use craft\web\View;
 use yii\base\Module;
 use yii\mail\MessageInterface;
 use yii\web\Application;
@@ -86,6 +87,9 @@ class CraftConnector extends Yii2
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
+
+        // Reset the view object
+        $app->set('view', new View());
 
         /* @var Module $module */
         foreach (Craft::$app->getModules() as $module) {

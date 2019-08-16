@@ -220,8 +220,9 @@ class Application extends \yii\web\Application
         $projectConfig = $this->getProjectConfig();
 
         // Make sure schema required by config files aligns with what we have.
-        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
-            return $this->_handleIncompatibleConfig($request);
+        $issues = [];
+        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+            return $this->_handleIncompatibleConfig($request, $issues);
         }
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
@@ -699,12 +700,13 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
+     * @param array $issues An array of schema incompatibility issues
      * @return Response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _handleIncompatibleConfig(Request $request): Response
+    private function _handleIncompatibleConfig(Request $request, array $issues): Response
     {
         $this->_unregisterDebugModule();
 
@@ -714,7 +716,7 @@ class Application extends \yii\web\Application
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
             // Show the manual update notification template
-            return $this->runAction('templates/incompatible-config-alert');
+            return $this->runAction('templates/incompatible-config-alert', ['issues' => $issues]);
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

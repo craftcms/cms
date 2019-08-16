@@ -1,6 +1,7 @@
 {%- set class = [
     'select',
-    (class is defined ? class : null)
+    (class is defined ? class : null),
+    (disabled is defined and disabled ? 'disabled' : null),
 ]|filter|join(' ') %}
 
 {%- set options = (options is defined ? options : []) %}

@@ -10,24 +10,15 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
-use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
-use craft\events\ElementEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
-use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\web\assets\editentry\EditEntryAsset;
-use DateTime;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -35,13 +26,9 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
-
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
- * swapping between entry types, previewing, deleting and sharing entries.
- * Note that all actions in the controller except [[actionViewSharedEntry]] require an authenticated Craft session
- * via [[allowAnonymous]].
+ * swapping between entry types, and deleting entries.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -53,16 +40,9 @@ class EntriesController extends BaseEntriesController
 
     /**
      * @event ElementEvent The event that is triggered when an entry’s template is rendered for Live Preview.
+     * @deprecated in 3.2
      */
     const EVENT_PREVIEW_ENTRY = 'previewEntry';
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected $allowAnonymous = ['view-shared-entry'];
 
     // Public Methods
     // =========================================================================
@@ -98,7 +78,9 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        $this->_prepEditEntryVariables($variables);
+        if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
+            return $response;
+        }
 
         $this->getView()->registerAssetBundle(EditEntryAsset::class);
 
@@ -269,48 +251,8 @@ class EntriesController extends BaseEntriesController
             $variables['showEntryTypes'] = false;
         }
 
-        // Enable Live Preview?
-        if (!$request->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
-            $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#title-field, #fields > div > div > .field',
-                    'extraFields' => '#settings',
-                    'previewUrl' => $entry->getUrl(),
-                    'previewAction' => Craft::$app->getSecurity()->hashData('entries/preview-entry'),
-                    'previewParams' => [
-                        'sectionId' => $section->id,
-                        'entryId' => $entry->getSourceId(),
-                        'siteId' => $entry->siteId,
-                        'revisionId' => $entry->revisionId,
-                    ]
-                ]) . ');');
-
-            $variables['showPreviewBtn'] = true;
-
-            if ($entry->getIsDraft()) {
-                /** @var Entry|DraftBehavior $entry */
-                $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
-                    'draftId' => $entry->draftId,
-                ]);
-            } else if ($entry->getIsRevision()) {
-                /** @var Entry|RevisionBehavior $entry */
-                $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
-                    'revisionId' => $entry->revisionId,
-                ]);
-            } else if ($entry->getStatus() === Entry::STATUS_LIVE) {
-                // just use the entry's main URL as its share URL
-                $variables['shareUrl'] = $entry->getUrl();
-            } else {
-                $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
-                    'entryId' => $entry->id,
-                    'siteId' => $entry->siteId,
-                ]);
-            }
-        } else {
-            $variables['showPreviewBtn'] = false;
-        }
-
         // Can the user delete the entry?
-        $variables['canDeleteEntry'] = (
+        $variables['canDeleteSource'] = $section->type !== Section::TYPE_SINGLE && (
             ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
             ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
         );
@@ -339,7 +281,9 @@ class EntriesController extends BaseEntriesController
         $variables['entry'] = $entry;
         $variables['showEntryTypes'] = true;
 
-        $this->_prepEditEntryVariables($variables);
+        if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
+            return $response;
+        }
 
         $view = $this->getView();
         $tabsHtml = !empty($variables['tabs']) ? $view->renderTemplate('_includes/tabs', $variables) : null;
@@ -356,65 +300,18 @@ class EntriesController extends BaseEntriesController
     }
 
     /**
-     * Previews an entry.
-     *
-     * @return Response
-     * @throws NotFoundHttpException if the requested entry version cannot be found
-     */
-    public function actionPreviewEntry(): Response
-    {
-        $this->requirePostRequest();
-
-        // Are we previewing a version?
-        $revisionId = Craft::$app->getRequest()->getBodyParam('revisionId');
-
-        if ($revisionId) {
-            $entry = Entry::find()
-                ->revisionId($revisionId)
-                ->siteId(Craft::$app->getRequest()->getBodyParam('siteId'))
-                ->anyStatus()
-                ->one();
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry version not found');
-            }
-
-            $this->enforceEditEntryPermissions($entry);
-        } else {
-            $entry = $this->_getEntryModel();
-            $this->enforceEditEntryPermissions($entry);
-
-            // Set the language to the user's preferred language so DateFormatter returns the right format
-            Craft::$app->updateTargetLanguage(true);
-
-            $this->_populateEntryModel($entry);
-        }
-
-        // Fire a 'previewEntry' event
-        if ($this->hasEventHandlers(self::EVENT_PREVIEW_ENTRY)) {
-            $this->trigger(self::EVENT_PREVIEW_ENTRY, new ElementEvent([
-                'element' => $entry,
-            ]));
-        }
-
-        return $this->_showEntry($entry);
-    }
-
-    /**
      * Saves an entry.
      *
+     * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      */
-    public function actionSaveEntry()
+    public function actionSaveEntry(bool $duplicate = false)
     {
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
         $request = Craft::$app->getRequest();
-
-        // Are we duplicating the entry?
-        $duplicate = (bool)$request->getBodyParam('duplicate');
 
         // Permission enforcement
         $this->enforceEditEntryPermissions($entry, $duplicate);
@@ -523,6 +420,18 @@ class EntriesController extends BaseEntriesController
     }
 
     /**
+     * Duplicates an entry.
+     *
+     * @return Response|null
+     * @throws ServerErrorHttpException if reasons
+     * @since 3.2.3
+     */
+    public function actionDuplicateEntry()
+    {
+        return $this->runAction('save-entry', ['duplicate' => true]);
+    }
+
+    /**
      * Deletes an entry.
      *
      * @return Response|null
@@ -573,116 +482,6 @@ class EntriesController extends BaseEntriesController
         return $this->redirectToPostedUrl($entry);
     }
 
-    /**
-     * Redirects the client to a URL for viewing an entry/draft/version on the front end.
-     *
-     * @param int|null $entryId
-     * @param int|null $siteId
-     * @param int|null $draftId
-     * @param int|null $revisionId
-     * @return Response
-     * @throws Exception
-     * @throws NotFoundHttpException if the requested entry/revision cannot be found
-     * @throws ServerErrorHttpException if the section is not configured properly
-     */
-    public function actionShareEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $revisionId = null): Response
-    {
-        if ($entryId !== null) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry not found');
-            }
-
-            $params = ['entryId' => $entryId, 'siteId' => $entry->siteId];
-        } else if ($draftId !== null) {
-            $entry = Entry::find()
-                ->draftId($draftId)
-                ->siteId($siteId)
-                ->anyStatus()
-                ->one();
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry draft not found');
-            }
-
-            $params = ['draftId' => $draftId];
-        } else if ($revisionId !== null) {
-            $entry = Entry::find()
-                ->revisionId($revisionId)
-                ->siteId($siteId)
-                ->anyStatus()
-                ->one();
-
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry revision not found');
-            }
-
-            $params = ['revisionId' => $revisionId];
-        } else {
-            throw new NotFoundHttpException('Entry not found');
-        }
-
-        // Make sure they have permission to be viewing this entry
-        $this->enforceEditEntryPermissions($entry);
-
-        // Make sure the entry actually can be viewed
-        if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection(), $entry->siteId)) {
-            throw new ServerErrorHttpException('Section not configured properly');
-        }
-
-        // Create the token and redirect to the entry URL with the token in place
-        $token = Craft::$app->getTokens()->createToken([
-            'entries/view-shared-entry',
-            $params
-        ]);
-
-        if ($token === false) {
-            throw new Exception('There was a problem generating the token.');
-        }
-
-        $url = UrlHelper::urlWithToken($entry->getUrl(), $token);
-
-        return Craft::$app->getResponse()->redirect($url);
-    }
-
-    /**
-     * Shows an entry/draft/version based on a token.
-     *
-     * @param int|null $entryId
-     * @param int|null $siteId
-     * @param int|null $draftId
-     * @param int|null $revisionId
-     * @return Response
-     * @throws NotFoundHttpException if the requested entry cannot be found
-     */
-    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $revisionId = null): Response
-    {
-        $this->requireToken();
-
-        if ($entryId !== null) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
-        } else if ($draftId !== null) {
-            $entry = Entry::find()
-                ->draftId($draftId)
-                ->siteId($siteId)
-                ->anyStatus()
-                ->one();
-        } else if ($revisionId !== null) {
-            $entry = Entry::find()
-                ->revisionId($revisionId)
-                ->siteId($siteId)
-                ->anyStatus()
-                ->one();
-        }
-
-        if (empty($entry)) {
-            throw new NotFoundHttpException('Entry not found');
-        }
-
-        return $this->_showEntry($entry);
-    }
-
     // Private Methods
     // =========================================================================
 
@@ -690,6 +489,7 @@ class EntriesController extends BaseEntriesController
      * Preps entry edit variables.
      *
      * @param array &$variables
+     * @return Response|null
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -774,6 +574,17 @@ class EntriesController extends BaseEntriesController
             }
 
             if (!$variables['entry']) {
+                // If they're just accessing an invalid draft/revision ID, redirect them to the source
+                if (!empty($variables['draftId']) || !empty($variables['revisionId'])) {
+                    $sourceEntry = Entry::find()
+                        ->id($variables['entryId'])
+                        ->siteId($site->id)
+                        ->anyStatus()
+                        ->one();
+                    if ($sourceEntry) {
+                        return $this->redirect($sourceEntry->getCpEditUrl(), 301);
+                    }
+                }
                 throw new NotFoundHttpException('Entry not found');
             }
         }
@@ -834,6 +645,8 @@ class EntriesController extends BaseEntriesController
                 'class' => $hasErrors ? 'error' : null
             ];
         }
+
+        return null;
     }
 
     /**
@@ -845,7 +658,7 @@ class EntriesController extends BaseEntriesController
     private function _getEntryModel(): Entry
     {
         $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('entryId');
+        $entryId = $request->getBodyParam('entryId');
         $siteId = $request->getBodyParam('siteId');
 
         if ($entryId) {
@@ -919,43 +732,5 @@ class EntriesController extends BaseEntriesController
 
         // Revision notes
         $entry->setRevisionNotes($request->getBodyParam('revisionNotes'));
-    }
-
-    /**
-     * Displays an entry.
-     *
-     * @param Entry $entry
-     * @return Response
-     * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
-     */
-    private function _showEntry(Entry $entry): Response
-    {
-        $sectionSiteSettings = $entry->getSection()->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The entry ' . $entry->id . ' doesn’t have a URL for the site ' . $entry->siteId . '.');
-        }
-
-        $site = Craft::$app->getSites()->getSiteById($entry->siteId);
-
-        if (!$site) {
-            throw new ServerErrorHttpException('Invalid site ID: ' . $entry->siteId);
-        }
-
-        Craft::$app->language = $site->language;
-        Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
-
-        if (!$entry->postDate) {
-            $entry->postDate = new DateTime();
-        }
-
-        // Have this entry override any freshly queried entries with the same ID/site ID
-        Craft::$app->getElements()->setPlaceholderElement($entry);
-
-        $this->getView()->getTwig()->disableStrictVariables();
-
-        return $this->renderTemplate($sectionSiteSettings[$entry->siteId]->template, [
-            'entry' => $entry
-        ]);
     }
 }

@@ -31,7 +31,7 @@
                                 href: item.permalink,
                                 target: '_blank',
                                 text: item.title
-                            }).html() + ' ';
+                            }).get(0).outerHTML + ' ';
 
                             if (item.date) {
                                 widgetHtml += '<span class="light nowrap">' + item.date + '</span>';

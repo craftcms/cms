@@ -47,11 +47,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
 
             // Remove any empty elements and reset the keys
-            $object = array_merge(array_filter($object, function($value) {
-                return $value !== '';
-            }));
-
-            return $object;
+            return array_values(static::filterEmptyStringsFromArray($object));
         }
 
         return parent::toArray($object, $properties, $recursive);

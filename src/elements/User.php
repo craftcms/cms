@@ -1311,7 +1311,7 @@ class User extends Element implements IdentityInterface
             }
         } else {
             $record = new UserRecord();
-            $record->id = $this->id;
+            $record->id = (int)$this->id;
             $record->locked = $this->locked;
             $record->suspended = $this->suspended;
             $record->pending = $this->pending;
@@ -1320,7 +1320,7 @@ class User extends Element implements IdentityInterface
         $record->username = $this->username;
         $record->firstName = $this->firstName;
         $record->lastName = $this->lastName;
-        $record->photoId = $this->photoId;
+        $record->photoId = (int)$this->photoId ?: null;
         $record->email = $this->email;
         $record->admin = $this->admin;
         $record->passwordResetRequired = $this->passwordResetRequired;
@@ -1405,7 +1405,7 @@ class User extends Element implements IdentityInterface
                             ],
                             [
                                 $column => $this->id
-                            ])
+                            ], [], false)
                         ->execute();
                 }
             } else {

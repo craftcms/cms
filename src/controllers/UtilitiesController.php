@@ -8,9 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -340,8 +337,6 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:db-backup');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
-
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
@@ -352,7 +347,7 @@ class UtilitiesController extends Controller
             throw new Exception("Could not create backup: the backup file doesn't exist.");
         }
 
-        if (empty($params['downloadBackup'])) {
+        if (!Craft::$app->getRequest()->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
@@ -376,8 +371,8 @@ class UtilitiesController extends Controller
         $zip->addFile($backupPath, $filename);
         $zip->close();
 
-        return $this->asJson([
-            'backupFile' => pathinfo($filename, PATHINFO_FILENAME)
+        return Craft::$app->getResponse()->sendFile($zipPath, null, [
+            'mimeType' => 'application/zip',
         ]);
     }
 
@@ -421,92 +416,6 @@ class UtilitiesController extends Controller
                 'find' => $params['find'],
                 'replace' => $params['replace'],
             ]));
-        }
-
-        return $this->asJson([
-            'success' => true
-        ]);
-    }
-
-    /**
-     * Performs a Search Index action
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Search Indexes utility
-     */
-    public function actionSearchIndexPerformAction(): Response
-    {
-        $this->requirePermission('utility:search-indexes');
-
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
-
-        if (!empty($params['start'])) {
-            // Truncate the searchindex table
-            Craft::$app->getDb()->createCommand()
-                ->truncateTable(Table::SEARCHINDEX)
-                ->execute();
-
-            // Get all the element IDs ever
-            $elements = (new Query())
-                ->select(['id', 'type'])
-                ->from([Table::ELEMENTS])
-                ->where([
-                    'draftId' => null,
-                    'revisionId' => null,
-                    'dateDeleted' => null,
-                ])
-                ->all();
-
-            $batch = [];
-
-            foreach ($elements as $element) {
-                $batch[] = ['params' => $element];
-            }
-
-            return $this->asJson([
-                'batches' => [$batch]
-            ]);
-        }
-
-        /** @var ElementInterface $class */
-        $class = $params['type'];
-
-        if ($class::isLocalized()) {
-            $siteIds = Craft::$app->getSites()->getAllSiteIds();
-        } else {
-            $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
-        }
-
-        $query = $class::find()
-            ->id($params['id'])
-            ->anyStatus();
-
-        $searchService = Craft::$app->getSearch();
-
-        foreach ($siteIds as $siteId) {
-            $query->siteId($siteId);
-            $element = $query->one();
-
-            if ($element) {
-                /** @var Element $element */
-                $searchService->indexElementAttributes($element);
-
-                if ($class::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
-                    $keywords = [];
-
-                    foreach ($fieldLayout->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($field->searchable) {
-                            // Set the keywords for the content's site
-                            $fieldValue = $element->getFieldValue($field->handle);
-                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                            $keywords[$field->id] = $fieldSearchKeywords;
-                        }
-                    }
-
-                    $searchService->indexElementFields($element->id, $siteId, $keywords);
-                }
-            }
         }
 
         return $this->asJson([

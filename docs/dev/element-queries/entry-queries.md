@@ -1199,7 +1199,7 @@ Possible values include:
 | `'*foo'` | with a slug that ends with `foo`.
 | `'*foo*'` | with a slug that contains `foo`.
 | `'not *foo*'` | with a slug that doesn’t contain `foo`.
-| `['*foo*', '*bar*'` | with a slug that contains `foo` or `bar`.
+| `['*foo*', '*bar*']` | with a slug that contains `foo` or `bar`.
 | `['not', '*foo*', '*bar*']` | with a slug that doesn’t contain `foo` or `bar`.
 
 
@@ -1246,7 +1246,7 @@ Possible values include:
 ::: code
 ```twig
 {# Fetch disabled entries #}
-{% set entries = {twig-function}
+{% set entries = craft.entries()
     .status('disabled')
     .all() %}
 ```
@@ -1275,7 +1275,7 @@ Possible values include:
 | `'*Foo'` | with a title that ends with `Foo`.
 | `'*Foo*'` | with a title that contains `Foo`.
 | `'not *Foo*'` | with a title that doesn’t contain `Foo`.
-| `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+| `['*Foo*', '*Bar*']` | with a title that contains `Foo` or `Bar`.
 | `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
 
 
@@ -1308,7 +1308,7 @@ Narrows the query results to only entries that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed entries #}
-{% set entries = {twig-function}
+{% set entries = craft.entries()
     .trashed()
     .all() %}
 ```
@@ -1429,7 +1429,7 @@ Possible values include:
 | `'*foo'` | with a URI that ends with `foo`.
 | `'*foo*'` | with a URI that contains `foo`.
 | `'not *foo*'` | with a URI that doesn’t contain `foo`.
-| `['*foo*', '*bar*'` | with a URI that contains `foo` or `bar`.
+| `['*foo*', '*bar*']` | with a URI that contains `foo` or `bar`.
 | `['not', '*foo*', '*bar*']` | with a URI that doesn’t contain `foo` or `bar`.
 
 

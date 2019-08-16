@@ -173,7 +173,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch admins #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .admin()
      *     .all() %}
      * ```
@@ -204,7 +204,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch users that can access the Control Panel #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .can('accessCp')
      *     .all() %}
      * ```
@@ -523,7 +523,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch active and locked {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .status(['active', 'locked'])
      *     .all() %}
      * ```

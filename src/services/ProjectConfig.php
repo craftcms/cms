@@ -227,12 +227,6 @@ class ProjectConfig extends Component
     private $_waitingToUpdateParsedConfigTimes = false;
 
     /**
-     * @var bool Whether we’re listening for the request end, to update the modified config data.
-     * @see saveModifiedConfigData()
-     */
-    private $_waitingToSaveModifiedConfigData = false;
-
-    /**
      * @var bool Whether project.yaml changes are currently being applied.
      * @see applyYamlChanges()
      * @see getIsApplyingYamlChanges()
@@ -270,7 +264,7 @@ class ProjectConfig extends Component
      */
     public function init()
     {
-        $this->saveDataAfterRequest();
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData'], null, false);
 
         // If we're not using the project config file, load the stored config to emulate config files.
         // This is needed so we can make comparisons between the existing config and the modified config, as we're firing events.
@@ -302,32 +296,6 @@ class ProjectConfig extends Component
         $this->_changesBeingApplied = null;
 
         $this->init();
-    }
-
-    /**
-     * Set up an event handler to save modified data after request is over. This is called automatically when service is initialized.
-     *
-     * @return void
-     */
-    public function saveDataAfterRequest()
-    {
-        if (!$this->_waitingToSaveModifiedConfigData) {
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
-            $this->_waitingToSaveModifiedConfigData = true;
-        }
-    }
-
-    /**
-     * Disable the event handler that would save modified data after request is over.
-     *
-     * @return void
-     */
-    public function preventSavingDataAfterRequest()
-    {
-        if ($this->_waitingToSaveModifiedConfigData) {
-            Craft::$app->off(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
-            $this->_waitingToSaveModifiedConfigData = false;
-        }
     }
 
     /**
@@ -647,30 +615,32 @@ class ProjectConfig extends Component
             }
         }
 
-        if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
-            $previousConfig = $this->_getStoredConfig();
-            $value = ProjectConfigHelper::cleanupConfig($previousConfig);
-            ksort($value);
-            $this->_storeYamlHistory($value);
-
-            $info = Craft::$app->getInfo();
-
-            if ($this->_updateConfigMap && $this->_useConfigFile()) {
-                $configMap = $this->_generateConfigMap();
-
-                foreach ($configMap as &$filePath) {
-                    $filePath = Craft::alias($filePath);
-                }
-
-                $info->configMap = Json::encode($configMap);
-            }
-
-            if ($this->_updateConfig) {
-                $info->config = serialize($this->_getConfigurationFromYaml());
-            }
-
-            Craft::$app->saveInfo($info);
+        if (!$this->_updateConfig && !($this->_updateConfigMap && $this->_useConfigFile())) {
+            return;
         }
+
+        $previousConfig = $this->_getStoredConfig();
+        $value = ProjectConfigHelper::cleanupConfig($previousConfig);
+        ksort($value);
+        $this->_storeYamlHistory($value);
+
+        $info = Craft::$app->getInfo();
+
+        if ($this->_updateConfigMap && $this->_useConfigFile()) {
+            $configMap = $this->_generateConfigMap();
+
+            foreach ($configMap as &$filePath) {
+                $filePath = Craft::alias($filePath);
+            }
+
+            $info->configMap = Json::encode($configMap);
+        }
+
+        if ($this->_updateConfig) {
+            $info->config = Json::encode($this->_getConfigurationFromYaml());
+        }
+
+        Craft::$app->saveInfoAfterRequest();
     }
 
     /**
@@ -703,9 +673,12 @@ class ProjectConfig extends Component
      * The schemas must match exactly to avoid unpredictable behavior that can occur when running migrations
      * and applying project config changes at the same time.
      *
-     * @return bool
+     * @param array $issues Passed by reference and populated with issues on error in
+     *                      the following format: `[$pluginName, $existingSchema, $incomingSchema]`
+     *
+     * @return bool|array
      */
-    public function getAreConfigSchemaVersionsCompatible(): bool
+    public function getAreConfigSchemaVersionsCompatible(&$issues = [])
     {
         // TODO remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
@@ -717,7 +690,11 @@ class ProjectConfig extends Component
 
         // Compare existing Craft schema version with the one that is being applied.
         if (!version_compare($existingSchema, $incomingSchema, '=')) {
-            return false;
+            $issues[] = [
+                'cause' => 'Craft CMS',
+                'existing' => $existingSchema,
+                'incoming' => $incomingSchema
+            ];
         }
 
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
@@ -729,11 +706,15 @@ class ProjectConfig extends Component
 
             // Compare existing plugin schema version with the one that is being applied.
             if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
-                return false;
+                $issues[] = [
+                    'cause' => $plugin->name,
+                    'existing' => $existingSchema,
+                    'incoming' => $incomingSchema
+                ];
             }
         }
 
-        return true;
+        return empty($issues);
     }
 
     // Config Change Event Registration
@@ -910,7 +891,13 @@ class ProjectConfig extends Component
         $this->trigger(self::EVENT_REBUILD, $event);
 
         // Merge the new data over the existing one.
-        $configData = array_replace_recursive($currentConfig, $event->config);
+        $configData = array_replace_recursive([
+            'system' => $currentConfig['system'],
+            'routes' => $currentConfig['routes'] ?? [],
+            'plugins' => $currentConfig['plugins'] ?? [],
+            'users' => $currentConfig['users'] ?? [],
+            'email' => $currentConfig['email'] ?? [],
+        ], $event->config);
 
         $this->muteEvents = true;
 
@@ -1125,7 +1112,13 @@ class ProjectConfig extends Component
         }
 
         $info = Craft::$app->getInfo();
-        return $this->_storedConfig = $info->config ? unserialize($info->config, ['allowed_classes' => false]) : [];
+        if (!$info->config) {
+            return $this->_storedConfig = [];
+        }
+        if ($info->config[0] === '{') {
+            return $this->_storedConfig = Json::decode($info->config);
+        }
+        return $this->_storedConfig = unserialize($info->config, ['allowed_classes' => false]);
     }
 
     /**
@@ -1580,25 +1573,23 @@ class ProjectConfig extends Component
             ->andWhere(['entrytypes.dateDeleted' => null])
             ->all();
 
-        $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
+        $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($entryTypeRows as $entryType) {
-            if (empty($entryType['fieldLayoutId'])) {
-                continue;
-            }
-
-            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
-            $layoutUid = $layout['uid'];
-            $sectionUid = $entryType['sectionUid'];
-            $uid = $entryType['uid'];
-
-            unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+            $uid = ArrayHelper::remove($entryType, 'uid');
+            $sectionUid = ArrayHelper::remove($entryType, 'sectionUid');
+            $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
 
             $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
             $entryType['sortOrder'] = (int)$entryType['sortOrder'];
 
-            $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            if ($fieldLayoutId) {
+                $layout = array_merge($fieldLayouts[$fieldLayoutId]);
+                $layoutUid = ArrayHelper::remove($layout, 'uid');
+                $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            }
+
             $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
         }
 

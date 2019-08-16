@@ -60,12 +60,13 @@ class DownloadAssetFile extends ElementAction
 })();
 EOD;
 
+        $request = Craft::$app->getRequest();
         $js = str_replace([
             '{csrfName}',
             '{csrfValue}'
         ], [
-            Craft::$app->getConfig()->getGeneral()->csrfTokenName,
-            Craft::$app->getRequest()->getCsrfToken()
+            $request->csrfParam,
+            $request->getCsrfToken()
         ], $js);
 
         Craft::$app->getView()->registerJs($js);

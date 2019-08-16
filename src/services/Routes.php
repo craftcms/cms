@@ -170,7 +170,7 @@ class Routes extends Component
 
         // Compile the URI parts into a regex pattern
         $uriPattern = '';
-        $uriParts = array_filter($uriParts);
+        $uriParts = ArrayHelper::filterEmptyStringsFromArray($uriParts);
         $subpatternNameCounts = [];
 
         foreach ($uriParts as $part) {

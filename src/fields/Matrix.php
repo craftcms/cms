@@ -570,6 +570,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+
+        if ($value instanceof MatrixBlockQuery) {
+            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
+        }
+
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
         // Let plugins/modules override which block types should be available for this field
@@ -588,7 +597,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes);
         $createDefaultBlocks = $this->minBlocks != 0 && count($blockTypeInfo) === 1;
-        $staticBlocks = $createDefaultBlocks && $this->minBlocks == $this->maxBlocks;
+        $staticBlocks = (
+            $createDefaultBlocks &&
+            $this->minBlocks == $this->maxBlocks &&
+            $this->maxBlocks >= count($value)
+        );
 
         Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
@@ -598,15 +611,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             '"' . Craft::$app->getView()->namespaceInputName($this->handle) . '", ' .
             ($this->maxBlocks ?: 'null') .
             ');');
-
-        /** @var Element $element */
-        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle);
-        }
-
-        if ($value instanceof MatrixBlockQuery) {
-            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
-        }
 
         // Safe to set the default blocks?
         if ($createDefaultBlocks) {

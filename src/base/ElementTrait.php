@@ -106,6 +106,11 @@ trait ElementTrait
     public $dateUpdated;
 
     /**
+     * @var DateTime|null The date that the element was trashed
+     */
+    public $dateDeleted;
+
+    /**
      * @var int|null The element’s structure’s root ID
      */
     public $root;
@@ -150,6 +155,11 @@ trait ElementTrait
      * overwriting existing site-specific values.
      */
     public $propagateAll = false;
+
+    /**
+     * @var int[] The site IDs that the element was just propagated to for the first time.
+     */
+    public $newSiteIds = [];
 
     /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.

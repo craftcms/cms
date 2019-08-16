@@ -220,20 +220,22 @@ class Tag extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Get the tag record
-        if (!$isNew) {
-            $record = TagRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the tag record
+            if (!$isNew) {
+                $record = TagRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid tag ID: ' . $this->id);
+                if (!$record) {
+                    throw new Exception('Invalid tag ID: ' . $this->id);
+                }
+            } else {
+                $record = new TagRecord();
+                $record->id = (int)$this->id;
             }
-        } else {
-            $record = new TagRecord();
-            $record->id = $this->id;
-        }
 
-        $record->groupId = $this->groupId;
-        $record->save(false);
+            $record->groupId = (int)$this->groupId;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }

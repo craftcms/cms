@@ -1306,7 +1306,6 @@ class Asset extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // If this is just an element being propagated, there's absolutely no need for re-saving this.
         if (!$this->propagating) {
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
@@ -1329,16 +1328,16 @@ class Asset extends Element
                 }
             } else {
                 $record = new AssetRecord();
-                $record->id = $this->id;
+                $record->id = (int)$this->id;
             }
 
             $record->filename = $this->filename;
-            $record->volumeId = $this->volumeId;
-            $record->folderId = $this->folderId;
+            $record->volumeId = (int)$this->volumeId ?: null;
+            $record->folderId = (int)$this->folderId;
             $record->kind = $this->kind;
-            $record->size = $this->size;
-            $record->width = $this->_width;
-            $record->height = $this->_height;
+            $record->size = (int)$this->size ?: null;
+            $record->width = (int)$this->_width ?: null;
+            $record->height = (int)$this->_height ?: null;
             $record->dateModified = $this->dateModified;
 
             if ($this->getHasFocalPoint()) {

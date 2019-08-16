@@ -15,7 +15,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -210,10 +209,6 @@ class Content extends Component
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
-        if ($fieldLayout && !$element->getIsDraft() && !$element->getIsRevision()) {
-            $this->_updateSearchIndexes($element, $fieldLayout);
-        }
-
         // Fire an 'afterSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
@@ -230,32 +225,6 @@ class Content extends Component
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Updates the search indexes based on the new content values.
-     *
-     * @param ElementInterface $element
-     * @param FieldLayout $fieldLayout
-     */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
-    {
-        /** @var Element $element */
-        $searchKeywordsBySiteId = [];
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            if ($field->searchable) {
-                // Set the keywords for the content's site
-                $fieldValue = $element->getFieldValue($field->handle);
-                $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-            }
-        }
-
-        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
-        }
-    }
 
     /**
      * Removes the column prefixes from a given row.

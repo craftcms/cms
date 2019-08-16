@@ -14,7 +14,7 @@ use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
- * Creates a new database backup
+ * Allows you to create a new database backup.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.21

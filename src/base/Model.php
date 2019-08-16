@@ -110,6 +110,10 @@ abstract class Model extends \yii\base\Model
             $attributes[] = 'dateUpdated';
         }
 
+        if (property_exists($this, 'dateDeleted')) {
+            $attributes[] = 'dateDeleted';
+        }
+
         return $attributes;
     }
 

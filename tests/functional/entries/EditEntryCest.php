@@ -59,6 +59,6 @@ class EditEntryCest
     {
         $I->amOnPage('/'.$this->cpTrigger.'/entries');
 
-        $I->see('Craft CMS Test section');
+        $I->see('Craft CMS Test Section');
     }
 }

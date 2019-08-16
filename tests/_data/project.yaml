@@ -1,7 +1,7 @@
 dateModified: 1556009220
 email:
   fromEmail: info@crafttest.com
-  fromName: 'Craft CMS Testing'
+  fromName: 'Craft CMS Test From Name'
   template: ''
   transportType: craft\mail\transportadapters\Sendmail
   transportSettings: null
@@ -37,10 +37,10 @@ routes:
     siteUid: null
 siteGroups:
   05c96016-eb7d-4aa8-9715-2f0aa36c66a8:
-    name: 'Craft CMS Testing'
+    name: 'Craft CMS Test Site Group'
 sections:
   d927f367-5ec3-43d8-a273-0ee688875ece:
-    name: 'Craft CMS Test section'
+    name: 'Craft CMS Test Section'
     handle: craftCmsTestSection
     type: channel
     enableVersioning: true
@@ -53,7 +53,7 @@ sections:
         template: null
     entryTypes:
       185e535e-69b2-4a10-8ae1-3420343b4972:
-        name: 'Craft CMS Test section'
+        name: 'Craft CMS Test Section'
         handle: craftCmsTestSection
         hasTitleField: true
         titleLabel: Title
@@ -62,7 +62,7 @@ sections:
 sites:
   2fa19d28-c359-4955-8b0d-35a35e3f1128:
     siteGroup: 05c96016-eb7d-4aa8-9715-2f0aa36c66a8
-    name: 'Craft CMS testing'
+    name: 'Craft CMS Test Site'
     handle: default
     language: en-US
     hasUrls: true
@@ -71,9 +71,9 @@ sites:
     primary: true
 system:
   edition: pro
-  name: 'Craft CMS Testing'
+  name: 'Craft CMS Test Site'
   live: true
-  schemaVersion: 3.1.28
+  schemaVersion: 3.2.13
   timeZone: America/Los_Angeles
 users:
   allowPublicRegistration: false

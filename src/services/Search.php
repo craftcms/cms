@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\SiteNotFoundException;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
@@ -102,7 +103,7 @@ class Search extends Component
      *
      * @param ElementInterface $element
      * @return bool Whether the indexing was a success.
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function indexElementAttributes(ElementInterface $element): bool
     {
@@ -121,6 +122,23 @@ class Search extends Component
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
+        // Custom fields too?
+        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+            $keywords = [];
+
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field->searchable) {
+                    // Set the keywords for the content's site
+                    $fieldValue = $element->getFieldValue($field->handle);
+                    $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+                    $keywords[$field->id] = $fieldSearchKeywords;
+                }
+            }
+
+            $this->indexElementFields($element->id, $element->siteId, $keywords);
+        }
+
         return true;
     }
 
@@ -131,7 +149,7 @@ class Search extends Component
      * @param int $siteId The site ID of the content getting indexed.
      * @param array $fields The field values, indexed by field ID.
      * @return bool Whether the indexing was a success.
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
@@ -238,6 +256,15 @@ class Search extends Component
             // Sort found elementIds by score
             arsort($scoresByElementId);
 
+            // Fire an 'afterSearch' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+                $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
+                    'elementIds' => array_keys($scoresByElementId),
+                    'query' => $query,
+                    'siteId' => $siteId,
+                ]));
+            }
+
             if ($returnScores) {
                 return $scoresByElementId;
             }
@@ -267,6 +294,32 @@ class Search extends Component
         return $elementIds;
     }
 
+    /**
+     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     *
+     * @since 3.2.10
+     */
+    public function deleteOrphanedIndexes()
+    {
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE s.* FROM {{%searchindex}} s
+LEFT JOIN {{%elements}} e ON e.id = s.elementId
+WHERE e.id IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM {{%searchindex}} s
+WHERE NOT EXISTS (
+    SELECT * FROM {{%elements}}
+    WHERE id = s."elementId"
+)
+SQL;
+        }
+        $db->createCommand($sql)->execute();
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -278,7 +331,7 @@ class Search extends Component
      * @param string $fieldId
      * @param int $siteId
      * @param string $dirtyKeywords
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
     {

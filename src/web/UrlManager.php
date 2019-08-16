@@ -245,6 +245,32 @@ class UrlManager extends \yii\web\UrlManager
         return $this->_matchedElement;
     }
 
+    /**
+     * Sets the matched element for the request.
+     *
+     * @param ElementInterface|false|null $element
+     * @since 3.2.3
+     */
+    public function setMatchedElement($element)
+    {
+        if ($element instanceof ElementInterface) {
+            if ($route = $element->getRoute()) {
+                if (is_string($route)) {
+                    $route = [$route, []];
+                }
+                $this->_matchedElement = $element;
+                $this->_matchedElementRoute = $route;
+                return;
+            }
+
+            // Element doesn't have a route so ignore it
+            $element = false;
+        }
+
+        $this->_matchedElement = $element;
+        $this->_matchedElementRoute = $element;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -370,32 +396,20 @@ class UrlManager extends \yii\web\UrlManager
             return $this->_matchedElementRoute;
         }
 
-        $this->_matchedElement = false;
-        $this->_matchedElementRoute = false;
-
         if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
             /** @var Element $element */
             /** @noinspection PhpUnhandledExceptionInspection */
             $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
-
-            if ($element) {
-                $route = $element->getRoute();
-
-                if ($route) {
-                    if (is_string($route)) {
-                        $route = [$route, []];
-                    }
-
-                    $this->_matchedElement = $element;
-                    $this->_matchedElementRoute = $route;
-                }
-            }
+        } else {
+            $element = null;
         }
+
+        $this->setMatchedElement($element ?: false);
 
         if (YII_DEBUG) {
             Craft::debug([
                 'rule' => 'Element URI: ' . $path,
-                'match' => isset($element, $route),
+                'match' => $this->_matchedElement instanceof ElementInterface,
                 'parent' => null
             ], __METHOD__);
         }

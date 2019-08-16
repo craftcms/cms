@@ -403,23 +403,25 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function afterSave(bool $isNew)
     {
-        // Get the block record
-        if (!$isNew) {
-            $record = MatrixBlockRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the block record
+            if (!$isNew) {
+                $record = MatrixBlockRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                if (!$record) {
+                    throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                }
+            } else {
+                $record = new MatrixBlockRecord();
+                $record->id = (int)$this->id;
             }
-        } else {
-            $record = new MatrixBlockRecord();
-            $record->id = $this->id;
-        }
 
-        $record->fieldId = $this->fieldId;
-        $record->ownerId = $this->ownerId;
-        $record->typeId = $this->typeId;
-        $record->sortOrder = $this->sortOrder;
-        $record->save(false);
+            $record->fieldId = (int)$this->fieldId;
+            $record->ownerId = (int)$this->ownerId;
+            $record->typeId = (int)$this->typeId;
+            $record->sortOrder = (int)$this->sortOrder ?: null;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }

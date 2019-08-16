@@ -9,9 +9,10 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
 use craft\errors\InvalidElementException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -22,7 +23,7 @@ use yii\test\ActiveFixture;
  * Credit to: https://github.com/robuust/craft-fixtures
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
+ * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
@@ -35,11 +36,6 @@ abstract class ElementFixture extends ActiveFixture
      * @var array
      */
     protected $siteIds = [];
-
-    /**
-     * @var array
-     */
-    protected $ids = [];
 
     // Public Methods
     // =========================================================================
@@ -85,7 +81,7 @@ abstract class ElementFixture extends ActiveFixture
 
         foreach ($this->getData() as $alias => $data) {
             /* @var Element $element */
-            $element = $this->getElement();
+            $element = $this->getElement($data) ?: new $this->modelClass;
 
             // If they want to add a date deleted. Store it but dont set that as an element property
             $dateDeleted = null;
@@ -127,9 +123,10 @@ abstract class ElementFixture extends ActiveFixture
                 if (!$elementRecord->save()) {
                     throw new Exception('Unable to set element as deleted');
                 }
+            } else {
+                Craft::$app->getSearch()->indexElementAttributes($element);
             }
 
-            $this->ids[] = $element->id;
             $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
     }
@@ -142,19 +139,11 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->ids as $id) {
-            $element = $this->modelClass::find()
-                ->id($id)
-                ->anyStatus()
-                ->trashed(null)
-                ->one();
-
-            if ($id && !$element) {
-                throw new InvalidArgumentException("Unable to delete element $id. We were unable to find it.");
-            }
+        foreach ($this->getData() as $data) {
+            $element = $this->getElement($data);
 
             if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
-                throw new InvalidElementException($element, 'Unable to delete element');
+                throw new InvalidElementException($element, 'Unable to delete element.');
             }
         }
 
@@ -165,25 +154,32 @@ abstract class ElementFixture extends ActiveFixture
      * Get element model.
      *
      * @param array|null $data The data to get the element by
-     * @return Element
+     * @return ElementInterface|null
      */
     public function getElement(array $data = null)
     {
-        $modelClass = $this->modelClass;
-
         if ($data === null) {
-            return new $modelClass();
+            return new $this->modelClass();
         }
 
-        $query = $modelClass::find()->anyStatus()->trashed(null);
+        return $this->generateElementQuery($data)->one();
+    }
+
+    /**
+     * @param array $data
+     * @return ElementQuery
+     */
+    public function generateElementQuery(array $data) : ElementQuery
+    {
+        $query = $this->modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {
-                $query = $query->$key($value);
+                $query = $query->$key(addcslashes($value, ','));
             }
         }
 
-        return $query->one();
+        return $query;
     }
 
     // Protected Methods

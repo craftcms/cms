@@ -1107,6 +1107,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @return string|null The plugin’s license key, or null if it isn’t known
+     * @throws InvalidLicenseKeyException
      */
     public function getPluginLicenseKey(string $handle)
     {

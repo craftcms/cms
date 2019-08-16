@@ -179,7 +179,6 @@ class UserPermissionsTest extends TestCase
             ->admin(false)
             ->one();
 
-        // You may kiss the bride...
         Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000', '1001']);
 
         $this->assertCount(3, $this->userPermissions->getPermissionsByUserId($user->id));
@@ -194,6 +193,9 @@ class UserPermissionsTest extends TestCase
         );
     }
 
+    /**
+     * @throws WrongEditionException
+     */
     public function testChangedGroupPermissions()
     {
         // Setup user and craft
