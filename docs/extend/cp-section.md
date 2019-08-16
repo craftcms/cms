@@ -44,7 +44,7 @@ If your section has a sub-navigation, each subnav item within your `subnav` arra
     'foo' => ['label' => 'Foo', 'url' => 'section-url/foo'],
     'bar' => ['label' => 'Bar', 'url' => 'section-url/bar'],
     
-    // A subnav can also have it's own badge count by adding the optional `badeCount` key:
+    // A subnav can also have it's own badge count by adding the optional `badgeCount` key:
     'baz' => ['label' => 'Baz', 'url' => 'section-url/baz', 'badgeCount' => 5],
 ],
 ```
