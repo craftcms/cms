@@ -946,13 +946,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param array|string|null $attributes A list of attributes that should be added to the root `<svg>` element.
      * @param array|null $elements Any elements that should be added under the  root`svg` element
+     * @param string|null $class Deprecated - use $attributes instead.
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = [])
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = [], string $class = '')
     {
         // Deprecate the $class argument
-        if (is_string($attributes)) {
-            $attributes = ['class' => $attributes];
+        $oldClass = is_string($attributes) ? $attributes : $class;
+        if ($oldClass) {
+            $attributes = ['class' => $oldClass];
             Craft::$app->getDeprecator()->log('Extension::svgFunction()', 'Passing a string $class argument is deprecated. Pass an array with a `class` key instead.');
         }
 
