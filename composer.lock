@@ -2971,16 +2971,16 @@
         },
         {
             "name": "voku/portable-utf8",
-            "version": "5.4.15",
+            "version": "5.4.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/voku/portable-utf8.git",
-                "reference": "cdece5c6661b352a732e33cbfe2e4d56ccfe3fa2"
+                "reference": "8e64a63f9ba8e4c4c37ec30a1ace5f360d1dcdc5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/voku/portable-utf8/zipball/cdece5c6661b352a732e33cbfe2e4d56ccfe3fa2",
-                "reference": "cdece5c6661b352a732e33cbfe2e4d56ccfe3fa2",
+                "url": "https://api.github.com/repos/voku/portable-utf8/zipball/8e64a63f9ba8e4c4c37ec30a1ace5f360d1dcdc5",
+                "reference": "8e64a63f9ba8e4c4c37ec30a1ace5f360d1dcdc5",
                 "shasum": ""
             },
             "require": {
@@ -3040,7 +3040,7 @@
                 "utf-8",
                 "utf8"
             ],
-            "time": "2019-08-06T21:54:52+00:00"
+            "time": "2019-08-15T00:44:04+00:00"
         },
         {
             "name": "voku/stop-words",
