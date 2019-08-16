@@ -1429,17 +1429,43 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPreviewTargets(): array
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
-            return [];
+        $previewTargets = [];
+
+        if ($this->uri) {
+            $previewTargets[] = [
+                'label' => Craft::t('app', 'Primary {type} page', [
+                    'type' => strtolower(static::displayName())
+                ]),
+                'url' => $this->uri === '__home__' ? '' : $this->uri
+            ];
         }
 
-        // Give plugins a chance to modify them
-        $event = new RegisterPreviewTargetsEvent([
-            'previewTargets' => $this->previewTargets(),
-        ]);
-        $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            $previewTargets = array_merge($previewTargets, $this->previewTargets());
 
-        return $event->previewTargets;
+            // Give plugins a chance to modify them
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+                $event = new RegisterPreviewTargetsEvent([
+                    'previewTargets' => $previewTargets,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+                $previewTargets = $event->previewTargets;
+            }
+        }
+
+        // Normalize the URLs
+        $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : null;
+        $view = Craft::$app->getView();
+        foreach ($previewTargets as &$previewTarget) {
+            // urlFormat => url
+            if (isset($previewTarget['urlFormat'])) {
+                $previewTarget['url'] = $view->renderObjectTemplate($previewTarget['urlFormat'], $this);
+                unset($previewTarget['urlFormat']);
+            }
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, $scheme, $this->siteId);
+        }
+
+        return $previewTargets;
     }
 
     /**

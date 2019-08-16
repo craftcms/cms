@@ -258,6 +258,7 @@ class EntryRevisionsController extends BaseEntriesController
                 'docTitle' => $this->docTitle($draft),
                 'title' => $this->pageTitle($draft),
                 'duplicatedElements' => $elementsService::$duplicatedElementIds,
+                'previewTargets' => $draft->getPreviewTargets(),
             ]);
         }
 
