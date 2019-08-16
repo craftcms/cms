@@ -951,7 +951,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = [], string $class = '')
     {
-        // Deprecate the $class argument
+        // Deprecate the $class argument. Allow both svg(class='class') and svg('', true, true, 'class')
         $oldClass = is_string($attributes) ? $attributes : $class;
         if ($oldClass) {
             $attributes = ['class' => $oldClass];
