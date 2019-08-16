@@ -50,9 +50,7 @@ use yii\base\Component;
  * 8) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
  *     should apply - element changes invalidate a cached response and structural changes (when project config gets updated) invalidates
  *     cached responses. Cached by token by query.
- * 9) Pretty sure the test coverage went down with the last dev iteration - circle back and check.
- * 10) Tests for disabled and expired tokens.
- * 11) Tests for matrix blocks returning correct union types.
+ * 9) Tests: Disabled and expired tokens; matrix blocks return correct union types; parameters work eager-loading;
  * 12) Expose site structure over GQL as well
  * 13) Once (12) is in place, get rid of, say, `sectionId` and `sectionUid` fields and replace with a `section` type that has `uid` and `id` fields.
  * 14) MAYBE change all closures to static method and make schema itself cacheable per token per query.
