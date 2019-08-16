@@ -37,8 +37,19 @@ abstract class BaseElement extends BaseResolver
         }
 
         /** @var ElementQuery $query */
-        $preload = self::extractEagerLoadCondition($resolveInfo);
-        return $query->with($preload)->all();
+        $preloadNodes = self::extractEagerLoadCondition($resolveInfo);
+        $eagerLoadConditions = [];
+
+        // Set up the preload con
+        foreach ($preloadNodes as $element => $parameters) {
+            if (empty($parameters)) {
+                $eagerLoadConditions[] = $element;
+            } else {
+                $eagerLoadConditions[] = [$element, $parameters];
+            }
+        }
+
+        return $query->with($eagerLoadConditions)->all();
     }
 
     /**

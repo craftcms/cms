@@ -108,8 +108,16 @@ abstract class BaseResolver
 
                     // That is a Craft field that can be eager-loaded
                     if ($field = static::getPreloadableField($subNode->name->value, $context)) {
-                        // Add it to the list
-                        $eagerLoadNodes[$prefix.$nodeName] = true;
+                        $arguments = [];
+
+                        // Any arguments?
+                        $argumentNodes = $subNode->arguments ?? [];
+                        foreach ($argumentNodes as $argumentNode) {
+                            $arguments[$argumentNode->name->value] = $argumentNode->value->value;
+                        }
+
+                        // Add it all to the list
+                        $eagerLoadNodes[$prefix.$nodeName] = $arguments;
 
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {
@@ -140,8 +148,7 @@ abstract class BaseResolver
             return $eagerLoadNodes;
         };
 
-        // Remember to array_keys() it, since the values will be stored as keys.
-        return array_keys($traverseNodes($startingNode));
+        return $traverseNodes($startingNode);
     }
 
     /**

@@ -45,7 +45,6 @@ use yii\base\Component;
  * Rolling list of todos:
  *
  * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
- * 3) Eager-loading currently ignores the passed arguments. Some tests are borked because of that. This includes the `limit` argument to subqueries.
  * 4) Maybe move out token permissions to a separate service?
  * 5) Speaking of, maybe put the token settings somewhere else on the Craft settings page and definitely add an icon
  * 6) Figure out and add query complexity costs per GQL type.
