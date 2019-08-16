@@ -185,7 +185,7 @@ class GeneralConfig extends BaseObject
      * ],
      * ```
      *
-     * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).
+     * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/voku/Stringy).
      */
     public $customAsciiCharMappings = [];
     /**

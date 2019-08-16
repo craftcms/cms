@@ -102,17 +102,6 @@ class StringHelperTest extends Unit
     }
 
     /**
-     *
-     */
-    public function testContainsAllExceptions()
-    {
-        // Test that empty array with a string in it returns an exception.
-        $this->tester->expectThrowable(ErrorException::class, function() {
-            StringHelper::containsAll('', ['']);
-        });
-    }
-
-    /**
      * @dataProvider uppercaseFirstDataProvider
      *
      * @param $result
@@ -135,16 +124,6 @@ class StringHelperTest extends Unit
     {
         $index = StringHelper::indexOf($haystack, $needle);
         $this->assertSame($result, $index);
-    }
-
-    /**
-     *
-     */
-    public function testStringIndexException()
-    {
-        $this->tester->expectThrowable(ErrorException::class, function() {
-            StringHelper::indexOf('', '');
-        });
     }
 
     /**
@@ -673,6 +652,7 @@ class StringHelperTest extends Unit
             [2, '/@#$%^&*', '#'],
             [0, 'hello, people', 'he'],
             [false, 'some string', 'a needle'],
+            [false, '', '']
         ];
     }
 
@@ -688,6 +668,7 @@ class StringHelperTest extends Unit
             [true, 'iam some text', ['tEXt'], false],
             [false, 'iam some text', ['tEXt']],
             [false, '', []],
+            [false, '', ['']]
         ];
     }
 
