@@ -354,7 +354,7 @@ The `$attributes` argument accepts an array where the `key` is name of the attri
 ```
 
 It is also possible to specify custom elements that should be added as children of the root svg element (i.e. a `<title>`). This can be done  via the `$elements` argument. 
-The `$elements` argument requires a nested array where the child array contains three items: 
+The `$elements` argument requires a nested array where the child arrays contain these three items: 
 - The name of the element
 - The content of the element
 - An array containing the key value pairs listing any attributes of this element, 
