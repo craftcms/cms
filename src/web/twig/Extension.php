@@ -948,7 +948,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param array|null $elements Any elements that should be added under the  root`svg` element
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = null)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = [])
     {
         // Deprecate the $class argument
         if (is_string($attributes)) {
