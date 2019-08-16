@@ -335,7 +335,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Permission enforcement
         /** @var Entry|null $entry */
-        $entry = $draft->getSource();
+        $entry = ElementHelper::sourceElement($draft);
         $this->enforceEditEntryPermissions($entry);
         $section = ($entry)->getSection();
 
@@ -429,7 +429,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Permission enforcement
         /** @var Entry $entry */
-        $entry = $revision->getSource();
+        $entry = ElementHelper::sourceElement($revision);
 
         $this->enforceEditEntryPermissions($entry);
         $userId = Craft::$app->getUser()->getId();
