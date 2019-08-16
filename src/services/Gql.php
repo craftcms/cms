@@ -46,7 +46,6 @@ use yii\base\Component;
  *
  * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
  * 4) Maybe move out token permissions to a separate service?
- * 5) Speaking of, maybe put the token settings somewhere else on the Craft settings page and definitely add an icon
  * 6) Figure out and add query complexity costs per GQL type.
  * 7) Configurable limits on both query complexity and nesting level.
  * 8) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
