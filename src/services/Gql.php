@@ -45,7 +45,6 @@ use yii\base\Component;
  * Rolling list of todos:
  *
  * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
- * 4) Maybe move out token permissions to a separate service?
  * 6) Figure out and add query complexity costs per GQL type.
  * 7) Configurable limits on both query complexity and nesting level.
  * 8) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
