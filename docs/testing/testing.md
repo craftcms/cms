@@ -23,7 +23,7 @@ This is where **automated** tests can help.
 
 ::: tip
 Testing is all about strategy and approaches. Manual testing and automated testing work best 
-together. You can use your judgement to detect/prevent that computers cannot see and computers
+together. You can use your judgement to detect/prevent issues that computers cannot see and computers
 can execute many tests very quickly. 
 :::
 ### Unit testing
