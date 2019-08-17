@@ -254,6 +254,13 @@
                         id: 'enableDebugToolbarForCp',
                         checked: user.getPreference('enableDebugToolbarForCp')
                     }) }}
+
+                    {{ forms.checkboxField({
+                        label: "Show details of exceptions regardless of whether `devMode` is on."|t('app'),
+                        name: 'showExceptionDetail',
+                        id: 'showExceptionDetail',
+                        checked: user.getPreference('showExceptionDetail')
+                    }) }}
                 {% endif %}
             </div>
         {% endif %}
