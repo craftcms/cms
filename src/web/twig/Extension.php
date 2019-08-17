@@ -945,7 +945,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class Deprecated - use $attributes instead.
-     * @param array|string|null $attr A list of attributes that should be added to the root `<svg>` element.
+     * @param array|null $attr A list of attributes that should be added to the root `<svg>` element.
      * @param array|null $elements Any elements that should be added under the  root`svg` element
      * @return Markup|string
      */
