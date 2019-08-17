@@ -128,11 +128,28 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
+        $user = Craft::$app->getUser();
+        $showErrorDetail = $user->showErrorDetail();
+
         // Treat UserExceptions like normal exceptions when Dev Mode is enabled
-        if (YII_DEBUG && $exception instanceof UserException) {
+        if ((YII_DEBUG || $showErrorDetail) && $exception instanceof UserException) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
+        } elseif (!YII_DEBUG && $showErrorDetail) {
+            // Copied from parent...
+            // if there is an error during error rendering it's useful to
+            // display PHP error in debug mode instead of a blank screen
+            if (YII_DEBUG) {
+                ini_set('display_errors', 1);
+            }
+
+            $response = Craft::$app->getResponse();
+            $response->data = $this->renderFile($this->exceptionView, [
+                'exception' => $exception,
+            ]);
+            $response->send();
         }
+
 
         parent::renderException($exception);
     }

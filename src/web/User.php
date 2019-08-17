@@ -350,6 +350,30 @@ class User extends \yii\web\User
     // -------------------------------------------------------------------------
 
     /**
+     * Whether to show details of an error based on the current user preference and `devMode`.
+     *
+     * Only returns true if `YII_DEBUG` is on or the user has `showErrorDetails` on in their preference.
+     * @return bool
+     */
+    public function showErrorDetail() : bool
+    {
+        if (YII_DEBUG) {
+            return true;
+        }
+
+        $currentUser = $this->getIdentity();
+        if (!$currentUser) {
+            return false;
+        }
+
+        if ($currentUser->getPreference('showErrorDetails')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Saves the logged-in user’s Debug toolbar preferences to the session.
      */
     public function saveDebugPreferencesToSession()
