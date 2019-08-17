@@ -944,18 +944,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
-     * @param array|string|null $attributes A list of attributes that should be added to the root `<svg>` element.
-     * @param array|null $elements Any elements that should be added under the  root`svg` element
      * @param string|null $class Deprecated - use $attributes instead.
+     * @param array|string|null $attr A list of attributes that should be added to the root `<svg>` element.
+     * @param array|null $elements Any elements that should be added under the  root`svg` element
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, $attributes = [], array $elements = [], string $class = '')
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null, array $attr = [], array $elements = [])
     {
         // Deprecate the $class argument. Allow both svg(class='class') and svg('', true, true, 'class')
-        $oldClass = is_string($attributes) ? $attributes : $class;
-        if ($oldClass) {
-            $attributes = ['class' => $oldClass];
-            Craft::$app->getDeprecator()->log('Extension::svgFunction()', 'Passing a string $class argument is deprecated. Pass an array with a `class` key instead.');
+        if ($class) {
+            $attr['class'] = isset($attr['class']) ? $attr['class'] . ' ' . $class : $class;
+            Craft::$app->getDeprecator()->log("svg(class=$class)", 'Passing a string $class argument is deprecated. Pass an array with a `class` key instead.');
         }
 
         if ($svg instanceof Asset) {
@@ -1027,7 +1026,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         // Load up the attributes
-        foreach ($attributes as $key => $value) {
+        foreach ($attr as $key => $value) {
             if (is_string($key) && is_string($value)) {
                 $encKey = Html::encode($key);
                 $encVal = Html::encode($value);
