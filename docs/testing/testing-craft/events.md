@@ -5,7 +5,7 @@ place event listeners which modify actions and behaviours. This increases the fl
 of modules/plugins. 
 
 Seeing as events and the triggering thereof are routed through some complex [Yii2](https://www.yiiframework.com/doc/guide/2.0/en/concept-events)
-base functionality some specific steps must be taken to test code that triggers events. 
+based functionality some specific steps must be taken to test code that triggers events. 
 
 ## Testing event code
 Craft provides a simple helper method that allows you to test event codes.
