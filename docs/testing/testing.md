@@ -50,8 +50,8 @@ class SalaryChecker {
 If you were to unit test this class you would write something like follows: 
 
 ```php
-use craft\test\TestCase;
-class MyTest extends TestCase {
+use Codeception\Test\Unit;
+class MyTest extends Unit {
     public $salaryChecker;
  
     public function _before()
@@ -64,14 +64,14 @@ class MyTest extends TestCase {
     {
         $this->assertSame(
             4, 
-            $this->salaryChecker(2, 2)
+            $this->salaryChecker->multiply(2, 2)
         );
     }
     public function testAdd()
     {
         $this->assertSame(
             3, 
-            $this->salaryChecker(2, 1)
+            $this->salaryChecker->add(2, 1)
         );
     }
 } 
