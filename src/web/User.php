@@ -355,7 +355,7 @@ class User extends \yii\web\User
      * Only returns true if `YII_DEBUG` is on or the user has `showErrorDetails` on in their preference.
      * @return bool
      */
-    public function showErrorDetail() : bool
+    public function showExceptionDetail() : bool
     {
         if (YII_DEBUG) {
             return true;

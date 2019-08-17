@@ -129,7 +129,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     protected function renderException($exception)
     {
         $user = Craft::$app->getUser();
-        $showErrorDetail = $user->showErrorDetail();
+        $showErrorDetail = $user->showExceptionDetail();
 
         // Treat UserExceptions like normal exceptions when Dev Mode is enabled
         if ((YII_DEBUG || $showErrorDetail) && $exception instanceof UserException) {
