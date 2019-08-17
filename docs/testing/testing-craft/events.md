@@ -50,7 +50,7 @@ The `eventValues` property accepts an array that can be specially setup to
 validate the properties of the event that was passed. 
 
 ## Setting up `$eventValues`
-The Craft testing framework provides a special helper method that is recommended 
+Craft provides a special helper method that is recommended 
 to configure `$eventValues`. You can call `$this->tester->createEventItems()`
 and pass in an array with the following keys:
 
@@ -77,7 +77,7 @@ Where
 passed event an object will be returned. 
   - If you set the type to `TYPE_CLASS` you can pass in a `desiredClass` key value pair
   where the value indicates what class the object must be an `instanceof`. 
-- `TYPE_OTHERVALUE` instructs Craft to accept any other value than an object. 
+- `TYPE_OTHERVALUE` instructs Craft to accept any non-object value. 
 
 ### `desiredValue`
 `desiredValue` is designed to check the property values of the event that is passed. 
