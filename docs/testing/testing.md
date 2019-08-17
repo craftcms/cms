@@ -84,7 +84,7 @@ The `_before` method is run before _every_ test.
 
 2. A test is executed and a method of the `SalaryChecker` class is called. An **assertion**
 (checking that when passing 2 twice, 4 is returned - because the 2's are multiplied)
-is then made regarding its return result it returns. 
+is then made regarding its return result. 
 
 Fundamentally - that is a unit test. 
 Now imagine a
@@ -118,11 +118,6 @@ quickly catch and fix bugs relating this hereto.
 It is recommended to read the Codeception documentation on 
 [unit tests](https://codeception.com/docs/05-UnitTests)
  as well to see more practical examples of unit tests. 
- 
-::: tip
-TODO: Warning about that the Craft module does a semi-integration style of testing and
-how you can enable complete isolation. Are we providing support for complete isolation? 
-:::
 
 ### Functional & acceptance testing
 Your application isn't just a collection of PHP classes on a server. These
