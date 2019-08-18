@@ -358,6 +358,37 @@ Returns the content of a template without rendering it.
 
 This works identically to Twig’s core [`source`](https://twig.symfony.com/doc/2.x/functions/source.html) function.
 
+## `tag`
+
+Renders a complete HTML tag.
+
+```twig
+{{ tag('div', {
+    class: 'foo'
+}) }}
+{# Output: <div class="foo"></div> #}
+```
+
+If `text` is included in the attributes argument, its value will be HTML-encoded and set as the text contents of the tag.
+
+```twig
+{{ tag('div', {
+    text: 'Hello'
+}) }}
+{# Output: <div>Hello</div> #}
+```
+
+If `html` is included in the attributes argument (and `text` isn’t), its value will be set as the inner HTML of the tag (without getting HTML-encoded).
+
+```twig
+{{ tag('div', {
+    html: 'Hello<br>world'
+}) }}
+{# Output: <div>Hello<br>world</div> #}
+```
+
+All other keys passed to the second argument will be set as attributes on the tag, using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
+
 ## `template_from_string`
 
 Loads a template from a string.

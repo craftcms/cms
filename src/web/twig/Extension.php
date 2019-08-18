@@ -526,6 +526,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string $tag The HTML tag whose attributes should be modified.
      * @param array $attributes The attributes to be added to the tag.
      * @return string The modified HTML tag.
+     * @since 3.3.0
      */
     public function attrFilter(string $tag, array $attributes): string
     {
@@ -793,6 +794,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('svg', [$this, 'svgFunction']),
+            new TwigFunction('tag', [$this, 'tagFunction'], ['is_safe' => ['html']]),
             new TwigFunction('url', [UrlHelper::class, 'url']),
             // DOM event functions
             new TwigFunction('head', [$this->view, 'head']),
@@ -1043,6 +1045,28 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return TemplateHelper::raw($svg);
+    }
+
+    /**
+     * Generates a complete HTML tag.
+     *
+     * @param string $type the tag type ('p', 'div', etc.)
+     * @param array $attributes the HTML tag attributes in terms of name-value pairs.
+     * If `text` is supplied, the value will be HTML-encoded and included as the contents of the tag.
+     * If 'html' is supplied, the value will be included as the contents of the tag, without getting encoded.
+     * @return string
+     * @since 3.3.0
+     */
+    public function tagFunction(string $type, array $attributes = []): string
+    {
+        $html = ArrayHelper::remove($attributes, 'html', '');
+        $text = ArrayHelper::remove($attributes, 'text');
+
+        if ($text !== null) {
+            $html = Html::encode($text);
+        }
+
+        return Html::tag($type, $html, $attributes);
     }
 
     /**
