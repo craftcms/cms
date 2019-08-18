@@ -10,19 +10,23 @@
 {% hook "cp.categories.edit" %}
 
 {% block header %}
-    {{ block('pageTitle') }}
-    {{ block('contextMenu') }}
-    <div class="flex-grow"></div>
-    {% if showPreviewBtn or shareUrl is defined %}
-        {% if showPreviewBtn %}
-            <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
+    <div class="flex flex-nowrap">
+        {{ block('pageTitle') }}
+        {{ block('contextMenu') }}
+    </div>
+    <div class="flex">
+        {% if showPreviewBtn or shareUrl is defined %}
+            <div class="btngroup">
+                {% if showPreviewBtn %}
+                    <div class="btn livepreviewbtn" data-icon="view">{{ "Preview"|t('app') }}</div>
+                {% endif %}
+                {% if shareUrl is defined %}
+                    <a href="{{ shareUrl }}" class="btn sharebtn" data-icon="share" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
+                {% endif %}
+            </div>
         {% endif %}
-        {% if shareUrl is defined %}
-            <a href="{{ shareUrl }}" class="btn sharebtn" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
-        {% endif %}
-        <div class="flex-grow"></div>
-    {% endif %}
-    {{ block('actionButton') }}
+        {{ block('actionButton') }}
+    </div>
 {% endblock %}
 
 {% block contextMenu %}

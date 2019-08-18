@@ -70,6 +70,8 @@ class Gc extends Component
             Table::VOLUMES,
         ]);
 
+        Craft::$app->getSearch()->deleteOrphanedIndexes();
+
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
             $this->trigger(self::EVENT_RUN);
@@ -114,23 +116,6 @@ class Gc extends Component
         $db = Craft::$app->getDb();
 
         foreach ($tables as $table) {
-            // If we are deleting elements, delete their search indexes too
-            if ($table === Table::ELEMENTS) {
-                $elementIds = (new Query())
-                    ->select(['id'])
-                    ->from([$table])
-                    ->where($condition)
-                    ->column();
-
-                if (empty($elementIds)) {
-                    continue;
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::SEARCHINDEX, ['elementId' => $elementIds])
-                    ->execute();
-            }
-
             $db->createCommand()
                 ->delete($table, $condition)
                 ->execute();

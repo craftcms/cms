@@ -662,6 +662,17 @@ $.extend(Craft,
         },
 
         /**
+         * Returns whether a string starts with another string.
+         *
+         * @param {string} str
+         * @param {string} substr
+         * @return boolean
+         */
+        startsWith: function(str, substr) {
+            return str.substr(0, substr.length) === substr;
+        },
+
+        /**
          * Filters an array.
          *
          * @param {object} arr

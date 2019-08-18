@@ -169,6 +169,7 @@ class ElementHelperTest extends Unit
         return [
             ['wordWord', 'wordWord'],
             ['word[separator-here]word', 'word word'],
+            ['foo[separator-here]0', 'foo 0'],
             ['word', 'word'],
             ['123456789', '123456789'],
             ['abc...dfg', 'abc...dfg'],

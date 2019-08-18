@@ -1329,8 +1329,10 @@ trait ApplicationTrait
             $this->trigger(WebApplication::EVENT_INIT);
         }
 
-        // Possibly run garbage collection
-        $this->getGc()->run();
+        if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            // Possibly run garbage collection
+            $this->getGc()->run();
+        }
     }
 
     /**

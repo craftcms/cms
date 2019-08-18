@@ -361,7 +361,7 @@ return [
     'Drafts' => 'Vázlatok',
     'Driver' => 'Illesztőprogram',
     'Dropdown' => 'Legördülő',
-    'Dropdown Options' => 'Legördülö opciók',
+    'Dropdown Options' => 'Legördülő opciók',
     'Edit' => 'Szerkeszt',
     'Edit Image' => 'Kép szerkesztése',
     'Edit Message' => 'Üzenet szerkesztése',

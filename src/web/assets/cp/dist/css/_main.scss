@@ -909,11 +909,13 @@ ul.icons li a:hover {
 
   &:not(.flex-nowrap) {
     flex-wrap: wrap;
+
+    & > * {
+      margin-bottom: 7px;
+    }
   }
 
   & > * {
-    margin-bottom: 7px;
-
     &.label {
       white-space: nowrap;
     }

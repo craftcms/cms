@@ -784,9 +784,7 @@ class Db
             }
 
             // Remove any empty elements and reset the keys
-            $value = array_merge(array_filter($value));
-
-            return $value;
+            return array_values(ArrayHelper::filterEmptyStringsFromArray($value));
         }
 
         return ArrayHelper::toArray($value);

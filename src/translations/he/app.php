@@ -1377,7 +1377,7 @@ return [
     'Zip Code' => 'מיקוד',
     'File does not exist: {path}' => 'קובץ לא קיים: {path}',
     'Copy the package’s name for this plugin.' => 'העתק את שם החבילה לתוסף זה.',
-    'Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts' => 'כולל סקשנים, סטים גלובליים, קבוצות של קטגוריות, קבוצות של תיוגים, אמצעי אחסון של נכסים, שדות בהתאמה אישית, ניהול גרסאות של רשומות וטיוטות של רשומות',
+    'Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts' => 'כולל סקשנים, סטים גלובליים, קבוצות של קטגוריות, קבוצות של תיוגים, אמצעי אחסון של נכסים, תחומים בהתאמה אישית, ניהול גרסאות של רשומות וטיוטות של רשומות',
     'Export' => 'ייבא',
     'Updating search indexes' => 'מעדכן אינדקסים של חיפוש',
     'Propagation Method' => 'שיטת הפצה',
@@ -1402,7 +1402,7 @@ return [
     'Customize element sources' => 'התאם אישית את מקורות הרכיבים',
     'The URL/URI to use for this target.' => 'ה-URL/URI שיש לשמש ליעד זה.',
     'Licensed' => 'מורשה',
-    'The maximum length (in bytes) the field can hold.' => 'האורך המרבי (בבייטים) שהשדה יכול להכיל.',
+    'The maximum length (in bytes) the field can hold.' => 'האורך המרבי (בבייטים) שהתחום יכול להכיל.',
     'Find an official Craft Partner' => 'מצא שותף Craft רשמי',
     'Less' => 'פחות',
     'Resaving {type}' => 'שומר שוב {type}',
@@ -1464,6 +1464,6 @@ return [
     'Address Line 1' => 'שורת כתובת 1',
     'Choose a site' => 'בחר אתר',
     'Address Line 2' => 'שורת כתובת 2',
-    'Are you sure you want to delete this {type}?' => 'האם אתה בטוח שברצונך למחוק את ה{type}?',
+    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'ל<strong>{cause}</strong> המותקן כרגע יש גרסת סכימה של {existing}(צפוי{incoming})'
 ];

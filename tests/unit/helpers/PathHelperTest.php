@@ -57,7 +57,9 @@ class PathHelperTest extends Unit
             [true, 'in/a/path'],
             [false, '../test'],
             [true, './test'],
-            [true, 'test']
+            [true, 'test'],
+            [false, 'foo////../../bar'],
+            [true, 'foo/0/0/0/../../bar'],
         ];
     }
 }

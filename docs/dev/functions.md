@@ -21,7 +21,7 @@ Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which 
 <img src="{{ alias('@assetBaseUrl/images/logo.png') }}">
 ```
 
-### `attr`
+## `attr`
 
 Generates a list of HTML attributes based on the given object, using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
 
