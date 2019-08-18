@@ -4,7 +4,6 @@
 
 ### Added
 - Added the `utils/fix-element-uids` command, which ensures all elements have unique UIDs. ([#4653[(https://github.com/craftcms/cms/issues/4653)]])
-- Added the `purgeStaleUserSessionDuration` config setting that controls how long Craft should wait to purge stale user sessions in the database.
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to create a homepage Single section if a prior entry revisions’ URI had been set to `__home__`. ([#4657](https://github.com/craftcms/cms/issues/4657))
