@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\Html;
 use UnitTester;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the HTML Helper class.
@@ -46,6 +47,50 @@ class HtmlHelperTest extends Unit
         $this->assertSame($result, Html::encodeParams($input, $variables));
     }
 
+    /**
+     * @dataProvider parseTagAttributesDataProvider
+     *
+     * @param $result
+     * @param $tag
+     */
+    public function testParseTagAttributes($result, $tag)
+    {
+        if ($result === false) {
+            $this->expectException(InvalidArgumentException::class);
+            Html::parseTagAttributes($tag);
+        } else {
+            $this->assertSame($result, Html::parseTagAttributes($tag));
+        }
+    }
+
+    /**
+     * @dataProvider modifyTagAttributesDataProvider
+     *
+     * @param $result
+     * @param $tag
+     * @param $attributes
+     */
+    public function testModifyTagAttributes($result, $tag, $attributes)
+    {
+        if ($result === false) {
+            $this->expectException(InvalidArgumentException::class);
+            Html::modifyTagAttributes($tag, $attributes);
+        } else {
+            $this->assertSame($result, Html::modifyTagAttributes($tag, $attributes));
+        }
+    }
+
+    /**
+     * @dataProvider normalizeTagAttributesDataProvider
+     *
+     * @param $result
+     * @param $attributes
+     */
+    public function testNormalizeTagAttributes($result, $attributes)
+    {
+        $this->assertSame($result, Html::normalizeTagAttributes($attributes));
+    }
+
     // Data Providers
     // =========================================================================
 
@@ -73,6 +118,62 @@ class HtmlHelperTest extends Unit
                 ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
             ],
             ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function parseTagAttributesDataProvider(): array
+    {
+        return [
+            [['type' => 'text', 'disabled' => true], '<input type="text" disabled>'],
+            [['type' => 'text', 'disabled' => true], '<input type=text disabled />'],
+            [['type' => 'text'], '<!-- comment --> <input type="text">'],
+            [['type' => 'text'], '<?xml?> <input type="text">'],
+            [['data' => ['foo' => '1', 'bar' => '2']], '<div data-foo="1" data-bar="2">'],
+            [['data-ng' => ['foo' => '1', 'bar' => '2']], '<div data-ng-foo="1" data-ng-bar="2">'],
+            [['ng' => ['foo' => '1', 'bar' => '2']], '<div ng-foo="1" ng-bar="2">'],
+            [['data-foo' => true], '<div data-foo>'],
+            [['class' => ['foo', 'bar']], '<div class="foo bar">'],
+            [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
+            [false, '<div'],
+            [false, '<!-- comment -->'],
+            [false, '<?xml?>'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function modifyTagAttributesDataProvider(): array
+    {
+        return [
+            ['<input type="text">', '<input type="text" disabled>', ['disabled' => false]],
+            [ '<!-- comment --> <input type="text" />',  '<!-- comment --> <input type="text" disabled />', ['disabled' => false]],
+            ['<div class="foo bar">', '<div class="foo">', ['class' => ['foo', 'bar']]],
+            ['<div data-foo="2" data-bar="3">', '<div data-foo="1">', ['data' => ['foo' => '2', 'bar' => '3']]],
+            ['<div style="color: black; background: red;">', '<div>', ['style' => ['color' => 'black', 'background' => 'red']]],
+            ['<div style="color: black; background: red;">', '<div style="color: red">', ['style' => ['color' => 'black', 'background' => 'red']]],
+            [false, '<div', []],
+            [false, '<!-- comment -->', []],
+            [false, '<?xml?>', []],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeTagAttributesDataProvider(): array
+    {
+        return [
+            [['type' => 'text', 'disabled' => true], ['type' => 'text', 'disabled' => true]],
+            [['class' => ['foo', 'bar']], ['class' => 'foo bar']],
+            [['style' => ['color' => 'black', 'background' => 'red']], ['style' => 'color: black; background: red;']],
+            [['data' => ['foo' => '1', 'bar' => '2']], ['data-foo' => '1', 'data-bar' => '2']],
+            [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
+            [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
+            [['data-foo' => true], ['data-foo' => true]],
         ];
     }
 }

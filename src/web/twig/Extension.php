@@ -205,6 +205,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
+            new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
             new TwigFilter('currency', [$formatter, 'asCurrency']),
@@ -517,6 +518,23 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function atomFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
+    }
+
+    /**
+     * Modifies a HTML tag’s attributes, supporting the same attribute definitions as [[Html::renderTagAttributes()]].
+     *
+     * @param string $tag The HTML tag whose attributes should be modified.
+     * @param array $attributes The attributes to be added to the tag.
+     * @return string The modified HTML tag.
+     */
+    public function attrFilter(string $tag, array $attributes): string
+    {
+        try {
+            return Html::modifyTagAttributes($tag, $attributes);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
     }
 
     /**

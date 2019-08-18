@@ -32,6 +32,72 @@ Converts a date to an ISO-8601 timestamp (e.g. `2019-01-29T10:00:00-08:00`), whi
 {{ entry.postDate|atom }}
 ```
 
+## `attr`
+
+Modifies an HTML tag’s attributes, using the same attribute definitions supported by using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
+
+```twig
+{% set tag = '<div>' %}
+{{ tag|attr({
+    class: 'foo'
+}) }}
+{# Output: <div class="foo"> #}
+```
+
+Only the first tag will be modified, and any HTML comments or doctype declarations before it will be ignored.
+
+```twig
+{% set svg %}
+    <?xml version="1.0" encoding="utf-8"?>
+    <svg>...</svg>
+{% endset %}
+{{ svg|attr({
+    class: 'icon'
+}) }}
+{# Output:
+   <?xml version="1.0" encoding="utf-8"?>
+   <svg class="icon">...</svg> #}
+```
+
+Attributes can be removed by setting them to `false`.
+
+```twig
+{% set tag = '<input type="text" disabled>' %}
+{{ tag|attr({
+    disabled: false
+}) }}
+{# Output: <input type="text"> #}
+```
+
+`class` and `style` attributes will be combined with the element’s existing attributes, if set.
+
+```twig
+{% set tag = '<div class="foo" style="color: black;">' %}
+{{ tag|attr({
+    class: 'bar',
+    style: {background: 'red'}
+}) }}
+{# Output: <div class="foo bar" style="color: black; background: red;"> #}
+```
+
+All other attributes will replace the existing attribute values.
+
+```twig
+{% set tag = '<input type="text">' %}
+{{ tag|attr({
+    type: 'email'
+}) }}
+{# Output: <input type="email"> #}
+```
+
+If you want to completely replace a `class` or `style` attribute, remove it first, then set the new value:
+
+```twig
+{% set tag = '<div class="foo">' %}
+{{ tag|attr({class: false})|attr({class: 'bar'}) }}
+{# Output: <div class="bar"> #}
+```
+
 ## `batch`
 
 “Batches” items by returning a list of lists with the given number of items
