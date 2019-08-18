@@ -47,6 +47,152 @@ class StringHelperTest extends Unit
     }
 
     /**
+     * @dataProvider afterFirstDataProvider
+     * @param $result
+     * @param $string
+     * @param $separator
+     * @param $caseSensitive
+     */
+    public function testAfterFirst($result, $string, $separator, $caseSensitive)
+    {
+        $actual = StringHelper::afterFirst($string, $separator, $caseSensitive);
+        $this->assertSame($result, $actual);
+    }
+
+    /**
+     * @dataProvider afterLastDataProvider
+     * @param $result
+     * @param $string
+     * @param $separator
+     * @param $caseSensitive
+     */
+    public function testAfterLast($result, $string, $separator, $caseSensitive)
+    {
+        $actual = StringHelper::afterLast($string, $separator, $caseSensitive);
+        $this->assertSame($result, $actual);
+    }
+
+    /**
+     * @dataProvider appendDataProvider
+     * @param $result
+     * @param $string
+     * @param $append
+     */
+    public function testAppend($result, $string, $append)
+    {
+        $actual = StringHelper::append($string, $append);
+        $this->assertSame($result, $actual);
+    }
+
+    /**
+     *
+     */
+    public function testAppendRandomString()
+    {
+        $testArray = [
+            'abc'       => [1, 1],
+            'öäü'       => [10, 10],
+            ''          => [10, 0],
+            ' '         => [10, 10],
+            'κόσμε-öäü' => [10, 10],
+        ];
+
+        foreach ($testArray as $testString => $testResult) {
+            $actual = StringHelper::appendRandomString('', $testResult[0], $testString);
+            $this->assertSame($testResult[1], StringHelper::length($actual));
+        }
+    }
+
+    /**
+     *
+     */
+    public function testAppendUniqueIdentifier()
+    {
+        $uniqueIds = [];
+        for ($i = 0; $i <= 100; ++$i) {
+            $uniqueIds[] = StringHelper::appendUniqueIdentifier('');
+        }
+
+        // detect duplicate values in the array
+        foreach (array_count_values($uniqueIds) as $uniqueId => $count) {
+            $this->assertSame(1, $count);
+        }
+
+        // check the string length
+        foreach ($uniqueIds as $uniqueId) {
+            static::assertSame(32, strlen($uniqueId));
+        }
+    }
+
+    /**
+     *
+     */
+    public function testAt()
+    {
+        $testArray = [
+            ['f', 'foo bar', 0],
+            ['o', 'foo bar', 1],
+            ['r', 'foo bar', 6],
+            ['', 'foo bar', 7],
+            ['f', 'fòô bàř', 0],
+            ['ò', 'fòô bàř', 1],
+            ['ř', 'fòô bàř', 6],
+            ['', 'fòô bàř', 7],
+        ];
+
+        foreach ($testArray as $testResult) {
+            $actual = StringHelper::at($testResult[1], $testResult[2]);
+            $this->assertSame($testResult[0], $actual);
+        }
+    }
+
+    /**
+     *
+     */
+    public function testBeforeFirst()
+    {
+        $testArray = [
+            ['', '', 'b', true],
+            ['<h1>test</h1>', '', 'b', true],
+            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', true],
+            ['<h1></h1> ', '', 'b', true],
+            ['</b></b>', '</', 'b', true],
+            ['öäü<strong>lall</strong>', '', 'b', true],
+            [' b<b></b>', ' ', 'b', true],
+            ['<b><b>lall</b>', '<', 'b', true],
+            ['</b>lall</b>', '</', 'b', true],
+            ['[b][/b]', '[', 'b', true],
+            ['[B][/B]', '', 'b', true],
+            ['κόσμbε ¡-öäü', 'κόσμ', 'b', true],
+            ['', '', 'b', false],
+            ['<h1>test</h1>', '', 'b', false],
+            ['foo<h1></h1>Bar', 'foo<h1></h1>', 'b', false],
+            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', false],
+            ['<h1></h1> ', '', 'b', false],
+            ['</b></b>', '</', 'b', false],
+            ['öäü<strong>lall</strong>', '', 'b', false],
+            [' b<b></b>', ' ', 'b', false],
+            ['<b><b>lall</b>', '<', 'b', false],
+            ['</b>lall</b>', '</', 'b', false],
+            ['[B][/B]', '[', 'b', false],
+            ['κόσμbε ¡-öäü', 'κόσμ', 'b', false],
+            ['Bκόσμbε', '', 'b', false],
+        ];
+
+        foreach ($testArray as $testResult) {
+            if ($testResult[3]) {
+                $actual = StringHelper::beforeFirst($testResult[0], $testResult[2]);
+                $this->assertSame($testResult[1], $actual);
+                $this->assertSame($testResult[1], StringHelper::substringOf($testResult[0], 'b', true, true));
+            } else {
+                $actual = StringHelper::beforeFirstIgnoreCase($testResult[0], $testResult[2]);
+                $this->assertSame($testResult[1], $actual);
+                $this->assertSame($testResult[1], StringHelper::substringOf($testResult[0], 'b', true, false));
+            }
+        }
+    }
+
+    /**
      *
      */
     public function testStartsWith()
@@ -983,6 +1129,73 @@ class StringHelperTest extends Unit
     /**
      * @return array
      */
+    public function afterFirstDataProvider(): array
+    {
+        return [
+            ['', '', 'b', true],
+            ['', '<h1>test</h1>', 'b', true],
+            ['ar', 'foo<h1></h1>bar', 'b', true],
+            ['', '<h1></h1> ', 'b', true],
+            ['></b>', '</b></b>', 'b', true],
+            ['', 'öäü<strong>lall</strong>', 'b', true],
+            ['<b></b>', ' b<b></b>', 'b', true],
+            ['><b>lall</b>', '<b><b>lall</b>', 'b', true],
+            ['>lall</b>', '</b>lall</b>', 'b', true],
+            ['', '[B][/B]', 'b', true],
+            ['][/b]', '[b][/b]', 'b', true],
+            ['ε ¡-öäü', 'κόσμbε ¡-öäü', 'b', true],
+            ['κόσμbε', 'bκόσμbε', 'b', true],
+            ['', '', 'b', false],
+            ['', '<h1>test</h1>', 'b', false],
+            ['ar', 'foo<h1></h1>Bar', 'b', false],
+            ['', '<h1></h1> ', 'b', false],
+            ['></b>', '</B></b>', 'b', false],
+            ['', 'öäü<strong>lall</strong>', 'b', false],
+            ['></b>B', ' <b></b>B', 'B', false],
+            ['><b>lall</b>', '<b><b>lall</b>', 'b', false],
+            ['>lall</b>', '</b>lall</b>', 'b', false],
+            ['][/B]', '[B][/B]', 'b', false],
+            ['][/b]', '[B][/b]', 'B', false],
+            ['ε ¡-öäü', 'κόσμbε ¡-öäü', 'b', false],
+            ['κόσμbε', 'bκόσμbε', 'B', false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function afterLastDataProvider(): array
+    {
+        return [
+            ['', '', 'b', true],
+            ['', '<h1>test</h1>', 'b', true],
+            ['ar', 'foo<h1></h1>bar', 'b', true],
+            ['', '<h1></h1> ', 'b', true],
+            ['>', '</b></b>', 'b', true],
+            ['', 'öäü<strong>lall</strong>', 'b', true],
+            ['>', ' b<b></b>', 'b', true],
+            ['>', '<b><b>lall</b>', 'b', true],
+            ['>', '</b>lall</b>', 'b', true],
+            [']', '[b][/b]', 'b', true],
+            ['', '[B][/B]', 'b', true],
+            ['ε ¡-öäü', 'κόσμbε ¡-öäü', 'b', true],
+            ['', '', 'b', false],
+            ['', '<h1>test</h1>', 'b', false],
+            ['ar', 'foo<h1></h1>bar', 'b', false],
+            ['ar', 'foo<h1></h1>Bar', 'b', false],
+            ['', '<h1></h1> ', 'b', false],
+            ['', 'öäü<strong>lall</strong>', 'b', false],
+            ['>', ' b<b></b>', 'b', false],
+            ['>', '<b><b>lall</b>', 'b', false],
+            ['>', '<b><B>lall</B>', 'b', false],
+            [']', '[b][/b]', 'b', false],
+            ['ε ¡-öäü', 'κόσμbε ¡-öäü', 'b', false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function toStringDataProvider(): array
     {
         return [
@@ -1129,6 +1342,17 @@ class StringHelperTest extends Unit
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
             ['\x09Example string\x0A', '\x09Example string\x0A'],
             ['\t\tThese are a few words :) ...', '\t\tThese are a few words :) ...  ']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function appendDataProvider(): array
+    {
+        return [
+            ['foobar', 'foo', 'bar'],
+            ['fòôbàř', 'fòô', 'bàř'],
         ];
     }
 }
