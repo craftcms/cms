@@ -129,23 +129,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
-        // Treat UserExceptions like normal exceptions when Dev Mode is enabled
-        if (YII_DEBUG && $exception instanceof UserException) {
+        // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
+        // or if the user is an admin and has indicated they want to see it
+        if ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
-        }
-
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-        // Show details even if YII_DEBUG is off but only if `showExceptionDetails`is enabled and the response format is HTML.
-        if (!YII_DEBUG &&
-            $currentUser &&
-            $currentUser->getPreference('showExceptionDetails') &&
-            Craft::$app->getResponse()->format === Response::FORMAT_HTML
-        ) {
-            $this->_sendExceptionResponse($exception);
-            return;
         }
 
         parent::renderException($exception);
@@ -179,32 +167,21 @@ class ErrorHandler extends \yii\web\ErrorHandler
     // =========================================================================
 
     /**
-     * Sends a response containing all details of $exception via $this->exceptionView.
+     * Returns whether the full exception view should be shown.
      *
-     * @param Throwable $exception
+     * @return bool
      */
-    private function _sendExceptionResponse(Throwable $exception)
+    private function _showExceptionView(): bool
     {
-        $response = Craft::$app->getResponse();
-        // reset parameters of response to avoid interference with partially created response data
-        // in case the error occurred while sending the response.
-        $response->isSent = false;
-        $response->stream = null;
-        $response->data = null;
-        $response->content = null;
+        if (YII_DEBUG) {
+            return true;
+        }
 
-
-        $response->setStatusCodeByException($exception);
-
-        // if there is an error during error rendering it's useful to
-        // display PHP error in debug mode instead of a blank screen
-        ini_set('display_errors', 1);
-
-        $response = Craft::$app->getResponse();
-        $response->data = $this->renderFile($this->exceptionView, [
-            'exception' => $exception,
-        ]);
-        $response->send();
+        $user = Craft::$app->getUser()->getIdentity();
+        return (
+            $user &&
+            $user->admin &&
+            $user->getPreference('showExceptionView')
+        );
     }
-
 }

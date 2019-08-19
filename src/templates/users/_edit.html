@@ -241,26 +241,41 @@
                 {% if user.admin %}
                     <hr>
 
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the front end"|t('app'),
-                        name: 'enableDebugToolbarForSite',
-                        id: 'enableDebugToolbarForSite',
-                        checked: user.getPreference('enableDebugToolbarForSite')
-                    }) }}
+                    {% embed '_includes/forms/field' %}
+                        {% block label %}
+                            {{ 'Debug Toolbar'|t('app') }}
+                        {% endblock %}
+                        {% block input %}
+                            {% import '_includes/forms' as forms %}
+                            {{ forms.checkboxField({
+                                label: "Show the debug toolbar on the front end"|t('app'),
+                                name: 'enableDebugToolbarForSite',
+                                id: 'enableDebugToolbarForSite',
+                                checked: user.getPreference('enableDebugToolbarForSite')
+                            }) }}
+                            {{ forms.checkboxField({
+                                label: "Show the debug toolbar on the Control Panel"|t('app'),
+                                name: 'enableDebugToolbarForCp',
+                                id: 'enableDebugToolbarForCp',
+                                checked: user.getPreference('enableDebugToolbarForCp')
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
 
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the Control Panel"|t('app'),
-                        name: 'enableDebugToolbarForCp',
-                        id: 'enableDebugToolbarForCp',
-                        checked: user.getPreference('enableDebugToolbarForCp')
-                    }) }}
-
-                    {{ forms.checkboxField({
-                        label: "Show exception details regardless of whether `devMode` is on."|t('app'),
-                        name: 'showExceptionDetails',
-                        id: 'showExceptionDetails',
-                        checked: user.getPreference('showExceptionDetails')
-                    }) }}
+                    {% embed '_includes/forms/field' %}
+                        {% block label %}
+                            {{ 'Exception Views'|t('app') }}
+                        {% endblock %}
+                        {% block input %}
+                            {% import '_includes/forms' as forms %}
+                            {{ forms.checkboxField({
+                                label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+                                name: 'showExceptionView',
+                                id: 'showExceptionView',
+                                checked: user.getPreference('showExceptionView')
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
                 {% endif %}
             </div>
         {% endif %}
