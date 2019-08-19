@@ -110,7 +110,7 @@ define('CRAFT_VENDOR_PATH', dirname(__DIR__).'/vendor');
 TestSetup::configureCraft();
 
 // Prevent `headers already sent` error when running tests in PhpStorm
-ob_start ();
+ob_start();
 ```
 
 ### Required `Craft::$app` setup code
