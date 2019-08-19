@@ -135,8 +135,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $this->errorView = $this->exceptionView;
         }
 
-        $user = Craft::$app->getUser();
-        $currentUser = $user->getIdentity();
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
 
         // Show details even if YII_DEBUG is off but only if `showExceptionDetails`is enabled and the response format is HTML.
         if (!YII_DEBUG &&
