@@ -1,9 +1,10 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\types\elements;
 
 use craft\elements\User as UserElement;
 use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\types\BaseType;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\models\UserGroup;

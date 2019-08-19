@@ -1,15 +1,15 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\types\elements;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\types\BaseType;
 use craft\helpers\StringHelper;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class AssetType
+ * Class Asset
  */
 class Asset extends BaseType
 {

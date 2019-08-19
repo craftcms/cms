@@ -1,7 +1,8 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\types\elements;
 
 use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\types\BaseType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

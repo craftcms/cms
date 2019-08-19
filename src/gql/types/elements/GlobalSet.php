@@ -1,13 +1,14 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\types\elements;
 
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
+use craft\gql\types\BaseType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class GlobalSetType
+ * Class GlobalSet
  */
 class GlobalSet extends BaseType
 {

@@ -1,14 +1,15 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\types\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
+use craft\gql\types\BaseType;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class MatrixBlockType
+ * Class MatrixBlock
  */
 class MatrixBlock extends BaseType
 {

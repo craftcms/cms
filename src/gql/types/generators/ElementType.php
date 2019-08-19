@@ -4,7 +4,7 @@ namespace craft\gql\types\generators;
 use craft\base\Element as BaseElement;
 use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\Element;
+use craft\gql\types\elements\Element;
 
 /**
  * Class ElementType

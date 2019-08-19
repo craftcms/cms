@@ -7,7 +7,7 @@ use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\Asset;
+use craft\gql\types\elements\Asset;
 use craft\helpers\Gql as GqlHelper;
 
 /**

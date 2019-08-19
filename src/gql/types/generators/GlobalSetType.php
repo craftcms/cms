@@ -6,7 +6,7 @@ use craft\base\Field;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\GlobalSet;
+use craft\gql\types\elements\GlobalSet;
 use craft\helpers\Gql as GqlHelper;
 
 /**
