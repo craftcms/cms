@@ -62,7 +62,7 @@ class Html extends \yii\helpers\Html
     {
         // Normalize the attributes & merge with the old attributes
         $attributes = static::normalizeTagAttributes($attributes);
-        $oldAttributes = static::parseTagAttributes($tag, $attrStart, $attrEnd);
+        $oldAttributes = static::parseTagAttributes($tag, $start, $end);
         $attributes = ArrayHelper::merge($oldAttributes, $attributes);
 
         // Ensure we don't have any duplicate classes
@@ -70,39 +70,37 @@ class Html extends \yii\helpers\Html
             $attributes['class'] = array_unique($attributes['class']);
         }
 
-        return substr($tag, 0, $attrStart) .
+        return substr($tag, 0, $start) .
             static::renderTagAttributes($attributes) .
-            substr($tag, $attrEnd);
+            substr($tag, $end);
     }
 
     /**
      * Parses an HTML tag to find its attributes.
      *
      * @param string $tag The HTML tag to parse
-     * @param int|null $attrStart The start position of the first attribute in the given tag
-     * @param int|null $attrEnd The end position of the last attribute in the given tag
+     * @param int|null $start The start position of the first attribute in the given tag
+     * @param int|null $end The end position of the last attribute in the given tag
      * @return array The parsed HTML tags
      * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */
-    public static function parseTagAttributes(string $tag, int &$attrStart = null, int &$attrEnd = null): array
+    public static function parseTagAttributes(string $tag, int &$start = null, int &$end = null): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
         if (!preg_match('/<\w+/', $tag, $match, PREG_OFFSET_CAPTURE)) {
             throw new InvalidArgumentException('Could not find an HTML tag in string: ' . $tag);
         }
 
-        $attrStart = $match[0][1] + strlen($match[0][0]);
-        $anchor = $attrStart;
+        $start = $match[0][1] + strlen($match[0][0]);
+        $anchor = $start;
         $attributes = [];
-
-
 
         do {
             if (!preg_match('/\s*([^=\/> ]+)/A', $tag, $match, 0, $anchor)) {
                 // Did we just reach the end of the tag?
                 if (preg_match('/(\s*)\/?>/A', $tag, $match, 0, $anchor)) {
-                    $attrEnd = $anchor;
+                    $end = $anchor;
                     break;
                 }
                 // Otherwise this is a malformed tag
