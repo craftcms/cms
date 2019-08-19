@@ -2,13 +2,22 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ElementHelper::sourceElement()`.
+
 ### Changed
 - Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
 - Relational fields without a specific target site will now only return related elements from the same site as the source element by default, as they did before Craft 3.2. ([#4751](https://github.com/craftcms/cms/issues/4751))
-- `source` is now a reserved field handle. ([#4754](https://github.com/craftcms/cms/issues/4754))
+- Improved the performance of element duplication on multi-site installs.
+- Edit Entry pages now get updated preview target URLs after saving a draft, in case the URLs have changed.
+- Improved the performance of `craft\web\View::renderString()` for templates that don’t contain any Twig code.
+
+### Removed
+- Removed `craft\base\ElementInterface::getSource()`. ([#4754](https://github.com/craftcms/cms/issues/4754))
 
 ### Fixed
 - Fixed an error that could occur if garbage collection was run while Craft 3.2 migrations were pending. ([#4720](https://github.com/craftcms/cms/issues/4720))
+- Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
 
 ## 3.2.10 - 2019-08-13
 

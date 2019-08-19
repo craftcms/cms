@@ -172,15 +172,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 $li = $('<li/>').appendTo($ul);
                 $a = $('<a/>', {
                     text: this.settings.previewTargets[i].label,
-                    data: {
-                        url: this.settings.previewTargets[i].url,
-                    }
                 }).appendTo($li);
                 this.addListener($a, 'click', {
-                    url: this.settings.previewTargets[i].url,
+                    target: i,
                 }, function(ev) {
-                    this.openShareLink(ev.data.url);
-                });
+                    this.openShareLink(this.settings.previewTargets[ev.data.target].url);
+                }.bind(this));
             }
         },
 
@@ -448,6 +445,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                         }));
                     }
 
+                    // Did the controller send us updated preview targets?
+                    if (
+                        response.previewTargets &&
+                        JSON.stringify(response.previewTargets) !== JSON.stringify(this.settings.previewTargets)
+                    ) {
+                        this.updatePreviewTargets(response.previewTargets);
+                    }
+
                     this.afterUpdate(data);
 
                     if (draftCreated) {
@@ -482,6 +487,19 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             return data;
+        },
+
+        updatePreviewTargets: function(previewTargets) {
+            // index the current preview targets by label
+            var currentTargets = {};
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
+                currentTargets[this.settings.previewTargets[i].label] = this.settings.previewTargets[i];
+            }
+            for (i = 0; i < previewTargets.length; i++) {
+                if (currentTargets[previewTargets[i].label]) {
+                    currentTargets[previewTargets[i].label].url = previewTargets[i].url;
+                }
+            }
         },
 
         afterUpdate: function(data) {
