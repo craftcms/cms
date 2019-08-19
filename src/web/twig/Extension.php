@@ -203,6 +203,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $security = Craft::$app->getSecurity();
 
         return [
+            new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
             new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
@@ -238,6 +239,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter']),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
+            new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -449,6 +451,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Prepends HTML to the beginning of given tag.
+     *
+     * @param string $tag The HTML tag that `$html` should be prepended to
+     * @param string $html The HTML to prepend to `$tag`.
+     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
+     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     * by `$tag`.
+     * @return string The modified HTML
+     * @since 3.3.0
+     */
+    public static function prependFilter(string $tag, string $html, string $ifExists = null): string
+    {
+        try {
+            return Html::prependToTag($tag, $html, $ifExists);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
+    }
+
+    /**
      * Replaces Twig's |replace filter, adding support for passing in separate
      * search and replace arrays.
      *
@@ -505,6 +528,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatted = $formatter->asDate($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
+    }
+
+    /**
+     * Appends HTML to the end of the given tag.
+     *
+     * @param string $tag The HTML tag that `$html` should be appended to
+     * @param string $html The HTML to append to `$tag`.
+     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
+     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     * by `$tag`.
+     * @return string The modified HTML
+     * @since 3.3.0
+     */
+    public static function appendFilter(string $tag, string $html, string $ifExists = null): string
+    {
+        try {
+            return Html::appendToTag($tag, $html, $ifExists);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
     }
 
     /**

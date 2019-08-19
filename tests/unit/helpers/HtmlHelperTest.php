@@ -48,6 +48,65 @@ class HtmlHelperTest extends Unit
     }
 
     /**
+     * @dataProvider parseTagDataProvider
+     *
+     * @param $result
+     * @param $tag
+     */
+    public function testParseTag($result, $tag)
+    {
+        if ($result === false) {
+            $this->expectException(InvalidArgumentException::class);
+            Html::parseTag($tag);
+        } else {
+            $info = Html::parseTag($tag);
+            $this->assertSame($result, [
+                $info['type'],
+                $info['attributes'],
+                isset($info['htmlStart'], $info['htmlEnd'])
+                    ? substr($tag, $info['htmlStart'], $info['htmlEnd'] - $info['htmlStart'])
+                    : null
+            ]);
+        }
+    }
+
+    /**
+     * @dataProvider appendToTagDataProvider
+     *
+     * @param $result
+     * @param $tag
+     * @param $html
+     * @param $ifExists
+     */
+    public function testAppendToTag($result, $tag, $html, $ifExists)
+    {
+        if ($result === false) {
+            $this->expectException(InvalidArgumentException::class);
+            Html::appendToTag($tag, $html, $ifExists);
+        } else {
+            $this->assertSame($result, Html::appendToTag($tag, $html, $ifExists));
+        }
+    }
+
+    /**
+     * @dataProvider prependToTagDataProvider
+     *
+     * @param $result
+     * @param $tag
+     * @param $html
+     * @param $ifExists
+     */
+    public function testPrependToTag($result, $tag, $html, $ifExists)
+    {
+        if ($result === false) {
+            $this->expectException(InvalidArgumentException::class);
+            Html::prependToTag($tag, $html, $ifExists);
+        } else {
+            $this->assertSame($result, Html::prependToTag($tag, $html, $ifExists));
+        }
+    }
+
+    /**
      * @dataProvider parseTagAttributesDataProvider
      *
      * @param $result
@@ -118,6 +177,49 @@ class HtmlHelperTest extends Unit
                 ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
             ],
             ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function parseTagDataProvider(): array
+    {
+        return [
+            [['p', ['class' => ['foo']], 'Hello<br>there'], '<p class="foo">Hello<br>there</p>'],
+            [['div', [], '<div>Nested</div>'], '<div><div>Nested</div></div>'],
+            [['br', [], null], '<br>'],
+            [['br', [], null], '<br />'],
+            [['div', [], null], '<div />'],
+            [false, '<div>'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function appendToTagDataProvider(): array
+    {
+        return [
+            ['<div><p>Foo</p><p>Bar</p></div>', '<div><p>Foo</p></div>', '<p>Bar</p>', null],
+            ['<div><p>Foo</p></div>', '<div><p>Foo</p></div>', '<p>Bar</p>', 'keep'],
+            ['<div><p>Bar</p></div>', '<div><p>Foo</p></div>', '<p>Bar</p>', 'replace'],
+            [false, '<div />', '<p>Bar</p>', null],
+            [false, '<div><p>Foo</p></div>', 'Bar', 'keep'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function prependToTagDataProvider(): array
+    {
+        return [
+            ['<div><p>Foo</p><p>Bar</p></div>', '<div><p>Bar</p></div>', '<p>Foo</p>', null],
+            ['<div><p>Foo</p></div>', '<div><p>Foo</p></div>', '<p>Bar</p>', 'keep'],
+            ['<div><p>Bar</p></div>', '<div><p>Foo</p></div>', '<p>Bar</p>', 'replace'],
+            [false, '<div />', '<p>Bar</p>', null],
+            [false, '<div><p>Foo</p></div>', 'Bar', 'keep'],
         ];
     }
 

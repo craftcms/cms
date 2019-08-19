@@ -8,6 +8,29 @@ Returns an absolute value.
 
 This works identically to Twig’s core [`abs`](https://twig.symfony.com/doc/2.x/filters/abs.html) filter.
 
+## `append`
+
+Appends HTML to the end of another element.
+
+```twig
+{{ '<div><p>Lorem</p></div>'|append('<p>Ipsum</p>') }}
+{# Output: <div><p>Lorem</p><p>Ipsum</p></div> #}
+```
+
+If you only want to append a new element if one of the same type doesn’t already exist, pass `'keep'` as a second argument.
+
+```twig
+{{ '<div><p>Lorem</p></div>'|append('<p>Ipsum</p>', 'keep') }}
+{# Output: <div><p>Lorem</p></div> #}
+```
+
+If you want to replace an existing element of the same type, pass `'replace'` as a second argument.
+
+```twig
+{{ '<div><p>Lorem</p></div>'|append('<p>Ipsum</p>', 'replace') }}
+{# Output: <div><p>Ipsum</p></div> #}
+```
+
 ## `ascii`
 
 Converts a string to ASCII characters.
@@ -555,6 +578,29 @@ Returns a string formatted in “PascalCase” (AKA “UpperCamelCase”).
 ## `percentage`
 
 Formats a percentage according to the user’s preferred language.
+
+## `append`
+
+Prepends HTML to the beginning of another element.
+
+```twig
+{{ '<div><p>Ipsum</p></div>'|prepend('<p>Lorem</p>') }}
+{# Output: <div><p>Lorem</p><p>Ipsum</p></div> #}
+```
+
+If you only want to append a new element if one of the same type doesn’t already exist, pass `'keep'` as a second argument.
+
+```twig
+{{ '<div><p>Ipsum</p></div>'|prepend('<p>Lorem</p>', 'keep') }}
+{# Output: <div><p>Ipsum</p></div> #}
+```
+
+If you want to replace an existing element of the same type, pass `'replace'` as a second argument.
+
+```twig
+{{ '<div><p>Ipsum</p></div>'|prepend('<p>Lorem</p>', 'replace') }}
+{# Output: <div><p>Lorem</p></div> #}
+```
 
 ## `raw`
 
