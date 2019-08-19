@@ -187,8 +187,86 @@ class StringHelperTest extends Unit
             } else {
                 $actual = StringHelper::beforeFirstIgnoreCase($testResult[0], $testResult[2]);
                 $this->assertSame($testResult[1], $actual);
-                $this->assertSame($testResult[1], StringHelper::substringOf($testResult[0], 'b', true, false));
+                $this->assertSame($testResult[1], StringHelper::substringOf($testResult[0], 'b', true));
             }
+        }
+    }
+
+    /**
+     *
+     */
+    public function testBeforeLast()
+    {
+        $testArray = [
+            ['', '', 'b', true],
+            ['<h1>test</h1>', '', 'b', true],
+            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', true],
+            ['<h1></h1> ', '', 'b', true],
+            ['</b></b>', '</b></', 'b', true],
+            ['öäü<strong>lall</strong>', '', 'b', true],
+            [' b<b></b>', ' b<b></', 'b', true],
+            ['<b><b>lall</b>', '<b><b>lall</', 'b', true],
+            ['</b>lall</b>', '</b>lall</', 'b', true],
+            ['[b][/b]', '[b][/', 'b', true],
+            ['[B][/B]', '', 'b', true],
+            ['κόσμbε ¡-öäü', 'κόσμ', 'b', true],
+            ['', '', 'b', false],
+            ['<h1>test</h1>', '', 'b', false],
+            ['foo<h1></h1>Bar', 'foo<h1></h1>', 'b', false],
+            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', false],
+            ['<h1></h1> ', '', 'b', false],
+            ['</b></b>', '</b></', 'b', false],
+            ['öäü<strong>lall</strong>', '', 'b', false],
+            [' b<b></b>', ' b<b></', 'b', false],
+            ['<b><b>lall</b>', '<b><b>lall</', 'b', false],
+            ['</b>lall</b>', '</b>lall</', 'b', false],
+            ['[B][/B]', '[B][/', 'b', false],
+            ['κόσμbε ¡-öäü', 'κόσμ', 'b', false],
+            ['bκόσμbε', 'bκόσμ', 'b', false],
+        ];
+
+        foreach ($testArray as $testResult) {
+            if ($testResult[3]) {
+                $actual = StringHelper::beforeLast($testResult[0], $testResult[2]);
+                $this->assertSame($testResult[1], $actual);
+                $this->assertSame($testResult[1], StringHelper::lastSubstringOf($testResult[0], 'b', true, true));
+            } else {
+                $actual = StringHelper::beforeLastIgnoreCase($testResult[0], $testResult[2]);
+                $this->assertSame($testResult[1], $actual);
+                $this->assertSame($testResult[1], StringHelper::lastSubstringOf($testResult[0], 'b', true));
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    public function testBetween()
+    {
+        $testArray = [
+            ['', 'foo', '{', '}'],
+            ['', '{foo', '{', '}'],
+            ['foo', '{foo}', '{', '}'],
+            ['{foo', '{{foo}', '{', '}'],
+            ['', '{}foo}', '{', '}'],
+            ['foo', '}{foo}', '{', '}'],
+            ['foo', 'A description of {foo} goes here', '{', '}'],
+            ['bar', '{foo} and {bar}', '{', '}', 1],
+            ['', 'fòô', '{', '}', 0],
+            ['', '{fòô', '{', '}', 0],
+            ['fòô', '{fòô}', '{', '}', 0],
+            ['{fòô', '{{fòô}', '{', '}', 0],
+            ['', '{}fòô}', '{', '}', 0],
+            ['fòô', '}{fòô}', '{', '}', 0],
+            ['fòô', 'A description of {fòô} goes here', '{', '}', 0],
+            ['bàř', '{fòô} and {bàř}', '{', '}', 1],
+        ];
+
+        foreach ($testArray as $testResult) {
+            $offset = $testResult[4] ?? null;
+            $result = StringHelper::between($testResult[1], $testResult[2], $testResult[3], $offset);
+
+            $this->assertSame($testResult[0], $result);
         }
     }
 
