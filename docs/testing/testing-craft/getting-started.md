@@ -57,8 +57,7 @@ modules:
     config:
         \craft\test\Craft:
             configFile: 'tests/_craft/config/test.php'
-            entryUrl: 'https://your-site-url.test/'
-            entryScript: 'index.php'
+            entryUrl: 'https://your-site-url.test/index.php'
             projectConfig: {}
             migrations: []
             plugins: []
