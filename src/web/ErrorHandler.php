@@ -128,8 +128,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
-        $user = Craft::$app->getUser();
-        $showErrorDetail = $user->showExceptionDetails();
+        $showExceptionDetails = Craft::$app->getUser()->showExceptionDetails();
 
         // Treat UserExceptions like normal exceptions when Dev Mode is enabled
         if (YII_DEBUG && $exception instanceof UserException) {
@@ -138,7 +137,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         // Show details even if YII_DEBUG is off but only if `showExceptionDetails`is enabled and the response format is HTML.
-        if (!YII_DEBUG && $showErrorDetail && Craft::$app->getResponse()->format === Response::FORMAT_HTML) {
+        if (!YII_DEBUG && $showExceptionDetails && Craft::$app->getResponse()->format === Response::FORMAT_HTML) {
             $this->_sendExceptionResponse($exception);
             return;
         }
