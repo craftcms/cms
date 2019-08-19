@@ -17,6 +17,7 @@ use Twig\Template;
 use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
+use Throwable;
 
 /**
  * Class ErrorHandler
@@ -128,8 +129,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
-        $showExceptionDetails = Craft::$app->getUser()->showExceptionDetails();
-
         // Treat UserExceptions like normal exceptions when Dev Mode is enabled
         if (YII_DEBUG && $exception instanceof UserException) {
             $this->errorAction = null;
@@ -137,7 +136,10 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         // Show details even if YII_DEBUG is off but only if `showExceptionDetails`is enabled and the response format is HTML.
-        if (!YII_DEBUG && $showExceptionDetails && Craft::$app->getResponse()->format === Response::FORMAT_HTML) {
+        if (!YII_DEBUG &&
+            Craft::$app->getUser()->showExceptionDetails() &&
+            Craft::$app->getResponse()->format === Response::FORMAT_HTML
+        ) {
             $this->_sendExceptionResponse($exception);
             return;
         }
@@ -175,9 +177,9 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * Sends a response containing all details of $exception via $this->exceptionView.
      *
-     * @param \Exception $exception
+     * @param Throwable $exception
      */
-    private function _sendExceptionResponse(\Exception $exception)
+    private function _sendExceptionResponse(Throwable $exception)
     {
         $response = Craft::$app->getResponse();
         // reset parameters of response to avoid interference with partially created response data
