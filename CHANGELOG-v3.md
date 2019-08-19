@@ -18,6 +18,7 @@
 ### Fixed
 - Fixed an error that could occur if garbage collection was run while Craft 3.2 migrations were pending. ([#4720](https://github.com/craftcms/cms/issues/4720))
 - Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
+- Fixed a bug where the “Publish live changes for other authors’ entries” permission was being enforced when saving another author’s entry as a new entry. ([#4758](https://github.com/craftcms/cms/issues/4758))
 
 ## 3.2.10 - 2019-08-13
 
