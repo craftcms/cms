@@ -1135,7 +1135,7 @@ class UsersController extends Controller
             $preferences = array_merge($preferences, [
                 'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
-                'showExceptionDetail' => (bool)$request->getBodyParam('showExceptionDetail', $user->getPreference('showExceptionDetail'))
+                'showExceptionDetails' => (bool)$request->getBodyParam('showExceptionDetail', $user->getPreference('showExceptionDetails'))
             ]);
         }
 

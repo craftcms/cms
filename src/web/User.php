@@ -366,7 +366,7 @@ class User extends \yii\web\User
             return false;
         }
 
-        if ($currentUser->getPreference('showErrorDetails')) {
+        if ($currentUser->getPreference('showExceptionDetails')) {
             return true;
         }
 
