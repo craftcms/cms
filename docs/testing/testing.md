@@ -23,8 +23,8 @@ This is where **automated** tests can help.
 
 ::: tip
 Testing is all about strategy and approaches. Manual testing and automated testing work best 
-together. You can use your judgement to detect/prevent that computers cannot see and computers
-can execute many tests very quickly. 
+together. You can use your judgement to detect/prevent issues that computers cannot see whilst computers
+can execute many tests in short time.  
 :::
 ### Unit testing
 Many definitions exist regarding unit testing. Fundamentally a unit test is focused on testing 
@@ -50,8 +50,8 @@ class SalaryChecker {
 If you were to unit test this class you would write something like follows: 
 
 ```php
-use craft\test\TestCase;
-class MyTest extends TestCase {
+use Codeception\Test\Unit;
+class MyTest extends Unit {
     public $salaryChecker;
  
     public function _before()
@@ -64,14 +64,14 @@ class MyTest extends TestCase {
     {
         $this->assertSame(
             4, 
-            $this->salaryChecker(2, 2)
+            $this->salaryChecker->multiply(2, 2)
         );
     }
     public function testAdd()
     {
         $this->assertSame(
             3, 
-            $this->salaryChecker(2, 1)
+            $this->salaryChecker->add(2, 1)
         );
     }
 } 
@@ -84,7 +84,7 @@ The `_before` method is run before _every_ test.
 
 2. A test is executed and a method of the `SalaryChecker` class is called. An **assertion**
 (checking that when passing 2 twice, 4 is returned - because the 2's are multiplied)
-is then made regarding its return result it returns. 
+is then made regarding its return result. 
 
 Fundamentally - that is a unit test. 
 Now imagine a
@@ -118,11 +118,6 @@ quickly catch and fix bugs relating this hereto.
 It is recommended to read the Codeception documentation on 
 [unit tests](https://codeception.com/docs/05-UnitTests)
  as well to see more practical examples of unit tests. 
- 
-::: tip
-TODO: Warning about that the Craft module does a semi-integration style of testing and
-how you can enable complete isolation. Are we providing support for complete isolation? 
-:::
 
 ### Functional & acceptance testing
 Your application isn't just a collection of PHP classes on a server. These

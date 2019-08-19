@@ -23,7 +23,7 @@ The `projectConfig` setting accepts an object with the following parameters:
 located here. 
 
 ::: warning
-If you have enabled `projectConfig`, regular DB based fixtures may cause syncing issues. It is recommended
+If you have enabled `projectConfig`, regular DB based fixtures for Project Config data (i.e sections) may cause syncing issues. It is recommended
  to setup your environment using the `project.yml` file only. 
 :::
 
