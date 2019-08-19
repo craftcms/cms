@@ -52,7 +52,7 @@
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "^3.0",
+    "codeception/codeception": "^3.1",
     "codeception/mockery-module": "^0.3",
     "codeception/phpunit-wrapper": "^7.7",
     "codeception/specify": "^0.4",
