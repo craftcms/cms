@@ -579,7 +579,7 @@ Returns a string formatted in “PascalCase” (AKA “UpperCamelCase”).
 
 Formats a percentage according to the user’s preferred language.
 
-## `append`
+## `prepend`
 
 Prepends HTML to the beginning of another element.
 
