@@ -944,17 +944,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
-     * @param string|null $class Deprecated - use $attributes instead.
-     * @param array|null $attr A list of attributes that should be added to the root `<svg>` element.
+     * @param string|null $class Deprecated - use |attr instead.
      * @param array|null $elements Any elements that should be added under the  root`svg` element
      * @return Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null, array $attr = [], array $elements = [])
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null, array $elements = [])
     {
-        // Deprecate the $class argument. Allow both svg(class='class') and svg('', true, true, 'class')
+        // Deprecate the $class argument.
         if ($class) {
-            $attr['class'] = isset($attr['class']) ? $attr['class'] . ' ' . $class : $class;
-            Craft::$app->getDeprecator()->log("svg(class=$class)", 'Passing a string $class argument is deprecated. Pass an array with a `class` key instead.');
+            Craft::$app->getDeprecator()->log("svg(class=$class)", 'Passing a string $class argument is deprecated. Use the `|attr` filter.');
         }
 
         if ($svg instanceof Asset) {
@@ -1025,16 +1023,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        // Load up the attributes
-        foreach ($attr as $key => $value) {
-            if (is_string($key) && is_string($value)) {
-                $encKey = Html::encode($key);
-                $encVal = Html::encode($value);
-
-                $svg = preg_replace('/(<svg\b[^>]+\b' . $encKey . '=([\'"])[^\'"]+)(\\2)/i', "$1 {$encVal}$3", $svg, 1, $count);
-                if ($count === 0) {
-                    $svg = preg_replace('/<svg\b/i', "$0 {$encKey}=\"{$encVal}\"", $svg, 1);
-                }
+        // Class functionality.
+        if ($class !== null) {
+            $svg = preg_replace('/(<svg\b[^>]+\bclass=([\'"])[^\'"]+)(\\2)/i', "$1 {$class}$3", $svg, 1, $count);
+            if ($count === 0) {
+                $svg = preg_replace('/<svg\b/i', "$0 class=\"{$class}\"", $svg, 1);
             }
         }
 

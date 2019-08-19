@@ -346,11 +346,14 @@ By default, if you pass an asset or raw markup into the function, the SVG will b
 {{ svg(image, sanitize=false, namespace=false) }}
 ```
 
-You can specify custom attributes that should be added the root `<svg>` element using the `$attr` argument. 
-The `$attr` argument accepts an array where the `key` is name of the attribute the `value` is it's value: 
+If you want to specify custom attributes you can use the [|attr](#attr) filter as follows: 
 
 ```twig
-{{ svg('@webroot/icons/lemon.svg', attributes={class: 'lemon-icon', 'aria-labelledby': 'title'}) }}
+{{ svg('@webroot/icons/lemon.svg')|attr({
+    class: 'icon',
+    role: 'img',
+    'aria-labelledby': 'title desc'
+}) }}
 ```
 
 It is also possible to specify custom elements that should be added as children of the root svg element (i.e. a `<title>`). This can be done  via the `$elements` argument. 
