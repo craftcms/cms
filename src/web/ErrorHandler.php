@@ -137,22 +137,44 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $this->errorView = $this->exceptionView;
         }
 
-        // Allow `showExceptionDetail` to run.
-        if (!YII_DEBUG && $showErrorDetail) {
-            // Copied from parent...
-            // if there is an error during error rendering it's useful to
-            // display PHP error in debug mode instead of a blank screen
-            ini_set('display_errors', 1);
-
-            $response = Craft::$app->getResponse();
-            $response->data = $this->renderFile($this->exceptionView, [
-                'exception' => $exception,
-            ]);
-            $response->send();
+        // Show details even if YII_DEBUG is off if `showExceptionDetail` is enabled and we can return HTML.
+        if (!YII_DEBUG && $showErrorDetail && Craft::$app->getResponse()->format === Response::FORMAT_HTML) {
+            $this->_sendExceptionResponse($exception);
         }
 
 
         parent::renderException($exception);
+    }
+
+    /**
+     * Send exception response method copied over from parent.
+     * @param \Exception $exception
+     */
+    public function _sendExceptionResponse(\Exception $exception)
+    {
+        if (Craft::$app->has('response')) {
+            $response = Craft::$app->getResponse();
+            // reset parameters of response to avoid interference with partially created response data
+            // in case the error occurred while sending the response.
+            $response->isSent = false;
+            $response->stream = null;
+            $response->data = null;
+            $response->content = null;
+        } else {
+            $response = new Response();
+        }
+
+        $response->setStatusCodeByException($exception);
+
+        // if there is an error during error rendering it's useful to
+        // display PHP error in debug mode instead of a blank screen
+        ini_set('display_errors', 1);
+
+        $response = Craft::$app->getResponse();
+        $response->data = $this->renderFile($this->exceptionView, [
+            'exception' => $exception,
+        ]);
+        $response->send();
     }
 
     /**
