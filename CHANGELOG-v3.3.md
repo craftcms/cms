@@ -13,7 +13,6 @@
 - Added `craft\helpers\Html::parseTag()`.
 - Added `craft\helpers\Html::parseTagAttributes()`.
 - Added `craft\helpers\Html::prependToTag()`.
-- Added `craft\web\User::showExceptionDetails()`.
 
 ## Changed
 - Global set reference tags can now refer to the global set by its handle. ([#4645](https://github.com/craftcms/cms/issues/4645))
