@@ -140,6 +140,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // Show details even if YII_DEBUG is off if `showExceptionDetail` is enabled and we can return HTML.
         if (!YII_DEBUG && $showErrorDetail && Craft::$app->getResponse()->format === Response::FORMAT_HTML) {
             $this->_sendExceptionResponse($exception);
+            return;
         }
 
 
@@ -148,21 +149,19 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
     /**
      * Send exception response method copied over from parent.
+     *
      * @param \Exception $exception
      */
     public function _sendExceptionResponse(\Exception $exception)
     {
-        if (Craft::$app->has('response')) {
-            $response = Craft::$app->getResponse();
-            // reset parameters of response to avoid interference with partially created response data
-            // in case the error occurred while sending the response.
-            $response->isSent = false;
-            $response->stream = null;
-            $response->data = null;
-            $response->content = null;
-        } else {
-            $response = new Response();
-        }
+        $response = Craft::$app->getResponse();
+        // reset parameters of response to avoid interference with partially created response data
+        // in case the error occurred while sending the response.
+        $response->isSent = false;
+        $response->stream = null;
+        $response->data = null;
+        $response->content = null;
+
 
         $response->setStatusCodeByException($exception);
 
