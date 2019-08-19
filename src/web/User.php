@@ -352,7 +352,8 @@ class User extends \yii\web\User
     /**
      * Whether to show details of an exception based on the current user preference and `devMode`.
      *
-     * Only returns true if `YII_DEBUG`, a user is logged in and they have `showExceptionDetails`on in their preference.
+     * Only returns true if `YII_DEBUG` is true OR a user is logged in and they have `showExceptionDetails`on in their preference.
+     *
      * @return bool
      */
     public function showExceptionDetails() : bool
