@@ -321,6 +321,9 @@ class TestSetup
         Craft::setAlias('@templates', $templatesPath);
         Craft::setAlias('@translations', $translationsPath);
 
+        // Prevent `headers already sent` error when running tests in PhpStorm
+        ob_start ();
+        
         return true;
     }
 
