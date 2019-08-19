@@ -6,8 +6,8 @@
 - Added the `purgeStaleUserSessionDuration` config setting.
 - Control Panel subnav items can now have badge counts. ([#4756](https://github.com/craftcms/cms/issues/4756))
 - Added `craft\helpers\Html::modifyTagAttributes()`.
-- Added `craft\helpers\Html::parseTagAttributes()`.
 - Added `craft\helpers\Html::normalizeTagAttributes()`.
+- Added `craft\helpers\Html::parseTagAttributes()`.
 
 ## Changed
 - Global set reference tags can now refer to the global set by its handle. ([#4645](https://github.com/craftcms/cms/issues/4645))
