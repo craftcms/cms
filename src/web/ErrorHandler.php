@@ -142,38 +142,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $this->_sendExceptionResponse($exception);
             return;
         }
-
-
+        
         parent::renderException($exception);
-    }
-
-    /**
-     * Send exception response method copied over from parent.
-     *
-     * @param \Exception $exception
-     */
-    public function _sendExceptionResponse(\Exception $exception)
-    {
-        $response = Craft::$app->getResponse();
-        // reset parameters of response to avoid interference with partially created response data
-        // in case the error occurred while sending the response.
-        $response->isSent = false;
-        $response->stream = null;
-        $response->data = null;
-        $response->content = null;
-
-
-        $response->setStatusCodeByException($exception);
-
-        // if there is an error during error rendering it's useful to
-        // display PHP error in debug mode instead of a blank screen
-        ini_set('display_errors', 1);
-
-        $response = Craft::$app->getResponse();
-        $response->data = $this->renderFile($this->exceptionView, [
-            'exception' => $exception,
-        ]);
-        $response->send();
     }
 
     /**
@@ -199,4 +169,38 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         return $url;
     }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Sends a details response containing exception details. Used for if `showExceptionDetail` is enabled and we
+     * *have* to send a detailed response.
+     *
+     * @param \Exception $exception
+     */
+    private function _sendExceptionResponse(\Exception $exception)
+    {
+        $response = Craft::$app->getResponse();
+        // reset parameters of response to avoid interference with partially created response data
+        // in case the error occurred while sending the response.
+        $response->isSent = false;
+        $response->stream = null;
+        $response->data = null;
+        $response->content = null;
+
+
+        $response->setStatusCodeByException($exception);
+
+        // if there is an error during error rendering it's useful to
+        // display PHP error in debug mode instead of a blank screen
+        ini_set('display_errors', 1);
+
+        $response = Craft::$app->getResponse();
+        $response->data = $this->renderFile($this->exceptionView, [
+            'exception' => $exception,
+        ]);
+        $response->send();
+    }
+
 }
