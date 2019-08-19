@@ -78,7 +78,8 @@
   },
   "autoload": {
     "psr-4": {
-      "craft\\": "src/"
+      "craft\\": "src/",
+      "crafttests\\fixtures\\": "tests/fixtures/"
     }
   }
 }
