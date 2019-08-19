@@ -6,7 +6,7 @@
 body.ltr .route:hover:after { right: 5px; }
 body.rtl .route:hover:after { left: 5px; }
 
-.route .uri-container, .route .template { padding: 7px 14px; }
+.route .uri-container, .route .template { padding: 7px 14px; line-height: 18px; min-height: 18px; }
 
 .route .uri-container { position: relative; color: #0d78f2; background: #fff; }
 body.ltr .route .uri-container { margin-right: 20px; }

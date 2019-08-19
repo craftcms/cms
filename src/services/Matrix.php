@@ -749,11 +749,19 @@ class Matrix extends Component
             $this->_deleteOtherBlocks($field, $owner, $blockIds);
 
             // Should we duplicate the blocks to other sites?
-            if ($owner->propagateAll && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
+            if (
+                $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL &&
+                ($owner->propagateAll || !empty($owner->newSiteIds))
+            ) {
                 // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
                 $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
                 $fieldSiteIds = $this->getSupportedSiteIdsForField($field, $owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
+
+                // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
+                if (!$owner->propagateAll) {
+                    $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
+                }
 
                 if (!empty($otherSiteIds)) {
                     // Get the original element and duplicated element for each of those sites

@@ -32,6 +32,7 @@
             sourceElementId: {{ sourceElementId ?: 'null' }},
             prevalidate: {{ (prevalidate ?? false) ? 'true' : 'false' }},
             branchLimit: {{ branchLimit ?: 'null' }},
+            showSiteMenu: {{ (showSiteMenu ?? false)|json_encode|raw }},
             modalStorageKey: "{{ storageKey|e('js') }}",
             selectionLabel: "{{ selectionLabel|e('js') }}"
         });

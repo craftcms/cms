@@ -203,8 +203,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $security = Craft::$app->getSecurity();
 
         return [
+            new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
+            new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
             new TwigFilter('currency', [$formatter, 'asCurrency']),
@@ -237,6 +239,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter']),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
+            new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -448,6 +451,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Prepends HTML to the beginning of given tag.
+     *
+     * @param string $tag The HTML tag that `$html` should be prepended to
+     * @param string $html The HTML to prepend to `$tag`.
+     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
+     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     * by `$tag`.
+     * @return string The modified HTML
+     * @since 3.3.0
+     */
+    public static function prependFilter(string $tag, string $html, string $ifExists = null): string
+    {
+        try {
+            return Html::prependToTag($tag, $html, $ifExists);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
+    }
+
+    /**
      * Replaces Twig's |replace filter, adding support for passing in separate
      * search and replace arrays.
      *
@@ -507,6 +531,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Appends HTML to the end of the given tag.
+     *
+     * @param string $tag The HTML tag that `$html` should be appended to
+     * @param string $html The HTML to append to `$tag`.
+     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
+     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     * by `$tag`.
+     * @return string The modified HTML
+     * @since 3.3.0
+     */
+    public static function appendFilter(string $tag, string $html, string $ifExists = null): string
+    {
+        try {
+            return Html::appendToTag($tag, $html, $ifExists);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
+    }
+
+    /**
      * Converts a date to the Atom format.
      *
      * @param TwigEnvironment $env
@@ -517,6 +562,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function atomFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
+    }
+
+    /**
+     * Modifies a HTML tag’s attributes, supporting the same attribute definitions as [[Html::renderTagAttributes()]].
+     *
+     * @param string $tag The HTML tag whose attributes should be modified.
+     * @param array $attributes The attributes to be added to the tag.
+     * @return string The modified HTML tag.
+     * @since 3.3.0
+     */
+    public function attrFilter(string $tag, array $attributes): string
+    {
+        try {
+            return Html::modifyTagAttributes($tag, $attributes);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
     }
 
     /**
@@ -775,6 +838,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('svg', [$this, 'svgFunction']),
+            new TwigFunction('tag', [$this, 'tagFunction'], ['is_safe' => ['html']]),
             new TwigFunction('url', [UrlHelper::class, 'url']),
             // DOM event functions
             new TwigFunction('head', [$this->view, 'head']),
@@ -1025,6 +1089,28 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return TemplateHelper::raw($svg);
+    }
+
+    /**
+     * Generates a complete HTML tag.
+     *
+     * @param string $type the tag type ('p', 'div', etc.)
+     * @param array $attributes the HTML tag attributes in terms of name-value pairs.
+     * If `text` is supplied, the value will be HTML-encoded and included as the contents of the tag.
+     * If 'html' is supplied, the value will be included as the contents of the tag, without getting encoded.
+     * @return string
+     * @since 3.3.0
+     */
+    public function tagFunction(string $type, array $attributes = []): string
+    {
+        $html = ArrayHelper::remove($attributes, 'html', '');
+        $text = ArrayHelper::remove($attributes, 'text');
+
+        if ($text !== null) {
+            $html = Html::encode($text);
+        }
+
+        return Html::tag($type, $html, $attributes);
     }
 
     /**

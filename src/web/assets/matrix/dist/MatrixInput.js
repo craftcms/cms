@@ -671,6 +671,10 @@
                 this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function() {
                     this.$container.remove();
                     this.matrix.updateAddBlockBtn();
+
+                    if (window.draftEditor) {
+                        window.draftEditor.checkForm();
+                    }
                 }, this));
             }
         });

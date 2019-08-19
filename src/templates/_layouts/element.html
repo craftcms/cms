@@ -32,13 +32,7 @@
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
 
-{% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
-{% if element.uri %}
-    {% set previewTargets = [{
-        label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
-        url: element.uri == '__home__' ? '' : element.uri
-    }]|merge(previewTargets) %}
-{% endif %}
+{% set previewTargets = element.getPreviewTargets() %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = isDraft and not isUnsavedDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
@@ -79,41 +73,33 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
-{% set actionButton = block('actionButton')|trim %}
-
 {% block header %}
-    {{ block('pageTitle') }}
-    {{ block('contextMenu') }}
-    <div class="flex-grow"></div>
-
-    {% if previewTargets %}
-        <div class="btngroup">
-            {% if enablePreview %}
-                <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
-            {% endif %}
-            <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
-        </div>
-    {% endif %}
-
-    {% if isCurrent %}
+    <div class="flex flex-nowrap">
+        {{ block('pageTitle') }}
+        {{ block('contextMenu') }}
+    </div>
+    <div class="flex">
         {% if previewTargets %}
-            <div class="spacer"></div>
+            <div class="btngroup">
+                {% if enablePreview %}
+                    <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
+                {% endif %}
+                <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
+            </div>
         {% endif %}
-        <div id="save-draft-btn-container">
-            {% if canUpdateSource and saveSourceAction %}
-                <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
-            {% else %}
-                <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
-            {% endif %}
-        </div>
-    {% endif %}
 
-    {% if actionButton %}
-        {% if previewTargets or isCurrent %}
-            <div class="spacer"></div>
+        {% if isCurrent %}
+            <div id="save-draft-btn-container">
+                {% if canUpdateSource and saveSourceAction %}
+                    <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+                {% else %}
+                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+                {% endif %}
+            </div>
         {% endif %}
-        {{ actionButton|raw }}
-    {% endif %}
+
+        {{ block('actionButton') }}
+    </div>
 {% endblock %}
 
 {% block contextMenu %}
@@ -125,7 +111,7 @@
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
             <div id="save-btn-container" class="btngroup submit">
-                <input type="submit" class="btn submit" value="{{ 'Save {type}'|t('app', { type: element.displayName() }) }}">
+                <input type="submit" class="btn submit" value="{{ 'Save'|t('app', { type: element.displayName() }) }}">
                 <div class="btn submit menubtn"></div>
                 <div class="menu" data-align="right">
                     <ul>
@@ -199,6 +185,11 @@
         {% if craft.app.isMultiSite %}
             <input type="hidden" name="siteId" value="{{ element.siteId }}">
         {% endif %}
+
+        {# propagateAll param #}
+        {% if isUnsavedDraft and craft.app.request.getQueryParam('fresh') %}
+            <input type="hidden" name="propagateAll" value="1">
+        {% endif %}
     {% endif %}
     {{ parent() }}
 {% endblock %}
@@ -256,16 +247,6 @@
     </div>
 {% endblock %}
 
-{% set normalizedPreviewTargets = [] %}
-{% set scheme = craft.app.request.isSecureConnection ? 'https': null %}
-{% for target in previewTargets %}
-    {% set path = target.url ?? view.renderObjectTemplate(target.urlFormat, element) %}
-    {% set normalizedPreviewTargets = normalizedPreviewTargets|merge([{
-        label: target.label|t('site'),
-        url: siteUrl(path, scheme=scheme, siteId=element.siteId)
-    }]) %}
-{% endfor %}
-
 {% set settings = {
     elementType: className(element),
     elementTypeDisplayName: element.displayName(),
@@ -279,14 +260,13 @@
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,
     draftNotes: isDraft ? element.draftNotes : null,
-    propagateAll: isUnsavedDraft and craft.app.request.getQueryParam('fresh'),
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,
     deleteDraftAction: deleteDraftAction,
     applyDraftAction: applyDraftAction,
     enablePreview: enablePreview,
-    previewTargets: normalizedPreviewTargets,
+    previewTargets: previewTargets,
 } %}
 {% js %}
     window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});

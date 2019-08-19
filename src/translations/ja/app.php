@@ -1465,5 +1465,5 @@ return [
     'Choose a site' => 'サイトを選択',
     'Address Line 2' => '住所2',
     'Are you sure you want to delete this {type}?' => 'この{type}を削除してもよろしいですか？',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '現在インストールされている<strong>{cause}</strong>のスキーマバージョンは {existing} です（必要バージョン：{incoming}）'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '現在インストールされている<strong>{cause}</strong>のスキーマバージョンは {existing} です（予想：{incoming}）'
 ];

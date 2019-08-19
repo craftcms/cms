@@ -255,6 +255,7 @@ JS;
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
+            'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
