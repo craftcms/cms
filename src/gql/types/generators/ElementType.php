@@ -20,7 +20,7 @@ class ElementType implements GeneratorInterface
         $gqlTypes = [];
         $typeName = BaseElement::getGqlTypeNameByContext(null);
 
-        $elementFields = ElementInterface::getFields();
+        $elementFields = ElementInterface::getFieldDefinitions();
 
         // Generate a type for each entry type
         $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Element([

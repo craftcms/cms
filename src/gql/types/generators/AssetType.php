@@ -41,7 +41,7 @@ class AssetType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $assetFields = array_merge(AssetInterface::getFields(), $contentFieldGqlTypes);
+            $assetFields = array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Asset([

@@ -19,7 +19,7 @@ class Query
      * @inheritdoc
      * @throws GqlException if class called incorrectly.
      */
-    public static function getFields(): array
+    public static function getFieldDefinitions(): array
     {
         throw new GqlException('Query type should not have any fields listed statically. Fields must be set at type register time.');
     }

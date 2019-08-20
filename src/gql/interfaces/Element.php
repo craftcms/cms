@@ -34,7 +34,7 @@ class Element extends InterfaceType
 
         $type = GqlEntityRegistry::createEntity(self::class, new GqlInterfaceType([
             'name' => static::getName(),
-            'fields' => self::class . '::getFields',
+            'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all elements.',
             'resolveType' => function (ElementInterface $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
@@ -51,9 +51,9 @@ class Element extends InterfaceType
     /**
      * @inheritdoc
      */
-    public static function getFields(): array
+    public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFields(), [
+        return array_merge(parent::getCommonFieldDefinitions(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),

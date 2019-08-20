@@ -40,7 +40,7 @@ class GlobalSetType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $globalSetFields = array_merge(GlobalSetInterface::getFields(), $contentFieldGqlTypes);
+            $globalSetFields = array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new GlobalSet([

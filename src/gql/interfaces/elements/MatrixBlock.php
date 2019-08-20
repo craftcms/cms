@@ -33,7 +33,7 @@ class MatrixBlock extends Element
 
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
-            'fields' => self::class . '::getFields',
+            'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all matrix blocks.',
             'resolveType' => function (MatrixBlockElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
@@ -58,9 +58,9 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getFields(): array {
+    public static function getFieldDefinitions(): array {
         // Todo nest nestable things. Such as field data under field subtype.
-        return array_merge(parent::getFields(), [
+        return array_merge(parent::getFieldDefinitions(), [
             'fieldUid' => [
                 'name' => 'fieldUid',
                 'type' => Type::string(),

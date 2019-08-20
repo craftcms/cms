@@ -7,7 +7,7 @@ use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class BaseType
+ * Class ObjectType
  */
 abstract class ObjectType extends GqlObjectType
 {

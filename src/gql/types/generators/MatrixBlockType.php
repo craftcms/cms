@@ -44,7 +44,7 @@ class MatrixBlockType implements GeneratorInterface
                     $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
                 }
 
-                $blockTypeFields = array_merge(MatrixBlockInterface::getFields(), $contentFieldGqlTypes);
+                $blockTypeFields = array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
                 // Generate a type for each entry type
                 $entity = GqlEntityRegistry::createEntity($typeName, new MatrixBlock([

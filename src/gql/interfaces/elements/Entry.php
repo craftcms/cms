@@ -34,7 +34,7 @@ class Entry extends Element
 
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
-            'fields' => self::class . '::getFields',
+            'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
             'resolveType' => function (EntryElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
@@ -59,9 +59,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getFields(): array {
+    public static function getFieldDefinitions(): array {
         // Todo section data under section type, same with type, author
-        return array_merge(parent::getFields(), [
+        return array_merge(parent::getFieldDefinitions(), [
             'sectionUid' => [
                 'name' => 'sectionUid',
                 'type' => Type::string(),

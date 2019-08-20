@@ -30,7 +30,7 @@ class UserType implements GeneratorInterface
             $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
         }
 
-        $userFields = array_merge(UserInterface::getFields(), $contentFieldGqlTypes);
+        $userFields = array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
         // Generate a type for each entry type
         $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([

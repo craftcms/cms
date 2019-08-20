@@ -33,7 +33,7 @@ class GlobalSet extends Element
 
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
-            'fields' => self::class . '::getFields',
+            'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all global sets.',
             'resolveType' => function (GlobalSetElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
@@ -58,8 +58,8 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function getFields(): array {
-        return array_merge(parent::getFields(), [
+    public static function getFieldDefinitions(): array {
+        return array_merge(parent::getFieldDefinitions(), [
             'name' => [
                 'name' => 'name',
                 'type' => Type::string(),

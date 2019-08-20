@@ -41,7 +41,7 @@ class EntryType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $entryTypeFields = array_merge(EntryInterface::getFields(), $contentFieldGqlTypes);
+            $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Entry([

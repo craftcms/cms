@@ -35,7 +35,7 @@ class Asset extends Element
 
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
-            'fields' => self::class . '::getFields',
+            'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all assets.',
             'resolveType' => function (AssetElement $value) {
                 return GqlEntityRegistry::getEntity($value->getGqlTypeName());
@@ -60,10 +60,10 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getFields(): array
+    public static function getFieldDefinitions(): array
     {
         // Todo nest nestable things. Such as volume data under volume subtype.
-        return array_merge(parent::getFields(), [
+        return array_merge(parent::getFieldDefinitions(), [
             'volumeUid' => [
                 'name' => 'volumeUid',
                 'type' => Type::string(),
