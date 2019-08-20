@@ -51,9 +51,9 @@ class Element extends BaseInterface
     /**
      * @inheritdoc
      */
-    public static function getCommonFields(): array
+    public static function getFields(): array
     {
-        return array_merge(parent::getCommonFields(), [
+        return array_merge(parent::getFields(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
@@ -100,14 +100,6 @@ class Element extends BaseInterface
                 'description' => 'The element\'s status.'
             ]
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getFields(): array
-    {
-        return static::getCommonFields();
     }
 
     /**

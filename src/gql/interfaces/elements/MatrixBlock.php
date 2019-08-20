@@ -60,7 +60,7 @@ class MatrixBlock extends Element
      */
     public static function getFields(): array {
         // Todo nest nestable things. Such as field data under field subtype.
-        return array_merge(parent::getCommonFields(), [
+        return array_merge(parent::getFields(), [
             'fieldUid' => [
                 'name' => 'fieldUid',
                 'type' => Type::string(),

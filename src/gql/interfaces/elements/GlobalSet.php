@@ -58,7 +58,7 @@ class GlobalSet extends Element
      * @inheritdoc
      */
     public static function getFields(): array {
-        return array_merge(parent::getCommonFields(), [
+        return array_merge(parent::getFields(), [
             'name' => [
                 'name' => 'name',
                 'type' => Type::string(),

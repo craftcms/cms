@@ -59,7 +59,7 @@ class User extends Element
      * @inheritdoc
      */
     public static function getFields(): array {
-        return array_merge(parent::getCommonFields(), [
+        return array_merge(parent::getFields(), [
             'cooldownEndTime' => [
                 'name' => 'cooldownEndTime',
                 'type' => DateTime::getType(),

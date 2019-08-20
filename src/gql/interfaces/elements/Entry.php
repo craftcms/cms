@@ -60,7 +60,7 @@ class Entry extends Element
      */
     public static function getFields(): array {
         // Todo section data under section type, same with type, author
-        return array_merge(parent::getCommonFields(), [
+        return array_merge(parent::getFields(), [
             'sectionUid' => [
                 'name' => 'sectionUid',
                 'type' => Type::string(),

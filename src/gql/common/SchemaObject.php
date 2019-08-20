@@ -12,11 +12,11 @@ use GraphQL\Type\Definition\Type;
 abstract class SchemaObject
 {
     /**
-     * A list of common fields.
+     * List of fields for this type.
      *
      * @return array
      */
-    public static function getCommonFields(): array
+    public static function getFields(): array
     {
         return [
             'id' => [
@@ -55,13 +55,6 @@ abstract class SchemaObject
             'fields' => $fields ?: (static::class . '::getFields'),
         ]));
     }
-
-    /**
-     * Returns the fields configured for this type.
-     *
-     * @return array
-     */
-    abstract public static function getFields(): array;
 
     /**
      * Returns the schema object name
