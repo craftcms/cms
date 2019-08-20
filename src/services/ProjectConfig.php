@@ -878,7 +878,10 @@ class ProjectConfig extends Component
             'config' => $configData,
         ]);
         $this->trigger(self::EVENT_REBUILD, $event);
-
+        
+        // Remove any existing user groups and fieldlayouts from $currentConfig
+        unset($currentConfig['users']['groups'], $currentConfig['users']['fieldLayouts']);
+        
         // Merge the new data over the existing one.
         $configData = array_replace_recursive([
             'system' => $currentConfig['system'],
