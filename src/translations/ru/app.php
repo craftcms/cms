@@ -559,7 +559,6 @@ return [
     'Link' => 'Ссылка',
     'List' => 'Список',
     'Live' => 'В реальном времени',
-    'Live Preview' => 'Динамический просмотр',
     'Load this template' => 'Загрузить этот шаблон',
     'Loading Plugin Store…' => 'Загрузка Plugin Store…',
     'Local Folder' => 'Локальная папка',
@@ -1385,7 +1384,6 @@ return [
     'Price includes 1 year of updates.' => 'В стоимость входит 1 год обновлений.',
     '{name} should be at least {value}.' => '{name} должно быть не менее {value}.',
     'Business Tax ID' => 'Налоговый идентификатор',
-    'Save {type}' => 'Сохранить {type}',
     'Save entries to other sites in the same site group' => 'Сохраняйте записи, указывающие на другие сайты, в одной и той же группе сайтов',
     'Showing results for “{searchQuery}”' => 'Отобразить результаты для “{searchQuery}”',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/в год за последующие обновления.',
@@ -1465,5 +1463,11 @@ return [
     'Choose a site' => 'Выбрать сайт',
     'Address Line 2' => 'Адресная строка 2',
     'Are you sure you want to delete this {type}?' => 'Вы уверены, что хотите удалить этот {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>, установленная в настоящий момент, имеет версию схемы h {existing} (expected {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>, установленная в настоящий момент, имеет версию схемы h {existing} (expected {incoming})',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
+    'Exception Views' => 'Exception Views',
+    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Debug Toolbar' => 'Debug Toolbar'
 ];
