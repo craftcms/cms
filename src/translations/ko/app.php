@@ -559,7 +559,6 @@ return [
     'Link' => '링크',
     'List' => '목록',
     'Live' => '실시간',
-    'Live Preview' => '실시간 프리뷰',
     'Load this template' => '이 템플릿을 로드',
     'Loading Plugin Store…' => 'Plugin Store 로드 중…',
     'Local Folder' => '로컬 폴더',
@@ -1385,7 +1384,6 @@ return [
     'Price includes 1 year of updates.' => '가격에는 1년간 업데이트가 포함됩니다.',
     '{name} should be at least {value}.' => '{name}은(는) 최소 {value} 이상이어야 합니다.',
     'Business Tax ID' => '회사 법인 번호',
-    'Save {type}' => '{type} 저장',
     'Save entries to other sites in the same site group' => '동일한 사이트 그룹에서 다른 사이트에 항목 저장 ',
     'Showing results for “{searchQuery}”' => '“{searchQuery}”의 결과 표시',
     '{renewalPrice}/year per site for updates after that.' => '이후 업데이트는 사이트당 {renewalPrice}/년',
@@ -1465,5 +1463,11 @@ return [
     'Choose a site' => '사이트 선택',
     'Address Line 2' => '주소 입력 2',
     'Are you sure you want to delete this {type}?' => '이 {type}을(를) 삭제하시겠습니까?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '현재 설치되어 있는 <strong>{cause}</strong>의 스키마 버전은 {existing}입니다(필요한 버전 {incoming}).'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '현재 설치되어 있는 <strong>{cause}</strong>의 스키마 버전은 {existing}입니다(필요한 버전 {incoming}).',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
+    'Exception Views' => 'Exception Views',
+    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Debug Toolbar' => 'Debug Toolbar'
 ];
