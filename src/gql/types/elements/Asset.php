@@ -3,7 +3,7 @@ namespace craft\gql\types\elements;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\types\BaseType;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;

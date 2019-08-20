@@ -2,7 +2,7 @@
 namespace craft\gql\types\elements;
 
 use craft\elements\User as UserElement;
-use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\types\BaseType;
 use craft\helpers\Gql as GqlHelper;

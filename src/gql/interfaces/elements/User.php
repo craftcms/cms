@@ -2,6 +2,7 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\User as UserElement;
+use craft\gql\interfaces\Element;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;

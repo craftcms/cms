@@ -15,13 +15,13 @@ use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\common\SchemaObject;
-use craft\gql\directives\BaseDirective;
+use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\BaseInterface;
+use craft\gql\base\InterfaceType;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
@@ -188,7 +188,7 @@ class Gql extends Component
                 ];
 
                 foreach ($interfaces as $interfaceClass) {
-                    if (!is_subclass_of($interfaceClass, BaseInterface::class)) {
+                    if (!is_subclass_of($interfaceClass, InterfaceType::class)) {
                         throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
                     }
 
@@ -433,7 +433,7 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
-     * @return BaseDirective[]
+     * @return Directive[]
      */
     private function _loadGqlDirectives(): array
     {
@@ -452,7 +452,7 @@ class Gql extends Component
         $directives = GraphQL::getStandardDirectives();
 
         foreach ($event->directives as $directive) {
-            /** @var BaseDirective $directive */
+            /** @var Directive $directive */
             $directives[] = $directive::getDirective();
         }
 

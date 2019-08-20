@@ -3,6 +3,7 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\Asset as AssetElement;
+use craft\gql\interfaces\Element;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;

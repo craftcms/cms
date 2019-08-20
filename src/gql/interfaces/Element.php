@@ -1,19 +1,18 @@
 <?php
-namespace craft\gql\interfaces\elements;
+namespace craft\gql\interfaces;
 
 use craft\base\ElementInterface;
-use craft\gql\common\SchemaObject;
+use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\BaseInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\ElementType;
-use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 
 /**
  * Class Element
  */
-class Element extends BaseInterface
+class Element extends InterfaceType
 {
     /**
      * @inheritdoc
@@ -32,7 +31,7 @@ class Element extends BaseInterface
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
+        $type = GqlEntityRegistry::createEntity(self::class, new GqlInterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'description' => 'This is the interface implemented by all elements.',

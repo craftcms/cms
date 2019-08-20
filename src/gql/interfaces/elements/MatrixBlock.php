@@ -2,9 +2,9 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
+use craft\gql\interfaces\Element;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\types\generators\MatrixBlockType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;

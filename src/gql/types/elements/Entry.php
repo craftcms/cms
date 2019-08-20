@@ -2,7 +2,7 @@
 namespace craft\gql\types\elements;
 
 use craft\elements\Entry as EntryElement;
-use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\types\BaseType;
 use craft\helpers\StringHelper;
