@@ -85,6 +85,31 @@ abstract class BaseElement extends BaseArguments
                 'type' => Type::boolean(),
                 'description' => 'Causes the query results to be returned in reverse order.'
             ],
+            'dateCreated' => [
+                'name' => 'dateCreated',
+                'type' => Type::string(),
+                'description' => 'Narrows the query results based on the {elements}’ creation dates.'
+            ],
+            'dateUpdated' => [
+                'name' => 'dateUpdated',
+                'type' => Type::string(),
+                'description' => 'Narrows the query results based on the {elements}’ last-updated dates.'
+            ],
+            'offset' => [
+                'name' => 'offset',
+                'type' => Type::int(),
+                'description' => 'Sets the offset for paginated results.'
+            ],
+            'limit' => [
+                'name' => 'limit',
+                'type' => Type::int(),
+                'description' => 'Sets the limit for paginated results.'
+            ],
+            'orderBy' => [
+                'name' => 'orderBy',
+                'type' => Type::string(),
+                'description' => 'Sets the field the returned elements should be ordered by'
+            ],
         ]);
     }
 }
