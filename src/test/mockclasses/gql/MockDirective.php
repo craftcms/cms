@@ -2,20 +2,20 @@
 namespace craft\test\mockclasses\gql;
 
 use Craft;
-use craft\gql\directives\BaseDirective;
+use craft\gql\base\Directive;
 use GraphQL\Language\DirectiveLocation;
-use GraphQL\Type\Definition\Directive;
+use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class MockDirective
  */
-class MockDirective extends BaseDirective
+class MockDirective extends Directive
 {
     /**
      * @inheritdoc
      */
-    public static function getDirective(): Directive
+    public static function getDirective(): GqlDirective
     {
         return new self([
             'name' => static::getName(),

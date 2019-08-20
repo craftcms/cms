@@ -1,13 +1,13 @@
 <?php
 namespace craft\gql\types;
 
-use GraphQL\Type\Definition\ObjectType;
+use craft\gql\base\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class TableRow
  */
-class TableRow extends Type
+class TableRow extends ObjectType
 {
     /**
      * @inheritdoc

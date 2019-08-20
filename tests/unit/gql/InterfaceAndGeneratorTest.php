@@ -19,7 +19,7 @@ use craft\fields\PlainText;
 use craft\fields\Table;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Element as ElementInterface;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
