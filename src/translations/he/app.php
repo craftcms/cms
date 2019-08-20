@@ -559,7 +559,6 @@ return [
     'Link' => 'לינק',
     'List' => 'רשימה',
     'Live' => 'חי',
-    'Live Preview' => 'תצוגה מקדימה',
     'Load this template' => 'טען את התבנית הזאת',
     'Loading Plugin Store…' => 'טוען חנות תוסף...',
     'Local Folder' => 'תיקייה מקומית',
@@ -1385,7 +1384,6 @@ return [
     'Price includes 1 year of updates.' => 'המחיר כולל עדכונים לשנה אחת.',
     '{name} should be at least {value}.' => '{name} צריך להיות לפחות {value}.',
     'Business Tax ID' => 'מזהה מס עסקי',
-    'Save {type}' => 'שמור {type}',
     'Save entries to other sites in the same site group' => 'שמור טיוטות באתרים אחרים באותה קבוצת אתרים',
     'Showing results for “{searchQuery}”' => 'מראה תוצאות עבור "{searchQuery}"',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/לשנה בכל אתר עבור עדכונים לאחר מכן.',
@@ -1465,5 +1463,11 @@ return [
     'Choose a site' => 'בחר אתר',
     'Address Line 2' => 'שורת כתובת 2',
     'Are you sure you want to delete this {type}?' => 'האם אתה בטוח שברצונך למחוק את ה{type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'ל<strong>{cause}</strong> המותקן כרגע יש גרסת סכימה של {existing}(צפוי{incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'ל<strong>{cause}</strong> המותקן כרגע יש גרסת סכימה של {existing}(צפוי{incoming})',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
+    'Exception Views' => 'Exception Views',
+    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Debug Toolbar' => 'Debug Toolbar'
 ];
