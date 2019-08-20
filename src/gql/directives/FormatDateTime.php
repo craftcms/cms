@@ -1,9 +1,10 @@
 <?php
 namespace craft\gql\directives;
 
+use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\DirectiveLocation;
-use GraphQL\Type\Definition\Directive;
+use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -11,7 +12,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class FormatDate
  */
-class FormatDateTime extends BaseDirective
+class FormatDateTime extends Directive
 {
     const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
     const DEFAULT_TIMEZONE = 'UTC';
@@ -19,7 +20,7 @@ class FormatDateTime extends BaseDirective
     /**
      * @inheritdoc
      */
-    public static function getDirective(): Directive
+    public static function getDirective(): GqlDirective
     {
         if ($type = GqlEntityRegistry::getEntity(self::class)) {
             return $type;
