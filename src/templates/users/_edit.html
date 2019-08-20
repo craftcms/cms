@@ -259,6 +259,12 @@
                                 id: 'enableDebugToolbarForCp',
                                 checked: user.getPreference('enableDebugToolbarForCp')
                             }) }}
+                            {{ forms.checkboxField({
+                                label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+                                name: 'profileTemplates',
+                                id: 'profileTemplates',
+                                checked: user.getPreference('profileTemplates')
+                            }) }}
                         {% endblock %}
                     {% endembed %}
 

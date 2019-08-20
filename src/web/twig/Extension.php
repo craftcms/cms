@@ -26,6 +26,7 @@ use craft\i18n\Locale;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
+use craft\web\twig\nodevisitors\Profiler;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
@@ -103,6 +104,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getNodeVisitors()
     {
         return [
+            new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
             new EventTagAdder(),

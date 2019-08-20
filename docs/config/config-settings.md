@@ -2241,28 +2241,6 @@ Whether user IP addresses should be stored/logged by the system.
 
 
 
-### `suppressTemplateErrors`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Default value
-
-:   `false`
-
-Defined by
-
-:   [GeneralConfig::$suppressTemplateErrors](api:craft\config\GeneralConfig::$suppressTemplateErrors)
-
-
-
-Whether Twig runtime errors should be suppressed.
-
-If it is set to `true`, the errors will still be logged to Craft’s log files.
-
-
-
 ### `testToEmailAddress`
 
 Allowed types
