@@ -2,6 +2,7 @@
 namespace craft\gql\queries;
 
 use craft\gql\arguments\elements\User as UserArguments;
+use craft\gql\base\Query;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\Gql as GqlHelper;
@@ -10,7 +11,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class User
  */
-class User extends BaseQuery
+class User extends Query
 {
     /**
      * @inheritdoc

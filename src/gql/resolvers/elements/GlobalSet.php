@@ -2,13 +2,13 @@
 namespace craft\gql\resolvers\elements;
 
 use craft\elements\GlobalSet as GlobalSetElement;
+use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class GlobalSet
  */
-class GlobalSet extends BaseElement
+class GlobalSet extends ElementResolver
 {
     /**
      * @inheritdoc

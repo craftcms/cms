@@ -1,10 +1,10 @@
 <?php
-namespace craft\gql\queries;
+namespace craft\gql\base;
 
 /**
  * Class BaseQuery
  */
-abstract class BaseQuery
+abstract class Query
 {
     /**
      * Return the queries defined by the class as an array

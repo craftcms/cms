@@ -1,5 +1,5 @@
 <?php
-namespace craft\gql\resolvers;
+namespace craft\gql\base;
 
 use Craft;
 use craft\base\Field;
@@ -15,7 +15,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class BaseResolver
  */
-abstract class BaseResolver
+abstract class Resolver
 {
     /**
      * Cache fields by context.

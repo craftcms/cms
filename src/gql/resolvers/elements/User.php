@@ -3,15 +3,15 @@ namespace craft\gql\resolvers\elements;
 
 use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\gql\base\ElementResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlToken;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class User
  */
-class User extends BaseElement
+class User extends ElementResolver
 {
     /**
      * @inheritdoc

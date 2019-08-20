@@ -2,6 +2,7 @@
 namespace craft\gql\queries;
 
 use craft\gql\arguments\elements\GlobalSet as GlobalSetArguments;
+use craft\gql\base\Query;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\helpers\Gql as GqlHelper;
@@ -10,7 +11,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class GlobalSet
  */
-class GlobalSet extends BaseQuery
+class GlobalSet extends Query
 {
     /**
      * @inheritdoc

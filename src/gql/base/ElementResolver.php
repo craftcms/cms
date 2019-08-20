@@ -1,15 +1,13 @@
 <?php
-namespace craft\gql\resolvers\elements;
+namespace craft\gql\base;
 
-use craft\db\Query;
 use craft\elements\db\ElementQuery;
-use craft\gql\resolvers\BaseResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class BaseElement
  */
-abstract class BaseElement extends BaseResolver
+abstract class ElementResolver extends Resolver
 {
     /**
      * @inheritdoc

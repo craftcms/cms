@@ -2,6 +2,7 @@
 namespace craft\gql\queries;
 
 use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\base\Query;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql as GqlHelper;
@@ -10,7 +11,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Asset
  */
-class Asset extends BaseQuery
+class Asset extends Query
 {
     /**
      * @inheritdoc

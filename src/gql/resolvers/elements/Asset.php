@@ -3,14 +3,14 @@ namespace craft\gql\resolvers\elements;
 
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
+use craft\gql\base\ElementResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class Asset
  */
-class Asset extends BaseElement
+class Asset extends ElementResolver
 {
     /**
      * @inheritdoc

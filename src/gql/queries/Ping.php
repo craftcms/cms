@@ -1,12 +1,13 @@
 <?php
 namespace craft\gql\queries;
 
+use craft\gql\base\Query;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class Ping
  */
-class Ping extends BaseQuery
+class Ping extends Query
 {
     /**
      * @inheritdoc

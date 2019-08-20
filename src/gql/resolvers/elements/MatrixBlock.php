@@ -2,12 +2,12 @@
 namespace craft\gql\resolvers\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
-use GraphQL\Type\Definition\ResolveInfo;
+use craft\gql\base\ElementResolver;
 
 /**
  * Class MatrixBlock
  */
-class MatrixBlock extends BaseElement
+class MatrixBlock extends ElementResolver
 {
     /**
      * @inheritdoc

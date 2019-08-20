@@ -3,14 +3,14 @@ namespace craft\gql\resolvers\elements;
 
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
+use craft\gql\base\ElementResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class Entry
  */
-class Entry extends BaseElement
+class Entry extends ElementResolver
 {
     /**
      * @inheritdoc
