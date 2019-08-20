@@ -5,6 +5,7 @@ use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
+use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
@@ -97,7 +98,17 @@ class Element extends InterfaceType
                 'name' => 'status',
                 'type' => Type::string(),
                 'description' => 'The element\'s status.'
-            ]
+            ],
+            'dateCreated' => [
+                'name' => 'dateCreated',
+                'type' => DateTime::getType(),
+                'description' => 'The date the entity was created'
+            ],
+            'dateUpdated' => [
+                'name' => 'dateUpdated',
+                'type' => DateTime::getType(),
+                'description' => 'The date the entity was last updated'
+            ],
         ]);
     }
 
