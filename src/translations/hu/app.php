@@ -361,7 +361,7 @@ return [
     'Drafts' => 'Vázlatok',
     'Driver' => 'Illesztőprogram',
     'Dropdown' => 'Legördülő',
-    'Dropdown Options' => 'Legördülö opciók',
+    'Dropdown Options' => 'Legördülő opciók',
     'Edit' => 'Szerkeszt',
     'Edit Image' => 'Kép szerkesztése',
     'Edit Message' => 'Üzenet szerkesztése',
@@ -559,7 +559,6 @@ return [
     'Link' => 'Hivatkozás',
     'List' => 'Lista',
     'Live' => 'Éles',
-    'Live Preview' => 'Élő előnézet',
     'Load this template' => 'Töltse be ezt a sablont',
     'Loading Plugin Store…' => 'A Beépülőmodul-áruház betöltése…',
     'Local Folder' => 'Helyi Mappa',
@@ -1383,7 +1382,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Price includes 1 year of updates.' => 'Az ár 1 év frissítést tartalmaz.',
     '{name} should be at least {value}.' => '{name} legalább {value} legyen.',
     'Business Tax ID' => 'Vállalkozás adóazonosítója',
-    'Save {type}' => '{type} mentése',
     'Save entries to other sites in the same site group' => 'Mentse a bejegyzéseket az azonos webhelycsoportban lévő más webhelyekre',
     'Showing results for “{searchQuery}”' => 'Találatok megjelenítése: „{searchQuery}”',
     '{renewalPrice}/year per site for updates after that.' => 'Ezután webhelyenként {renewalPrice}/év a frissítésekért.',
@@ -1463,5 +1461,11 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Choose a site' => 'Válasszon webhelyet',
     'Address Line 2' => 'Címsor 2',
     'Are you sure you want to delete this {type}?' => 'Biztosan törölni szeretné: {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'A jelenleg telepített <strong>{cause}</strong> azonos sémát használ, mint a {existing} (elvárt: {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'A jelenleg telepített <strong>{cause}</strong> azonos sémát használ, mint a {existing} (elvárt: {incoming})',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
+    'Exception Views' => 'Exception Views',
+    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Debug Toolbar' => 'Debug Toolbar'
 ];
