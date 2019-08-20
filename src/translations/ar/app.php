@@ -559,7 +559,6 @@ return [
     'Link' => 'رابط',
     'List' => 'القائمة',
     'Live' => 'مباشر',
-    'Live Preview' => 'معاينة مباشرة',
     'Load this template' => 'تحميل هذا القالب',
     'Loading Plugin Store…' => 'جاري تحميل متجر الملحقات...',
     'Local Folder' => 'المجلد المحلي',
@@ -1385,7 +1384,6 @@ return [
     'Price includes 1 year of updates.' => 'السعر يشمل سنة واحدة من التحديثات.',
     '{name} should be at least {value}.' => '{name} يجب أن يكون {value} على الأقل.',
     'Business Tax ID' => 'مُعرف ضرائب العمل التجاري',
-    'Save {type}' => 'حفظ {type}',
     'Save entries to other sites in the same site group' => 'حفظ الإدخالات على مواقع أخرى في نفس مجموعة المواقع',
     'Showing results for “{searchQuery}”' => 'إظهار نتائج "{searchQuery}"',
     '{renewalPrice}/year per site for updates after that.' => '{تجديد السعر}/سنة لكل موقع للحصول على التحديثات بعد ذلك.',
@@ -1465,5 +1463,11 @@ return [
     'Choose a site' => 'اختر موقع',
     'Address Line 2' => 'العنوان 2',
     'Are you sure you want to delete this {type}?' => 'هل أنت متأكد أنك تريد حذف هذا {type}؟',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> المثبت حاليًا به إصدار المخطط من {existing} (متوقع {incoming})'
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> المثبت حاليًا به إصدار المخطط من {existing} (متوقع {incoming})',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
+    'Exception Views' => 'Exception Views',
+    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Debug Toolbar' => 'Debug Toolbar'
 ];
