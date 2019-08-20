@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\helpers\ElementHelper::sourceElement()`.
+- Added `craft\helpers\ArrayHelper::whereMultiple()`
 
 ### Changed
 - Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
