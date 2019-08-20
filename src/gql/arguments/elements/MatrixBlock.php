@@ -1,12 +1,13 @@
 <?php
 namespace craft\gql\arguments\elements;
 
+use craft\gql\base\ElementArguments;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class MatrixBlock
  */
-class MatrixBlock extends BaseElement
+class MatrixBlock extends ElementArguments
 {
     /**
      * @inheritdoc

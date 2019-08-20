@@ -1,12 +1,12 @@
 <?php
-namespace craft\gql\arguments\elements;
+namespace craft\gql\base;
 
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class StructureElement
  */
-abstract class StructureElement extends BaseElement
+abstract class StructureElementArguments extends ElementArguments
 {
     /**
      * @inheritdoc

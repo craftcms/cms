@@ -1,12 +1,12 @@
 <?php
-namespace craft\gql\arguments;
+namespace craft\gql\base;
 
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class BaseArguments
+ * Class Arguments
  */
-abstract class BaseArguments
+abstract class Arguments
 {
     /**
      * Returns the argument fields to use in GQL type definitions.

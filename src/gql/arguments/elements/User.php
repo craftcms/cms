@@ -2,12 +2,13 @@
 
 namespace craft\gql\arguments\elements;
 
+use craft\gql\base\ElementArguments;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class User
  */
-class User extends BaseElement
+class User extends ElementArguments
 {
     /**
      * @inheritdoc

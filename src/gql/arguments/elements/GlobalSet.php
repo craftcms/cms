@@ -2,12 +2,13 @@
 
 namespace craft\gql\arguments\elements;
 
+use craft\gql\base\ElementArguments;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class GlobalSet
  */
-class GlobalSet extends BaseElement
+class GlobalSet extends ElementArguments
 {
     /**
      * @inheritdoc
