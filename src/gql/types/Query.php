@@ -2,7 +2,7 @@
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
-use craft\gql\base\RegistrableEntityTrait;
+use craft\gql\base\GqlTypeTrait;
 
 /**
  * Class Query
@@ -11,7 +11,7 @@ class Query
 {
     // Traits
     // =========================================================================
-    use RegistrableEntityTrait;
+    use GqlTypeTrait;
 
     // Methods
     // =========================================================================
