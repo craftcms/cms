@@ -2,13 +2,13 @@
 namespace craft\gql\types\elements;
 
 use craft\gql\interfaces\Element as ElementInterface;
-use craft\gql\types\BaseType;
+use craft\gql\base\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class Element
  */
-class Element extends BaseType
+class Element extends ObjectType
 {
     /**
      * @inheritdoc

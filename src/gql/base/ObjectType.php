@@ -1,16 +1,15 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\base;
 
 use craft\errors\GqlException;
-use craft\gql\directives\BaseDirective;
 use craft\gql\GqlEntityRegistry;
-use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class BaseType
  */
-abstract class BaseType extends ObjectType
+abstract class ObjectType extends GqlObjectType
 {
     /**
      * @inheritdoc
@@ -39,7 +38,7 @@ abstract class BaseType extends ObjectType
 
             if (isset($resolveInfo->fieldNodes[0]->directives)) {
                 foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                    /** @var BaseDirective $directiveEntity */
+                    /** @var Directive $directiveEntity */
                     $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
                     $arguments = [];
 

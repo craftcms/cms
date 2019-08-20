@@ -6,6 +6,12 @@ namespace craft\gql\base;
  */
 abstract class Query
 {
+    // Traits
+    // =========================================================================
+    use RegistrableEntityTrait;
+
+    // Methods
+    // =========================================================================
     /**
      * Return the queries defined by the class as an array
      *

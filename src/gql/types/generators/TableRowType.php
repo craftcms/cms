@@ -2,6 +2,7 @@
 namespace craft\gql\types\generators;
 
 use craft\fields\Table as TableField;
+use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
@@ -11,7 +12,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class TableRowType
  */
-class TableRowType implements BaseGenerator
+class TableRowType implements GeneratorInterface
 {
     /**
      * @inheritdoc

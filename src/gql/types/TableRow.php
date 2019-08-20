@@ -7,7 +7,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class TableRow
  */
-class TableRow extends BaseType
+class TableRow extends Type
 {
     /**
      * @inheritdoc

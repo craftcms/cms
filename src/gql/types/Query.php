@@ -2,13 +2,19 @@
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
-use craft\gql\common\SchemaObject;
+use craft\gql\base\RegistrableEntityTrait;
 
 /**
  * Class Query
  */
-class Query extends SchemaObject
+class Query
 {
+    // Traits
+    // =========================================================================
+    use RegistrableEntityTrait;
+
+    // Methods
+    // =========================================================================
     /**
      * @inheritdoc
      * @throws GqlException if class called incorrectly.

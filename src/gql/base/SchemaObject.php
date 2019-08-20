@@ -1,5 +1,5 @@
 <?php
-namespace craft\gql\common;
+namespace craft\gql\base;
 
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
@@ -42,19 +42,7 @@ abstract class SchemaObject
         ];
     }
 
-    /**
-     * Returns an instance of this schema object's type.
-     *
-     * @param array $fields optional fields to use
-     * @return Type
-     */
-    public static function getType($fields = null): Type
-    {
-        return GqlEntityRegistry::getEntity(static::class) ?: GqlEntityRegistry::createEntity(static::class, new ObjectType([
-            'name' => static::getName(),
-            'fields' => $fields ?: (static::class . '::getFields'),
-        ]));
-    }
+
 
     /**
      * Returns the schema object name

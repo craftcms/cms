@@ -4,6 +4,7 @@ namespace craft\gql\types\generators;
 use Craft;
 use craft\base\Field;
 use craft\elements\Entry as EntryElement;
+use craft\gql\base\GeneratorInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Entry;
@@ -13,7 +14,7 @@ use craft\models\EntryType as EntryTypeModel;
 /**
  * Class EntryType
  */
-class EntryType implements BaseGenerator
+class EntryType implements GeneratorInterface
 {
     /**
      * @inheritdoc

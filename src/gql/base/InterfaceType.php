@@ -1,10 +1,8 @@
 <?php
 namespace craft\gql\base;
 
-use craft\gql\common\SchemaObject;
-
 /**
- * Class Element
+ * Class InterfaceType
  */
 abstract class InterfaceType extends SchemaObject
 {

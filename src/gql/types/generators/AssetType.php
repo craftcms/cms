@@ -5,6 +5,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
+use craft\gql\base\GeneratorInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset;
@@ -13,7 +14,7 @@ use craft\helpers\Gql as GqlHelper;
 /**
  * Class AssetType
  */
-class AssetType implements BaseGenerator
+class AssetType implements GeneratorInterface
 {
     /**
      * @inheritdoc

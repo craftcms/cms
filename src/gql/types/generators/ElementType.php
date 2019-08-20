@@ -2,6 +2,7 @@
 namespace craft\gql\types\generators;
 
 use craft\base\Element as BaseElement;
+use craft\gql\base\GeneratorInterface;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Element;
@@ -9,7 +10,7 @@ use craft\gql\types\elements\Element;
 /**
  * Class ElementType
  */
-class ElementType implements BaseGenerator
+class ElementType implements GeneratorInterface
 {
     /**
      * @inheritdoc

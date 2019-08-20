@@ -1,12 +1,12 @@
 <?php
 
-namespace craft\gql\types\generators;
+namespace craft\gql\base;
 
 
 /**
  * Class BaseGenerator
  */
-interface BaseGenerator
+interface GeneratorInterface
 {
     /**
      * Generate GQL types.

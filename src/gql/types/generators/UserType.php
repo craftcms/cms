@@ -4,6 +4,7 @@ namespace craft\gql\types\generators;
 use Craft;
 use craft\base\Field;
 use craft\elements\User as UserElement;
+use craft\gql\base\GeneratorInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\User;
@@ -11,7 +12,7 @@ use craft\gql\types\elements\User;
 /**
  * Class UserType
  */
-class UserType implements BaseGenerator
+class UserType implements GeneratorInterface
 {
     /**
      * @inheritdoc
