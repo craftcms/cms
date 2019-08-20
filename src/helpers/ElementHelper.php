@@ -349,6 +349,29 @@ class ElementHelper
     }
 
     /**
+     * Returns the element, or if it’s a draft/revision, the source element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     * @since 3.2.11
+     */
+    public static function sourceElement(ElementInterface $element): ElementInterface
+    {
+        /** @var Element $element */
+        $sourceId = $element->getSourceId();
+        if ($sourceId === $element->id) {
+            return $element;
+        }
+
+        return $element::find()
+            ->id($sourceId)
+            ->siteId($element->siteId)
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->one();
+    }
+
+    /**
      * Given an array of elements, will go through and set the appropriate "next"
      * and "prev" elements on them.
      *

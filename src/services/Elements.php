@@ -703,18 +703,19 @@ class Elements extends Component
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
-        // Set a unique URI on the clone
-        try {
-            ElementHelper::setUniqueUri($mainClone);
-        } catch (OperationAbortedException $e) {
-            // Oh well, not worth bailing over
+        // Validate, ignoring any URI errors
+        $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
+        $mainClone->validate();
+        $mainClone->clearErrors('uri');
+
+        if ($mainClone->hasErrors()) {
+            throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated because it doens\'t validate.');
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $element's site
-            $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
-            if (!$this->_saveElementInternal($mainClone, true, false)) {
+            if (!$this->_saveElementInternal($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 

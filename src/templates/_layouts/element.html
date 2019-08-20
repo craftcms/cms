@@ -32,13 +32,7 @@
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
 
-{% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
-{% if element.uri %}
-    {% set previewTargets = [{
-        label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
-        url: element.uri == '__home__' ? '' : element.uri
-    }]|merge(previewTargets) %}
-{% endif %}
+{% set previewTargets = element.getPreviewTargets() %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = isDraft and not isUnsavedDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
@@ -253,16 +247,6 @@
     </div>
 {% endblock %}
 
-{% set normalizedPreviewTargets = [] %}
-{% set scheme = craft.app.request.isSecureConnection ? 'https': null %}
-{% for target in previewTargets %}
-    {% set path = target.url ?? view.renderObjectTemplate(target.urlFormat, element) %}
-    {% set normalizedPreviewTargets = normalizedPreviewTargets|merge([{
-        label: target.label|t('site'),
-        url: siteUrl(path, scheme=scheme, siteId=element.siteId)
-    }]) %}
-{% endfor %}
-
 {% set settings = {
     elementType: className(element),
     elementTypeDisplayName: element.displayName(),
@@ -282,7 +266,7 @@
     deleteDraftAction: deleteDraftAction,
     applyDraftAction: applyDraftAction,
     enablePreview: enablePreview,
-    previewTargets: normalizedPreviewTargets,
+    previewTargets: previewTargets,
 } %}
 {% js %}
     window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});

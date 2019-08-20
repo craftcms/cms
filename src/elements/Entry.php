@@ -752,7 +752,10 @@ class Entry extends Element
      */
     protected function previewTargets(): array
     {
-        return $this->getSection()->previewTargets;
+        return array_map(function($previewTarget) {
+            $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
+            return $previewTarget;
+        }, $this->getSection()->previewTargets);
     }
 
     /**

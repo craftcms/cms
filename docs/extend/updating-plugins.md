@@ -904,7 +904,7 @@ class MyJob extends BaseJob
     public function execute($queue)
     {
         $totalSteps = 5;
-        for ($step = 0; $step < $steps; $step++)
+        for ($step = 0; $step < $totalSteps; $step++)
         {
             $this->setProgress($queue, $step / $totalSteps);
             // do something...
