@@ -10,7 +10,7 @@ A shortcut for outputting a hidden input used to route a POST request to a parti
 {{ actionInput('users/save-user') }}
 ```
 
-You can optionally set additional attributes on the tag by passing a second argument.
+You can optionally set additional attributes on the tag by passing an `options` argument.
 
 ```twig
 {{ actionInput('users/save-user', {
@@ -132,7 +132,7 @@ Returns a hidden CSRF Token input. All sites that have CSRF Protection enabled m
 {{ csrfInput() }}
 ```
 
-You can optionally set additional attributes on the tag by passing a second argument.
+You can optionally set additional attributes on the tag by passing an `options` argument.
 
 ```twig
 {{ csrfInput({
@@ -265,7 +265,7 @@ Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}"
 {{ redirectInput(url) }}
 ```
 
-You can optionally set additional attributes on the tag by passing a second argument.
+You can optionally set additional attributes on the tag by passing an `options` argument.
 
 ```twig
 {{ redirectInput(url, {
