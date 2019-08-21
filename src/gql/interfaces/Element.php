@@ -102,12 +102,12 @@ class Element extends InterfaceType
             'dateCreated' => [
                 'name' => 'dateCreated',
                 'type' => DateTime::getType(),
-                'description' => 'The date the entity was created'
+                'description' => 'The date the element was created.'
             ],
             'dateUpdated' => [
                 'name' => 'dateUpdated',
                 'type' => DateTime::getType(),
-                'description' => 'The date the entity was last updated'
+                'description' => 'The date the element was last updated.'
             ],
         ]);
     }

@@ -35,7 +35,7 @@ class User extends ObjectType
     {
         /** @var UserElement $source */
         $fieldName = $resolveInfo->fieldName;
-        
+
         if ($fieldName === 'preferences') {
             return Json::encode($source->getPreferences());
         }
