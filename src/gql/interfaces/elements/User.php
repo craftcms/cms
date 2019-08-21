@@ -61,11 +61,6 @@ class User extends Element
      */
     public static function getFieldDefinitions(): array {
         return array_merge(parent::getFieldDefinitions(), [
-            'cooldownEndTime' => [
-                'name' => 'cooldownEndTime',
-                'type' => DateTime::getType(),
-                'description' => 'The time when the user will be over their cooldown period.'
-            ],
             'friendlyName' => [
                 'name' => 'friendlyName',
                 'type' => Type::string(),
@@ -75,11 +70,6 @@ class User extends Element
                 'name' => 'fullName',
                 'type' => Type::string(),
                 'description' => 'The user\'s full name.'
-            ],
-            'groupHandles' => [
-                'name' => 'groupHandles',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'A list of all the user group handles that the user belongs to.'
             ],
             'name' => [
                 'name' => 'name',
@@ -106,11 +96,6 @@ class User extends Element
                 'type' => Type::string(),
                 'description' => 'The username.'
             ],
-            'photoId' => [
-                'name' => 'photoId',
-                'type' => Type::int(),
-                'description' => 'The photo asset id.'
-            ],
             'firstName' => [
                 'name' => 'firstName',
                 'type' => Type::string(),
@@ -125,81 +110,6 @@ class User extends Element
                 'name' => 'email',
                 'type' => Type::string(),
                 'description' => 'The user\'s email.'
-            ],
-            'admin' => [
-                'name' => 'admin',
-                'type' => Type::boolean(),
-                'description' => 'Whether the user is an admin.'
-            ],
-            'locked' => [
-                'name' => 'locked',
-                'type' => Type::boolean(),
-                'description' => 'Whether the user is locked.'
-            ],
-            'suspended' => [
-                'name' => 'suspended',
-                'type' => Type::boolean(),
-                'description' => 'Whether the user is suspended.'
-            ],
-            'pending' => [
-                'name' => 'pending',
-                'type' => Type::boolean(),
-                'description' => 'Whether the user is pending activation.'
-            ],
-            'lastLoginDate' => [
-                'name' => 'lastLoginDate',
-                'type' => DateTime::getType(),
-                'description' => 'Last login date'
-            ],
-            'lastInvalidLoginDate' => [
-                'name' => 'lastInvalidLoginDate',
-                'type' => DateTime::getType(),
-                'description' => 'Last invalid login date for the user.'
-            ],
-            'invalidLoginCount' => [
-                'name' => 'invalidLoginCount',
-                'type' => Type::int(),
-                'description' => 'Invalid login count for the user.'
-            ],
-            'lockoutDate' => [
-                'name' => 'lockoutDate',
-                'type' => DateTime::getType(),
-                'description' => 'The lockout date for the user.'
-            ],
-            'hasDashboard' => [
-                'name' => 'hasDashboard',
-                'type' => Type::boolean(),
-                'description' => 'Whether the user has a dashboard or not.'
-            ],
-            'passwordResetRequired' => [
-                'name' => 'passwordResetRequired',
-                'type' => Type::boolean(),
-                'description' => 'Whether a password reset required is required for the user.'
-            ],
-            'lastPasswordChangeDate' => [
-                'name' => 'lastPasswordChangeDate',
-                'type' => DateTime::getType(),
-                'description' => 'Last password change date for the user.'
-            ],
-            'unverifiedEmail' => [
-                'name' => 'unverifiedEmail',
-                'type' => Type::string(),
-                'description' => 'The unverified email for the user.'
-            ],
-            'verificationCodeIssuedDate' => [
-                'name' => 'verificationCodeIssuedDate',
-                'type' => DateTime::getType(),
-                'description' => 'The date when the verification code was issued for the user.'
-            ],
-            'verificationCode' => [
-                'name' => 'verificationCode',
-                'type' => Type::string(),
-                'description' => 'The verification code issued for the user.'
-            ],
-            'lastLoginAttemptIp' => [
-                'name' => 'lastLoginAttemptIp',
-                'type' => Type::string(),
-                'description' => 'The last login attempt IP address for this user.'
             ],
         ]);
     }

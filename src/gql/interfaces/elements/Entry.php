@@ -62,11 +62,6 @@ class Entry extends Element
     public static function getFieldDefinitions(): array {
         // Todo section data under section type, same with type, author
         return array_merge(parent::getFieldDefinitions(), [
-            'sectionUid' => [
-                'name' => 'sectionUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the section that contains the entry.'
-            ],
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
@@ -76,11 +71,6 @@ class Entry extends Element
                 'name' => 'sectionHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the section that contains the entry.'
-            ],
-            'typeUid' => [
-                'name' => 'typeUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the entry type that contains the entry.'
             ],
             'typeId' => [
                 'name' => 'typeId',

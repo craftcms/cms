@@ -61,30 +61,15 @@ class MatrixBlock extends Element
     public static function getFieldDefinitions(): array {
         // Todo nest nestable things. Such as field data under field subtype.
         return array_merge(parent::getFieldDefinitions(), [
-            'fieldUid' => [
-                'name' => 'fieldUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the field that owns the matrix block.'
-            ],
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
                 'description' => 'The ID of the field that owns the matrix block.'
             ],
-            'ownerUid' => [
-                'name' => 'ownerUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the element that owns the matrix block.'
-            ],
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
                 'description' => 'The ID of the element that owns the matrix block.'
-            ],
-            'typeUid' => [
-                'name' => 'typeUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the matrix block\'s type.'
             ],
             'typeId' => [
                 'name' => 'typeId',

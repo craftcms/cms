@@ -64,30 +64,15 @@ class Asset extends Element
     {
         // Todo nest nestable things. Such as volume data under volume subtype.
         return array_merge(parent::getFieldDefinitions(), [
-            'volumeUid' => [
-                'name' => 'volumeUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the volume that the asset belongs to.'
-            ],
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
                 'description' => 'The ID of the volume that the asset belongs to.'
             ],
-            'folderUid' => [
-                'name' => 'folderUid',
-                'type' => Type::string(),
-                'description' => 'The UID of the folder that the asset belongs to.'
-            ],
             'folderId' => [
                 'name' => 'folderId',
                 'type' => Type::int(),
                 'description' => 'The ID of the folder that the asset belongs to.'
-            ],
-            'folderPath' => [
-                'name' => 'folderPath',
-                'type' => Type::string(),
-                'description' => 'The folder path on the volume for the asset.'
             ],
             'filename' => [
                 'name' => 'filename',
