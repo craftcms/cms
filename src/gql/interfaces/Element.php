@@ -53,7 +53,7 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getCommonFieldDefinitions(), [
+        return array_merge(parent::getFieldDefinitions(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),

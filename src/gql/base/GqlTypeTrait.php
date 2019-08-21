@@ -17,17 +17,6 @@ trait GqlTypeTrait
      */
     public static function getFieldDefinitions(): array
     {
-        return self::getCommonFieldDefinitions();
-    }
-
-    /**
-     * List of common fields for all types.
-     * @TODO Really, this is just a workaround for inheritance using traits. See craft\gql\types\Volume
-     *
-     * @return array
-     */
-    public static function getCommonFieldDefinitions(): array
-    {
         return [
             'id' => [
                 'name' => 'id',
