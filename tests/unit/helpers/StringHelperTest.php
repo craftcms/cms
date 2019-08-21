@@ -238,8 +238,8 @@ class StringHelperTest extends Unit
      */
     public function testBetween($expected, $string, $firstChar, $secondChar, $offset = null)
     {
-        $result = StringHelper::between($string, $firstChar, $secondChar, $offset);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::between($string, $firstChar, $secondChar, $offset);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -249,8 +249,8 @@ class StringHelperTest extends Unit
      */
     public function testCapitalizePersonalName($expected, $string)
     {
-        $result = StringHelper::capitalizePersonalName($string);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::capitalizePersonalName($string);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -262,8 +262,8 @@ class StringHelperTest extends Unit
      */
     public function testContainsAny($expected, $haystack, $needles, $caseSensitive = true)
     {
-        $result = StringHelper::containsAny($haystack, $needles, $caseSensitive);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::containsAny($haystack, $needles, $caseSensitive);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -271,8 +271,8 @@ class StringHelperTest extends Unit
      */
     public function testCount()
     {
-        $result = StringHelper::count('Fòô');
-        $this->assertSame(3, $result);
+        $actual = StringHelper::count('Fòô');
+        $this->assertSame(3, $actual);
     }
 
     /**
@@ -282,8 +282,8 @@ class StringHelperTest extends Unit
      */
     public function testDasherize($expected, $string)
     {
-        $result = StringHelper::dasherize($string);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::dasherize($string);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -294,8 +294,8 @@ class StringHelperTest extends Unit
      */
     public function testEnsureLeft($expected, $string, $prepend)
     {
-        $result = StringHelper::ensureLeft($string, $prepend);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::ensureLeft($string, $prepend);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -306,8 +306,8 @@ class StringHelperTest extends Unit
      */
     public function testEnsureRight($expected, $string, $append)
     {
-        $result = StringHelper::ensureRight($string, $append);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::ensureRight($string, $append);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -317,8 +317,8 @@ class StringHelperTest extends Unit
      */
     public function testHasLowerCase($expected, $string)
     {
-        $result = StringHelper::hasLowerCase($string);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::hasLowerCase($string);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -328,8 +328,8 @@ class StringHelperTest extends Unit
      */
     public function testHasUpperCase($expected, $string)
     {
-        $result = StringHelper::hasUpperCase($string);
-        $this->assertSame($expected, $result);
+        $actual = StringHelper::hasUpperCase($string);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -351,65 +351,65 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider endsWithDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $haystack
      * @param $needle
      */
-    public function testEndsWith($result, $haystack, $needle)
+    public function testEndsWith($expected, $haystack, $needle)
     {
-        $endsWith = StringHelper::endsWith($haystack, $needle);
-        $this->assertSame($result, $endsWith);
+        $actual = StringHelper::endsWith($haystack, $needle);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider camelCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testCamelCase($result, $input)
+    public function testCamelCase($expected, $input)
     {
-        $toCamel = StringHelper::camelCase($input);
-        $this->assertSame($result, $toCamel);
+        $actual = StringHelper::camelCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider containsAllDataProvider
      *
-     * @param      $result
+     * @param      $expected
      * @param      $haystack
      * @param      $needle
      * @param bool $caseSensitive
      */
-    public function testContainsAll($result, $haystack, $needle, $caseSensitive = true)
+    public function testContainsAll($expected, $haystack, $needle, $caseSensitive = true)
     {
-        $containsAll = StringHelper::containsAll($haystack, $needle, $caseSensitive);
-        $this->assertSame($result, $containsAll);
+        $actual = StringHelper::containsAll($haystack, $needle, $caseSensitive);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider uppercaseFirstDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testUppercaseFirst($result, $input)
+    public function testUppercaseFirst($expected, $input)
     {
-        $uppercaseFirst = StringHelper::upperCaseFirst($input);
-        $this->assertSame($result, $uppercaseFirst);
+        $actual = StringHelper::upperCaseFirst($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider indexOfDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $haystack
      * @param $needle
      */
-    public function testIndexOf($result, $haystack, $needle)
+    public function testIndexOf($expected, $haystack, $needle)
     {
-        $index = StringHelper::indexOf($haystack, $needle);
-        $this->assertSame($result, $index);
+        $actual = StringHelper::indexOf($haystack, $needle);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -426,138 +426,138 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider snakeCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToSnakeCase($result, $input)
+    public function testToSnakeCase($expected, $input)
     {
-        $toSnake = StringHelper::toSnakeCase($input);
-        $this->assertSame($result, $toSnake);
+        $actual = StringHelper::toSnakeCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider mb4DataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testIsMb4($result, $input)
+    public function testIsMb4($expected, $input)
     {
-        $isMb4 = StringHelper::containsMb4($input);
-        $this->assertSame($result, $isMb4);
+        $actual = StringHelper::containsMb4($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider charsAsArrayDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testCharsAsArray($result, $input)
+    public function testCharsAsArray($expected, $input)
     {
-        $charsArray = StringHelper::charsAsArray($input);
-        $this->assertSame($result, $charsArray);
+        $actual = StringHelper::charsAsArray($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider toAsciiDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToAscii($result, $input)
+    public function testToAscii($expected, $input)
     {
-        $toAscii = StringHelper::toAscii($input);
-        $this->assertSame($result, $toAscii);
+        $actual = StringHelper::toAscii($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider firstDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      * @param $requiredChars
      */
-    public function testFirst($result, $input, $requiredChars)
+    public function testFirst($expected, $input, $requiredChars)
     {
-        $stripped = StringHelper::first($input, $requiredChars);
-        $this->assertSame($result, $stripped);
+        $actual = StringHelper::first($input, $requiredChars);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider stripHtmlDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testHtmlStripping($result, $input)
+    public function testHtmlStripping($expected, $input)
     {
-        $stripped = StringHelper::stripHtml($input);
-        $this->assertSame($result, $stripped);
+        $actual = StringHelper::stripHtml($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider uuidDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testIsUUID($result, $input)
+    public function testIsUUID($expected, $input)
     {
-        $isUUID = StringHelper::isUUID($input);
-        $this->assertSame($result, $isUUID);
+        $actual = StringHelper::isUUID($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider collapseWhitespaceDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testWhitespaceCollapse($result, $input)
+    public function testWhitespaceCollapse($expected, $input)
     {
-        $whitespaceGone = StringHelper::collapseWhitespace($input);
-        $this->assertSame($result, $whitespaceGone);
+        $actual = StringHelper::collapseWhitespace($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider whitespaceDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testIsWhitespace($result, $input)
+    public function testIsWhitespace($expected, $input)
     {
-        $isWhitespace = StringHelper::isWhitespace($input);
-        $this->assertSame($result, $isWhitespace);
-        $this->assertIsBool($isWhitespace);
+        $actual = StringHelper::isWhitespace($input);
+        $this->assertSame($expected, $actual);
+        $this->assertIsBool($actual);
     }
 
     /**
      * @dataProvider splitDataProvider
      *
-     * @param        $result
+     * @param        $expected
      * @param        $input
      * @param string $splitter
      */
-    public function testStringSplit($result, $input, $splitter = ',')
+    public function testStringSplit($expected, $input, $splitter = ',')
     {
-        $splitString = StringHelper::split($input, $splitter);
-        $this->assertSame($result, $splitString);
+        $actual = StringHelper::split($input, $splitter);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider delimitDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      * @param $delimited
      */
-    public function testDelimit($result, $input, $delimited)
+    public function testDelimit($expected, $input, $delimited)
     {
-        $delimitedString = StringHelper::delimit($input, $delimited);
-        $this->assertSame($result, $delimitedString);
-        $this->assertIsString($delimitedString);
+        $actual = StringHelper::delimit($input, $delimited);
+        $this->assertSame($expected, $actual);
+        $this->assertIsString($actual);
     }
 
     /**
@@ -565,6 +565,7 @@ class StringHelperTest extends Unit
      *
      * @param $valid
      * @param int $length
+     * @throws \Exception
      */
     public function testRandomStringWithChars($valid, int $length)
     {
@@ -573,7 +574,7 @@ class StringHelperTest extends Unit
 
         $this->assertSame($length, $strLen);
 
-        // Loop through the string and see if any of the characters arent on the list of allowed chars.
+        // Loop through the string and see if any of the characters aren't on the list of allowed chars.
         for ($i = 0; $i < $strLen; $i++) {
             if (mb_strpos($valid, $str[$i]) === false) {
                 $this->fail('Invalid chars');
@@ -584,28 +585,28 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider mb4EncodingDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testMb4Encoding($result, $input)
+    public function testMb4Encoding($expected, $input)
     {
-        $mb4String = StringHelper::encodeMb4($input);
-        $this->assertSame($result, $mb4String);
-        $this->assertIsString($mb4String);
+        $actual = StringHelper::encodeMb4($input);
+        $this->assertSame($expected, $actual);
+        $this->assertIsString($actual);
 
-        $this->assertFalse(StringHelper::containsMb4($mb4String));
+        $this->assertFalse(StringHelper::containsMb4($actual));
     }
 
     /**
      * @dataProvider convertToUtf8DataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testConvertToUtf8($result, $input)
+    public function testConvertToUtf8($expected, $input)
     {
-        $utf8 = StringHelper::convertToUtf8($input);
-        $this->assertSame($result, $utf8);
+        $actual = StringHelper::convertToUtf8($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -627,12 +628,12 @@ class StringHelperTest extends Unit
      */
     public function testAsciiCharMap()
     {
-        $deArray = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü'];
+        $theArray = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü'];
         $this->assertArrayNotHasKey('de', StringHelper::asciiCharMap(false, 'de'));
-        $deMap = StringHelper::asciiCharMap(true, 'de');
+        $theMap = StringHelper::asciiCharMap(true, 'de');
 
-        foreach ($deArray as $deChar) {
-            $this->assertArrayHasKey($deChar, $deMap);
+        foreach ($theArray as $theChar) {
+            $this->assertArrayHasKey($theChar, $theMap);
         }
     }
 
@@ -649,14 +650,14 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider toStringDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      * @param $glue
      */
-    public function testToString($result, $input, $glue = ',')
+    public function testToString($expected, $input, $glue = ',')
     {
-        $string = StringHelper::toString($input, $glue);
-        $this->assertSame($result, $string);
+        $actual = StringHelper::toString($input, $glue);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -664,6 +665,7 @@ class StringHelperTest extends Unit
      *
      * @param $length
      * @param $extendedChars
+     * @throws \Exception
      */
     public function testRandomString($length = 36, $extendedChars = false)
     {
@@ -685,138 +687,138 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider toPascalCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToPascalCase($result, $input)
+    public function testToPascalCase($expected, $input)
     {
-        $pascal = StringHelper::toPascalCase($input);
-        $this->assertSame($result, $pascal);
+        $actual = StringHelper::toPascalCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider toCamelCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToCamelCase($result, $input)
+    public function testToCamelCase($expected, $input)
     {
-        $camel = StringHelper::toCamelCase($input);
-        $this->assertSame($result, $camel);
+        $actual = StringHelper::toCamelCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider toKebabCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToKebabCase($result, $input)
+    public function testToKebabCase($expected, $input)
     {
-        $kebab = StringHelper::toKebabCase($input);
-        $this->assertSame($result, $kebab);
+        $actual = StringHelper::toKebabCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider linesDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testLines($result, $input)
+    public function testLines($expected, $input)
     {
-        $lines = StringHelper::lines($input);
-        $this->assertCount($result, $lines);
+        $actual = StringHelper::lines($input);
+        $this->assertCount($expected, $actual);
     }
 
     /**
      * @dataProvider toUppercaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToUppercase($result, $input)
+    public function testToUppercase($expected, $input)
     {
-        $uppercase = StringHelper::toUpperCase($input);
-        $this->assertSame($result, $uppercase);
+        $actual = StringHelper::toUpperCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider trimDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testTrim($result, $input)
+    public function testTrim($expected, $input)
     {
-        $trim = StringHelper::trim($input);
-        $this->assertSame($result, $trim);
+        $actual = StringHelper::trim($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider toTitleCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToTitleCase($result, $input)
+    public function testToTitleCase($expected, $input)
     {
-        $toTitleCase = StringHelper::toTitleCase($input);
-        $this->assertSame($result, $toTitleCase);
+        $actual = StringHelper::toTitleCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider toLowerCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testToLowerCase($result, $input)
+    public function testToLowerCase($expected, $input)
     {
-        $toLower = StringHelper::toLowerCase($input);
-        $this->assertSame($result, $toLower);
+        $actual = StringHelper::toLowerCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
-     * @dataProvider titelizeDataProvider
+     * @dataProvider titleizeDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testTitleize($result, $input)
+    public function testTitleize($expected, $input)
     {
-        $titelize = StringHelper::titleize($input);
-        $this->assertSame($result, $titelize);
+        $actual = StringHelper::titleize($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider swapCaseDataProvider
      *
-     * @param $result
+     * @param $expected
      * @param $input
      */
-    public function testSwapCase($result, $input)
+    public function testSwapCase($expected, $input)
     {
-        $swap = StringHelper::swapCase($input);
-        $this->assertSame($result, $swap);
+        $actual = StringHelper::swapCase($input);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider substrDataProvider
      *
-     * @param      $result
+     * @param      $expected
      * @param      $input
      * @param      $start
      * @param null $length
      */
-    public function testSubstr($result, $input, $start, $length = null)
+    public function testSubstr($expected, $input, $start, $length = null)
     {
-        $substr = StringHelper::substr($input, $start, $length);
-        $this->assertSame($result, $substr);
+        $actual = StringHelper::substr($input, $start, $length);
+        $this->assertSame($expected, $actual);
     }
 
-    // Data Properties
+    // Data Providers
     // =========================================================================
 
     /**
@@ -853,25 +855,6 @@ class StringHelperTest extends Unit
             ['', ''],
             ['😘', '😘'],
             ['22 aLPHAn nUMERIC', '22 AlphaN Numeric'],
-            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function titelizeDataProvider(): array
-    {
-        return [
-            ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
-            ['😂 😁', '😂 😁'],
-            ['Test Test Craft Cms !@#$%^&  *(abc)', 'Test test CRAFT cms !@#$%^&  *(abc)'],
-            ['Craft Cms', 'Craft Cms'],
-            ['Craft Cms', 'CRAFT CMS'],
-            ['Craftcms', 'CRAFTCMS'],
-            ['', ''],
-            ['😘', '😘'],
-            ['22 Alphan Numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
         ];
     }
@@ -980,6 +963,7 @@ class StringHelperTest extends Unit
 
     /**
      * @return array
+     * @throws \Exception
      */
     public function uuidDataProvider(): array
     {
@@ -1643,6 +1627,8 @@ class StringHelperTest extends Unit
             [false, 'Ο συγγραφέας είπε', ['  συγγραφέας ', ' ραφέ '], false, 'UTF-8'],
             [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', [' ßÅ˚', ' Å˚ '], false, 'UTF-8'],
         ];
+
+        return array_merge($singleNeedle, $provider);
     }
 
     /**
