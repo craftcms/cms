@@ -29,7 +29,7 @@ class MatrixBlock extends ElementArguments
             'type' => [
                 'name' => 'type',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the Matrix blocks’ block types.'
+                'description' => 'Narrows the query results based on the Matrix blocks’ block type handles.'
             ],
         ]);
     }
