@@ -71,5 +71,9 @@ abstract class ObjectType extends GqlObjectType
      *
      * @return mixed $result
      */
-    abstract protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo);
+    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        return $source->{$resolveInfo->fieldName};
+    }
+
 }
