@@ -89,8 +89,7 @@ accessing the event using the [eventPropName](#eventpropname) property will be d
 using `assertSame()`. 
 
 #### When type is `EventItem::TYPE_CLASS`
-If accessing the event using the [eventPropName](#eventpropname) yields an 
-object Craft allows you to check the individual properties of this object. 
+Craft allows you to check the individual properties of the returned object. 
 In order to do this you must enter a key-value array where: 
 
 - `key` 
@@ -108,7 +107,9 @@ use yii\base\Event;
 use craft\test\EventItem;
 
 $this->tester->expectEvent(SomeComponent::class, SomeComponent::SOME_EVENT, function() {
-    // Perform some action. 
+
+        // Code that should trigger an event goes here. 
+    
     }, Event::class,
     $this->tester->createEventItems([
         [
