@@ -48,40 +48,40 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider afterFirstDataProvider
-     * @param $result
+     * @param $expected
      * @param $string
      * @param $separator
      * @param $caseSensitive
      */
-    public function testAfterFirst($result, $string, $separator, $caseSensitive)
+    public function testAfterFirst($expected, $string, $separator, $caseSensitive)
     {
         $actual = StringHelper::afterFirst($string, $separator, $caseSensitive);
-        $this->assertSame($result, $actual);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider afterLastDataProvider
-     * @param $result
+     * @param $expected
      * @param $string
      * @param $separator
      * @param $caseSensitive
      */
-    public function testAfterLast($result, $string, $separator, $caseSensitive)
+    public function testAfterLast($expected, $string, $separator, $caseSensitive)
     {
         $actual = StringHelper::afterLast($string, $separator, $caseSensitive);
-        $this->assertSame($result, $actual);
+        $this->assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider appendDataProvider
-     * @param $result
+     * @param $expected
      * @param $string
      * @param $append
      */
-    public function testAppend($result, $string, $append)
+    public function testAppend($expected, $string, $append)
     {
         $actual = StringHelper::append($string, $append);
-        $this->assertSame($result, $actual);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -126,14 +126,14 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider atDataProvider
-     * @param $result
+     * @param $expected
      * @param $string
      * @param $position
      */
-    public function testAt($result, $string, $position)
+    public function testAt($expected, $string, $position)
     {
         $actual = StringHelper::at($string, $position);
-        $this->assertSame($result, $actual);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -244,70 +244,92 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider capitalizePersonalNameDataProvider
-     * @param $actual
+     * @param $expected
      * @param $string
      */
-    public function testCapitalizePersonalName($actual, $string)
+    public function testCapitalizePersonalName($expected, $string)
     {
         $result = StringHelper::capitalizePersonalName($string);
-        $this->assertSame($actual, $result);
+        $this->assertSame($expected, $result);
+    }
+
+    /**
+     * @dataProvider containsAnyDataProvider
+     * @param $expected
+     * @param $haystack
+     * @param $needles
+     * @param bool $caseSensitive
+     */
+    public function testContainsAny($expected, $haystack, $needles, $caseSensitive = true)
+    {
+        $result = StringHelper::containsAny($haystack, $needles, $caseSensitive);
+        $this->assertSame($expected, $result);
     }
 
     /**
      *
      */
-    public function testContainsAny()
+    public function testCount()
     {
-        $testArray = [
-            ['Marcus Aurelius', 'marcus aurelius'],
-            ['Torbjørn Færøvik', 'torbjørn færøvik'],
-            ['Jaap de Hoop Scheffer', 'jaap de hoop scheffer'],
-            ['K. Anders Ericsson', 'k. anders ericsson'],
-            ['Per-Einar', 'per-einar'],
-            [
-                'Line Break',
-                'line
-             break',
-            ],
-            ['ab', 'ab'],
-            ['af', 'af'],
-            ['al', 'al'],
-            ['and', 'and'],
-            ['ap', 'ap'],
-            ['bint', 'bint'],
-            ['binte', 'binte'],
-            ['da', 'da'],
-            ['de', 'de'],
-            ['del', 'del'],
-            ['den', 'den'],
-            ['der', 'der'],
-            ['di', 'di'],
-            ['dit', 'dit'],
-            ['ibn', 'ibn'],
-            ['la', 'la'],
-            ['mac', 'mac'],
-            ['nic', 'nic'],
-            ['of', 'of'],
-            ['ter', 'ter'],
-            ['the', 'the'],
-            ['und', 'und'],
-            ['van', 'van'],
-            ['von', 'von'],
-            ['y', 'y'],
-            ['zu', 'zu'],
-            ['Bashar al-Assad', 'bashar al-assad'],
-            ["d'Name", "d'Name"],
-            ['ffName', 'ffName'],
-            ["l'Name", "l'Name"],
-            ['macDuck', 'macDuck'],
-            ['mcDuck', 'mcDuck'],
-            ['nickMick', 'nickMick'],
-        ];
+        $result = StringHelper::count('Fòô');
+        $this->assertSame(3, $result);
+    }
 
-        foreach ($testArray as $testResult) {
-            $result = StringHelper::capitalizePersonalName($testResult[1]);
-            $this->assertSame($testResult[0], $result);
-        }
+    /**
+     * @dataProvider dasherizeDataProvider
+     * @param $expected
+     * @param $string
+     */
+    public function testDasherize($expected, $string)
+    {
+        $result = StringHelper::dasherize($string);
+        $this->assertSame($expected, $result);
+    }
+
+    /**
+     * @dataProvider ensureLeftDataProvider
+     * @param $expected
+     * @param $string
+     * @param $prepend
+     */
+    public function testEnsureLeft($expected, $string, $prepend)
+    {
+        $result = StringHelper::ensureLeft($string, $prepend);
+        $this->assertSame($expected, $result);
+    }
+
+    /**
+     * @dataProvider ensureRightDataProvider
+     * @param $expected
+     * @param $string
+     * @param $append
+     */
+    public function testEnsureRight($expected, $string, $append)
+    {
+        $result = StringHelper::ensureRight($string, $append);
+        $this->assertSame($expected, $result);
+    }
+
+    /**
+     * @dataProvider hasLowerCaseDataProvider
+     * @param $expected
+     * @param $string
+     */
+    public function testHasLowerCase($expected, $string)
+    {
+        $result = StringHelper::hasLowerCase($string);
+        $this->assertSame($expected, $result);
+    }
+
+    /**
+     * @dataProvider hasUpperCaseDataProvider
+     * @param $expected
+     * @param $string
+     */
+    public function testHasUpperCase($expected, $string)
+    {
+        $result = StringHelper::hasUpperCase($string);
+        $this->assertSame($expected, $result);
     }
 
     /**
@@ -536,18 +558,6 @@ class StringHelperTest extends Unit
         $delimitedString = StringHelper::delimit($input, $delimited);
         $this->assertSame($result, $delimitedString);
         $this->assertIsString($delimitedString);
-    }
-
-    /**
-     * @dataProvider ensureRightDataProvider
-     *
-     * @param $result
-     * @param $input
-     * @param $ensure
-     */
-    public function testEnsureRight($result, $input, $ensure)
-    {
-        $this->assertSame($result, StringHelper::ensureRight($input, $ensure));
     }
 
     /**
@@ -923,22 +933,6 @@ class StringHelperTest extends Unit
     /**
      * @return array
      */
-    public function containsAllDataProvider(): array
-    {
-        return [
-            [true, 'haystack', ['haystack']],
-            [true, 'some haystackedy stack', ['stackedy']],
-            [true, ' ', [' ']],
-            [true, 'iam some text', ['tEXt'], false],
-            [false, 'iam some text', ['tEXt']],
-            [false, '', []],
-            [false, '', ['']]
-        ];
-    }
-
-    /**
-     * @return array
-     */
     public function camelCaseDataProvider(): array
     {
         return [
@@ -1094,26 +1088,6 @@ class StringHelperTest extends Unit
             ['', ''],
             ['i_😘_u', 'I 😘 U'],
             ['2_2_alpha_n_numeric', '22 AlphaN Numeric'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function ensureRightDataProvider(): array
-    {
-        return [
-            ['hello', 'hello', 'o'],
-            ['!@#$%^&*()1234567890', '!@#$%^&*()1234567890', '567890'],
-            ['hello, my name is', 'hello, my name is', 'e is'],
-            ['hEllo, my name is', 'hEllo, my name is', 'Ello, my name is'],
-            ['😀😁😂', '😀😁😂', '😂'],
-
-            // Assert that without matches it gets added to the end.
-            ['hEllo, my name ishello, m', 'hEllo, my name is', 'hello, m'],
-            ['😀😁1aA!😂😁1aA!', '😀😁1aA!😂', '😁1aA!'],
-            ['!@#$%^&*()1234567 890567890', '!@#$%^&*()1234567 890', '567890'],
-
         ];
     }
 
@@ -1632,48 +1606,44 @@ class StringHelperTest extends Unit
     /**
      * @return array
      */
-//    public function containsAllDataProvider(): array
-//    {
-//        // One needle
-//        $singleNeedle = \array_map(
-//            static function ($array) {
-//                $array[2] = [$array[2]];
-//
-//                return $array;
-//            },
-//            $this->containsDataProvider()
-//        );
-//
-//        $provider = [
-//            // One needle
-//            [false, 'Str contains foo bar', []],
-//            [false, 'Str contains foo bar', ['']],
-//            // Multiple needles
-//            [true, 'Str contains foo bar', ['foo', 'bar']],
-//            [true, '12398!@(*%!@# @!%#*&^%', [' @!%#*', '&^%']],
-//            [true, 'Ο συγγραφέας είπε', ['συγγρ', 'αφέας'], 'UTF-8'],
-//            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['å´¥', '©'], true, 'UTF-8'],
-//            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['å˚ ', '∆'], true, 'UTF-8'],
-//            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['øœ', '¬'], true, 'UTF-8'],
-//            [false, 'Str contains foo bar', ['Foo', 'bar']],
-//            [false, 'Str contains foo bar', ['foobar', 'bar']],
-//            [false, 'Str contains foo bar', ['foo bar ', 'bar']],
-//            [false, 'Ο συγγραφέας είπε', ['  συγγραφέας ', '  συγγραφ '], true, 'UTF-8'],
-//            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', [' ßå˚', ' ß '], true, 'UTF-8'],
-//            [true, 'Str contains foo bar', ['Foo bar', 'bar'], false],
-//            [true, '12398!@(*%!@# @!%#*&^%', [' @!%#*&^%', '*&^%'], false],
-//            [true, 'Ο συγγραφέας είπε', ['ΣΥΓΓΡΑΦΈΑΣ', 'ΑΦΈΑ'], false, 'UTF-8'],
-//            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['Å´¥©', '¥©'], false, 'UTF-8'],
-//            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['Å˚ ∆', ' ∆'], false, 'UTF-8'],
-//            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['ØŒ¬', 'Œ'], false, 'UTF-8'],
-//            [false, 'Str contains foo bar', ['foobar', 'none'], false],
-//            [false, 'Str contains foo bar', ['foo bar ', ' ba'], false],
-//            [false, 'Ο συγγραφέας είπε', ['  συγγραφέας ', ' ραφέ '], false, 'UTF-8'],
-//            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', [' ßÅ˚', ' Å˚ '], false, 'UTF-8'],
-//        ];
-//
-//        return \array_merge($singleNeedle, $provider);
-//    }
+    public function containsAllDataProvider(): array
+    {
+        // One needle
+        $singleNeedle = array_map(
+            static function($array) {
+                $array[2] = [$array[2]];
+                return $array;
+            },
+            $this->containsDataProvider()
+        );
+        $provider = [
+            // One needle
+            [false, 'Str contains foo bar', []],
+            [false, 'Str contains foo bar', ['']],
+            // Multiple needles
+            [true, 'Str contains foo bar', ['foo', 'bar']],
+            [true, '12398!@(*%!@# @!%#*&^%', [' @!%#*', '&^%']],
+            [true, 'Ο συγγραφέας είπε', ['συγγρ', 'αφέας'], 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['å´¥', '©'], true, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['å˚ ', '∆'], true, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['øœ', '¬'], true, 'UTF-8'],
+            [false, 'Str contains foo bar', ['Foo', 'bar']],
+            [false, 'Str contains foo bar', ['foobar', 'bar']],
+            [false, 'Str contains foo bar', ['foo bar ', 'bar']],
+            [false, 'Ο συγγραφέας είπε', ['  συγγραφέας ', '  συγγραφ '], true, 'UTF-8'],
+            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', [' ßå˚', ' ß '], true, 'UTF-8'],
+            [true, 'Str contains foo bar', ['Foo bar', 'bar'], false],
+            [true, '12398!@(*%!@# @!%#*&^%', [' @!%#*&^%', '*&^%'], false],
+            [true, 'Ο συγγραφέας είπε', ['ΣΥΓΓΡΑΦΈΑΣ', 'ΑΦΈΑ'], false, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['Å´¥©', '¥©'], false, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['Å˚ ∆', ' ∆'], false, 'UTF-8'],
+            [true, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', ['ØŒ¬', 'Œ'], false, 'UTF-8'],
+            [false, 'Str contains foo bar', ['foobar', 'none'], false],
+            [false, 'Str contains foo bar', ['foo bar ', ' ba'], false],
+            [false, 'Ο συγγραφέας είπε', ['  συγγραφέας ', ' ραφέ '], false, 'UTF-8'],
+            [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', [' ßÅ˚', ' Å˚ '], false, 'UTF-8'],
+        ];
+    }
 
     /**
      * @return array
@@ -1681,12 +1651,13 @@ class StringHelperTest extends Unit
     public function containsAnyDataProvider(): array
     {
         // One needle
-        $singleNeedle = \array_map(
+        $singleNeedle = array_map(
             static function ($array) {
                 $array[2] = [$array[2]];
 
                 return $array;
             },
+
             $this->containsDataProvider()
         );
 
@@ -1717,7 +1688,7 @@ class StringHelperTest extends Unit
             [false, 'å´¥©¨ˆßå˚ ∆∂˙©å∑¥øœ¬', [' ßÅ˚', ' Å˚ '], false, 'UTF-8'],
         ];
 
-        return \array_merge($singleNeedle, $provider);
+        return array_merge($singleNeedle, $provider);
     }
 
     /**
@@ -1796,9 +1767,9 @@ class StringHelperTest extends Unit
             ['car-speed', 'CarSpeed'],
             ['yes-we-can', 'yesWeCan'],
             ['background-color', 'backgroundColor'],
-            ['dash-σase', 'dash Σase', 'UTF-8'],
-            ['στανιλ-case', 'Στανιλ case', 'UTF-8'],
-            ['σash-case', 'Σash  Case', 'UTF-8'],
+            ['dash-σase', 'dash Σase'],
+            ['στανιλ-case', 'Στανιλ case'],
+            ['σash-case', 'Σash  Case'],
         ];
     }
 
@@ -1876,32 +1847,32 @@ class StringHelperTest extends Unit
             ['foo/foobar', 'foobar', 'foo/'],
             ['http://foobar', 'foobar', 'http://'],
             ['http://foobar', 'http://foobar', 'http://'],
-            ['fòôbàř', 'fòôbàř', 'f', 'UTF-8'],
-            ['fòôbàř', 'fòôbàř', 'fòô', 'UTF-8'],
-            ['fòô/fòôbàř', 'fòôbàř', 'fòô/', 'UTF-8'],
-            ['http://fòôbàř', 'fòôbàř', 'http://', 'UTF-8'],
-            ['http://fòôbàř', 'http://fòôbàř', 'http://', 'UTF-8'],
+            ['fòôbàř', 'fòôbàř', 'f',],
+            ['fòôbàř', 'fòôbàř', 'fòô'],
+            ['fòô/fòôbàř', 'fòôbàř', 'fòô/'],
+            ['http://fòôbàř', 'fòôbàř', 'http://'],
+            ['http://fòôbàř', 'http://fòôbàř', 'http://'],
         ];
     }
 
     /**
      * @return array
      */
-//    public function ensureRightDataProvider(): array
-//    {
-//        return [
-//            ['foobar', 'foobar', 'r'],
-//            ['foobar', 'foobar', 'bar'],
-//            ['foobar/bar', 'foobar', '/bar'],
-//            ['foobar.com/', 'foobar', '.com/'],
-//            ['foobar.com/', 'foobar.com/', '.com/'],
-//            ['fòôbàř', 'fòôbàř', 'ř', 'UTF-8'],
-//            ['fòôbàř', 'fòôbàř', 'bàř', 'UTF-8'],
-//            ['fòôbàř/bàř', 'fòôbàř', '/bàř', 'UTF-8'],
-//            ['fòôbàř.com/', 'fòôbàř', '.com/', 'UTF-8'],
-//            ['fòôbàř.com/', 'fòôbàř.com/', '.com/', 'UTF-8'],
-//        ];
-//    }
+    public function ensureRightDataProvider(): array
+    {
+        return [
+            ['foobar', 'foobar', 'r'],
+            ['foobar', 'foobar', 'bar'],
+            ['foobar/bar', 'foobar', '/bar'],
+            ['foobar.com/', 'foobar', '.com/'],
+            ['foobar.com/', 'foobar.com/', '.com/'],
+            ['fòôbàř', 'fòôbàř', 'ř', 'UTF-8'],
+            ['fòôbàř', 'fòôbàř', 'bàř', 'UTF-8'],
+            ['fòôbàř/bàř', 'fòôbàř', '/bàř', 'UTF-8'],
+            ['fòôbàř.com/', 'fòôbàř', '.com/', 'UTF-8'],
+            ['fòôbàř.com/', 'fòôbàř.com/', '.com/', 'UTF-8'],
+        ];
+    }
 
     /**
      * @return array
