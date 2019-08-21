@@ -24,15 +24,4 @@ class GlobalSet extends ObjectType
 
         parent::__construct($config);
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
-    {
-        /** @var GlobalSetElement $source */
-        $fieldName = $resolveInfo->fieldName;
-
-        return $source->$fieldName;
-    }
 }

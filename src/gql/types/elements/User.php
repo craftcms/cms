@@ -35,26 +35,7 @@ class User extends ObjectType
     {
         /** @var UserElement $source */
         $fieldName = $resolveInfo->fieldName;
-
-        if ($fieldName === 'groupHandles') {
-            $groups = $source->getGroups();
-
-            $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
-
-            if (empty($pairs['usergroups'])) {
-                return [];
-            }
-
-            $allowedGroups = array_flip($pairs['usergroups']);
-
-            // Don't list the groups user has no access to see.
-            $groups = array_filter($groups, function (UserGroup $userGroup) use ($allowedGroups) {
-                return isset($allowedGroups[$userGroup->uid]);
-            });
-
-            return array_map(function (UserGroup $userGroup) { return $userGroup->handle;}, $groups);
-        }
-
+        
         if ($fieldName === 'preferences') {
             return Json::encode($source->getPreferences());
         }
