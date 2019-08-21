@@ -243,18 +243,6 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Returns the character at a specific point in a potentially multibyte string.
-     *
-     * @param string $str The string to check.
-     * @param int $i The 0-offset position in the string to check.
-     * @return string
-     */
-    public static function charAt(string $str, int $i): string
-    {
-        return self::at($str, $i);
-    }
-
-    /**
      * Returns an array consisting of the characters in the string.
      *
      * @param string $str
