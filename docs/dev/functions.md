@@ -213,11 +213,45 @@ Outputs any scripts and styles that were registered for the “head” position.
 </head>
 ```
 
+## `hiddenInput`
+
+Generates an HTML input tag.
+
+```twig
+{{ hiddenInput('entryId', entry.id) }}
+{# Output: <input type="hidden" name="entryId" value="100"> #}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ hiddenInput('entryId', entry.id, {
+    id: 'entry-id-input'
+}) }}
+```
+
 ## `include`
 
 Returns the rendered content of a template.
 
 This works identically to Twig’s core [`include`](https://twig.symfony.com/doc/2.x/functions/include.html) function.
+
+## `input`
+
+Generates an HTML input tag.
+
+```twig
+{{ input('email', 'email-input', '') }}
+{# Output: <input type="email" name="email-input" value=""> #}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ input('email', 'email-input', '', {
+    id: 'custom-input'
+}) }}
+```
 
 ## `max`
 

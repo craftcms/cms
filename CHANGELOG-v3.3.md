@@ -1,7 +1,9 @@
 # Running Release Notes for Craft CMS 3.3
 
 ## Added
-- Added the `tag()` Twig function, which renders a complete HTML tag.
+- Added the `hiddenInput()` Twig function, which generates a hidden input tag.
+- Added the `input()` Twig function, which generates an input tag.
+- Added the `tag()` Twig function, which generates an HTML tag.
 - Added the `|attr` Twig filter, which modifies the attributes on an HTML tag. ([#4660](https://github.com/craftcms/cms/issues/4660))
 - Added the `|append` and `|prepend` Twig filters, which add new HTML elements as children of an HTML tag. ([#3937](https://github.com/craftcms/cms/issues/3937))
 - Added the `purgeStaleUserSessionDuration` config setting.
