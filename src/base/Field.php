@@ -317,11 +317,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
-            [
-                'name' => $this->handle,
-                'value' => $value
-            ]);
+        return Html::textarea($this->handle, $value);
     }
 
     /**
