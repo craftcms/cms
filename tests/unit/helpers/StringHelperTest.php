@@ -785,10 +785,11 @@ class StringHelperTest extends Unit
      *
      * @param $expected
      * @param $input
+     * @param $ignore
      */
-    public function testTitleize($expected, $input)
+    public function testTitleize($expected, $input, $ignore = null)
     {
-        $actual = StringHelper::titleize($input);
+        $actual = StringHelper::titleize($input, $ignore);
         $this->assertSame($expected, $actual);
     }
 
@@ -3161,12 +3162,8 @@ class StringHelperTest extends Unit
             ['Title Case', 'TITLE CASE'],
             ['Testing The Method', 'testing the method'],
             ['Testing the Method', 'testing the method', $ignore],
-            [
-                'I Like to Watch Dvds at Home',
-                'i like to watch DVDs at home',
-                $ignore,
-            ],
-            ['Θα Ήθελα Να Φύγει', '  Θα ήθελα να φύγει  ', null, 'UTF-8'],
+            ['I Like to Watch Dvds at Home', 'i like to watch DVDs at home', $ignore],
+            ['Θα Ήθελα Να Φύγει', '  Θα ήθελα να φύγει  '],
         ];
     }
 
