@@ -424,6 +424,11 @@
 - Fixed a bug where `craft\helpers\UrlHelper` methods could add duplicate query params on generated URLs.
 - Fixed a bug where Matrix blocks weren’t getting duplicated for other sites when creating a new element. ([#4449](https://github.com/craftcms/cms/issues/4449))
 
+## 3.1.34.3 - 2019-08-21
+
+### Fixed
+- Fixed a bug where the `project-config/rebuild` command wasn’t discarding unused user groups or user field layouts in the project config. ([#4781](https://github.com/craftcms/cms/pull/4781))
+
 ## 3.1.34.2 - 2019-07-23
 
 ### Fixed
