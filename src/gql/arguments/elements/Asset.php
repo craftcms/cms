@@ -20,6 +20,11 @@ class Asset extends ElementArguments
                 'type' => Type::listOf(Type::int()),
                 'description' => 'Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.'
             ],
+            'volume' => [
+                'name' => 'volume',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on the volumes the assets belong to, per the volumes’ handles.'
+            ],
             'folderId' => [
                 'name' => 'folderId',
                 'type' => Type::listOf(Type::int()),
