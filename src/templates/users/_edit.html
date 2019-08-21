@@ -25,7 +25,7 @@
 {% set hiddenInputs %}
     {{ csrfInput() }}
     {% if not isNewUser -%}
-        <input type="hidden" name="userId" value="{{ user.id }}">
+        {{ hiddenInput('userId', user.id) }}
     {%- endif %}
 {% endset %}
 
@@ -55,7 +55,7 @@
 
 {% block content %}
     <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
-        <input type="hidden" name="action" value="users/save-user">
+        {{ actionInput('users/save-user') }}
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
@@ -149,7 +149,7 @@
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
                     {% set userGroupsInput %}
-                        <input type="hidden" name="groups" value="">
+                        {{ hiddenInput('groups', '') }}
 
                         {% if assignableGroups %}
                             <ul>
@@ -190,7 +190,7 @@
                         }) }}
                     {% endif %}
 
-                    <input type="hidden" name="permissions" value="">
+                    {{ hiddenInput('permissions', '') }}
 
                     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
                         {% include "_includes/permissions" with {
