@@ -14,8 +14,11 @@
 - Added `craft\helpers\Html::parseTag()`.
 - Added `craft\helpers\Html::parseTagAttributes()`.
 - Added `craft\helpers\Html::prependToTag()`.
+- Added `craft\helpers\Template::actionInput()`.
 - Added `craft\helpers\Template::beginProfile()`.
+- Added `craft\helpers\Template::csrfInput()`.
 - Added `craft\helpers\Template::endProfile()`.
+- Added `craft\helpers\Template::redirectInput()`.
 - Added `craft\web\twig\nodes\ProfileNode`.
 - Added `craft\web\twig\nodevisitors\Profiler`.
 
@@ -23,9 +26,15 @@
 - Global set reference tags can now refer to the global set by its handle. ([#4645](https://github.com/craftcms/cms/issues/4645))
 - Improved Twig template profiling to include blocks and macros.
 - Twig template profiling no longer occurs when Dev Mode isn’t enabled, unless an admin user is logged in and has opted into it.
+- The `actionInput()`, `csrfInput()`, and `redirectInput()` Twig functions now support an `options` argument for customizing the HTML tag attributes.
 - The `_layouts/forms/field.html` template now supports `label`, `instructions`, `tip`, `warning`, and `input` blocks that can be overridden when including the template with an `{% embed %}` tag.
 - Craft no longer overrides the base Twig template class, unless the now-deprecated `` config setting is enabled. ([#4755](https://github.com/craftcms/cms/issues/4755))
 
 ## Deprecated
 - Deprecated the `suppressTemplateErrors` config setting.
 - Deprecated `craft\web\twig\Template`.
+
+## Removed
+- Removed `craft\web\twig\Extension::actionInputFunction()`.
+- Removed `craft\web\twig\Extension::csrfInputFunction()`.
+- Removed `craft\web\twig\Extension::redirectInputFunction()`.

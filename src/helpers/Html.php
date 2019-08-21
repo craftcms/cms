@@ -7,7 +7,10 @@
 
 namespace craft\helpers;
 
+use Craft;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Html
@@ -46,6 +49,56 @@ class Html extends \yii\helpers\Html
         }
 
         return $html;
+    }
+
+    /**
+     * Generates a hidden CSRF input tag.
+     *
+     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @return string The generated hidden input tag
+     * @since 3.3.0
+     */
+    public static function csrfInput(array $options = []): string
+    {
+        $request = Craft::$app->getRequest();
+        return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+    }
+
+    /**
+     * Generates a hidden `action` input tag.
+     *
+     * @param string $route The action route
+     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @return string The generated hidden input tag
+     * @since 3.3.0
+     */
+    public static function actionInput(string $route, array $options = []): string
+    {
+        return static::hiddenInput('action', $route, $options);
+    }
+
+    /**
+     * Generates a hidden `redirect` input tag.
+     *
+     * @param string $url The URL to redirect to
+     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @return string The generated hidden input tag
+     * @throws Exception if the validation key could not be written
+     * @throws InvalidConfigException when HMAC generation fails
+     * @since 3.3.0
+     */
+    public static function redirectInput(string $url, array $options = []): string
+    {
+        return static::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options);
     }
 
     /**

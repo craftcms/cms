@@ -813,7 +813,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('alias', [Craft::class, 'getAlias']),
-            new TwigFunction('actionInput', [$this, 'actionInputFunction'], ['is_safe' => ['html']]),
+            new TwigFunction('actionInput', [Html::class, 'actionInput'], ['is_safe' => ['html']]),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
             new TwigFunction('attr', [$this, 'attrFunction'], ['is_safe' => ['html']]),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
@@ -821,13 +821,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
             new TwigFunction('create', [Craft::class, 'createObject']),
-            new TwigFunction('csrfInput', [$this, 'csrfInputFunction'], ['is_safe' => ['html']]),
+            new TwigFunction('csrfInput', [Html::class, 'csrfInput'], ['is_safe' => ['html']]),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', 'getenv'),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
-            new TwigFunction('redirectInput', [$this, 'redirectInputFunction'], ['is_safe' => ['html']]),
+            new TwigFunction('redirectInput', [Html::class, 'redirectInput'], ['is_safe' => ['html']]),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('round', [$this, 'roundFunction']),
             new TwigFunction('seq', [$this, 'seqFunction']),
@@ -856,22 +856,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function attrFunction(array $attributes): string
     {
         return Html::renderTagAttributes($attributes);
-    }
-
-    /**
-     * Returns a CSRF input wrapped in a \Twig\Markup object.
-     *
-     * @return string|null
-     */
-    public function csrfInputFunction()
-    {
-        $request = Craft::$app->getRequest();
-
-        if (!$request->enableCsrfValidation) {
-            return null;
-        }
-
-        return '<input type="hidden" name="' . $request->csrfParam . '" value="' . $request->getCsrfToken() . '">';
     }
 
     /**
@@ -905,28 +889,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function pluginFunction(string $handle)
     {
         return Craft::$app->getPlugins()->getPlugin($handle);
-    }
-
-    /**
-     * Returns a redirect input wrapped in a \Twig\Markup object.
-     *
-     * @param string $url The URL to redirect to.
-     * @return string
-     */
-    public function redirectInputFunction(string $url): string
-    {
-        return '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData($url) . '">';
-    }
-
-    /**
-     * Returns an action input wrapped in a \Twig\Markup object, suitable for use in a front-end form.
-     *
-     * @param string $actionPath
-     * @return string
-     */
-    public function actionInputFunction(string $actionPath): string
-    {
-        return '<input type="hidden" name="action" value="' . $actionPath . '">';
     }
 
     /**
@@ -1187,13 +1149,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @return string|null
+     * @return string
      * @deprecated in Craft 3.0. Use csrfInput() instead.
      */
-    public function getCsrfInput()
+    public function getCsrfInput(): string
     {
         Craft::$app->getDeprecator()->log('getCsrfInput', 'getCsrfInput() has been deprecated. Use csrfInput() instead.');
-        return $this->csrfInputFunction();
+        return Html::csrfInput();
     }
 
     /**

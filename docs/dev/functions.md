@@ -4,13 +4,18 @@ The following functions are available to Twig templates in Craft:
 
 ## `actionInput`
 
-A shortcut for outputting a hidden input used to route a POST request to a particular controller and action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action-name">` directly into a template.
+A shortcut for outputting a hidden input used to route a POST request to a particular controller action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action/route">` directly into a template.
 
 ```twig
-<form method="POST">
-    {{ actionInput('users/save-user') }}
-    <!-- ... -->
-</form>
+{{ actionInput('users/save-user') }}
+```
+
+You can optionally set additional attributes on the tag by passing a second argument.
+
+```twig
+{{ actionInput('users/save-user', {
+    id: 'action-input'
+}) }}
 ```
 
 ## `alias`
@@ -124,10 +129,15 @@ Creates a new object instance based on a given class name or object configuratio
 Returns a hidden CSRF Token input. All sites that have CSRF Protection enabled must include this in each form that submits via POST.
 
 ```twig
-<form method="post">
-    {{ csrfInput() }}
-    <!-- ... -->
-</form>
+{{ csrfInput() }}
+```
+
+You can optionally set additional attributes on the tag by passing a second argument.
+
+```twig
+{{ csrfInput({
+    id: 'csrf-input'
+}) }}
 ```
 
 ## `cycle`
@@ -253,6 +263,14 @@ Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}"
 
 ```twig
 {{ redirectInput(url) }}
+```
+
+You can optionally set additional attributes on the tag by passing a second argument.
+
+```twig
+{{ redirectInput(url, {
+    id: 'redirect-input'
+}) }}
 ```
 
 ## `seq`
