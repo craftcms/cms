@@ -513,7 +513,7 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             '4-spaces' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?    =',
+                self::ABSOLUTE_URL_HTTPS_WWW,
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    ',
                 'urlWithParams'
@@ -694,6 +694,8 @@ class UrlHelperTest extends Unit
     {
         return [
             ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],
+            // https://github.com/craftcms/cms/issues/4778
+            ['http://test.craftcms.test/index.php?p=endpoint&param1=x&param2[]=y&param2[]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
         ];
     }
 

@@ -28,7 +28,7 @@ body.rtl .route .uri-container:after { background-image: url(images/route-bg_rtl
 body.ltr .route .uri-container .site { margin: -1px 8px -1px 0 ; }
 body.rtl .route .uri-container .site { margin: -1px 0 -1px 8px ; }
 
-.route .uri-container .uri .token { margin: 0 2px; }
+.route .uri-container .uri .token { margin: 0 2px -1px; }
 
 .route .template { color: #8f98a3; }
 
