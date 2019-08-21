@@ -16,8 +16,8 @@
 - Added `craft\helpers\Html::prependToTag()`.
 - Added `craft\helpers\Template::beginProfile()`.
 - Added `craft\helpers\Template::endProfile()`.
-- Added `craft\web\twig\nodevisitors\Profiler`.
 - Added `craft\web\twig\nodes\ProfileNode`.
+- Added `craft\web\twig\nodevisitors\Profiler`.
 
 ## Changed
 - Global set reference tags can now refer to the global set by its handle. ([#4645](https://github.com/craftcms/cms/issues/4645))
