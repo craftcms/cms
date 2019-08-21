@@ -23,7 +23,7 @@ class Entry extends StructureElementArguments
             'section' => [
                 'name' => 'section',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the sections the entries belong to.'
+                'description' => 'Narrows the query results based on the section handles the entries belong to.'
             ],
             'sectionId' => [
                 'name' => 'sectionId',
@@ -33,7 +33,7 @@ class Entry extends StructureElementArguments
             'type' => [
                 'name' => 'type',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the entries’ entry types.'
+                'description' => 'Narrows the query results based on the entries’ entry type handles.'
             ],
             'typeId' => [
                 'name' => 'typeId',
