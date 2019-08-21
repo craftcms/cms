@@ -10,6 +10,7 @@
 - Admin users can now opt into getting the full stack trace view when an uncaught exception occurs when Dev Mode isn’t enabled. ([#4765](https://github.com/craftcms/cms/issues/4765))
 - Admin users can now opt into having Twig templates profiled when Dev Mode inn’t enabled.
 - Control Panel subnav items can now have badge counts. ([#4756](https://github.com/craftcms/cms/issues/4756))
+- Added `craft\helpers\Html::a()`.
 - Added `craft\helpers\Html::actionInput()`.
 - Added `craft\helpers\Html::appendToTag()`.
 - Added `craft\helpers\Html::csrfInput()`.

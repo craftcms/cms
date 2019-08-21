@@ -102,6 +102,19 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function a($text, $url = null, $options = [])
+    {
+        if ($url !== null) {
+            // Use UrlHelper::url() instead of Url::to()
+            $options['href'] = UrlHelper::url($url);
+        }
+
+        return static::tag('a', $text, $options);
+    }
+
+    /**
      * Appends HTML to the end of the given tag.
      *
      * @param string $tag The HTML tag that `$html` should be appended to
