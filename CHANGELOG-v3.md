@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.34.3 - 2019-08-21
+
+### Fixed
+- Fixed a bug where the `project-config/rebuild` command wasn’t discarding unused user groups or user field layouts in the project config. ([#4781](https://github.com/craftcms/cms/pull/4781))
+
 ## 3.1.34.2 - 2019-07-23
 
 ### Fixed
