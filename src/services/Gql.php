@@ -42,20 +42,6 @@ use GraphQL\Type\Schema;
 use yii\base\Component;
 
 /**
- * Rolling list of todos:
- *
- * 2) Event for registering interfaces (because they get eager-loaded if `prebuildSchema` is set to `true` when building schema.
- * 6) Figure out and add query complexity costs per GQL type.
- * 7) Configurable limits on both query complexity and nesting level.
- * 8) Sprinkle some cache on top (see if able to integrate with Craft template caching, as similar principles
- *     should apply - element changes invalidate a cached response and structural changes (when project config gets updated) invalidates
- *     cached responses. Cached by token by query.
- * 9) Tests: Disabled and expired tokens; matrix blocks return correct union types; parameters work eager-loading;
- * 12) Expose site structure over GQL as well
- * 13) Once (12) is in place, get rid of, say, `sectionId` and `sectionUid` fields and replace with a `section` type that has `uid` and `id` fields.
- * 14) MAYBE change all closures to static method and make schema itself cacheable per token per query.
- */
-/**
  * The Gql service provides GraphQL functionality.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
