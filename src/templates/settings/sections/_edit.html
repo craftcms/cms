@@ -203,28 +203,8 @@
     {% endif %}
 {% endblock %}
 
-
-{% js %}
-    var $siteRows = $('#sites').children('tbody').children(),
-        $lightswitches = $siteRows.children('th:nth-child(2)').children('.lightswitch');
-
-    function updateSites() {
-        $lightswitches.each(function() {
-            if ($(this).data('lightswitch').on) {
-                $(this).parent().nextAll('td').removeClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '0');
-            } else {
-                $(this).parent().nextAll('td').addClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '-1');
-            }
-        });
-    }
-
-    $lightswitches.on('change', updateSites);
-
-    Garnish.$doc.ready(function() {
-        updateSites();
-    });
-
-    {% if brandNewSection %}
+{% if brandNewSection %}
+    {% js %}
         new Craft.HandleGenerator('#name', '#handle');
 
         {% for site in craft.app.sites.getAllSites() %}
@@ -232,5 +212,5 @@
             new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
             new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_entry' });
         {% endfor %}
-    {% endif %}
-{% endjs %}
+    {% endjs %}
+{% endif %}

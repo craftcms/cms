@@ -14,6 +14,7 @@ use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -122,6 +123,8 @@ class SectionsController extends Controller
                 'url' => UrlHelper::url('settings/sections')
             ],
         ];
+
+        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
 
         return $this->renderTemplate('settings/sections/_edit', $variables);
     }
