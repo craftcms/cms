@@ -1464,10 +1464,10 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'Address Line 2' => 'Adresregel 2',
     'Are you sure you want to delete this {type}?' => 'Weet u zeker dat u deze {type} wilt verwijderen?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'De momenteel geïnstalleerde <strong>{cause}</strong> heeft schemaversie {existing} ({incoming} verwacht)',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profieltwigsjablonen wanneer ontwikkelmodus is ingeschakeld',
     'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
     'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'The URI can’t begin with the {setting} config setting.' => 'De URI mag niet beginnen met de configuratie-instelling {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} mag niet beginnen met de configuratie-instelling {setting}.',
+    'Debug Toolbar' => 'Debugwerkbalk'
 ];
