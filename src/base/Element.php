@@ -1350,13 +1350,12 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl()
     {
-        if ($this->uri !== null) {
-            $path = ($this->uri === '__home__') ? '' : $this->uri;
-
-            return UrlHelper::siteUrl($path, null, null, $this->siteId);
+        if ($this->uri === null) {
+            return null;
         }
 
-        return null;
+        $path = ($this->uri === '__home__') ? '' : $this->uri;
+        return UrlHelper::siteUrl($path, null, null, $this->siteId);
     }
 
     /**
