@@ -1391,10 +1391,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
-        $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
         $this->_applyJoinParams();
+        
+        // The search executes this query, so we should apply it as late as possible
+        $this->_applySearchParam($builder->db);
 
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
