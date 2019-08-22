@@ -1464,7 +1464,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig-skabeloner, når udviklertilstand er deaktiveret',
     'Show full exception views when Dev Mode is disabled' => 'Vis komplet visning af undtagelser, når udviklertilstand er deaktiveret',
     'Exception Views' => 'Visning af undtagelser',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'The URI can’t begin with the {setting} config setting.' => 'URI\'en må ikke starte med konfig-indstillingen {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} må ikke starte med konfi-indstillingen {setting}.',
+    'Debug Toolbar' => 'Værktøjslinjen Fejlfinding'
 ];
