@@ -1460,10 +1460,10 @@ Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'Address Line 2' => 'Wiersz 2 adresu',
     'Are you sure you want to delete this {type}?' => 'Czy na pewno chcesz usunąć {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'Aktualnie zainstalowane oprogramowanie <strong>{cause}</strong> ma wersję schematu {existing} (expected {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Szablony profilu Twig, gdy wyłączony jest tryb deweloperski',
+    'Show full exception views when Dev Mode is disabled' => 'Pokaż pełne widoki wyjątków, gdy wyłączony jest tryb deweloperski',
+    'Exception Views' => 'Widoki wyjątków',
+    'The URI can’t begin with the {setting} config setting.' => 'Identyfikator URI nie może zaczynać się od ustawienia konfiguracyjnego {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => 'Atrybut {attribute} nie może zaczynać się od ustawienia konfiguracyjnego {setting}.',
+    'Debug Toolbar' => 'Pasek narzędzi debugowania'
 ];
