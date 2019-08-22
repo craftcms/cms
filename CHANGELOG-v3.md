@@ -12,6 +12,7 @@
 - Improved the performance of element duplication on multi-site installs.
 - Edit Entry pages now get updated preview target URLs after saving a draft, in case the URLs have changed.
 - Improved the performance of `craft\web\View::renderString()` for templates that don’t contain any Twig code.
+- Matrix block queries no longer include blocks owned by drafts or revisions by default. ([#4790](https://github.com/craftcms/cms/issues/4790))
 
 ### Removed
 - Removed `craft\base\ElementInterface::getSource()`. ([#4754](https://github.com/craftcms/cms/issues/4754))
