@@ -23,7 +23,13 @@
                         {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
                 {%- endswitch %}
                 <th scope="col" class="{{ col.class ?? '' }}">
-                    {%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
+                    {%- if col.headingHtml is defined %}
+                        {{- col.headingHtml|raw }}
+                    {%- elseif col.heading is defined and col.heading %}
+                        {{- col.heading }}
+                    {%- else %}
+                        &nbsp;
+                    {%- endif %}
                     {%- if col.info is defined -%}
                         <span class="info">{{ col.info|md|raw }}</span>
                     {%- endif -%}
