@@ -92,7 +92,3 @@ You can also set the `orderBy` parameter to `'score'` if you want results ordere
 When you do this, each of the elements returned will have a `searchScore` attribute set, which reveals what their search score was.
 
 > See our [Search Form](dev/examples/search-form.md) tutorial for a complete example of listing dynamic search results.
-
-## Rebuilding your Search Indexes
-
-Craft does its best to keep its search indexes as up-to-date as possible, but there are a couple things that might render portions of them inaccurate. If you suspect that your search indexes don’t have the latest and greatest data, you can have Craft rebuild them with the Rebuild Search Indexes tool in Settings.
