@@ -1464,10 +1464,10 @@ return [
     'Address Line 2' => 'Адресная строка 2',
     'Are you sure you want to delete this {type}?' => 'Вы уверены, что хотите удалить этот {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>, установленная в настоящий момент, имеет версию схемы h {existing} (expected {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Профилировать шаблоны Twig при отключенном режиме разработчика',
+    'Show full exception views when Dev Mode is disabled' => 'Выводить представления исключений полностью при отключенном режиме разработчика',
+    'Exception Views' => 'Представления исключений',
+    'The URI can’t begin with the {setting} config setting.' => 'URI не может начинаться с конфигурационной настройки {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} не может начинаться с конфигурационной настройки {setting}.',
+    'Debug Toolbar' => 'Отладочная панель инструментов'
 ];
