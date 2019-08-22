@@ -1464,9 +1464,9 @@ return [
     'Address Line 2' => '주소 입력 2',
     'Are you sure you want to delete this {type}?' => '이 {type}을(를) 삭제하시겠습니까?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '현재 설치되어 있는 <strong>{cause}</strong>의 스키마 버전은 {existing}입니다(필요한 버전 {incoming}).',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
+    'Profile Twig templates when Dev Mode is disabled' => '프로필 트윅 템플릿(개발자 모드가 비활성화 상태인 경우)',
+    'Show full exception views when Dev Mode is disabled' => '전체 예외 보기 표시(개발자 모드가 비활성화 상태인 경우)',
+    'Exception Views' => '예외 보기',
     'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
     'Debug Toolbar' => 'Debug Toolbar'
