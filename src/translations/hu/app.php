@@ -1462,10 +1462,10 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Address Line 2' => 'Címsor 2',
     'Are you sure you want to delete this {type}?' => 'Biztosan törölni szeretné: {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'A jelenleg telepített <strong>{cause}</strong> azonos sémát használ, mint a {existing} (elvárt: {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Twig profilsablonok kikapcsolt fejlesztői módban',
+    'Show full exception views when Dev Mode is disabled' => 'Kivétel nézetek teljes megjelenítése kikapcsolt fejlesztői módban',
+    'Exception Views' => 'Kivétel nézet',
+    'The URI can’t begin with the {setting} config setting.' => 'Az URI nem kezdődhet {setting} konfigurációs beállítással.',
+    '{attribute} cannot start with the {setting} config setting.' => 'az {attribute} nem kezdődhet {setting} konfigurációs beállítással.',
+    'Debug Toolbar' => 'Hibakereső eszköztár'
 ];
