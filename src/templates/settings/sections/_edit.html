@@ -75,9 +75,8 @@
                     value: site.id,
                     small: true
                 }),
-                hasUrls: {
-                    value: siteSettings ? siteSettings.hasUrls,
-                    hasErrors: siteSettings.hasErrors('hasUrls')
+                singleHomepage: {
+                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
                 },
                 singleUri: {
                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
@@ -111,24 +110,25 @@
                 type: 'heading',
                 class: 'thin'~(not craft.app.getIsMultiSite() ? ' hidden')
             },
-            hasUrls: {
-                type: 'lightswitch',
-                heading: "Has urls"|t('app'),
-                class: 'thin '~(section.type != 'single' ? ' hidden')
+            singleHomepage: {
+                type: 'checkbox',
+                headingHtml: tag('div', {
+                    data: {icon: 'home'},
+                    title: 'Homepage'|t('app')
+                }),
+                class: 'thin single-homepage type-single'~(section.type != 'single' ? ' hidden')
             },
             singleUri: {
                 type: 'singleline',
                 heading: "URI"|t('app'),
-                info: "What the entry URI should be for the site. Leave blank if this is the homepage."|t('app'),
-                placeholder: "Leave blank if this is the homepage. Turn the toggle to the left off if this section should not have URLs."|t('app'),
+                info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
                 code: true,
-                class: 'type-single'~(section.type != 'single' ? ' hidden')
+                class: 'single-uri type-single'~(section.type != 'single' ? ' hidden')
             },
             uriFormat: {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
-                placeholder: "Leave blank if entries don’t have URLs"|t('app'),
                 code: true,
                 class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
             },
