@@ -37,6 +37,7 @@
 
 ## Deprecated
 - Deprecated the `suppressTemplateErrors` config setting.
+- Deprecated `craft\services\Sections::isSectionTemplateValid()`.
 - Deprecated `craft\web\twig\Template`.
 
 ## Removed
