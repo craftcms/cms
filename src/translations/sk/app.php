@@ -1464,10 +1464,10 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Address Line 2' => 'Adresa, riadok 2',
     'Are you sure you want to delete this {type}?' => 'Naozaj chcete odstrániť tento {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong>má aktuálne nainštalovanú verziu schémy {existing} (očakávaná {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Šablóny Profile Twig v zakázanom režime vývojára',
-    'Show full exception views when Dev Mode is disabled' => 'Zobraziť plné náhľady v zakázanom režime vývojára',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Šablóny profilu Twig v zakázanom režime vývojára',
+    'Show full exception views when Dev Mode is disabled' => 'Plné zobrazenie výnimiek v zakázanom režime vývojára',
+    'Exception Views' => 'Zobrazenie výnimiek',
+    'The URI can’t begin with the {setting} config setting.' => 'URI nemôže začínať nastavením konfigurácie {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} nemôže začínať nastavením konfigurácie {setting}.',
+    'Debug Toolbar' => 'Panel nástrojov na ladenie'
 ];
