@@ -3,6 +3,8 @@
 
 {% requireEdition CraftPro %}
 
+{% set selectedSubnavItem = 'tokens' %}
+
 {% block content %}
     {% set tokens = craft.app.gql.tokens %}
 

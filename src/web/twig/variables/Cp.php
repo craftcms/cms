@@ -153,14 +153,14 @@ class Cp extends Component
         if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->getIsAdmin()) {
             $navItems[] = [
                 'label' => Craft::t('app', 'GraphQL'),
-                'url' => 'graphql/explore',
+                'url' => 'graphql',
                 'icon' => '@app/icons/graphql.svg',
                 'subnav' => [
-                    [
+                    'explore' => [
                         'label' => Craft::t('app', 'Explore'),
-                        'url' => 'graphql/explore',
+                        'url' => 'graphql',
                     ],
-                    [
+                    'tokens' => [
                         'label' => Craft::t('app', 'Tokens'),
                         'url' => 'graphql/tokens',
                     ]
