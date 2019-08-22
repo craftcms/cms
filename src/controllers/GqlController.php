@@ -101,6 +101,17 @@ class GqlController extends Controller
         return $this->asJson($result);
     }
 
+    public function actionGraphiql()
+    {
+        $this->requireAdmin();
+        $this->getView()->registerAssetBundle(GraphiQlAsset::class);
+
+        return $this->renderTemplate('graphql/graphiql', [
+            'url' => '/actions/gql',
+            'token' => 'apFUXCq-Ry49Vo609lEsVxxCQ4yXzEaj'
+        ]);
+    }
+
     public function actionViewTokens()
     {
         $this->requireAdmin();
