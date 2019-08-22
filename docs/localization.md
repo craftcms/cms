@@ -43,6 +43,12 @@ You can also take advantage of Craft’s [static translation](https://docs.craft
 {{ "Welcome!"|t }}
 ```
 
+### Related articles & code snippets
+
+- [The Power of t() in Craft 3](https://medium.com/@drifter/the-power-of-t-in-craft-3-b4bc3489edc4)
+- [Language switcher for Craft 3 by Jan D'Hollander](https://www.thebasement.be/language-switcher-for-craft-3/)
+- [Getting full native language name in Craft3 language switcher](https://craftcms.stackexchange.com/questions/27116/getting-full-native-language-name-in-craft3-language-switcher)
+
 ## Step 5: Give your authors access to the sites
 
 As soon as you add an additional site to your Craft installation, Craft will start checking for site permissions whenever users try to edit content. By default, no users or groups have access to any site, so you need to assign them.
