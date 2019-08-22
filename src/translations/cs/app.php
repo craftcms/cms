@@ -1460,10 +1460,10 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'Address Line 2' => 'Řádek adresy 2',
     'Are you sure you want to delete this {type}?' => 'Opravdu chcete tento {type} vymazat?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'V současné době nainstalovaný <strong>{cause}</strong> má verzi schématu {existing} (očekávána je {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
+    'Profile Twig templates when Dev Mode is disabled' => 'Profilovat šablony Twig, když je deaktivován vývojářský režim',
     'Show full exception views when Dev Mode is disabled' => 'Zobrazit celé náhledy výjimky, když je deaktivován vývojářský režim',
     'Exception Views' => 'Náhledy výjimky',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'The URI can’t begin with the {setting} config setting.' => 'URI nemůže začít s {setting} nastavením konfigurace.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} nemůže začít s {setting} nastavením konfigurace.',
+    'Debug Toolbar' => 'Panel nástrojů pro debugging'
 ];
