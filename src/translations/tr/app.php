@@ -1465,5 +1465,5 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'Exception Views' => 'İstisnai Görünümler',
     'The URI can’t begin with the {setting} config setting.' => 'URI, {setting} yapılandırma ayarıyla başlayamaz.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute}, {setting} yapılandırma ayarıyla başlayamaz.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Debug Toolbar' => 'Hata Ayıklama Araç Çubuğu'
 ];
