@@ -1587,9 +1587,15 @@ JS;
             'charset' => Craft::$app->charset,
         ];
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
         // Only load our custom Template class if they still have suppressTemplateErrors enabled
-        if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
+        if ($generalConfig->suppressTemplateErrors) {
             $this->_twigOptions['base_template_class'] = Template::class;
+        }
+
+        if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $this->_twigOptions['autoescape'] = 'js';
         }
 
         if (YII_DEBUG) {

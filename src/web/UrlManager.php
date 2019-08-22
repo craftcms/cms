@@ -234,14 +234,7 @@ class UrlManager extends \yii\web\UrlManager
             return $this->_matchedElement;
         }
 
-        $request = Craft::$app->getRequest();
-
-        if (!$request->getIsSiteRequest()) {
-            return $this->_matchedElement = false;
-        }
-
-        $this->_getMatchedElementRoute($request->getPathInfo());
-
+        $this->_getMatchedElementRoute(Craft::$app->getRequest());
         return $this->_matchedElement;
     }
 
@@ -368,10 +361,8 @@ class UrlManager extends \yii\web\UrlManager
             return $route;
         }
 
-        $path = $request->getPathInfo();
-
         // Is this an element request?
-        if (($route = $this->_getMatchedElementRoute($path)) !== false) {
+        if (($route = $this->_getMatchedElementRoute($request)) !== false) {
             return $route;
         }
 
@@ -381,29 +372,35 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         // Does it look like they're trying to access a public template path?
-        return $this->_getTemplateRoute($path);
+        return $this->_getTemplateRoute($request);
     }
 
     /**
      * Attempts to match a path with an element in the database.
      *
-     * @param string $path
+     * @param Request $request
      * @return mixed
      */
-    private function _getMatchedElementRoute(string $path)
+    private function _getMatchedElementRoute(Request $request)
     {
         if ($this->_matchedElementRoute !== null) {
             return $this->_matchedElementRoute;
         }
 
-        if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
-            /** @var Element $element */
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
-        } else {
-            $element = null;
+        if (
+            !Craft::$app->getIsInstalled() ||
+            !$request->getIsSiteRequest() ||
+            Craft::$app->getConfig()->getGeneral()->headlessMode
+        ) {
+
+            $this->setMatchedElement(false);
+            return false;
         }
 
+        $path = $request->getPathInfo();
+        /** @var Element $element */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
         $this->setMatchedElement($element ?: false);
 
         if (YII_DEBUG) {
@@ -454,11 +451,11 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
      *
+     * @param Request $request
      * @return bool
      */
-    private function _isPublicTemplatePath(): bool
+    private function _isPublicTemplatePath(Request $request): bool
     {
-        $request = Craft::$app->getRequest();
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
             $trigger = '_';
         } else {
@@ -482,12 +479,17 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Checks if the path could be a public template path and if so, returns a route to that template.
      *
-     * @param string $path
+     * @param Request $request
      * @return array|bool
      */
-    private function _getTemplateRoute(string $path)
+    private function _getTemplateRoute(Request $request)
     {
-        $matches = $this->_isPublicTemplatePath();
+        if ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            return false;
+        }
+
+        $matches = $this->_isPublicTemplatePath($request);
+        $path = $request->getPathInfo();
 
         if (YII_DEBUG) {
             Craft::debug([

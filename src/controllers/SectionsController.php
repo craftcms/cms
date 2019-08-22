@@ -171,9 +171,9 @@ class SectionsController extends Controller
             $siteSettings->siteId = $site->id;
 
             if ($section->type === Section::TYPE_SINGLE) {
-                $siteSettings->uriFormat = $postedSettings['singleHomepage'] ? '__home__' : $postedSettings['singleUri'];
+                $siteSettings->uriFormat = ($postedSettings['singleHomepage'] ?? false) ? '__home__' : ($postedSettings['singleUri'] ?? null);
             } else {
-                $siteSettings->uriFormat = $postedSettings['uriFormat'];
+                $siteSettings->uriFormat = $postedSettings['uriFormat'] ?? null;
                 $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
             }
 

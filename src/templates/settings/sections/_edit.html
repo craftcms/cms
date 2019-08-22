@@ -3,6 +3,8 @@
 
 {% import "_includes/forms" as forms %}
 
+{% set headlessMode = craft.app.config.general.headlessMode %}
+
 
 {% block content %}
     {{ actionInput('sections/save-section') }}
@@ -75,23 +77,23 @@
                     value: site.id,
                     small: true
                 }),
-                singleHomepage: {
+                singleHomepage: not headlessMode ? {
                     value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
                 },
-                singleUri: {
+                singleUri: not headlessMode ? {
                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
                    hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                uriFormat: {
+                uriFormat: not headlessMode ? {
                     value: siteSettings ? siteSettings.uriFormat,
                     hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                template: {
+                template: not headlessMode ? {
                     value: siteSettings ? siteSettings.template,
                     hasErrors: siteSettings ? siteSettings.hasErrors('template'),
                 },
                 enabledByDefault: siteSettings ? siteSettings.enabledByDefault : true,
-            }
+            }|filter
         }) %}
     {% endfor %}
 
@@ -104,35 +106,37 @@
             heading: {
                 type: 'heading',
                 heading: "Site"|t('app'),
-                class: 'thin'
+                thin: true
             },
             enabled: {
                 type: 'heading',
-                class: 'thin'~(not craft.app.getIsMultiSite() ? ' hidden')
+                thin: true,
+                class: not craft.app.getIsMultiSite() ? 'hidden'
             },
-            singleHomepage: {
+            singleHomepage: not headlessMode ? {
                 type: 'checkbox',
                 headingHtml: tag('div', {
                     data: {icon: 'home'},
                     title: 'Homepage'|t('app')
                 }),
-                class: 'thin single-homepage type-single'~(section.type != 'single' ? ' hidden')
+                thin: true,
+                class: ['single-homepage', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            singleUri: {
+            singleUri: not headlessMode ? {
                 type: 'singleline',
                 heading: "URI"|t('app'),
                 info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
                 code: true,
-                class: 'single-uri type-single'~(section.type != 'single' ? ' hidden')
+                class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            uriFormat: {
+            uriFormat: not headlessMode ? {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 code: true,
-                class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
+                class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             },
-            template: {
+            template: not headlessMode ? {
                 type: 'template',
                 heading: "Template"|t('app'),
                 info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
@@ -141,10 +145,12 @@
             enabledByDefault: {
                 type: 'lightswitch',
                 heading: "Default Status"|t('app'),
-                class: 'thin type-channel type-structure'~(section.type == 'single' ? ' hidden')
+                thin: true,
+                class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             }
-        },
+        }|filter,
         rows: siteRows,
+        fullWidth: not headlessMode,
         staticRows: true,
         errors: siteErrors|unique
     }) }}
@@ -182,7 +188,9 @@
     {% if CraftEdition == CraftPro %}
         {{ forms.editableTableField({
             label: 'Preview Targets'|t('app'),
-            instructions: 'Additional locations that should be available for previewing entries in this section.',
+            instructions: headlessMode
+                ? 'Locations that should be available for previewing entries in this section.'|t('app')
+                : 'Additional locations that should be available for previewing entries in this section.'|t('app'),
             id: 'previewTargets',
             name: 'previewTargets',
             cols: {
