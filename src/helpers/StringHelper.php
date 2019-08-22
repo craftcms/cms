@@ -571,7 +571,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param int $flags A bitmask of these flags: https://www.php.net/manual/en/function.html-entity-decode.php
      * @return string The decoded string.
      */
-    public static function htmlDecode(string $str, int $flags = \ENT_COMPAT): string
+    public static function htmlDecode(string $str, int $flags = ENT_COMPAT): string
     {
         return (string)BaseStringy::create($str)->htmlDecode($flags);
     }

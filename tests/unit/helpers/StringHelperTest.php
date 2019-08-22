@@ -120,7 +120,7 @@ class StringHelperTest extends Unit
 
         // check the string length
         foreach ($uniqueIds as $uniqueId) {
-            static::assertSame(32, strlen($uniqueId));
+            $this->assertSame(32, strlen($uniqueId));
         }
     }
 
@@ -362,6 +362,113 @@ class StringHelperTest extends Unit
     }
 
     /**
+     * @dataProvider endsWithAnyDataProvider
+     *
+     * @param $expected
+     * @param $haystack
+     * @param $needles
+     * @param bool $caseSensitive
+     */
+    public function testEndsWithAny($expected, $haystack, $needles, $caseSensitive = true)
+    {
+        $actual = StringHelper::endsWithAny($haystack, $needles, $caseSensitive);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider escapeDataProvider
+     *
+     * @param $expected
+     * @param $string
+     */
+    public function testEscape($expected, $string)
+    {
+        $actual = StringHelper::escape($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     *
+     */
+    public function testExtractText()
+    {
+        $testArray = [
+            ''                                                                                                                       => '',
+            '<h1>test</h1>'                                                                                                          => '<h1>test</h1>',
+            'test'                                                                                                                   => 'test',
+            'A PHP string manipulation library with multibyte support. Compatible with PHP PHP 7+.'                                  => 'A PHP string manipulation library with multibyte…',
+            'A PHP string manipulation library with multibyte support. κόσμε-öäü κόσμε-öäü κόσμε-öäü foobar Compatible with PHP 7+.' => 'A PHP string manipulation library with multibyte support. κόσμε-öäü…',
+            'A PHP string manipulation library with multibyte support. foobar Compatible with PHP 7+.'                               => 'A PHP string manipulation library with multibyte…',
+        ];
+
+        foreach ($testArray as $testString => $testExpected) {
+            $this->assertSame($testExpected, StringHelper::extractText($testString), 'tested: ' . $testString);
+        }
+
+        // ----------------
+
+        $testString = 'this is only a Fork of Stringy';
+        $this->assertSame('…a Fork of Stringy', StringHelper::extractText($testString, 'Fork', 5), 'tested: ' . $testString);
+
+        // ----------------
+
+        $testString = 'This is only a Fork of Stringy, take a look at the new features.';
+        $this->assertSame('…Fork of Stringy…', StringHelper::extractText($testString,'Stringy', 15), 'tested: ' . $testString);
+
+        // ----------------
+
+        $testString = 'This is only a Fork of Stringy, take a look at the new features.';
+        $this->assertSame('…only a Fork of Stringy, take a…', StringHelper::extractText($testString,'Stringy'), 'tested: ' . $testString);
+
+        // ----------------
+
+        $testString = 'This is only a Fork of Stringy, take a look at the new features.';
+        $this->assertSame('This is only a Fork of Stringy…', StringHelper::extractText($testString), 'tested: ' . $testString);
+
+        // ----------------
+
+        $testString = 'This is only a Fork of Stringy, take a look at the new features.';
+        $this->assertSame('This…', StringHelper::extractText($testString,'', 0), 'tested: ' . $testString);
+
+        // ----------------
+
+        $testString = 'This is only a Fork of Stringy, take a look at the new features.';
+        $this->assertSame('…Stringy, take a look at the new features.', StringHelper::extractText($testString,'Stringy', 0), 'tested: ' . $testString);
+
+        // ----------------
+
+        $testArray = [
+            'Yes. The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…The fox is jumping in the <strong>garden</strong> when he is happy. But that…',
+            'The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.'      => '…The fox is jumping in the <strong>garden</strong> when he is happy. But that…',
+            'The fox is jumping in the garden when he is happy. But that is not the whole story.'                                      => '…is jumping in the <strong>garden</strong> when he is happy…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story.'                                 => '…fox is jumping in the <strong>garden</strong> when he is happy…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story of the garden story.'             => '…The fox is jumping in the <strong>garden</strong> when he is happy. But…',
+        ];
+        $searchString = 'garden';
+        foreach ($testArray as $testString => $testExpected) {
+            $result = StringHelper::extractText($testString, $searchString);
+            $result = StringHelper::replace($result, $searchString, '<strong>' . $searchString . '</strong>');
+            $this->assertSame($testExpected, $result, 'tested: ' . $testString);
+        }
+
+        // ----------------
+
+        $testArray = [
+            'Yes. The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…flying in the wind. <strong>The fox is jumping in the garden</strong> when he…',
+            'The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.'      => '…in the wind. <strong>The fox is jumping in the garden</strong> when he is…',
+            'The fox is jumping in the garden when he is happy. But that is not the whole story.'                                      => '<strong>The fox is jumping in the garden</strong> when he is…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story.'                                 => 'Yes. <strong>The fox is jumping in the garden</strong> when he…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story of the garden story.'             => 'Yes. <strong>The fox is jumping in the garden</strong> when he is happy…',
+        ];
+        $searchString = 'The fox is jumping in the garden';
+        foreach ($testArray as $testString => $testExpected) {
+            $result = StringHelper::extractText($testString, $searchString);
+            $result = StringHelper::replace($result, $searchString, '<strong>' . $searchString . '</strong>');
+            $this->assertSame($testExpected, $result, 'tested: ' . $testString);
+        }
+    }
+
+    /**
      * @dataProvider camelCaseDataProvider
      *
      * @param $expected
@@ -370,6 +477,44 @@ class StringHelperTest extends Unit
     public function testCamelCase($expected, $input)
     {
         $actual = StringHelper::camelCase($input);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider htmlDecodeDataProvider
+     *
+     * @param $expected
+     * @param $input
+     * @param int $flags
+     */
+    public function testHtmlDecode($expected, $input, $flags = ENT_COMPAT)
+    {
+        $actual = StringHelper::htmlDecode($input, $flags);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider htmlEncodeDataProvider
+     *
+     * @param $expected
+     * @param $input
+     * @param int $flags
+     */
+    public function testHtmlEncode($expected, $input, $flags = ENT_COMPAT)
+    {
+        $actual = StringHelper::htmlEncode($input, $flags);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider humanizeDataProvider
+     *
+     * @param $expected
+     * @param $input
+     */
+    public function testHumanize($expected, $input)
+    {
+        $actual = StringHelper::humanize($input);
         $this->assertSame($expected, $actual);
     }
 
@@ -405,11 +550,13 @@ class StringHelperTest extends Unit
      * @param $expected
      * @param $haystack
      * @param $needle
+     * @param int $offset
+     * @param bool $caseSensitive
      */
-    public function testIndexOf($expected, $haystack, $needle)
+    public function testIndexOf($expected, $haystack, $needle, $offset = 0, $caseSensitive = true)
     {
-        $actual = StringHelper::indexOf($haystack, $needle);
-        $this->assertSame($expected, $actual);
+        $actual = StringHelper::indexOf($haystack, $needle, $offset, $caseSensitive);
+        $this->assertSame($expected, $actual, 'expected: '.$expected.' - actual: '.$actual.' - needle: '.$needle);
     }
 
     /**
@@ -904,13 +1051,26 @@ class StringHelperTest extends Unit
     public function indexOfDataProvider(): array
     {
         return [
-            [2, 'thisisstring', 'is'],
-            [6, 'craft cms', 'cms'],
-            [1, '😀😘', '😘'],
-            [2, '/@#$%^&*', '#'],
-            [0, 'hello, people', 'he'],
-            [false, 'some string', 'a needle'],
-            [false, '', '']
+            [6, 'foo & bar', 'bar', true],
+            [6, 'foo & bar', 'bar', 0, true],
+            [false, 'foo & bar', 'baz', true],
+            [false, 'foo & bar', 'baz', 0, true],
+            [12, 'foo & bar & foo', 'foo', 0, true],
+            [0, 'foo & bar & foo', 'foo', -5, true],
+            [6, 'fòô & bàř', 'bàř', 0, true],
+            [false, 'fòô & bàř', 'baz', 0, true],
+            [12, 'fòô & bàř & fòô', 'fòô', 0, true],
+            [0, 'fòô & bàř & fòô', 'fòô', -5, true],
+            [6, 'foo & bar', 'Bar', false],
+            [6, 'foo & bar', 'bAr', 0, false],
+            [false, 'foo & bar', 'baZ', false],
+            [false, 'foo & bar', 'baZ', 0, false],
+            [12, 'foo & bar & foo', 'fOo', 0, false],
+            [0, 'foo & bar & foo', 'fOO', -5, false],
+            [6, 'fòô & bàř', 'bàř', 0, false],
+            [false, 'fòô & bàř', 'baz', 0, false],
+            [12, 'fòô & bàř & fòô', 'fòô', 0, false],
+            [0, 'fòô & bàř & fòô', 'fòÔ', -5, false],
         ];
     }
 
@@ -1792,36 +1952,16 @@ class StringHelperTest extends Unit
             [true, 'foo bars', ['foo', 'o bars']],
             [true, 'FOO bars', ['foo', 'o bars'], false],
             [true, 'FOO bars', ['foo', 'o BARs'], false],
-            [true, 'FÒÔ bàřs', ['foo', 'ô bàřs'], false, 'UTF-8'],
-            [true, 'fòô bàřs', ['foo', 'ô BÀŘs'], false, 'UTF-8'],
+            [true, 'FÒÔ bàřs', ['foo', 'ô bàřs'], false],
+            [true, 'fòô bàřs', ['foo', 'ô BÀŘs'], false],
             [false, 'foo bar', ['foo']],
             [false, 'foo bar', ['foo', 'foo bars']],
             [false, 'FOO bar', ['foo', 'foo bars']],
             [false, 'FOO bars', ['foo', 'foo BARS']],
-            [false, 'FÒÔ bàřs', ['fòô', 'fòô bàřs'], true, 'UTF-8'],
-            [false, 'fòô bàřs', ['fòô', 'fòô BÀŘS'], true, 'UTF-8'],
+            [false, 'FÒÔ bàřs', ['fòô', 'fòô bàřs'], true],
+            [false, 'fòô bàřs', ['fòô', 'fòô BÀŘS'], true],
         ];
     }
-
-    /**
-     * @return array
-     */
-//    public function endsWithDataProvider(): array
-//    {
-//        return [
-//            [true, 'foo bars', 'o bars'],
-//            [true, 'FOO bars', 'o bars', false],
-//            [true, 'FOO bars', 'o BARs', false],
-//            [true, 'FÒÔ bàřs', 'ô bàřs', false, 'UTF-8'],
-//            [true, 'fòô bàřs', 'ô BÀŘs', false, 'UTF-8'],
-//            [false, 'foo bar', 'foo'],
-//            [false, 'foo bar', 'foo bars'],
-//            [false, 'FOO bar', 'foo bars'],
-//            [false, 'FOO bars', 'foo BARS'],
-//            [false, 'FÒÔ bàřs', 'fòô bàřs', true, 'UTF-8'],
-//            [false, 'fòô bàřs', 'fòô BÀŘS', true, 'UTF-8'],
-//        ];
-//    }
 
     /**
      * @return array
