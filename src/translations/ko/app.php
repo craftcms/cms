@@ -1467,7 +1467,7 @@ return [
     'Profile Twig templates when Dev Mode is disabled' => '프로필 트윅 템플릿(개발자 모드가 비활성화 상태인 경우)',
     'Show full exception views when Dev Mode is disabled' => '전체 예외 보기 표시(개발자 모드가 비활성화 상태인 경우)',
     'Exception Views' => '예외 보기',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'The URI can’t begin with the {setting} config setting.' => 'URIsms {setting} 구성 설정을 시작할 수 없습니다.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute}은(는) {setting} 구성 설정을 시작할 수 없습니다.',
+    'Debug Toolbar' => '디버그 툴바'
 ];
