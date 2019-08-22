@@ -150,6 +150,24 @@ class Cp extends Component
             ];
         }
 
+        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->getIsAdmin()) {
+            $navItems[] = [
+                'label' => Craft::t('app', 'GraphQL'),
+                'url' => 'graphql/explore',
+                'icon' => '@app/icons/graphql.svg',
+                'subnav' => [
+                    [
+                        'label' => Craft::t('app', 'Explore'),
+                        'url' => 'graphql/explore',
+                    ],
+                    [
+                        'label' => Craft::t('app', 'Tokens'),
+                        'url' => 'graphql/tokens',
+                    ]
+                ]
+            ];
+        }
+
         if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
@@ -278,10 +296,6 @@ class Cp extends Component
         $settings[$label]['plugins'] = [
             'icon' => '@app/icons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
-        ];
-        $settings[$label]['graphql/tokens'] = [
-            'icon' => '@app/icons/graphql.svg',
-            'label' => Craft::t('app', 'GraphQL Tokens')
         ];
 
         $label = Craft::t('app', 'Content');

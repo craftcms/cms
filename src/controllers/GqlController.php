@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
 use craft\models\GqlToken;
+use craft\web\assets\graphiql\GraphiQlAsset;
 use craft\web\Controller;
 use GraphQL\GraphQL;
 use yii\web\BadRequestHttpException;
@@ -32,7 +33,7 @@ class GqlController extends Controller
     // Public Methods
     // =========================================================================
 
-    public $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+    public $allowAnonymous = ['index'];
 
     /**
      * @inheritdoc
@@ -104,7 +105,7 @@ class GqlController extends Controller
     {
         $this->requireAdmin();
 
-        return $this->renderTemplate('settings/graphql/tokens/_index');
+        return $this->renderTemplate('graphql/tokens/_index');
     }
 
     public function actionEditToken(int $tokenId = null, GqlToken $token = null)
@@ -128,7 +129,7 @@ class GqlController extends Controller
             $title = trim($token->name) ?: Craft::t('app', 'Create a new GraphQL token');
         }
 
-        return $this->renderTemplate('settings/graphql/tokens/_edit', compact(
+        return $this->renderTemplate('graphql/tokens/_edit', compact(
             'token',
             'title'
         ));
