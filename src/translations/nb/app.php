@@ -1460,10 +1460,10 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'Address Line 2' => 'Adresselinje 2',
     'Are you sure you want to delete this {type}?' => 'Er du sikker på at du vil slette denne {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'Den gjeldende installasjonen av <strong>{cause}</strong> har skjemaversjonen av {existing} (expected {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig-maler når utviklermodus er deaktivert',
+    'Show full exception views when Dev Mode is disabled' => 'Vis fulle unntaksvisninger når utviklermodus er deaktivert',
+    'Exception Views' => 'Unntaksvisninger',
+    'The URI can’t begin with the {setting} config setting.' => 'URI-en kan ikke starte med {setting}-konfigurasjonsinnstillingen.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} kan ikke starte med {setting}-konfigurasjonsinnstillingen.',
+    'Debug Toolbar' => 'Feilsøk verktøylinje'
 ];
