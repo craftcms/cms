@@ -459,7 +459,7 @@ class Install extends Migration
             'type' => $this->enum('type', [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
             'propagationMethod' => $this->string()->defaultValue(Section::PROPAGATION_METHOD_ALL)->notNull(),
-            'previewTargets' => $this->string(),
+            'previewTargets' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),

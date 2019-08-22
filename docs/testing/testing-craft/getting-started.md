@@ -1,4 +1,5 @@
 # Getting started
+
 In order to get started please ensure you have a basic understanding of the following:
 - Craft CMS 3.2 or higher
 - [Codeception](https://codeception.com/docs/01-Introduction)
@@ -21,7 +22,7 @@ installing Codeception and its support libraries.
 
 ## Step 2: Setting up the required directories
 The Craft module requires a directory setup that is very similar to what an ordinary 
-Craft project [requires](../directory-structure.md)
+Craft project [requires](../../directory-structure.md)
 
 - In your `tests/` folder create a folder called `_craft` 
 - In the `_craft` folder create the following folders:
@@ -56,8 +57,7 @@ modules:
     config:
         \craft\test\Craft:
             configFile: 'tests/_craft/config/test.php'
-            entryUrl: 'https://your-site-url.test/'
-            entryScript: 'index.php'
+            entryUrl: 'https://your-site-url.test/index.php'
             projectConfig: {}
             migrations: []
             plugins: []
@@ -67,7 +67,7 @@ modules:
 ```
 
 ::: tip
-These variables are explained [here](./framework/config-options.md)
+These variables are explained [here](../framework/config-options.md)
 :::
 
 ### .env
@@ -155,7 +155,7 @@ return [
 ];
 ```
 
-The `tests/_craft/config` dir acts entirely the same as a normal [config directory](../config/README.md) in a Craft application. 
+The `tests/_craft/config` dir acts entirely the same as a normal `config/` folder in a Craft application. 
 The only difference is you cannot create a different configuration for web and console requests (I.E `app.web.php` vs `app.console.php`). 
 If, for example, the project you are testing defines custom routes you can create a `routes.php` file
 which will be included in the craft configuration when setting up the test environment. 

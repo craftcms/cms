@@ -9,9 +9,10 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
 use craft\errors\InvalidElementException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -22,7 +23,7 @@ use yii\test\ActiveFixture;
  * Credit to: https://github.com/robuust/craft-fixtures
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
+ * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
@@ -153,17 +154,24 @@ abstract class ElementFixture extends ActiveFixture
      * Get element model.
      *
      * @param array|null $data The data to get the element by
-     * @return Element
+     * @return ElementInterface|null
      */
     public function getElement(array $data = null)
     {
-        $modelClass = $this->modelClass;
-
         if ($data === null) {
-            return new $modelClass();
+            return new $this->modelClass();
         }
 
-        $query = $modelClass::find()->anyStatus()->trashed(null);
+        return $this->generateElementQuery($data)->one();
+    }
+
+    /**
+     * @param array $data
+     * @return ElementQuery
+     */
+    public function generateElementQuery(array $data) : ElementQuery
+    {
+        $query = $this->modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {
@@ -171,7 +179,7 @@ abstract class ElementFixture extends ActiveFixture
             }
         }
 
-        return $query->one();
+        return $query;
     }
 
     // Protected Methods

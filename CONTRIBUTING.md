@@ -61,7 +61,9 @@ Once the VuePress dev server is up and running, you’ll be able to view the doc
 
 ## Control Panel Translations
 
-Craft’s Control Panel translations are located at [src/translations/](https://github.com/craftcms/cms/tree/develop/src/translations) in the repo. You can make translation improvements directly to those files.
+We manage Craft’s Control Panel translations with [Crowdin](https://crowdin.com/project/craft-cms).
+
+If you want to help improve Craft’s translations, [sign up to be a translator](https://crwd.in/craft-cms), or you can submit a pull request directly to the [src/translations/](https://github.com/craftcms/cms/tree/develop/src/translations) folder if you prefer. 
 
 ## Core Enhancements
 

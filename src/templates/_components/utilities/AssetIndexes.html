@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 <form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
-    <input type="hidden" name="action" value="utilities/asset-index-perform-action">
+    {{ actionInput('utilities/asset-index-perform-action') }}
     {{ csrfInput() }}
 
     {{ checkboxSelectHtml|raw }}

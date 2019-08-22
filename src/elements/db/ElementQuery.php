@@ -117,6 +117,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $asArray = false;
 
+    /**
+     * @var bool Whether to ignore placeholder elements when populating the results.
+     * @used-by ignorePlaceholders()
+     */
+    public $ignorePlaceholders = false;
+
     // Drafts and revisions
     // -------------------------------------------------------------------------
 
@@ -131,7 +137,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftId;
 
     /**
-     * @var int|null The source element ID that drafts should be returned for
+     * @var int|false|null The source element ID that drafts should be returned for.
+     * Set to `false` to fetch unsaved drafts.
      */
     public $draftOf;
 
@@ -398,6 +405,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @var mixed The placeholder condition for this query.
+     * @see _placeholderCondition()
+     */
+    private $_placeholderCondition;
+
+    /**
+     * @var mixed The [[siteId]] param used at the time the placeholder condition was generated.
+     * @see _placeholderCondition()
+     */
+    private $_placeholderSiteIds;
+
+    /**
      * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
@@ -647,6 +666,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $asArray
+     */
+    public function ignorePlaceholders(bool $value = true)
+    {
+        $this->ignorePlaceholders = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $drafts
      */
     public function drafts(bool $value = true)
@@ -677,7 +706,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($value instanceof ElementInterface) {
             /** @var Element $value */
             $this->draftOf = $value->getSourceId();
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === false) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
@@ -1343,7 +1372,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated));
         }
 
-        if ($this->title && $class::hasTitles()) {
+        if ($this->title !== null && $this->title !== '' && $class::hasTitles()) {
             $this->subQuery->andWhere(Db::parseParam('content.title', $this->title));
         }
 
@@ -1839,6 +1868,49 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     /**
+     * Combines the given condition with an alternative condition if there are any relevant placeholder elements.
+     *
+     * @param mixed $condition
+     * @return mixed
+     */
+    private function _placeholderCondition($condition)
+    {
+        if ($this->ignorePlaceholders) {
+            return $condition;
+        }
+
+        if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
+            $placeholderSourceIds = [];
+            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            if (!empty($placeholderElements)) {
+                $siteIds = $this->siteId !== '*' ? array_flip((array)$this->siteId) : null;
+                foreach ($placeholderElements as $element) {
+                    /** @var Element $element */
+                    if (
+                        $element instanceof $this->elementType &&
+                        ($siteIds === null || isset($siteIds[$element->siteId]))
+                    ) {
+                        $placeholderSourceIds[] = $element->getSourceId();
+                    }
+                }
+            }
+
+            if (!empty($placeholderSourceIds)) {
+                $this->_placeholderCondition = ['elements.id' => $placeholderSourceIds];
+            } else {
+                $this->_placeholderCondition = false;
+            }
+            $this->_placeholderSiteIds = is_array($this->siteId) ? array_merge($this->siteId) : $this->siteId;
+        }
+
+        if ($this->_placeholderCondition === false) {
+            return $condition;
+        }
+
+        return ['or', $condition, $this->_placeholderCondition];
+    }
+
+    /**
      * Joins the content table into the query being prepared.
      *
      * @param string $class
@@ -1936,7 +2008,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $this->subQuery->andWhere($condition);
+        $this->subQuery->andWhere($this->_placeholderCondition($condition));
     }
 
     /**
@@ -2199,15 +2271,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf) {
-                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
+            if ($this->draftOf !== null) {
+                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
         } else {
-            $this->subQuery->andWhere(['elements.draftId' => null]);
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
 
         if ($this->revisions) {
@@ -2234,7 +2306,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
             }
         } else {
-            $this->subQuery->andWhere(['elements.revisionId' => null]);
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.revisionId' => null]));
         }
     }
 
@@ -2542,7 +2614,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
         $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
 
-        $this->subQuery->where(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
+        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
     }
 
     /**
@@ -2619,7 +2691,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?
-        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null) {
+        if (
+            !$this->ignorePlaceholders &&
+            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+        ) {
             return $element;
         }
 
@@ -2632,6 +2707,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($class::hasContent() && $this->contentTable !== null) {
+            if ($class::hasTitles()) {
+                // Ensure the title is a string
+                $row['title'] = (string)($row['title'] ?? '');
+            }
+
             // Separate the content values from the main element attributes
             $fieldValues = [];
 

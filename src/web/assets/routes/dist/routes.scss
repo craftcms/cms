@@ -27,6 +27,8 @@
 .route .uri-container,
 .route .template {
   padding: 7px 14px;
+  line-height: 18px;
+  min-height: 18px;
 }
 
 .route .uri-container {
@@ -69,7 +71,7 @@
 }
 
 .route .uri-container .uri .token {
-  margin: 0 2px;
+  margin: 0 2px -1px;
 }
 
 .route .template {

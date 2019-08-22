@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
@@ -1134,6 +1135,7 @@ class UsersController extends Controller
             $preferences = array_merge($preferences, [
                 'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
+                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView'))
             ]);
         }
 
@@ -1443,9 +1445,11 @@ class UsersController extends Controller
 
         $summary = [];
 
-        $entryCount = (new Query())
-            ->from([Table::ENTRIES])
-            ->where(['authorId' => $userIds])
+        $entryCount = Entry::find()
+            ->authorId($userIds)
+            ->siteId('*')
+            ->unique()
+            ->anyStatus()
             ->count();
 
         if ($entryCount) {

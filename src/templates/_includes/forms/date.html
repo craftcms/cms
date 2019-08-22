@@ -13,7 +13,7 @@
     } -%}
     <div data-icon="date"></div>
     {% if name -%}
-        <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
+        {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
 </div>
 

@@ -83,6 +83,7 @@ class DraftBehavior extends Behavior
      * Returns the draft’s source element.
      *
      * @return ElementInterface|null
+     * @deprecated in 3.2.9. Use [[ElementInterface::getSource()]] instead.
      */
     public function getSource()
     {

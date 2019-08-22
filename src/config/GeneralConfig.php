@@ -534,7 +534,7 @@ class GeneralConfig extends BaseObject
      */
     public $preserveCmykColorspace = false;
     /**
-     * @var bool Whether the EXIF data should be preserved when manipulating images.
+     * @var bool Whether the EXIF data should be preserved when manipulating and uploading images.
      *
      * Setting this to `true` will result in larger image file sizes.
      *
@@ -572,6 +572,14 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $purgePendingUsersDuration = 0;
+    /**
+     * @var mixed The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $purgeStaleUserSessionDuration = 7776000;
     /**
      * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
      *
@@ -751,6 +759,8 @@ class GeneralConfig extends BaseObject
      * @var bool Whether Twig runtime errors should be suppressed.
      *
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
+     *
+     * @deprecated in 3.3.0
      */
     public $suppressTemplateErrors = false;
     /**
@@ -995,6 +1005,10 @@ class GeneralConfig extends BaseObject
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
+        }
+
+        if ($this->suppressTemplateErrors) {
+            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
     }
 

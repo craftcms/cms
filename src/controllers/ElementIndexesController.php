@@ -16,6 +16,7 @@ use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -357,6 +358,10 @@ class ElementIndexesController extends BaseElementsController
         if ($criteria = $request->getBodyParam('criteria')) {
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = (bool)$criteria['trashed'];
+            }
+            if (ArrayHelper::remove($criteria, 'drafts')) {
+                $criteria['drafts'] = true;
+                $criteria['draftOf'] = false;
             }
             Craft::configure($query, $criteria);
         }

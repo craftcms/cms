@@ -5,10 +5,10 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="sections/save-section">
+    {{ actionInput('sections/save-section') }}
     {{ redirectInput('settings/sections') }}
 
-    {% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
+    {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
 
     {{ forms.textField({
         first: true,

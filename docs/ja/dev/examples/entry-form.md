@@ -17,10 +17,10 @@
 
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="entries/save-entry">
+    {{ actionInput('entries/save-entry') }}
     {{ redirectInput('viewentry/{slug}') }}
-    <input type="hidden" name="sectionId" value="2">
-    <input type="hidden" name="enabled" value="1">
+    {{ hiddenInput('sectionId', '2') }}
+    {{ hiddenInput('enabled', '1') }}
 
     <label for="title">Title</label>
     <input id="title" type="text" name="title"
@@ -52,6 +52,6 @@
 不可視項目の「entryId」を追加すると、既存のエントリを保存するためのフォームに変更できます。
 
 ```twig
-<input type="hidden" name="entryId" value="{{ entry.id }}">
+{{ hiddenInput('entryId', entry.id) }}
 ```
 

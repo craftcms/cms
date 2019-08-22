@@ -17,6 +17,7 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
@@ -337,7 +338,6 @@ class View extends \yii\web\View
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
-        Craft::beginProfile($template, __METHOD__);
 
         try {
             $output = $this->getTwig()->render($template, $variables);
@@ -349,7 +349,6 @@ class View extends \yii\web\View
             throw $e;
         }
 
-        Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
         $this->afterRenderTemplate($template, $variables, $output);
@@ -447,6 +446,11 @@ class View extends \yii\web\View
      */
     public function renderString(string $template, array $variables = []): string
     {
+        // If there are no dynamic tags, just return the template
+        if (strpos($template, '{') === false) {
+            return $template;
+        }
+
         $twig = $this->getTwig();
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
@@ -1577,12 +1581,16 @@ JS;
         }
 
         $this->_twigOptions = [
-            'base_template_class' => Template::class,
             // See: https://github.com/twigphp/Twig/issues/1951
             'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
             'auto_reload' => true,
             'charset' => Craft::$app->charset,
         ];
+
+        // Only load our custom Template class if they still have suppressTemplateErrors enabled
+        if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
+            $this->_twigOptions['base_template_class'] = Template::class;
+        }
 
         if (YII_DEBUG) {
             $this->_twigOptions['debug'] = true;
@@ -1670,6 +1678,7 @@ JS;
 
         /** @var Element $element */
         $element = $context['element'];
+        $label = $element->getUiLabel();
 
         if (!isset($context['context'])) {
             $context['context'] = 'index';
@@ -1720,6 +1729,7 @@ JS;
                 'data-label' => (string)$element,
                 'data-url' => $element->getUrl(),
                 'data-level' => $element->level,
+                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
             ]);
 
         if ($context['context'] === 'field') {
@@ -1770,13 +1780,19 @@ JS;
 
         $html .= '<span class="title">';
 
-        $label = HtmlHelper::encode($element->getUiLabel());
+        $encodedLabel = HtmlHelper::encode($label);
 
         if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+            if ($element->getIsDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
+            } else if ($element->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+            }
+
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
-            $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
+            $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
         } else {
-            $html .= $label;
+            $html .= $encodedLabel;
         }
 
         $html .= '</span></div></div>';

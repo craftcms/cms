@@ -217,7 +217,7 @@ Defined by
 
 
 
-The database schema to use (PostgreSQL only).
+The schema that Postgres is configured to use by default (PostgreSQL only).
 
 
 

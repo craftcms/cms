@@ -26,9 +26,9 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="globals/save-content">
-    <input type="hidden" name="setId" value="{{ globalSet.id }}">
-    <input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
+    {{ actionInput('globals/save-content') }}
+    {{ hiddenInput('setId', globalSet.id) }}
+    {{ hiddenInput('siteId', globalSet.siteId) }}
     {{ csrfInput() }}
 
     {% if globalSet.getFieldLayout().getFields() | length %}

@@ -1071,6 +1071,7 @@ class StringHelperTest extends Unit
     {
         return [
             ['test-s-2-s-zw-2', 'test s 2 s zw 2'],
+            ['test-s-0-s-zw-2', 'test s 0 s zw 2'],
             ['', '😂 😁'],
             ['test-test-craft-cms-abc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
             ['craft-cms', 'Craft Cms'],

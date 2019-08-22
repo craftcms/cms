@@ -210,7 +210,12 @@ class Plugin extends Module implements PluginInterface
      */
     public function setSettings(array $settings)
     {
-        $this->getSettings()->setAttributes($settings, false);
+        if (($model = $this->getSettings()) === null) {
+            Craft::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
+            return;
+        }
+
+        $model->setAttributes($settings, false);
     }
 
     /**
@@ -377,9 +382,9 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs actions before the plugin is installed.
+     * Performs actions before the plugin is uninstalled.
      *
-     * @return bool Whether the plugin should be installed
+     * @return bool Whether the plugin should be uninstalled
      */
     protected function beforeUninstall(): bool
     {
@@ -387,7 +392,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs actions after the plugin is installed.
+     * Performs actions after the plugin is uninstalled.
      */
     protected function afterUninstall()
     {

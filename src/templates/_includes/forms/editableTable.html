@@ -8,7 +8,7 @@
 {%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == rows|length) %}
 
 {% if not static %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif %}
 
 <table id="{{ id }}" class="shadow-box editable"
