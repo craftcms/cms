@@ -1460,10 +1460,10 @@ Se non aspettavi questa email, ignorala semplicemente.',
     'Address Line 2' => 'Indirizzo (linea 2)',
     'Are you sure you want to delete this {type}?' => 'Eliminare questo {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> attualmente installato con versione schema di {existing} (attesa {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Modelli Profile Twig quando il Dev Mode è disabilitato',
+    'Show full exception views when Dev Mode is disabled' => 'Mostra visualizzazione completa delle eccezioni quando il Dev Mode è disabilitato',
+    'Exception Views' => 'Visualizzazione eccezioni',
+    'The URI can’t begin with the {setting} config setting.' => 'L\'URI non può iniziare con l\'impostazione di configurazione {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} non può iniziare con l\'impostazione di configurazione {setting}.',
+    'Debug Toolbar' => 'Barra strumenti debug'
 ];
