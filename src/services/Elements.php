@@ -963,7 +963,10 @@ class Elements extends Component
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        /** @var Element $mergedElement */
+        /** @var Element $prevailingElement */
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -985,7 +988,7 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->update(
                             Table::RELATIONS,
                             [
@@ -1016,7 +1019,7 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->update(Table::RELATIONS,
                             [
                                 'elementId' => $prevailingElement->id
@@ -1138,7 +1141,8 @@ class Elements extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
         try {
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
@@ -1164,17 +1168,20 @@ class Elements extends Component
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
             if ($element->hardDelete) {
-                Craft::$app->getDb()->createCommand()
+                $db->createCommand()
                     ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
-                Craft::$app->getDb()->createCommand()
+                $db->createCommand()
                     ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
                     ->execute();
             } else {
                 // Soft delete the elements table row
-                Craft::$app->getDb()->createCommand()
+                $db->createCommand()
                     ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
+
+                // Also soft delete the element's drafts & revisions
+                $this->_cascadeDeleteDraftsAndRevisions($element->id);
             }
 
             $element->afterDelete();
@@ -1233,7 +1240,8 @@ class Elements extends Component
             }
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
         try {
             // Restore the elements
             foreach ($elements as $element) {
@@ -1286,9 +1294,12 @@ class Elements extends Component
                 }
 
                 // Restore it
-                Craft::$app->getDb()->createCommand()
+                $db->createCommand()
                     ->restore(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
+
+                // Also restore the element's drafts & revisions
+                $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
 
                 // Restore its search indexes
                 $searchService = Craft::$app->getSearch();
@@ -2063,6 +2074,43 @@ class Elements extends Component
             }
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
+        }
+    }
+
+    /**
+     * Soft-deletes or restores the drafts and revisions of the given element.
+     *
+     * @param int $sourceId The source element ID
+     * @param bool $delete `true` if the drafts/revisions should be soft-deleted; `false` if they should be restored
+     */
+    private function _cascadeDeleteDraftsAndRevisions(int $sourceId, bool $delete = true)
+    {
+        $params = [
+            'dateDeleted' => $delete ? Db::prepareDateForDb(new \DateTime()) : null,
+            'sourceId' => $sourceId,
+        ];
+
+        $db = Craft::$app->getDb();
+
+        foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+UPDATE {{%elements}} [[e]]
+INNER JOIN {$table} [[t]] ON [[t.id]] = [[e.{$fk}]]
+SET [[e.dateDeleted]] = :dateDeleted
+WHERE [[t.sourceId]] = :sourceId
+SQL;
+            } else {
+                $sql = <<<SQL
+UPDATE {{%elements}} [[e]]
+SET [[dateDeleted]] = :dateDeleted
+FROM {$table} [[t]]
+WHERE [[t.id]] = [[e.{$fk}]]
+AND [[t.sourceId]] = :sourceId
+SQL;
+            }
+
+            $db->createCommand($sql, $params)->execute();
         }
     }
 

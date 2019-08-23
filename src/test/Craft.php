@@ -69,8 +69,11 @@ class Craft extends Yii2
     // =========================================================================
 
     /**
-     * A static version of the config for use on the tests/_craft/config/test.php file
+     * A static version of the testing config. 
      *
+     * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`. 
+     * This variable is equivelant to calling $this->_getConfig(); but is available for public access. 
+     * 
      * @var array
      */
     public static $testConfig;
@@ -86,6 +89,7 @@ class Craft extends Yii2
      * @var array
      */
     protected $addedConfig = [
+        'migrations' => [],
         'plugins' => [],
         'setupDb' => null,
         'projectConfig' => null,
@@ -167,7 +171,7 @@ class Craft extends Yii2
         }
 
         // Re-apply project config
-        if ($projectConfig = $this->_getConfig('projectConfig')) {
+        if ($projectConfig = TestSetup::useProjectConfig()) {
             // Tests just beginning. . Reset the project config to its original state.
             TestSetup::setupProjectConfig($projectConfig['file']);
 
@@ -222,21 +226,26 @@ class Craft extends Yii2
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
+
+            // Setup the project config from the passed file.
+            if ($projectConfig = TestSetup::useProjectConfig()) {
+                // Fail hard if someone has specified a project config file but doesn't have project config enabled.
+                // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
+                if (!\Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+                    throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
+                }
+
+                TestSetup::setupProjectConfig($projectConfig['file']);
+            }
+
             // Get rid of everything.
             if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
                 TestSetup::cleanseDb($dbConnection);
             }
 
-            // Setup the project config from the passed file.
-            $projectConfig = $this->_getConfig('projectConfig');
-            if ($projectConfig && isset($projectConfig['file'])) {
-                // Just set it up.
-                TestSetup::setupProjectConfig($projectConfig['file']);
-            }
-
             // Install the db from install.php
             if (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] === true) {
-                TestSetup::setupCraftDb($dbConnection, $this);
+                TestSetup::setupCraftDb($dbConnection);
             }
 
             // Ready to rock.
@@ -250,8 +259,10 @@ class Craft extends Yii2
             }
 
             // Add any plugins
-            foreach ($this->_getConfig('plugins') as $plugin) {
-                $this->installPlugin($plugin);
+            if ($plugins = $this->_getConfig('plugins')) {
+                foreach ($plugins as $plugin) {
+                    $this->installPlugin($plugin);
+                }
             }
 
             // Trigger the end of a 'request'. This lets project config do its stuff.
@@ -298,6 +309,26 @@ class Craft extends Yii2
     public static function normalizePathSeparators($path)
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
+    }
+
+
+    /**
+     * Creates a DB config according to the loaded .env variables.
+     *
+     * @return DbConfig
+     */
+    public static function createDbConfig(): DbConfig
+    {
+        return new DbConfig([
+            'password' => getenv('DB_PASSWORD'),
+            'user' => getenv('DB_USER'),
+            'database' => getenv('DB_DATABASE'),
+            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
+            'driver' => getenv('DB_DRIVER'),
+            'port' => getenv('DB_PORT'),
+            'schema' => getenv('DB_SCHEMA'),
+            'server' => getenv('DB_SERVER'),
+        ]);
     }
 
     // Helpers for test methods
@@ -528,25 +559,6 @@ class Craft extends Yii2
         }
 
         return $items;
-    }
-
-    /**
-     * Creates a DB config according to the loaded .env variables.
-     *
-     * @return DbConfig
-     */
-    public static function createDbConfig(): DbConfig
-    {
-        return new DbConfig([
-            'password' => getenv('DB_PASSWORD'),
-            'user' => getenv('DB_USER'),
-            'database' => getenv('DB_DATABASE'),
-            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-            'driver' => getenv('DB_DRIVER'),
-            'port' => getenv('DB_PORT'),
-            'schema' => getenv('DB_SCHEMA'),
-            'server' => getenv('DB_SERVER'),
-        ]);
     }
 
     // Protected Methods

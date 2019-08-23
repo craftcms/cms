@@ -793,9 +793,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param array $attributes
      * @return Markup
      */
-    public function attrFunction(array $config): Markup
+    public function attrFunction(array $attributes): Markup
     {
-        return TemplateHelper::raw(Html::renderTagAttributes($config));
+        return TemplateHelper::raw(Html::renderTagAttributes($attributes));
     }
 
     /**

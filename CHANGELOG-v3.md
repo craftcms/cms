@@ -4,13 +4,20 @@
 
 ### Added
 - Added `craft\helpers\ElementHelper::sourceElement()`.
+- Added `craft\helpers\UrlHelper::buildQuery()`.
 
 ### Changed
+- `craft\test\TestSetup::setupCraftDb()` no longer accepts a second argument. Ensure that `craft\test\Craft::$testConfig` is set before calling this function. ([#4804](https://github.com/craftcms/cms/pull/4804))
 - Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
 - Relational fields without a specific target site will now only return related elements from the same site as the source element by default, as they did before Craft 3.2. ([#4751](https://github.com/craftcms/cms/issues/4751))
 - Improved the performance of element duplication on multi-site installs.
 - Edit Entry pages now get updated preview target URLs after saving a draft, in case the URLs have changed.
 - Improved the performance of `craft\web\View::renderString()` for templates that don’t contain any Twig code.
+- Matrix block queries no longer include blocks owned by drafts or revisions by default. ([#4790](https://github.com/craftcms/cms/issues/4790))
+- The confirmation dialog that can appear after running the Asset Indexes utility no longer will close by pressing the <kbd>Esc</kbd> key or clicking outside of the modal. ([#4795](https://github.com/craftcms/cms/issues/4795))
+- Section and Matrix “Propagation Method” settings now display warnings about the potential for data loss when appropriate.
+- Entries’ drafts and revisions are now soft-deleted and restored along with their source elements. ([#4797](https://github.com/craftcms/cms/issues/4797))
+- `craft\behaviors\DraftBehavior::getCreator()` can now return `null`.
 
 ### Removed
 - Removed `craft\base\ElementInterface::getSource()`. ([#4754](https://github.com/craftcms/cms/issues/4754))
@@ -18,6 +25,14 @@
 ### Fixed
 - Fixed an error that could occur if garbage collection was run while Craft 3.2 migrations were pending. ([#4720](https://github.com/craftcms/cms/issues/4720))
 - Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
+- Fixed a bug where the “Publish live changes for other authors’ entries” permission was being enforced when saving another author’s entry as a new entry. ([#4758](https://github.com/craftcms/cms/issues/4758))
+- Fixed a bug where `craft\helpers\UrlHelper` methods would strip out array params in the query string. ([#4778](https://github.com/craftcms/cms/issues/4778))
+- Fixed a SQL error that occurred when a `{% cache %}` tag was used on a page with a 4-byte character in the URI. ([#4780](https://github.com/craftcms/cms/issues/4780))
+- Fixed a bug where Craft could show a nondescript error when navigating away from a Control Panel page if an Ajax request was currently in progress. ([#4796](https://github.com/craftcms/cms/issues/4796))
+- Fixed an error that occurred when editing an entry with a draft that was created by a soft-deleted user. ([#4800](https://github.com/craftcms/cms/issues/4800))
+- Fixed a bug where entry revisions and drafts would be deleted when the user that created them was hard-deleted.
+- Fixed a SQL error that could occur when executing an element query that had custom `JOIN` and `WHERE` clauses if the `search` param was also set. ([#4788](https://github.com/craftcms/cms/issues/4788))
+- Fixed a bug where default field values weren’t being applied to Matrix blocks that were autocreated per the Min Blocks setting. ([#4806](https://github.com/craftcms/cms/issues/4806))
 
 ## 3.2.10 - 2019-08-13
 
@@ -419,6 +434,11 @@
 ### Fixed
 - Fixed a bug where `craft\helpers\UrlHelper` methods could add duplicate query params on generated URLs.
 - Fixed a bug where Matrix blocks weren’t getting duplicated for other sites when creating a new element. ([#4449](https://github.com/craftcms/cms/issues/4449))
+
+## 3.1.34.3 - 2019-08-21
+
+### Fixed
+- Fixed a bug where the `project-config/rebuild` command wasn’t discarding unused user groups or user field layouts in the project config. ([#4781](https://github.com/craftcms/cms/pull/4781))
 
 ## 3.1.34.2 - 2019-07-23
 
