@@ -13,6 +13,7 @@
 - Edit Entry pages now get updated preview target URLs after saving a draft, in case the URLs have changed.
 - Improved the performance of `craft\web\View::renderString()` for templates that don’t contain any Twig code.
 - Matrix block queries no longer include blocks owned by drafts or revisions by default. ([#4790](https://github.com/craftcms/cms/issues/4790))
+- The confirmation dialog that can appear after running the Asset Indexes utility no longer will close by pressing the <kbd>Esc</kbd> key or clicking outside of the modal. ([#4795](https://github.com/craftcms/cms/issues/4795))
 
 ### Removed
 - Removed `craft\base\ElementInterface::getSource()`. ([#4754](https://github.com/craftcms/cms/issues/4754))
