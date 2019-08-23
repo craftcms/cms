@@ -243,7 +243,7 @@ class Craft extends Yii2
 
             // Install the db from install.php
             if (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] === true) {
-                TestSetup::setupCraftDb($dbConnection, $this);
+                TestSetup::setupCraftDb($dbConnection);
             }
 
             // Ready to rock.
