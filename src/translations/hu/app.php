@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => 'Szeretné a távoli képeket gyorsítótárba helyezni?',
     'Cancel' => 'Mégse',
     'Can’t run Craft CMS' => 'Craft CMS nem futtatható',
-    'Careful—changing this may result in data loss.' => 'Figyelem—ennek módosítása adatveszteséget eredményezhet.',
     'Cart' => 'Bevásárlókosár',
     'Categories' => 'Kategóriák',
     'Categories deleted.' => 'Kategóriák törölve.',
@@ -546,8 +545,6 @@ return [
     'Last update' => 'Utolsó frissítés',
     'Learn more' => 'További információk',
     'Leave blank if categories don’t have URLs' => 'Ha a kategóriához nem tartozik URL, hagyja üresen.',
-    'Leave blank if entries don’t have URLs' => 'Ha a bejegyzésekhez nem tartozik URL, hagyja üresen.',
-    'Leave blank if this is the homepage' => 'Ha ez a kezdőlap, hagyja üresen.',
     'Leave it uninstalled' => 'Hagyd eltávolítva',
     'License' => 'Licenc',
     'License transferred.' => 'Licenc átutalva',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => 'Hogyan nevezed el a csoportot?',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'Ilyenek legyenek a webhely beviteli URI-jai. Hagyd üresen, ha a bejegyzésekhez nem tartoznak URL-címek.',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'Ahogy az automatikusan generált címek kellene kinézzenek. Tartalmazhat bejegyzés tulajdonságait jelző címkéket, mint pl {ex}.',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => 'Ilyen legyen a webhely beviteli URI-ja. Ha ez a kezdőlap, hagyd üresen.',
     'What this block type will be called in the CP.' => 'Ami a blokktípus neve lesz az admin felületen?',
     'What this category group will be called in the CP.' => 'Ami a kategória csoport neve lesz az admin felületen.',
     'What this entry type will be called in the CP.' => 'Mi lesz a bejegyzéstípus neve az admin felületen?',
@@ -1467,5 +1463,8 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Exception Views' => 'Kivétel nézet',
     'The URI can’t begin with the {setting} config setting.' => 'Az URI nem kezdődhet {setting} konfigurációs beállítással.',
     '{attribute} cannot start with the {setting} config setting.' => 'az {attribute} nem kezdődhet {setting} konfigurációs beállítással.',
-    'Debug Toolbar' => 'Hibakereső eszköztár'
+    'Debug Toolbar' => 'Hibakereső eszköztár',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
