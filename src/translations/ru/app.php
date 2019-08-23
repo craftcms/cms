@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => 'Кэшировать удаленные изображения?',
     'Cancel' => 'Отмена',
     'Can’t run Craft CMS' => 'Не удается запустить Craft CMS',
-    'Careful—changing this may result in data loss.' => 'Осторожно — изменение может привести к потере данных.',
     'Cart' => 'Корзина',
     'Categories' => 'Категории',
     'Categories deleted.' => 'Категории удалены.',
@@ -546,8 +545,6 @@ return [
     'Last update' => 'Последнее обновление',
     'Learn more' => 'Подробнее',
     'Leave blank if categories don’t have URLs' => 'Не заполнять, если у категорий нет URL',
-    'Leave blank if entries don’t have URLs' => 'Не заполнять, если у записей нет URL',
-    'Leave blank if this is the homepage' => 'Оставить пустым, если это домашняя страница',
     'Leave it uninstalled' => 'Оставить без установки',
     'License' => 'Лицензия',
     'License transferred.' => 'Лицензия передана.',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => 'Как вы хотите назвать группу?',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'Какими должны быть URI записей для данного сайта. Не заполнять, если у записей нет URL.',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'Так будут выглядеть автоматически генерируемые названия записей. Вы можете добавлять теги, которые выводят свойства записи, как, например, {ex}.',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => 'Каким должен быть URI записи для данного сайта. Не заполнять, если это домашняя страница.',
     'What this block type will be called in the CP.' => 'Как этот тип блока будет называться в панели управления.',
     'What this category group will be called in the CP.' => 'Как эта группа категорий будет называться в панели управления.',
     'What this entry type will be called in the CP.' => 'Как этот тип записи будет называться в панели управления.',
@@ -1469,5 +1465,8 @@ return [
     'Exception Views' => 'Представления исключений',
     'The URI can’t begin with the {setting} config setting.' => 'URI не может начинаться с конфигурационной настройки {setting}.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} не может начинаться с конфигурационной настройки {setting}.',
-    'Debug Toolbar' => 'Отладочная панель инструментов'
+    'Debug Toolbar' => 'Отладочная панель инструментов',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
