@@ -49,3 +49,6 @@
 - Removed `craft\web\twig\Extension::actionInputFunction()`.
 - Removed `craft\web\twig\Extension::csrfInputFunction()`.
 - Removed `craft\web\twig\Extension::redirectInputFunction()`.
+
+## Fixed
+- Fixed a SQL error that could occur when `:empty:` or `not :empty:` was passed to a date param on an element query when running MySQL 8. ([#4808](https://github.com/craftcms/cms/issues/4808))
