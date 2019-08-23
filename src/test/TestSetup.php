@@ -363,9 +363,7 @@ class TestSetup
         ];
 
         // Replace the default site with what is desired by the project config (Currently). If project config is enabled.
-        $projectConfig = $craftTestModule->_getConfig('projectConfig');
-
-        if ($projectConfig && isset($projectConfig['file'])) {
+        if ($projectConfig = $craftTestModule->useProjectConfig()) {
             $existingProjectConfig = Yaml::parse(
                 file_get_contents($projectConfig['file']) ?: ''
             );

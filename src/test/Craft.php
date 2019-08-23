@@ -309,6 +309,49 @@ class Craft extends Yii2
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }
 
+    /**
+     * Whether project config should be used in tests.
+     *
+     * Returns the projectConfig configuration array if yes - `false` if not.
+     *
+     * @return array|false
+     */
+    public function useProjectConfig()
+    {
+        if (!\Craft::$app) {
+            return false;
+        }
+
+        $projectConfig = $projectConfig = $this->_getConfig('projectConfig');
+        $useProjectConfig = \Craft::$app->getConfig()->getGeneral();
+
+        if ($projectConfig && isset($projectConfig['file']) && $useProjectConfig) {
+            return $projectConfig;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Creates a DB config according to the loaded .env variables.
+     *
+     * @return DbConfig
+     */
+    public static function createDbConfig(): DbConfig
+    {
+        return new DbConfig([
+            'password' => getenv('DB_PASSWORD'),
+            'user' => getenv('DB_USER'),
+            'database' => getenv('DB_DATABASE'),
+            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
+            'driver' => getenv('DB_DRIVER'),
+            'port' => getenv('DB_PORT'),
+            'schema' => getenv('DB_SCHEMA'),
+            'server' => getenv('DB_SERVER'),
+        ]);
+    }
+
     // Helpers for test methods
     // =========================================================================
 
@@ -539,50 +582,8 @@ class Craft extends Yii2
         return $items;
     }
 
-    /**
-     * Creates a DB config according to the loaded .env variables.
-     *
-     * @return DbConfig
-     */
-    public static function createDbConfig(): DbConfig
-    {
-        return new DbConfig([
-            'password' => getenv('DB_PASSWORD'),
-            'user' => getenv('DB_USER'),
-            'database' => getenv('DB_DATABASE'),
-            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-            'driver' => getenv('DB_DRIVER'),
-            'port' => getenv('DB_PORT'),
-            'schema' => getenv('DB_SCHEMA'),
-            'server' => getenv('DB_SERVER'),
-        ]);
-    }
-
     // Protected Methods
     // =========================================================================
-
-    /**
-     * Whether project config should be used in tests.
-     *
-     * Returns the projectConfig configuration array if yes - `false` if not.
-     *
-     * @return array|false
-     */
-    protected function useProjectConfig()
-    {
-        if (!\Craft::$app) {
-            return false;
-        }
-
-        $projectConfig = $projectConfig = $this->_getConfig('projectConfig');
-        $useProjectConfig = \Craft::$app->getConfig()->getGeneral();
-
-        if ($projectConfig && isset($projectConfig['file']) && $useProjectConfig) {
-            return $projectConfig;
-        }
-
-        return false;
-    }
 
     /**
      * @param $event
