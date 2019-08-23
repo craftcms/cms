@@ -86,6 +86,7 @@ class Craft extends Yii2
      * @var array
      */
     protected $addedConfig = [
+        'migrations' => [],
         'plugins' => [],
         'setupDb' => null,
         'projectConfig' => null,
@@ -249,8 +250,10 @@ class Craft extends Yii2
             }
 
             // Add any plugins
-            foreach ($this->_getConfig('plugins') as $plugin) {
-                $this->installPlugin($plugin);
+            if ($plugins = $this->_getConfig('plugins')) {
+                foreach ($plugins as $plugin) {
+                    $this->installPlugin($plugin);
+                }
             }
 
             // Trigger the end of a 'request'. This lets project config do its stuff.
