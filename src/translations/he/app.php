@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => 'לאחסן במטמון תמונות מרוחקות?',
     'Cancel' => 'ביטול',
     'Can’t run Craft CMS' => 'לא ניתן להריץ את Craft CMS',
-    'Careful—changing this may result in data loss.' => 'זהירות - שינוי של אזור זה עשוי לגרום לאובדן מידע.',
     'Cart' => 'עגלה',
     'Categories' => 'קטגוריות',
     'Categories deleted.' => 'הקטגוריות נמחקו.',
@@ -546,8 +545,6 @@ return [
     'Last update' => 'עדכון אחרון',
     'Learn more' => 'למידע נוסף',
     'Leave blank if categories don’t have URLs' => 'השאר ריק אם לקטגוריות אין כתובות אתר (URL)',
-    'Leave blank if entries don’t have URLs' => 'השאר ריק אם לרשומות אין כתובות URL',
-    'Leave blank if this is the homepage' => 'השאר ריק אם זהו דף הבית',
     'Leave it uninstalled' => 'השאר לא מותקן',
     'License' => 'רשיון',
     'License transferred.' => 'הרישיון הועבר.',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => 'איך אתה רוצה לקרוא לקבוצה?',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'כיצד ממשקי URI של כניסה צריכים להיראות עבור האתר. השאר ריק אם לערכים אין כתובות URL',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'כיצד אמורות להיראות כותרת הערכים שנוצרו אוטומטית. ניתן לכלול תגיות שמייצרות מאפייני ערך, כמו  {ex}.',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => 'מה אמור להיות מען ממשקי URI של כניסה של האתר. השאר ריק אם זהו דף הבית.',
     'What this block type will be called in the CP.' => 'כיצד ייקרא סוג בלוק זה ב-CP.',
     'What this category group will be called in the CP.' => 'כיצד קבוצת הקטגוריות הזאת תקרא בפאנל הניהול?',
     'What this entry type will be called in the CP.' => 'כיצד ייקרא סוג ערך זה ב-CP.',
@@ -1469,5 +1465,8 @@ return [
     'Exception Views' => 'תצוגות חריגה',
     'The URI can’t begin with the {setting} config setting.' => 'ה-URI אינו יכול להתחיל עם הגדרת התצורה {setting}.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} אינו יכול להתחיל עם הגדרת התצורה {setting}.',
-    'Debug Toolbar' => 'סרגל כלי ניפוי שגיאות'
+    'Debug Toolbar' => 'סרגל כלי ניפוי שגיאות',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
