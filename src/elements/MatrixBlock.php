@@ -363,19 +363,6 @@ class MatrixBlock extends Element implements BlockElementInterface
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getHasFreshContent(): bool
-    {
-        // Defer to the owner element
-        try {
-            return $this->getOwner()->getHasFreshContent();
-        } catch (InvalidConfigException $e) {
-            return false;
-        }
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
