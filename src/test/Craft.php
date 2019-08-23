@@ -223,15 +223,22 @@ class Craft extends Yii2
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
-            // Get rid of everything.
-            if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
-                TestSetup::cleanseDb($dbConnection);
-            }
 
             // Setup the project config from the passed file.
             $projectConfig = $this->useProjectConfig();
             if ($projectConfig) {
+                // Fail hard if someone has specified a project config file but doesn't have project config enabled.
+                // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
+                if (!\Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+                    throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
+                }
+
                 TestSetup::setupProjectConfig($projectConfig['file']);
+            }
+
+            // Get rid of everything.
+            if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
+                TestSetup::cleanseDb($dbConnection);
             }
 
             // Install the db from install.php
