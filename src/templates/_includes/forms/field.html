@@ -1,11 +1,11 @@
 {%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
-{%- set label = (label is defined and label != '__blank__' ? label : null) %}
+{%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
-{%- set instructions = (instructions is defined ? instructions : null) %}
-{%- set tip = (tip is defined ? tip : null) %}
-{%- set warning = (warning is defined ? warning : null) %}
+{%- set instructions = instructions ?? block('instructions') ?? null %}
+{%- set tip = tip ?? block('tip') ?? null %}
+{%- set warning = warning ?? block('warning') ?? null %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
@@ -33,7 +33,9 @@
         </div>
     {% endif %}
     <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
-        {{ input|raw }}
+        {% block input %}
+            {{ input|raw }}
+        {% endblock %}
     </div>
     {% if tip %}
         <p class="notice">{{ tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>

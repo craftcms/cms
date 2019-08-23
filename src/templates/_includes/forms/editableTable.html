@@ -1,4 +1,5 @@
 {%- set static = static ?? false %}
+{%- set fullWidth = fullWidth ?? true %}
 {%- set cols = cols ?? [] %}
 {%- set rows = rows ?? [] %}
 {%- set initJs = not static and (initJs ?? true) -%}
@@ -8,10 +9,14 @@
 {%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == rows|length) %}
 
 {% if not static %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif %}
 
-<table id="{{ id }}" class="shadow-box editable"
+{% macro cellClass(fullWidth, col, class) %}
+    {{- (class is iterable ? class : [class])|merge(fullWidth and (col.thin ?? false) ? ['thin'] : [])|join(' ') -}}
+{% endmacro %}
+
+<table id="{{ id }}" class="shadow-box editable{% if fullWidth %} fullwidth{% endif %}"
        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
@@ -22,8 +27,14 @@
                     {%- case 'template' %}
                         {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
                 {%- endswitch %}
-                <th scope="col" class="{{ col.class ?? '' }}">
-                    {%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
+                <th scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
+                    {%- if col.headingHtml is defined %}
+                        {{- col.headingHtml|raw }}
+                    {%- elseif col.heading is defined and col.heading %}
+                        {{- col.heading }}
+                    {%- else %}
+                        &nbsp;
+                    {%- endif %}
                     {%- if col.info is defined -%}
                         <span class="info">{{ col.info|md|raw }}</span>
                     {%- endif -%}
@@ -41,15 +52,15 @@
                     {% set cell = row[colId] ?? null %}
                     {% set value = cell.value is defined ? cell.value : cell %}
                     {% if col.type == 'heading' %}
-                        <th scope="row" class="{{ cell.class ?? col.class ?? '' }}">{{ value|raw }}</th>
+                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</th>
                     {% elseif col.type == 'html' %}
-                        <td class="{{ cell.class ?? col.class ?? '' }}">{{ value|raw }}</td>
+                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</td>
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set textual = (col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
-                        <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+                        <td class="{% if textual %}textual{% endif %} {{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}

@@ -18,7 +18,7 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="system-settings/save-general-settings">
+    {{ actionInput('system-settings/save-general-settings') }}
     {{ redirectInput('settings') }}
 
     {{ forms.autosuggestField({

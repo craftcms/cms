@@ -23,6 +23,7 @@ use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
@@ -640,6 +641,26 @@ class App
 
         if ($generalConfig->secureProtocolHeaders !== null) {
             $config['secureProtocolHeaders'] = $generalConfig->secureProtocolHeaders;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns the `response` component config for web requests.
+     *
+     * @return array
+     * @since 3.3.0
+     */
+    public static function webResponseConfig(): array
+    {
+        $config = [
+            'class' => WebResponse::class,
+        ];
+
+        // Default to JSON responses if running in headless mode
+        if (Craft::$app->getRequest()->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            $config['format'] = WebResponse::FORMAT_JSON;
         }
 
         return $config;

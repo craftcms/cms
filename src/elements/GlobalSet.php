@@ -71,6 +71,14 @@ class GlobalSet extends Element
     }
 
     /**
+     * @return string|null
+     */
+    public function getRef()
+    {
+        return $this->handle;
+    }
+
+    /**
      * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
