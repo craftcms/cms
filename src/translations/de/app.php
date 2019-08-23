@@ -1464,6 +1464,6 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
     'Exception Views' => 'Exception Views',
     'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} kann nicht mit der {setting} Konfigurationseinstellung starten.',
     'Debug Toolbar' => 'Debug-Symbolleiste'
 ];
