@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => '缓存远程图像？',
     'Cancel' => '取消',
     'Can’t run Craft CMS' => 'Craft CMS 无法运行',
-    'Careful—changing this may result in data loss.' => '小心 - 做此更改可能会导致数据丢失。',
     'Cart' => '购物车',
     'Categories' => '分类',
     'Categories deleted.' => '分类已删除。',
@@ -546,8 +545,6 @@ return [
     'Last update' => '上次更新',
     'Learn more' => '了解更多',
     'Leave blank if categories don’t have URLs' => '如果分类不存在 URL，请留空',
-    'Leave blank if entries don’t have URLs' => '如果条目没有 URL，请留空',
-    'Leave blank if this is the homepage' => '如果这是首页，请留空',
     'Leave it uninstalled' => '将它卸载',
     'License' => '许可证',
     'License transferred.' => '许可证已转移。',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => '您想如何命名该组？',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => '站点条目的 URI 应该是什么样？如果条目没有 URL，请留空。',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => '自动生成的条目标题是什么样的。可以包含标签（例如 {ex}）用以输出条目属性。',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => '站点条目的 URI 应该是什么？如果这是主页，请留空。',
     'What this block type will be called in the CP.' => '该区块类型在控制面板中应如何称呼。',
     'What this category group will be called in the CP.' => '该分类群组在控制面板中应如何称呼。',
     'What this entry type will be called in the CP.' => '该条目类型在控制面板中应如何称呼。',
@@ -1469,5 +1465,8 @@ return [
     'Exception Views' => '异常视图',
     'The URI can’t begin with the {setting} config setting.' => 'URI 不能以 {setting} 配置设置开头。',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} 不能以 {setting} 配置设置开头。',
-    'Debug Toolbar' => '调试工具栏'
+    'Debug Toolbar' => '调试工具栏',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
