@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => '원격 이미지를 캐시에 저장하시겠습니까?',
     'Cancel' => '취소',
     'Can’t run Craft CMS' => 'Craft CMS를 실행할 수 없습니다',
-    'Careful—changing this may result in data loss.' => '주의—이를 변경하면 데이터가 손실될 수 있습니다.',
     'Cart' => '장바구니',
     'Categories' => '카테고리',
     'Categories deleted.' => '카테고리 삭제함.',
@@ -546,8 +545,6 @@ return [
     'Last update' => '마지막 업데이트',
     'Learn more' => '더 알아보기',
     'Leave blank if categories don’t have URLs' => '카테고리가 URL을 포함하지 않은 경우 비워 두십시오',
-    'Leave blank if entries don’t have URLs' => '항목에 URL이 포함되지 않은 경우 비워 두십시오',
-    'Leave blank if this is the homepage' => '홈 페이지인 경우 비워 두십시오',
     'Leave it uninstalled' => '제거된 상태로 두십시오',
     'License' => '라이선스',
     'License transferred.' => '라이선스가 전송됨.',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => '그룹에 어떤 이름을 부여하고 싶으세요?',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => '해당 사이트의 항목 URI 예시입니다. 항목에 URL이 포함되지 않은 경우 비워 두십시오.',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => '자동 생성된 항목 타이틀 모습. {ex} 같이 항목 속성을 출력하는 태그를 포함할 수 있습니다.',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => '사이트의 항목 URI입니다. 홈 페이지인 경우 비워 두십시오.',
     'What this block type will be called in the CP.' => '이 블록 타입이 CP 안에서 호출되는 것.',
     'What this category group will be called in the CP.' => 'CP에서 이 카테고리를 호출하는 것.',
     'What this entry type will be called in the CP.' => '이 항목 타입이 CP 안에서 호출되는 것.',
@@ -1469,5 +1465,8 @@ return [
     'Exception Views' => '예외 보기',
     'The URI can’t begin with the {setting} config setting.' => 'URIsms {setting} 구성 설정을 시작할 수 없습니다.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute}은(는) {setting} 구성 설정을 시작할 수 없습니다.',
-    'Debug Toolbar' => '디버그 툴바'
+    'Debug Toolbar' => '디버그 툴바',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
