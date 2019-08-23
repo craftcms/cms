@@ -17,7 +17,6 @@
 - Section and Matrix “Propagation Method” settings now display warnings about the potential for data loss when appropriate.
 - Entries’ drafts and revisions are now soft-deleted and restored along with their source elements. ([#4797](https://github.com/craftcms/cms/issues/4797))
 - `craft\behaviors\DraftBehavior::getCreator()` can now return `null`.
-- `craft\helpers\Db::parseParam()` now has an optional `$columnType` argument. ([#4807](https://github.com/craftcms/cms/pull/4807))
 
 ### Removed
 - Removed `craft\base\ElementInterface::getSource()`. ([#4754](https://github.com/craftcms/cms/issues/4754))
