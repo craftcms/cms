@@ -24,6 +24,7 @@
 - Fixed a bug where the “Publish live changes for other authors’ entries” permission was being enforced when saving another author’s entry as a new entry. ([#4758](https://github.com/craftcms/cms/issues/4758))
 - Fixed a bug where `craft\helpers\UrlHelper` methods would strip out array params in the query string. ([#4778](https://github.com/craftcms/cms/issues/4778))
 - Fixed a SQL error that occurred when a `{% cache %}` tag was used on a page with a 4-byte character in the URI. ([#4780](https://github.com/craftcms/cms/issues/4780))
+- Fixed a bug where Craft could show a nondescript error when navigating away from a Control Panel page if an Ajax request was currently in progress. ([#4796](https://github.com/craftcms/cms/issues/4796))
 
 ## 3.2.10 - 2019-08-13
 
