@@ -14,6 +14,7 @@
         first: true,
         label: "Group"|t('app'),
         instructions: "Which group should this site belong to?"|t('app'),
+        warning: site.id and craft.app.isMultiSite ? 'Changing this may result in data loss.'|t('app'),
         id: 'group',
         name: 'group',
         options: groupOptions,
