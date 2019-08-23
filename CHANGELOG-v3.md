@@ -17,6 +17,7 @@
 - Section and Matrix “Propagation Method” settings now display warnings about the potential for data loss when appropriate.
 - Entries’ drafts and revisions are now soft-deleted and restored along with their source elements. ([#4797](https://github.com/craftcms/cms/issues/4797))
 - `craft\behaviors\DraftBehavior::getCreator()` can now return `null`.
+- `craft\helpers\Db::parseParam()` now has an optional `$columnType` argument. ([#4807](https://github.com/craftcms/cms/pull/4807))
 
 ### Removed
 - Removed `craft\base\ElementInterface::getSource()`. ([#4754](https://github.com/craftcms/cms/issues/4754))
@@ -31,6 +32,7 @@
 - Fixed an error that occurred when editing an entry with a draft that was created by a soft-deleted user. ([#4800](https://github.com/craftcms/cms/issues/4800))
 - Fixed a bug where entry revisions and drafts would be deleted when the user that created them was hard-deleted.
 - Fixed a SQL error that could occur when executing an element query that had custom `JOIN` and `WHERE` clauses if the `search` param was also set. ([#4788](https://github.com/craftcms/cms/issues/4788))
+- Fixed a SQL error that could occur when `:empty:` or `not :empty:` was passed to a date param on an element query when running MySQL 8. ([#4808](https://github.com/craftcms/cms/issues/4808))
 
 ## 3.2.10 - 2019-08-13
 
