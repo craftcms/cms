@@ -485,14 +485,17 @@ class Db
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
             if ($val === ':empty:') {
-                if ($isMysql && $columnType != Schema::TYPE_DATETIME) {
+                // If this is a textual column type, also check for empty strings
+                if (
+                    ($columnType === null && $isMysql) ||
+                    static::isTextualColumnType($columnType)
+                ) {
                     $valCondition = [
                         'or',
                         [$column => null],
                         [$column => '']
                     ];
                 } else {
-                    // Because PostgreSQL chokes if you do a string check on an int column
                     $valCondition = [$column => null];
                 }
                 if ($operator === '!=') {
