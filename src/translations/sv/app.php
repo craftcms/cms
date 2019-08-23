@@ -1464,10 +1464,10 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'Address Line 2' => 'Adressrad 2',
     'Are you sure you want to delete this {type}?' => 'Är du säker på att du vill ta bort denna {type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> som för närvarande är installerad har schemaversionen av {existing} (expected {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => 'Profil Twig-mallar när utvecklarläge är avaktiverat',
+    'Show full exception views when Dev Mode is disabled' => 'Visa fullständig undantagsvisning när utvecklarläge är avaktiverat',
+    'Exception Views' => 'Undantagsvisningar',
+    'The URI can’t begin with the {setting} config setting.' => 'URL kan inte börja med {setting} konfigurationsinställningen.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} kan inte starta med {setting} konfigurationsinställningen.',
+    'Debug Toolbar' => 'Verktygsfältet för felsökning'
 ];
