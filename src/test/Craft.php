@@ -167,7 +167,7 @@ class Craft extends Yii2
         }
 
         // Re-apply project config
-        if ($projectConfig = $this->_getConfig('projectConfig')) {
+        if ($projectConfig = $this->useProjectConfig()) {
             // Tests just beginning. . Reset the project config to its original state.
             TestSetup::setupProjectConfig($projectConfig['file']);
 
@@ -228,9 +228,8 @@ class Craft extends Yii2
             }
 
             // Setup the project config from the passed file.
-            $projectConfig = $this->_getConfig('projectConfig');
-            if ($projectConfig && isset($projectConfig['file'])) {
-                // Just set it up.
+            $projectConfig = $this->useProjectConfig();
+            if ($projectConfig) {
                 TestSetup::setupProjectConfig($projectConfig['file']);
             }
 
@@ -551,6 +550,29 @@ class Craft extends Yii2
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Whether project config should be used in tests.
+     *
+     * Returns the projectConfig configuration array if yes - `false` if not.
+     *
+     * @return array|false
+     */
+    protected function useProjectConfig()
+    {
+        if (!\Craft::$app) {
+            return false;
+        }
+
+        $projectConfig = $projectConfig = $this->_getConfig('projectConfig');
+        $useProjectConfig = \Craft::$app->getConfig()->getGeneral();
+
+        if ($projectConfig && isset($projectConfig['file']) && $useProjectConfig) {
+            return $projectConfig;
+        }
+
+        return false;
+    }
 
     /**
      * @param $event
