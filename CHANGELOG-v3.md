@@ -34,6 +34,7 @@
 - Fixed a bug where entry revisions and drafts would be deleted when the user that created them was hard-deleted.
 - Fixed a SQL error that could occur when executing an element query that had custom `JOIN` and `WHERE` clauses if the `search` param was also set. ([#4788](https://github.com/craftcms/cms/issues/4788))
 - Fixed a bug where default field values weren’t being applied to Matrix blocks that were autocreated per the Min Blocks setting. ([#4806](https://github.com/craftcms/cms/issues/4806))
+- Fixed Plugin Store dropdowns which were not working properly with Windows Edge browsers.
 
 ## 3.2.10 - 2019-08-13
 
