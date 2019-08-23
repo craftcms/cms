@@ -225,8 +225,7 @@ class Craft extends Yii2
 
 
             // Setup the project config from the passed file.
-            $projectConfig = TestSetup::useProjectConfig();
-            if ($projectConfig) {
+            if ($projectConfig = TestSetup::useProjectConfig()) {
                 // Fail hard if someone has specified a project config file but doesn't have project config enabled.
                 // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
                 if (!\Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
