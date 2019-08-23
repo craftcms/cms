@@ -351,12 +351,12 @@ class TestSetup
      */
     public static function useProjectConfig()
     {
-        if (!\Craft::$app) {
+        if (!Craft::$app) {
             return false;
         }
 
         $projectConfig = \craft\test\Craft::$testConfig['projectConfig'] ?? [];
-        $useProjectConfig = \Craft::$app->getConfig()->getGeneral();
+        $useProjectConfig = Craft::$app->getConfig()->getGeneral();
 
         if ($projectConfig && isset($projectConfig['file']) && $useProjectConfig) {
             return $projectConfig;
