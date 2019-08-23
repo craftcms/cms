@@ -434,10 +434,10 @@ class Db
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
-     * @param null $columnType The database column type the param is targeting.
+     * @param string|null $columnType The database column type the param is targeting
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false, $columnType = null)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, string $columnType = null)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
