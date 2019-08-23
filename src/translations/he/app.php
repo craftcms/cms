@@ -1469,5 +1469,5 @@ return [
     'Exception Views' => 'תצוגות חריגה',
     'The URI can’t begin with the {setting} config setting.' => 'ה-URI אינו יכול להתחיל עם הגדרת התצורה {setting}.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} אינו יכול להתחיל עם הגדרת התצורה {setting}.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Debug Toolbar' => 'סרגל כלי ניפוי שגיאות'
 ];
