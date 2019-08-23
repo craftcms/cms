@@ -169,7 +169,6 @@ class Craft extends Yii2
 
         // Re-apply project config
         if ($projectConfig = TestSetup::useProjectConfig()) {
-            // Tests just beginning. . Reset the project config to its original state.
             $yamlContent = TestSetup::setupProjectConfig($projectConfig['file']);
 
             \Craft::$app->getProjectConfig()->applyConfigChanges(
