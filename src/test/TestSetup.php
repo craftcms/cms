@@ -322,8 +322,9 @@ class TestSetup
         Craft::setAlias('@translations', $translationsPath);
 
         // Prevent `headers already sent` error when running tests in PhpStorm
+        // https://stackoverflow.com/questions/31175636/headers-already-sent-running-unit-tests-in-phpstorm
         ob_start ();
-        
+
         return true;
     }
 
