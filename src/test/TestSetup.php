@@ -384,7 +384,7 @@ class TestSetup
             'primary' => true,
         ];
 
-        // Replace the default site with what is desired by the project config (Currently). If project config is enabled.
+        // Replace the default site with what is desired by the project config. If project config is enabled.
         if ($projectConfig = self::useProjectConfig()) {
             $existingProjectConfig = Yaml::parse(
                 file_get_contents($projectConfig['file']) ?: ''
