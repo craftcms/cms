@@ -1244,7 +1244,7 @@ body.rtl .tagmenu ul li a:before { margin: 3px -18px 0 0 ; }
 /* ----------------------------------------
 /*  Fields
 /* ----------------------------------------*/
-.shadow-box { border-radius: 5px; border: 1px solid #ccc; width: 100%; -webkit-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); }
+.shadow-box { border-radius: 5px; border: 1px solid #ccc; -webkit-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); }
 
 table.shadow-box thead:first-child tr:first-child th:first-child, table.shadow-box thead:first-child tr:first-child th:first-child.disabled:after, table.shadow-box thead:first-child tr:first-child td:first-child, table.shadow-box thead:first-child tr:first-child td:first-child.disabled:after, table.shadow-box tbody:first-child tr:first-child th:first-child, table.shadow-box tbody:first-child tr:first-child th:first-child.disabled:after, table.shadow-box tbody:first-child tr:first-child td:first-child, table.shadow-box tbody:first-child tr:first-child td:first-child.disabled:after { border-top-left-radius: 4px; }
 table.shadow-box thead:first-child tr:first-child th:last-child, table.shadow-box thead:first-child tr:first-child th:last-child.disabled:after, table.shadow-box thead:first-child tr:first-child td:last-child, table.shadow-box thead:first-child tr:first-child td:last-child.disabled:after, table.shadow-box tbody:first-child tr:first-child th:last-child, table.shadow-box tbody:first-child tr:first-child th:last-child.disabled:after, table.shadow-box tbody:first-child tr:first-child td:last-child, table.shadow-box tbody:first-child tr:first-child td:last-child.disabled:after { border-top-right-radius: 4px; }

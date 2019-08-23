@@ -70,12 +70,12 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="categories/save-category">
+    {{ actionInput('categories/save-category') }}
     {{ redirectInput('categories/'~groupHandle) }}
 
-    <input type="hidden" name="groupId" value="{{ group.id }}">
-    {% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
-    {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ category.siteId }}">{% endif %}
+    {{ hiddenInput('groupId', group.id) }}
+    {% if category.id %}{{ hiddenInput('categoryId', category.id) }}{% endif %}
+    {% if craft.app.getIsMultiSite() %}{{ hiddenInput('siteId', category.siteId) }}{% endif %}
 
     <div id="fields">
         {{ forms.textField({

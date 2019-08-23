@@ -7,7 +7,7 @@ Craft Pro を使用し、サイトで誰でもユーザーアカウントを登�
 ```twig
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="users/save-user">
+    {{ actionInput('users/save-user') }}
     {{ redirectInput('') }}
 
     {% macro errorList(errors) %}

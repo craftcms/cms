@@ -17,10 +17,10 @@ You can create a new entry form for the front-end of your site using the followi
 
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="entries/save-entry">
+    {{ actionInput('entries/save-entry') }}
     {{ redirectInput('viewentry/{slug}') }}
-    <input type="hidden" name="sectionId" value="2">
-    <input type="hidden" name="enabled" value="1">
+    {{ hiddenInput('sectionId', '2') }}
+    {{ hiddenInput('enabled', '1') }}
 
     <label for="title">Title</label>
     <input id="title" type="text" name="title"
@@ -53,5 +53,5 @@ The user submitting the entry will also need to have the permission necessary to
 You can modify the form to save existing entries by adding an “entryId” hidden input to the form:
 
 ```twig
-<input type="hidden" name="entryId" value="{{ entry.id }}">
+{{ hiddenInput('entryId', entry.id) }}
 ```

@@ -3,7 +3,7 @@
 {%- set small = (small is defined ? small : false) %}
 {%- set toggle = (toggle is defined ? toggle : false) %}
 {%- set reverseToggle = (reverseToggle is defined ? reverseToggle : false) %}
-{%- set disabled = (disabled is defined ? disabled : false) %}
+{%- set disabled = (disabled is defined and disabled ? true : false) %}
 
 <div class="lightswitch{% if on %} on{% endif %}{% if small %} small{% endif %}{% if toggle or reverseToggle %} fieldtoggle{% endif %}{% if disabled %} disabled{% endif %}" tabindex="0" data-value="{{ value }}"
     {%- if id is defined %} id="{{ id }}"{% endif %}
@@ -17,6 +17,6 @@
         <div class="label off"></div>
     </div>
     {% if name is defined -%}
-        <input type="hidden" name="{{ name }}" value="{{ on ? value }}"{% if disabled %} disabled{% endif %}>
+        {{ hiddenInput(name, on ? value : '', {disabled: disabled}) }}
     {%- endif %}
 </div>

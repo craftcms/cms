@@ -5,7 +5,7 @@
 ```twig
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="users/send-password-reset-email">
+    {{ actionInput('users/send-password-reset-email') }}
     {{ redirectInput('') }}
 
     <h3><label for="loginName">Username or email</label></h3>
