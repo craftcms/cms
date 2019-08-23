@@ -1001,6 +1001,36 @@ Whether images transforms should be generated before page load.
 
 
 
+### `headlessMode`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$headlessMode](api:craft\config\GeneralConfig::$headlessMode)
+
+
+
+Bool Whether the system should run in Headless Mode, which
+optimizes the system and Control Panel for headless CMS implementations.
+
+When this is enabled, the following changes will take place:
+
+- URI Format settings for sections and category groups will be hidden.
+- Template route management will be hidden.
+- Front-end routing will skip checks for element and template requests.
+- Front-end responses will be JSON-formatted rather than HTML by default.
+- Twig will be configured to escape unsafe strings for JavaScript/JSON
+  rather than HTML by default for front-end requests.
+
+
+
 ### `imageDriver`
 
 Allowed types
