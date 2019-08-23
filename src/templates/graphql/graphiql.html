@@ -1,179 +1,20 @@
 {% extends "_layouts/cp" %}
 
-{% set title = "Explore GraphQL API"|t %}
+{% set title = "Explore the GraphQL API"|t %}
 {% set selectedSubnavItem = 'explore' %}
 
-{% set content %}
-<style>
-    #graphiql {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-    }
-    #container {
-        overflow: hidden;
-    }
-    #page-header, #footer {
-        display: none;
-    }
-    #content {
-        position: relative;
-    }
-    #main.single-pane .padded > .pane {
-        overflow: visible;
-    }
-    .graphiql-container .topBar,
-    .graphiql-container .docExplorerShow {
-        background: #ebedef;
-        padding: 20px 24px;
-        border: none;
-    }
-    .graphiql-container .topBar .title {
-        font-size: 24px;
-        font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif;
-        color: #29323d;
-    }
-    .graphiql-container .docExplorerShow {
-        color: #29323d;
-    }
-    .graphiql-container .docExplorerShow:before {
-        border-color: #29323d;
-    }
-    .graphiql-container .toolbar-button {
-        display: flex;
-        align-items: center;
-        color: #fff;
-        background-image: linear-gradient(#da5a47, #cc5643);
-        font-weight: 600;
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1);
-        height: 30px;
-        border-radius: 3px;
-        padding: 6px 12px;
-        cursor: pointer;
-        font-size: 13px;
-        box-sizing: border-box;
-    }
-    .graphiql-container .toolbar-button:hover {
-        background-image: linear-gradient(#bf503f, #b34b3b);
-    }
-    .graphiql-container .result-window .CodeMirror-gutters,
-    .graphiql-container .variable-editor-title {
-        background: #ebedef;
-    }
-    .CodeMirror-gutters {
-        background: #fafafa;
-        border-right: 0;
-    }
-    .CodeMirror-hints {
-        z-index: 100;
-    }
-</style>
+{% block content %}
+    <div data-endpoint="{{ url }}" id="graphiql">
+        <div class="spinner big"></div>
+    </div>
 
-<div id="graphiql">Loading...</div>
+    {% js %}
+        var gqlTokens = [];
 
-{% js %}
+        {% for name, token in gqlTokens %}
+            gqlTokens.push({name: '{{ name|e('js') }}', token: '{{ token }}'});
+        {% endfor %}
 
-var header = document.querySelector('#header');
-if (header) {
-    header.parentNode.removeChild(header);
-}
-
-
-// Parse the search string to get url parameters.
-var search = window.location.search;
-var parameters = {};
-search.substr(1).split('&').forEach(function (entry) {
-    var eq = entry.indexOf('=');
-    if (eq >= 0) {
-        parameters[decodeURIComponent(entry.slice(0, eq))] =
-        decodeURIComponent(entry.slice(eq + 1));
-    }
-});
-
-// if variables was provided, try to format it.
-if (parameters.variables) {
-    try {
-        parameters.variables = JSON.stringify(JSON.parse(parameters.variables), null, 2);
-} catch (e) {
-    // Do nothing, we want to display the invalid JSON as a string, rather
-    // than present an error.
-}
-}
-
-// When the query and variables string is edited, update the URL bar so
-// that it can be easily shared
-function onEditQuery(newQuery) {
-    parameters.query = newQuery;
-    updateURL();
-}
-
-function onEditVariables(newVariables) {
-    parameters.variables = newVariables;
-    updateURL();
-}
-
-function onEditOperationName(newOperationName) {
-    parameters.operationName = newOperationName;
-    updateURL();
-}
-
-function updateURL() {
-    var newSearch = '?' + Object.keys(parameters).filter(function (key) {
-        return Boolean(parameters[key]);
-    }).map(function (key) {
-        return encodeURIComponent(key) + '=' + encodeURIComponent(parameters[key]);
-    }).join('&');
-    history.replaceState(null, null, newSearch);
-}
-
-// Defines a GraphQL fetcher using the fetch API. You're not required to
-// use fetch, and could instead implement graphQLFetcher however you like,
-// as long as it returns a Promise or Observable.
-function graphQLFetcher(graphQLParams) {
-    // This example expects a GraphQL server at the path /graphql.
-    // Change this to point wherever you host your GraphQL server.
-    return fetch('{{ url }}', {
-        method: 'post',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer {{ token }}',
-        },
-        body: JSON.stringify(graphQLParams),
-        credentials: 'include',
-    }).then(function (response) {
-        return response.text();
-    }).then(function (responseBody) {
-        try {
-            return JSON.parse(responseBody);
-        } catch (error) {
-            return responseBody;
-        }
-    });
-}
-
-var logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API")
-
-// Render <GraphiQL /> into the body.
-// See the README in the top level of this module to learn more about
-// how you can customize GraphiQL by providing different values or
-// additional child elements.
-ReactDOM.render(
-    React.createElement(GraphiQL, {
-        fetcher: graphQLFetcher,
-        schema: undefined,
-        query: parameters.query,
-        variables: parameters.variables,
-        operationName: parameters.operationName,
-        onEditQuery: onEditQuery,
-        onEditVariables: onEditVariables,
-        onEditOperationName: onEditOperationName
-    }, logoElement),
-    document.getElementById('graphiql')
-);
-
-{% endjs %}
-
-{% endset %}
+        initGraphiQl();
+    {% endjs %}
+{% endblock %}

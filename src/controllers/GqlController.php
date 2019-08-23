@@ -106,9 +106,15 @@ class GqlController extends Controller
         $this->requireAdmin();
         $this->getView()->registerAssetBundle(GraphiQlAsset::class);
 
+        $tokenPairs = [];
+
+        foreach (Craft::$app->getGql()->getTokens() as $token) {
+            $tokenPairs[$token->name] = $token->accessToken;
+        }
+
         return $this->renderTemplate('graphql/graphiql', [
             'url' => '/actions/gql',
-            'token' => 'apFUXCq-Ry49Vo609lEsVxxCQ4yXzEaj'
+            'gqlTokens' => $tokenPairs,
         ]);
     }
 

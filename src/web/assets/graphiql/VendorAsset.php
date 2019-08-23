@@ -8,31 +8,29 @@
 namespace craft\web\assets\graphiql;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
 
 /**
- * GraphiQL asset bundle.
+ * VendorAsset asset bundle.
  */
-class GraphiQlAsset extends AssetBundle
+class VendorAsset extends AssetBundle
 {
     /**
      * @inheritdoc
      */
     public function init()
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->depends = [
-            VendorAsset::class,
-            CpAsset::class,
-        ];
+        $this->sourcePath = '@lib';
 
         $this->js = [
-            'graphiql' . $this->dotJs(),
+            'es6-promise/es6-promise.min.js',
+            'fetch/fetch.js',
+            'react/react.production.min.js',
+            'react-dom/react-dom.production.min.js',
+            'graphiql/js/graphiql.min.js',
         ];
 
         $this->css = [
-            'graphiql.css',
+            'graphiql/css/graphiql.css',
         ];
 
         parent::init();
