@@ -1179,6 +1179,9 @@ class Elements extends Component
                 $db->createCommand()
                     ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
+
+                // Also soft delete the element's drafts & revisions
+                $this->_cascadeDeleteDraftsAndRevisions($element->id);
             }
 
             $element->afterDelete();
@@ -1294,6 +1297,9 @@ class Elements extends Component
                 $db->createCommand()
                     ->restore(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
+
+                // Also restore the element's drafts & revisions
+                $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
 
                 // Restore its search indexes
                 $searchService = Craft::$app->getSearch();
@@ -2068,6 +2074,43 @@ class Elements extends Component
             }
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
+        }
+    }
+
+    /**
+     * Soft-deletes or restores the drafts and revisions of the given element.
+     *
+     * @param int $sourceId The source element ID
+     * @param bool $delete `true` if the drafts/revisions should be soft-deleted; `false` if they should be restored
+     */
+    private function _cascadeDeleteDraftsAndRevisions(int $sourceId, bool $delete = true)
+    {
+        $params = [
+            'dateDeleted' => $delete ? Db::prepareDateForDb(new \DateTime()) : null,
+            'sourceId' => $sourceId,
+        ];
+
+        $db = Craft::$app->getDb();
+
+        foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+UPDATE {{%elements}} [[e]]
+INNER JOIN {$table} [[t]] ON [[t.id]] = [[e.{$fk}]]
+SET [[e.dateDeleted]] = :dateDeleted
+WHERE [[t.sourceId]] = :sourceId
+SQL;
+            } else {
+                $sql = <<<SQL
+UPDATE {{%elements}} [[e]]
+SET [[dateDeleted]] = :dateDeleted
+FROM {$table} [[t]]
+WHERE [[t.id]] = [[e.{$fk}]]
+AND [[t.sourceId]] = :sourceId
+SQL;
+            }
+
+            $db->createCommand($sql, $params)->execute();
         }
     }
 
