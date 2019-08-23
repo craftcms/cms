@@ -327,8 +327,9 @@ class TestSetup
     /**
      * @param string $projectConfigFile
      * @throws ErrorException
+     * @return array
      */
-    public static function setupProjectConfig(string $projectConfigFile)
+    public static function setupProjectConfig(string $projectConfigFile) : array
     {
         if (!is_file($projectConfigFile)) {
             throw new InvalidArgumentException('Project config is not a file');
@@ -340,6 +341,8 @@ class TestSetup
 
         // Write to the file.
         FileHelper::writeToFile($testSuiteProjectConfigPath, Yaml::dump($arrayContents));
+
+        return $arrayContents;
     }
 
     /**
