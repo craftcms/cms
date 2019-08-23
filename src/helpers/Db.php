@@ -474,6 +474,8 @@ class Db
             $caseInsensitive = false;
         }
 
+        $caseColumn = $caseInsensitive ? "lower([[{$column}]])" : $column;
+
         $inVals = [];
         $notInVals = [];
 
@@ -481,38 +483,21 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (is_string($val) && strtolower($val) === ':empty:') {
-                if ($operator === '=') {
-                    if ($isMysql) {
-                        $condition[] = [
-                            'or',
-                            [$column => null],
-                            [$column => '']
-                        ];
-                    } else {
-                        // Because PostgreSQL chokes if you do a string check on an int column
-                        $condition[] = [$column => null];
-                    }
+            if ($val === ':empty:') {
+                if ($isMysql) {
+                    $valCondition = [
+                        'or',
+                        [$column => null],
+                        [$column => '']
+                    ];
                 } else {
-                    if ($isMysql) {
-                        $condition[] = [
-                            'not',
-                            [
-                                'or',
-                                [$column => null],
-                                [$column => '']
-                            ]
-                        ];
-                    } else {
-                        // Because PostgreSQL chokes if you do a string check on an int column
-                        $condition[] = [
-                            'not',
-                            [
-                                $column => null,
-                            ]
-                        ];
-                    }
+                    // Because PostgreSQL chokes if you do a string check on an int column
+                    $valCondition = [$column => null];
                 }
+                if ($operator === '!=') {
+                    $valCondition = ['not', $valCondition];
+                }
+                $condition[] = $valCondition;
                 continue;
             }
 
@@ -558,27 +543,20 @@ class Db
                 continue;
             }
 
-            if ($caseInsensitive) {
-                $condition[] = [$operator, "lower([[{$column}]])", $val];
-            } else {
-                $condition[] = [$operator, $column, $val];
-            }
+            $condition[] = [$operator, $caseColumn, $val];
         }
 
         if (!empty($inVals)) {
-            if ($caseInsensitive) {
-                $condition[] = ['in', "lower([[{$column}]])", $inVals];
-            } else {
-                $condition[] = ['in', $column, $inVals];
-            }
+            $condition[] = self::_inCondition($caseColumn, $inVals);
         }
 
         if (!empty($notInVals)) {
-            if ($caseInsensitive) {
-                $condition[] = ['not in', "lower([[{$column}]])", $notInVals];
-            } else {
-                $condition[] = ['not in', $column, $notInVals];
-            }
+            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+        }
+
+        // Skip the glue if there's only one condition
+        if (count($condition) === 2) {
+            return $condition[1];
         }
 
         return $condition;
@@ -799,7 +777,18 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (is_string($value) && strtolower($value) === ':notempty:') {
+            return;
+        }
+
+        if (!is_string($value) || $value === ':empty:' || $value === 'not :empty:') {
+            return;
+        }
+
+        $lower = strtolower($value);
+
+        if ($lower === ':empty:') {
+            $value = ':empty:';
+        } else if ($lower === ':notempty:' || $lower === 'not :empty:') {
             $value = 'not :empty:';
         }
     }
@@ -851,5 +840,17 @@ class Db
         }
 
         return $op;
+    }
+
+    /**
+     * @param string $column
+     * @param array $values
+     * @return array
+     */
+    private static function _inCondition(string $column, array $values): array
+    {
+        return [
+            $column => count($values) === 1 ? $values[0] : $values,
+        ];
     }
 }
