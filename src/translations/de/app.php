@@ -1461,9 +1461,9 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Are you sure you want to delete this {type}?' => 'Sind Sie sicher, dass Sie diesen {type} löschen möchten?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> hat aktuell die Schemaversion von {existing} installiert ({incoming} erwartet)',
     'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
+    'Show full exception views when Dev Mode is disabled' => 'Zeigt vollständige Ausnahmeansichten an, wenn der Entwicklermodus deaktiviert ist',
+    'Exception Views' => 'Ausnahmenansicht',
+    'The URI can’t begin with the {setting} config setting.' => 'Die URI kann nicht mit der {setting} Konfigurationseinstellung anfangen.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} kann nicht mit der {setting} Konfigurationseinstellung starten.',
     'Debug Toolbar' => 'Debug-Symbolleiste'
 ];
