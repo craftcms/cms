@@ -197,4 +197,16 @@ class GqlController extends Controller
 
         return $this->redirectToPostedUrl();
     }
+
+    public function actionDeleteToken()
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $tokenId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+
+        Craft::$app->getGql()->deleteTokenById($tokenId);
+
+        return $this->asJson(['success' => true]);
+    }
 }

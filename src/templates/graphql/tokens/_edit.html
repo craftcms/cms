@@ -54,7 +54,7 @@
 
 {% block content %}
     <input type="hidden" name="action" value="gql/save-token">
-    {{ redirectInput('settings/graphql/tokens') }}
+    {{ redirectInput('graphql/tokens') }}
     {% if token.id %}<input type="hidden" name="tokenId" value="{{ token.id }}">{% endif %}
 
     <div id="token-settings">

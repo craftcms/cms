@@ -353,6 +353,23 @@ class Gql extends Component
         return true;
     }
 
+    /**
+     * Deletes a GQL token by its ID.
+     *
+     * @param int $tokenId The transform's ID
+     * @return bool Whether the token was deleted.
+     */
+    public function deleteTokenById(int $tokenId): bool
+    {
+        $tokenRecord = GqlTokenRecord::findOne($tokenId);
+
+        if (!$tokenRecord) {
+            return true;
+        }
+
+        return $tokenRecord->delete();
+    }
+
     // Private Methods
     // =========================================================================
 

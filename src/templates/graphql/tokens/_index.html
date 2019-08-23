@@ -24,13 +24,14 @@
             </thead>
             <tbody>
                 {% for token in tokens %}
-                    <tr data-id="{{ token.id }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/graphql/tokens/' ~ token.id) }}">{{ token.name }}</a></th>
+                    <tr data-id="{{ token.id }}" data-name="{{ token.name }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/tokens/' ~ token.id) }}">{{ token.name }}</a></th>
                         <td data-title="{{ 'Access token'|t('app') }}">{{ token.accessToken }}</td>
                         <td class="thin" data-title="{{ 'Enabled'|t('app') }}">{% if token.enabled %}<div data-icon="check"></div>{% endif %}</td>
                         <td data-title="{{ 'Last used'|t('app') }}">{{ token.lastUsed ? token.lastUsed|datetime('short') : ''}}</td>
                         <td data-title="{{ 'Expires'|t('app') }}"><code>{{ token.expiryDate ? token.expiryDate|datetime('short') : ''}}</code></td>
                         <td data-title="{{ 'Created'|t('app') }}"><code>{{ token.dateCreated|datetime('short') }}</code></td>
+                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -39,7 +40,7 @@
     {% endif %}
 
     <div class="buttons">
-        <a class="btn submit add icon" href="{{ url('settings/graphql/tokens/new') }}">{{ "New token"|t('app') }}</a>
+        <a class="btn submit add icon" href="{{ url('graphql/tokens/new') }}">{{ "New token"|t('app') }}</a>
     </div>
 {% endblock %}
 
@@ -50,6 +51,6 @@
         noItemsSelector: '#notokens',
         minItems: 1,
         sortable: false,
-        deleteAction: 'gql/delete-token',
+        deleteAction: 'gql/delete-token'
     });
 {% endjs %}
