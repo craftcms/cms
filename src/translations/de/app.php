@@ -1465,5 +1465,5 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Exception Views' => 'Exception Views',
     'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Debug Toolbar' => 'Debug-Symbolleiste'
 ];
