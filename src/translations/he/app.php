@@ -1464,10 +1464,10 @@ return [
     'Address Line 2' => 'שורת כתובת 2',
     'Are you sure you want to delete this {type}?' => 'האם אתה בטוח שברצונך למחוק את ה{type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'ל<strong>{cause}</strong> המותקן כרגע יש גרסת סכימה של {existing}(צפוי{incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Profile Twig templates when Dev Mode is disabled' => 'צור תבניות פרופיל Twig כאשר מצב Dev מנוטרל',
+    'Show full exception views when Dev Mode is disabled' => 'הצג תצוגות חריגה מלאות כאשר מצב Dev מנוטרל',
+    'Exception Views' => 'תצוגות חריגה',
+    'The URI can’t begin with the {setting} config setting.' => 'ה-URI אינו יכול להתחיל עם הגדרת התצורה {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} אינו יכול להתחיל עם הגדרת התצורה {setting}.',
     'Debug Toolbar' => 'Debug Toolbar'
 ];
