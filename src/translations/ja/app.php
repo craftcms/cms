@@ -1464,10 +1464,10 @@ return [
     'Address Line 2' => '住所2',
     'Are you sure you want to delete this {type}?' => 'この{type}を削除してもよろしいですか？',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '現在インストールされている<strong>{cause}</strong>のスキーマバージョンは {existing} です（必要バージョン：{incoming}）',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Profile Twig templates when Dev Mode is disabled' => '開発モードが無効な場合にTwigテンプレートをプロファイリングする',
+    'Show full exception views when Dev Mode is disabled' => '開発モードが無効な場合に完全な例外ビューを表示する',
+    'Exception Views' => '例外ビュー',
+    'The URI can’t begin with the {setting} config setting.' => 'URIは{setting}構成設定で始めることはできません。',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute}は{setting}構成設定で始めることはできません。',
+    'Debug Toolbar' => 'デバッグツールバー'
 ];
