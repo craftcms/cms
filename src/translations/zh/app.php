@@ -1464,10 +1464,10 @@ return [
     'Address Line 2' => '地址行 2',
     'Are you sure you want to delete this {type}?' => '确定要删除此{type}吗？',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '当前安装的 <strong>{cause}</strong> 的架构版本为 {existing}（预期为 {incoming}）',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
-    'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
+    'Profile Twig templates when Dev Mode is disabled' => '在开发者模式禁用时分析 Twig 模板',
+    'Show full exception views when Dev Mode is disabled' => '在开发者模式禁用时显示完整异常视图',
+    'Exception Views' => '异常视图',
+    'The URI can’t begin with the {setting} config setting.' => 'URI 不能以 {setting} 配置设置开头。',
+    '{attribute} cannot start with the {setting} config setting.' => '{attribute} 不能以 {setting} 配置设置开头。',
     'Debug Toolbar' => 'Debug Toolbar'
 ];
