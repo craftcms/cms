@@ -434,9 +434,10 @@ class Db
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
+     * @param null $columnType The database column type the param is targeting.
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false, $columnType = null)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
@@ -483,7 +484,7 @@ class Db
 
             if (is_string($val) && strtolower($val) === ':empty:') {
                 if ($operator === '=') {
-                    if ($isMysql) {
+                    if ($isMysql && $columnType != Schema::TYPE_DATETIME) {
                         $condition[] = [
                             'or',
                             [$column => null],
@@ -494,7 +495,7 @@ class Db
                         $condition[] = [$column => null];
                     }
                 } else {
-                    if ($isMysql) {
+                    if ($isMysql && $columnType != Schema::TYPE_DATETIME) {
                         $condition[] = [
                             'not',
                             [
@@ -627,7 +628,7 @@ class Db
             $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
-        return static::parseParam($column, $normalizedValues);
+        return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
     }
 
     /**
