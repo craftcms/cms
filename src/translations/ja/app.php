@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => 'リモート画像をキャッシュしますか？',
     'Cancel' => 'キャンセル',
     'Can’t run Craft CMS' => 'Craft CMS を実行できません',
-    'Careful—changing this may result in data loss.' => '注：これを変更するとデータが失われる場合があります。',
     'Cart' => 'カート',
     'Categories' => 'カテゴリ',
     'Categories deleted.' => 'カテゴリを削除しました。',
@@ -546,8 +545,6 @@ return [
     'Last update' => '最終更新',
     'Learn more' => 'さらに詳しく',
     'Leave blank if categories don’t have URLs' => 'カテゴリーに URL がない場合は空にしてください',
-    'Leave blank if entries don’t have URLs' => 'エントリーに URL がない場合は空にしてください',
-    'Leave blank if this is the homepage' => 'これがホームページである場合は空にしてください',
     'Leave it uninstalled' => 'アンインストールのまま残す',
     'License' => 'ライセンス',
     'License transferred.' => 'ライセンスを移動しました。',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => 'グループの名前を何にしますか？',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'このサイトに対して表示されるエントリ URI。エントリに URL がない場合は空にしてください。',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => '自動出力エントリ・タイトルの見え方。エントリ・プロパティを出力するタグ (例えば、{ex}) を含めることができます。',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => 'サイトに対するエントリ URI。これがホームページである場合は空にしてください。',
     'What this block type will be called in the CP.' => 'ブロックタイプのCP内の名称。',
     'What this category group will be called in the CP.' => 'CP中でのこのカテゴリーグループの名称。',
     'What this entry type will be called in the CP.' => 'この入力タイプはCPで以下のように呼ばれます。',
@@ -1469,5 +1465,8 @@ return [
     'Exception Views' => '例外ビュー',
     'The URI can’t begin with the {setting} config setting.' => 'URIは{setting}構成設定で始めることはできません。',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute}は{setting}構成設定で始めることはできません。',
-    'Debug Toolbar' => 'デバッグツールバー'
+    'Debug Toolbar' => 'デバッグツールバー',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
