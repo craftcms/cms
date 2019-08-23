@@ -105,7 +105,10 @@
                         <li>
                             <a{% if draft.draftId == element.draftId %} class="sel"{% endif %} href="{{ url }}">
                                 <span class="draft-name">{{ draft.draftName }}</span>
-                                <span class="draft-creator light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
+                                {% set creator = draft.getCreator() %}
+                                {% if creator %}
+                                    <span class="draft-creator light">{{ "by {creator}"|t('app', { creator: creator }) }}</span>
+                                {% endif %}
                             </a>
                         </li>
                     {% endfor %}

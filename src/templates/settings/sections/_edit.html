@@ -46,7 +46,8 @@
 
     {{ forms.selectField({
         label: "Section Type"|t('app'),
-        instructions: "What type of section is this?"|t('app') ~ (section.id ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t('app')~'</span>' : ''),
+        instructions: "What type of section is this?"|t('app'),
+        warning: section.id and section.type != 'single' ? 'Changing this may result in data loss.'|t('app'),
         id: 'type',
         name: 'type',
         options: typeOptions,
@@ -160,6 +161,7 @@
             {{ forms.selectField({
                 label: 'Propagation Method'|t('app'),
                 instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
+                warning: section.id and section.propagationMethod != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
                 id: 'propagationMethod',
                 name: 'propagationMethod',
                 options: [

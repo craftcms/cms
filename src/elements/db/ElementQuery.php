@@ -2358,27 +2358,14 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->search) {
             // Get the element IDs
-            $limit = $this->query->limit;
-            $offset = $this->query->offset;
-            $subLimit = $this->subQuery->limit;
-            $subOffset = $this->subQuery->offset;
+            $elementIds = (clone $this)
+                ->search(null)
+                ->offset(null)
+                ->limit(null)
+                ->ids();
 
-            $this->query->limit = null;
-            $this->query->offset = null;
-            $this->subQuery->limit = null;
-            $this->subQuery->offset = null;
-
-            $select = $this->query->select;
-            $this->query->select = ['elements.id' => 'elements.id'];
-            $elementIds = $this->query->column();
-            $this->query->select = $select;
             $siteId = $this->siteId === '*' ? null : $this->siteId;
             $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $siteId, true);
-
-            $this->query->limit = $limit;
-            $this->query->offset = $offset;
-            $this->subQuery->limit = $subLimit;
-            $this->subQuery->offset = $subOffset;
 
             // No results?
             if (empty($searchResults)) {
