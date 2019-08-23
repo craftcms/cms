@@ -327,9 +327,8 @@ class TestSetup
     /**
      * @param string $projectConfigFile
      * @throws ErrorException
-     * @return array
      */
-    public static function setupProjectConfig(string $projectConfigFile) : array
+    public static function setupProjectConfig(string $projectConfigFile)
     {
         if (!is_file($projectConfigFile)) {
             throw new InvalidArgumentException('Project config is not a file');
@@ -337,12 +336,9 @@ class TestSetup
 
         $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH . '/project.yaml';
         $contents = file_get_contents($projectConfigFile);
-        $arrayContents = Yaml::parse($contents);
 
         // Write to the file.
-        FileHelper::writeToFile($testSuiteProjectConfigPath, Yaml::dump($arrayContents));
-
-        return $arrayContents;
+        FileHelper::writeToFile($testSuiteProjectConfigPath, $contents);
     }
 
     /**
