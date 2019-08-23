@@ -141,7 +141,6 @@ return [
     'Cache remote images?' => 'تخزين مؤقت للصور البعيدة؟',
     'Cancel' => 'إلغاء',
     'Can’t run Craft CMS' => 'يتعذر تشغيل  Craft CMS',
-    'Careful—changing this may result in data loss.' => 'كن حذراً— هذا التغيير قد يتسبب في فقدان البيانات.',
     'Cart' => 'سلة',
     'Categories' => 'الفئات',
     'Categories deleted.' => 'تم حذف التصنيفات.',
@@ -546,8 +545,6 @@ return [
     'Last update' => 'آخر تحديث',
     'Learn more' => 'تعرف على المزيد',
     'Leave blank if categories don’t have URLs' => 'اترك هذا الجزء فارغًا إذا لم تتوفر عناوين URL للفئات',
-    'Leave blank if entries don’t have URLs' => 'اترك هذا الجزء فارغًا إذا لم تتوفر عناوين URL للإدخالات',
-    'Leave blank if this is the homepage' => 'اترك هذا فارغًا إذا كان عبارة عن الصفحة الرئيسية',
     'Leave it uninstalled' => 'لا تقم بتثبيته',
     'License' => 'ترخيص',
     'License transferred.' => 'تم نقل الترخيص.',
@@ -1083,7 +1080,6 @@ return [
     'What do you want to name the group?' => 'ما هو الاسم الذي تريده للمجموعة؟',
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'كيفية ظهور عناوين URI الخاصة بالإدخالات على الموقع. اترك هذا الجزء فارغًا إذا لم تتوفر عناوين URL للإدخالات.',
     'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'كيف ينبغي أن تبدو عليه عناوين الإدخالات التي تم إنشاؤها تلقائياً. يمكنك إدراج العلامات التي تظهر خصائص الإدخال، مثل {ex}.',
-    'What the entry URI should be for the site. Leave blank if this is the homepage.' => 'الشكل الذي يجب أن يبدو عليه عنوان URI الخاص بالإدخال على الموقع. اترك هذا فارغًا إذا كانت هذه هي الصفحة الرئيسية.',
     'What this block type will be called in the CP.' => 'بماذا سيسمى نوع الكتلة هذا في لوحة التحكم.',
     'What this category group will be called in the CP.' => 'بماذا ستسمى مجموعة الفئات هذه في لوحة التحكم.',
     'What this entry type will be called in the CP.' => 'بماذا سيسمى نوع الإدخال هذا في لوحة التحكم.',
@@ -1469,5 +1465,8 @@ return [
     'Exception Views' => 'عرض الاستثناءات',
     'The URI can’t begin with the {setting} config setting.' => 'لا يمكن أن يبدأ URI بتكوين إعداد {setting}.',
     '{attribute} cannot start with the {setting} config setting.' => 'لا يمكن أن يبدأ {attribute} بتكوين إعداد {setting}.',
-    'Debug Toolbar' => 'شريط أدوات تصحيح الأخطاء'
+    'Debug Toolbar' => 'شريط أدوات تصحيح الأخطاء',
+    'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.',
+    'Additional locations that should be available for previewing entries in this section.' => 'Additional locations that should be available for previewing entries in this section.',
+    'Locations that should be available for previewing entries in this section.' => 'Locations that should be available for previewing entries in this section.'
 ];
