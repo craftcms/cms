@@ -1464,10 +1464,10 @@ return [
     'Address Line 2' => 'العنوان 2',
     'Are you sure you want to delete this {type}?' => 'هل أنت متأكد أنك تريد حذف هذا {type}؟',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> المثبت حاليًا به إصدار المخطط من {existing} (متوقع {incoming})',
-    'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'Show full exception views when Dev Mode is disabled' => 'Show full exception views when Dev Mode is disabled',
+    'Profile Twig templates when Dev Mode is disabled' => 'تشكيل قوالب Twig عندما يكون وضع التطوير معطلًا',
+    'Show full exception views when Dev Mode is disabled' => 'إظهار طرق عرض الاستثناء الكاملة عندما يكون وضع التطزير معطلًا',
     'Exception Views' => 'Exception Views',
-    'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
-    '{attribute} cannot start with the {setting} config setting.' => '{attribute} cannot start with the {setting} config setting.',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'The URI can’t begin with the {setting} config setting.' => 'لا يمكن أن يبدأ URI بتكوين إعداد {setting}.',
+    '{attribute} cannot start with the {setting} config setting.' => 'لا يمكن أن يبدأ {attribute} بتكوين إعداد {setting}.',
+    'Debug Toolbar' => 'شريط أدوات تصحيح الأخطاء'
 ];
