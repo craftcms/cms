@@ -1469,5 +1469,5 @@ return [
     'Exception Views' => '异常视图',
     'The URI can’t begin with the {setting} config setting.' => 'URI 不能以 {setting} 配置设置开头。',
     '{attribute} cannot start with the {setting} config setting.' => '{attribute} 不能以 {setting} 配置设置开头。',
-    'Debug Toolbar' => 'Debug Toolbar'
+    'Debug Toolbar' => '调试工具栏'
 ];
