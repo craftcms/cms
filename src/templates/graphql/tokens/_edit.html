@@ -84,10 +84,9 @@
 
 
         {{ forms.dateTimeField({
-            label: "Expiry date"|t('app'),
+            label: "Expiry Date"|t('app'),
             id: 'expiryDate',
             name: 'expiryDate',
-            instructions: "Token's expiry date."|t('app'),
             value: (token.expiryDate ? token.expiryDate : null),
             errors: token.getErrors('expiryDate')
         }) }}

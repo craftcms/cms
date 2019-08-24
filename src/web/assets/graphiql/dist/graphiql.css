@@ -1,35 +1,12 @@
-#graphiql { width: 100%; min-width: 960px; height: 100%; }
+#main { background: #e7eef3; }
 
-#container { overflow: hidden; }
-
-#token-info { padding-top: 5px; padding-left: 10px; }
-
-#page-header, #footer { display: none; }
-
-#content { position: relative; }
-
-#main.single-pane .padded > .pane { overflow: visible; }
-
-.graphiql-container .topBar, .graphiql-container .docExplorerShow { background: #ebedef; padding: 20px 24px; border: none; }
-
-.graphiql-container .topBar .title { font-size: 24px; font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif; color: #29323d; }
-
-.graphiql-container .docExplorerShow { color: #29323d; }
-
-.graphiql-container .docExplorerShow:before { border-color: #29323d; }
-
-.graphiql-container .toolbar-button { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; color: #fff; background-image: -webkit-gradient(linear, left top, left bottom, from(#da5a47), to(#cc5643)); background-image: linear-gradient(#da5a47, #cc5643); font-weight: 600; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); height: 30px; border-radius: 3px; padding: 6px 12px; cursor: pointer; font-size: 13px; -webkit-box-sizing: border-box; box-sizing: border-box; }
-
-.graphiql-container .toolbar-button:hover { background-image: -webkit-gradient(linear, left top, left bottom, from(#bf503f), to(#b34b3b)); background-image: linear-gradient(#bf503f, #b34b3b); }
-
-.graphiql-container .toolbar-button li { color: #29323d; }
-
-.graphiql-container .toolbar-button li.hover { color: #fff; background-image: -webkit-gradient(linear, left top, left bottom, from(#da5a47), to(#cc5643)) !important; background-image: linear-gradient(#da5a47, #cc5643) !important; }
-
-.graphiql-container .result-window .CodeMirror-gutters, .graphiql-container .variable-editor-title { background: #ebedef; }
-
-.CodeMirror-gutters { background: #fafafa; border-right: 0; }
-
-.CodeMirror-hints { z-index: 100; }
+#graphiql { width: 100%; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; font-size: 14px; line-height: 20px; color: #29323d; -webkit-font-smoothing: subpixel-antialiased; }
+#graphiql .graphiql-container .topBar, #graphiql .graphiql-container .docExplorerShow, #graphiql .graphiql-container .historyShow, #graphiql .graphiql-container .docExplorerWrap, #graphiql .graphiql-container .historyPaneWrap, #graphiql .graphiql-container .variable-editor-title, #graphiql .graphiql-container .footer, #graphiql .result-window .CodeMirror, #graphiql .graphiql-container .result-window .CodeMirror-gutters, #graphiql .graphiql-container .toolbar-button, #graphiql .graphiql-container .toolbar-button:active, #graphiql .graphiql-container .execute-button, #graphiql .graphiql-container .execute-button:active, #graphiql .graphiql-container .execute-options, #graphiql .graphiql-container .toolbar-menu-items, #graphiql .graphiql-container .toolbar-select-options, #graphiql .graphiql-container .execute-options > li.selected, #graphiql .graphiql-container .toolbar-menu-items > li.hover, #graphiql .graphiql-container .toolbar-menu-items > li:active, #graphiql .graphiql-container .toolbar-menu-items > li:hover, #graphiql .graphiql-container .toolbar-select-options > li.hover, #graphiql .graphiql-container .toolbar-select-options > li:active, #graphiql .graphiql-container .toolbar-select-options > li:hover, #graphiql .graphiql-container .history-contents > p:hover, #graphiql .graphiql-container .history-contents > p:active, #graphiql .CodeMirror-gutters { background: none; border: none; }
+#graphiql .topBar { padding: 33px 24px; }
+#graphiql .topBar .title { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; font-size: 24px; font-weight: 300; line-height: 32px; color: #29323d; }
+#graphiql .queryWrap { -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.1); background: #fff; }
+#graphiql .queryWrap .CodeMirror-gutters { background: #fbfcfd; -webkit-box-shadow: inset -1px 0 0 #e3e5e8; box-shadow: inset -1px 0 0 #e3e5e8; }
+#graphiql .queryWrap .variable-editor-title { background: #f1f5f8; -webkit-box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1), 0 1px 0 rgba(0, 0, 20, 0.1); box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1), 0 1px 0 rgba(0, 0, 20, 0.1); z-index: 4; }
+#graphiql .docExplorerWrap { background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.1); }
 
 /*# sourceMappingURL=graphiql.css.map */

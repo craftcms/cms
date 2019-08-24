@@ -1,74 +1,80 @@
-#graphiql {
-    width: 100%;
-    min-width: 960px;
-    height: 100%;
-}
-#container {
-    overflow: hidden;
-}
-#token-info {
-    padding-top: 5px;
-    padding-left: 10px;
+@charset "UTF-8";
+@import "../../../../../lib/craftcms-sass/mixins";
+
+#main {
+  background: darken($bgColor, 3%);
 }
 
-#page-header, #footer {
-    display: none;
-}
-#content {
-    position: relative;
-}
-#main.single-pane .padded > .pane {
-    overflow: visible;
-}
-.graphiql-container .topBar,
-.graphiql-container .docExplorerShow {
-    background: #ebedef;
-    padding: 20px 24px;
+#graphiql {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: $textColor;
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  .graphiql-container .topBar,
+  .graphiql-container .docExplorerShow,
+  .graphiql-container .historyShow,
+  .graphiql-container .docExplorerWrap,
+  .graphiql-container .historyPaneWrap,
+  .graphiql-container .variable-editor-title,
+  .graphiql-container .footer,
+  .result-window .CodeMirror,
+  .graphiql-container .result-window .CodeMirror-gutters,
+  .graphiql-container .toolbar-button,
+  .graphiql-container .toolbar-button:active,
+  .graphiql-container .execute-button,
+  .graphiql-container .execute-button:active,
+  .graphiql-container .execute-options,
+  .graphiql-container .toolbar-menu-items,
+  .graphiql-container .toolbar-select-options,
+  .graphiql-container .execute-options > li.selected,
+  .graphiql-container .toolbar-menu-items > li.hover,
+  .graphiql-container .toolbar-menu-items > li:active,
+  .graphiql-container .toolbar-menu-items > li:hover,
+  .graphiql-container .toolbar-select-options > li.hover,
+  .graphiql-container .toolbar-select-options > li:active,
+  .graphiql-container .toolbar-select-options > li:hover,
+  .graphiql-container .history-contents > p:hover,
+  .graphiql-container .history-contents > p:active,
+  .CodeMirror-gutters{
+    background: none;
     border: none;
-}
-.graphiql-container .topBar .title {
-    font-size: 24px;
-    font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif;
-    color: #29323d;
-}
-.graphiql-container .docExplorerShow {
-    color: #29323d;
-}
-.graphiql-container .docExplorerShow:before {
-    border-color: #29323d;
-}
-.graphiql-container .toolbar-button {
-    display: flex;
-    align-items: center;
-    color: #fff;
-    background-image: linear-gradient(#da5a47, #cc5643);
-    font-weight: 600;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1);
-    height: 30px;
-    border-radius: 3px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 13px;
-    box-sizing: border-box;
-}
-.graphiql-container .toolbar-button:hover {
-    background-image: linear-gradient(#bf503f, #b34b3b);
-}
-.graphiql-container .toolbar-button li {
-    color: #29323d;
-}
-.graphiql-container .toolbar-button li.hover {
-    color: #fff;
-    background-image: linear-gradient(#da5a47, #cc5643) !important;
-}
-.graphiql-container .result-window .CodeMirror-gutters,
-.graphiql-container .variable-editor-title {
-    background: #ebedef;
-}
-.CodeMirror-gutters {
-    background: #fafafa;
-    border-right: 0;
-}
-.CodeMirror-hints {
-    z-index: 100;
+  }
+
+  .topBar {
+    padding: 33px 24px;
+
+    .title {
+      @include sans-serif-font;
+      font-size: 24px;
+      font-weight: 300;
+      line-height: 32px;
+      color: $textColor;
+    }
+  }
+
+  .queryWrap {
+    box-shadow: 0 0 0 1px $hairlineColorAlpha;
+    background: #fff;
+
+    .CodeMirror-gutters {
+      background: $lightBgColor;
+      box-shadow: inset -1px 0 0 $hairlineColor;
+    }
+
+    .variable-editor-title {
+      background: $bgColor;
+      box-shadow: 0 -1px 0 $hairlineColorAlpha, 0 1px 0 $hairlineColorAlpha;
+      z-index: 4;
+    }
+  }
+
+  .docExplorerWrap {
+    background: #fff;
+    box-shadow: 0 0 0 1px $hairlineColorAlpha;
+  }
 }

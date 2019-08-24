@@ -1,20 +1,14 @@
 {% extends "_layouts/cp" %}
-
 {% set title = "Explore the GraphQL API"|t %}
 {% set selectedSubnavItem = 'explore' %}
 
-{% block content %}
+{% block main %}
     <div data-endpoint="{{ url }}" id="graphiql">
         <div class="spinner big"></div>
     </div>
-
-    {% js %}
-        var gqlTokens = [];
-
-        {% for name, token in gqlTokens %}
-            gqlTokens.push({name: '{{ name|e('js') }}', token: '{{ token }}'});
-        {% endfor %}
-
-        initGraphiQl();
-    {% endjs %}
 {% endblock %}
+
+{% js %}
+    var gqlTokens = {{ tokens|json_encode|raw }};
+    initGraphiQl();
+{% endjs %}

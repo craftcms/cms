@@ -23,31 +23,24 @@ Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The GqlController class is a controller that handles various GraphQL related tasks.
- * @TODO Docs
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.0
  */
 class GqlController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
-    public $allowAnonymous = ['index'];
+    /**
+     * @inheritdoc
+     */
+    public $enableCsrfValidation = false;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
-    {
-        // disable csrf
-        $this->enableCsrfValidation = false;
-
-        return parent::beforeAction($action);
-    }
+    public $allowAnonymous = ['index'];
 
     /**
-     * Perform a GQL query.
+     * Performs a GraphQL query.
      *
      * @return Response
      */
@@ -79,9 +72,9 @@ class GqlController extends Controller
             throw new ForbiddenHttpException('Invalid authorization token.');
         }
 
-        if ($request->getIsPost() && $query= $request->post('query')) {
+        if ($request->getIsPost() && $query = $request->post('query')) {
             $input = $query;
-        } else if ($request->getIsGet() && $query= $request->get('query')) {
+        } else if ($request->getIsGet() && $query = $request->get('query')) {
             $input = $query;
         } else {
             $data = $request->getRawBody();
@@ -101,31 +94,46 @@ class GqlController extends Controller
         return $this->asJson($result);
     }
 
-    public function actionGraphiql()
+    /**
+     * @return Response
+     * @throws ForbiddenHttpException
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function actionGraphiql(): Response
     {
         $this->requireAdmin();
         $this->getView()->registerAssetBundle(GraphiQlAsset::class);
 
-        $tokenPairs = [];
+        $tokens = [];
 
         foreach (Craft::$app->getGql()->getTokens() as $token) {
-            $tokenPairs[$token->name] = $token->accessToken;
+            $tokens[$token->name] = $token->accessToken;
         }
 
         return $this->renderTemplate('graphql/graphiql', [
             'url' => '/actions/gql',
-            'gqlTokens' => $tokenPairs,
+            'tokens' => $tokens,
         ]);
     }
 
-    public function actionViewTokens()
+    /**
+     * @return Response
+     * @throws ForbiddenHttpException
+     */
+    public function actionViewTokens(): Response
     {
         $this->requireAdmin();
-
         return $this->renderTemplate('graphql/tokens/_index');
     }
 
-    public function actionEditToken(int $tokenId = null, GqlToken $token = null)
+    /**
+     * @param int|null $tokenId
+     * @param GqlToken|null $token
+     * @return Response
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
+     */
+    public function actionEditToken(int $tokenId = null, GqlToken $token = null): Response
     {
         $this->requireAdmin();
 
@@ -152,6 +160,14 @@ class GqlController extends Controller
         ));
     }
 
+    /**
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     */
     public function actionSaveToken()
     {
         $this->requirePostRequest();
@@ -198,7 +214,11 @@ class GqlController extends Controller
         return $this->redirectToPostedUrl();
     }
 
-    public function actionDeleteToken()
+    /**
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionDeleteToken(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
