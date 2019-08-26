@@ -23,7 +23,7 @@ class Asset extends Query
         }
 
         return [
-            'queryAssets' => [
+            'assets' => [
                 'type' => Type::listOf(AssetInterface::getType()),
                 'args' => AssetArguments::getArguments(),
                 'resolve' => AssetResolver::class . '::resolve',

@@ -23,7 +23,7 @@ class GlobalSet extends Query
         }
 
         return [
-            'queryGlobalSets' => [
+            'globalSets' => [
                 'type' => Type::listOf(GlobalSetInterface::getType()),
                 'args' => GlobalSetArguments::getArguments(),
                 'resolve' => GlobalSetResolver::class . '::resolve',

@@ -23,7 +23,7 @@ class Entry extends Query
         }
 
         return [
-            'queryEntries' => [
+            'entries' => [
                 'type' => Type::listOf(EntryInterface::getType()),
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolve',

@@ -23,7 +23,7 @@ class User extends Query
         }
 
         return [
-            'queryUsers' => [
+            'users' => [
                 'type' => Type::listOf(UserInterface::getType()),
                 'args' => UserArguments::getArguments(),
                 'resolve' => UserResolver::class . '::resolve',
