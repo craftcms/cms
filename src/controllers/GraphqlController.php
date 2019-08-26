@@ -62,6 +62,8 @@ class GraphqlController extends Controller
      */
     public function actionApi(): Response
     {
+        Craft::$app->getResponse()->format = Response::FORMAT_JSON;
+
         $gqlService = Craft::$app->getGql();
         $request = Craft::$app->getRequest();
 
