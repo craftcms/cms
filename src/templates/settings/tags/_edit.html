@@ -5,10 +5,10 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    <input type="hidden" name="action" value="tags/save-tag-group">
+    {{ actionInput('tags/save-tag-group') }}
     {{ redirectInput('settings/tags') }}
 
-    {% if tagGroup.id %}<input type="hidden" name="tagGroupId" value="{{ tagGroup.id }}">{% endif %}
+    {% if tagGroup.id %}{{ hiddenInput('tagGroupId', tagGroup.id) }}{% endif %}
 
     <div id="taggroup-settings">
         {{ forms.textField({

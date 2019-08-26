@@ -78,7 +78,7 @@
 
 {# Include a hidden input first so Craft knows to update the
    existing value, if no options are selected. #}
-<input type="hidden" name="fields[<FieldHandle>]" value="">
+{{ hiddenInput('fields[<FieldHandle>]' , '') }}
 
 <select multiple name="fields[<FieldHandle>][]">
     {% for option in field.options %}

@@ -18,11 +18,11 @@ If those are all you need, then the form can be quite simple.
 {% requireLogin %}
 
 <form id="profile-form" class="profile-form" method="post" accept-charset="UTF-8" enctype="multipart/form-data">
-  <input type="hidden" name="action" value="users/save-user">
+  {{ actionInput('users/save-user') }}
 
   {{ csrfInput() }}
 
-  <input type="hidden" name="userId" value="{{ currentUser.id }}">
+  {{ hiddenInput('userId', currentUser.id) }}
 
   <div>
     <label for="first-name">First Name</label>
@@ -111,9 +111,9 @@ Keep in mind that there is a custom Bio field included in this example, so if yo
 
   {# {{ redirectInput('users/'~currentUser.username) }} #}
 
-  <input type="hidden" name="action" value="users/save-user">
+  {{ actionInput('users/save-user') }}
 
-  <input type="hidden" name="userId" value="{{ formUser.id }}">
+  {{ hiddenInput('userId', formUser.id) }}
 
   <div class="group">
     <label for="first-name">First Name</label>
@@ -218,7 +218,7 @@ Make sure the user is logged in or else the template will throw errors doing any
 
 ```twig
 <form id="profile-form" class="profile-form" method="post" accept-charset="UTF-8">
-      <input type="hidden" name="action" value="users/save-user">
+      {{ actionInput('users/save-user') }}
 ```
 
 The `<form>` tag does not have an `action=""` parameter on purpose. The hidden `name="action"` input tells Craft which controller and controller method to use.
@@ -263,7 +263,7 @@ The `csrfInput()` generator function is required in all forms for Craft’s [cro
 That line is commented out, but demonstrates that upon a successful save, you can redirect to another page; perhaps a user’s home page based on their username.
 
 ```twig
-<input type="hidden" name="userId" value="{{ formUser.id }}">
+{{ hiddenInput('userId', formUser.id) }}
 ```
 
 The user id is required to update the correct user. You’ll want to make sure group permissions are set not to allow users to edit other users’ profiles.

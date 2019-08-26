@@ -117,6 +117,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $asArray = false;
 
+    /**
+     * @var bool Whether to ignore placeholder elements when populating the results.
+     * @used-by ignorePlaceholders()
+     */
+    public $ignorePlaceholders = false;
+
     // Drafts and revisions
     // -------------------------------------------------------------------------
 
@@ -131,7 +137,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftId;
 
     /**
-     * @var int|null The source element ID that drafts should be returned for
+     * @var int|false|null The source element ID that drafts should be returned for.
+     * Set to `false` to fetch unsaved drafts.
      */
     public $draftOf;
 
@@ -659,6 +666,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $asArray
+     */
+    public function ignorePlaceholders(bool $value = true)
+    {
+        $this->ignorePlaceholders = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $drafts
      */
     public function drafts(bool $value = true)
@@ -689,7 +706,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($value instanceof ElementInterface) {
             /** @var Element $value */
             $this->draftOf = $value->getSourceId();
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === false) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
@@ -1355,7 +1372,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated));
         }
 
-        if ($this->title && $class::hasTitles()) {
+        if ($this->title !== null && $this->title !== '' && $class::hasTitles()) {
             $this->subQuery->andWhere(Db::parseParam('content.title', $this->title));
         }
 
@@ -1364,6 +1381,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
+            if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
+                throw new QueryAbortedException();
+            }
+
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
@@ -1858,6 +1879,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _placeholderCondition($condition)
     {
+        if ($this->ignorePlaceholders) {
+            return $condition;
+        }
+
         if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
             $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
@@ -2250,8 +2275,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf) {
-                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
+            if ($this->draftOf !== null) {
+                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {
@@ -2333,27 +2358,14 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->search) {
             // Get the element IDs
-            $limit = $this->query->limit;
-            $offset = $this->query->offset;
-            $subLimit = $this->subQuery->limit;
-            $subOffset = $this->subQuery->offset;
+            $elementIds = (clone $this)
+                ->search(null)
+                ->offset(null)
+                ->limit(null)
+                ->ids();
 
-            $this->query->limit = null;
-            $this->query->offset = null;
-            $this->subQuery->limit = null;
-            $this->subQuery->offset = null;
-
-            $select = $this->query->select;
-            $this->query->select = ['elements.id' => 'elements.id'];
-            $elementIds = $this->query->column();
-            $this->query->select = $select;
             $siteId = $this->siteId === '*' ? null : $this->siteId;
             $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $siteId, true);
-
-            $this->query->limit = $limit;
-            $this->query->offset = $offset;
-            $this->subQuery->limit = $subLimit;
-            $this->subQuery->offset = $subOffset;
 
             // No results?
             if (empty($searchResults)) {
@@ -2504,9 +2516,13 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
-                'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
+
+            // Only include the URI if this isn't headless mode
+            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+                $select['elements_sites.uri'] = 'elements_sites.uri';
+            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
@@ -2670,7 +2686,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?
-        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null) {
+        if (
+            !$this->ignorePlaceholders &&
+            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+        ) {
             return $element;
         }
 

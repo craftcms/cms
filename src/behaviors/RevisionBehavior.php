@@ -73,6 +73,7 @@ class RevisionBehavior extends Behavior
      * Returns the revision’s source element.
      *
      * @return ElementInterface
+     * @deprecated in 3.2.9. Use [[ElementInterface::getSource()]] instead.
      */
     public function getSource(): ElementInterface
     {

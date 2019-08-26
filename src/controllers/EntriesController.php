@@ -320,6 +320,7 @@ class EntriesController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->id &&
+            !$duplicate &&
             $entry->authorId != $currentUser->id &&
             $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
@@ -658,7 +659,7 @@ class EntriesController extends BaseEntriesController
     private function _getEntryModel(): Entry
     {
         $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('entryId');
+        $entryId = $request->getBodyParam('entryId');
         $siteId = $request->getBodyParam('siteId');
 
         if ($entryId) {

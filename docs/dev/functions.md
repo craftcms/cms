@@ -4,13 +4,18 @@ The following functions are available to Twig templates in Craft:
 
 ## `actionInput`
 
-A shortcut for outputting a hidden input used to route a POST request to a particular controller and action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action-name">` directly into a template.
+A shortcut for outputting a hidden input used to route a POST request to a particular controller action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action/route">` directly into a template.
 
 ```twig
-<form method="POST">
-    {{ actionInput('users/save-user') }}
-    <!-- ... -->
-</form>
+{{ actionInput('users/save-user') }}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ actionInput('users/save-user', {
+    id: 'action-input'
+}) }}
 ```
 
 ## `alias`
@@ -21,7 +26,7 @@ Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which 
 <img src="{{ alias('@assetBaseUrl/images/logo.png') }}">
 ```
 
-### `attr`
+## `attr`
 
 Generates a list of HTML attributes based on the given object, using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
 
@@ -124,10 +129,15 @@ Creates a new object instance based on a given class name or object configuratio
 Returns a hidden CSRF Token input. All sites that have CSRF Protection enabled must include this in each form that submits via POST.
 
 ```twig
-<form method="post">
-    {{ csrfInput() }}
-    <!-- ... -->
-</form>
+{{ csrfInput() }}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ csrfInput({
+    id: 'csrf-input'
+}) }}
 ```
 
 ## `cycle`
@@ -203,11 +213,45 @@ Outputs any scripts and styles that were registered for the “head” position.
 </head>
 ```
 
+## `hiddenInput`
+
+Generates an HTML input tag.
+
+```twig
+{{ hiddenInput('entryId', entry.id) }}
+{# Output: <input type="hidden" name="entryId" value="100"> #}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ hiddenInput('entryId', entry.id, {
+    id: 'entry-id-input'
+}) }}
+```
+
 ## `include`
 
 Returns the rendered content of a template.
 
 This works identically to Twig’s core [`include`](https://twig.symfony.com/doc/2.x/functions/include.html) function.
+
+## `input`
+
+Generates an HTML input tag.
+
+```twig
+{{ input('email', 'email-input', '') }}
+{# Output: <input type="email" name="email-input" value=""> #}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ input('email', 'email-input', '', {
+    id: 'custom-input'
+}) }}
+```
 
 ## `max`
 
@@ -253,6 +297,14 @@ Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}"
 
 ```twig
 {{ redirectInput(url) }}
+```
+
+You can optionally set additional attributes on the tag by passing an `options` argument.
+
+```twig
+{{ redirectInput(url, {
+    id: 'redirect-input'
+}) }}
 ```
 
 ## `seq`
@@ -357,6 +409,37 @@ You can also specify a custom class name that should be added to the root `<svg>
 Returns the content of a template without rendering it.
 
 This works identically to Twig’s core [`source`](https://twig.symfony.com/doc/2.x/functions/source.html) function.
+
+## `tag`
+
+Renders a complete HTML tag.
+
+```twig
+{{ tag('div', {
+    class: 'foo'
+}) }}
+{# Output: <div class="foo"></div> #}
+```
+
+If `text` is included in the attributes argument, its value will be HTML-encoded and set as the text contents of the tag.
+
+```twig
+{{ tag('div', {
+    text: 'Hello'
+}) }}
+{# Output: <div>Hello</div> #}
+```
+
+If `html` is included in the attributes argument (and `text` isn’t), its value will be set as the inner HTML of the tag (without getting HTML-encoded).
+
+```twig
+{{ tag('div', {
+    html: 'Hello<br>world'
+}) }}
+{# Output: <div>Hello<br>world</div> #}
+```
+
+All other keys passed to the second argument will be set as attributes on the tag, using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
 
 ## `template_from_string`
 

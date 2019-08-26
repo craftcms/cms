@@ -75,7 +75,7 @@ class DbConfig extends BaseObject
      */
     public $port;
     /**
-     * @var string The database schema to use (PostgreSQL only).
+     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';

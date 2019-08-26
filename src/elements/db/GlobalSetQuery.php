@@ -128,12 +128,26 @@ class GlobalSetQuery extends ElementQuery
         }
 
         $this->_applyEditableParam();
+        $this->_applyRefParam();
 
         return parent::beforePrepare();
     }
 
     // Private Methods
     // =========================================================================
+
+
+    /**
+     * Applies the 'ref' param to the query being prepared.
+     */
+    private function _applyRefParam()
+    {
+        if (!$this->ref) {
+            return;
+        }
+
+        $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->ref));
+    }
 
     /**
      * Applies the 'editable' param to the query being prepared.

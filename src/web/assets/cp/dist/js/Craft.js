@@ -1,4 +1,4 @@
-/*!   - 2019-07-29 */
+/*!   - 2019-08-23 */
 (function($){
 
 /** global: Craft */
@@ -367,18 +367,22 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus) {
-                    if (callback) {
-                        callback(null, textStatus, jqXHR);
-                    }
-                },
                 complete: function(jqXHR, textStatus) {
                     if (textStatus === 'error') {
+                        // Ignore incomplete requests, likely due to navigating away from the page
+                        // h/t https://stackoverflow.com/a/22107079/1688568
+                        if (jqXHR.readyState !== 4) {
+                            return;
+                        }
+
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
-                        }
-                        else {
+                        } else {
                             alert(Craft.t('app', 'An unknown error occurred.'));
+                        }
+
+                        if (callback) {
+                            callback(null, textStatus, jqXHR);
                         }
                     }
                 }
@@ -662,6 +666,17 @@ $.extend(Craft,
             str = Craft.ltrim(str, chars);
             str = Craft.rtrim(str, chars);
             return str;
+        },
+
+        /**
+         * Returns whether a string starts with another string.
+         *
+         * @param {string} str
+         * @param {string} substr
+         * @return boolean
+         */
+        startsWith: function(str, substr) {
+            return str.substr(0, substr.length) === substr;
         },
 
         /**
@@ -1502,7 +1517,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         loadHud: function() {
             this.onBeginLoading();
             var data = this.getBaseData();
-            data.includeSites = this.settings.showSiteSwitcher;
+            data.includeSites = Craft.isMultiSite && this.settings.showSiteSwitcher;
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
         },
 
@@ -1513,18 +1528,23 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 var $hudContents = $();
 
                 if (response.sites) {
-                    var $header = $('<div class="hud-header"/>'),
-                        $siteSelectContainer = $('<div class="select"/>').appendTo($header);
+                    var $header = $('<div class="hud-header"/>');
 
-                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
-                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+                    if (response.sites.length === 1) {
+                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);;
+                    } else {
+                        var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-                    for (var i = 0; i < response.sites.length; i++) {
-                        var siteInfo = response.sites[i];
-                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+                        this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+
+                        for (var i = 0; i < response.sites.length; i++) {
+                            var siteInfo = response.sites[i];
+                            $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        }
+
+                        this.addListener(this.$siteSelect, 'change', 'switchSite');
                     }
-
-                    this.addListener(this.$siteSelect, 'change', 'switchSite');
 
                     $hudContents = $hudContents.add($header);
                 }
@@ -1793,6 +1813,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         searching: false,
         searchText: null,
         trashed: false,
+        drafts: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -2336,7 +2357,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0
+                trashed: this.trashed ? 1 : 0,
+                drafts: this.drafts ? 1 : 0,
             };
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
@@ -3075,11 +3097,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
+            this.trashed = false;
+            this.drafts = false;
+            this.status = null;
+
             if (Garnish.hasAttr($option, 'data-trashed')) {
                 this.trashed = true;
-                this.status = null;
+            } else if (Garnish.hasAttr($option, 'data-drafts')) {
+                this.drafts = true;
             } else {
-                this.trashed = false;
                 this.status = $option.data('status');
             }
 
@@ -3188,7 +3214,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            if (this.trashed || this.searching) {
+            if (this.trashed || this.drafts || this.searching) {
                 $option.addClass('disabled');
                 if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
@@ -3535,6 +3561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+                delete params.criteria.limit;
 
                 var limit = parseInt($limitField.find('input').val());
                 if (limit && !isNaN(limit)) {
@@ -3546,9 +3573,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     $spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        var url = Craft.getCpUrl('', {
-                            token: response.token
-                        });
+                        var params = {};
+                        params[Craft.tokenParam] = response.token;
+                        var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
@@ -13037,15 +13064,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 $li = $('<li/>').appendTo($ul);
                 $a = $('<a/>', {
                     text: this.settings.previewTargets[i].label,
-                    data: {
-                        url: this.settings.previewTargets[i].url,
-                    }
                 }).appendTo($li);
                 this.addListener($a, 'click', {
-                    url: this.settings.previewTargets[i].url,
+                    target: i,
                 }, function(ev) {
-                    this.openShareLink(ev.data.url);
-                });
+                    this.openShareLink(this.settings.previewTargets[ev.data.target].url);
+                }.bind(this));
             }
         },
 
@@ -13313,6 +13337,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                         }));
                     }
 
+                    // Did the controller send us updated preview targets?
+                    if (
+                        response.previewTargets &&
+                        JSON.stringify(response.previewTargets) !== JSON.stringify(this.settings.previewTargets)
+                    ) {
+                        this.updatePreviewTargets(response.previewTargets);
+                    }
+
                     this.afterUpdate(data);
 
                     if (draftCreated) {
@@ -13344,13 +13376,22 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data += '&draftId=' + this.settings.draftId
                     + '&draftName=' + encodeURIComponent(this.settings.draftName)
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
-
-                if (this.settings.propagateAll) {
-                    data += '&propagateAll=1';
-                }
             }
 
             return data;
+        },
+
+        updatePreviewTargets: function(previewTargets) {
+            // index the current preview targets by label
+            var currentTargets = {};
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
+                currentTargets[this.settings.previewTargets[i].label] = this.settings.previewTargets[i];
+            }
+            for (i = 0; i < previewTargets.length; i++) {
+                if (currentTargets[previewTargets[i].label]) {
+                    currentTargets[previewTargets[i].label].url = previewTargets[i].url;
+                }
+            }
         },
 
         afterUpdate: function(data) {
@@ -13573,7 +13614,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             revisionId: null,
             draftName: null,
             draftNotes: null,
-            propagateAll: false,
             canDeleteDraft: false,
             canUpdateSource: false,
             saveDraftAction: null,

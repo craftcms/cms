@@ -76,7 +76,7 @@ class ElementHelper
 
         // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
         // Reference: http://www.regular-expressions.info/unicode.html
-        $words = array_filter(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
+        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
 
         return implode($generalConfig->slugWordSeparator, $words);
     }
@@ -90,7 +90,7 @@ class ElementHelper
     public static function setUniqueUri(ElementInterface $element)
     {
         /** @var Element $element */
-        $uriFormat = $element->getUriFormat();
+        $uriFormat = Craft::$app->getConfig()->getGeneral()->headlessMode ? null : $element->getUriFormat();
 
         // No URL format, no URI.
         if ($uriFormat === null) {
@@ -346,6 +346,29 @@ class ElementHelper
         /** @var Element $root */
         $root = ElementHelper::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
+    }
+
+    /**
+     * Returns the element, or if it’s a draft/revision, the source element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     * @since 3.2.11
+     */
+    public static function sourceElement(ElementInterface $element): ElementInterface
+    {
+        /** @var Element $element */
+        $sourceId = $element->getSourceId();
+        if ($sourceId === $element->id) {
+            return $element;
+        }
+
+        return $element::find()
+            ->id($sourceId)
+            ->siteId($element->siteId)
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->one();
     }
 
     /**

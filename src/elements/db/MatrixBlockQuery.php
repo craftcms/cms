@@ -394,6 +394,17 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
         }
 
+        // Ignore revision/draft blocks by default
+        if (!$this->id && !$this->ownerId) {
+            // todo: we will need to expand on this when Matrix blocks can be nested.
+            $this->subQuery
+                ->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]')
+                ->andWhere([
+                    'owners.draftId' => null,
+                    'owners.revisionId' => null,
+                ]);
+        }
+
         return parent::beforePrepare();
     }
 

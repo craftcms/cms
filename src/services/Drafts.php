@@ -18,6 +18,7 @@ use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
@@ -209,8 +210,8 @@ class Drafts extends Component
         /** @var Element|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        /** @var Element|null $source */
-        $source = $behavior->getSource();
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($draft);
 
         // Fire a 'beforeApplyDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
@@ -227,7 +228,7 @@ class Drafts extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($source) {
+            if ($source !== $draft) {
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->duplicateElement($draft, [
                     'id' => $source->id,
@@ -241,13 +242,22 @@ class Drafts extends Component
                 $behavior = $draft->detachBehavior('draft');
 
                 // Duplicate the draft as a new element
-                $newSource = $elementsService->duplicateElement($draft, [
-                    'draftId' => null,
-                ]);
+                $e = null;
+                try {
+                    $newSource = $elementsService->duplicateElement($draft, [
+                        'draftId' => null,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Don't throw it just yet, until we reattach the draft behavior
+                }
 
                 // Now reattach the draft behavior to the draft
                 if ($behavior !== null) {
                     $draft->attachBehavior('draft', $behavior);
+                }
+
+                if ($e !== null) {
+                    throw $e;
                 }
             }
 
@@ -257,6 +267,12 @@ class Drafts extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+
+            if ($e instanceof InvalidElementException) {
+                // Add the errors from the duplicated element back onto the draft
+                $draft->addErrors($e->element->getErrors());
+            }
+
             throw $e;
         }
 
@@ -323,10 +339,10 @@ class Drafts extends Component
     /**
      * Creates a new row in the `drafts` table.
      *
+     * @param int|null $sourceId
      * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
-     * @param int|null $sourceId
      * @return int The new draft ID
      * @throws DbException
      */

@@ -636,6 +636,9 @@ class TemplateCaches extends Component
         }
 
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $this->_path = StringHelper::encodeMb4($this->_path);
+        }
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
             $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->getPageTrigger() . $pageNum;

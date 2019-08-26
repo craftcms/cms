@@ -7,6 +7,7 @@
 
 namespace craft\errors;
 
+use craft\base\Element;
 use craft\base\ElementInterface;
 use yii\base\Exception;
 
@@ -19,7 +20,7 @@ use yii\base\Exception;
 class InvalidElementException extends Exception
 {
     /**
-     * @var ElementInterface The element
+     * @var ElementInterface|Element The element
      */
     public $element;
 
