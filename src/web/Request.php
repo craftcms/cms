@@ -1305,7 +1305,11 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($value);
         }
 
-        return StringHelper::convertToUtf8($value);
+        if (is_string($value)) {
+            return StringHelper::convertToUtf8($value);
+        }
+
+        return $value;
     }
 
     /**
