@@ -33,17 +33,24 @@ class GraphqlController extends Controller
     /**
      * @inheritdoc
      */
-    public $enableCsrfValidation = false;
-
-    /**
-     * @inheritdoc
-     */
     public $allowAnonymous = ['api'];
 
     /**
      * @inheritdoc
      */
     public $defaultAction = 'api';
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if ($action->id === 'api') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
 
     /**
      * Performs a GraphQL query.
