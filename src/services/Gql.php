@@ -362,9 +362,10 @@ class Gql extends Component
      * Returns a GraphQL schema by its access token.
      *
      * @param string $token
-     * @return GqlSchema|null
+     * @return GqlSchema
+     * @throws InvalidArgumentException if $token is invalid
      */
-    public function getSchemaByAccessToken(string $token)
+    public function getSchemaByAccessToken(string $token): GqlSchema
     {
         if ($token == GqlSchema::PUBLIC_TOKEN) {
             return $this->getPublicSchema();
@@ -374,7 +375,11 @@ class Gql extends Component
             ->where(['accessToken' => $token])
             ->one();
 
-        return $result ? new GqlSchema($result) : null;
+        if (!$result) {
+            throw new InvalidArgumentException('Invalid access token');
+        }
+
+        return new GqlSchema($result);
     }
 
     /**

@@ -60,6 +60,7 @@ class GraphqlController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      * @throws GqlException
+     * @throws ForbiddenHttpException
      */
     public function actionApi(): Response
     {
@@ -72,8 +73,12 @@ class GraphqlController extends Controller
         $authorizationHeader = Craft::$app->request->headers->get('authorization');
 
         if (preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches)) {
-            $accessToken = $matches[1];
-            $schema = $gqlService->getSchemaByAccessToken($accessToken);
+            $token = $matches[1];
+            try {
+                $schema = $gqlService->getSchemaByAccessToken($token);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException('Invalid authorization token.');
+            }
         }
 
         // What if something already set it on the service?
