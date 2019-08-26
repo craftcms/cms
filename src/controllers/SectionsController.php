@@ -14,6 +14,7 @@ use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -123,6 +124,8 @@ class SectionsController extends Controller
             ],
         ];
 
+        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
+
         return $this->renderTemplate('settings/sections/_edit', $variables);
     }
 
@@ -168,16 +171,14 @@ class SectionsController extends Controller
             $siteSettings->siteId = $site->id;
 
             if ($section->type === Section::TYPE_SINGLE) {
-                $siteSettings->hasUrls = true;
-                $siteSettings->uriFormat = $postedSettings['singleUri'] ?: '__home__';
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->uriFormat = ($postedSettings['singleHomepage'] ?? false) ? '__home__' : ($postedSettings['singleUri'] ?? null);
             } else {
+                $siteSettings->uriFormat = $postedSettings['uriFormat'] ?? null;
                 $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
+            }
 
-                if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
-                    $siteSettings->uriFormat = $postedSettings['uriFormat'];
-                    $siteSettings->template = $postedSettings['template'];
-                }
+            if ($siteSettings->hasUrls = (bool)$siteSettings->uriFormat) {
+                $siteSettings->template = $postedSettings['template'];
             }
 
             $allSiteSettings[$site->id] = $siteSettings;

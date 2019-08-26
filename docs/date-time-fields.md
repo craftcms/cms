@@ -102,7 +102,7 @@ By default, Craft will assume the date is posted in UTC. As of Craft 3.1.6 you y
     : '' %}
 
 <input type="datetime-local" name="fields[<FieldHandle>][datetime]" value="{{ currentValue }}">
-<input type="hidden" name="fields[<FieldHandle>][timezone]" value="{{ pt }}">
+{{ hiddenInput('fields[<FieldHandle>][timezone]', pt) }}
 ```
 
 Or you can let users decide which timezone the date should be posted in:

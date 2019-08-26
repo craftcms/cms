@@ -83,7 +83,13 @@ class TemplatesController extends Controller
     public function actionRender(string $template, array $variables = []): Response
     {
         // Does that template exist?
-        if (!$this->getView()->doesTemplateExist($template)) {
+        if (
+            (
+                Craft::$app->getConfig()->getGeneral()->headlessMode &&
+                Craft::$app->getRequest()->getIsSiteRequest()
+            ) ||
+            !$this->getView()->doesTemplateExist($template)
+        ) {
             throw new NotFoundHttpException('Template not found: ' . $template);
         }
 

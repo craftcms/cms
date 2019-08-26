@@ -263,10 +263,14 @@ class Cp extends Component
             'icon' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
-        $settings[$label]['routes'] = [
-            'icon' => '@app/icons/routes.svg',
-            'label' => Craft::t('app', 'Routes')
-        ];
+
+        if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            $settings[$label]['routes'] = [
+                'icon' => '@app/icons/routes.svg',
+                'label' => Craft::t('app', 'Routes')
+            ];
+        }
+
         $settings[$label]['users'] = [
             'icon' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')

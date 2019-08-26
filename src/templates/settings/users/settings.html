@@ -52,7 +52,7 @@
 
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
-        <input type="hidden" name="action" value="user-settings/save-user-settings">
+        {{ actionInput('user-settings/save-user-settings') }}
         {{ csrfInput() }}
 
         {% if volumeList %}

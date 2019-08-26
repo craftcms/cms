@@ -147,9 +147,14 @@
                                         ) -%}
 
                                         <li>
-                                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
-                                        </li>
+                                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>
+                                                {{ item.label }}
 
+                                                {%- if not itemIsSelected and item.badgeCount is defined -%}
+                                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                                                {%- endif -%}
+                                            </a>
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             {% endif %}
