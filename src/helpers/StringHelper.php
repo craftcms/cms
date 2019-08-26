@@ -160,23 +160,16 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to search.
      * @param string $separator The separator string.
+     * @param bool $caseSensitive
      * @return string The resulting string.
      */
-    public static function beforeFirst(string $str, string $separator): string
+    public static function beforeFirst(string $str, string $separator, bool $caseSensitive = true): string
     {
-        return (string)BaseStringy::create($str)->beforeFirst($separator);
-    }
+        if ($caseSensitive) {
+            return BaseStringy::create($str)->beforeFirst($separator);
+        }
 
-    /**
-     * Gets the substring before the first occurrence of a separator, ignoring case.
-     *
-     * @param string $str The string to search.
-     * @param string $separator The separator string.
-     * @return string The resulting string.
-     */
-    public static function beforeFirstIgnoreCase(string $str, string $separator): string
-    {
-        return (string)BaseStringy::create($str)->beforeFirstIgnoreCase($separator);
+        return BaseStringy::create($str)->beforeFirstIgnoreCase($separator);
     }
 
     /**
@@ -184,23 +177,16 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to search.
      * @param string $separator The separator string.
+     * @param bool $caseSensitive
      * @return string The resulting string.
      */
-    public static function beforeLast(string $str, string $separator): string
+    public static function beforeLast(string $str, string $separator, bool $caseSensitive = true): string
     {
-        return (string)BaseStringy::create($str)->beforeLast($separator);
-    }
+        if ($caseSensitive) {
+            return BaseStringy::create($str)->beforeLast($separator);
+        }
 
-    /**
-     * Gets the substring before the last occurrence of a separator, ignoring case.
-     *
-     * @param string $str The string to search.
-     * @param string $separator The separator string.
-     * @return string The resulting string.
-     */
-    public static function beforeLastIgnoreCase(string $str, string $separator): string
-    {
-        return (string)BaseStringy::create($str)->beforeLastIgnoreCase($separator);
+        return BaseStringy::create($str)->beforeLastIgnoreCase($separator);
     }
 
     /**

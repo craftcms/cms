@@ -63,7 +63,7 @@ class StringHelperTest extends Unit
      * @param $separator
      * @param $caseSensitive
      */
-    public function testAfterFirst($expected, $string, $separator, $caseSensitive)
+    public function testAfterFirst($expected, $string, $separator, $caseSensitive = true)
     {
         $actual = StringHelper::afterFirst($string, $separator, $caseSensitive);
         $this->assertSame($expected, $actual);
@@ -76,7 +76,7 @@ class StringHelperTest extends Unit
      * @param $separator
      * @param $caseSensitive
      */
-    public function testAfterLast($expected, $string, $separator, $caseSensitive)
+    public function testAfterLast($expected, $string, $separator, $caseSensitive = true)
     {
         $actual = StringHelper::afterLast($string, $separator, $caseSensitive);
         $this->assertSame($expected, $actual);
@@ -147,95 +147,31 @@ class StringHelperTest extends Unit
     }
 
     /**
-     *
+     * @dataProvider beforeFirstDataProvider
+     * @param $expected
+     * @param $string
+     * @param $separator
+     * @param bool $caseSensitive
      */
-    public function testBeforeFirst()
+    public function testBeforeFirst($expected, $string, $separator, $caseSensitive = true)
     {
-        $testArray = [
-            ['', '', 'b', true],
-            ['<h1>test</h1>', '', 'b', true],
-            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', true],
-            ['<h1></h1> ', '', 'b', true],
-            ['</b></b>', '</', 'b', true],
-            ['öäü<strong>lall</strong>', '', 'b', true],
-            [' b<b></b>', ' ', 'b', true],
-            ['<b><b>lall</b>', '<', 'b', true],
-            ['</b>lall</b>', '</', 'b', true],
-            ['[b][/b]', '[', 'b', true],
-            ['[B][/B]', '', 'b', true],
-            ['κόσμbε ¡-öäü', 'κόσμ', 'b', true],
-            ['', '', 'b', false],
-            ['<h1>test</h1>', '', 'b', false],
-            ['foo<h1></h1>Bar', 'foo<h1></h1>', 'b', false],
-            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', false],
-            ['<h1></h1> ', '', 'b', false],
-            ['</b></b>', '</', 'b', false],
-            ['öäü<strong>lall</strong>', '', 'b', false],
-            [' b<b></b>', ' ', 'b', false],
-            ['<b><b>lall</b>', '<', 'b', false],
-            ['</b>lall</b>', '</', 'b', false],
-            ['[B][/B]', '[', 'b', false],
-            ['κόσμbε ¡-öäü', 'κόσμ', 'b', false],
-            ['Bκόσμbε', '', 'b', false],
-        ];
-
-        foreach ($testArray as $testResult) {
-            if ($testResult[3]) {
-                $actual = StringHelper::beforeFirst($testResult[0], $testResult[2]);
-                $this->assertSame($testResult[1], $actual);
-                $this->assertSame($testResult[1], StringHelper::substringOf($testResult[0], 'b', true, true));
-            } else {
-                $actual = StringHelper::beforeFirstIgnoreCase($testResult[0], $testResult[2]);
-                $this->assertSame($testResult[1], $actual);
-                $this->assertSame($testResult[1], StringHelper::substringOf($testResult[0], 'b', true));
-            }
-        }
+        $actual = StringHelper::beforeFirst($string, $separator, $caseSensitive);
+        $this->assertSame($expected, $actual);
+        $this->assertSame($expected, StringHelper::substringOf($string, 'b', true, $caseSensitive));
     }
 
     /**
-     *
+     * @dataProvider beforeLastDataProvider
+     * @param $expected
+     * @param $string
+     * @param $separator
+     * @param bool $caseSensitive
      */
-    public function testBeforeLast()
+    public function testBeforeLast($expected, $string, $separator, $caseSensitive = true)
     {
-        $testArray = [
-            ['', '', 'b', true],
-            ['<h1>test</h1>', '', 'b', true],
-            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', true],
-            ['<h1></h1> ', '', 'b', true],
-            ['</b></b>', '</b></', 'b', true],
-            ['öäü<strong>lall</strong>', '', 'b', true],
-            [' b<b></b>', ' b<b></', 'b', true],
-            ['<b><b>lall</b>', '<b><b>lall</', 'b', true],
-            ['</b>lall</b>', '</b>lall</', 'b', true],
-            ['[b][/b]', '[b][/', 'b', true],
-            ['[B][/B]', '', 'b', true],
-            ['κόσμbε ¡-öäü', 'κόσμ', 'b', true],
-            ['', '', 'b', false],
-            ['<h1>test</h1>', '', 'b', false],
-            ['foo<h1></h1>Bar', 'foo<h1></h1>', 'b', false],
-            ['foo<h1></h1>bar', 'foo<h1></h1>', 'b', false],
-            ['<h1></h1> ', '', 'b', false],
-            ['</b></b>', '</b></', 'b', false],
-            ['öäü<strong>lall</strong>', '', 'b', false],
-            [' b<b></b>', ' b<b></', 'b', false],
-            ['<b><b>lall</b>', '<b><b>lall</', 'b', false],
-            ['</b>lall</b>', '</b>lall</', 'b', false],
-            ['[B][/B]', '[B][/', 'b', false],
-            ['κόσμbε ¡-öäü', 'κόσμ', 'b', false],
-            ['bκόσμbε', 'bκόσμ', 'b', false],
-        ];
-
-        foreach ($testArray as $testResult) {
-            if ($testResult[3]) {
-                $actual = StringHelper::beforeLast($testResult[0], $testResult[2]);
-                $this->assertSame($testResult[1], $actual);
-                $this->assertSame($testResult[1], StringHelper::lastSubstringOf($testResult[0], 'b', true, true));
-            } else {
-                $actual = StringHelper::beforeLastIgnoreCase($testResult[0], $testResult[2]);
-                $this->assertSame($testResult[1], $actual);
-                $this->assertSame($testResult[1], StringHelper::lastSubstringOf($testResult[0], 'b', true));
-            }
-        }
+        $actual = StringHelper::beforeLast($string, $separator, $caseSensitive);
+        $this->assertSame($expected, $actual);
+        $this->assertSame($expected, StringHelper::lastSubstringOf($string, 'b', true, $caseSensitive));
     }
 
     /**
@@ -4235,6 +4171,74 @@ class StringHelperTest extends Unit
                 'Never Touch Paths Like /var/run Before/After /boot',
                 'Never touch paths like /var/run before/after /boot',
             ],
+        ];
+    }
+
+    /**
+     *
+     */
+    public function beforeFirstDataProvider(): array
+    {
+        return [
+            ['', '', 'b', true],
+            ['', '<h1>test</h1>', 'b', true],
+            ['foo<h1></h1>', 'foo<h1></h1>bar', 'b', true],
+            ['', '<h1></h1> ', 'b', true],
+            ['</', '</b></b>', 'b', true],
+            ['', 'öäü<strong>lall</strong>', 'b', true],
+            [' ', ' b<b></b>', 'b', true],
+            ['<', '<b><b>lall</b>', 'b', true],
+            ['</', '</b>lall</b>', 'b', true],
+            ['[', '[b][/b]', 'b', true],
+            ['', '[B][/B]',  'b', true],
+            ['κόσμ', 'κόσμbε ¡-öäü', 'b', true],
+            ['', '', 'b', false],
+            ['', '<h1>test</h1>', 'b', false],
+            ['foo<h1></h1>', 'foo<h1></h1>Bar', 'b', false],
+            ['foo<h1></h1>', 'foo<h1></h1>bar', 'b', false],
+            ['', '<h1></h1> ', 'b', false],
+            ['</', '</b></b>', 'b', false],
+            ['', 'öäü<strong>lall</strong>', 'b', false],
+            [' ', ' b<b></b>', 'b', false],
+            ['<', '<b><b>lall</b>', 'b', false],
+            ['</', '</b>lall</b>', 'b', false],
+            ['[', '[B][/B]', 'b', false],
+            ['κόσμ', 'κόσμbε ¡-öäü', 'b', false],
+            ['', 'Bκόσμbε', 'b', false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function beforeLastDataProvider(): array
+    {
+        return [
+            ['', '', 'b', true],
+            ['', '<h1>test</h1>', 'b', true],
+            ['foo<h1></h1>', 'foo<h1></h1>bar', 'b', true],
+            ['', '<h1></h1> ', 'b', true],
+            ['</b></', '</b></b>', 'b', true],
+            ['', 'öäü<strong>lall</strong>', 'b', true],
+            [' b<b></', ' b<b></b>', 'b', true],
+            ['<b><b>lall</', '<b><b>lall</b>', 'b', true],
+            ['</b>lall</', '</b>lall</b>', 'b', true],
+            ['[b][/', '[b][/b]', 'b', true],
+            ['', '[B][/B]', 'b', true],
+            ['κόσμ', 'κόσμbε ¡-öäü', 'b', true],
+            ['', '', 'b', false],
+            ['', '<h1>test</h1>', 'b', false],
+            ['foo<h1></h1>', 'foo<h1></h1>Bar', 'b', false],
+            ['foo<h1></h1>', 'foo<h1></h1>bar', 'b', false],
+            ['', '<h1></h1> ', 'b', false],
+            ['</b></', '</b></b>', 'b', false],
+            ['', 'öäü<strong>lall</strong>', 'b', false],
+            [' b<b></', ' b<b></b>', 'b', false],
+            ['<b><b>lall</', '<b><b>lall</b>', 'b', false],
+            ['</b>lall</', '</b>lall</b>', 'b', false],
+            ['[B][/', '[B][/B]', 'b', false],
+            ['κόσμ', 'κόσμbε ¡-öäü', 'b', false],
+            ['bκόσμ', 'bκόσμbε', 'b', false],
         ];
     }
 }
