@@ -358,6 +358,10 @@ class Gql extends Component
      */
     public function getTokenByAccessToken(string $accessToken)
     {
+        if ($accessToken == self::PUBLIC_TOKEN) {
+            return $this->getPublicToken();
+        }
+
         $tokenRow = $this->_createTokenQuery()->where(['accessToken' => $accessToken])->one();
         return $tokenRow ? new GqlToken($tokenRow) : null;
     }
