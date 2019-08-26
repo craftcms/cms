@@ -1792,25 +1792,6 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Converts the string into an URL slug. This includes replacing non-ASCII
-     * characters with their closest ASCII equivalents, removing remaining
-     * non-ASCII and non-alphanumeric characters, and replacing whitespace with
-     * $replacement. The replacement defaults to a single dash, and the string
-     * is also converted to lowercase.
-     *
-     * @param string      $str The string to process.
-     * @param string      $replacement The string used to replace whitespace.
-     * @param string|null $language    The language for the url.
-     * @param bool        $strToLower  Whether to lowercase the string or not.
-     *
-     * @return string The string that has been converted to a URL slug.
-     */
-    public static function urlify(string $str, string $replacement = '-', string $language = null, bool $strToLower = true): string
-    {
-        return (string)BaseStringy::create($str)->urlify($replacement, $language ?? Craft::$app->language, $strToLower);
-    }
-
-    /**
      * Generates a valid v4 UUID string. See [http://stackoverflow.com/a/2040279/684]
      *
      * @return string The UUID.
