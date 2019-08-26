@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
 use craft\models\GqlToken;
+use craft\services\Gql;
 use craft\web\assets\graphiql\GraphiQlAsset;
 use craft\web\Controller;
 use GraphQL\GraphQL;
@@ -62,7 +63,8 @@ class GqlController extends Controller
             try {
                 $token = $gqlService->getCurrentToken();
             } catch (GqlException $exception) {
-                // Or not.
+                // Well, go for the public token then.
+                $token = $gqlService->getPublicToken();
             }
         }
 
@@ -72,21 +74,35 @@ class GqlController extends Controller
             throw new ForbiddenHttpException('Invalid authorization token.');
         }
 
-        if ($request->getIsPost() && $query = $request->post('query')) {
-            $input = $query;
-        } else if ($request->getIsGet() && $query = $request->get('query')) {
-            $input = $query;
-        } else {
-            $data = $request->getRawBody();
-            $data = json_decode($data, true);
-            $input = @$data['query'];
+        $query = null;
+        $variables = null;
+
+        if (!($request->getIsPost() && $query = $request->post('query'))) {
+            if (!($request->getIsGet() && $query = $request->get('query'))) {
+                $data = $request->getRawBody();
+                $data = json_decode($data, true);
+                $query = @$data['query'];
+            }
         }
 
-        if ($input) {
-            $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-            $schema = $gqlService->getSchema($token, $devMode, $input);
 
-            $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
+        if (!($request->getIsPost() && $variables = $request->post('variables'))) {
+            if (!($request->getIsGet() && $variables = $request->get('variables'))) {
+                $data = Craft::$app->request->getRawBody();
+                $data = json_decode($data, true);
+                $variables = @$data['variables'];
+            }
+        }
+
+        if ($query) {
+            try {
+                $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+                $schema = $gqlService->getSchema($token, $devMode);
+                $result = GraphQL::executeQuery($schema, $query, null, null, $variables)->toArray(true);
+            } catch (\Throwable $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                throw new GqlException('Something went wrong when processing the GraphQL query.');
+            }
         } else {
             throw new BadRequestHttpException('Request missing required param');
         }
@@ -123,7 +139,7 @@ class GqlController extends Controller
     public function actionViewTokens(): Response
     {
         $this->requireAdmin();
-        return $this->renderTemplate('graphql/tokens/_index');
+        return $this->renderTemplate('graphql/tokens/_index', ['publicToken' => Gql::PUBLIC_TOKEN]);
     }
 
     /**

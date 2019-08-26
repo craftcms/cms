@@ -31,7 +31,11 @@
                         <td data-title="{{ 'Last used'|t('app') }}" title="{{ token.lastUsed ? token.lastUsed|datetime('short') }}">{{ token.lastUsed ? token.lastUsed|timestamp}}</td>
                         <td data-title="{{ 'Expires'|t('app') }}" title="{{ token.expiryDate ? token.expiryDate|datetime('short') }}">{{ token.expiryDate ? token.expiryDate|timestamp}}</td>
                         <td data-title="{{ 'Created'|t('app') }}" title="{{ token.dateCreated|datetime('short') }}">{{ token.dateCreated|timestamp }}</td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        {% if token.accessToken != publicToken %}
+                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        {% else %}
+                            <td class="thin"></td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             </tbody>

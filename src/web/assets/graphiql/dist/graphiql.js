@@ -57,7 +57,7 @@ var elem = React.createElement;
 // called when tokens are prepared
 function initGraphiQl() {
 
-    var tokenToUse = '';
+    var tokenToUse = '__PUBLIC__';
 
     // Defines a GraphQL fetcher using the fetch API.
     function graphQLFetcher(graphQLParams) {
@@ -96,18 +96,18 @@ function initGraphiQl() {
         var text = state[0];
         var setText = state[1];
 
+        if (text.length == 0) {
+            setText('No token selected');
+        }
+        
         var logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API")
 
         var menuItems = [];
 
-        for (var i = 0; i < gqlTokens.length; i++) {
-            var token = gqlTokens[i];
+        for (tokenName in gqlTokens) {
+            var tokenValue = gqlTokens[tokenName];
 
-            if (i == 0) {
-                tokenTouse = token.token;
-            }
-
-            menuItems.push(elem(Item, Object.assign({}, token, { setText: setText})));
+            menuItems.push(elem(Item, Object.assign({}, {name: tokenName, token: tokenValue}, { setText: setText})));
         }
 
         var toolBar = React.createElement(GraphiQL.Toolbar, {},

@@ -121,6 +121,11 @@ class Gql extends Component
     const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
 
     /**
+     * Token value for the public token.
+     */
+    const PUBLIC_TOKEN = '__PUBLIC__';
+
+    /**
      * Currently loaded schema
      *
      * @var Schema
@@ -237,11 +242,46 @@ class Gql extends Component
         $rows = $this->_createTokenQuery()->all();
         $tokens = [];
 
+        $publicTokenExists = false;
+
         foreach ($rows as $row) {
-            $tokens[] = new GqlToken($row);
+            $token = new GqlToken($row);
+            $tokens[] = $token;
+
+            if ($token->accessToken == self::PUBLIC_TOKEN) {
+                $publicTokenExists = true;
+            }
+        }
+
+        if (!$publicTokenExists) {
+            array_unshift($tokens, $this->getPublicToken());
         }
 
         return $tokens;
+    }
+
+    /**
+     * Return the public token. If it does not exist, it will be created.
+     *
+     * @return GqlToken
+     * @throws \yii\base\Exception
+     */
+    public function getPublicToken(): GqlToken
+    {
+        $tokenRow = $this->_createTokenQuery()->where(['accessToken' => self::PUBLIC_TOKEN])->one();
+
+        if ($tokenRow) {
+            $token = new GqlToken($tokenRow);
+        } else {
+            $token = new GqlToken([
+                'name' => Craft::t('app', 'Public Access Token'),
+                'accessToken' => self::PUBLIC_TOKEN,
+                'enabled' => true,
+            ]);
+            $this->saveToken($token);
+        }
+
+        return $token;
     }
 
     /**
