@@ -73,13 +73,13 @@ Additionally, you will have to define several PHP Constants for the test suite t
 constants must be defined in the `tests/_bootstrap.php`. 
 
 ### `CRAFT_STORAGE_PATH`
-The [storage path](directory-structure.md#storage) Craft can use during testing.
+The [storage path](../../directory-structure.md#storage) Craft can use during testing.
 
 ### `CRAFT_TEMPLATES_PATH`
-The [templates path](directory-structure.md#templates) Craft can use during testing.
+The [templates path](../../directory-structure.md#templates) Craft can use during testing.
 
 ### `CRAFT_CONFIG_PATH`
-The [config path](directory-structure.md#config) Craft can use during testing.
+The [config path](../../directory-structure.md#config) Craft can use during testing.
 
 ::: warning
 If you are testing an actual Craft site this directory cannot be the config directory you use for
@@ -87,11 +87,11 @@ the production site. I.E. Ensure it is located within the `tests/_craft/` folder
 :::
 
 ### `CRAFT_MIGRATIONS_PATH`
-The path to the folder where all your [migration](extend/migrations.md) classes are stored. 
+The path to the folder where all your [migration](../../extend/migrations.md) classes are stored. 
 
 ### `CRAFT_TRANSLATIONS_PATH`
-The path to the folder where all your [translations](static-translations.md) are stored.
+The path to the folder where all your [translations](../../static-translations.md) are stored.
 
 ### `CRAFT_VENDOR_PATH`
-Path to the [vendor](directory-structure.html#vendor) directory.
+Path to the [vendor](../../directory-structure.html#vendor) directory.
 
