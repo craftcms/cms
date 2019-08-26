@@ -321,8 +321,8 @@ class Gql extends Component
     public function saveToken(GqlToken $token, $runValidation = true): bool
     {
         $isNewToken = !$token->id;
-
-        if ($isNewToken) {
+        
+        if ($isNewToken && empty($token->accessToken)) {
             $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
         }
 
