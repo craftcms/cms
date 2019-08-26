@@ -27,7 +27,7 @@ class TypeLoader
             return $loader();
         }
 
-        throw new GqlException('Tried to load an unregistered type „' . $type . '” ');
+        throw new GqlException('Tried to load an unregistered type „' . $type . '”. This can indicate both a typo in the query or a token permission mismatch.');
     }
 
     /**
