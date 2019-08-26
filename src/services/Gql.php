@@ -41,6 +41,7 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * The Gql service provides GraphQL functionality.
@@ -341,15 +342,20 @@ class Gql extends Component
      * Returns a GraphQL schema by its UID.
      *
      * @param string $uid
-     * @return GqlSchema|null
+     * @return GqlSchema
+     * @throws InvalidArgumentException if $uid is invalid
      */
-    public function getSchemaByUid(string $uid)
+    public function getSchemaByUid(string $uid): GqlSchema
     {
         $result = $this->_createSchemaQuery()
             ->where(['uid' => $uid])
             ->one();
 
-        return $result ? new GqlSchema($result) : null;
+        if (!$result) {
+            throw new InvalidArgumentException('Invalid UID');
+        }
+
+        return new GqlSchema($result);
     }
 
     /**

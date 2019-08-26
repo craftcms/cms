@@ -16,6 +16,7 @@ use craft\web\assets\graphiql\GraphiQlAsset;
 use craft\web\Controller;
 use craft\web\Request;
 use GraphQL\GraphQL;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -129,6 +130,7 @@ class GraphqlController extends Controller
      * @return Response
      * @throws ForbiddenHttpException
      * @throws \yii\base\InvalidConfigException
+     * @throws BadRequestHttpException
      */
     public function actionGraphiql(): Response
     {
@@ -138,13 +140,14 @@ class GraphqlController extends Controller
         $schemaUid = Craft::$app->getRequest()->getQueryParam('schemaUid');
         $gqlService = Craft::$app->getGql();
 
-        if (!$schemaUid) {
-            $selectedSchema = $gqlService->getPublicSchema();
+        if ($schemaUid) {
+            try {
+                $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException('Invalid schema UID.');
+            }
+            Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
         } else {
-            $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
-        }
-
-        if (!$selectedSchema) {
             $selectedSchema = $gqlService->getPublicSchema();
         }
 
