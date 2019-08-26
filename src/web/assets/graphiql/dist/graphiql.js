@@ -90,19 +90,28 @@ function initGraphiQl() {
 
     function Root() {
         var logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API")
-
         var menuItems = [];
+        var toolBar;
 
         for (schemaName in gqlSchemas) {
             var schemaUid = gqlSchemas[schemaName];
-
-            menuItems.push(elem(Item, Object.assign({}, {name: schemaName, uid: schemaUid})));
+            if (schemaName !== selectedSchema.name) {
+                menuItems.push(elem(Item, Object.assign({}, {name: schemaName, uid: schemaUid})));
+            } else {
+                menuItems.push(elem('li', {class: 'selected-schema'}, schemaName));
+            }
         }
 
-        var toolBar = React.createElement(GraphiQL.Toolbar, {},
-            elem(GraphiQL.Menu, {label: "Select schema", title: "Select the GraphQL schema to use"}, menuItems),
-            elem(Display, { text: 'Using the “' + selectedSchema.name + '” schema' })
-        );
+        if (menuItems.length) {
+            toolBar = React.createElement(GraphiQL.Toolbar, {class: 'menu'}, elem(GraphiQL.Menu, {
+                    label: selectedSchema.name,
+                    title: "Select a GraphQL schema"
+                }, menuItems)
+            );
+        } else {
+            // empty toolbar to remove default toolbar buttons
+            toolBar = React.createElement(GraphiQL.Toolbar, {}, elem('div', {}, ''));
+        }
 
         return elem(GraphiQL, {
             fetcher: graphQLFetcher,
