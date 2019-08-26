@@ -40,6 +40,7 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Gql service provides GraphQL functionality.
@@ -241,21 +242,25 @@ class Gql extends Component
     {
         $rows = $this->_createTokenQuery()->all();
         $tokens = [];
+        $tokenNames = [];
 
-        $publicTokenExists = false;
+        $publicToken = null;
 
         foreach ($rows as $row) {
             $token = new GqlToken($row);
-            $tokens[] = $token;
-
             if ($token->accessToken == self::PUBLIC_TOKEN) {
-                $publicTokenExists = true;
+                $publicToken = $token;
+            } else {
+                $tokens[] = $token;
+                $tokenNames[] = $token->name;
             }
         }
 
-        if (!$publicTokenExists) {
-            array_unshift($tokens, $this->getPublicToken());
-        }
+        // Sort tokens by name
+        array_multisort($tokenNames, SORT_ASC, SORT_STRING, $tokens);
+
+        // Add the public token to the top
+        array_unshift($tokens, $publicToken ?? $this->_createPublicToken());
 
         return $tokens;
     }
@@ -271,17 +276,10 @@ class Gql extends Component
         $tokenRow = $this->_createTokenQuery()->where(['accessToken' => self::PUBLIC_TOKEN])->one();
 
         if ($tokenRow) {
-            $token = new GqlToken($tokenRow);
-        } else {
-            $token = new GqlToken([
-                'name' => Craft::t('app', 'Public Access Token'),
-                'accessToken' => self::PUBLIC_TOKEN,
-                'enabled' => true,
-            ]);
-            $this->saveToken($token);
+            return new GqlToken($tokenRow);
         }
 
-        return $token;
+        return $this->_createPublicToken();
     }
 
     /**
@@ -632,4 +630,22 @@ class Gql extends Component
         return $query;
     }
 
+    /**
+     * Creates the public token.
+     *
+     * @return GqlToken
+     * @throws Exception if the token couldn't be created.
+     */
+    private function _createPublicToken(): GqlToken
+    {
+        $token = new GqlToken([
+            'name' => 'Public Token',
+            'accessToken' => self::PUBLIC_TOKEN,
+            'enabled' => true,
+        ]);
+        if (!$this->saveToken($token)) {
+            throw new Exception('Couldn’t create public token.');
+        }
+        return $token;
+    }
 }

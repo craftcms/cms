@@ -10,11 +10,13 @@ namespace craft\models;
 use craft\base\Model;
 use craft\helpers\Json;
 use craft\records\GqlToken as GqlTokenRecord;
+use craft\services\Gql;
 use craft\validators\UniqueValidator;
 
 /**
  * GQL token class
  *
+ * @property bool $isPublic Whether this is the public token
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3
  */
@@ -110,6 +112,16 @@ class GqlToken extends Model
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    /**
+     * returns whether this is the public token.
+     *
+     * @return bool
+     */
+    public function getIsPublic(): bool
+    {
+        return $this->accessToken === Gql::PUBLIC_TOKEN;
     }
 
     /**

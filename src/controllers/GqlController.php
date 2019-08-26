@@ -139,7 +139,7 @@ class GqlController extends Controller
     public function actionViewTokens(): Response
     {
         $this->requireAdmin();
-        return $this->renderTemplate('graphql/tokens/_index', ['publicToken' => Gql::PUBLIC_TOKEN]);
+        return $this->renderTemplate('graphql/tokens/_index');
     }
 
     /**

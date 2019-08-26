@@ -71,8 +71,8 @@
 
         {{ forms.textField({
             first: true,
-            label: "Token"|t('app'),
-            instructions: "The access token"|t('app'),
+            label: "Access Token"|t('app'),
+            instructions: 'The access token that must be provided with GraphQL requests.'|t('app'),
             id: 'accessToken',
             name: 'accessToken',
             value: token.accessToken,
@@ -97,7 +97,9 @@
             on: token.enabled,
         }) }}
 
-        {# Require Craft Pro for this? #}
+        <hr>
+
+        <h2>{{ 'Define the token’s scope'|t('app') }}</h2>
 
         {% do view.registerTranslations('app', [
             "Select All",
