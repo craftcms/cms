@@ -44,7 +44,7 @@ Accepts: Array|Object
 
 The `plugins` parameter accepts an Array of objects with the following parameters. 
 
-- class (Required): [The main plugin class](../../extend/plugin-guide.html#the-plugin-class)
+- class (Required): [The main plugin class](../../extend/plugin-guide.md#the-plugin-class)
 - handle (Required): The plugin handle
 
 Plugins will be installed before any tests are run.
@@ -92,5 +92,5 @@ The path to the folder where all your [migration](../../extend/migrations.md) cl
 The path to the folder where all your [translations](../../static-translations.md) are stored.
 
 ### `CRAFT_VENDOR_PATH`
-Path to the [vendor](../../directory-structure.html#vendor) directory.
+Path to the [vendor](../../directory-structure.md#vendor) directory.
 

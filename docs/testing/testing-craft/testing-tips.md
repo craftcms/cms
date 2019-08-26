@@ -19,7 +19,7 @@ MyISAM Database driver. If this is the case transactions are
 If you are creating new elements in your tests using:
 `Craft::$app->getElements()->saveElement()` and the element you are saving has content 
 in the `[[%searchindex]]` table - this `[[%searchindex]]` content will not be removed. It is recommended to 
-manually delete clear the search index or use an [element fixture](framework/fixtures.md#element-fixtures)
+manually delete clear the search index or use an [element fixture](fixtures.md#element-fixtures)
 :::
 
 ### `Cleaup`
