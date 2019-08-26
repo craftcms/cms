@@ -6,8 +6,8 @@ return [
     'settings/users' => ['template' => 'settings/users/groups/_index'],
     'settings/users/groups/new' => ['template' => 'settings/users/groups/_edit'],
     'settings/users/groups/<groupId:\d+>' => ['template' => 'settings/users/groups/_edit'],
-    'graphql' => 'gql/graphiql',
-    'graphql/schemas' => 'gql/view-schemas',
-    'graphql/schemas/new' => 'gql/edit-schema',
-    'graphql/schemas/<schemaId:\d+>' => 'gql/edit-schema',
+    'graphql' => 'graphql/graphiql',
+    'graphql/schemas' => 'graphql/view-schemas',
+    'graphql/schemas/new' => 'graphql/edit-schema',
+    'graphql/schemas/<schemaId:\d+>' => 'graphql/edit-schema',
 ];

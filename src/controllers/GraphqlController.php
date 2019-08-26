@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiQlAsset;
 use craft\web\Controller;
@@ -27,7 +28,7 @@ Craft::$app->requireEdition(Craft::Pro);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class GqlController extends Controller
+class GraphqlController extends Controller
 {
     /**
      * @inheritdoc
@@ -37,14 +38,19 @@ class GqlController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = ['index'];
+    public $allowAnonymous = ['api'];
+
+    /**
+     * @inheritdoc
+     */
+    public $defaultAction = 'api';
 
     /**
      * Performs a GraphQL query.
      *
      * @return Response
      */
-    public function actionIndex(): Response
+    public function actionApi(): Response
     {
         $gqlService = Craft::$app->getGql();
         $request = Craft::$app->getRequest();
@@ -140,7 +146,7 @@ class GqlController extends Controller
         }
 
         return $this->renderTemplate('graphql/graphiql', [
-            'url' => '/actions/gql',
+            'url' => UrlHelper::actionUrl('graphql/api'),
             'schemas' => $schemas,
             'selectedSchema' => $selectedSchema
         ]);

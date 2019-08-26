@@ -52,7 +52,7 @@
 {% from _self import permissionList %}
 
 {% block content %}
-    <input type="hidden" name="action" value="gql/save-schema">
+    <input type="hidden" name="action" value="graphql/save-schema">
     {{ redirectInput('graphql/schemas') }}
     {% if schema.id %}<input type="hidden" name="schemaId" value="{{ schema.id }}">{% endif %}
 
