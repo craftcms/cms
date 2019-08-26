@@ -337,6 +337,18 @@ class Gql extends Component
     }
 
     /**
+     * Return a GQL token by its uid.
+     *
+     * @param string $tokenUid
+     * @return GqlToken|null
+     */
+    public function getTokenByUid(string $tokenUid)
+    {
+        $tokenRow = $this->_createTokenQuery()->where(['uid' => $tokenUid])->one();
+        return $tokenRow ? new GqlToken($tokenRow) : null;
+    }
+
+    /**
      * Return a GQL token by its access token.
      *
      * @param string $accessToken
@@ -344,6 +356,10 @@ class Gql extends Component
      */
     public function getTokenByAccessToken(string $accessToken)
     {
+        if ($accessToken == self::PUBLIC_TOKEN) {
+            return $this->getPublicToken();
+        }
+
         $tokenRow = $this->_createTokenQuery()->where(['accessToken' => $accessToken])->one();
         return $tokenRow ? new GqlToken($tokenRow) : null;
     }
@@ -624,6 +640,7 @@ class Gql extends Component
                 'lastUsed',
                 'permissions',
                 'dateCreated',
+                'uid',
             ])
             ->from([Table::GQLTOKENS]);
 

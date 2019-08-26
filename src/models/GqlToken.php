@@ -65,6 +65,11 @@ class GqlToken extends Model
      */
     public $dateCreated;
 
+    /**
+     * @var string $uid
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

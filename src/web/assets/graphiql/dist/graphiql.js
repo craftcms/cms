@@ -56,9 +56,6 @@ var elem = React.createElement;
 
 // called when tokens are prepared
 function initGraphiQl() {
-
-    var tokenToUse = '__PUBLIC__';
-
     // Defines a GraphQL fetcher using the fetch API.
     function graphQLFetcher(graphQLParams) {
         return fetch(getEndpoint(), {
@@ -66,7 +63,7 @@ function initGraphiQl() {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + tokenToUse,
+                'Authorization': 'Bearer ' + selectedToken.token,
             },
             body: JSON.stringify(graphQLParams),
             credentials: 'include',
@@ -82,7 +79,7 @@ function initGraphiQl() {
     }
 
     function Item (props) {
-        return elem(GraphiQL.MenuItem, {label: props.name, title: props.name, onSelect: function() { props.setText('Using token “' + props.name + '”'); tokenToUse = props.token; }})
+        return elem(GraphiQL.MenuItem, {label: props.name, title: props.name, onSelect: function() { setToken(props.uid) }})
     }
 
     function Display(props) {
@@ -92,27 +89,19 @@ function initGraphiQl() {
     }
 
     function Root() {
-        var state = React.useState('');
-        var text = state[0];
-        var setText = state[1];
-
-        if (text.length == 0) {
-            setText('No token selected');
-        }
-        
         var logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API")
 
         var menuItems = [];
 
         for (tokenName in gqlTokens) {
-            var tokenValue = gqlTokens[tokenName];
+            var tokenUid = gqlTokens[tokenName];
 
-            menuItems.push(elem(Item, Object.assign({}, {name: tokenName, token: tokenValue}, { setText: setText})));
+            menuItems.push(elem(Item, Object.assign({}, {name: tokenName, uid: tokenUid})));
         }
 
         var toolBar = React.createElement(GraphiQL.Toolbar, {},
             elem(GraphiQL.Menu, {label: "Select token", title: "Select GQL token to use"}, menuItems),
-            elem(Display, { text: text })
+            elem(Display, { text: 'Using the “' + selectedToken.name + '” token' })
         );
 
         return elem(GraphiQL, {
@@ -128,6 +117,19 @@ function initGraphiQl() {
     }
 
     ReactDOM.render(elem(Root), document.getElementById('graphiql'));
+}
+
+function setToken(uid) {
+    var pattern = /tokenUid=[a-z0-9-]+/i;
+    if (location.href.match(pattern)) {
+        location.href = location.href.replace(pattern, 'tokenUid=' + uid);
+    } else {
+        if (location.href.indexOf('?') !== -1) {
+            location.href += '&tokenUid=' + uid;
+        } else {
+            location.href += '?tokenUid=' + uid;
+        }
+    }
 }
 
 function getEndpoint() {
