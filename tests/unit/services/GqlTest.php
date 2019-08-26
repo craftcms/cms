@@ -146,28 +146,6 @@ class GqlTest extends Unit
     }
 
     /**
-     * Test if we're able to save and retrieve tokens.
-     *
-     * @throws \yii\base\Exception
-     */
-    public function testTokenSaveAndRetrieval()
-    {
-        $gqlService = Craft::$app->getGql();
-
-        $token = new GqlSchema(['name' => 'Something', 'enabled' => true]);
-        $gqlService->saveSchema($token);
-
-        $this->assertEquals($token->id, $gqlService->getSchemaByAccessToken($token->accessToken)->id);
-        $this->assertEquals($token->accessToken, $gqlService->getSchemaById($token->id)->accessToken);
-
-        $token = new GqlSchema(['name' => 'Different', 'enabled' => true]);
-        $gqlService->saveSchema($token);
-
-        $tokenList = $gqlService->getSchemas();
-        $this->assertCount(2, $tokenList);
-    }
-
-    /**
      * Test if token affects the schema.
      *
      * @throws GqlException

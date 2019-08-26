@@ -411,7 +411,7 @@ class Gql extends Component
         $schemaRecord->lastUsed = $schema->lastUsed;
         $schemaRecord->scope = $schema->scope;
 
-        if ($isNewSchema) {
+        if ($schema->accessToken) {
             $schemaRecord->accessToken = $schema->accessToken;
         }
 

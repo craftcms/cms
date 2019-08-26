@@ -70,17 +70,34 @@
                 required: true,
             }) }}
 
-            {{ forms.textField({
-                first: true,
+            {% embed '_includes/forms/field' with {
                 label: "Access Token"|t('app'),
                 instructions: 'The token that must be provided with GraphQL requests to access this schema.'|t('app'),
                 id: 'accessToken',
-                name: 'accessToken',
-                value: schema.accessToken,
-                errors: schema.getErrors('accessToken'),
-                readonly: true,
-                placeholder: "This is generated automatically"|t('app')
-            }) }}
+            } %}
+                {% block input %}
+                    {% import '_includes/forms' as forms %}
+                    <div class="flex">
+                        {{ forms.text({
+                            id: 'accessToken',
+                            name: 'accessToken',
+                            value: accessToken ?? '••••••••••••••••••••••••••••••••',
+                            errors: schema.getErrors('accessToken'),
+                            readonly: true,
+                            disabled: accessToken is not defined,
+                            class: 'code',
+                            size: 32
+                        }) }}
+                        <div class="btngroup">
+                            {% if accessToken is not defined %}
+                                <div id="show-btn" class="btn">{{ 'Show'|t('app') }}</div>
+                            {% endif %}
+                            <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>
+                        </div>
+                        <div id="token-spinner" class="spinner hidden"></div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
         {% endif %}
 
         {{ forms.dateTimeField({
@@ -119,6 +136,41 @@
             {{ permissionList(schema, catPermissions) }}
         </div>
         {% endfor %}
-
     </div>
 {% endblock %}
+
+{% js %}
+    {% if not schema.isPublic %}
+        {% if schema.id %}
+            $('#show-btn').on('click', function() {
+                Craft.elevatedSessionManager.requireElevatedSession(function() {
+                    $('#token-spinner').removeClass('hidden');
+                    var data = {{ {schemaUid: schema.uid}|json_encode|raw }};
+                    Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
+                        $('#token-spinner').addClass('hidden');
+                        if (textStatus === 'success') {
+                            $('#accessToken')
+                                .val(response.accessToken)
+                                .removeClass('disabled');
+                            $('#show-btn').remove();
+                        }
+                    });
+                });
+            });
+        {% endif %}
+        $('#regen-btn').on('click', function() {
+            $('#token-spinner').removeClass('hidden');
+            Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
+                $('#token-spinner').addClass('hidden');
+                if (textStatus === 'success') {
+                    $('#accessToken')
+                        .val(response.accessToken)
+                        .prop('disabled', false)
+                        .removeClass('disabled');
+                }
+            });
+        });
+    {% endif %}
+
+    new Craft.ElevatedSessionForm('#main-form');
+{% endjs %}

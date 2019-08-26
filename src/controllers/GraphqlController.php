@@ -209,13 +209,14 @@ class GraphqlController extends Controller
             }
         } else {
             $schema = new GqlSchema();
-            $schema->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
+            $accessToken = $this->_generateToken();
             $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL schema');
         }
 
         return $this->renderTemplate('graphql/schemas/_edit', compact(
             'schema',
-            'title'
+            'title',
+            'accessToken'
         ));
     }
 
@@ -231,6 +232,7 @@ class GraphqlController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAdmin();
+        $this->requireElevatedSession();
 
         $gqlService = Craft::$app->getGql();
         $request = Craft::$app->getRequest();
@@ -245,10 +247,10 @@ class GraphqlController extends Controller
             }
         } else {
             $schema = new GqlSchema();
-            $schema->accessToken = $request->getRequiredBodyParam('accessToken');
         }
 
         $schema->name = $request->getBodyParam('name') ?? $schema->name;
+        $schema->accessToken =  $request->getBodyParam('accessToken') ?? $schema->accessToken;
         $schema->enabled = (bool)$request->getRequiredBodyParam('enabled');
         $schema->scope = $request->getBodyParam('permissions');
 
@@ -278,15 +280,62 @@ class GraphqlController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      */
+    public function actionFetchToken(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireAdmin();
+        $this->requireElevatedSession();
+
+        $schemaUid = Craft::$app->getRequest()->getRequiredBodyParam('schemaUid');
+
+        try {
+            $schema = Craft::$app->getGql()->getSchemaByUid($schemaUid);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException('Invalid schema UID.');
+        }
+
+        return $this->asJson([
+            'accessToken' => $schema->accessToken,
+        ]);
+    }
+
+    /**
+     * @return Response
+     */
+    public function actionGenerateToken(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireAdmin();
+
+        return $this->asJson([
+            'accessToken' => $this->_generateToken(),
+        ]);
+    }
+
+    /**
+     * @return Response
+     * @throws BadRequestHttpException
+     */
     public function actionDeleteSchema(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $this->requireAdmin();
 
         $schemaId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
         Craft::$app->getGql()->deleteSchemaById($schemaId);
 
         return $this->asJson(['success' => true]);
+    }
+
+    /**
+     * @return string
+     */
+    private function _generateToken(): string
+    {
+        return Craft::$app->getSecurity()->generateRandomString(32);
     }
 }
