@@ -40,6 +40,7 @@
 - Editable tables now support `headingHtml` column settings.
 - Craft no longer overrides the base Twig template class, unless the now-deprecated `` config setting is enabled. ([#4755](https://github.com/craftcms/cms/issues/4755))
 - `craft\helpers\Db::parseParam()` now has an optional `$columnType` argument. ([#4807](https://github.com/craftcms/cms/pull/4807))
+- `craft\web\Request::post()` and `getBodyParam()` will now work with posted JSON data, if the request’s content type is set to `application/json`.
 
 ## Deprecated
 - Deprecated the `suppressTemplateErrors` config setting.
