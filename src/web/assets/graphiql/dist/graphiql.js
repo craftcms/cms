@@ -54,7 +54,7 @@ function updateURL() {
 
 var elem = React.createElement;
 
-// called when tokens are prepared
+// called when schemas are prepared
 function initGraphiQl() {
     // Defines a GraphQL fetcher using the fetch API.
     function graphQLFetcher(graphQLParams) {
@@ -63,7 +63,7 @@ function initGraphiQl() {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + selectedToken.token,
+                'Authorization': 'Bearer ' + selectedSchema.token,
             },
             body: JSON.stringify(graphQLParams),
             credentials: 'include',
@@ -79,13 +79,13 @@ function initGraphiQl() {
     }
 
     function Item (props) {
-        return elem(GraphiQL.MenuItem, {label: props.name, title: props.name, onSelect: function() { setToken(props.uid) }})
+        return elem(GraphiQL.MenuItem, {label: props.name, title: props.name, onSelect: function() { setSchema(props.uid) }})
     }
 
     function Display(props) {
         var text = props.text;
 
-        return elem('span', {id: 'token-info'}, text);
+        return elem('span', {id: 'schema-info'}, text);
     }
 
     function Root() {
@@ -93,15 +93,15 @@ function initGraphiQl() {
 
         var menuItems = [];
 
-        for (tokenName in gqlTokens) {
-            var tokenUid = gqlTokens[tokenName];
+        for (schemaName in gqlSchemas) {
+            var schemaUid = gqlSchemas[schemaName];
 
-            menuItems.push(elem(Item, Object.assign({}, {name: tokenName, uid: tokenUid})));
+            menuItems.push(elem(Item, Object.assign({}, {name: schemaName, uid: schemaUid})));
         }
 
         var toolBar = React.createElement(GraphiQL.Toolbar, {},
-            elem(GraphiQL.Menu, {label: "Select token", title: "Select GQL token to use"}, menuItems),
-            elem(Display, { text: 'Using the “' + selectedToken.name + '” token' })
+            elem(GraphiQL.Menu, {label: "Select schema", title: "Select the GraphQL schema to use"}, menuItems),
+            elem(Display, { text: 'Using the “' + selectedSchema.name + '” schema' })
         );
 
         return elem(GraphiQL, {
@@ -119,15 +119,15 @@ function initGraphiQl() {
     ReactDOM.render(elem(Root), document.getElementById('graphiql'));
 }
 
-function setToken(uid) {
-    var pattern = /tokenUid=[a-z0-9-]+/i;
+function setSchema(uid) {
+    var pattern = /schemaUid=[a-z0-9-]+/i;
     if (location.href.match(pattern)) {
-        location.href = location.href.replace(pattern, 'tokenUid=' + uid);
+        location.href = location.href.replace(pattern, 'schemaUid=' + uid);
     } else {
         if (location.href.indexOf('?') !== -1) {
-            location.href += '&tokenUid=' + uid;
+            location.href += '&schemaUid=' + uid;
         } else {
-            location.href += '?tokenUid=' + uid;
+            location.href += '?schemaUid=' + uid;
         }
     }
 }

@@ -8,30 +8,30 @@ use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
- * m190617_164400_add_gql_token_table migration.
+ * m190617_164400_add_gqlschemas_table migration.
  */
-class m190617_164400_add_gql_token_table extends Migration
+class m190617_164400_add_gqlschemas_table extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp()
     {
-        $this->createTable(Table::GQLTOKENS, [
+        $this->createTable(Table::GQLSCHEMAS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'accessToken' => $this->string()->notNull(),
             'enabled' => $this->boolean()->notNull()->defaultValue(true),
             'expiryDate' => $this->dateTime(),
             'lastUsed' => $this->dateTime(),
-            'permissions' => $this->text(),
+            'scope' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
 
-        $this->createIndex(null, Table::GQLTOKENS, ['accessToken'], true);
-        $this->createIndex(null, Table::GQLTOKENS, ['name'], true);
+        $this->createIndex(null, Table::GQLSCHEMAS, ['accessToken'], true);
+        $this->createIndex(null, Table::GQLSCHEMAS, ['name'], true);
     }
 
     /**
@@ -39,7 +39,7 @@ class m190617_164400_add_gql_token_table extends Migration
      */
     public function safeDown()
     {
-        echo "m190617_164400_add_gql_token_table cannot be reverted.\n";
+        echo "m190617_164400_add_gqlschemas_table cannot be reverted.\n";
         return false;
     }
 }

@@ -204,9 +204,9 @@ class Cp extends Component
                             'label' => Craft::t('app', 'Explore'),
                             'url' => 'graphql',
                         ],
-                        'tokens' => [
-                            'label' => Craft::t('app', 'Tokens'),
-                            'url' => 'graphql/tokens',
+                        'schemas' => [
+                            'label' => Craft::t('app', 'Schemas'),
+                            'url' => 'graphql/schemas',
                         ]
                     ]
                 ];

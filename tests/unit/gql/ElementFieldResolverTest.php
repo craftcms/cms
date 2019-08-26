@@ -25,7 +25,7 @@ use craft\gql\types\elements\User as UserGqlType;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
-use craft\models\GqlToken;
+use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\Site;
@@ -46,7 +46,7 @@ class ElementFieldResolverTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['getCurrentToken' => $this->make(GqlToken::class, [
+            ['getCurrentToken' => $this->make(GqlSchema::class, [
                 'permissions' => [
                     'usergroups.group-1-uid:read',
                     'usergroups.group-2-uid:read',
@@ -252,7 +252,7 @@ class ElementFieldResolverTest extends Unit
             $this->tester->expectException(GqlException::class, $resolve);
         }
     }
-    
+
     // Data providers
     // =========================================================================
 

@@ -12,7 +12,7 @@ use Craft;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
-use craft\models\GqlToken;
+use craft\models\GqlSchema;
 
 class GqlHelperTest extends Unit
 {
@@ -189,7 +189,7 @@ class GqlHelperTest extends Unit
     public function _setTokenWithPermissions($permissionSet)
     {
         $gqlService = Craft::$app->getGql();
-        $token = new GqlToken(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => $permissionSet]);
-        $gqlService->setToken($token);
+        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => $permissionSet]);
+        $gqlService->setActiveSchema($token);
     }
 }

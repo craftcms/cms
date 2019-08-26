@@ -9,19 +9,26 @@ namespace craft\models;
 
 use craft\base\Model;
 use craft\helpers\Json;
-use craft\records\GqlToken as GqlTokenRecord;
-use craft\services\Gql;
+use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
 
 /**
- * GQL token class
+ * GraphQL schema class
  *
- * @property bool $isPublic Whether this is the public token
+ * @property bool $isPublic Whether this is the public schema
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3
  */
-class GqlToken extends Model
+class GqlSchema extends Model
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * The public schema token value.
+     */
+    const PUBLIC_TOKEN = '__PUBLIC__';
+
     // Properties
     // =========================================================================
 
@@ -31,7 +38,7 @@ class GqlToken extends Model
     public $id;
 
     /**
-     * @var string Token name
+     * @var string Schema name
      */
     public $name;
 
@@ -41,7 +48,7 @@ class GqlToken extends Model
     public $accessToken;
 
     /**
-     * @var bool Is the token enabled
+     * @var bool Is the schema enabled
      */
     public $enabled = true;
 
@@ -56,9 +63,9 @@ class GqlToken extends Model
     public $lastUsed;
 
     /**
-     * @var array Permissions
+     * @var array The schema’s scope
      */
-    public $permissions = [];
+    public $scope = [];
 
     /**
      * @var \DateTime|null Date created
@@ -77,8 +84,8 @@ class GqlToken extends Model
     {
         parent::__construct($config);
 
-        if (is_string($this->permissions)) {
-            $this->permissions = Json::decodeIfJson($this->permissions);
+        if (is_string($this->scope)) {
+            $this->scope = Json::decodeIfJson($this->scope);
         }
     }
 
@@ -103,7 +110,7 @@ class GqlToken extends Model
         $rules[] = [
             ['name', 'accessToken'],
             UniqueValidator::class,
-            'targetClass' => GqlTokenRecord::class,
+            'targetClass' => GqlSchemaRecord::class,
         ];
 
         return $rules;
@@ -120,23 +127,23 @@ class GqlToken extends Model
     }
 
     /**
-     * returns whether this is the public token.
+     * returns whether this is the public schema.
      *
      * @return bool
      */
     public function getIsPublic(): bool
     {
-        return $this->accessToken === Gql::PUBLIC_TOKEN;
+        return $this->accessToken === self::PUBLIC_TOKEN;
     }
 
     /**
-     * Return whether this token can perform an action
+     * Return whether this schema can perform an action
      *
-     * @param $permissionName
+     * @param $name
      * @return bool
      */
-    public function hasPermission(string $permissionName): bool
+    public function has(string $name): bool
     {
-        return is_array($this->permissions) && in_array($permissionName, $this->permissions, true);
+        return is_array($this->scope) && in_array($name, $this->scope, true);
     }
 }

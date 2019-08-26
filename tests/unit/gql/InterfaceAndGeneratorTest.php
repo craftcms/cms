@@ -27,7 +27,7 @@ use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
 use craft\models\EntryType;
-use craft\models\GqlToken;
+use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\volumes\Local;
 use GraphQL\Type\Definition\ObjectType;
@@ -45,7 +45,7 @@ class InterfaceAndGeneratorTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['getCurrentToken' => $this->make(GqlToken::class, [
+            ['getCurrentToken' => $this->make(GqlSchema::class, [
                 'permissions' => [
                     'volumes.volume-uid-1:read',
                     'volumes.volume-uid-2:read',
@@ -108,7 +108,7 @@ class InterfaceAndGeneratorTest extends Unit
             $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
 
             // Make sure the generated types are pre-loaded, when asserting valid.
-            $this->assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchema(null, true)->getTypeMap()));
+            $this->assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchemaDef(null, true)->getTypeMap()));
         }
     }
 
@@ -150,7 +150,7 @@ class InterfaceAndGeneratorTest extends Unit
         $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
     }
 
-    
+
     // Data providers
     // =========================================================================
 

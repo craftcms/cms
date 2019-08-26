@@ -35,8 +35,8 @@ use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
 use craft\helpers\DateTimeHelper;
-use craft\models\GqlToken;
-use craft\records\GqlToken as GqlTokenRecord;
+use craft\models\GqlSchema;
+use craft\records\GqlSchema as GqlSchemaRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use yii\base\Component;
@@ -122,23 +122,19 @@ class Gql extends Component
     const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
 
     /**
-     * Token value for the public token.
-     */
-    const PUBLIC_TOKEN = '__PUBLIC__';
-
-    /**
-     * Currently loaded schema
+     * Currently loaded schema definition
      *
      * @var Schema
      */
-    private $_schema;
+    private $_schemaDef;
 
     /**
-     * GQL token currently in user
+     * The active GraphQL schema
      *
-     * @var GqlToken
+     * @var GqlSchema
+     * @see setActiveSchema()
      */
-    private $_token;
+    private $_schema;
 
     // Public Methods
     // =========================================================================
@@ -146,18 +142,18 @@ class Gql extends Component
     /**
      * Returns the GraphQL schema.
      *
-     * @param GqlToken $token
+     * @param GqlSchema $schema
      * @param bool $prebuildSchema should the schema be deep-scanned and pre-built instead of lazy-loaded
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchema($token = null, $prebuildSchema = false): Schema
+    public function getSchemaDef(GqlSchema $schema = null, $prebuildSchema = false): Schema
     {
-        if ($token) {
-            $this->setToken($token);
+        if ($schema) {
+            $this->setActiveSchema($schema);
         }
 
-        if (!$this->_schema || $prebuildSchema) {
+        if (!$this->_schemaDef || $prebuildSchema) {
             $this->_registerGqlTypes();
             $this->_registerGqlQueries();
 
@@ -168,7 +164,7 @@ class Gql extends Component
             ];
 
             if (!$prebuildSchema) {
-                $this->_schema = new Schema($schemaConfig);
+                $this->_schemaDef = new Schema($schemaConfig);
             } else {
                 $interfaces = [
                     EntryInterface::class,
@@ -191,95 +187,97 @@ class Gql extends Component
                     }
                 }
                 try {
-                    $this->_schema = new Schema($schemaConfig);
-                    $this->_schema->getTypeMap();
+                    $this->_schemaDef = new Schema($schemaConfig);
+                    $this->_schemaDef->getTypeMap();
                 } catch (\Throwable $exception) {
                     throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
                 }
             }
         }
 
+        return $this->_schemaDef;
+    }
+
+    /**
+     * Returns the active GraphQL schema.
+     *
+     * @return GqlSchema
+     * @throws GqlException if no schema is currently active.
+     */
+    public function getActiveSchema(): GqlSchema
+    {
+        if (!$this->_schema) {
+            throw new GqlException('No schema is active.');
+        }
+
         return $this->_schema;
     }
 
     /**
-     * Set the GQL token to be used.
+     * Sets the active GraphQL schema.
      *
-     * @param GqlToken|null $token The token to set. Null to unset.
-     * @throws \yii\base\Exception
+     * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
+     * @throws Exception
      */
-    public function setToken(GqlToken $token = null)
+    public function setActiveSchema(GqlSchema $schema = null)
     {
-        $this->_token = $token;
+        $this->_schema = $schema;
 
-        if ($token) {
-            $token->lastUsed = DateTimeHelper::currentUTCDateTime();
-            $this->saveToken($token);
+        if ($schema) {
+            $schema->lastUsed = DateTimeHelper::currentUTCDateTime();
+            $this->saveSchema($schema);
         }
     }
 
     /**
-     * Return the token in use for the current GQL request.
+     * Returns all GraphQL schemas.
      *
-     * @return GqlToken
-     * @throws GqlException if no token set.
+     * @return GqlSchema[]
      */
-    public function getCurrentToken(): GqlToken
+    public function getSchemas(): array
     {
-        if (!$this->_token) {
-            throw new GqlException('No access token set.');
-        }
+        $rows = $this->_createSchemaQuery()->all();
+        $schemas = [];
+        $names = [];
 
-        return $this->_token;
-    }
-
-    /**
-     * Return an array of all tokens.
-     *
-     * @return array
-     */
-    public function getTokens(): array
-    {
-        $rows = $this->_createTokenQuery()->all();
-        $tokens = [];
-        $tokenNames = [];
-
-        $publicToken = null;
+        $publicSchema = null;
 
         foreach ($rows as $row) {
-            $token = new GqlToken($row);
-            if ($token->accessToken == self::PUBLIC_TOKEN) {
-                $publicToken = $token;
+            $schema = new GqlSchema($row);
+            if ($schema->getIsPublic()) {
+                $publicSchema = $schema;
             } else {
-                $tokens[] = $token;
-                $tokenNames[] = $token->name;
+                $schemas[] = $schema;
+                $names[] = $schema->name;
             }
         }
 
-        // Sort tokens by name
-        array_multisort($tokenNames, SORT_ASC, SORT_STRING, $tokens);
+        // Sort them by name
+        array_multisort($names, SORT_ASC, SORT_STRING, $schemas);
 
-        // Add the public token to the top
-        array_unshift($tokens, $publicToken ?? $this->_createPublicToken());
+        // Add the public schema to the top
+        array_unshift($schemas, $publicSchema ?? $this->_createPublicSchema());
 
-        return $tokens;
+        return $schemas;
     }
 
     /**
-     * Return the public token. If it does not exist, it will be created.
+     * Returns the public schema. If it does not exist, it will be created.
      *
-     * @return GqlToken
-     * @throws \yii\base\Exception
+     * @return GqlSchema
+     * @throws Exception
      */
-    public function getPublicToken(): GqlToken
+    public function getPublicSchema(): GqlSchema
     {
-        $tokenRow = $this->_createTokenQuery()->where(['accessToken' => self::PUBLIC_TOKEN])->one();
+        $result = $this->_createSchemaQuery()
+            ->where(['accessToken' => GqlSchema::PUBLIC_TOKEN])
+            ->one();
 
-        if ($tokenRow) {
-            return new GqlToken($tokenRow);
+        if ($result) {
+            return new GqlSchema($result);
         }
 
-        return $this->_createPublicToken();
+        return $this->_createPublicSchema();
     }
 
     /**
@@ -318,106 +316,115 @@ class Gql extends Component
      */
     public function flushCaches()
     {
-        $this->_token = null;
         $this->_schema = null;
+        $this->_schemaDef = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
     }
 
     /**
-     * Return a GQL token by its id.
+     * Returns a GraphQL schema by its id.
      *
-     * @param int $tokenId
-     * @return GqlToken|null
+     * @param int $id
+     * @return GqlSchema|null
      */
-    public function getTokenById(int $tokenId)
+    public function getSchemaById(int $id)
     {
-        $tokenRow = $this->_createTokenQuery()->where(['id' => $tokenId])->one();
-        return $tokenRow ? new GqlToken($tokenRow) : null;
+        $result = $this->_createSchemaQuery()
+            ->where(['id' => $id])
+            ->one();
+
+        return $result ? new GqlSchema($result) : null;
     }
 
     /**
-     * Return a GQL token by its uid.
+     * Returns a GraphQL schema by its UID.
      *
-     * @param string $tokenUid
-     * @return GqlToken|null
+     * @param string $uid
+     * @return GqlSchema|null
      */
-    public function getTokenByUid(string $tokenUid)
+    public function getSchemaByUid(string $uid)
     {
-        $tokenRow = $this->_createTokenQuery()->where(['uid' => $tokenUid])->one();
-        return $tokenRow ? new GqlToken($tokenRow) : null;
+        $result = $this->_createSchemaQuery()
+            ->where(['uid' => $uid])
+            ->one();
+
+        return $result ? new GqlSchema($result) : null;
     }
 
     /**
-     * Return a GQL token by its access token.
+     * Returns a GraphQL schema by its access token.
      *
-     * @param string $accessToken
-     * @return GqlToken|null
+     * @param string $token
+     * @return GqlSchema|null
      */
-    public function getTokenByAccessToken(string $accessToken)
+    public function getSchemaByAccessToken(string $token)
     {
-        if ($accessToken == self::PUBLIC_TOKEN) {
-            return $this->getPublicToken();
+        if ($token == GqlSchema::PUBLIC_TOKEN) {
+            return $this->getPublicSchema();
         }
 
-        $tokenRow = $this->_createTokenQuery()->where(['accessToken' => $accessToken])->one();
-        return $tokenRow ? new GqlToken($tokenRow) : null;
+        $result = $this->_createSchemaQuery()
+            ->where(['accessToken' => $token])
+            ->one();
+
+        return $result ? new GqlSchema($result) : null;
     }
 
     /**
-     * Save a GQL token.
+     * Saves a GraphQL schema.
      *
-     * @param GqlToken $token the token to save
-     * @param bool $runValidation Whether the token should be validated
-     * @return bool Whether the token was saved successfully
-     * @throws \yii\base\Exception
+     * @param GqlSchema $schema the schema to save
+     * @param bool $runValidation Whether the schema should be validated
+     * @return bool Whether the schema was saved successfully
+     * @throws Exception
      */
-    public function saveToken(GqlToken $token, $runValidation = true): bool
+    public function saveSchema(GqlSchema $schema, $runValidation = true): bool
     {
-        $isNewToken = !$token->id;
+        $isNewSchema = !$schema->id;
 
-        if ($runValidation && !$token->validate()) {
-            Craft::info('Token not saved due to validation error.', __METHOD__);
+        if ($runValidation && !$schema->validate()) {
+            Craft::info('Schema not saved due to validation error.', __METHOD__);
             return false;
         }
 
-        if ($isNewToken) {
-            $tokenRecord = new GqlTokenRecord();
+        if ($isNewSchema) {
+            $schemaRecord = new GqlSchemaRecord();
         } else {
-            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
+            $schemaRecord = GqlSchemaRecord::findOne($schema->id) ?: new GqlSchemaRecord();
         }
 
-        $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = (bool) $token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
-        $tokenRecord->permissions = $token->permissions;
+        $schemaRecord->name = $schema->name;
+        $schemaRecord->enabled = (bool) $schema->enabled;
+        $schemaRecord->expiryDate = $schema->expiryDate;
+        $schemaRecord->lastUsed = $schema->lastUsed;
+        $schemaRecord->scope = $schema->scope;
 
-        if ($isNewToken) {
-            $tokenRecord->accessToken = $token->accessToken;
+        if ($isNewSchema) {
+            $schemaRecord->accessToken = $schema->accessToken;
         }
 
-        $tokenRecord->save();
-        $token->id = $tokenRecord->id;
+        $schemaRecord->save();
+        $schema->id = $schemaRecord->id;
 
         return true;
     }
 
     /**
-     * Deletes a GQL token by its ID.
+     * Deletes a GraphQL schema by its ID.
      *
-     * @param int $tokenId The transform's ID
+     * @param int $id The transform's ID
      * @return bool Whether the token was deleted.
      */
-    public function deleteTokenById(int $tokenId): bool
+    public function deleteSchemaById(int $id): bool
     {
-        $tokenRecord = GqlTokenRecord::findOne($tokenId);
+        $record = GqlSchemaRecord::findOne($id);
 
-        if (!$tokenRecord) {
+        if (!$record) {
             return true;
         }
 
-        return $tokenRecord->delete();
+        return $record->delete();
     }
 
     // Private Methods
@@ -628,7 +635,7 @@ class Gql extends Component
      *
      * @return DbQuery
      */
-    private function _createTokenQuery(): DbQuery
+    private function _createSchemaQuery(): DbQuery
     {
         $query = (new DbQuery())
             ->select([
@@ -638,31 +645,31 @@ class Gql extends Component
                 'enabled',
                 'expiryDate',
                 'lastUsed',
-                'permissions',
+                'scope',
                 'dateCreated',
                 'uid',
             ])
-            ->from([Table::GQLTOKENS]);
+            ->from([Table::GQLSCHEMAS]);
 
         return $query;
     }
 
     /**
-     * Creates the public token.
+     * Creates the public schema.
      *
-     * @return GqlToken
-     * @throws Exception if the token couldn't be created.
+     * @return GqlSchema
+     * @throws Exception if the schema couldn't be created.
      */
-    private function _createPublicToken(): GqlToken
+    private function _createPublicSchema(): GqlSchema
     {
-        $token = new GqlToken([
-            'name' => 'Public Token',
-            'accessToken' => self::PUBLIC_TOKEN,
+        $schema = new GqlSchema([
+            'name' => 'Public Schema',
+            'accessToken' => GqlSchema::PUBLIC_TOKEN,
             'enabled' => true,
         ]);
-        if (!$this->saveToken($token)) {
-            throw new Exception('Couldn’t create public token.');
+        if (!$this->saveSchema($schema)) {
+            throw new Exception('Couldn’t create public schema.');
         }
-        return $token;
+        return $schema;
     }
 }

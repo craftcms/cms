@@ -45,8 +45,8 @@ class GqlCest
     public function _setToken(string $accessToken)
     {
         $gqlService = Craft::$app->getGql();
-        $token = $gqlService->getTokenByAccessToken($accessToken);
-        $gqlService->setToken($token);
+        $schema = $gqlService->getSchemaByAccessToken($accessToken);
+        $gqlService->setActiveSchema($schema);
     }
 
     /**
@@ -110,7 +110,7 @@ class GqlCest
      */
     public function testMissingToken(FunctionalTester $I)
     {
-        Craft::$app->getGql()->setToken(null);
+        Craft::$app->getGql()->setActiveSchema(null);
         $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
         $I->see('Invalid authorization token');
     }

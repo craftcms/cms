@@ -7,7 +7,7 @@ return [
     'settings/users/groups/new' => ['template' => 'settings/users/groups/_edit'],
     'settings/users/groups/<groupId:\d+>' => ['template' => 'settings/users/groups/_edit'],
     'graphql' => 'gql/graphiql',
-    'graphql/tokens' => 'gql/view-tokens',
-    'graphql/tokens/new' => 'gql/edit-token',
-    'graphql/tokens/<tokenId:\d+>' => 'gql/edit-token',
+    'graphql/schemas' => 'gql/view-schemas',
+    'graphql/schemas/new' => 'gql/edit-schema',
+    'graphql/schemas/<schemaId:\d+>' => 'gql/edit-schema',
 ];

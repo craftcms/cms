@@ -17,7 +17,7 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
-use craft\models\GqlToken;
+use craft\models\GqlSchema;
 use craft\services\Gql;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
@@ -30,12 +30,12 @@ class GqlTest extends Unit
      * @var \UnitTester
      */
     protected $tester;
-    
+
     protected function _before()
     {
         Craft::$app->getGql()->flushCaches();
         $gql = Craft::$app->getGql();
-        $gql->setToken(new GqlToken());
+        $gql->setActiveSchema(new GqlSchema());
     }
 
     protected function _after()
@@ -54,8 +54,8 @@ class GqlTest extends Unit
     public function testCreatingSchemaFail()
     {
         $gqlService = Craft::$app->getGql();
-        $gqlService->setToken(null);
-        $gqlService->getSchema();
+        $gqlService->setActiveSchema(null);
+        $gqlService->getSchemaDef();
     }
 
     /**
@@ -63,7 +63,7 @@ class GqlTest extends Unit
      */
     public function testCreatingSchemaSuccess()
     {
-        $schema = Craft::$app->getGql()->getSchema();
+        $schema = Craft::$app->getGql()->getSchemaDef();
         $this->assertInstanceOf('GraphQL\Type\Schema', $schema);
     }
 
@@ -80,7 +80,7 @@ class GqlTest extends Unit
             ];
         });
 
-        $queries = Craft::$app->getGql()->getSchema()->getQueryType()->getFields();
+        $queries = Craft::$app->getGql()->getSchemaDef()->getQueryType()->getFields();
         $this->assertArrayHasKey('mockQuery', $queries);
     }
 
@@ -96,7 +96,7 @@ class GqlTest extends Unit
         });
 
         $this->expectException('craft\errors\GqlException');
-        Craft::$app->getGql()->getSchema(null, true);
+        Craft::$app->getGql()->getSchemaDef(null, true);
     }
 
     /**
@@ -108,7 +108,7 @@ class GqlTest extends Unit
             $event->directives[] = MockDirective::class;
         });
 
-        $directive = Craft::$app->getGql()->getSchema()->getDirective(MockDirective::getName());
+        $directive = Craft::$app->getGql()->getSchemaDef()->getDirective(MockDirective::getName());
         $this->assertInstanceOf('GraphQL\Type\Definition\Directive', $directive);
     }
 
@@ -121,7 +121,7 @@ class GqlTest extends Unit
             $event->types[] = MockType::class;
         });
 
-        $mockType = Craft::$app->getGql()->getSchema()->getType(MockType::getName());
+        $mockType = Craft::$app->getGql()->getSchemaDef()->getType(MockType::getName());
         $this->assertInstanceOf('GraphQL\Type\Definition\ObjectType', $mockType);
     }
 
@@ -154,16 +154,16 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlToken(['name' => 'Something', 'enabled' => true]);
-        $gqlService->saveToken($token);
+        $token = new GqlSchema(['name' => 'Something', 'enabled' => true]);
+        $gqlService->saveSchema($token);
 
-        $this->assertEquals($token->id, $gqlService->getTokenByAccessToken($token->accessToken)->id);
-        $this->assertEquals($token->accessToken, $gqlService->getTokenById($token->id)->accessToken);
+        $this->assertEquals($token->id, $gqlService->getSchemaByAccessToken($token->accessToken)->id);
+        $this->assertEquals($token->accessToken, $gqlService->getSchemaById($token->id)->accessToken);
 
-        $token = new GqlToken(['name' => 'Different', 'enabled' => true]);
-        $gqlService->saveToken($token);
+        $token = new GqlSchema(['name' => 'Different', 'enabled' => true]);
+        $gqlService->saveSchema($token);
 
-        $tokenList = $gqlService->getTokens();
+        $tokenList = $gqlService->getSchemas();
         $this->assertCount(2, $tokenList);
     }
 
@@ -177,15 +177,15 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlToken(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['usergroups.allUsers:read']]);
-        $gqlService->setToken($token);
-        $schema = $gqlService->getSchema($token);
+        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['usergroups.allUsers:read']]);
+        $gqlService->setActiveSchema($token);
+        $schema = $gqlService->getSchemaDef($token);
 
         $gqlService->flushCaches();
 
-        $token = new GqlToken(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['volumes.someVolume:read']]);
-        $gqlService->setToken($token);
-        $this->assertNotEquals($schema, $gqlService->getSchema($token));
+        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['volumes.someVolume:read']]);
+        $gqlService->setActiveSchema($token);
+        $this->assertNotEquals($schema, $gqlService->getSchemaDef($token));
     }
 
     /**

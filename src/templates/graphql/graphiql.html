@@ -9,7 +9,10 @@
 {% endblock %}
 
 {% js %}
-    var gqlTokens = {{ tokens|json_encode|raw }};
-    var selectedToken = {name: "{{ selectedToken.name }}", token: "{{ selectedToken.accessToken}}"};
+    var gqlSchemas = {{ schemas|json_encode|raw }};
+    var selectedSchema = {{ {
+        name: selectedSchema.name,
+        token: selectedSchema.accessToken,
+    }|json_encode|raw }};
     initGraphiQl();
 {% endjs %}

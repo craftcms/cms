@@ -7,7 +7,7 @@
 
 namespace crafttests\fixtures;
 
-use craft\records\GqlToken;
+use craft\records\GqlSchema;
 use craft\test\Fixture;
 
 /**
@@ -25,7 +25,7 @@ class GqlTokensFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $modelClass = GqlToken::class;
+    public $modelClass = GqlSchema::class;
 
     /**
      * @inheritdoc

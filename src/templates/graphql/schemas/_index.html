@@ -1,0 +1,55 @@
+{% extends "_layouts/cp" %}
+{% set title = "GraphQL Schemas"|t('app') %}
+
+{% requireEdition CraftPro %}
+
+{% set selectedSubnavItem = 'schemas' %}
+
+{% block content %}
+    {% set schemas = craft.app.gql.schemas %}
+
+    <table id="schemas" class="data fullwidth collapsible">
+        <thead>
+            <th scope="col">{{ "Schema name"|t('app') }}</th>
+            <th scope="col">{{ "Access Token"|t('app') }}</th>
+            <th scope="col">{{ "Enabled"|t('app') }}</th>
+            <th scope="col">{{ "Last Used"|t('app') }}</th>
+            <th scope="col">{{ "Expires"|t('app') }}</th>
+            <th></th>
+        </thead>
+        <tbody>
+            {% for schema in schemas %}
+                <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
+                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.isPublic ? 'Public Schema'|t('app') : schema.name }}</a></th>
+                    {% if schema.isPublic %}
+                        <td class="light" data-title="{{ 'Access Token'|t('app') }}">{{ 'None'|t('app') }}</td>
+                    {% else %}
+                        <td class="code" data-title="{{ 'Access Token'|t('app') }}">{{ schema.accessToken }}</td>
+                    {% endif %}
+                    <td data-title="{{ 'Enabled'|t('app') }}">{% if schema.enabled %}<div data-icon="check"></div>{% endif %}</td>
+                    <td data-title="{{ 'Last Used'|t('app') }}" title="{{ schema.lastUsed ? schema.lastUsed|datetime('short') }}">{{ schema.lastUsed ? schema.lastUsed|timestamp}}</td>
+                    <td data-title="{{ 'Expires'|t('app') }}" title="{{ schema.expiryDate ? schema.expiryDate|datetime('short') }}">{{ schema.expiryDate ? schema.expiryDate|timestamp}}</td>
+                    <th class="thin">
+                        {% if not schema.isPublic %}
+                            <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
+                        {% endif %}
+                    </th>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="buttons">
+        <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>
+    </div>
+{% endblock %}
+
+
+{% js on ready %}
+    new Craft.AdminTable({
+        tableSelector: '#schemas',
+        minItems: 1,
+        sortable: false,
+        deleteAction: 'gql/delete-schema'
+    });
+{% endjs %}

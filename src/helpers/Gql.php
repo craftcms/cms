@@ -42,7 +42,7 @@ class Gql
         }
 
         try {
-            $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+            $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
         } catch (GqlException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return false;
@@ -65,11 +65,11 @@ class Gql
      */
     public static function extractAllowedEntitiesFromToken($action = 'read'): array
     {
-        $token = Craft::$app->getGql()->getCurrentToken();
+        $token = Craft::$app->getGql()->getActiveSchema();
 
         if (empty(self::$cachedPairs[$token->id])) {
             try {
-                $permissions = (array) $token->permissions;
+                $permissions = (array) $token->scope;
                 $pairs = [];
 
                 foreach ($permissions as $permission) {
@@ -106,7 +106,7 @@ class Gql
     public static function canToken($scope, $action = 'read'): bool
     {
         try {
-            $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+            $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
             return !empty(preg_grep('/^' . preg_quote($scope, '/') . '\:' . preg_quote($action, '/') . '$/i', $permissions));
         } catch (GqlException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
