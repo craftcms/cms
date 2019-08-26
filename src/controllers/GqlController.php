@@ -224,7 +224,7 @@ class GqlController extends Controller
             $schema->accessToken = $request->getRequiredBodyParam('accessToken');
         }
 
-        $schema->name = $request->getRequiredBodyParam('name');
+        $schema->name = $request->getBodyParam('name') ?? $schema->name;
         $schema->enabled = (bool)$request->getRequiredBodyParam('enabled');
         $schema->scope = $request->getBodyParam('permissions');
 
