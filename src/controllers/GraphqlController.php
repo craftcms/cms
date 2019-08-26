@@ -14,6 +14,7 @@ use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiQlAsset;
 use craft\web\Controller;
+use craft\web\Request;
 use GraphQL\GraphQL;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -56,6 +57,8 @@ class GraphqlController extends Controller
      * Performs a GraphQL query.
      *
      * @return Response
+     * @throws BadRequestHttpException
+     * @throws GqlException
      */
     public function actionApi(): Response
     {
@@ -86,37 +89,35 @@ class GraphqlController extends Controller
             throw new ForbiddenHttpException('Invalid authorization token.');
         }
 
-        $query = null;
-        $variables = null;
+        $query = $operationName = $variables = null;
 
-        if (!($request->getIsPost() && $query = $request->post('query'))) {
-            if (!($request->getIsGet() && $query = $request->get('query'))) {
-                $data = $request->getRawBody();
-                $data = json_decode($data, true);
-                $query = @$data['query'];
+        // Check the body if it's a POST request
+        if ($request->getIsPost()) {
+            // If it's a application/graphql request, the whole body is the query
+            if ($request->getContentType() === 'application/graphql') {
+                $query = $request->getRawBody();
+            } else {
+                $query = $request->getBodyParam('query');
+                $operationName = $request->getBodyParam('operationName');
+                $variables = $request->getBodyParam('variables');
             }
         }
 
+        // 'query' GET param supersedes all others though
+        $query = $request->getQueryParam('query', $query);
 
-        if (!($request->getIsPost() && $variables = $request->post('variables'))) {
-            if (!($request->getIsGet() && $variables = $request->get('variables'))) {
-                $data = Craft::$app->request->getRawBody();
-                $data = json_decode($data, true);
-                $variables = @$data['variables'];
-            }
+        // 400 error if we couldn't find the query
+        if ($query === null) {
+            throw new BadRequestHttpException('No GraphQL query was supplied.');
         }
 
-        if ($query) {
-            try {
-                $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-                $schemaDef = $gqlService->getSchemaDef($schema, $devMode);
-                $result = GraphQL::executeQuery($schemaDef, $query, null, null, $variables)->toArray(true);
-            } catch (\Throwable $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
-                throw new GqlException('Something went wrong when processing the GraphQL query.');
-            }
-        } else {
-            throw new BadRequestHttpException('Request missing required param');
+        try {
+            $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+            $schemaDef = $gqlService->getSchemaDef($schema, $devMode);
+            $result = GraphQL::executeQuery($schemaDef, $query, null, null, $variables, $operationName)
+                ->toArray(true);
+        } catch (\Throwable $e) {
+            throw new GqlException('Something went wrong when processing the GraphQL query.', 0, $e);
         }
 
         return $this->asJson($result);
