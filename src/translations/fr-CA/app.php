@@ -1464,6 +1464,6 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'Address Line 1' => 'Ligne d\'adresse 1',
     'Choose a site' => 'Choisir un site',
     'Address Line 2' => 'Ligne d\'adresse 2',
-    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
-    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'
+    'Are you sure you want to delete this {type}?' => 'Voulez-vous vraiment supprimer ce {type}?',
+    '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => '<strong>{cause}</strong> présentement installée en tant que version de schéma pour {existing} (attendue {incoming})'
 ];

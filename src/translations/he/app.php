@@ -1464,6 +1464,6 @@ return [
     'Address Line 1' => 'שורת כתובת 1',
     'Choose a site' => 'בחר אתר',
     'Address Line 2' => 'שורת כתובת 2',
-    'Are you sure you want to delete this {type}?' => 'Are you sure you want to delete this {type}?',
+    'Are you sure you want to delete this {type}?' => 'האם אתה בטוח שברצונך למחוק את ה{type}?',
     '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})' => 'ל<strong>{cause}</strong> המותקן כרגע יש גרסת סכימה של {existing}(צפוי{incoming})'
 ];
