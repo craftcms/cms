@@ -556,7 +556,300 @@ class StringHelperTest extends Unit
     public function testIndexOf($expected, $haystack, $needle, $offset = 0, $caseSensitive = true)
     {
         $actual = StringHelper::indexOf($haystack, $needle, $offset, $caseSensitive);
-        $this->assertSame($expected, $actual, 'expected: '.$expected.' - actual: '.$actual.' - needle: '.$needle);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider indexOfLastDataProvider
+     *
+     * @param $expected
+     * @param $haystack
+     * @param $needle
+     * @param int $offset
+     * @param bool $caseSensitive
+     */
+    public function testIndexOfLast($expected, $haystack, $needle, $offset = 0, $caseSensitive = true)
+    {
+        $actual = StringHelper::indexOfLast($haystack, $needle, $offset, $caseSensitive);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isDataProvider()
+     *
+     * @param      $expected
+     * @param      $string
+     * @param      $pattern
+     */
+    public function testIs($expected, $string, $pattern)
+    {
+        $actual = StringHelper::is($string, $pattern);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isAlphaDataProvider()
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsAlpha($expected, $string)
+    {
+        $actual = StringHelper::isAlpha($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isAlphanumericDataProvider()
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsAlphanumeric($expected, $string)
+    {
+        $actual = StringHelper::isAlphanumeric($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isBase64DataProvider()
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsBase64($expected, $string)
+    {
+        $actual = StringHelper::isBase64($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isBlankDataProvider()
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsBlank($expected, $string)
+    {
+        $actual = StringHelper::isBlank($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isHexadecimalDataProvider
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsHexadecimal($expected, $string)
+    {
+        $actual = StringHelper::isHexadecimal($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     *
+     */
+    public function testIsHtml()
+    {
+        $testArray = [
+            ''                         => false,
+            '<h1>test</h1>'            => true,
+            'test'                     => false,
+            '<b>lall</b>'              => true,
+            'öäü<strong>lall</strong>' => true,
+            ' <b>lall</b>'             => true,
+            '<b><b>lall</b>'           => true,
+            '</b>lall</b>'             => true,
+            '[b]lall[b]'               => false,
+            ' <test>κόσμε</test> '     => true,
+        ];
+
+        foreach ($testArray as $testString => $testResult) {
+            $result = StringHelper::isHtml($testString);
+            static::assertSame($result, $testResult);
+        }
+    }
+
+    /**
+     * @dataProvider isJsonDataProvider
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsJson($expected, $string)
+    {
+        $actual = StringHelper::isJson($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isLowerCaseDataProvider
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsLowerCase($expected, $string)
+    {
+        $actual = StringHelper::isLowerCase($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isSerializedDataProvider
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsSerialized($expected, $string)
+    {
+        $actual = StringHelper::isSerialized($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider isUpperCaseDataProvider
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testIsUpperCase($expected, $string)
+    {
+        $actual = StringHelper::isUpperCase($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     *
+     */
+    public function testLineWrapAfterWord()
+    {
+        $testArray = [
+            ''                                                                                                      => "\n",
+            ' '                                                                                                     => ' ' . "\n",
+            'http:// moelleken.org'                                                                                 => 'http://' . "\n" . 'moelleken.org' . "\n",
+            'http://test.de'                                                                                        => 'http://test.de' . "\n",
+            'http://öäü.de'                                                                                         => 'http://öäü.de' . "\n",
+            'http://menadwork.com'                                                                                  => 'http://menadwork.com' . "\n",
+            'test.de'                                                                                               => 'test.de' . "\n",
+            'test'                                                                                                  => 'test' . "\n",
+            '0123456 789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' => '0123456' . "\n" . '789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' . "\n",
+        ];
+
+        foreach ($testArray as $testString => $testResult) {
+            $actual = StringHelper::lineWrapAfterWord($testString, 10);
+            static::assertSame($testResult, $actual);
+        }
+    }
+
+    /**
+     * @dataProvider lowerCaseFirstDataProvider
+     *
+     * @param      $expected
+     * @param      $string
+     */
+    public function testLowercaseFirst($expected, $string)
+    {
+        $actual = StringHelper::lowercaseFirst($string);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider padDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $length
+     * @param $padStr
+     * @param $padType
+     */
+    public function testPad($expected, $string, $length, $padStr, $padType)
+    {
+        $actual = StringHelper::pad($string, $length, $padStr, $padType);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider padBothDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $length
+     * @param $padStr
+     */
+    public function testPadBoth($expected, $string, $length, $padStr)
+    {
+        $actual = StringHelper::padBoth($string, $length, $padStr);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider padLeftDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $length
+     * @param $padStr
+     */
+    public function testPadLeft($expected, $string, $length, $padStr)
+    {
+        $actual = StringHelper::padLeft($string, $length, $padStr);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider padRightDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $length
+     * @param $padStr
+     */
+    public function testPadRight($expected, $string, $length, $padStr)
+    {
+        $actual = StringHelper::padRight($string, $length, $padStr);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider prependDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $prependString
+     */
+    public function testPrepend($expected, $string, $prependString)
+    {
+        $actual = StringHelper::prepend($string, $prependString);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider regexReplaceDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $pattern
+     * @param $replacement
+     * @param $options
+     */
+    public function testRegexReplace($expected, $string, $pattern, $replacement, $options)
+    {
+        $actual = StringHelper::regexReplace($string, $pattern, $replacement, $options);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @dataProvider removeHtmlDataProvider
+     *
+     * @param $expected
+     * @param $string
+     * @param $allowableTags
+     */
+    public function testRemoveHtml($expected, $string, $allowableTags)
+    {
+        $actual = StringHelper::removeHtml($string, $allowableTags);
+        $this->assertSame($expected, $actual);
     }
 
     /**
@@ -2125,75 +2418,28 @@ class StringHelperTest extends Unit
     public function indexOfLastDataProvider(): array
     {
         return [
-            [6, 'foo & bar', 'bar'],
-            [6, 'foo & bar', 'bar', 0],
-            [false, 'foo & bar', 'baz'],
-            [false, 'foo & bar', 'baz', 0],
-            [12, 'foo & bar & foo', 'foo', 0],
-            [0, 'foo & bar & foo', 'foo', -5],
-            [6, 'fòô & bàř', 'bàř', 0, 'UTF-8'],
-            [false, 'fòô & bàř', 'baz', 0, 'UTF-8'],
-            [12, 'fòô & bàř & fòô', 'fòô', 0, 'UTF-8'],
-            [0, 'fòô & bàř & fòô', 'fòô', -5, 'UTF-8'],
+            [6, 'foo & bar', 'bar', 0, true],
+            [6, 'foo & bar', 'bar', 0, true],
+            [false, 'foo & bar', 'baz', 0, true],
+            [false, 'foo & bar', 'baz', 0, true],
+            [12, 'foo & bar & foo', 'foo', 0, true],
+            [0, 'foo & bar & foo', 'foo', -5, true],
+            [6, 'fòô & bàř', 'bàř', 0, true],
+            [false, 'fòô & bàř', 'baz', 0, true],
+            [12, 'fòô & bàř & fòô', 'fòô', 0, true],
+            [0, 'fòô & bàř & fòô', 'fòô', -5, true],
+            [6, 'foo & bar', 'Bar', 0, false],
+            [6, 'foo & bar', 'bAr', 0, false],
+            [false, 'foo & bar', 'baZ', 0, false],
+            [false, 'foo & bar', 'baZ', 0, false],
+            [12, 'foo & bar & foo', 'fOo', 0, false],
+            [0, 'foo & bar & foo', 'fOO', -5, false],
+            [6, 'fòô & bàř', 'bàř', 0, false],
+            [false, 'fòô & bàř', 'baz', 0, false],
+            [12, 'fòô & bàř & fòô', 'fòô', 0, false],
+            [0, 'fòô & bàř & fòô', 'fòÔ', -5, false],
         ];
     }
-
-    /**
-     * @return array
-     */
-    public function indexOfLastIgnoreCaseDataProvider(): array
-    {
-        return [
-            [6, 'foo & bar', 'Bar'],
-            [6, 'foo & bar', 'bAr', 0],
-            [false, 'foo & bar', 'baZ'],
-            [false, 'foo & bar', 'baZ', 0],
-            [12, 'foo & bar & foo', 'fOo', 0],
-            [0, 'foo & bar & foo', 'fOO', -5],
-            [6, 'fòô & bàř', 'bàř', 0, 'UTF-8'],
-            [false, 'fòô & bàř', 'baz', 0, 'UTF-8'],
-            [12, 'fòô & bàř & fòô', 'fòô', 0, 'UTF-8'],
-            [0, 'fòô & bàř & fòô', 'fòÔ', -5, 'UTF-8'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function indexOfIgnoreCaseDataProvider(): array
-    {
-        return [
-            [6, 'foo & bar', 'Bar'],
-            [6, 'foo & bar', 'bar', 0],
-            [false, 'foo & bar', 'Baz'],
-            [false, 'foo & bar', 'bAz', 0],
-            [0, 'foo & bar & foo', 'foO', 0],
-            [12, 'foo & bar & foo', 'fOO', 5],
-            [6, 'fòô & bàř', 'bàř', 0, 'UTF-8'],
-            [false, 'fòô & bàř', 'baz', 0, 'UTF-8'],
-            [0, 'fòô & bàř & fòô', 'fòô', 0, 'UTF-8'],
-            [12, 'fòô & bàř & fòô', 'fòÔ', 5, 'UTF-8'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-//    public function indexOfDataProvider(): array
-//    {
-//        return [
-//            [6, 'foo & bar', 'bar'],
-//            [6, 'foo & bar', 'bar', 0],
-//            [false, 'foo & bar', 'baz'],
-//            [false, 'foo & bar', 'baz', 0],
-//            [0, 'foo & bar & foo', 'foo', 0],
-//            [12, 'foo & bar & foo', 'foo', 5],
-//            [6, 'fòô & bàř', 'bàř', 0, 'UTF-8'],
-//            [false, 'fòô & bàř', 'baz', 0, 'UTF-8'],
-//            [0, 'fòô & bàř & fòô', 'fòô', 0, 'UTF-8'],
-//            [12, 'fòô & bàř & fòô', 'fòô', 5, 'UTF-8'],
-//        ];
-//    }
 
     /**
      * @return array
@@ -2261,10 +2507,10 @@ class StringHelperTest extends Unit
         return [
             [false, ' '],
             [false, ''],
-            [true, \base64_encode('FooBar')],
-            [true, \base64_encode(' ')],
-            [true, \base64_encode('FÒÔBÀŘ')],
-            [true, \base64_encode('συγγραφέας')],
+            [true, base64_encode('FooBar')],
+            [true, base64_encode(' ')],
+            [true, base64_encode('FÒÔBÀŘ')],
+            [true, base64_encode('συγγραφέας')],
             [false, 'Foobar'],
         ];
     }
@@ -2334,13 +2580,13 @@ class StringHelperTest extends Unit
             [false, '{"foo"}'],
             [true, '["foo"]'],
             [false, '{"foo": "bar"]'],
-            [false, '123', 'UTF-8'],
-            [true, '{"fòô": "bàř"}', 'UTF-8'],
-            [false, '{"fòô":"bàř",}', 'UTF-8'],
-            [false, '{"fòô"}', 'UTF-8'],
-            [false, '["fòô": "bàř"]', 'UTF-8'],
-            [true, '["fòô"]', 'UTF-8'],
-            [false, '{"fòô": "bàř"]', 'UTF-8'],
+            [false, '123'],
+            [true, '{"fòô": "bàř"}'],
+            [false, '{"fòô":"bàř",}'],
+            [false, '{"fòô"}'],
+            [false, '["fòô": "bàř"]'],
+            [true, '["fòô"]'],
+            [false, '{"fòô": "bàř"]'],
         ];
     }
 
@@ -2570,15 +2816,15 @@ class StringHelperTest extends Unit
         return [
             ['foo bar ', 'foo bar', 8],
             [' foo bar ', 'foo bar', 9, ' '],
-            ['fòô bàř ', 'fòô bàř', 8, ' ', 'UTF-8'],
-            [' fòô bàř ', 'fòô bàř', 9, ' ', 'UTF-8'],
-            ['fòô bàř¬', 'fòô bàř', 8, '¬ø', 'UTF-8'],
-            ['¬fòô bàř¬', 'fòô bàř', 9, '¬ø', 'UTF-8'],
-            ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬ø', 'UTF-8'],
-            ['¬øfòô bàř¬ø', 'fòô bàř', 11, '¬ø', 'UTF-8'],
-            ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬øÿ', 'UTF-8'],
-            ['¬øfòô bàř¬ø', 'fòô bàř', 11, '¬øÿ', 'UTF-8'],
-            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'UTF-8'],
+            ['fòô bàř ', 'fòô bàř', 8, ' '],
+            [' fòô bàř ', 'fòô bàř', 9, ' '],
+            ['fòô bàř¬', 'fòô bàř', 8, '¬ø'],
+            ['¬fòô bàř¬', 'fòô bàř', 9, '¬ø'],
+            ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬ø'],
+            ['¬øfòô bàř¬ø', 'fòô bàř', 11, '¬ø'],
+            ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬øÿ'],
+            ['¬øfòô bàř¬ø', 'fòô bàř', 11, '¬øÿ'],
+            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ'],
         ];
     }
 
@@ -2591,10 +2837,10 @@ class StringHelperTest extends Unit
             ['  foo bar', 'foo bar', 9],
             ['_*foo bar', 'foo bar', 9, '_*'],
             ['_*_foo bar', 'foo bar', 10, '_*'],
-            ['  fòô bàř', 'fòô bàř', 9, ' ', 'UTF-8'],
-            ['¬øfòô bàř', 'fòô bàř', 9, '¬ø', 'UTF-8'],
-            ['¬ø¬fòô bàř', 'fòô bàř', 10, '¬ø', 'UTF-8'],
-            ['¬ø¬øfòô bàř', 'fòô bàř', 11, '¬ø', 'UTF-8'],
+            ['  fòô bàř', 'fòô bàř', 9, ' '],
+            ['¬øfòô bàř', 'fòô bàř', 9, '¬ø'],
+            ['¬ø¬fòô bàř', 'fòô bàř', 10, '¬ø'],
+            ['¬ø¬øfòô bàř', 'fòô bàř', 11, '¬ø'],
         ];
     }
 
@@ -2607,22 +2853,22 @@ class StringHelperTest extends Unit
             // length <= str
             ['foo bar', 'foo bar', -1],
             ['foo bar', 'foo bar', 7],
-            ['fòô bàř', 'fòô bàř', 7, ' ', 'right', 'UTF-8'],
+            ['fòô bàř', 'fòô bàř', 7, ' ', 'right'],
 
             // right
             ['foo bar  ', 'foo bar', 9],
             ['foo bar_*', 'foo bar', 9, '_*', 'right'],
-            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø', 'right', 'UTF-8'],
+            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø', 'right'],
 
             // left
             ['  foo bar', 'foo bar', 9, ' ', 'left'],
             ['_*foo bar', 'foo bar', 9, '_*', 'left'],
-            ['¬ø¬fòô bàř', 'fòô bàř', 10, '¬ø', 'left', 'UTF-8'],
+            ['¬ø¬fòô bàř', 'fòô bàř', 10, '¬ø', 'left'],
 
             // both
             ['foo bar ', 'foo bar', 8, ' ', 'both'],
-            ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬ø', 'both', 'UTF-8'],
-            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'both', 'UTF-8'],
+            ['¬fòô bàř¬ø', 'fòô bàř', 10, '¬ø', 'both'],
+            ['¬øfòô bàř¬øÿ', 'fòô bàř', 12, '¬øÿ', 'both'],
         ];
     }
 
@@ -2635,10 +2881,10 @@ class StringHelperTest extends Unit
             ['foo bar  ', 'foo bar', 9],
             ['foo bar_*', 'foo bar', 9, '_*'],
             ['foo bar_*_', 'foo bar', 10, '_*'],
-            ['fòô bàř  ', 'fòô bàř', 9, ' ', 'UTF-8'],
-            ['fòô bàř¬ø', 'fòô bàř', 9, '¬ø', 'UTF-8'],
-            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø', 'UTF-8'],
-            ['fòô bàř¬ø¬ø', 'fòô bàř', 11, '¬ø', 'UTF-8'],
+            ['fòô bàř  ', 'fòô bàř', 9, ' ',],
+            ['fòô bàř¬ø', 'fòô bàř', 9, '¬ø',],
+            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø',],
+            ['fòô bàř¬ø¬ø', 'fòô bàř', 11, '¬ø'],
         ];
     }
 
@@ -2649,7 +2895,7 @@ class StringHelperTest extends Unit
     {
         return [
             ['foobar', 'bar', 'foo'],
-            ['fòôbàř', 'bàř', 'fòô', 'UTF-8'],
+            ['fòôbàř', 'bàř', 'fòô'],
         ];
     }
 
@@ -2665,10 +2911,10 @@ class StringHelperTest extends Unit
             ['o bar', 'foo bar', 'f(o)o', '\1'],
             ['bar', 'foo bar', 'f[O]+\s', '', 'i'],
             ['foo', 'bar', '[[:alpha:]]{3}', 'foo'],
-            ['', '', '', '', 'msr', '/', 'UTF-8'],
-            ['bàř', 'fòô ', 'f[òô]+\s', 'bàř', 'msr', '/', 'UTF-8'],
-            ['fòô', 'fò', '(ò)', '\\1ô', 'msr', '/', 'UTF-8'],
-            ['fòô', 'bàř', '[[:alpha:]]{3}', 'fòô', 'msr', '/', 'UTF-8'],
+            ['', '', '', '', 'msr', '/'],
+            ['bàř', 'fòô ', 'f[òô]+\s', 'bàř', 'msr', '/'],
+            ['fòô', 'fò', '(ò)', '\\1ô', 'msr', '/'],
+            ['fòô', 'bàř', '[[:alpha:]]{3}', 'fòô', 'msr', '/'],
         ];
     }
 

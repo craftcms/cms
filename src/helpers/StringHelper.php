@@ -699,7 +699,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isBase64(string $str, $emptyStringIsValid = true): bool
     {
-        return BaseStringy::create($str)->isBase64();
+        return BaseStringy::create($str)->isBase64($emptyStringIsValid);
     }
 
     /**
@@ -711,35 +711,6 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function isBlank(string $str): bool
     {
         return BaseStringy::create($str)->isBlank();
-    }
-
-    /**
-     * Returns true if the string contains a valid E-Mail address, false otherwise.
-     *
-     * @param string $str The string to check.
-     * @param bool $useExampleDomainCheck
-     * @param bool $useTypoInDomainCheck
-     * @param bool $useTemporaryDomainCheck
-     * @param bool $useDnsCheck
-     * @return bool Whether or not $str contains a valid email address.
-     */
-    public static function isEmail(string $str, bool $useExampleDomainCheck = false, bool $useTypoInDomainCheck = false, bool $useTemporaryDomainCheck = false, bool $useDnsCheck = false): bool
-    {
-        return BaseStringy::create($str)->isEmail($useExampleDomainCheck, $useTypoInDomainCheck, $useTypoInDomainCheck, $useDnsCheck);
-    }
-
-    /**
-     * Determine whether the string is considered to be empty.
-     *
-     * A variable is considered empty if it does not exist or if its value equals FALSE.
-     * empty() does not generate a warning if the variable does not exist.
-     *
-     * @param string $str The string to check.
-     * @return bool Whether or not $str is empty().
-     */
-    public static function isEmpty(string $str): bool
-    {
-        return BaseStringy::create($str)->isEmpty();
     }
 
     /**
