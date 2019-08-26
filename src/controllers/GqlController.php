@@ -135,7 +135,7 @@ class GqlController extends Controller
         $schemas = [];
 
         foreach ($gqlService->getSchemas() as $schema) {
-            $name = $schema->getIsPublic() ? Craft::t('app', 'Pubic Schema') : $schema->name;
+            $name = $schema->getIsPublic() ? Craft::t('app', 'Public Schema') : $schema->name;
             $schemas[$name] = $schema->uid;
         }
 
