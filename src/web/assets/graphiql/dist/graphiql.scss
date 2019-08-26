@@ -77,4 +77,70 @@
     background: #fff;
     box-shadow: 0 0 0 1px $hairlineColorAlpha;
   }
+
+  .graphiql-container {
+    .toolbar {
+      margin-left: 16px;
+    }
+    .toolbar-menu {
+      &.toolbar-button {
+        display: inline-block;
+        background-color: #FFFFFF;
+        border-radius: 2px;
+        padding: 6px 12px;
+        border: none;
+        text-align: center;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+        box-sizing: border-box;
+        appearance: none;
+        box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+        color: #29323d;
+        height: 32px;
+        max-width: 100%;
+
+        svg {
+          margin-left: 5px;
+        }
+      }
+    }
+    .toolbar-menu-items {
+      min-width: 100%;
+      margin-top: 0;
+      @include menu-styles;
+
+      li {
+        @include menu-option-styles;
+        text-align: left;
+        padding-left: 24px;
+        max-width: unset;
+
+        &:hover {
+          @include menu-option-active-styles;
+        }
+
+        &.selected-schema {
+          cursor: default;
+          background: none;
+          &:before {
+            @include icon;
+            content: 'check';
+            @include floatleft;
+            @include margin(3px, 0, 0, -17px);
+            font-size: 14px;
+            color: $lightTextColor;
+          }
+          &:hover {
+            background-color: #FFFFFF;
+          }
+        }
+      }
+    }
+
+    .execute-button {
+      background: linear-gradient(#fdfdfd, #CFD6DC);
+      border: 1px solid #CFD6DC;
+    }
+  }
 }
