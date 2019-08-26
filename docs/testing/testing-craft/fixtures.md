@@ -1,7 +1,7 @@
 # Fixtures
 Fixtures are used to setup data in a test suite that is predictable and the same 
 for each test run (so assertions can be conducted based on this data).
-They can be defined in the `fixturesMethod` [defined](config-options.md) in the `codeception.yml` file. 
+They can be defined in the `fixturesMethod` [defined](../framework/config-options.md) in the `codeception.yml` file. 
 In the [Yii2 docs](https://www.yiiframework.com/doc/guide/2.0/en/test-fixtures#defining-a-fixture)
 you can read about fixture classes and fixture data as well as how these can be setup/used for testing.
 
