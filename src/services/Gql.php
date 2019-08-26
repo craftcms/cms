@@ -339,6 +339,18 @@ class Gql extends Component
     }
 
     /**
+     * Return a GQL token by its uid.
+     *
+     * @param string $tokenUid
+     * @return GqlToken|null
+     */
+    public function getTokenByUid(string $tokenUid)
+    {
+        $tokenRow = $this->_createTokenQuery()->where(['uid' => $tokenUid])->one();
+        return $tokenRow ? new GqlToken($tokenRow) : null;
+    }
+
+    /**
      * Return a GQL token by its access token.
      *
      * @param string $accessToken
@@ -629,6 +641,7 @@ class Gql extends Component
                 'expiryDate',
                 'lastUsed',
                 'permissions',
+                'uid'
             ])
             ->from([Table::GQLTOKENS]);
 
