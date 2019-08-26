@@ -1469,7 +1469,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function tidy(string $str): string
     {
-        return (string)BaseStringy::create($str)->titleize();
+        return (string)BaseStringy::create($str)->tidy();
     }
 
     /**
