@@ -322,10 +322,6 @@ class Gql extends Component
     {
         $isNewToken = !$token->id;
 
-        if ($isNewToken) {
-            $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
-        }
-
         if ($runValidation && !$token->validate()) {
             Craft::info('Token not saved due to validation error.', __METHOD__);
             return false;
@@ -589,6 +585,7 @@ class Gql extends Component
                 'expiryDate',
                 'lastUsed',
                 'permissions',
+                'dateCreated',
             ])
             ->from([Table::GQLTOKENS]);
 

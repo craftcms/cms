@@ -26,11 +26,11 @@
                 {% for token in tokens %}
                     <tr data-id="{{ token.id }}" data-name="{{ token.name }}">
                         <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/tokens/' ~ token.id) }}">{{ token.name }}</a></th>
-                        <td data-title="{{ 'Access token'|t('app') }}">{{ token.accessToken }}</td>
+                        <td class="code" data-title="{{ 'Access token'|t('app') }}">{{ token.accessToken }}</td>
                         <td class="thin" data-title="{{ 'Enabled'|t('app') }}">{% if token.enabled %}<div data-icon="check"></div>{% endif %}</td>
-                        <td data-title="{{ 'Last used'|t('app') }}">{{ token.lastUsed ? token.lastUsed|datetime('short') : ''}}</td>
-                        <td data-title="{{ 'Expires'|t('app') }}"><code>{{ token.expiryDate ? token.expiryDate|datetime('short') : ''}}</code></td>
-                        <td data-title="{{ 'Created'|t('app') }}"><code>{{ token.dateCreated|datetime('short') }}</code></td>
+                        <td data-title="{{ 'Last used'|t('app') }}" title="{{ token.lastUsed ? token.lastUsed|datetime('short') }}">{{ token.lastUsed ? token.lastUsed|timestamp}}</td>
+                        <td data-title="{{ 'Expires'|t('app') }}" title="{{ token.expiryDate ? token.expiryDate|datetime('short') }}">{{ token.expiryDate ? token.expiryDate|timestamp}}</td>
+                        <td data-title="{{ 'Created'|t('app') }}" title="{{ token.dateCreated|datetime('short') }}">{{ token.dateCreated|timestamp }}</td>
                         <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
                     </tr>
                 {% endfor %}

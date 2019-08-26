@@ -41,7 +41,7 @@ class GqlToken extends Model
     /**
      * @var bool Is the token enabled
      */
-    public $enabled = false;
+    public $enabled = true;
 
     /**
      * @var \DateTime|null Date expires

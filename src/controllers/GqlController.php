@@ -151,6 +151,7 @@ class GqlController extends Controller
             $title = trim($token->name) ?: Craft::t('app', 'Edit GraphQL Token');
         } else {
             $token = new GqlToken();
+            $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
             $title = trim($token->name) ?: Craft::t('app', 'Create a new GraphQL token');
         }
 
@@ -186,10 +187,11 @@ class GqlController extends Controller
             }
         } else {
             $token = new GqlToken();
+            $token->accessToken = $request->getRequiredBodyParam('accessToken');
         }
 
-        $token->name = $request->getBodyParam('name');
-        $token->enabled = $request->getBodyParam('enabled', false);
+        $token->name = $request->getRequiredBodyParam('name');
+        $token->enabled = (bool)$request->getRequiredBodyParam('enabled');
         $token->permissions = $request->getBodyParam('permissions');
 
         if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
