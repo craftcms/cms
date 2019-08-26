@@ -72,21 +72,31 @@ class GqlController extends Controller
             throw new ForbiddenHttpException('Invalid authorization token.');
         }
 
-        if ($request->getIsPost() && $query = $request->post('query')) {
-            $input = $query;
-        } else if ($request->getIsGet() && $query = $request->get('query')) {
-            $input = $query;
-        } else {
-            $data = $request->getRawBody();
-            $data = json_decode($data, true);
-            $input = @$data['query'];
+        $query = null;
+        $variables = null;
+
+        if (!($request->getIsPost() && $query = $request->post('query'))) {
+            if (!($request->getIsGet() && $query = $request->get('query'))) {
+                $data = $request->getRawBody();
+                $data = json_decode($data, true);
+                $query = @$data['query'];
+            }
         }
 
-        if ($input) {
-            $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-            $schema = $gqlService->getSchema($token, $devMode, $input);
 
-            $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
+        if (!($request->getIsPost() && $variables = $request->post('variables'))) {
+            if (!($request->getIsGet() && $variables = $request->get('variables'))) {
+                $data = Craft::$app->request->getRawBody();
+                $data = json_decode($data, true);
+                $variables = @$data['variables'];
+            }
+        }
+
+        if ($query) {
+            $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+            $schema = $gqlService->getSchema($token, $devMode);
+
+            $result = GraphQL::executeQuery($schema, $query, null, null, $variables)->toArray(true);
         } else {
             throw new BadRequestHttpException('Request missing required param');
         }
