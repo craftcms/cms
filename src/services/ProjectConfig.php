@@ -1357,6 +1357,8 @@ class ProjectConfig extends Component
 
             return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
         }
+
+        return null;
     }
 
     /**
