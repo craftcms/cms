@@ -16,6 +16,7 @@ use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
+use GraphQL\Language\AST\NodeList;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -134,6 +135,35 @@ abstract class Resolver
                                 $arguments[$argumentNode->name->value] = $argumentNode->value->value;
                             }
                         }
+
+                        /** @var EagerLoadingFieldInterface $field */
+                        $additionalArguments = $field->getEagerLoadingGqlConditions();
+
+                        // Load additional requirements enforced by schema
+                        if ($additionalArguments === false) {
+                            // If `false` was returned, make sure nothing is returned.
+                            $arguments['id'] = 0;
+                        } else {
+                            foreach ($additionalArguments as $argumentName => $argumentValue) {
+                                if (isset($arguments[$argumentName])) {
+                                    // If a filter was used that was not an array, make it an array
+                                    if (!is_array($arguments[$argumentName])) {
+                                        $arguments[$argumentName] = [$arguments[$argumentName]];
+                                    }
+
+                                    // See what remains after we enforce the scope by schema
+                                    $allowed = array_intersect($arguments[$argumentName], $argumentValue);
+
+                                    // If that cleared out all that they wanted, make it an impossible condition
+                                    if (empty($allowed)) {
+                                        $arguments['id'] = 0;
+                                    } else {
+                                        $arguments[$argumentName] = $allowed;
+                                    }
+                                } else {
+                                    $arguments[$argumentName] = $argumentValue;
+                                }
+                            }
                         }
 
                         // Add it all to the list
