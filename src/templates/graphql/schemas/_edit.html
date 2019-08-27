@@ -84,12 +84,12 @@
                             value: accessToken ?? '••••••••••••••••••••••••••••••••',
                             errors: schema.getErrors('accessToken'),
                             readonly: true,
-                            disabled: accessToken is not defined,
+                            disabled: not (accessToken ?? false),
                             class: 'code',
                             size: 32
                         }) }}
                         <div class="btngroup">
-                            {% if accessToken is not defined %}
+                            {% if not (accessToken ?? false) %}
                                 <div id="show-btn" class="btn">{{ 'Show'|t('app') }}</div>
                             {% endif %}
                             <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>

@@ -63,10 +63,24 @@ class GraphqlController extends Controller
      */
     public function actionApi(): Response
     {
-        Craft::$app->getResponse()->format = Response::FORMAT_JSON;
+        $request = Craft::$app->getRequest();
+        $response = Craft::$app->getResponse();
+
+        // Add CORS headers
+        $response->getHeaders()
+            ->add('Access-Control-Allow-Origin', $request->getOrigin())
+            ->add('Access-Control-Allow-Credentials', 'true');
+
+        if ($request->getIsOptions()) {
+            // This is just a preflight request, no need to run the actual query yet
+            $response->format = Response::FORMAT_RAW;
+            $response->data = '';
+            return $response;
+        }
+
+        $response->format = Response::FORMAT_JSON;
 
         $gqlService = Craft::$app->getGql();
-        $request = Craft::$app->getRequest();
 
         $schema = null;
         $authorizationHeader = Craft::$app->request->headers->get('authorization');
@@ -191,6 +205,7 @@ class GraphqlController extends Controller
         $this->requireAdmin();
 
         $gqlService = Craft::$app->getGql();
+        $accessToken = null;
 
         if ($schema || $schemaId) {
             if (!$schema) {

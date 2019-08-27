@@ -488,7 +488,7 @@ class Db
                 // If this is a textual column type, also check for empty strings
                 if (
                     ($columnType === null && $isMysql) ||
-                    static::isTextualColumnType($columnType)
+                    ($columnType !== null && static::isTextualColumnType($columnType))
                 ) {
                     $valCondition = [
                         'or',
