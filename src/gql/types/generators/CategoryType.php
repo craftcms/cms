@@ -35,8 +35,8 @@ class CategoryType implements GeneratorInterface
 
         foreach ($categoryGroups as $categoryGroup) {
             /** @var CategoryGroup $categoryGroup */
-            $typeName = CategoryElement::getGqlTypeNameByContext($categoryGroup);
-            $requiredContexts = CategoryElement::getGqlScopesByContext($categoryGroup);
+            $typeName = CategoryElement::gqlTypeNameByContext($categoryGroup);
+            $requiredContexts = CategoryElement::gqlScopesByContext($categoryGroup);
 
             if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
                 continue;

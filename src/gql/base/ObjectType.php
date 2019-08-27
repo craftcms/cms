@@ -57,7 +57,7 @@ abstract class ObjectType extends GqlObjectType
                         }
                     }
 
-                    $value = $directiveEntity::applyDirective($source, $value, $arguments, $resolveInfo);
+                    $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
                 }
             }
         } catch (\Throwable $exception) {

@@ -29,7 +29,7 @@ class UserType implements GeneratorInterface
     public static function generateTypes($context = null): array
     {
         $gqlTypes = [];
-        $typeName = UserElement::getGqlTypeNameByContext(null);
+        $typeName = UserElement::gqlTypeNameByContext(null);
 
         $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
         $contentFieldGqlTypes = [];

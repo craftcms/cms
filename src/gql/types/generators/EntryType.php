@@ -35,8 +35,8 @@ class EntryType implements GeneratorInterface
 
         foreach ($entryTypes as $entryType) {
             /** @var EntryTypeModel $entryType */
-            $typeName = EntryElement::getGqlTypeNameByContext($entryType);
-            $requiredContexts = EntryElement::getGqlScopesByContext($entryType);
+            $typeName = EntryElement::gqlTypeNameByContext($entryType);
+            $requiredContexts = EntryElement::gqlScopesByContext($entryType);
 
             if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
                 continue;

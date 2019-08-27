@@ -42,7 +42,7 @@ class MatrixBlockType implements GeneratorInterface
 
         foreach ($matrixBlockTypes as $matrixBlockType) {
             /** @var MatrixBlockTypeModel $matrixBlockType */
-            $typeName = MatrixBlockElement::getGqlTypeNameByContext($matrixBlockType);
+            $typeName = MatrixBlockElement::gqlTypeNameByContext($matrixBlockType);
 
             if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
                 $contentFields = $matrixBlockType->getFields();

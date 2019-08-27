@@ -23,14 +23,14 @@ abstract class Directive extends GqlDirective
      *
      * @return GqlDirective $directive
      */
-    abstract public static function getDirective(): GqlDirective;
+    abstract public static function create(): GqlDirective;
 
     /**
      * Return the directive's name
      *
      * @return string $name
      */
-    abstract public static function getName(): string;
+    abstract public static function name(): string;
 
     /**
      * Apply the directive to the value with arguments
@@ -40,5 +40,5 @@ abstract class Directive extends GqlDirective
      * @param array $arguments for the directive
      * @param ResolveInfo $resolveInfo resolve info object
      */
-    abstract public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo);
+    abstract public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo);
 }

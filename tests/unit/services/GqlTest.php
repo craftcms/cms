@@ -108,7 +108,7 @@ class GqlTest extends Unit
             $event->directives[] = MockDirective::class;
         });
 
-        $directive = Craft::$app->getGql()->getSchemaDef()->getDirective(MockDirective::getName());
+        $directive = Craft::$app->getGql()->getSchemaDef()->getDirective(MockDirective::name());
         $this->assertInstanceOf('GraphQL\Type\Definition\Directive', $directive);
     }
 
@@ -132,7 +132,7 @@ class GqlTest extends Unit
     {
         // Generate types by creating the interface.
         UserInterface::getType();
-        $typeName = User::getGqlTypeNameByContext(null);
+        $typeName = User::gqlTypeNameByContext(null);
 
         $this->assertNotFalse(GqlEntityRegistry::getEntity($typeName));
         $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));

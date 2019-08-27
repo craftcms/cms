@@ -118,7 +118,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         /** @var CategoryGroup $context */
         return $context->handle . '_Category';
@@ -128,7 +128,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlScopesByContext($context): array
+    public static function gqlScopesByContext($context): array
     {
         /** @var CategoryGroup $context */
         return ['categorygroups.' . $context->uid];
@@ -484,7 +484,7 @@ class Category extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::getGqlTypeNameByContext($this->getGroup());
+        return static::gqlTypeNameByContext($this->getGroup());
     }
 
     // Events

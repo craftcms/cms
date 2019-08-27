@@ -27,7 +27,7 @@ class ElementType implements GeneratorInterface
     public static function generateTypes($context = null): array
     {
         $gqlTypes = [];
-        $typeName = BaseElement::getGqlTypeNameByContext(null);
+        $typeName = BaseElement::gqlTypeNameByContext(null);
 
         $elementFields = ElementInterface::getFieldDefinitions();
 

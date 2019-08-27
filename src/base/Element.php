@@ -682,7 +682,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         // Default to the same type
         return 'Element';
@@ -692,7 +692,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlScopesByContext($context): array
+    public static function gqlScopesByContext($context): array
     {
         // Default to no scopes required
         return [];
@@ -2084,7 +2084,7 @@ abstract class Element extends Component implements ElementInterface
     public function getGqlTypeName(): string
     {
         // Default to the same type
-        return static::getGqlTypeNameByContext(null);
+        return static::gqlTypeNameByContext(null);
     }
 
     // Events

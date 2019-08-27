@@ -502,7 +502,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         /** @var EntryType $context */
         return $context->getSection()->handle . '_' . $context->handle . '_Entry';
@@ -512,7 +512,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlScopesByContext($context): array
+    public static function gqlScopesByContext($context): array
     {
         /** @var EntryType $context */
         return [
@@ -987,7 +987,7 @@ class Entry extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::getGqlTypeNameByContext($this->getType());
+        return static::gqlTypeNameByContext($this->getType());
     }
 
     /**

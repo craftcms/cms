@@ -35,8 +35,8 @@ class TagType implements GeneratorInterface
 
         foreach ($tagGroups as $tagGroup) {
             /** @var TagGroup $tagGroup */
-            $typeName = TagElement::getGqlTypeNameByContext($tagGroup);
-            $requiredContexts = TagElement::getGqlScopesByContext($tagGroup);
+            $typeName = TagElement::gqlTypeNameByContext($tagGroup);
+            $requiredContexts = TagElement::gqlScopesByContext($tagGroup);
 
             if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
                 continue;

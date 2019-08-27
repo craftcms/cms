@@ -363,7 +363,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         return 'User';
     }
@@ -1278,7 +1278,7 @@ class User extends Element implements IdentityInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::getGqlTypeNameByContext($this);
+        return static::gqlTypeNameByContext($this);
     }
 
     // Events

@@ -14,10 +14,10 @@ class MockDirective extends Directive
     /**
      * @inheritdoc
      */
-    public static function getDirective(): GqlDirective
+    public static function create(): GqlDirective
     {
         return new self([
-            'name' => static::getName(),
+            'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
             ]
@@ -27,7 +27,7 @@ class MockDirective extends Directive
     /**
      * @inheritdoc
      */
-    public static function getName(): string
+    public static function name(): string
     {
         return 'mockDirective';
     }
@@ -35,7 +35,7 @@ class MockDirective extends Directive
     /**
      * @inheritdoc
      */
-    public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         $prefix = $arguments['prefix'] ?? 'mock';
         return $prefix.$value;
