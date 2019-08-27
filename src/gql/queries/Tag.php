@@ -32,7 +32,7 @@ class Tag extends Query
         }
 
         return [
-            'categories' => [
+            'tags' => [
                 'type' => Type::listOf(TagInterface::getType()),
                 'args' => TagArguments::getArguments(),
                 'resolve' => TagResolver::class . '::resolve',
