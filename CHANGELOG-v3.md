@@ -17,9 +17,11 @@
 - Admin users can now opt into having Twig templates profiled when Dev Mode isn’t enabled.
 - Added the `graphql/api` controller action.
 - Added `craft\base\ApplicationTrait::getGql()`.
+- Added `craft\base\EagerLoadingFieldInterface::getEagerLoadingGqlConditions()`.
 - Added `craft\base\ElementInterface::getGqlScopesByContext()`.
 - Added `craft\base\ElementInterface::getGqlTypeName()`.
 - Added `craft\base\ElementInterface::getGqlTypeNameByContext()`.
+- Added `craft\base\Field::getEagerLoadingGqlConditions()`.
 - Added `craft\base\FieldInterface::getContentGqlType()`.
 - Added `craft\base\GqlInlineFragmentFieldInterface`.
 - Added `craft\base\GqlInlineFragmentInterface`.
