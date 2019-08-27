@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Volume;
-use craft\db\Table as TableHelper;
+use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -519,6 +519,7 @@ class Assets extends BaseRelationField
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions()
     {
@@ -529,7 +530,7 @@ class Assets extends BaseRelationField
             return false;
         }
 
-        $volumeIds = Db::idsByUids(TableHelper::VOLUMES, $allowedVolumeUids);
+        $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
 
         return ['volumeId' => array_values($volumeIds)];
     }

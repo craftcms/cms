@@ -603,14 +603,6 @@ JS;
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getEagerLoadingGqlConditions()
-    {
-        return [];
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
