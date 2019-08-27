@@ -63,7 +63,7 @@ Additional GraphQL IDEs are available as well:
 * [GraphQL Playground online](https://www.graphqlbin.com/v2/new)
 
 ::: tip
-When you are initially exploring the API, make sure that [Dev Mode](config:devMode) is enabled so the IDE can be informed about the entire schema available to it. 
+When you are initially exploring the API, make sure that [Dev Mode](config:devMode) is enabled so the IDE can be informed about the entire schema available to it.
 :::
 
 ### Sending Requests Manually
@@ -88,7 +88,7 @@ The GraphQL API can be queried in three ways:
 - Using a `POST` request with an `application/graphql` content type, with the GraphQL query defined by the raw request body:
   ```bash
   curl \
-    -H "Content-Type: application/graphql" \ 
+    -H "Content-Type: application/graphql" \
     -d '{ping}' \
     http://my-project.test/api
   ```
@@ -129,10 +129,10 @@ The actual API features will depend on what your schema allows.
 This query is used to query for assets.
 
 #### The `id` argument
-Narrows the query results based on the {elements}’ IDs.
+Narrows the query results based on the elements’ IDs.
 
 #### The `uid` argument
-Narrows the query results based on the {elements}’ UIDs.
+Narrows the query results based on the elements’ UIDs.
 
 #### The `status` argument
 Narrows the query results based on the elements’ statuses.
@@ -177,10 +177,10 @@ Causes the query results to be returned in the order specified by the `id` argum
 Causes the query results to be returned in reverse order.
 
 #### The `dateCreated` argument
-Narrows the query results based on the {elements}’ creation dates.
+Narrows the query results based on the elements’ creation dates.
 
 #### The `dateUpdated` argument
-Narrows the query results based on the {elements}’ last-updated dates.
+Narrows the query results based on the elements’ last-updated dates.
 
 #### The `offset` argument
 Sets the offset for paginated results.
@@ -225,10 +225,10 @@ Broadens the query results to include assets from any of the subfolders of the f
 This query is used to query for entries.
 
 #### The `id` argument
-Narrows the query results based on the {elements}’ IDs.
+Narrows the query results based on the elements’ IDs.
 
 #### The `uid` argument
-Narrows the query results based on the {elements}’ UIDs.
+Narrows the query results based on the elements’ UIDs.
 
 #### The `status` argument
 Narrows the query results based on the elements’ statuses.
@@ -273,10 +273,10 @@ Causes the query results to be returned in the order specified by the `id` argum
 Causes the query results to be returned in reverse order.
 
 #### The `dateCreated` argument
-Narrows the query results based on the {elements}’ creation dates.
+Narrows the query results based on the elements’ creation dates.
 
 #### The `dateUpdated` argument
-Narrows the query results based on the {elements}’ last-updated dates.
+Narrows the query results based on the elements’ last-updated dates.
 
 #### The `offset` argument
 Sets the offset for paginated results.
@@ -351,10 +351,10 @@ Narrows the query results based on the entries’ expiry dates.
 This query is used to query for global sets.
 
 #### The `id` argument
-Narrows the query results based on the {elements}’ IDs.
+Narrows the query results based on the elements’ IDs.
 
 #### The `uid` argument
-Narrows the query results based on the {elements}’ UIDs.
+Narrows the query results based on the elements’ UIDs.
 
 #### The `status` argument
 Narrows the query results based on the elements’ statuses.
@@ -399,10 +399,10 @@ Causes the query results to be returned in the order specified by the `id` argum
 Causes the query results to be returned in reverse order.
 
 #### The `dateCreated` argument
-Narrows the query results based on the {elements}’ creation dates.
+Narrows the query results based on the elements’ creation dates.
 
 #### The `dateUpdated` argument
-Narrows the query results based on the {elements}’ last-updated dates.
+Narrows the query results based on the elements’ last-updated dates.
 
 #### The `offset` argument
 Sets the offset for paginated results.
@@ -420,10 +420,10 @@ Narrows the query results based on the global sets’ handles.
 This query is used to query for users.
 
 #### The `id` argument
-Narrows the query results based on the {elements}’ IDs.
+Narrows the query results based on the elements’ IDs.
 
 #### The `uid` argument
-Narrows the query results based on the {elements}’ UIDs.
+Narrows the query results based on the elements’ UIDs.
 
 #### The `status` argument
 Narrows the query results based on the elements’ statuses.
@@ -468,10 +468,10 @@ Causes the query results to be returned in the order specified by the `id` argum
 Causes the query results to be returned in reverse order.
 
 #### The `dateCreated` argument
-Narrows the query results based on the {elements}’ creation dates.
+Narrows the query results based on the elements’ creation dates.
 
 #### The `dateUpdated` argument
-Narrows the query results based on the {elements}’ last-updated dates.
+Narrows the query results based on the elements’ last-updated dates.
 
 #### The `offset` argument
 Sets the offset for paginated results.
@@ -494,7 +494,6 @@ Narrows the query results based on the users’ first names.
 #### The `lastName` argument
 Narrows the query results based on the users’ last names.
 
-
 ## List of available directives
 Directives are not regulated by permissions and they affect how the returned data is displayed.
 
@@ -506,7 +505,6 @@ This specifies the format to use. It defaults to the [Atom date time format](htt
 
 #### The `timezone` argument
 The full name of the timezone, defaults to UTC. (E.g., America/New_York)
-
 
 ### The `transform` directive
 This directive is used to return a URL for an [asset tranform](https://docs.craftcms.com/v3/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.
@@ -537,8 +535,6 @@ The format to use for the transform
 
 #### The `immediately` argument
 Whether the transform should be generated immediately or only when the image is requested used the generated URL
-
-
 
 ## Pre-defined interfaces
 Craft defines several interfaces to be implemented by the different GraphQL types.
@@ -630,7 +626,6 @@ The asset's path in the volume.
 #### The `dateModified` field
 The date the asset file was last modified.
 
-
 ### The `EntryInterface` interface
 This is the interface implemented by all entries.
 
@@ -673,6 +668,21 @@ The date the element was created.
 #### The `dateUpdated` field
 The date the element was last updated.
 
+#### The `lft` field
+The element’s left position within its structure.
+
+#### The `rgt` field
+The element’s right position within its structure.
+
+#### The `level` field
+The element’s level within its structure
+
+#### The `root` field
+The element’s structure’s root ID
+
+#### The `structureId` field
+The element’s structure ID.
+
 #### The `sectionId` field
 The ID of the section that contains the entry.
 
@@ -696,7 +706,6 @@ The entry's post date.
 
 #### The `expiryDate` field
 The expiry date of the entry.
-
 
 ### The `GlobalSetInterface` interface
 This is the interface implemented by all global sets.
@@ -745,7 +754,6 @@ The name of the global set.
 
 #### The `handle` field
 The handle of the global set.
-
 
 ### The `MatrixBlockInterface` interface
 This is the interface implemented by all matrix blocks.
@@ -803,7 +811,6 @@ The handle of the matrix block's type.
 
 #### The `sortOrder` field
 The sort order of the matrix block within the owner element field.
-
 
 ### The `UserInterface` interface
 This is the interface implemented by all users.
@@ -876,8 +883,6 @@ The user's last name.
 
 #### The `email` field
 The user's email.
-
-
 
 ## Interface Implementation
 
