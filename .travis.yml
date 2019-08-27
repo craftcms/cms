@@ -9,7 +9,7 @@ branches:
   only:
   - develop
   - feature/tests
-  - feature/stringy
+  - 3.3
 services:
 - mysql
 - postgresql
