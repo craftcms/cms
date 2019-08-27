@@ -961,6 +961,35 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public function getGqlTypeName(): string
+    {
+        return static::getGqlTypeNameByContext($this->getType());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeNameByContext($context): string
+    {
+        /** @var EntryType $context */
+        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlScopesByContext($context): array
+    {
+        /** @var EntryType $context */
+        return [
+            'sections.' . $context->getSection()->uid,
+            'entrytypes.' . $context->uid,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'author') {

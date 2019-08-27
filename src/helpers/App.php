@@ -34,6 +34,7 @@ use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
 use yii\log\Logger;
 use yii\mutex\FileMutex;
+use yii\web\JsonParser;
 
 /**
  * App helper.
@@ -625,6 +626,9 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'parsers' => [
+                'application/json' => JsonParser::class,
+            ],
         ];
 
         if ($generalConfig->trustedHosts !== null) {

@@ -263,6 +263,7 @@ module.exports = {
                 title: 'Development',
                 collapsable: false,
                 children: [
+                    'graphql',
                     'dev/',
                     'extend/',
                     'testing/'

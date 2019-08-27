@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\ArrayHelper::whereMultiple()`
 - Added `craft\helpers\ElementHelper::sourceElement()`.
 - Added `craft\helpers\UrlHelper::buildQuery()`.
 
