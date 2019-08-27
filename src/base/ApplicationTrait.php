@@ -32,7 +32,6 @@ use craft\services\Categories;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Matrix;
-use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;

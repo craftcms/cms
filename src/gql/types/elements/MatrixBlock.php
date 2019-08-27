@@ -11,7 +11,6 @@ use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\base\ObjectType;
-use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

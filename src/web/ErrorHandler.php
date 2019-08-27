@@ -14,10 +14,8 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
-use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
-use Throwable;
 
 /**
  * Class ErrorHandler

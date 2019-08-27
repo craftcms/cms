@@ -1,7 +1,6 @@
 <?php
 namespace craft\test\mockclasses\gql;
 
-use Craft;
 use craft\gql\base\Directive;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;

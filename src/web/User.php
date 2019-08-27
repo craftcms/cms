@@ -599,7 +599,6 @@ class User extends \yii\web\User
     /**
      * @param string $authError
      * @param UserElement $user
-     * @return null
      */
     private function _handleLoginFailure(string $authError = null, UserElement $user = null)
     {

@@ -224,6 +224,7 @@
 - Fixed a bug where default field values weren’t being applied to Matrix blocks that were autocreated per the Min Blocks setting. ([#4806](https://github.com/craftcms/cms/issues/4806))
 - Fixed Plugin Store dropdowns which were not working properly with Windows Edge browsers.
 - Fixed a SQL error that could occur when `:empty:` or `not :empty:` was passed to a date param on an element query when running MySQL 8. ([#4808](https://github.com/craftcms/cms/issues/4808))
+- Fixed a bug where Dropdown and Multi-select fields’ Dropdown Options settings weren’t autofocussing on the first input when adding a new row with the keyboard. ([#4823](https://github.com/craftcms/cms/issues/4823))
 
 ## 3.2.10 - 2019-08-13
 

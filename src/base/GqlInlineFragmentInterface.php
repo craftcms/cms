@@ -8,7 +8,7 @@
 namespace craft\base;
 
 /**
- * GqlInlineFragmentInterface defines the common interface to be implemented by GQL inline fragments contained by fields.
+ * GqlInlineFragmentInterface defines the common interface to be implemented by GraphQL inline fragments contained by fields.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0

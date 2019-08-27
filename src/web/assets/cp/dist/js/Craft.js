@@ -1,4 +1,4 @@
-/*!   - 2019-08-23 */
+/*!   - 2019-08-27 */
 (function($){
 
 /** global: Craft */
@@ -13797,7 +13797,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             if (focus !== false) {
-                $tr.find('input,textarea,select').first().trigger('focus');
+                $tr.find('input:visible,textarea:visible,select:visible').first().trigger('focus');
             }
 
             this.rowCount++;

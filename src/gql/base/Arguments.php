@@ -18,7 +18,7 @@ use GraphQL\Type\Definition\Type;
 abstract class Arguments
 {
     /**
-     * Returns the argument fields to use in GQL type definitions.
+     * Returns the argument fields to use in GraphQL type definitions.
      *
      * @return array $fields
      */

@@ -40,6 +40,7 @@ use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
@@ -799,25 +800,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @inheritdoc
+     * @throws InvalidArgumentException
      * @since 3.3.0
      */
     public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
     {
         if (!preg_match('/^(?P<fieldHandle>[\w]+)_(?P<blockTypeHandle>[\w]+)_BlockType$/i', $fragmentName, $matches)) {
-            return null;
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
         }
 
         if ($this->handle !== $matches['fieldHandle']) {
-            return null;
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
         }
 
-        $blockTypes = $this->getBlockTypes();
+        $blockType = ArrayHelper::firstWhere($this->getBlockTypes(), 'handle', $matches['blockTypeHandle']);
 
-        foreach ($blockTypes as $blockType) {
-            if ($blockType->handle === $matches['blockTypeHandle']) {
-                return $blockType;
-            }
+        if (!$blockType) {
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
         }
+
+        return $blockType;
     }
 
     // Events

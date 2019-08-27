@@ -113,6 +113,8 @@ class ResaveController extends Controller
             case 'assets':
                 $options[] = 'volume';
                 break;
+            case 'tags':
+            case 'users':
             case 'categories':
                 $options[] = 'group';
                 break;
@@ -123,12 +125,6 @@ class ResaveController extends Controller
             case 'matrix-blocks':
                 $options[] = 'field';
                 $options[] = 'type';
-                break;
-            case 'tags':
-                $options[] = 'group';
-                break;
-            case 'users':
-                $options[] = 'group';
                 break;
         }
 

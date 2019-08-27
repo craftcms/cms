@@ -7,11 +7,9 @@
 
 namespace craft\gql\types\elements;
 
-use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\base\ObjectType;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class GlobalSet

@@ -9,7 +9,6 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use yii\db\ActiveQueryInterface;
 
 /**
  * Class GqlSchema record.

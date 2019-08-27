@@ -7,7 +7,6 @@
 
 namespace craft\events;
 
-use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 
 /**
@@ -22,7 +21,7 @@ class RegisterGqlQueriesEvent extends Event
     // =========================================================================
 
     /**
-     * @var array[] List of GQL query definitions
+     * @var array[] List of GraphQL query definitions
      */
     public $queries = [];
 }

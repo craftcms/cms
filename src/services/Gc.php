@@ -8,11 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use DateInterval;
 use yii\base\Component;
 
 /**

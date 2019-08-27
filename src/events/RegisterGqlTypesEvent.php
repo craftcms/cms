@@ -21,7 +21,7 @@ class RegisterGqlTypesEvent extends Event
     // =========================================================================
 
     /**
-     * @var array List of GQL Type definition classes
+     * @var array List of GraphQL Type definition classes
      */
     public $types = [];
 }

@@ -56,7 +56,7 @@ class Gql extends Component
     /**
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
-     * Plugins get a chance to add their own GQL types.
+     * Plugins get a chance to add their own GraphQL types.
      * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
@@ -66,7 +66,7 @@ class Gql extends Component
      * use yii\base\Event;
      *
      * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypeEvent $event) {
-     *     // Add my GQL types
+     *     // Add my GraphQL types
      *     $event->types[] = MyType::class;
      * });
      * ```
@@ -76,7 +76,7 @@ class Gql extends Component
     /**
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
-     * Plugins get a chance to add their own GQL queries.
+     * Plugins get a chance to add their own GraphQL queries.
      * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
@@ -87,7 +87,7 @@ class Gql extends Component
      * use GraphQL\Type\Definition\Type;
      *
      * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlQueriesEvent $event) {
-     *     // Add my GQL queries
+     *     // Add my GraphQL queries
      *     $even->queries['queryPluginData'] =
      *     [
      *         'type' => Type::listOf(MyType::getType())),
@@ -102,7 +102,7 @@ class Gql extends Component
     /**
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
-     * Plugins get a chance to add their own GQL directives.
+     * Plugins get a chance to add their own GraphQL directives.
      * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
@@ -281,7 +281,7 @@ class Gql extends Component
     }
 
     /**
-     * Returns all of the known GQL permissions, sorted by category.
+     * Returns all of the known GraphQL permissions, sorted by category.
      *
      * @return array
      */
@@ -310,7 +310,7 @@ class Gql extends Component
     }
 
     /**
-     * Flush all GQL caches, registries and loaders.
+     * Flush all GraphQL caches, registries and loaders.
      *
      * @return void
      */
