@@ -18,9 +18,9 @@
 - Added the `graphql/api` controller action.
 - Added `craft\base\ApplicationTrait::getGql()`.
 - Added `craft\base\EagerLoadingFieldInterface::getEagerLoadingGqlConditions()`.
-- Added `craft\base\ElementInterface::getGqlScopesByContext()`.
 - Added `craft\base\ElementInterface::getGqlTypeName()`.
-- Added `craft\base\ElementInterface::getGqlTypeNameByContext()`.
+- Added `craft\base\ElementInterface::gqlScopesByContext()`.
+- Added `craft\base\ElementInterface::gqlTypeNameByContext()`.
 - Added `craft\base\Field::getEagerLoadingGqlConditions()`.
 - Added `craft\base\FieldInterface::getContentGqlType()`.
 - Added `craft\base\GqlInlineFragmentFieldInterface`.
@@ -31,9 +31,11 @@
 - Added `craft\events\RegisterGqlQueriesEvent`.
 - Added `craft\events\RegisterGqlTypesEvent`.
 - Added `craft\gql\arguments\elements\Asset`.
+- Added `craft\gql\arguments\elements\Category`.
 - Added `craft\gql\arguments\elements\Entry`.
 - Added `craft\gql\arguments\elements\GlobalSet`.
 - Added `craft\gql\arguments\elements\MatrixBlock`.
+- Added `craft\gql\arguments\elements\Tag`.
 - Added `craft\gql\arguments\elements\User`.
 - Added `craft\gql\base\Arguments`.
 - Added `craft\gql\base\Directive`.
@@ -51,40 +53,51 @@
 - Added `craft\gql\GqlEntityRegistry`.
 - Added `craft\gql\interfaces\Element`.
 - Added `craft\gql\interfaces\elements\Asset`.
+- Added `craft\gql\interfaces\elements\Category`.
 - Added `craft\gql\interfaces\elements\Entry`.
 - Added `craft\gql\interfaces\elements\GlobalSet`.
 - Added `craft\gql\interfaces\elements\MatrixBlock`.
+- Added `craft\gql\interfaces\elements\Tag`.
 - Added `craft\gql\interfaces\elements\User`.
 - Added `craft\gql\interfaces\Structure`.
 - Added `craft\gql\queries\Asset`.
+- Added `craft\gql\queries\Category`.
 - Added `craft\gql\queries\Entry`.
 - Added `craft\gql\queries\GlobalSet`.
 - Added `craft\gql\queries\Ping`.
+- Added `craft\gql\queries\Tag`.
 - Added `craft\gql\queries\User`.
 - Added `craft\gql\resolvers\elements\Asset`.
+- Added `craft\gql\resolvers\elements\Category`.
 - Added `craft\gql\resolvers\elements\Entry`.
 - Added `craft\gql\resolvers\elements\GlobalSet`.
 - Added `craft\gql\resolvers\elements\MatrixBlock`.
+- Added `craft\gql\resolvers\elements\Tag`.
 - Added `craft\gql\resolvers\elements\User`.
 - Added `craft\gql\TypeLoader`.
 - Added `craft\gql\types\DateTime`.
 - Added `craft\gql\types\elements\Asset`.
+- Added `craft\gql\types\elements\Category`.
 - Added `craft\gql\types\elements\Element`.
 - Added `craft\gql\types\elements\Entry`.
 - Added `craft\gql\types\elements\GlobalSet`.
 - Added `craft\gql\types\elements\MatrixBlock`.
+- Added `craft\gql\types\elements\Tag`.
 - Added `craft\gql\types\elements\User`.
 - Added `craft\gql\types\generators\AssetType`.
+- Added `craft\gql\types\generators\CategoryType`.
 - Added `craft\gql\types\generators\ElementType`.
 - Added `craft\gql\types\generators\EntryType`.
 - Added `craft\gql\types\generators\GlobalSetType`.
 - Added `craft\gql\types\generators\MatrixBlockType`.
 - Added `craft\gql\types\generators\TableRowType`.
+- Added `craft\gql\types\generators\TagType`.
 - Added `craft\gql\types\generators\UserType`.
 - Added `craft\gql\types\Query`.
 - Added `craft\gql\types\TableRow`.
 - Added `craft\helpers\App::webResponseConfig()`.
 - Added `craft\helpers\ArrayHelper::whereMultiple()`.
+- Added `craft\helpers\ElementHelper::sourceElement()`.
 - Added `craft\helpers\Gql`.
 - Added `craft\helpers\Html::a()`.
 - Added `craft\helpers\Html::actionInput()`.
@@ -161,6 +174,7 @@
 - Added `craft\helpers\StringHelper::upperCaseFirst()`.
 - Added `craft\helpers\Template::beginProfile()`.
 - Added `craft\helpers\Template::endProfile()`.
+- Added `craft\helpers\UrlHelper::buildQuery()`.
 - Added `craft\model\MatrixBlockType::getField()`.
 - Added `craft\models\GqlSchema`.
 - Added `craft\records\GqlSchema`.
@@ -172,8 +186,6 @@
 - Added `craft\web\assets\graphiql\VendorAsset`.
 - Added `craft\web\twig\nodes\ProfileNode`.
 - Added `craft\web\twig\nodevisitors\Profiler`.
-- Added `craft\helpers\ElementHelper::sourceElement()`.
-- Added `craft\helpers\UrlHelper::buildQuery()`.
 
 ### Changed
 - Relational fields without a specific target site will now only return related elements from the same site as the source element by default, as they did before Craft 3.2. ([#4751](https://github.com/craftcms/cms/issues/4751))
@@ -196,10 +208,10 @@
 - Control Panel subnav items can now have badge counts. ([#4756](https://github.com/craftcms/cms/issues/4756))
 - Improved the performance of element duplication on multi-site installs.
 - Improved the performance of `craft\web\View::renderString()` for templates that don’t contain any Twig code.
-- `craft\helpers\Db::parseParam()` now has an optional `$columnType` argument. ([#4807](https://github.com/craftcms/cms/pull/4807))
-- `craft\web\Request::post()` and `getBodyParam()` will now work with posted JSON data, if the request’s content type is set to `application/json`.
 - `craft\behaviors\DraftBehavior::getCreator()` can now return `null`.
+- `craft\helpers\Db::parseParam()` now has an optional `$columnType` argument. ([#4807](https://github.com/craftcms/cms/pull/4807))
 - `craft\test\TestSetup::setupCraftDb()` no longer accepts a second argument. Ensure that `craft\test\Craft::$testConfig` is set before calling this function. ([#4804](https://github.com/craftcms/cms/pull/4804))
+- `craft\web\Request::post()` and `getBodyParam()` will now work with posted JSON data, if the request’s content type is set to `application/json`.
 - Switched from the `stringy/stringy` library to `voku/stringy`. ([#4753](https://github.com/craftcms/cms/issues/4753))
 
 ### Deprecated
