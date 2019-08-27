@@ -34,11 +34,8 @@ class MatrixBlock extends ObjectType
         /** @var MatrixBlockElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if (StringHelper::substr($fieldName, 0, 4) === 'type') {
-            $entryType = $source->getType();
-            $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 4));
-
-            return $entryType->$property;
+        if ($fieldName === 'typeHandle') {
+            return $source->getType()->handle;
         }
 
         return $source->$fieldName;
