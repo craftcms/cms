@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Volume;
+use craft\db\Table as TableHelper;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -21,8 +22,10 @@ use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
@@ -512,6 +515,23 @@ class Assets extends BaseRelationField
         }
 
         parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
+
+        if (empty($allowedVolumeUids)) {
+            return false;
+        }
+
+        $volumeIds = Db::idsByUids(TableHelper::VOLUMES, $allowedVolumeUids);
+
+        return ['volumeId' => array_values($volumeIds)];
     }
 
     // Protected Methods

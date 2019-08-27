@@ -8,11 +8,14 @@
 namespace craft\fields;
 
 use Craft;
+use craft\db\Table as TableHelper;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
+use craft\helpers\Db;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -72,5 +75,26 @@ class Users extends BaseRelationField
             'args' => UserArguments::getArguments(),
             'resolve' => UserResolver::class . '::resolve',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedGroupUids = $allowedEntities['usergroups'] ?? [];
+
+        if (in_array('everyone', $allowedGroupUids, false)) {
+            return [];
+        }
+
+        if (empty($allowedGroupUids)) {
+            return false;
+        }
+
+        $groupIds = Db::idsByUids(TableHelper::USERGROUPS, $allowedGroupUids);
+
+        return ['groupId' => array_values($groupIds)];
     }
 }

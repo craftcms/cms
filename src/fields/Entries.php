@@ -8,11 +8,14 @@
 namespace craft\fields;
 
 use Craft;
+use craft\db\Table as TableHelper;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\helpers\Db;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -72,6 +75,28 @@ class Entries extends BaseRelationField
             'type' => Type::listOf(EntryInterface::getType()),
             'args' => EntryArguments::getArguments(),
             'resolve' => EntryResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedSectionUids = $allowedEntities['sections'] ?? [];
+        $allowedEntryTypeUids = $allowedEntities['entrytypes'] ?? [];
+
+        if (empty($allowedSectionUids) || empty($allowedEntryTypeUids)) {
+            return false;
+        }
+
+        $entryTypeIds = Db::idsByUids(TableHelper::ENTRYTYPES, $allowedEntryTypeUids);
+        $sectionIds = Db::idsByUids(TableHelper::SECTIONS, $allowedSectionUids);
+
+        return [
+            'typeId' => array_values($entryTypeIds),
+            'sectionId' => array_values($sectionIds)
         ];
     }
 }
