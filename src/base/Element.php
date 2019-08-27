@@ -823,7 +823,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var ElementInterface[]|null
+     * @var array|null
      */
     private $_eagerLoadedElements;
 
@@ -1945,9 +1945,10 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
-
-        return $this->_eagerLoadedElements[$handle];
+        /** @var ElementInterface[] $elements */
+        $elements = $this->_eagerLoadedElements[$handle];
+        ElementHelper::setNextPrevOnElements($elements);
+        return $elements;
     }
 
     /**
