@@ -54,7 +54,7 @@ class Stringy extends \Stringy\Stringy
      *
      * @return array
      */
-    protected function charsArray()
+    protected function charsArray(): array
     {
         static $charsArray;
         return $charsArray ?? $charsArray = array_merge(
