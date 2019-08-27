@@ -59,7 +59,6 @@ class MatrixBlock extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        // Todo nest nestable things. Such as field data under field subtype.
         return array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',

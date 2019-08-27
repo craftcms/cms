@@ -60,7 +60,6 @@ class Entry extends Structure
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        // Todo section data under section type, same with type, author
         return array_merge(parent::getFieldDefinitions(), [
             'sectionId' => [
                 'name' => 'sectionId',

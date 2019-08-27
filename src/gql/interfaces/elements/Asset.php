@@ -62,7 +62,6 @@ class Asset extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        // Todo nest nestable things. Such as volume data under volume subtype.
         return array_merge(parent::getFieldDefinitions(), [
             'volumeId' => [
                 'name' => 'volumeId',
