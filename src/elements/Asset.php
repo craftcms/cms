@@ -178,6 +178,26 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function getGqlTypeNameByContext($context): string
+    {
+        /** @var Volume $context */
+        return $context->handle . '_Asset';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function getGqlScopesByContext($context): array
+    {
+        /** @var Volume $context */
+        return ['volumes.' . $context->uid];
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineSources(string $context = null): array
     {
@@ -1184,24 +1204,6 @@ class Asset extends Element
     public function getGqlTypeName(): string
     {
         return static::getGqlTypeNameByContext($this->getVolume());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeNameByContext($context): string
-    {
-        /** @var Volume $context */
-        return $context->handle . '_Asset';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlScopesByContext($context): array
-    {
-        /** @var Volume $context */
-        return ['volumes.' . $context->uid];
     }
 
     /**

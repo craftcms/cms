@@ -500,6 +500,29 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function getGqlTypeNameByContext($context): string
+    {
+        /** @var EntryType $context */
+        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function getGqlScopesByContext($context): array
+    {
+        /** @var EntryType $context */
+        return [
+            'sections.' . $context->getSection()->uid,
+            'entrytypes.' . $context->uid,
+        ];
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
@@ -964,27 +987,6 @@ class Entry extends Element
     public function getGqlTypeName(): string
     {
         return static::getGqlTypeNameByContext($this->getType());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeNameByContext($context): string
-    {
-        /** @var EntryType $context */
-        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlScopesByContext($context): array
-    {
-        /** @var EntryType $context */
-        return [
-            'sections.' . $context->getSection()->uid,
-            'entrytypes.' . $context->uid,
-        ];
     }
 
     /**
