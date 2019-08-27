@@ -494,6 +494,180 @@ Narrows the query results based on the users’ first names.
 #### The `lastName` argument
 Narrows the query results based on the users’ last names.
 
+### The `tags` query
+This query is used to query for categories.
+
+#### The `id` argument
+Narrows the query results based on the elements’ IDs.
+
+#### The `uid` argument
+Narrows the query results based on the elements’ UIDs.
+
+#### The `status` argument
+Narrows the query results based on the elements’ statuses.
+
+#### The `archived` argument
+Narrows the query results to only elements that have been archived.
+
+#### The `trashed` argument
+Narrows the query results to only elements that have been soft-deleted.
+
+#### The `site` argument
+Determines which site(s) the elements should be queried in. Defaults to the primary site.
+
+#### The `siteId` argument
+Determines which site(s) the elements should be queried in. Defaults to the primary site.
+
+#### The `unique` argument
+Determines whether only elements with unique IDs should be returned by the query.
+
+#### The `enabledForSite` argument
+Narrows the query results based on whether the elements are enabled in the site they’re being queried in, per the `site` argument.
+
+#### The `title` argument
+Narrows the query results based on the elements’ titles.
+
+#### The `slug` argument
+Narrows the query results based on the elements’ slugs.
+
+#### The `uri` argument
+Narrows the query results based on the elements’ URIs.
+
+#### The `search` argument
+Narrows the query results to only elements that match a search query.
+
+#### The `ref` argument
+Narrows the query results based on a reference string.
+
+#### The `fixedOrder` argument
+Causes the query results to be returned in the order specified by the `id` argument.
+
+#### The `inReverse` argument
+Causes the query results to be returned in reverse order.
+
+#### The `dateCreated` argument
+Narrows the query results based on the elements’ creation dates.
+
+#### The `dateUpdated` argument
+Narrows the query results based on the elements’ last-updated dates.
+
+#### The `offset` argument
+Sets the offset for paginated results.
+
+#### The `limit` argument
+Sets the limit for paginated results.
+
+#### The `orderBy` argument
+Sets the field the returned elements should be ordered by
+
+#### The `group` argument
+Narrows the query results based on the tag groups the tags belong to per the group’s handles.
+
+#### The `groupId` argument
+Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.
+
+### The `categories` query
+This query is used to query for categories.
+
+#### The `id` argument
+Narrows the query results based on the elements’ IDs.
+
+#### The `uid` argument
+Narrows the query results based on the elements’ UIDs.
+
+#### The `status` argument
+Narrows the query results based on the elements’ statuses.
+
+#### The `archived` argument
+Narrows the query results to only elements that have been archived.
+
+#### The `trashed` argument
+Narrows the query results to only elements that have been soft-deleted.
+
+#### The `site` argument
+Determines which site(s) the elements should be queried in. Defaults to the primary site.
+
+#### The `siteId` argument
+Determines which site(s) the elements should be queried in. Defaults to the primary site.
+
+#### The `unique` argument
+Determines whether only elements with unique IDs should be returned by the query.
+
+#### The `enabledForSite` argument
+Narrows the query results based on whether the elements are enabled in the site they’re being queried in, per the `site` argument.
+
+#### The `title` argument
+Narrows the query results based on the elements’ titles.
+
+#### The `slug` argument
+Narrows the query results based on the elements’ slugs.
+
+#### The `uri` argument
+Narrows the query results based on the elements’ URIs.
+
+#### The `search` argument
+Narrows the query results to only elements that match a search query.
+
+#### The `ref` argument
+Narrows the query results based on a reference string.
+
+#### The `fixedOrder` argument
+Causes the query results to be returned in the order specified by the `id` argument.
+
+#### The `inReverse` argument
+Causes the query results to be returned in reverse order.
+
+#### The `dateCreated` argument
+Narrows the query results based on the elements’ creation dates.
+
+#### The `dateUpdated` argument
+Narrows the query results based on the elements’ last-updated dates.
+
+#### The `offset` argument
+Sets the offset for paginated results.
+
+#### The `limit` argument
+Sets the limit for paginated results.
+
+#### The `orderBy` argument
+Sets the field the returned elements should be ordered by
+
+#### The `withStructure` argument
+Explicitly determines whether the query should join in the structure data.
+
+#### The `structureId` argument
+Determines which structure data should be joined into the query.
+
+#### The `level` argument
+Narrows the query results based on the elements’ level within the structure.
+
+#### The `hasDescendants` argument
+Narrows the query results based on whether the elements have any descendants.
+
+#### The `ancestorOf` argument
+Narrows the query results to only elements that are ancestors of another element.
+
+#### The `ancestorDist` argument
+Narrows the query results to only elements that are up to a certain distance away from the element specified by `ancestorOf`.
+
+#### The `descendantOf` argument
+Narrows the query results to only elements that are descendants of another element.
+
+#### The `descendantDist` argument
+Narrows the query results to only elements that are up to a certain distance away from the element specified by `descendantOf`.
+
+#### The `leaves` argument
+Narrows the query results based on whether the elements are “leaves” (element with no descendants).
+
+#### The `editable` argument
+Whether to only return categories that the user has permission to edit.
+
+#### The `group` argument
+Narrows the query results based on the category groups the categories belong to per the group’s handles.
+
+#### The `groupId` argument
+Narrows the query results based on the category groups the categories belong to, per the groups’ IDs.
+
 ## List of available directives
 Directives are not regulated by permissions and they affect how the returned data is displayed.
 
@@ -883,6 +1057,117 @@ The user's last name.
 
 #### The `email` field
 The user's email.
+
+### The `CategoryInterface` interface
+This is the interface implemented by all categories.
+
+#### The `id` field
+The id of the entity
+
+#### The `uid` field
+The uid of the entity
+
+#### The `title` field
+The element’s title.
+
+#### The `slug` field
+The element’s slug.
+
+#### The `uri` field
+The element’s URI.
+
+#### The `enabled` field
+Whether the element is enabled or not.
+
+#### The `archived` field
+Whether the element is archived or not.
+
+#### The `siteId` field
+The ID of the site the element is associated with.
+
+#### The `searchScore` field
+The element’s search score, if the `search` parameter was used when querying for the element.
+
+#### The `trashed` field
+Whether the element has been soft-deleted or not.
+
+#### The `status` field
+The element's status.
+
+#### The `dateCreated` field
+The date the element was created.
+
+#### The `dateUpdated` field
+The date the element was last updated.
+
+#### The `lft` field
+The element’s left position within its structure.
+
+#### The `rgt` field
+The element’s right position within its structure.
+
+#### The `level` field
+The element’s level within its structure
+
+#### The `root` field
+The element’s structure’s root ID
+
+#### The `structureId` field
+The element’s structure ID.
+
+#### The `groupId` field
+The ID of the group that contains the category.
+
+#### The `groupHandle` field
+The handle of the group that contains the category.
+
+### The `TagInterface` interface
+This is the interface implemented by all tags.
+
+#### The `id` field
+The id of the entity
+
+#### The `uid` field
+The uid of the entity
+
+#### The `title` field
+The element’s title.
+
+#### The `slug` field
+The element’s slug.
+
+#### The `uri` field
+The element’s URI.
+
+#### The `enabled` field
+Whether the element is enabled or not.
+
+#### The `archived` field
+Whether the element is archived or not.
+
+#### The `siteId` field
+The ID of the site the element is associated with.
+
+#### The `searchScore` field
+The element’s search score, if the `search` parameter was used when querying for the element.
+
+#### The `trashed` field
+Whether the element has been soft-deleted or not.
+
+#### The `status` field
+The element's status.
+
+#### The `dateCreated` field
+The date the element was created.
+
+#### The `dateUpdated` field
+The date the element was last updated.
+
+#### The `groupId` field
+The ID of the group that contains the tag.
+
+#### The `groupHandle` field
+The handle of the group that contains the tag.
 
 ## Interface Implementation
 
