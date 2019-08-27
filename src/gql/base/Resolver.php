@@ -16,7 +16,6 @@ use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\NodeList;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

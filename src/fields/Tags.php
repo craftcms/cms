@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\Table as TableHelper;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
@@ -150,7 +150,7 @@ class Tags extends BaseRelationField
             return false;
         }
 
-        $tagGroupIds = Db::idsByUids(TableHelper::TAGGROUPS, $allowedTagGroupUids);
+        $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
 
         return ['groupId' => array_values($tagGroupIds)];
     }

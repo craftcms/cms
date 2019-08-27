@@ -9,7 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\db\Table as TableHelper;
+use craft\db\Table as DbTable;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\gql\arguments\elements\Category as CategoryArguments;
@@ -188,7 +188,7 @@ class Categories extends BaseRelationField
             return false;
         }
 
-        $categoryIds = Db::idsByUids(TableHelper::CATEGORYGROUPS, $allowedCategoryUids);
+        $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
 
         return ['groupId' => array_values($categoryIds)];
     }
