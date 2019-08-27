@@ -46,8 +46,8 @@ class ElementFieldResolverTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['getCurrentToken' => $this->make(GqlSchema::class, [
-                'permissions' => [
+            ['getActiveSchema' => $this->make(GqlSchema::class, [
+                'scope' => [
                     'usergroups.group-1-uid:read',
                     'usergroups.group-2-uid:read',
                 ]
@@ -73,20 +73,21 @@ class ElementFieldResolverTest extends Unit
      */
     public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $sectionUid = StringHelper::UUID();
-        $typeUid = StringHelper::UUID();
+        $sectionHandle = StringHelper::UUID();
+        $typeHandle = StringHelper::UUID();
+
         $mockElement = $this->make(
             EntryElement::class, [
                 'postDate' => new \DateTime(),
                 '__get' => function ($property) {
-                    // Assume a content field named 'plainTextField'
-                    return $property == 'plainTextField' ? 'ok' : $this->$property;
+                    // Assume fields 'plainTextField' and 'typeface'
+                    return in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property;
                 },
-                'getSection' => function () use ($sectionUid) {
-                    return $this->make(Section::class, ['uid' => $sectionUid]);
+                'getSection' => function () use ($sectionHandle) {
+                    return $this->make(Section::class, ['handle' => $sectionHandle]);
                 },
-                'getType' => function () use ($typeUid) {
-                    return $this->make(EntryType::class, ['uid' => $typeUid]);
+                'getType' => function () use ($typeHandle) {
+                    return $this->make(EntryType::class, ['handle' => $typeHandle]);
                 }
             ]
         );
@@ -105,19 +106,11 @@ class ElementFieldResolverTest extends Unit
      */
     public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $volumeUid = StringHelper::UUID();
-        $folderUid = StringHelper::UUID();
         $mockElement = $this->make(
             AssetElement::class, [
                 '__get' => function ($property) {
                     // Assume a content field named 'plainTextField'
-                    return $property == 'imageDescription' ? 'ok' : $this->$property;
-                },
-                'getVolume' => function () use ($volumeUid) {
-                    return $this->make(Volume::class, ['uid' => $volumeUid]);
-                },
-                'getFolder' => function () use ($folderUid) {
-                    return $this->make(VolumeFolder::class, ['uid' => $folderUid]);
+                    return in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property;
                 }
             ]
         );
@@ -160,9 +153,7 @@ class ElementFieldResolverTest extends Unit
      */
     public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $fieldUid = StringHelper::UUID();
-        $typeUid = StringHelper::UUID();
-        $ownerUid = StringHelper::UUID();
+        $typeHandle = StringHelper::UUID();
 
         $mockElement = $this->make(
             MatrixBlockElement::class, [
@@ -171,20 +162,10 @@ class ElementFieldResolverTest extends Unit
                     return $property == 'firstSubfield' ? 'ok' : $this->$property;
                 },
                 'fieldId' => 1000,
-                'getField' => function () use ($fieldUid) {
-                    return $this->make(Matrix::class, ['uid' => $fieldUid]);
-                },
-                'getOwner' => function () use ($ownerUid) {
-                    return $this->make(EntryElement::class, [
-                        'uid' => $ownerUid,
-                        'getSite' => function () {
-                            return $this->make(Site::class, ['id' => 1000]);
-                        },
-                        'siteId' => 1000,
-                    ]);
-                },
-                'getType' => function () use ($typeUid) {
-                    return $this->make(MatrixBlockType::class, ['uid' => $typeUid]);
+                'ownerId' => 80,
+                'typeId' => 99,
+                'getType' => function () use ($typeHandle) {
+                    return $this->make(MatrixBlockType::class, ['handle' => $typeHandle]);
                 }
             ]
         );
@@ -260,8 +241,9 @@ class ElementFieldResolverTest extends Unit
     {
         return [
             // Entries
-            [EntryGqlType::class, 'sectionUid', function ($source) { return $source->getSection()->uid;}],
-            [EntryGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
+            [EntryGqlType::class, 'sectionHandle', function ($source) { return $source->getSection()->handle;}],
+            [EntryGqlType::class, 'typeHandle', function ($source) { return $source->getType()->handle;}],
+            [EntryGqlType::class, 'typeface', true],
             [EntryGqlType::class, 'missingProperty', false],
             [EntryGqlType::class, 'typeInvalid', false],
             [EntryGqlType::class, 'plainTextField', true],
@@ -272,13 +254,9 @@ class ElementFieldResolverTest extends Unit
     public function assetFieldTestDataProvider(): array
     {
         return [
-            [AssetGqlType::class, 'volumeUid', function ($source) { return $source->getVolume()->uid;}],
             [AssetGqlType::class, 'missingProperty', false],
-            [AssetGqlType::class, 'folderUid', function ($source) { return $source->getFolder()->uid;}],
             [AssetGqlType::class, 'imageDescription', true],
-            // TODO this test fails because the resolver looks for "andMass" property on the volume object.
-            // The best clean way is to add all the structure entities as types and just nest the queries.
-//            [AssetGqlType::class, 'volumeAndMass', true],
+            [AssetGqlType::class, 'volumeAndMass', true],
         ];
     }
 
@@ -297,11 +275,10 @@ class ElementFieldResolverTest extends Unit
             [MatrixBlockGqlType::class, 'missingProperty', false],
             [MatrixBlockGqlType::class, 'firstSubfield', true],
             [MatrixBlockGqlType::class, 'fieldId', true],
-            [MatrixBlockGqlType::class, 'fieldInvalid', false],
-            [MatrixBlockGqlType::class, 'fieldUid', function ($source) { return $source->getField()->uid;}],
-            [MatrixBlockGqlType::class, 'ownerSiteId', function ($source) { return $source->getOwner()->getSite()->id;}],
-            [MatrixBlockGqlType::class, 'ownerUid', function ($source) { return $source->getOwner()->uid;}],
-            [MatrixBlockGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
+            [MatrixBlockGqlType::class, 'typeInvalid', false],
+            [MatrixBlockGqlType::class, 'ownerId', true],
+            [MatrixBlockGqlType::class, 'typeId', true],
+            [MatrixBlockGqlType::class, 'typeHandle', function ($source) { return $source->getType()->handle;}],
         ];
     }
 
@@ -312,7 +289,6 @@ class ElementFieldResolverTest extends Unit
             [UserGqlType::class, 'shortBio', true],
             [UserGqlType::class, 'username', true],
             [UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->getPreferences());}],
-            [UserGqlType::class, 'groupHandles', function () { return ['Group 1', 'Group 2'];}],
         ];
     }
 }
