@@ -380,7 +380,7 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string;
+    public static function gqlTypeNameByContext($context): string;
 
     /**
      * Returns the GraphQL scopes required by element's context.
@@ -389,7 +389,7 @@ interface ElementInterface extends ComponentInterface
      * @return array
      * @since 3.3.0
      */
-    public static function getGqlScopesByContext($context): array;
+    public static function gqlScopesByContext($context): array;
 
     // Public Methods
     // =========================================================================

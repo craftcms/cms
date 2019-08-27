@@ -180,7 +180,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         /** @var Volume $context */
         return $context->handle . '_Asset';
@@ -190,7 +190,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlScopesByContext($context): array
+    public static function gqlScopesByContext($context): array
     {
         /** @var Volume $context */
         return ['volumes.' . $context->uid];
@@ -1204,7 +1204,7 @@ class Asset extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::getGqlTypeNameByContext($this->getVolume());
+        return static::gqlTypeNameByContext($this->getVolume());
     }
 
     /**

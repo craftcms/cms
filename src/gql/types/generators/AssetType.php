@@ -35,8 +35,8 @@ class AssetType implements GeneratorInterface
 
         foreach ($volumes as $volume) {
             /** @var Volume $volume */
-            $typeName = AssetElement::getGqlTypeNameByContext($volume);
-            $requiredContexts = AssetElement::getGqlScopesByContext($volume);
+            $typeName = AssetElement::gqlTypeNameByContext($volume);
+            $requiredContexts = AssetElement::gqlScopesByContext($volume);
 
             if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
                 continue;

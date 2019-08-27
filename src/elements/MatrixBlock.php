@@ -134,7 +134,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         /** @var MatrixBlockTypeModel $context */
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
@@ -377,7 +377,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getGqlTypeName(): string
     {
-        return static::getGqlTypeNameByContext($this->getType());
+        return static::gqlTypeNameByContext($this->getType());
     }
 
     // Events

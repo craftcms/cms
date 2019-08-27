@@ -91,7 +91,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext($context): string
     {
         /** @var GlobalSetElement $context */
         return $context->handle . '_GlobalSet';
@@ -101,7 +101,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function getGqlScopesByContext($context): array
+    public static function gqlScopesByContext($context): array
     {
         /** @var GlobalSetElement $context */
         return ['globalsets.' . $context->uid];
@@ -199,7 +199,7 @@ class GlobalSet extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::getGqlTypeNameByContext($this);
+        return static::gqlTypeNameByContext($this);
     }
 
     // Events

@@ -29,14 +29,14 @@ class FormatDateTime extends Directive
     /**
      * @inheritdoc
      */
-    public static function getDirective(): GqlDirective
+    public static function create(): GqlDirective
     {
         if ($type = GqlEntityRegistry::getEntity(self::class)) {
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::getName(), new self([
-            'name' => static::getName(),
+        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+            'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
@@ -63,7 +63,7 @@ class FormatDateTime extends Directive
     /**
      * @inheritdoc
      */
-    public static function getName(): string
+    public static function name(): string
     {
         return 'formatDateTime';
     }
@@ -71,7 +71,7 @@ class FormatDateTime extends Directive
     /**
      * @inheritdoc
      */
-    public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         if ($value instanceof \DateTime) {
             /** @var \DateTime $value */

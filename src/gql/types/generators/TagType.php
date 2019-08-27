@@ -9,40 +9,40 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
-use craft\elements\Entry as EntryElement;
+use craft\elements\Tag as TagElement;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\elements\Entry;
+use craft\gql\types\elements\Tag;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\EntryType as EntryTypeModel;
+use craft\models\TagGroup;
 
 /**
- * Class EntryType
+ * Class TagType
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class EntryType implements GeneratorInterface
+class TagType implements GeneratorInterface
 {
     /**
      * @inheritdoc
      */
     public static function generateTypes($context = null): array
     {
-        $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
+        $tagGroups = Craft::$app->getTags()->getAllTagGroups();
         $gqlTypes = [];
 
-        foreach ($entryTypes as $entryType) {
-            /** @var EntryTypeModel $entryType */
-            $typeName = EntryElement::gqlTypeNameByContext($entryType);
-            $requiredContexts = EntryElement::gqlScopesByContext($entryType);
+        foreach ($tagGroups as $tagGroup) {
+            /** @var TagGroup $tagGroup */
+            $typeName = TagElement::gqlTypeNameByContext($tagGroup);
+            $requiredContexts = TagElement::gqlScopesByContext($tagGroup);
 
             if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
                 continue;
             }
 
-            $contentFields = $entryType->getFields();
+            $contentFields = $tagGroup->getFields();
             $contentFieldGqlTypes = [];
 
             /** @var Field $contentField */
@@ -50,13 +50,13 @@ class EntryType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+            $tagGroupFields = array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
-            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Entry([
+            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([
                 'name' => $typeName,
-                'fields' => function () use ($entryTypeFields) {
-                    return $entryTypeFields;
+                'fields' => function () use ($tagGroupFields) {
+                    return $tagGroupFields;
                 }
             ]));
         }
