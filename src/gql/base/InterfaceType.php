@@ -1,8 +1,6 @@
 <?php
 namespace craft\gql\base;
 
-use GraphQL\Type\Definition\Type;
-
 /**
  * Class InterfaceType
  */

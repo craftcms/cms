@@ -2,7 +2,7 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\Entry as EntryElement;
-use craft\gql\interfaces\Element;
+use craft\gql\interfaces\Structure;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
@@ -13,7 +13,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Entry
  */
-class Entry extends Element
+class Entry extends Structure
 {
     /**
      * @inheritdoc
