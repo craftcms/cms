@@ -18,12 +18,4 @@ class Element extends ObjectType
         $config['interfaces'] = [ElementInterface::getType()];
         parent::__construct($config);
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
-    {
-        return $source->{$resolveInfo->fieldName};
-    }
 }
