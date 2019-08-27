@@ -20,16 +20,20 @@ use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\base\InterfaceType;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\queries\Asset as AssetQuery;
+use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Ping as PingQuery;
 use craft\gql\queries\User as UserQuery;
+use craft\gql\queries\Tag as TagQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
@@ -173,6 +177,8 @@ class Gql extends Component
                     UserInterface::class,
                     GlobalSetInterface::class,
                     ElementInterface::class,
+                    CategoryInterface::class,
+                    TagInterface::class,
                 ];
 
                 foreach ($interfaces as $interfaceClass) {
@@ -304,6 +310,14 @@ class Gql extends Component
         // Users
         // ---------------------------------------------------------------------
         $permissions = array_merge($permissions, $this->_getUserPermissions());
+
+        // Categories
+        // ---------------------------------------------------------------------
+        $permissions = array_merge($permissions, $this->_getCategoryPermissions());
+
+        // Tags
+        // ---------------------------------------------------------------------
+        $permissions = array_merge($permissions, $this->_getTagPermissions());
 
         return $permissions;
 
@@ -458,6 +472,8 @@ class Gql extends Component
             AssetInterface::class,
             UserInterface::class,
             GlobalSetInterface::class,
+            CategoryInterface::class,
+            TagInterface::class,
         ];
 
         $event = new RegisterGqlTypesEvent([
@@ -486,6 +502,8 @@ class Gql extends Component
             AssetQuery::getQueries(),
             UserQuery::getQueries(),
             GlobalSetQuery::getQueries(),
+            CategoryQuery::getQueries(),
+            TagQuery::getQueries(),
         ];
 
 
@@ -615,6 +633,59 @@ class Gql extends Component
 
         return $permissions;
     }
+
+    /**
+     * Return category group permissions.
+     *
+     * @return array
+     */
+    private function _getCategoryPermissions(): array
+    {
+        $permissions = [];
+
+        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
+
+        if (!empty($categoryGroups)) {
+            $label = Craft::t('app', 'Categories');
+            $categoryPermissions = [];
+
+            foreach ($categoryGroups as $categoryGroup) {
+                $suffix = 'categorygroups.' . $categoryGroup->uid;
+                $categoryPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])];
+            }
+
+            $permissions[$label] = $categoryPermissions;
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * Return tag group permissions.
+     *
+     * @return array
+     */
+    private function _getTagPermissions(): array
+    {
+        $permissions = [];
+
+        $tagGroups = Craft::$app->getTags()->getAllTagGroups();
+
+        if (!empty($tagGroups)) {
+            $label = Craft::t('app', 'Tags');
+            $tagPermissions = [];
+
+            foreach ($tagGroups as $tagGroup) {
+                $suffix = 'taggroups.' . $tagGroup->uid;
+                $tagPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)])];
+            }
+
+            $permissions[$label] = $tagPermissions;
+        }
+
+        return $permissions;
+    }
+
     /**
      * Return user permissions.
      *

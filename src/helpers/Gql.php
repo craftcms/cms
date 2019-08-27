@@ -126,7 +126,7 @@ class Gql
     }
 
     /**
-     * Return true if current token can query entries.
+     * Return true if current token can query assets.
      *
      * @return bool
      */
@@ -136,7 +136,27 @@ class Gql
     }
 
     /**
-     * Return true if current token can query entries.
+     * Return true if current token can query categories.
+     *
+     * @return bool
+     */
+    public static function canQueryCategories(): bool
+    {
+        return isset(self::extractAllowedEntitiesFromToken()['categorygroups']);
+    }
+
+    /**
+     * Return true if current token can query tags.
+     *
+     * @return bool
+     */
+    public static function canQueryTags(): bool
+    {
+        return isset(self::extractAllowedEntitiesFromToken()['taggroups']);
+    }
+
+    /**
+     * Return true if current token can query global sets.
      *
      * @return bool
      */
@@ -146,7 +166,7 @@ class Gql
     }
 
     /**
-     * Return true if current token can query entries.
+     * Return true if current token can query users.
      *
      * @return bool
      */
