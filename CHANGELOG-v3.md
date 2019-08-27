@@ -35,6 +35,7 @@
 - Fixed a SQL error that could occur when executing an element query that had custom `JOIN` and `WHERE` clauses if the `search` param was also set. ([#4788](https://github.com/craftcms/cms/issues/4788))
 - Fixed a bug where default field values weren’t being applied to Matrix blocks that were autocreated per the Min Blocks setting. ([#4806](https://github.com/craftcms/cms/issues/4806))
 - Fixed Plugin Store dropdowns which were not working properly with Windows Edge browsers.
+- Fixed a bug where Dropdown and Multi-select fields’ Dropdown Options settings weren’t autofocussing on the first input when adding a new row with the keyboard. ([#4823](https://github.com/craftcms/cms/issues/4823))
 
 ## 3.2.10 - 2019-08-13
 
