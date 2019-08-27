@@ -11,7 +11,7 @@ use Craft;
 use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
-use crafttests\fixtures\GqlTokensFixture;
+use crafttests\fixtures\GqlSchemasFixture;
 use FunctionalTester;
 
 class GqlCest
@@ -23,7 +23,7 @@ class GqlCest
                 'class' => EntryWithFieldsFixture::class
             ],
             'gqlTokens' => [
-                'class' => GqlTokensFixture::class
+                'class' => GqlSchemasFixture::class
             ],
             'globalSets' => [
                 'class' => GlobalSetFixture::class

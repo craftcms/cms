@@ -17,7 +17,7 @@ use craft\test\Fixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.3
  */
-class GqlTokensFixture extends Fixture
+class GqlSchemasFixture extends Fixture
 {
     // Properties
     // =========================================================================
@@ -30,5 +30,5 @@ class GqlTokensFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__ . '/data/gql-tokens.php';
+    public $dataFile = __DIR__ . '/data/gql-schemas.php';
 }

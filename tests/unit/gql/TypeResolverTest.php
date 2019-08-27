@@ -25,7 +25,7 @@ use craft\test\mockclasses\elements\ExampleElement;
 use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
-use crafttests\fixtures\GqlTokensFixture;
+use crafttests\fixtures\GqlSchemasFixture;
 use crafttests\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -64,7 +64,7 @@ class TypeResolverTest extends Unit
                 'class' => GlobalSetFixture::class
             ],
             'gqlTokens' => [
-                'class' => GqlTokensFixture::class
+                'class' => GqlSchemasFixture::class
             ],
         ];
     }
