@@ -89,6 +89,7 @@
 - Added `craft\helpers\StringHelper::upperCaseFirst()`.
 - Added `craft\helpers\Template::beginProfile()`.
 - Added `craft\helpers\Template::endProfile()`.
+- Added `craft\services\Sections::getAllEntryTypes()`.
 - Added `craft\web\twig\nodes\ProfileNode`.
 - Added `craft\web\twig\nodevisitors\Profiler`.
 
