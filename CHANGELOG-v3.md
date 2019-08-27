@@ -8,7 +8,7 @@
 
 ### Changed
 - `craft\test\TestSetup::setupCraftDb()` no longer accepts a second argument. Ensure that `craft\test\Craft::$testConfig` is set before calling this function. ([#4804](https://github.com/craftcms/cms/pull/4804))
-- Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
+- Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default. ([#4820](https://github.com/craftcms/cms/issues/4820))
 - Relational fields without a specific target site will now only return related elements from the same site as the source element by default, as they did before Craft 3.2. ([#4751](https://github.com/craftcms/cms/issues/4751))
 - Improved the performance of element duplication on multi-site installs.
 - Edit Entry pages now get updated preview target URLs after saving a draft, in case the URLs have changed.
