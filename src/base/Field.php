@@ -474,6 +474,15 @@ abstract class Field extends SavableComponent implements FieldInterface
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return Type::string();
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -585,14 +594,6 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'element' => $element,
             ]));
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentGqlType()
-    {
-        return Type::string();
     }
 
     // Protected Methods

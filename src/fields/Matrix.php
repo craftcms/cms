@@ -777,6 +777,49 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         ];
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
+        $typeName = $this->handle . '_MatrixField';
+        $resolver = function (MatrixBlockElement $value) {
+            return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+        };
+
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
+            'args' => MatrixBlockArguments::getArguments(),
+            'resolve' => MatrixBlockResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
+    {
+        if (!preg_match('/^(?P<fieldHandle>[\w]+)_(?P<blockTypeHandle>[\w]+)_BlockType$/i', $fragmentName, $matches)) {
+            return null;
+        }
+
+        if ($this->handle !== $matches['fieldHandle']) {
+            return null;
+        }
+
+        $blockTypes = $this->getBlockTypes();
+
+        foreach ($blockTypes as $blockType) {
+            if ($blockType->handle === $matches['blockTypeHandle']) {
+                return $blockType;
+            }
+        }
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -938,47 +981,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         parent::afterElementRestore($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentGqlType()
-    {
-        $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
-        $typeName = $this->handle . '_MatrixField';
-        $resolver = function (MatrixBlockElement $value) {
-            return GqlEntityRegistry::getEntity($value->getGqlTypeName());
-        };
-
-        return [
-            'name' => $this->handle,
-            'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
-            'args' => MatrixBlockArguments::getArguments(),
-            'resolve' => MatrixBlockResolver::class . '::resolve',
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
-    {
-        if (!preg_match('/^(?P<fieldHandle>[\w]+)_(?P<blockTypeHandle>[\w]+)_BlockType$/i', $fragmentName, $matches)) {
-            return null;
-        }
-
-        if ($this->handle !== $matches['fieldHandle']) {
-            return null;
-        }
-
-        $blockTypes = $this->getBlockTypes();
-
-        foreach ($blockTypes as $blockType) {
-            if ($blockType->handle === $matches['blockTypeHandle']) {
-                return $blockType;
-            }
-        }
     }
 
     // Private Methods

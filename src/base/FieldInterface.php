@@ -323,6 +323,14 @@ interface FieldInterface extends SavableComponentInterface
      */
     public function getGroup();
 
+    /**
+     * Returns the GraphQL type to be used for this field type.
+     *
+     * @return Type|array
+     * @since 3.3.0
+     */
+    public function getContentGqlType();
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -380,11 +388,4 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just restored
      */
     public function afterElementRestore(ElementInterface $element);
-
-    /**
-     * Return the GQL type to be used for this type of field.
-     *
-     * @return Type|array
-     */
-    public function getContentGqlType();
 }
