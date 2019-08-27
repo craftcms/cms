@@ -321,6 +321,7 @@ class App
      * Returns the backtrace as a string (omitting the final frame where this method was called).
      *
      * @param int $limit The max number of stack frames to be included (0 means no limit)
+     * @return string
      */
     public static function backtrace(int $limit = 0): string
     {
