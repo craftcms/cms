@@ -14,7 +14,6 @@ use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
-use craft\gql\common\SchemaObject;
 use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
@@ -468,7 +467,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var SchemaObject $type */
+            /** @var InterfaceType $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
     }
