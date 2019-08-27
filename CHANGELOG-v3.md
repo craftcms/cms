@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreeased
+## 3.3.0.1 - 2019-08-27
 
 ### Changed
 - `graphql/api` responses now send CORS headers to allow crossdomain requests. ([#4830](https://github.com/craftcms/cms/issues/4830))
