@@ -17,7 +17,7 @@ namespace craft\gql\base;
 interface GeneratorInterface
 {
     /**
-     * Generate GQL types.
+     * Generate GraphQL types.
      *
      * @param mixed $context Context for generated types
      * @return array

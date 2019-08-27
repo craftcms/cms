@@ -91,9 +91,9 @@ abstract class Resolver
         }
 
         /**
-         * Traverse child nodes of a GQL query formed as AST.
+         * Traverse child nodes of a GraphQL query formed as AST.
          *
-         * This method traverses all the child descendant nodes recursively for a GQL query AST node,
+         * This method traverses all the child descendant nodes recursively for a GraphQL query AST node,
          * keeping track of where in the tree it currently resides to correctly build the `with` clause
          * for the resulting element query.
          *
@@ -112,7 +112,7 @@ abstract class Resolver
             foreach ($subNodes as $subNode) {
                 $nodeName = $subNode->name->value ?? null;
 
-                // If that's a GQL field
+                // If that's a GraphQL field
                 if ($subNode instanceof FieldNode) {
 
                     // That is a Craft field that can be eager-loaded

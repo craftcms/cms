@@ -21,7 +21,7 @@ class RegisterGqlDirectivesEvent extends Event
     // =========================================================================
 
     /**
-     * @var array List of GQL Directive classes
+     * @var array List of GraphQL Directive classes
      */
     public $directives = [];
 }
