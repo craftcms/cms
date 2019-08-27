@@ -122,7 +122,18 @@ abstract class Resolver
                         // Any arguments?
                         $argumentNodes = $subNode->arguments ?? [];
                         foreach ($argumentNodes as $argumentNode) {
-                            $arguments[$argumentNode->name->value] = $argumentNode->value->value;
+                            if (isset($argumentNode->value->values)) {
+                                $values = [];
+
+                                foreach ($argumentNode->value->values as $value) {
+                                    $values[] = $value->value;
+                                }
+
+                                $arguments[$argumentNode->name->value] = $values;
+                            } else {
+                                $arguments[$argumentNode->name->value] = $argumentNode->value->value;
+                            }
+                        }
                         }
 
                         // Add it all to the list
