@@ -22,7 +22,7 @@ class GqlCest
             'entriesWithField' => [
                 'class' => EntryWithFieldsFixture::class
             ],
-            'gqlTokens' => [
+            'gqlSchemas' => [
                 'class' => GqlSchemasFixture::class
             ],
             'globalSets' => [
@@ -54,8 +54,8 @@ class GqlCest
      */
     public function forgetQueryParameter(FunctionalTester $I)
     {
-        $I->amOnPage('?action=gql');
-        $I->see('Request missing required param');
+        $I->amOnPage('?action=graphql/api');
+        $I->see('No GraphQL query was supplied');
     }
 
     /**
@@ -63,7 +63,7 @@ class GqlCest
      */
     public function provideMalformedQueryParameter(FunctionalTester $I)
     {
-        $I->amOnPage('?action=gql&query=bogus}');
+        $I->amOnPage('?action=graphql/api&query=bogus}');
         $I->see('Syntax Error');
     }
 
@@ -74,15 +74,15 @@ class GqlCest
     {
 
         $queryTypes = [
-            'Entries',
-            'Users',
-            'Assets',
-            'GlobalSets',
+            'entries',
+            'users',
+            'assets',
+            'globalSets',
         ];
 
         foreach ($queryTypes as $queryType) {
-            $I->amOnPage('?action=gql&query={query' . $queryType . '{title}}');
-            $I->see('"query' . $queryType . '":[');
+            $I->amOnPage('?action=graphql/api&query={' . $queryType . '{title}}');
+            $I->see('"' . $queryType . '":[');
         }
     }
 
@@ -92,7 +92,7 @@ class GqlCest
     public function testWrongGqlField(FunctionalTester $I)
     {
         $parameter = 'bogus';
-        $I->amOnPage('?action=gql&query={queryEntries{' . $parameter . '}}');
+        $I->amOnPage('?action=graphql/api&query={entries{' . $parameter . '}}');
         $I->see('"Cannot query field \"' . $parameter . '\"');
     }
 
@@ -101,18 +101,8 @@ class GqlCest
      */
     public function testWrongGqlQueryParameter(FunctionalTester $I)
     {
-        $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
+        $I->amOnPage('?action=graphql/api&query={entries(limit:[5,2]){title}}');
         $I->see('"debugMessage":"Expected');
-    }
-
-    /**
-     * Test whether querying with wrong parameters returns the correct error.
-     */
-    public function testMissingToken(FunctionalTester $I)
-    {
-        Craft::$app->getGql()->setActiveSchema(null);
-        $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
-        $I->see('Invalid authorization token');
     }
 
     /**
@@ -125,7 +115,7 @@ class GqlCest
             list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
             list ($token, $query) = explode('-----TOKEN DELIMITER-----', $query);
             $this->_setToken(trim($token));
-            $I->amOnPage('?action=gql&query='.urlencode(trim($query)));
+            $I->amOnPage('?action=graphql/api&query='.urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();
             $gqlService->flushCaches();
