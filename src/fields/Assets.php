@@ -16,12 +16,16 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
+use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
 /**
@@ -392,6 +396,19 @@ class Assets extends BaseRelationField
     public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
     {
         return $this->_determineUploadFolderId($element, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(AssetInterface::getType()),
+            'args' => AssetArguments::getArguments(),
+            'resolve' => AssetResolver::class . '::resolve',
+        ];
     }
 
     // Events

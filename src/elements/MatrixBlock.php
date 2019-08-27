@@ -18,6 +18,7 @@ use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
+use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\models\Section;
 use craft\models\Site;
 use craft\records\MatrixBlock as MatrixBlockRecord;
@@ -232,7 +233,7 @@ class MatrixBlock extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_getField(), $owner);
+        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->getField(), $owner);
     }
 
     /**
@@ -298,7 +299,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getContentTable(): string
     {
-        return $this->_getField()->contentTable;
+        return $this->getField()->contentTable;
     }
 
     /**
@@ -361,6 +362,24 @@ class MatrixBlock extends Element implements BlockElementInterface
         } else {
             parent::setEagerLoadedElements($handle, $elements);
         }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::getGqlTypeNameByContext($this->getType());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeNameByContext($context): string
+    {
+        /** @var MatrixBlockTypeModel $context */
+        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 
     // Events
@@ -429,15 +448,12 @@ class MatrixBlock extends Element implements BlockElementInterface
         parent::afterDelete();
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the Matrix field.
      *
      * @return Matrix
      */
-    private function _getField(): Matrix
+    public function getField(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

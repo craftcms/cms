@@ -7,9 +7,13 @@
 
 namespace craft\models;
 
+use Craft;
+use craft\base\Field;
+use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
+use yii\base\InvalidConfigException;
 
 /**
  * MatrixBlockType model class.
@@ -19,7 +23,7 @@ use craft\elements\MatrixBlock;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlockType extends Model
+class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 {
     // Properties
     // =========================================================================
@@ -109,4 +113,41 @@ class MatrixBlockType extends Model
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
     }
+
+    /**
+     * Returns the block type's field.
+     *
+     * @return Field
+     * @throws InvalidConfigException if [[fieldId]] is missing or invalid
+     */
+    public function getField(): Field
+    {
+        if ($this->fieldId === null) {
+            throw new InvalidConfigException('Block type missing its field ID');
+        }
+
+        if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
+            throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
+        }
+
+        return $field;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldContext(): string
+    {
+        return 'matrixBlockType:' . $this->uid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return $this->handle;
+    }
+
+
 }

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\records\FieldGroup;
+use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
 
 /**
@@ -379,4 +380,11 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just restored
      */
     public function afterElementRestore(ElementInterface $element);
+
+    /**
+     * Return the GQL type to be used for this type of field.
+     *
+     * @return Type|array
+     */
+    public function getContentGqlType();
 }

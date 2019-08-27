@@ -249,6 +249,96 @@ class ArrayHelperTest extends Unit
         $this->assertSame($array, $mockedUp);
     }
 
+    /**
+     * Test `whereMultiple` func
+     */
+    public function testWhereMultiple()
+    {
+        $array = [
+            [
+                'name' => 'array 1',
+                'description' => 'the first array',
+                'handle' => 'foo'
+            ],
+            [
+                'name' => 'array 2',
+                'description' => 'the second array',
+                'handle' => '88'
+            ],
+            [
+                'name' => 'array 3',
+                'description' => 'the third array',
+                'handle' => 'bar',
+                'arrayTest' => ['test' => 'me']
+            ],
+            [
+                'name' => 'array 4',
+                'description' => '',
+                'handle' => 'baz',
+                '😀' => '😘'
+            ]
+        ];
+
+        // Simple search
+        $filtered = ArrayHelper::whereMultiple($array, ['name' => 'array 1']);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('the first array', $filtered[0]['description']);
+
+        // Search by empty property
+        $filtered = ArrayHelper::whereMultiple($array, ['description' => ['']]);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('baz', $filtered[3]['handle']);
+
+        // Search with no condition
+        $filtered = ArrayHelper::whereMultiple($array, ['name' => []]);
+        $this->assertCount(count($array), $filtered);
+        $this->assertSame($array, $filtered);
+
+        // Filter by emojis?
+        $filtered = ArrayHelper::whereMultiple($array, ['😀' => '😘']);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('array 4', $filtered[3]['name']);
+
+        // Find a non-strict match.
+        $filtered = ArrayHelper::whereMultiple($array, ['handle' => 88]);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('array 2', $filtered[1]['name']);
+
+        // Fail to find a strict match
+        $filtered = ArrayHelper::whereMultiple($array, ['handle' => 88], true);
+        $this->assertCount(0, $filtered);
+
+        // Find multiple
+        $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz']]);
+        $this->assertCount(3, $filtered);
+        $this->assertSame('array 1', $filtered[0]['name']);
+        $this->assertSame('array 3', $filtered[2]['name']);
+
+        // Find multiple and narrow down
+        $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz'], 'name' => 'array 4']);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('array 4', $filtered[3]['name']);
+
+        // Ensure that array element must match all conditions
+        $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz'], 'name' => ['array 4', 'array 2']]);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('array 4', $filtered[3]['name']);
+
+        // Find multiple and narrow down to multiple
+        $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz'], 'name' => ['array 4', 'array 3']]);
+        $this->assertCount(2, $filtered);
+        $this->assertSame('array 3', $filtered[2]['name']);
+
+        // Wrong array syntax
+        $filtered = ArrayHelper::whereMultiple($array, ['arrayTest' => ['test' => 'me']]);
+        $this->assertCount(0, $filtered);
+
+        // Right array syntax
+        $filtered = ArrayHelper::whereMultiple($array, ['arrayTest' => [['test' => 'me']]]);
+        $this->assertCount(1, $filtered);
+        $this->assertSame('array 3', $filtered[2]['name']);
+    }
+
     // Data Providers
     // =========================================================================
 

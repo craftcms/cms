@@ -10,6 +10,10 @@ namespace craft\fields;
 use Craft;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
+use craft\gql\arguments\elements\User as UserArguments;
+use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\resolvers\elements\User as UserResolver;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Users represents a Users field.
@@ -52,5 +56,20 @@ class Users extends BaseRelationField
     public static function valueType(): string
     {
         return UserQuery::class;
+    }
+
+    // Public methods
+    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(UserInterface::getType()),
+            'args' => UserArguments::getArguments(),
+            'resolve' => UserResolver::class . '::resolve',
+        ];
     }
 }
