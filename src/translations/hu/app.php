@@ -1472,10 +1472,8 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'GraphQL Schemas' => 'GraphQL Schemas',
     'Access Token' => 'Access Token',
     'View all users' => 'View all users',
-    'Created' => 'Created',
     'View entry type - {entryType}' => 'View entry type - {entryType}',
     'Schema saved.' => 'Schema saved.',
-    'This is generated automatically' => 'This is generated automatically',
     'Last Used' => 'Last Used',
     'Couldn’t save schema.' => 'Couldn’t save schema.',
     'GraphQL' => 'GraphQL',
@@ -1486,5 +1484,13 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Edit GraphQL Schema' => 'Edit GraphQL Schema',
     'Expires' => 'Expires',
     'View volume - {volume}' => 'View volume - {volume}',
-    'New schema' => 'New Schema'
+    'New schema' => 'New Schema',
+    'The token that must be provided with GraphQL requests to access this schema.' => 'The token that must be provided with GraphQL requests to access this schema.',
+    'not an existing translation23131321313' => 'not an existing translation23131321313',
+    'Public Schema' => 'Public Schema',
+    'Regenerate' => 'Regenerate',
+    'Schemas' => 'Schemas',
+    'Define the schema’s scope' => 'Define the schema’s scope',
+    'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
+    'Schema name' => 'Schema name'
 ];
