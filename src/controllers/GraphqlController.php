@@ -191,6 +191,7 @@ class GraphqlController extends Controller
         $this->requireAdmin();
 
         $gqlService = Craft::$app->getGql();
+        $accessToken = null;
 
         if ($schema || $schemaId) {
             if (!$schema) {

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreeased
+
+### Fixed
+- Fixed a PHP erorr that could occur when editing an existing GraphQL scehma. ([#4827](https://github.com/craftcms/cms/issues/4827))
+
 ## 3.3.0 - 2019-08-27
 
 ### Added
