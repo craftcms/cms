@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a PHP erorr that could occur when editing an existing GraphQL scehma. ([#4827](https://github.com/craftcms/cms/issues/4827))
+- Fixed a PHP erorr that could occur when using PostgreSQL. ([#4828](https://github.com/craftcms/cms/issues/4828))
 
 ## 3.3.0 - 2019-08-27
 
