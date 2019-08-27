@@ -34,16 +34,15 @@ class Entry extends ObjectType
         /** @var EntryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if (in_array($fieldName, ['sectionId', 'sectionHandle'])) {
-            $section = $source->getSection();
-            $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 7));
-            return $section->$property;
-        }
-
-        if (in_array($fieldName, ['typeId', 'typeHandle'])) {
-            $entryType = $source->getType();
-            $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 4));
-            return $entryType->$property;
+        switch ($fieldName) {
+            case 'sectionId':
+                return $source->sectionId;
+            case 'typeId':
+                return $source->typeId;
+            case 'sectionHandle':
+                return $source->getSection()->handle;
+            case 'typeHandle':
+                return $source->getType()->handle;
         }
 
         return $source->$fieldName;
