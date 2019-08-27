@@ -71,7 +71,7 @@ class UrlHelper
      *
      * @param array $params
      * @return string
-     * @since 3.2.11
+     * @since 3.3.0
      */
     public static function buildQuery(array $params): string
     {
