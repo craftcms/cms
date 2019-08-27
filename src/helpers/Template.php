@@ -192,16 +192,21 @@ class Template
      */
     private static function _shouldProfile(): bool
     {
-        if (self::$_shouldProfile === null) {
-            if (YII_DEBUG) {
-                self::$_shouldProfile = true;
-            } else {
-                $user = Craft::$app->getUser()->getIdentity();
-                self::$_shouldProfile = $user->admin && $user->getPreference('profileTemplates');
-            }
+        if (self::$_shouldProfile !== null) {
+            return self::$_shouldProfile;
         }
 
-        return self::$_shouldProfile;
+        if (YII_DEBUG) {
+            return self::$_shouldProfile = true;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            return false;
+        }
+
+        return self::$_shouldProfile = $user->admin && $user->getPreference('profileTemplates');
     }
 
     /**
