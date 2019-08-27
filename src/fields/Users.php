@@ -8,7 +8,7 @@
 namespace craft\fields;
 
 use Craft;
-use craft\db\Table as TableHelper;
+use craft\db\Table as DbTable;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
@@ -79,6 +79,7 @@ class Users extends BaseRelationField
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions()
     {
@@ -93,7 +94,7 @@ class Users extends BaseRelationField
             return false;
         }
 
-        $groupIds = Db::idsByUids(TableHelper::USERGROUPS, $allowedGroupUids);
+        $groupIds = Db::idsByUids(DbTable::USERGROUPS, $allowedGroupUids);
 
         return ['groupId' => array_values($groupIds)];
     }

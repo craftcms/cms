@@ -8,7 +8,7 @@
 namespace craft\fields;
 
 use Craft;
-use craft\db\Table as TableHelper;
+use craft\db\Table as DbTable;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
@@ -80,6 +80,7 @@ class Entries extends BaseRelationField
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions()
     {
@@ -91,8 +92,8 @@ class Entries extends BaseRelationField
             return false;
         }
 
-        $entryTypeIds = Db::idsByUids(TableHelper::ENTRYTYPES, $allowedEntryTypeUids);
-        $sectionIds = Db::idsByUids(TableHelper::SECTIONS, $allowedSectionUids);
+        $entryTypeIds = Db::idsByUids(DbTable::ENTRYTYPES, $allowedEntryTypeUids);
+        $sectionIds = Db::idsByUids(DbTable::SECTIONS, $allowedSectionUids);
 
         return [
             'typeId' => array_values($entryTypeIds),
