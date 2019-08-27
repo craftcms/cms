@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\DdNode;
-use craft\web\twig\nodes\ExitNode;
 use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;

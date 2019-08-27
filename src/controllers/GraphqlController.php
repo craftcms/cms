@@ -14,7 +14,6 @@ use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
-use craft\web\Request;
 use GraphQL\GraphQL;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;

@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Field;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;

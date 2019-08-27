@@ -12,7 +12,6 @@ use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\GqlSchema;
 
 /**
  * Class User

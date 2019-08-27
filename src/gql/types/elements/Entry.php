@@ -11,7 +11,6 @@ use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\base\ObjectType;
-use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
