@@ -601,6 +601,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * should not be allowed in the GraphQL context.
      *
      * @return array|false
+     * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions()
     {

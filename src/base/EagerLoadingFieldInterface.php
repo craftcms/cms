@@ -38,6 +38,7 @@ interface EagerLoadingFieldInterface
      * should not be allowed in the GraphQL context.
      *
      * @return array|false
+     * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions();
 }
