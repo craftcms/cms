@@ -8,6 +8,29 @@ Returns an absolute value.
 
 This works identically to Twig’s core [`abs`](https://twig.symfony.com/doc/2.x/filters/abs.html) filter.
 
+## `append`
+
+Appends HTML to the end of another element.
+
+```twig
+{{ '<div><p>Lorem</p></div>'|append('<p>Ipsum</p>') }}
+{# Output: <div><p>Lorem</p><p>Ipsum</p></div> #}
+```
+
+If you only want to append a new element if one of the same type doesn’t already exist, pass `'keep'` as a second argument.
+
+```twig
+{{ '<div><p>Lorem</p></div>'|append('<p>Ipsum</p>', 'keep') }}
+{# Output: <div><p>Lorem</p></div> #}
+```
+
+If you want to replace an existing element of the same type, pass `'replace'` as a second argument.
+
+```twig
+{{ '<div><p>Lorem</p></div>'|append('<p>Ipsum</p>', 'replace') }}
+{# Output: <div><p>Ipsum</p></div> #}
+```
+
 ## `ascii`
 
 Converts a string to ASCII characters.
@@ -30,6 +53,72 @@ Converts a date to an ISO-8601 timestamp (e.g. `2019-01-29T10:00:00-08:00`), whi
 
 ```twig
 {{ entry.postDate|atom }}
+```
+
+## `attr`
+
+Modifies an HTML tag’s attributes, using the same attribute definitions supported by using <api:yii\helpers\BaseHtml::renderTagAttributes()>.
+
+```twig
+{% set tag = '<div>' %}
+{{ tag|attr({
+    class: 'foo'
+}) }}
+{# Output: <div class="foo"> #}
+```
+
+Only the first tag will be modified, and any HTML comments or doctype declarations before it will be ignored.
+
+```twig
+{% set svg %}
+    <?xml version="1.0" encoding="utf-8"?>
+    <svg>...</svg>
+{% endset %}
+{{ svg|attr({
+    class: 'icon'
+}) }}
+{# Output:
+   <?xml version="1.0" encoding="utf-8"?>
+   <svg class="icon">...</svg> #}
+```
+
+Attributes can be removed by setting them to `false`.
+
+```twig
+{% set tag = '<input type="text" disabled>' %}
+{{ tag|attr({
+    disabled: false
+}) }}
+{# Output: <input type="text"> #}
+```
+
+`class` and `style` attributes will be combined with the element’s existing attributes, if set.
+
+```twig
+{% set tag = '<div class="foo" style="color: black;">' %}
+{{ tag|attr({
+    class: 'bar',
+    style: {background: 'red'}
+}) }}
+{# Output: <div class="foo bar" style="color: black; background: red;"> #}
+```
+
+All other attributes will replace the existing attribute values.
+
+```twig
+{% set tag = '<input type="text">' %}
+{{ tag|attr({
+    type: 'email'
+}) }}
+{# Output: <input type="email"> #}
+```
+
+If you want to completely replace a `class` or `style` attribute, remove it first, then set the new value:
+
+```twig
+{% set tag = '<div class="foo">' %}
+{{ tag|attr({class: false})|attr({class: 'bar'}) }}
+{# Output: <div class="bar"> #}
 ```
 
 ## `batch`
@@ -489,6 +578,29 @@ Returns a string formatted in “PascalCase” (AKA “UpperCamelCase”).
 ## `percentage`
 
 Formats a percentage according to the user’s preferred language.
+
+## `prepend`
+
+Prepends HTML to the beginning of another element.
+
+```twig
+{{ '<div><p>Ipsum</p></div>'|prepend('<p>Lorem</p>') }}
+{# Output: <div><p>Lorem</p><p>Ipsum</p></div> #}
+```
+
+If you only want to append a new element if one of the same type doesn’t already exist, pass `'keep'` as a second argument.
+
+```twig
+{{ '<div><p>Ipsum</p></div>'|prepend('<p>Lorem</p>', 'keep') }}
+{# Output: <div><p>Ipsum</p></div> #}
+```
+
+If you want to replace an existing element of the same type, pass `'replace'` as a second argument.
+
+```twig
+{{ '<div><p>Ipsum</p></div>'|prepend('<p>Lorem</p>', 'replace') }}
+{# Output: <div><p>Lorem</p></div> #}
+```
 
 ## `raw`
 

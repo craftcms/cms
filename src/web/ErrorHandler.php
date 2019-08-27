@@ -14,7 +14,6 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
-use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 
@@ -128,8 +127,9 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
-        // Treat UserExceptions like normal exceptions when Dev Mode is enabled
-        if (YII_DEBUG && $exception instanceof UserException) {
+        // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
+        // or if the user is an admin and has indicated they want to see it
+        if ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }
@@ -159,5 +159,27 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         return $url;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns whether the full exception view should be shown.
+     *
+     * @return bool
+     */
+    private function _showExceptionView(): bool
+    {
+        if (YII_DEBUG) {
+            return true;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+        return (
+            $user &&
+            $user->admin &&
+            $user->getPreference('showExceptionView')
+        );
     }
 }

@@ -114,6 +114,24 @@ class Matrix extends Component
     }
 
     /**
+     * Returns all the block types.
+     *
+     * @return MatrixBlockType[] An array of block types.
+     * @since 3.3.0
+     */
+    public function getAllBlockTypes(): array
+    {
+        $results = $this->_createBlockTypeQuery()
+            ->all();
+
+        foreach ($results as $key => $result) {
+            $results[$key] = new MatrixBlockType($result);
+        }
+
+        return $results;
+    }
+
+    /**
      * Returns a block type by its ID.
      *
      * @param int $blockTypeId The block type ID.

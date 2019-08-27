@@ -70,7 +70,6 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\ErrorException;
 use yii\base\Event;

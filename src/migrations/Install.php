@@ -366,6 +366,18 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::GQLSCHEMAS, [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'accessToken' => $this->string()->notNull(),
+            'enabled' => $this->boolean()->notNull()->defaultValue(true),
+            'expiryDate' => $this->dateTime(),
+            'lastUsed' => $this->dateTime(),
+            'scope' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
         $this->createTable(Table::INFO, [
             'id' => $this->primaryKey(),
             'version' => $this->string(50)->notNull(),
@@ -758,6 +770,8 @@ class Install extends Migration
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);
+        $this->createIndex(null, Table::GQLSCHEMAS, ['accessToken'], true);
+        $this->createIndex(null, Table::GQLSCHEMAS, ['name'], true);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['ownerId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);

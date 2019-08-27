@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Table;
-use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;

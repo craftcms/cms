@@ -8,9 +8,9 @@ If you want to use Craft as a “headless” CMS, meaning it acts as a content A
 Check out CraftQuest’s [Headless Craft CMS](https://craftquest.io/courses/headless-craft) course to learn more about using Craft as a headless CMS.
 :::
 
-## GraphQL
+## GraphQL API
 
-The [CraftQL](https://github.com/markhuot/craftql) plugin by Mark Huot adds a zero-config [GraphQL](https://graphql.org/) server to your Craft installation.
+Craft comes with a built-in, self-generating [GraphQL API](../graphql.md).
 
 ## JSON API
 

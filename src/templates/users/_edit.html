@@ -25,7 +25,7 @@
 {% set hiddenInputs %}
     {{ csrfInput() }}
     {% if not isNewUser -%}
-        <input type="hidden" name="userId" value="{{ user.id }}">
+        {{ hiddenInput('userId', user.id) }}
     {%- endif %}
 {% endset %}
 
@@ -55,7 +55,7 @@
 
 {% block content %}
     <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
-        <input type="hidden" name="action" value="users/save-user">
+        {{ actionInput('users/save-user') }}
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
@@ -149,7 +149,7 @@
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
                     {% set userGroupsInput %}
-                        <input type="hidden" name="groups" value="">
+                        {{ hiddenInput('groups', '') }}
 
                         {% if assignableGroups %}
                             <ul>
@@ -190,7 +190,7 @@
                         }) }}
                     {% endif %}
 
-                    <input type="hidden" name="permissions" value="">
+                    {{ hiddenInput('permissions', '') }}
 
                     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
                         {% include "_includes/permissions" with {
@@ -241,19 +241,47 @@
                 {% if user.admin %}
                     <hr>
 
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the front end"|t('app'),
-                        name: 'enableDebugToolbarForSite',
-                        id: 'enableDebugToolbarForSite',
-                        checked: user.getPreference('enableDebugToolbarForSite')
-                    }) }}
+                    {% embed '_includes/forms/field' %}
+                        {% block label %}
+                            {{ 'Debug Toolbar'|t('app') }}
+                        {% endblock %}
+                        {% block input %}
+                            {% import '_includes/forms' as forms %}
+                            {{ forms.checkboxField({
+                                label: "Show the debug toolbar on the front end"|t('app'),
+                                name: 'enableDebugToolbarForSite',
+                                id: 'enableDebugToolbarForSite',
+                                checked: user.getPreference('enableDebugToolbarForSite')
+                            }) }}
+                            {{ forms.checkboxField({
+                                label: "Show the debug toolbar on the Control Panel"|t('app'),
+                                name: 'enableDebugToolbarForCp',
+                                id: 'enableDebugToolbarForCp',
+                                checked: user.getPreference('enableDebugToolbarForCp')
+                            }) }}
+                            {{ forms.checkboxField({
+                                label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+                                name: 'profileTemplates',
+                                id: 'profileTemplates',
+                                checked: user.getPreference('profileTemplates')
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
 
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the Control Panel"|t('app'),
-                        name: 'enableDebugToolbarForCp',
-                        id: 'enableDebugToolbarForCp',
-                        checked: user.getPreference('enableDebugToolbarForCp')
-                    }) }}
+                    {% embed '_includes/forms/field' %}
+                        {% block label %}
+                            {{ 'Exception Views'|t('app') }}
+                        {% endblock %}
+                        {% block input %}
+                            {% import '_includes/forms' as forms %}
+                            {{ forms.checkboxField({
+                                label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+                                name: 'showExceptionView',
+                                id: 'showExceptionView',
+                                checked: user.getPreference('showExceptionView')
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
                 {% endif %}
             </div>
         {% endif %}

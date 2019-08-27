@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
@@ -70,12 +71,40 @@ class GlobalSet extends Element
     }
 
     /**
+     * @return string|null
+     */
+    public function getRef()
+    {
+        return $this->handle;
+    }
+
+    /**
      * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
     public static function find(): ElementQueryInterface
     {
         return new GlobalSetQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var GlobalSetElement $context */
+        return $context->handle . '_GlobalSet';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var GlobalSetElement $context */
+        return ['globalsets.' . $context->uid];
     }
 
     // Properties
@@ -162,6 +191,15 @@ class GlobalSet extends Element
         }
 
         return UrlHelper::cpUrl('globals/' . $this->handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this);
     }
 
     // Events

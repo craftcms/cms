@@ -185,7 +185,7 @@ class GeneralConfig extends BaseObject
      * ],
      * ```
      *
-     * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).
+     * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/voku/Stringy).
      */
     public $customAsciiCharMappings = [];
     /**
@@ -352,6 +352,20 @@ class GeneralConfig extends BaseObject
      * @var bool Whether images transforms should be generated before page load.
      */
     public $generateTransformsBeforePageLoad = false;
+    /**
+     * @var bool bool Whether the system should run in Headless Mode, which
+     * optimizes the system and Control Panel for headless CMS implementations.
+     *
+     * When this is enabled, the following changes will take place:
+     *
+     * - URI Format settings for sections and category groups will be hidden.
+     * - Template route management will be hidden.
+     * - Front-end routing will skip checks for element and template requests.
+     * - Front-end responses will be JSON-formatted rather than HTML by default.
+     * - Twig will be configured to escape unsafe strings for JavaScript/JSON
+     *   rather than HTML by default for front-end requests.
+     */
+    public $headlessMode = false;
     /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will auto-detect if ImageMagick is installed and fallback to GD if not. You can explicitly set
      * either `'imagick'` or `'gd'` here to override that behavior.
@@ -573,6 +587,14 @@ class GeneralConfig extends BaseObject
      */
     public $purgePendingUsersDuration = 0;
     /**
+     * @var mixed The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $purgeStaleUserSessionDuration = 7776000;
+    /**
      * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
      *
      * Set to `0` to disable this feature.
@@ -751,6 +773,8 @@ class GeneralConfig extends BaseObject
      * @var bool Whether Twig runtime errors should be suppressed.
      *
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
+     *
+     * @deprecated in 3.3.0
      */
     public $suppressTemplateErrors = false;
     /**
@@ -995,6 +1019,10 @@ class GeneralConfig extends BaseObject
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
+        }
+
+        if ($this->suppressTemplateErrors) {
+            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
     }
 

@@ -14,7 +14,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\events\DeleteTemplateCachesEvent;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;

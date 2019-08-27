@@ -368,8 +368,6 @@ class Image
         $ppi = 72;
 
         switch ($unit) {
-            case 'px':
-                return 1;
             case 'in':
                 return $ppi;
             case 'pt':

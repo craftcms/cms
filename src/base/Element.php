@@ -679,6 +679,26 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        // Default to the same type
+        return 'Element';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        // Default to no scopes required
+        return [];
+    }
+
+    /**
      * Preps the element criteria for a given table attribute
      *
      * @param ElementQueryInterface $elementQuery
@@ -803,7 +823,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var ElementInterface[]|null
+     * @var array|null
      */
     private $_eagerLoadedElements;
 
@@ -1350,13 +1370,12 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl()
     {
-        if ($this->uri !== null) {
-            $path = ($this->uri === '__home__') ? '' : $this->uri;
-
-            return UrlHelper::siteUrl($path, null, null, $this->siteId);
+        if ($this->uri === null) {
+            return null;
         }
 
-        return null;
+        $path = ($this->uri === '__home__') ? '' : $this->uri;
+        return UrlHelper::siteUrl($path, null, null, $this->siteId);
     }
 
     /**
@@ -1364,15 +1383,12 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getLink()
     {
-        $url = $this->getUrl();
-
-        if ($url !== null) {
-            $link = '<a href="' . $url . '">' . Html::encode($this->getUiLabel()) . '</a>';
-
-            return Template::raw($link);
+        if (($url = $this->getUrl()) === null) {
+            return null;
         }
 
-        return null;
+        $a = Html::a(Html::encode($this->getUiLabel()), $url);
+        return Template::raw($a);
     }
 
     /**
@@ -1929,9 +1945,10 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
-
-        return $this->_eagerLoadedElements[$handle];
+        /** @var ElementInterface[] $elements */
+        $elements = $this->_eagerLoadedElements[$handle];
+        ElementHelper::setNextPrevOnElements($elements);
+        return $elements;
     }
 
     /**
@@ -2054,10 +2071,20 @@ abstract class Element extends Component implements ElementInterface
 
             Craft::$app->getView()->setNamespace($originalNamespace);
 
-            $html .= '<input type="hidden" name="fieldLayoutId" value="' . $fieldLayout->id . '">';
+            $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
         }
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        // Default to the same type
+        return static::gqlTypeNameByContext(null);
     }
 
     // Events
@@ -2347,7 +2374,12 @@ abstract class Element extends Component implements ElementInterface
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return '<a href="' . $url . '" rel="noopener" target="_blank" data-icon="world" title="' . Craft::t('app', 'Visit webpage') . '"></a>';
+                    return Html::a('', $url, [
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'data-icon' => 'world',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                    ]);
                 }
 
                 return '';
@@ -2359,7 +2391,10 @@ abstract class Element extends Component implements ElementInterface
                     $value = $this->uri;
 
                     if ($value === '__home__') {
-                        $value = '<span data-icon="home" title="' . Craft::t('app', 'Homepage') . '"></span>';
+                        $value = Html::tag('span', '', [
+                            'data-icon' => 'home',
+                            'title' => Craft::t('app', 'Homepage'),
+                        ]);
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line
                         $find = ['/'];
@@ -2375,7 +2410,13 @@ abstract class Element extends Component implements ElementInterface
                         $value = str_replace($find, $replace, $value);
                     }
 
-                    return '<a href="' . $url . '" rel="noopener" target="_blank" class="go" title="' . Craft::t('app', 'Visit webpage') . '"><span dir="ltr">' . $value . '</span></a>';
+                    return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+                        'href' => $url,
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'class' => 'go',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                    ]);
                 }
 
                 return '';
@@ -2412,8 +2453,9 @@ abstract class Element extends Component implements ElementInterface
 
                 if ($value instanceof DateTime) {
                     $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
+                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
+                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT)
+                    ]);
                 }
 
                 return Html::encode($value);

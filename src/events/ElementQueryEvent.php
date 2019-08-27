@@ -7,7 +7,6 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Event;
 

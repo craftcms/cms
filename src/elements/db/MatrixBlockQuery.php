@@ -16,8 +16,6 @@ use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Db;
 use craft\models\MatrixBlockType;
-use craft\models\Site;
-use yii\base\Exception;
 use yii\db\Connection;
 
 /**
