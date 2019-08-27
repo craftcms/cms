@@ -1200,6 +1200,7 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getGqlTypeName(): string
     {

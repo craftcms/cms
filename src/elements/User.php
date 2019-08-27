@@ -361,6 +361,15 @@ class User extends Element implements IdentityInterface
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function getGqlTypeNameByContext($context): string
+    {
+        return 'User';
+    }
+
     // IdentityInterface Methods
     // -------------------------------------------------------------------------
 
@@ -1267,18 +1276,11 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getGqlTypeName(): string
     {
         return static::getGqlTypeNameByContext($this);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeNameByContext($context): string
-    {
-        return 'User';
     }
 
     // Events

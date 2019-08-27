@@ -377,6 +377,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getGqlTypeName(): string
     {
