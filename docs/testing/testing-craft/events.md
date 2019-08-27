@@ -5,7 +5,7 @@ place event listeners which modify actions and behaviours. This increases the fl
 of modules/plugins. 
 
 Seeing as events and the triggering thereof are routed through some complex [Yii2](https://www.yiiframework.com/doc/guide/2.0/en/concept-events)
-base functionality some specific steps must be taken to test code that triggers events. 
+based functionality some specific steps must be taken to test code that triggers events. 
 
 ## Testing event code
 Craft provides a simple helper method that allows you to test event codes.
@@ -13,8 +13,6 @@ Firstly you need to ensure that your test class has a `$tester` property.
 Once this class property is declared you can call the following method: 
 
 ```php
-use Craft;
-
 $this->tester->expectEvent(MyComponent::class, MyComponent::AN_EVENT, function() {
     MyModule::getInstance()->myComponent->myMethod();
 });
@@ -50,7 +48,7 @@ The `eventValues` property accepts an array that can be specially setup to
 validate the properties of the event that was passed. 
 
 ## Setting up `$eventValues`
-The Craft testing framework provides a special helper method that is recommended 
+Craft provides a special helper method that is recommended 
 to configure `$eventValues`. You can call `$this->tester->createEventItems()`
 and pass in an array with the following keys:
 
@@ -75,13 +73,15 @@ EventItem::TYPE_OTHERVALUE
 Where
 - `TYPE_CLASS` instructs Craft that when we access the `$eventPropName` on the 
 passed event an object will be returned. 
-  - If you set the type to `TYPE_CLASS` you can pass in a `desiredClass` key value pair
-  where the value indicates what class the object must be an `instanceof`. 
-- `TYPE_OTHERVALUE` instructs Craft to accept any other value than an object. 
+- `TYPE_OTHERVALUE` instructs Craft to accept any non-object value. 
+
+### `desiredClass`
+If you have set `TYPE_CLASS` you can pass in an additional `desiredClass` property. 
+Craft will then compare the returned object to the `desiredClass` property using `instanceof`. 
 
 ### `desiredValue`
 `desiredValue` is designed to check the property values of the event that is passed. 
-Depending on the `type` argument you passed in 
+This can depend based on the `type` argument: 
 
 #### When type is `EventItem::TYPE_OTHERVALUE`
 Here you can set the `desiredValue` to anything you want. The result of 
@@ -89,15 +89,15 @@ accessing the event using the [eventPropName](#eventpropname) property will be d
 using `assertSame()`. 
 
 #### When type is `EventItem::TYPE_CLASS`
-If accessing the event using the [eventPropName](#eventpropname) yields an 
-object you can enter a key value array where: 
+Craft allows you to check the individual properties of the returned object. 
+In order to do this you must enter a key-value array where: 
 
 - `key` 
-Is the property name of the object that was returned when accessing
-the event using [eventPropName](#eventpropname). 
+Is the name of a property belonging to the object that was returned when accessing
+the event using [eventPropName](#eventpropname).
 
 - `value`
-The value that the value of the above property above should be. 
+The value that the above property above should be set to. 
 
 ::: tip
 See a complete example below:
@@ -107,11 +107,13 @@ use yii\base\Event;
 use craft\test\EventItem;
 
 $this->tester->expectEvent(SomeComponent::class, SomeComponent::SOME_EVENT, function() {
-            // Perform some action. 
+
+        // Code that should trigger an event goes here. 
+    
     }, Event::class,
     $this->tester->createEventItems([
         [
-            // The $event->sender prop is a \stdClass where the $key property is set to value
+            // The $event->sender prop is a \stdClass where the $key property is set to 'value'
             'eventPropName' => 'sender',
             'type' => EventItem::TYPE_CLASS,
             'desiredClass' => \stdClass::class,

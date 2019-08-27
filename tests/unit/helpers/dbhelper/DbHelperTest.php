@@ -35,38 +35,17 @@ class DbHelperTest extends Unit
         'or',
         [
             '!=',
-            'content_table',
+            'foo',
             'field_1'
         ],
         [
             '!=',
-            'content_table',
+            'foo',
             'field_2'
         ]
     ];
 
-    const MULTI_PARSEPARAM = [
-        'or',
-        [
-            'in',
-            'content_table',
-            [
-                'field_1',
-                'field_2'
-            ]
-        ]
-    ];
-
-    const EMPTY_COLUMN_PARSEPARAM = [
-        'or',
-        [
-            'in',
-            '',
-            [
-                'field_1',
-            ]
-        ]
-    ];
+    const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
 
     // Properties
     // =========================================================================
@@ -106,7 +85,7 @@ class DbHelperTest extends Unit
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
+    public function testParseParam($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
         $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
@@ -326,64 +305,50 @@ class DbHelperTest extends Unit
     {
         return [
             'basic' => [
-                ['or', ['in', 'foo', ['bar']]],
+                ['foo' => 'bar'],
                 'foo', 'bar'
             ],
             'multi-array-format' => [
                 self::MULTI_PARSEPARAM,
-                'content_table', ['field_1', 'field_2'],
+                'foo', ['field_1', 'field_2'],
             ],
             'multi-split-by-comma' => [
                 self::MULTI_PARSEPARAM,
-                'content_table', 'field_1, field_2'
+                'foo', 'field_1, field_2'
             ],
             'multi-not-param' => [
                 self::MULTI_PARSEPARAM_NOT,
-                'content_table', 'field_1, field_2', 'not',
+                'foo', 'field_1, field_2', 'not',
             ],
             'multi-not-symbol' => [
                 self::MULTI_PARSEPARAM_NOT,
-                'content_table', 'field_1, field_2', '!='
-            ],
-            'empty' => [
-                [
-                    'or', [
-                    'in',
-                    '', [
-                        'field_1',
-                    ]
-                ]
-                ],
-                '', 'field_1',
+                'foo', 'field_1, field_2', '!='
             ],
             'random-symbol' => [
-                [
-                    'or',
-                    ['raaa', 'content_table', 'field_1'],
-                ],
-                'content_table', 'field_1', 'raaa',
+                ['raaa', 'foo', 'field_1'],
+                'foo', 'field_1', 'raaa',
             ],
             'random-symbol-multi' => [
                 [
                     'or',
-                    ['raaa', 'content_table', 'field_1'],
-                    ['raaa', 'content_table', 'field_2']
+                    ['raaa', 'foo', 'field_1'],
+                    ['raaa', 'foo', 'field_2']
                 ],
-                'content_table', 'field_1, field_2', 'raaa',
+                'foo', 'field_1, field_2', 'raaa',
             ],
-            ['', 'content_table', 'not'],
-            ['', 'content', []],
+            ['', 'foo', 'not'],
+            ['', 'foo', []],
             ['', '', ''],
-            ['', 'content', null],
-            ['', 'contentCol', ''],
+            ['', 'foo', null],
+            ['', 'foo', ''],
 
-            'firstval-or' => [
-                ['or', ['in', 'content_table', ['field_1', 'field_2']]],
-                'content_table', ['or', 'field_1', 'field_2'],
+            [
+                ['foo' => ['field_1', 'field_2']],
+                'foo', ['or', 'field_1', 'field_2'],
             ],
-            'firstval-not' => [
-                ['and', ['not in', 'content_table', ['field_1', 'field_2']]],
-                'content_table', ['not', 'field_1', 'field_2'],
+            [
+                ['not', ['foo' => ['field_1', 'field_2']]],
+                'foo', ['not', 'field_1', 'field_2'],
             ],
         ];
     }

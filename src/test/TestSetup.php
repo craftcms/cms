@@ -70,7 +70,6 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\ErrorException;
 use yii\base\Event;
@@ -336,18 +335,39 @@ class TestSetup
 
         $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH . '/project.yaml';
         $contents = file_get_contents($projectConfigFile);
-        $arrayContents = Yaml::parse($contents);
 
         // Write to the file.
-        FileHelper::writeToFile($testSuiteProjectConfigPath, Yaml::dump($arrayContents));
+        FileHelper::writeToFile($testSuiteProjectConfigPath, $contents);
+    }
+
+    /**
+     * Whether project config should be used in tests.
+     *
+     * Returns the projectConfig configuration array if yes - `false` if not.
+     *
+     * @return array|false
+     */
+    public static function useProjectConfig()
+    {
+        if (!Craft::$app) {
+            return false;
+        }
+
+        $projectConfig = \craft\test\Craft::$testConfig['projectConfig'] ?? [];
+        $useProjectConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($projectConfig && isset($projectConfig['file']) && $useProjectConfig) {
+            return $projectConfig;
+        }
+
+        return false;
     }
 
     /**
      * @param Connection $connection
-     * @param CraftTest $craftTestModule
      * @throws Exception
      */
-    public static function setupCraftDb(Connection $connection, CraftTest $craftTestModule)
+    public static function setupCraftDb(Connection $connection)
     {
         if ($connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it has not been cleansed');
@@ -362,10 +382,8 @@ class TestSetup
             'primary' => true,
         ];
 
-        // Replace the default site with what is desired by the project config (Currently). If project config is enabled.
-        $projectConfig = $craftTestModule->_getConfig('projectConfig');
-
-        if ($projectConfig && isset($projectConfig['file'])) {
+        // Replace the default site with what is desired by the project config. If project config is enabled.
+        if ($projectConfig = self::useProjectConfig()) {
             $existingProjectConfig = Yaml::parse(
                 file_get_contents($projectConfig['file']) ?: ''
             );

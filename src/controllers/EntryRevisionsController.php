@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
@@ -258,6 +257,7 @@ class EntryRevisionsController extends BaseEntriesController
                 'docTitle' => $this->docTitle($draft),
                 'title' => $this->pageTitle($draft),
                 'duplicatedElements' => $elementsService::$duplicatedElementIds,
+                'previewTargets' => $draft->getPreviewTargets(),
             ]);
         }
 
@@ -334,7 +334,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Permission enforcement
         /** @var Entry|null $entry */
-        $entry = $draft->getSource();
+        $entry = ElementHelper::sourceElement($draft);
         $this->enforceEditEntryPermissions($entry);
         $section = ($entry)->getSection();
 
@@ -428,7 +428,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Permission enforcement
         /** @var Entry $entry */
-        $entry = $revision->getSource();
+        $entry = ElementHelper::sourceElement($revision);
 
         $this->enforceEditEntryPermissions($entry);
         $userId = Craft::$app->getUser()->getId();

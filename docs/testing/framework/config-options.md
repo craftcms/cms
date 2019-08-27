@@ -22,8 +22,9 @@ The `projectConfig` setting accepts an object with the following parameters:
 `CRAFT_CONFIG_PATH` but instead the file whose contents will be copied into the `project.yml` file 
 located here. 
 
+For the `projectConfig` option to work correctly please ensure you enable the [useProjectConfigFile](../../config/config-settings.md#useprojectconfigfile) config setting in `general.php`. 
 ::: warning
-If you have enabled `projectConfig`, regular DB based fixtures may cause syncing issues. It is recommended
+If you have enabled `projectConfig`, regular DB based fixtures for Project Config data (i.e sections) may cause syncing issues. It is recommended
  to setup your environment using the `project.yml` file only. 
 :::
 

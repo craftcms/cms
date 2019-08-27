@@ -31,7 +31,7 @@ class DraftBehavior extends Behavior
     public $sourceId;
 
     /**
-     * @var int The draft creator’s ID
+     * @var int|null The draft creator’s ID
      */
     public $creatorId;
 
@@ -101,10 +101,14 @@ class DraftBehavior extends Behavior
     /**
      * Returns the draft’s creator.
      *
-     * @return User
+     * @return User|null
      */
-    public function getCreator(): User
+    public function getCreator()
     {
+        if (!$this->creatorId) {
+            return null;
+        }
+
         return User::find()
             ->id($this->creatorId)
             ->anyStatus()

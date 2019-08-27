@@ -113,6 +113,62 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Filters an array to only the values where a list of keys is set to given values.
+     * Array keys are preserved.
+     *
+     * This method is most useful when, given an array of elements, it is needed to filter
+     * them by multiple conditions.
+     *
+     * Below are some usage examples,
+     *
+     * ```php
+     * // Entries with certain entry types
+     * $filtered = \craft\helpers\ArrayHelper::whereMultiple($entries, ['typeId' => [2, 4]]);
+     *
+     * // Entries with multiple conditions
+     * $filtered = \craft\helpers\ArrayHelper::whereMultiple($entries, ['typeId' => 2, 'authorId' => [1, 2]);
+     *
+     * // Testing for an array value
+     * $filtered = \craft\helpers\ArrayHelper::whereMultiple($asset, ['focalPoint' => [['x' => 0.5, 'y' => 0.5]]]);
+     *
+     * ```
+     *
+     * @param array|\Traversable $array the array that needs to be indexed or grouped
+     * @param array $conditions An array of key/value pairs of allowed values. Values can be arrays to allow multiple values.
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return array the filtered array
+     * @since 3.3.0
+     */
+    public static function whereMultiple($array, array $conditions, bool $strict = false): array
+    {
+        $result = [];
+
+        foreach ($array as $i => $element) {
+            foreach ($conditions as $key => $value) {
+                if (is_array($value) && !count($value)) {
+                    continue;
+                }
+
+                $elementValue = static::getValue($element, $key);
+
+                // Skip this element if there are multiple options and none of them match
+                if (is_array($value) && !in_array($elementValue, $value, $strict)) {
+                    continue 2;
+                }
+
+                if (!is_array($value) && (($strict && $elementValue !== $value) || (!$strict && $elementValue != $value))) {
+                    continue 2;
+                }
+            }
+
+            // If we haven't continue'd over this part, this is a good element.
+            $result[$i] = $element;
+        }
+
+        return $result;
+    }
+
+    /**
      * Returns the first value in a given array where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *

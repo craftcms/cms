@@ -6,8 +6,8 @@
 
     <form method="post" class="buttons">
         {{ csrfInput() }}
-        <input type="hidden" name="action" value="config-sync">
-        <input type="hidden" name="return" value="{{ craft.app.request.getPathInfo() }}">
+        {{ actionInput('config-sync') }}
+        {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
         <input type="submit" class="btn submit" value="{{ 'Sync changes'|t('app') }}">
     </form>
 {% endblock %}

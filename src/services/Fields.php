@@ -241,6 +241,18 @@ class Fields extends Component
     }
 
     /**
+     * Returns a field group by its UID.
+     *
+     * @param string $groupUid The field group’s UID
+     * @return FieldGroup|null The field group, or null if it doesn’t exist
+     * @since 3.3.0
+     */
+    public function getGroupByUid(string $groupUid)
+    {
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'uid', $groupUid);
+    }
+
+    /**
      * Saves a field group.
      *
      * @param FieldGroup $group The field group to be saved

@@ -50,6 +50,7 @@ The following are valid reference tags:
 - `{entry:about-us@en:intro}` – returns the value of an `intro` custom field on an entry with the slug `about-us`, loaded from the site with the handle `en`.
 - `{entry:blog/whats-on-tap}` – returns the URL of an entry in a `blog` section with the slug `whats-on-tap`.
 - `{craft\commerce\Variant:123:price}` – returns the price of a Commerce Variant object with the id of `123`.
+- `{globalset:aGlobalSet:uid}` – returns the UID of a global set with the handle `aGlobalSet`.
 
 ## Parsing Reference Tags
 

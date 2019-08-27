@@ -1,4 +1,4 @@
-/*!   - 2019-08-13 */
+/*!   - 2019-08-27 */
 (function($){
 
 /** global: Craft */
@@ -367,18 +367,22 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus) {
-                    if (callback) {
-                        callback(null, textStatus, jqXHR);
-                    }
-                },
                 complete: function(jqXHR, textStatus) {
                     if (textStatus === 'error') {
+                        // Ignore incomplete requests, likely due to navigating away from the page
+                        // h/t https://stackoverflow.com/a/22107079/1688568
+                        if (jqXHR.readyState !== 4) {
+                            return;
+                        }
+
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
-                        }
-                        else {
+                        } else {
                             alert(Craft.t('app', 'An unknown error occurred.'));
+                        }
+
+                        if (callback) {
+                            callback(null, textStatus, jqXHR);
                         }
                     }
                 }
@@ -13060,15 +13064,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 $li = $('<li/>').appendTo($ul);
                 $a = $('<a/>', {
                     text: this.settings.previewTargets[i].label,
-                    data: {
-                        url: this.settings.previewTargets[i].url,
-                    }
                 }).appendTo($li);
                 this.addListener($a, 'click', {
-                    url: this.settings.previewTargets[i].url,
+                    target: i,
                 }, function(ev) {
-                    this.openShareLink(ev.data.url);
-                });
+                    this.openShareLink(this.settings.previewTargets[ev.data.target].url);
+                }.bind(this));
             }
         },
 
@@ -13336,6 +13337,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                         }));
                     }
 
+                    // Did the controller send us updated preview targets?
+                    if (
+                        response.previewTargets &&
+                        JSON.stringify(response.previewTargets) !== JSON.stringify(this.settings.previewTargets)
+                    ) {
+                        this.updatePreviewTargets(response.previewTargets);
+                    }
+
                     this.afterUpdate(data);
 
                     if (draftCreated) {
@@ -13370,6 +13379,19 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             return data;
+        },
+
+        updatePreviewTargets: function(previewTargets) {
+            // index the current preview targets by label
+            var currentTargets = {};
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
+                currentTargets[this.settings.previewTargets[i].label] = this.settings.previewTargets[i];
+            }
+            for (i = 0; i < previewTargets.length; i++) {
+                if (currentTargets[previewTargets[i].label]) {
+                    currentTargets[previewTargets[i].label].url = previewTargets[i].url;
+                }
+            }
         },
 
         afterUpdate: function(data) {
@@ -13775,7 +13797,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             if (focus !== false) {
-                $tr.find('input,textarea,select').first().trigger('focus');
+                $tr.find('input:visible,textarea:visible,select:visible').first().trigger('focus');
             }
 
             this.rowCount++;

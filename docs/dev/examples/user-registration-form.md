@@ -7,7 +7,7 @@ Then you can create a registration form on the front end, like this:
 ```twig
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="users/save-user">
+    {{ actionInput('users/save-user') }}
     {{ redirectInput('') }}
 
     {% macro errorList(errors) %}

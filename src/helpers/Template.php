@@ -31,6 +31,32 @@ use yii\db\QueryInterface;
  */
 class Template
 {
+    // Constants
+    // =========================================================================
+
+    const PROFILE_TYPE_TEMPLATE = 'template';
+    const PROFILE_TYPE_BLOCK = 'block';
+    const PROFILE_TYPE_MACRO = 'macro';
+
+    const PROFILE_STAGE_BEGIN = 'begin';
+    const PROFILE_STAGE_END = 'end';
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool Whether to enable profiling for this request
+     * @see _shouldProfile()
+     */
+    private static $_shouldProfile;
+
+    /**
+     * @var array Counters for template elements being profiled
+     * @see beginProfile()
+     * @see endProfile()
+     */
+    private static $_profileCounters;
+
     // Public Methods
     // =========================================================================
 
@@ -117,8 +143,84 @@ class Template
         return new Markup($value, Craft::$app->charset);
     }
 
+    /**
+     * Begins profiling a template element.
+     *
+     * @param string $type The type of template element being profiled ('template', 'block', or 'macro')
+     * @param string $name The name of the template element
+     * @since 3.3.0
+     */
+    public static function beginProfile(string $type, string $name)
+    {
+        if (!self::_shouldProfile()) {
+            return;
+        }
+
+        if (!isset(self::$_profileCounters[$type][$name])) {
+            $count = self::$_profileCounters[$type][$name] = 1;
+        } else {
+            $count = ++self::$_profileCounters[$type][$name];
+        }
+
+        Craft::beginProfile(self::_profileToken($type, $name, $count), 'Twig template');
+    }
+
+    /**
+     * Finishes profiling a template element.
+     *
+     * @param string $type The type of template element being profiled ('template', 'block', or 'macro')
+     * @param string $name The name of the template element
+     * @since 3.3.0
+     */
+    public static function endProfile(string $type, string $name)
+    {
+        if (!self::_shouldProfile()) {
+            return;
+        }
+
+        $count = self::$_profileCounters[$type][$name]--;
+        Craft::endProfile(self::_profileToken($type, $name, $count), 'Twig template');
+    }
+
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns whether to profile the given template element.
+     *
+     * @return bool Whether to profile it
+     */
+    private static function _shouldProfile(): bool
+    {
+        if (self::$_shouldProfile !== null) {
+            return self::$_shouldProfile;
+        }
+
+        if (YII_DEBUG) {
+            return self::$_shouldProfile = true;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            return false;
+        }
+
+        return self::$_shouldProfile = $user->admin && $user->getPreference('profileTemplates');
+    }
+
+    /**
+     * Returns the token name that should be used for a template profile.
+     *
+     * @param string $type
+     * @param string $name
+     * @param int $count
+     * @return string
+     */
+    private static function _profileToken(string $type, string $name, int $count): string
+    {
+        return "render {$type}: {$name}" . ($count === 1 ? '' : " ({$count})");
+    }
 
     /**
      * Includes an element in any active template caches.

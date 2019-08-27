@@ -10,9 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\elements\Entry;
 use craft\errors\EntryDraftNotFoundException;
-use craft\models\BaseEntryRevisionModel;
-use craft\models\EntryDraft;
-use craft\models\EntryVersion;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
