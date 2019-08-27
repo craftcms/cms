@@ -63,6 +63,7 @@ class Entries extends BaseRelationField
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getContentGqlType()
     {

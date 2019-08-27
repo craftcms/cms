@@ -1023,6 +1023,7 @@ class Sections extends Component
      * ```
      *
      * @return EntryType[]
+     * @since 3.3.0
      */
     public function getAllEntryTypes(): array
     {

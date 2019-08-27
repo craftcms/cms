@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\resolvers\elements;
 
 use craft\db\Table;
@@ -9,6 +15,9 @@ use craft\helpers\Gql as GqlHelper;
 
 /**
  * Class Entry
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class Entry extends ElementResolver
 {

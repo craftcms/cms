@@ -1,10 +1,19 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\base;
 
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class Element
+ * Class ElementArguments
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 abstract class ElementArguments extends Arguments
 {

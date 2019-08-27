@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\types\generators;
 
 use craft\base\Element as BaseElement;
@@ -9,6 +15,9 @@ use craft\gql\types\elements\Element;
 
 /**
  * Class ElementType
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class ElementType implements GeneratorInterface
 {

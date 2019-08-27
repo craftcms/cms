@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\resolvers\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
@@ -6,6 +12,9 @@ use craft\gql\base\ElementResolver;
 
 /**
  * Class MatrixBlock
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class MatrixBlock extends ElementResolver
 {

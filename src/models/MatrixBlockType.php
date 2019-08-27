@@ -13,6 +13,7 @@ use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
+use craft\fields\Matrix;
 use yii\base\InvalidConfigException;
 
 /**
@@ -117,15 +118,17 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * Returns the block type's field.
      *
-     * @return Field
+     * @return Matrix
      * @throws InvalidConfigException if [[fieldId]] is missing or invalid
+     * @since 3.3.0
      */
-    public function getField(): Field
+    public function getField(): Matrix
     {
         if ($this->fieldId === null) {
             throw new InvalidConfigException('Block type missing its field ID');
         }
 
+        /** @var Matrix $field */
         if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
             throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
         }
@@ -135,6 +138,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getFieldContext(): string
     {
@@ -143,11 +147,10 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getEagerLoadingPrefix(): string
     {
         return $this->handle;
     }
-
-
 }

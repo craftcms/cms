@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\arguments\elements;
 
 use craft\gql\base\ElementArguments;
@@ -6,6 +12,9 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * Class Asset
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class Asset extends ElementArguments
 {

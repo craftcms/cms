@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\types\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
@@ -10,6 +16,9 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class MatrixBlock
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class MatrixBlock extends ObjectType
 {

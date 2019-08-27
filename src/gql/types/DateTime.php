@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\types;
 
 use craft\gql\directives\FormatDateTime;
@@ -8,6 +14,9 @@ use GraphQL\Type\Definition\ScalarType;
 
 /**
  * Class DateTime
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class DateTime extends ScalarType
 {

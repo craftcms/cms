@@ -11,6 +11,9 @@ use craft\web\AssetBundle;
 
 /**
  * VendorAsset asset bundle.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.30
  */
 class VendorAsset extends AssetBundle
 {

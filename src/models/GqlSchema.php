@@ -17,7 +17,7 @@ use craft\validators\UniqueValidator;
  *
  * @property bool $isPublic Whether this is the public schema
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.0
  */
 class GqlSchema extends Model
 {

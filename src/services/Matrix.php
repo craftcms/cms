@@ -117,6 +117,7 @@ class Matrix extends Component
      * Returns all the block types.
      *
      * @return MatrixBlockType[] An array of block types.
+     * @since 3.3.0
      */
     public function getAllBlockTypes(): array
     {

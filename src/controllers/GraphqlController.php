@@ -12,7 +12,7 @@ use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
-use craft\web\assets\graphiql\GraphiQlAsset;
+use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\Request;
 use GraphQL\GraphQL;
@@ -140,7 +140,7 @@ class GraphqlController extends Controller
     public function actionGraphiql(): Response
     {
         $this->requireAdmin();
-        $this->getView()->registerAssetBundle(GraphiQlAsset::class);
+        $this->getView()->registerAssetBundle(GraphiqlAsset::class);
 
         $schemaUid = Craft::$app->getRequest()->getQueryParam('schemaUid');
         $gqlService = Craft::$app->getGql();

@@ -416,6 +416,7 @@ class Table extends Field
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getContentGqlType()
     {

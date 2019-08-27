@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\queries;
 
 use craft\gql\arguments\elements\Entry as EntryArguments;
@@ -10,6 +16,9 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * Class Entry
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class Entry extends Query
 {

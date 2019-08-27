@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\types\generators;
 
 use craft\fields\Table as TableField;
@@ -11,6 +17,9 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * Class TableRowType
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class TableRowType implements GeneratorInterface
 {

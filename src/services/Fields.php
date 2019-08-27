@@ -245,6 +245,7 @@ class Fields extends Component
      *
      * @param string $groupUid The field group’s UID
      * @return FieldGroup|null The field group, or null if it doesn’t exist
+     * @since 3.3.0
      */
     public function getGroupByUid(string $groupUid)
     {

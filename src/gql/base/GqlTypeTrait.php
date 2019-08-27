@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\base;
 
 use craft\gql\GqlEntityRegistry;
@@ -7,6 +13,9 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * Trait GqlTypeTrait
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 trait GqlTypeTrait
 {

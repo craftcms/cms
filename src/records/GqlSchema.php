@@ -22,7 +22,7 @@ use yii\db\ActiveQueryInterface;
  * @property \DateTime $lastUsed When the schema was last used
  * @property array $scope The scope of the schema has.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.0
  */
 class GqlSchema extends ActiveRecord
 {

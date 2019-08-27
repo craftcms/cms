@@ -11,7 +11,7 @@ namespace craft\base;
  * GqlInlineFragmentFieldInterface defines the common interface to be implemented by fields that support inline GQL fragments.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.0
  */
 interface GqlInlineFragmentFieldInterface
 {
@@ -19,7 +19,7 @@ interface GqlInlineFragmentFieldInterface
     // =========================================================================
 
     /**
-     * Get a GQL fragment by its GQL fragment name.
+     * Returns a GraphQL fragment by its GraphQL fragment name.
      *
      * @param string $fragmentName
      * @return GqlInlineFragmentInterface

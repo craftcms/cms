@@ -137,6 +137,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $conditions An array of key/value pairs of allowed values. Values can be arrays to allow multiple values.
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return array the filtered array
+     * @since 3.3.0
      */
     public static function whereMultiple($array, array $conditions, bool $strict = false): array
     {

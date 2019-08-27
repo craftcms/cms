@@ -316,6 +316,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public function getContentGqlType()
     {

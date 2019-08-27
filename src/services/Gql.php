@@ -46,7 +46,7 @@ use yii\base\InvalidArgumentException;
  * The Gql service provides GraphQL functionality.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.3.0
  */
 class Gql extends Component
 {

@@ -13,7 +13,7 @@ use yii\base\Event;
  * RegisterGqlDirectivesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.3.0
  */
 class RegisterGqlDirectivesEvent extends Event
 {

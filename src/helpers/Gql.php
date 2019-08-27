@@ -17,7 +17,7 @@ use GraphQL\Type\Definition\UnionType;
  * Class Gql
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.0
  */
 class Gql
 {

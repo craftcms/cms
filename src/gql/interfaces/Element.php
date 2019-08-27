@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
 namespace craft\gql\interfaces;
 
 use craft\base\ElementInterface;
@@ -12,6 +18,9 @@ use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 
 /**
  * Class Element
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.3.0
  */
 class Element extends InterfaceType
 {

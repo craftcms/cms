@@ -11,7 +11,7 @@ namespace craft\base;
  * GqlInlineFragmentInterface defines the common interface to be implemented by GQL inline fragments contained by fields.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.0
  */
 interface GqlInlineFragmentInterface
 {
@@ -21,14 +21,14 @@ interface GqlInlineFragmentInterface
     /**
      * Get the field context for all subfields in this fragment.
      *
-     * @return
+     * @return string
      */
     public function getFieldContext(): string;
 
     /**
      * Get the eager loading prefix for all subfields in this fragment.
      *
-     * @return
+     * @return string
      */
     public function getEagerLoadingPrefix(): string;
 }
