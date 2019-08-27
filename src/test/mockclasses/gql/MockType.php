@@ -1,19 +1,18 @@
 <?php
 namespace craft\test\mockclasses\gql;
 
-use craft\gql\common\SchemaObject;
+use craft\gql\base\ObjectType;
 
 /**
  * Class MockType
  */
-class MockType extends SchemaObject
+class MockType extends ObjectType
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getFields(): array
+    public static function getType()
     {
-        return [];
+        return new self([
+            'name' => static::getName()
+        ]);
     }
 
     /**

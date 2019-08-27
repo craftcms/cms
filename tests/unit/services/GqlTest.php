@@ -49,7 +49,7 @@ class GqlTest extends Unit
      * Test schema creation without token.
      *
      * @expectedException \craft\errors\GqlException
-     * @expectedExceptionMessage No access token set.
+     * @expectedExceptionMessage No schema is active.
      */
     public function testCreatingSchemaFail()
     {
@@ -155,14 +155,12 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['usergroups.allUsers:read']]);
-        $gqlService->setActiveSchema($token);
+        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => ['usergroups.everyone:read']]);
         $schema = $gqlService->getSchemaDef($token);
 
         $gqlService->flushCaches();
 
-        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => ['volumes.someVolume:read']]);
-        $gqlService->setActiveSchema($token);
+        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => ['volumes.someVolume:read']]);
         $this->assertNotEquals($schema, $gqlService->getSchemaDef($token));
     }
 

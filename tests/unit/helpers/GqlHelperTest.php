@@ -27,7 +27,7 @@ class GqlHelperTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['saveToken' => function () { return true;}]
+            ['saveSchema' => function () { return true;}]
         );
     }
 
@@ -186,10 +186,10 @@ class GqlHelperTest extends Unit
     /**
      * Set a token with permission set
      */
-    public function _setTokenWithPermissions($permissionSet)
+    public function _setTokenWithPermissions($scopeSet)
     {
         $gqlService = Craft::$app->getGql();
-        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'permissions' => $permissionSet]);
-        $gqlService->setActiveSchema($token);
+        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => $scopeSet]);
+        $gqlService->setActiveSchema($schema);
     }
 }
