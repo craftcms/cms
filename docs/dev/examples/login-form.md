@@ -29,7 +29,7 @@ If you need to login a user from the front-end of your site, you can do so with 
 <p><a href="{{ url('forgotpassword') }}">Forget your password?</a></p>
 ```
 
-`craft.session.returnUrl` is set to the original URL that included the `{% requireLogin %}` tag that initiated the redirect to this login form.
+`craft.app.user.returnUrl` is set to the original URL that included the `{% requireLogin %}` tag that initiated the redirect to this login form.
 
 By default, users will be redirected based on your `postLoginRedirect` config setting value after logging in. You can override that within your login form using a `redirect` param:
 

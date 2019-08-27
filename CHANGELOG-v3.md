@@ -175,7 +175,7 @@
 
 ### Changed
 - Relational fields without a specific target site will now only return related elements from the same site as the source element by default, as they did before Craft 3.2. ([#4751](https://github.com/craftcms/cms/issues/4751))
-- Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default.
+- Element arrays no longer include `hasDescendants` or `totalDescendants` keys by default. ([#4820](https://github.com/craftcms/cms/issues/4820))
 - Matrix block queries no longer include blocks owned by drafts or revisions by default. ([#4790](https://github.com/craftcms/cms/issues/4790))
 - Entries’ drafts and revisions are now soft-deleted and restored along with their source elements. ([#4797](https://github.com/craftcms/cms/issues/4797))
 - Global set reference tags can now refer to the global set by its handle. ([#4645](https://github.com/craftcms/cms/issues/4645))
