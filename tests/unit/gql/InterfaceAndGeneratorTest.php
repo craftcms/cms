@@ -45,8 +45,8 @@ class InterfaceAndGeneratorTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['getCurrentToken' => $this->make(GqlSchema::class, [
-                'permissions' => [
+            ['getActiveSchema' => $this->make(GqlSchema::class, [
+                'scope' => [
                     'volumes.volume-uid-1:read',
                     'volumes.volume-uid-2:read',
                     'sections.section-uid-1:read',
