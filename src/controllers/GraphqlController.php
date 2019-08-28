@@ -73,6 +73,7 @@ class GraphqlController extends Controller
 
         if ($request->getIsOptions()) {
             // This is just a preflight request, no need to run the actual query yet
+            $response->getHeaders()->add('Access-Control-Allow-Headers', 'Content-Type');
             $response->format = Response::FORMAT_RAW;
             $response->data = '';
             return $response;
