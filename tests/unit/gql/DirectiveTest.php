@@ -208,7 +208,7 @@ class DirectiveTest extends Unit
             $argumentList[] = sprintf($argumentTemplate, $key, addslashes($value));
         }
 
-        return sprintf($directiveTemplate, $className::getName(), implode(', ', $argumentList));
+        return sprintf($directiveTemplate, $className::name(), implode(', ', $argumentList));
     }
 
     /**
@@ -218,10 +218,10 @@ class DirectiveTest extends Unit
      */
     private function _registerDirective($className) {
         // Make sure the mock directive is available in the entity registry
-        $directiveName = $className::getName();
+        $directiveName = $className::name();
 
         if (!GqlEntityRegistry::getEntity($directiveName)) {
-            GqlEntityRegistry::createEntity($directiveName, $className::getDirective());
+            GqlEntityRegistry::createEntity($directiveName, $className::create());
         }
 
     }
