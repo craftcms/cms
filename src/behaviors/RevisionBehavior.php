@@ -12,10 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\User;
-use craft\helpers\StringHelper;
 use yii\base\Behavior;
-use yii\base\Model;
-use yii\validators\UrlValidator;
 
 /**
  * RevisionBehavior is applied to element revisions.

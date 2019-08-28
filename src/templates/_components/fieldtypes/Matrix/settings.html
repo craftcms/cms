@@ -187,6 +187,7 @@
     {{ forms.selectField({
         label: 'Propagation Method'|t('app'),
         instructions: 'Which sites should blocks be saved to?'|t('app'),
+        warning: matrixField.id and matrixField.propagationMethod != 'none' ? 'Changing this may result in data loss.'|t('app'),
         id: 'propagationMethod',
         name: 'propagationMethod',
         options: [

@@ -8,11 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use DateInterval;
 use yii\base\Component;
 
 /**
@@ -127,7 +125,13 @@ class Gc extends Component
      */
     private function _deleteStaleSessions()
     {
-        $interval = new DateInterval('P3M');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgeStaleUserSessionDuration === 0) {
+            return;
+        }
+
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 

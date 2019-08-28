@@ -338,7 +338,6 @@ class View extends \yii\web\View
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
-        Craft::beginProfile($template, __METHOD__);
 
         try {
             $output = $this->getTwig()->render($template, $variables);
@@ -350,7 +349,6 @@ class View extends \yii\web\View
             throw $e;
         }
 
-        Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
         $this->afterRenderTemplate($template, $variables, $output);
@@ -454,11 +452,14 @@ class View extends \yii\web\View
         }
 
         $twig = $this->getTwig();
+        $templateMode = $this->templateMode;
+        $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
         $result = $twig->createTemplate($template)->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
+        $this->setTemplateMode($templateMode);
         $twig->setDefaultEscaperStrategy();
         return $result;
     }
@@ -532,6 +533,8 @@ class View extends \yii\web\View
         }
 
         // Render it!
+        $templateMode = $this->templateMode;
+        $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
@@ -545,6 +548,7 @@ class View extends \yii\web\View
         }
 
         $this->_renderingTemplate = $lastRenderingTemplate;
+        $this->setTemplateMode($templateMode);
         $twig->setDefaultEscaperStrategy();
 
         // Re-enable strict variables
@@ -1583,12 +1587,22 @@ JS;
         }
 
         $this->_twigOptions = [
-            'base_template_class' => Template::class,
             // See: https://github.com/twigphp/Twig/issues/1951
             'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
             'auto_reload' => true,
             'charset' => Craft::$app->charset,
         ];
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        // Only load our custom Template class if they still have suppressTemplateErrors enabled
+        if ($generalConfig->suppressTemplateErrors) {
+            $this->_twigOptions['base_template_class'] = Template::class;
+        }
+
+        if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $this->_twigOptions['autoescape'] = 'js';
+        }
 
         if (YII_DEBUG) {
             $this->_twigOptions['debug'] = true;

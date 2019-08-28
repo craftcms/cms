@@ -17,6 +17,7 @@ use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
@@ -311,6 +312,19 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     public function getIsMultiOptionsField(): bool
     {
         return $this->multi;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        if (!$this->multi) {
+            return parent::getContentGqlType();
+        }
+
+        return Type::listOf(Type::string());
     }
 
     // Protected Methods

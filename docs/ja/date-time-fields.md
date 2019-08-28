@@ -102,7 +102,7 @@ Craft と Twig は、必要に応じて使用できる日付を操作するた�
     : '' %}
 
 <input type="datetime-local" name="fields[<FieldHandle>][datetime]" value="{{ currentValue }}">
-<input type="hidden" name="fields[<FieldHandle>][timezone]" value="{{ pt }}">
+{{ hiddenInput('fields[<FieldHandle>][timezone]', pt) }}
 ```
 
 または、どのタイムゾーンで日付を投稿するかをユーザーに決定させることもできます。

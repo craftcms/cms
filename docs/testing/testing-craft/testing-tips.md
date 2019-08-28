@@ -2,7 +2,7 @@
 
 ## Maintain your database
 The Craft module provides a `cleanup` and `transaction` option for the `codeception.yml` file. 
-It is recommended that you set this option to `true`. 
+It is recommended that you set these options to `true`. 
 
 ### `transactions`
 The transaction option ensures that changes made to the database during your test 
@@ -19,7 +19,7 @@ MyISAM Database driver. If this is the case transactions are
 If you are creating new elements in your tests using:
 `Craft::$app->getElements()->saveElement()` and the element you are saving has content 
 in the `[[%searchindex]]` table - this `[[%searchindex]]` content will not be removed. It is recommended to 
-manually delete clear the search index or use an [element fixture](framework/fixtures.md#element-fixtures)
+manually clear the search index or use an [element fixture](fixtures.md#element-fixtures)
 :::
 
 ### `Cleaup`
@@ -38,7 +38,7 @@ Craft namespaces it's tests under one separate root namespace and then expands p
 under `crafttests\unit` while functional tests are namespaced under `crafttests\functional`. It is advised to apply
 this same convention to your tests. If you are testing a 
 module or plugin you may want to provide support resources for testing, it is advised to namespace these using
-`my/plugin/namespace/test` - this is exactly how Craft does it as well. See the
+`my\plugin\namespace\test` - this is exactly how Craft does it as well. See the
 [element fixtures](../testing-craft/fixtures.md) as an example. 
 
 ## Quickly setup tests using the dedicated console command
@@ -50,5 +50,3 @@ or a directory path of your choosing. All you then have to do is:
 - Composer require codeception. 
 - Run `codecept build`
 - Add a `.env` file. 
-
-TODO: More....

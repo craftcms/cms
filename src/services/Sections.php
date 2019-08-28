@@ -958,6 +958,7 @@ class Sections extends Component
      * @param Section $section
      * @param int $siteId
      * @return bool
+     * @deprecated in 3.3
      */
     public function isSectionTemplateValid(Section $section, int $siteId): bool
     {
@@ -1003,6 +1004,30 @@ class Sections extends Component
         $results = $this->_createEntryTypeQuery()
             ->andWhere(['sectionId' => $sectionId])
             ->orderBy(['sortOrder' => SORT_ASC])
+            ->all();
+
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Returns all entry types.
+     *
+     * ---
+     *
+     * ```php
+     * $entryTypes = Craft::$app->sections->getAllEntryTypes(1);
+     * ```
+     *
+     * @return EntryType[]
+     * @since 3.3.0
+     */
+    public function getAllEntryTypes(): array
+    {
+        $results = $this->_createEntryTypeQuery()
             ->all();
 
         foreach ($results as $key => $result) {

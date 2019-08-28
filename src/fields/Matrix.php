@@ -13,16 +13,24 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
+use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
 use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
+use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\events\BlockTypesEvent;
+use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
+use craft\gql\GqlEntityRegistry;
+use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
+use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
@@ -31,6 +39,8 @@ use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
+use GraphQL\Type\Definition\Type;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
@@ -40,7 +50,7 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Matrix extends Field implements EagerLoadingFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
     // Constants
     // =========================================================================
@@ -768,6 +778,50 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
+        $typeName = $this->handle . '_MatrixField';
+        $resolver = function (MatrixBlockElement $value) {
+            return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+        };
+
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
+            'args' => MatrixBlockArguments::getArguments(),
+            'resolve' => MatrixBlockResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @throws InvalidArgumentException
+     * @since 3.3.0
+     */
+    public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
+    {
+        if (!preg_match('/^(?P<fieldHandle>[\w]+)_(?P<blockTypeHandle>[\w]+)_BlockType$/i', $fragmentName, $matches)) {
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
+        }
+
+        if ($this->handle !== $matches['fieldHandle']) {
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
+        }
+
+        $blockType = ArrayHelper::firstWhere($this->getBlockTypes(), 'handle', $matches['blockTypeHandle']);
+
+        if (!$blockType) {
+            throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
+        }
+
+        return $blockType;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -930,7 +984,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         parent::afterElementRestore($element);
     }
-
+    
     // Private Methods
     // =========================================================================
 

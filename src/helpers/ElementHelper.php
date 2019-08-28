@@ -90,7 +90,7 @@ class ElementHelper
     public static function setUniqueUri(ElementInterface $element)
     {
         /** @var Element $element */
-        $uriFormat = $element->getUriFormat();
+        $uriFormat = Craft::$app->getConfig()->getGeneral()->headlessMode ? null : $element->getUriFormat();
 
         // No URL format, no URI.
         if ($uriFormat === null) {
@@ -353,7 +353,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @return ElementInterface
-     * @since 3.2.11
+     * @since 3.3.0
      */
     public static function sourceElement(ElementInterface $element): ElementInterface
     {

@@ -12,12 +12,14 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -410,6 +412,16 @@ class Table extends Field
     public function getStaticHtml($value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = TableRowTypeGenerator::generateTypes($this);
+        return Type::listOf(array_pop($typeArray));
     }
 
     // Private Methods

@@ -121,6 +121,12 @@ class Routes extends Component
             return $this->_projectConfigRoutes;
         }
 
+        $this->_projectConfigRoutes = [];
+
+        if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            return $this->_projectConfigRoutes;
+        }
+
         $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
         ArrayHelper::multisort($routes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;

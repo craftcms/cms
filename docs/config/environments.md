@@ -10,6 +10,8 @@ Some settings in the Control Panel can be set to environment variables (like the
   - **System Name**
 - Sites
   - **Base URL**
+- Sections
+  - **Preview Target URIs**
 - Asset Volumes
   - **Base URL**
   - **File System Path** (Local)

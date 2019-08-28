@@ -46,7 +46,7 @@
 
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
-        <input type="hidden" name="action" value="asset-settings/save-asset-settings">
+        {{ actionInput('asset-settings/save-asset-settings') }}
         {{ csrfInput() }}
 
         {{ forms.field({

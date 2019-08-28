@@ -1,4 +1,4 @@
-/*!   - 2019-08-16 */
+/*!   - 2019-08-27 */
 (function($){
 
 /** global: Craft */
@@ -367,18 +367,22 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus) {
-                    if (callback) {
-                        callback(null, textStatus, jqXHR);
-                    }
-                },
                 complete: function(jqXHR, textStatus) {
                     if (textStatus === 'error') {
+                        // Ignore incomplete requests, likely due to navigating away from the page
+                        // h/t https://stackoverflow.com/a/22107079/1688568
+                        if (jqXHR.readyState !== 4) {
+                            return;
+                        }
+
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
-                        }
-                        else {
+                        } else {
                             alert(Craft.t('app', 'An unknown error occurred.'));
+                        }
+
+                        if (callback) {
+                            callback(null, textStatus, jqXHR);
                         }
                     }
                 }
@@ -13793,7 +13797,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             if (focus !== false) {
-                $tr.find('input,textarea,select').first().trigger('focus');
+                $tr.find('input:visible,textarea:visible,select:visible').first().trigger('focus');
             }
 
             this.rowCount++;

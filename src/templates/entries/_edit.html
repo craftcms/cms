@@ -40,10 +40,10 @@
 
 {% block content %}
     {% if not isRevision %}
-        <input type="hidden" name="sectionId" value="{{ section.id }}">
-        <input type="hidden" name="entryId" value="{{ entry.sourceId }}">
+        {{ hiddenInput('sectionId', section.id) }}
+        {{ hiddenInput('entryId', entry.sourceId) }}
     {% else %}
-        <input type="hidden" name="revisionId" value="{{ entry.revisionId }}">
+        {{ hiddenInput('revisionId', entry.revisionId) }}
     {% endif %}
 
     <div id="fields">
