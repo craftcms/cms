@@ -138,10 +138,6 @@ class Deprecator extends Component
         } catch (IntegrityException $e) {
             // todo: remove this try/catch after the next breakpoint
         }
-        // Throw an exception if $hardDeprecationErrors is true
-        if (Craft::$app->getConfig()->getGeneral()->hardDeprecationErrors) {
-            throw new DeprecationException($message);
-        }
     }
 
     /**
