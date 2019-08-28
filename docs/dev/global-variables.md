@@ -15,9 +15,7 @@ Accessing things via `craft.app` is considered advanced. There are more security
 :::
 
 ```twig
-{% if craft.app.config.general.devMode %}
-    <p>This site is running in Dev Mode.</p>
-{% endif %}
+{% set field = craft.app.fields.getFieldByHandle('body') %}
 ```
 
 ## `currentSite`
@@ -47,6 +45,16 @@ The currently-logged-in user, represented by a <api:craft\elements\User> object,
 ```twig
 {% if currentUser %}
     Welcome, {{ currentUser.friendlyName }}!
+{% endif %}
+```
+
+## `devMode`
+
+Whether the <config:devMode> config setting is currently enabled.
+
+```twig
+{% if devMode %}
+    Craft is running in dev mode.
 {% endif %}
 ```
 

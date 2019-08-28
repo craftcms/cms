@@ -69,6 +69,17 @@ $.extend(Craft,
         },
 
         /**
+         * Escapes special regular expression characters.
+         *
+         * @param {string} str
+         * @return string
+         */
+        escapeRegex: function(str) {
+            // h/t https://stackoverflow.com/a/9310752
+            return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        },
+
+        /**
          * Returns the text in a string that might contain HTML tags.
          *
          * @param {string} str
@@ -146,16 +157,9 @@ $.extend(Craft,
                 path = '';
             }
 
-            // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path[0] === '/') {
-                return path;
-            }
-
-            path = Craft.trim(path, '/');
-
+            // Normalize the params
             var anchor = '';
 
-            // Normalize the params
             if ($.isPlainObject(params)) {
                 var aParams = [];
 
@@ -191,6 +195,13 @@ $.extend(Craft,
                 path = path.substr(0, qpos);
             }
 
+            // Return path if it appears to be an absolute URL.
+            if (path.search('://') !== -1 || path[0] === '/') {
+                return path + (params ? '?' + params : '');
+            }
+
+            path = Craft.trim(path, '/');
+
             // Put it all together
             var url;
 
@@ -199,9 +210,9 @@ $.extend(Craft,
 
                 if (path) {
                     // Does baseUrl already contain a path?
-                    var pathMatch = url.match(/[&\?]p=[^&]+/);
+                    var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
-                        url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
+                        url = url.replace(pathMatch[0], Craft.rtrim(pathMatch[0], '/') + '/' + path);
                         path = '';
                     }
                 }
@@ -227,8 +238,8 @@ $.extend(Craft,
                 else {
                     // Move the path into the query string params
 
-                    // Is the p= param already set?
-                    if (params && params.substr(0, 2) === 'p=') {
+                    // Is the path param already set?
+                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
                         var basePath,
                             endPath = params.indexOf('&');
 
@@ -248,7 +259,7 @@ $.extend(Craft,
                     }
 
                     // Now move the path into the params
-                    params = 'p=' + path + (params ? '&' + params : '');
+                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
                     path = null;
                 }
             }
@@ -353,18 +364,22 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus) {
-                    if (callback) {
-                        callback(null, textStatus, jqXHR);
-                    }
-                },
                 complete: function(jqXHR, textStatus) {
-                    if (textStatus !== 'success') {
+                    if (textStatus === 'error') {
+                        // Ignore incomplete requests, likely due to navigating away from the page
+                        // h/t https://stackoverflow.com/a/22107079/1688568
+                        if (jqXHR.readyState !== 4) {
+                            return;
+                        }
+
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
-                        }
-                        else {
+                        } else {
                             alert(Craft.t('app', 'An unknown error occurred.'));
+                        }
+
+                        if (callback) {
+                            callback(null, textStatus, jqXHR);
                         }
                     }
                 }
@@ -651,6 +666,17 @@ $.extend(Craft,
         },
 
         /**
+         * Returns whether a string starts with another string.
+         *
+         * @param {string} str
+         * @param {string} substr
+         * @return boolean
+         */
+        startsWith: function(str, substr) {
+            return str.substr(0, substr.length) === substr;
+        },
+
+        /**
          * Filters an array.
          *
          * @param {object} arr
@@ -741,6 +767,34 @@ $.extend(Craft,
             return str.charAt(0).toLowerCase() + str.slice(1);
         },
 
+        parseUrl: function(url) {
+            var m = url.match(/^(?:(https?):\/\/|\/\/)([^\/\:]*)(?:\:(\d+))?(\/[^\?]*)?(?:\?([^#]*))?(#.*)?/);
+            if (!m) {
+                return {};
+            }
+            return {
+                scheme: m[1],
+                host: m[2] + (m[3] ? ':' + m[3] : ''),
+                hostname: m[2],
+                port: m[3] || null,
+                path: m[4] || '/',
+                query: m[5] || null,
+                hash: m[6] || null,
+            };
+        },
+
+        isSameHost: function(url) {
+            var requestUrlInfo = this.parseUrl(document.location.href);
+            if (!requestUrlInfo) {
+                return false;
+            }
+            var urlInfo = this.parseUrl(url);
+            if (!urlInfo) {
+                return false;
+            }
+            return requestUrlInfo.host === urlInfo.host;
+        },
+
         /**
          * Converts a number of seconds into a human-facing time duration.
          */
@@ -818,6 +872,16 @@ $.extend(Craft,
             return asciiStr;
         },
 
+        randomString: function(length) {
+            // h/t https://stackoverflow.com/a/1349426/1688568
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * 62));
+            }
+            return result;
+        },
+
         /**
          * Prevents the outline when an element is focused by the mouse.
          *
@@ -866,10 +930,11 @@ $.extend(Craft,
 
             if ($existingCss.length) {
                 var existingCss = [];
+                var href;
 
                 for (var i = 0; i < $existingCss.length; i++) {
-                    var href = $existingCss.eq(i).attr('href');
-                    existingCss.push(href.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+                    href = $existingCss.eq(i).attr('href').replace(/&/g, '&amp;');
+                    existingCss.push(Craft.escapeRegex(href));
                 }
 
                 var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
@@ -890,10 +955,11 @@ $.extend(Craft,
 
             if ($existingJs.length) {
                 var existingJs = [];
+                var src;
 
                 for (var i = 0; i < $existingJs.length; i++) {
-                    var src = $existingJs.eq(i).attr('src');
-                    existingJs.push(src.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+                    src = $existingJs.eq(i).attr('src').replace(/&/g, '&amp;');
+                    existingJs.push(Craft.escapeRegex(src));
                 }
 
                 var regexp = new RegExp('<script\\s[^>]*src="(?:' + existingJs.join('|') + ')".*?></script>', 'g');
@@ -1314,28 +1380,31 @@ $.extend($.fn,
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
-                if ($btn.attr('data-action')) {
+                if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
-                        .val($btn.attr('data-action'))
+                        .val($btn.data('action'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-redirect')) {
+                if ($btn.data('redirect')) {
                     $('<input type="hidden" name="redirect"/>')
-                        .val($btn.attr('data-redirect'))
+                        .val($btn.data('redirect'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-param')) {
+                if ($btn.data('param')) {
                     $('<input type="hidden"/>')
                         .attr({
-                            name: $btn.attr('data-param'),
-                            value: $btn.attr('data-value')
+                            name: $btn.data('param'),
+                            value: $btn.data('value')
                         })
                         .appendTo($form);
                 }
 
-                $form.trigger('submit');
+                $form.trigger({
+                    type: 'submit',
+                    customTrigger: $btn,
+                });
             });
         },
 

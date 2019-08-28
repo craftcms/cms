@@ -25,15 +25,19 @@ abstract class Table
     const CONTENT = '{{%content}}';
     const CRAFTIDTOKENS = '{{%craftidtokens}}';
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';
+    const DRAFTS = '{{%drafts}}';
     const ELEMENTINDEXSETTINGS = '{{%elementindexsettings}}';
     const ELEMENTS = '{{%elements}}';
     const ELEMENTS_SITES = '{{%elements_sites}}';
     const RESOURCEPATHS = '{{%resourcepaths}}';
+    const REVISIONS = '{{%revisions}}';
     const SEQUENCES = '{{%sequences}}';
     const SYSTEMMESSAGES = '{{%systemmessages}}';
     const ENTRIES = '{{%entries}}';
+    /** @deprecated in 3.2 */
     const ENTRYDRAFTS = '{{%entrydrafts}}';
     const ENTRYTYPES = '{{%entrytypes}}';
+    /** @deprecated in 3.2 */
     const ENTRYVERSIONS = '{{%entryversions}}';
     const FIELDGROUPS = '{{%fieldgroups}}';
     const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
@@ -41,6 +45,7 @@ abstract class Table
     const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     const FIELDS = '{{%fields}}';
     const GLOBALSETS = '{{%globalsets}}';
+    const GQLSCHEMAS = '{{%gqlschemas}}';
     const INFO = '{{%info}}';
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';

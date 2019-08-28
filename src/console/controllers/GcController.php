@@ -9,11 +9,11 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\Console;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
- * Garbage collector.
+ * Allows you to manage garbage collection.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1

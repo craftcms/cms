@@ -16,16 +16,18 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
-use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
+use craft\web\twig\nodevisitors\Profiler;
 use craft\web\twig\tokenparsers\CacheTokenParser;
+use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
@@ -50,7 +52,6 @@ use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
-use Twig\Markup;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
@@ -101,6 +102,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getNodeVisitors()
     {
         return [
+            new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
             new EventTagAdder(),
@@ -114,6 +116,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new CacheTokenParser(),
+            new DdTokenParser(),
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
@@ -200,7 +203,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $security = Craft::$app->getSecurity();
 
         return [
+            new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
+            new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
             new TwigFilter('currency', [$formatter, 'asCurrency']),
@@ -209,8 +215,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
-            new TwigFilter('filter', 'array_filter'),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
+            new TwigFilter('filter', [$this, 'filterFilter']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('id', [$this->view, 'formatInputId']),
@@ -222,17 +228,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('kebab', [$this, 'kebabFilter']),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
-            new TwigFilter('markdown', [$this, 'markdownFilter']),
-            new TwigFilter('md', [$this, 'markdownFilter']),
+            new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs']),
             new TwigFilter('ns', [$this->view, 'namespaceInputs']),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
             new TwigFilter('number', [$formatter, 'asDecimal']),
-            new TwigFilter('parseRefs', [$this, 'parseRefsFilter']),
+            new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
+            new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -245,6 +252,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('without', [$this, 'withoutFilter']),
+            new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
     }
 
@@ -415,17 +423,50 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Returns an array without a certain key.
+     *
+     * @param mixed $arr
+     * @param string $key
+     * @return array
+     */
+    public function withoutKeyFilter($arr, string $key): array
+    {
+        $arr = (array)$arr;
+        ArrayHelper::remove($arr, $key);
+        return $arr;
+    }
+
+    /**
      * Parses a string for reference tags.
      *
      * @param mixed $str
      * @param int|null $siteId
-     * @return Markup
+     * @return string
      */
-    public function parseRefsFilter($str, int $siteId = null): Markup
+    public function parseRefsFilter($str, int $siteId = null): string
     {
-        $str = Craft::$app->getElements()->parseRefs((string)$str, $siteId);
+        return Craft::$app->getElements()->parseRefs((string)$str, $siteId);
+    }
 
-        return TemplateHelper::raw($str);
+    /**
+     * Prepends HTML to the beginning of given tag.
+     *
+     * @param string $tag The HTML tag that `$html` should be prepended to
+     * @param string $html The HTML to prepend to `$tag`.
+     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
+     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     * by `$tag`.
+     * @return string The modified HTML
+     * @since 3.3.0
+     */
+    public static function prependFilter(string $tag, string $html, string $ifExists = null): string
+    {
+        try {
+            return Html::prependToTag($tag, $html, $ifExists);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
     }
 
     /**
@@ -488,6 +529,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Appends HTML to the end of the given tag.
+     *
+     * @param string $tag The HTML tag that `$html` should be appended to
+     * @param string $html The HTML to append to `$tag`.
+     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
+     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     * by `$tag`.
+     * @return string The modified HTML
+     * @since 3.3.0
+     */
+    public static function appendFilter(string $tag, string $html, string $ifExists = null): string
+    {
+        try {
+            return Html::appendToTag($tag, $html, $ifExists);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
+    }
+
+    /**
      * Converts a date to the Atom format.
      *
      * @param TwigEnvironment $env
@@ -498,6 +560,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function atomFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
+    }
+
+    /**
+     * Modifies a HTML tag’s attributes, supporting the same attribute definitions as [[Html::renderTagAttributes()]].
+     *
+     * @param string $tag The HTML tag whose attributes should be modified.
+     * @param array $attributes The attributes to be added to the tag.
+     * @return string The modified HTML tag.
+     * @since 3.3.0
+     */
+    public function attrFilter(string $tag, array $attributes): string
+    {
+        try {
+            return Html::modifyTagAttributes($tag, $attributes);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
     }
 
     /**
@@ -585,6 +665,28 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Filters an array.
+     *
+     * @param array|\Traversable $arr
+     * @param callable|null $arrow
+     * @return array
+     */
+    public function filterFilter($arr, $arrow = null)
+    {
+        if ($arrow === null) {
+            return array_filter($arr);
+        }
+
+        $filtered = twig_array_filter($arr, $arrow);
+
+        if (is_array($filtered)) {
+            return $filtered;
+        }
+
+        return iterator_to_array($filtered);
+    }
+
+    /**
      * Groups an array or element query's results by a common property.
      *
      * @param array|\Traversable $arr
@@ -667,17 +769,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
-     * @return Markup
+     * @return string
      */
-    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): Markup
+    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): string
     {
         if ($inlineOnly) {
-            $html = Markdown::processParagraph((string)$markdown, $flavor);
-        } else {
-            $html = Markdown::process((string)$markdown, $flavor);
+            return Markdown::processParagraph((string)$markdown, $flavor);
         }
 
-        return TemplateHelper::raw($html);
+        return Markdown::process((string)$markdown, $flavor);
     }
 
     /**
@@ -713,52 +813,44 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('alias', [Craft::class, 'getAlias']),
-            new TwigFunction('actionInput', [$this, 'actionInputFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
             new TwigFunction('create', [Craft::class, 'createObject']),
-            new TwigFunction('csrfInput', [$this, 'csrfInputFunction']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', 'getenv'),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
-            new TwigFunction('redirectInput', [$this, 'redirectInputFunction']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('round', [$this, 'roundFunction']),
             new TwigFunction('seq', [$this, 'seqFunction']),
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
-            new TwigFunction('svg', [$this, 'svgFunction']),
             new TwigFunction('url', [UrlHelper::class, 'url']),
+
+            // HTML generation functions
+            new TwigFunction('actionInput', [Html::class, 'actionInput'], ['is_safe' => ['html']]),
+            new TwigFunction('attr', [Html::class, 'renderTagAttributes'], ['is_safe' => ['html']]),
+            new TwigFunction('csrfInput', [Html::class, 'csrfInput'], ['is_safe' => ['html']]),
+            new TwigFunction('hiddenInput', [Html::class, 'hiddenInput'], ['is_safe' => ['html']]),
+            new TwigFunction('input', [Html::class, 'input'], ['is_safe' => ['html']]),
+            new TwigFunction('redirectInput', [Html::class, 'redirectInput'], ['is_safe' => ['html']]),
+            new TwigFunction('svg', [$this, 'svgFunction'], ['is_safe' => ['html']]),
+            new TwigFunction('tag', [$this, 'tagFunction'], ['is_safe' => ['html']]),
+
             // DOM event functions
             new TwigFunction('head', [$this->view, 'head']),
             new TwigFunction('beginBody', [$this->view, 'beginBody']),
             new TwigFunction('endBody', [$this->view, 'endBody']),
+
             // Deprecated functions
-            new TwigFunction('getCsrfInput', [$this, 'getCsrfInput']),
-            new TwigFunction('getHeadHtml', [$this, 'getHeadHtml']),
-            new TwigFunction('getFootHtml', [$this, 'getFootHtml']),
+            new TwigFunction('getCsrfInput', [$this, 'getCsrfInput'], ['is_safe' => ['html'], 'deprecated' => '3.0.0', 'alternative' => 'csrfInput()']),
+            new TwigFunction('getHeadHtml', [$this, 'getHeadHtml'], ['is_safe' => ['html'], 'deprecated' => '3.0.0', 'alternative' => 'head()']),
+            new TwigFunction('getFootHtml', [$this, 'getFootHtml'], ['is_safe' => ['html'], 'deprecated' => '3.0.0', 'alternative' => 'endBody()']),
         ];
-    }
-
-    /**
-     * Returns a CSRF input wrapped in a \Twig\Markup object.
-     *
-     * @return Markup|null
-     */
-    public function csrfInputFunction()
-    {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        if ($generalConfig->enableCsrfProtection === true) {
-            return TemplateHelper::raw('<input type="hidden" name="' . $generalConfig->csrfTokenName . '" value="' . Craft::$app->getRequest()->getCsrfToken() . '">');
-        }
-
-        return null;
     }
 
     /**
@@ -792,28 +884,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function pluginFunction(string $handle)
     {
         return Craft::$app->getPlugins()->getPlugin($handle);
-    }
-
-    /**
-     * Returns a redirect input wrapped in a \Twig\Markup object.
-     *
-     * @param string $url The URL to redirect to.
-     * @return Markup
-     */
-    public function redirectInputFunction(string $url): Markup
-    {
-        return TemplateHelper::raw('<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData($url) . '">');
-    }
-
-    /**
-     * Returns an action input wrapped in a \Twig\Markup object, suitable for use in a front-end form.
-     *
-     * @param string $actionPath
-     * @return Markup
-     */
-    public function actionInputFunction(string $actionPath): Markup
-    {
-        return TemplateHelper::raw('<input type="hidden" name="action" value="' . $actionPath . '">');
     }
 
     /**
@@ -891,7 +961,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class A CSS class name that should be added to the `<svg>` element.
-     * @return Markup|string
+     * @return string
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
     {
@@ -954,11 +1024,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
             }, $svg);
             foreach ($ids as $id) {
-                $quotedId = preg_quote($id, '\\');
+                $quotedId = preg_quote($id, '/');
                 $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
             }
             foreach ($classes as $c) {
-                $quotedClass = preg_quote($c, '\\');
+                $quotedClass = preg_quote($c, '/');
                 $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$c}", $svg);
             }
         }
@@ -970,7 +1040,29 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        return TemplateHelper::raw($svg);
+        return $svg;
+    }
+
+    /**
+     * Generates a complete HTML tag.
+     *
+     * @param string $type the tag type ('p', 'div', etc.)
+     * @param array $attributes the HTML tag attributes in terms of name-value pairs.
+     * If `text` is supplied, the value will be HTML-encoded and included as the contents of the tag.
+     * If 'html' is supplied, the value will be included as the contents of the tag, without getting encoded.
+     * @return string
+     * @since 3.3.0
+     */
+    public function tagFunction(string $type, array $attributes = []): string
+    {
+        $html = ArrayHelper::remove($attributes, 'html', '');
+        $text = ArrayHelper::remove($attributes, 'text');
+
+        if ($text !== null) {
+            $html = Html::encode($text);
+        }
+
+        return Html::tag($type, $html, $attributes);
     }
 
     /**
@@ -985,6 +1077,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $globals = [
             'view' => $this->view,
 
+            'devMode' => YII_DEBUG,
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,
@@ -1051,21 +1144,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @return string
      * @deprecated in Craft 3.0. Use csrfInput() instead.
-     * @return Markup|null
      */
-    public function getCsrfInput()
+    public function getCsrfInput(): string
     {
         Craft::$app->getDeprecator()->log('getCsrfInput', 'getCsrfInput() has been deprecated. Use csrfInput() instead.');
-
-        return $this->csrfInputFunction();
+        return Html::csrfInput();
     }
 
     /**
+     * @return string
      * @deprecated in Craft 3.0. Use head() instead.
-     * @return Markup
      */
-    public function getHeadHtml(): Markup
+    public function getHeadHtml(): string
     {
         Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
 
@@ -1073,14 +1165,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
         ob_implicit_flush(false);
         $this->view->head();
 
-        return TemplateHelper::raw(ob_get_clean());
+        return ob_get_clean();
     }
 
     /**
+     * @return string
      * @deprecated in Craft 3.0. Use endBody() instead.
-     * @return Markup
      */
-    public function getFootHtml(): Markup
+    public function getFootHtml(): string
     {
         Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
 
@@ -1088,6 +1180,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         ob_implicit_flush(false);
         $this->view->endBody();
 
-        return TemplateHelper::raw(ob_get_clean());
+        return ob_get_clean();
     }
 }

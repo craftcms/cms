@@ -23,15 +23,18 @@ use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\caching\FileCache;
 use yii\helpers\Inflector;
+use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
 use yii\log\Logger;
 use yii\mutex\FileMutex;
+use yii\web\JsonParser;
 
 /**
  * App helper.
@@ -223,7 +226,8 @@ class App
         }
 
         $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
-        set_error_handler(function(){});
+        set_error_handler(function() {
+        });
         $result = ini_set('memory_limit', $testValue);
         $newValue = ini_get('memory_limit');
         ini_set('memory_limit', $oldValue);
@@ -317,6 +321,7 @@ class App
      * Returns the backtrace as a string (omitting the final frame where this method was called).
      *
      * @param int $limit The max number of stack frames to be included (0 means no limit)
+     * @return string
      */
     public static function backtrace(int $limit = 0): string
     {
@@ -495,6 +500,9 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
             'includeUserIp' => $generalConfig->storeUserIps,
+            'except' => [
+                PhpMessageSource::class . ':*',
+            ],
         ];
 
         if ($isConsoleRequest) {
@@ -523,7 +531,7 @@ class App
     {
         return [
             'class' => ProjectConfigService::class,
-            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ];
     }
 
@@ -619,6 +627,9 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'parsers' => [
+                'application/json' => JsonParser::class,
+            ],
         ];
 
         if ($generalConfig->trustedHosts !== null) {
@@ -635,6 +646,26 @@ class App
 
         if ($generalConfig->secureProtocolHeaders !== null) {
             $config['secureProtocolHeaders'] = $generalConfig->secureProtocolHeaders;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns the `response` component config for web requests.
+     *
+     * @return array
+     * @since 3.3.0
+     */
+    public static function webResponseConfig(): array
+    {
+        $config = [
+            'class' => WebResponse::class,
+        ];
+
+        // Default to JSON responses if running in headless mode
+        if (Craft::$app->getRequest()->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            $config['format'] = WebResponse::FORMAT_JSON;
         }
 
         return $config;

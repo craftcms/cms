@@ -9,6 +9,8 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -23,6 +25,7 @@ use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
@@ -84,6 +87,8 @@ use yii\validators\Validator;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
+ * @property-write int|null $revisionCreatorId revision creator ID to be saved
+ * @property-write string|null $revisionNotes revision notes to be saved
  * @mixin ContentBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -150,6 +155,11 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
 
     /**
+     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
+     */
+    const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
+
+    /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
     const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
@@ -170,7 +180,7 @@ abstract class Element extends Component implements ElementInterface
      *     if ($entry->uri === 'pricing') {
      *         $e->route = 'module/pricing/index';
      *     }
-     * }
+     * });
      * ```
      */
     const EVENT_SET_ROUTE = 'setRoute';
@@ -185,6 +195,11 @@ abstract class Element extends Component implements ElementInterface
      * @event ModelEvent The event that is triggered after the element is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
+
+    /**
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     */
+    const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
      * @event ModelEvent The event that is triggered before the element is deleted
@@ -222,6 +237,14 @@ abstract class Element extends Component implements ElementInterface
 
     // Static
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Elements');
+    }
 
     /**
      * @inheritdoc
@@ -457,6 +480,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
+        // Add custom fields to the fix
+        foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
+            /** @var Field $field */
+            if ($field instanceof SortableFieldInterface) {
+                $sortOptions[] = $field->getSortOption();
+            }
+        }
+
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
             'sortOptions' => $sortOptions
@@ -648,6 +679,26 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        // Default to the same type
+        return 'Element';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        // Default to no scopes required
+        return [];
+    }
+
+    /**
      * Preps the element criteria for a given table attribute
      *
      * @param ElementQueryInterface $elementQuery
@@ -720,6 +771,18 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
+     * @var string|null Revision creator ID to be saved
+     * @see setRevisionCreatorId()
+     */
+    protected $revisionCreatorId;
+
+    /**
+     * @var string|null Revision notes to be saved
+     * @see setRevisionNotes()
+     */
+    protected $revisionNotes;
+
+    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -760,9 +823,15 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var ElementInterface[]|null
+     * @var array|null
      */
     private $_eagerLoadedElements;
+
+    /**
+     * @var ElementInterface|false
+     * @see getCurrentRevision()
+     */
+    private $_currentRevision;
 
     // Public Methods
     // =========================================================================
@@ -774,7 +843,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        if ($this->title) {
+        if ($this->title !== null && $this->title !== '') {
             return (string)$this->title;
         }
         return (string)$this->id ?: static::class;
@@ -897,11 +966,9 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'awaitingFieldValues');
         ArrayHelper::removeValue($names, 'propagating');
 
-        $names[] = 'hasDescendants';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
-        $names[] = 'totalDescendants';
         $names[] = 'url';
 
         // Include custom field handles
@@ -925,6 +992,7 @@ abstract class Element extends Component implements ElementInterface
             'ancestors',
             'children',
             'descendants',
+            'hasDescendants',
             'next',
             'nextSibling',
             'parent',
@@ -932,6 +1000,7 @@ abstract class Element extends Component implements ElementInterface
             'prevSibling',
             'siblings',
             'site',
+            'totalDescendants',
         ];
     }
 
@@ -1076,7 +1145,7 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
             }
         }
 
@@ -1188,6 +1257,61 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsDraft(): bool
+    {
+        return !empty($this->draftId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsRevision(): bool
+    {
+        return !empty($this->revisionId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceId()
+    {
+        /** @var DraftBehavior|RevisionBehavior|null $behavior */
+        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
+        return $behavior->sourceId ?? $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceUid(): string
+    {
+        $sourceId = $this->getSourceId();
+        if ($sourceId === $this->id) {
+            return $this->uid;
+        }
+        return static::find()
+            ->id($sourceId)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->select(['elements.uid'])
+            ->scalar();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsUnsavedDraft(): bool
+    {
+        if (!$this->getIsDraft()) {
+            return false;
+        }
+        $sourceId = $this->getSourceId();
+        return !$sourceId || $sourceId == $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         if ($this->fieldLayoutId) {
@@ -1246,13 +1370,12 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl()
     {
-        if ($this->uri !== null) {
-            $path = ($this->uri === '__home__') ? '' : $this->uri;
-
-            return UrlHelper::siteUrl($path, null, null, $this->siteId);
+        if ($this->uri === null) {
+            return null;
         }
 
-        return null;
+        $path = ($this->uri === '__home__') ? '' : $this->uri;
+        return UrlHelper::siteUrl($path, null, null, $this->siteId);
     }
 
     /**
@@ -1260,15 +1383,20 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getLink()
     {
-        $url = $this->getUrl();
-
-        if ($url !== null) {
-            $link = '<a href="' . $url . '">' . Html::encode($this->__toString()) . '</a>';
-
-            return Template::raw($link);
+        if (($url = $this->getUrl()) === null) {
+            return null;
         }
 
-        return null;
+        $a = Html::a(Html::encode($this->getUiLabel()), $url);
+        return Template::raw($a);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return (string)$this;
     }
 
     /**
@@ -1293,6 +1421,50 @@ abstract class Element extends Component implements ElementInterface
     public function getCpEditUrl()
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewTargets(): array
+    {
+        $previewTargets = [];
+
+        if ($this->uri) {
+            $previewTargets[] = [
+                'label' => Craft::t('app', 'Primary {type} page', [
+                    'type' => strtolower(static::displayName())
+                ]),
+                'url' => $this->uri === '__home__' ? '' : $this->uri
+            ];
+        }
+
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            $previewTargets = array_merge($previewTargets, $this->previewTargets());
+
+            // Give plugins a chance to modify them
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+                $event = new RegisterPreviewTargetsEvent([
+                    'previewTargets' => $previewTargets,
+                ]);
+                $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+                $previewTargets = $event->previewTargets;
+            }
+        }
+
+        // Normalize the URLs
+        $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : null;
+        $view = Craft::$app->getView();
+        foreach ($previewTargets as &$previewTarget) {
+            // urlFormat => url
+            if (isset($previewTarget['urlFormat'])) {
+                $previewTarget['url'] = $view->renderObjectTemplate($previewTarget['urlFormat'], $this);
+                unset($previewTarget['urlFormat']);
+            }
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, $scheme, $this->siteId);
+        }
+
+        return $previewTargets;
     }
 
     /**
@@ -1407,7 +1579,7 @@ abstract class Element extends Component implements ElementInterface
     {
         return static::find()
             ->structureId($this->structureId)
-            ->ancestorOf($this)
+            ->ancestorOf(ElementHelper::sourceElement($this))
             ->siteId($this->siteId)
             ->ancestorDist($dist);
     }
@@ -1424,7 +1596,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf($this)
+            ->descendantOf(ElementHelper::sourceElement($this))
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }
@@ -1449,7 +1621,7 @@ abstract class Element extends Component implements ElementInterface
     {
         return static::find()
             ->structureId($this->structureId)
-            ->siblingOf($this)
+            ->siblingOf(ElementHelper::sourceElement($this))
             ->siteId($this->siteId);
     }
 
@@ -1462,7 +1634,7 @@ abstract class Element extends Component implements ElementInterface
             /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
             $query->structureId = $this->structureId;
-            $query->prevSiblingOf = $this;
+            $query->prevSiblingOf = ElementHelper::sourceElement($this);
             $query->siteId = $this->siteId;
             $query->anyStatus();
             $this->_prevSibling = $query->one();
@@ -1484,7 +1656,7 @@ abstract class Element extends Component implements ElementInterface
             /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
             $query->structureId = $this->structureId;
-            $query->nextSiblingOf = $this;
+            $query->nextSiblingOf = ElementHelper::sourceElement($this);
             $query->siteId = $this->siteId;
             $query->anyStatus();
             $this->_nextSibling = $query->one();
@@ -1502,7 +1674,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHasDescendants(): bool
     {
-        return ($this->lft !== null && $this->rgt !== null && $this->rgt > $this->lft + 1);
+        $descendants = $this->getDescendants();
+        if (is_array($descendants)) {
+            return !empty($descendants);
+        }
+        return $descendants->exists();
     }
 
     /**
@@ -1510,11 +1686,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTotalDescendants(): int
     {
-        if ($this->getHasDescendants()) {
-            return ($this->rgt - $this->lft - 1) / 2;
+        $descendants = $this->getDescendants();
+        if (is_array($descendants)) {
+            return count($descendants);
         }
-
-        return 0;
+        return $descendants->count();
     }
 
     /**
@@ -1522,8 +1698,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
+        return ($source->root == $element->root && $source->lft < $element->lft && $source->rgt > $element->rgt);
     }
 
     /**
@@ -1531,8 +1709,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isDescendantOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
+        return ($source->root == $element->root && $source->lft > $element->lft && $source->rgt < $element->rgt);
     }
 
     /**
@@ -1540,8 +1720,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
+        return ($source->root == $element->root && $source->level == $element->level - 1 && $source->isAncestorOf($element));
     }
 
     /**
@@ -1549,8 +1731,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isChildOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
+        return ($source->root == $element->root && $source->level == $element->level + 1 && $source->isDescendantOf($element));
     }
 
     /**
@@ -1558,13 +1742,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        if ($this->root == $element->root && $this->level !== null && $this->level == $element->level) {
-            if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
+        if ($source->root == $element->root && $source->level !== null && $source->level == $element->level) {
+            if ($source->level == 1 || $source->isPrevSiblingOf($element) || $source->isNextSiblingOf($element)) {
                 return true;
             }
 
-            $parent = $this->getParent();
+            $parent = $source->getParent();
 
             if ($parent) {
                 return $element->isDescendantOf($parent);
@@ -1579,8 +1765,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isPrevSiblingOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
+        return ($source->root == $element->root && $source->level == $element->level && $source->rgt == $element->lft - 1);
     }
 
     /**
@@ -1588,8 +1776,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isNextSiblingOf(ElementInterface $element): bool
     {
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($this);
         /** @var Element $element */
-        return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
+        return ($source->root == $element->root && $source->level == $element->level && $source->lft == $element->rgt + 1);
     }
 
     /**
@@ -1755,9 +1945,10 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
-
-        return $this->_eagerLoadedElements[$handle];
+        /** @var ElementInterface[] $elements */
+        $elements = $this->_eagerLoadedElements[$handle];
+        ElementHelper::setNextPrevOnElements($elements);
+        return $elements;
     }
 
     /**
@@ -1777,6 +1968,43 @@ abstract class Element extends Component implements ElementInterface
     public function getHasFreshContent(): bool
     {
         return ($this->contentId === null && !$this->hasErrors());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionCreatorId(int $creatorId = null)
+    {
+        $this->revisionCreatorId = $creatorId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionNotes(string $notes = null)
+    {
+        $this->revisionNotes = $notes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrentRevision()
+    {
+        if (!$this->id) {
+            return null;
+        }
+
+        if ($this->_currentRevision === null) {
+            $this->_currentRevision = static::find()
+                ->revisionOf($this->getSourceId())
+                ->dateCreated($this->dateUpdated)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->one() ?: false;
+        }
+
+        return $this->_currentRevision ?: null;
     }
 
     // Indexes, etc.
@@ -1843,10 +2071,20 @@ abstract class Element extends Component implements ElementInterface
 
             Craft::$app->getView()->setNamespace($originalNamespace);
 
-            $html .= '<input type="hidden" name="fieldLayoutId" value="' . $fieldLayout->id . '">';
+            $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
         }
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        // Default to the same type
+        return static::gqlTypeNameByContext(null);
     }
 
     // Events
@@ -1886,6 +2124,24 @@ abstract class Element extends Component implements ElementInterface
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPropagate(bool $isNew)
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementPropagate($this, $isNew);
+        }
+
+        // Trigger an 'afterPropagate' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
+            $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([
                 'isNew' => $isNew,
             ]));
         }
@@ -2118,7 +2374,12 @@ abstract class Element extends Component implements ElementInterface
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return '<a href="' . $url . '" rel="noopener" target="_blank" data-icon="world" title="' . Craft::t('app', 'Visit webpage') . '"></a>';
+                    return Html::a('', $url, [
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'data-icon' => 'world',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                    ]);
                 }
 
                 return '';
@@ -2130,7 +2391,10 @@ abstract class Element extends Component implements ElementInterface
                     $value = $this->uri;
 
                     if ($value === '__home__') {
-                        $value = '<span data-icon="home" title="' . Craft::t('app', 'Homepage') . '"></span>';
+                        $value = Html::tag('span', '', [
+                            'data-icon' => 'home',
+                            'title' => Craft::t('app', 'Homepage'),
+                        ]);
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line
                         $find = ['/'];
@@ -2146,7 +2410,13 @@ abstract class Element extends Component implements ElementInterface
                         $value = str_replace($find, $replace, $value);
                     }
 
-                    return '<a href="' . $url . '" rel="noopener" target="_blank" class="go" title="' . Craft::t('app', 'Visit webpage') . '"><span dir="ltr">' . $value . '</span></a>';
+                    return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+                        'href' => $url,
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'class' => 'go',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                    ]);
                 }
 
                 return '';
@@ -2183,8 +2453,9 @@ abstract class Element extends Component implements ElementInterface
 
                 if ($value instanceof DateTime) {
                     $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
+                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
+                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT)
+                    ]);
                 }
 
                 return Html::encode($value);
@@ -2200,6 +2471,20 @@ abstract class Element extends Component implements ElementInterface
     protected function route()
     {
         return null;
+    }
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @see getPreviewTargets()
+     * @since 3.2
+     */
+    protected function previewTargets(): array
+    {
+        return [];
     }
 
     /**
@@ -2244,7 +2529,7 @@ abstract class Element extends Component implements ElementInterface
 
         /** @var ElementQuery $query */
         $elementIds = $query->ids();
-        $key = array_search($this->id, $elementIds, false);
+        $key = array_search($this->getSourceId(), $elementIds, false);
 
         if ($key === false || !isset($elementIds[$key + $dir])) {
             return null;

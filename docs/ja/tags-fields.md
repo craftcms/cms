@@ -37,6 +37,26 @@
 
 ## テンプレート記法
 
+### タグフィールドによるエレメントの照会
+
+タグフィールドを持つ[エレメントを照会](dev/element-queries/README.md)する場合、フィールドのハンドルにちなんで名付けられたクエリパラメータを使用して、タグフィールドのデータに基づいた結果をフィルタできます。
+
+利用可能な値には、次のものが含まれます。
+
+| 値 | 取得するエレメント
+| - | -
+| `':empty:'` | 関連付けられたタグを持たない。
+| `':notempty:'` | 少なくとも1つの関連付けられたタグを持つ。
+
+```twig
+{# Fetch entries with a related tag #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### タグフィールドデータの操作
+
 テンプレート内でタグフィールドのエレメントを取得する場合、タグフィールドのハンドルを利用して、関連付けられたタグにアクセスできます。
 
 ```twig
@@ -44,8 +64,6 @@
 ```
 
 これは、所定のフィールドで関連付けられたすべてのタグを出力するよう準備された[タグクエリ](dev/element-queries/tag-queries.md)を提供します。
-
-### 実例
 
 関連付けられたすべてのタグをループするには、[all()](api:craft\db\Query::all()) を呼び出して、結果をループ処理します。
 
@@ -79,7 +97,7 @@
 
 タグクエリで[パラメータ](dev/element-queries/tag-queries.md#parameters)をセットすることもできます。
 
-### 関連項目
+## 関連項目
 
 * [タグクエリ](dev/element-queries/tag-queries.md)
 * <api:craft\elements\Tag>

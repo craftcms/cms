@@ -30,6 +30,11 @@ abstract class BaseJob extends BaseObject implements JobInterface
      */
     private $_progress;
 
+    /**
+     * @var string|null The current progress label
+     */
+    private $_progressLabel;
+
     // Public Methods
     // =========================================================================
 
@@ -70,11 +75,26 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * @param \yii\queue\Queue|QueueInterface $queue
      * @param float $progress A number between 0 and 1
+     * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress)
+    protected function setProgress($queue, float $progress, string $label = null)
     {
-        if ($progress !== $this->_progress && $queue instanceof QueueInterface) {
-            $queue->setProgress(round(100 * $progress));
+        $progress = round(100 * $progress);
+
+        if (
+            $progress !== $this->_progress ||
+            ($label !== null && $label !== $this->_progressLabel)
+        ) {
+            $this->_progress = $progress;
+
+            // If $label == null, leave the existing value alone
+            if ($label !== null) {
+                $this->_progressLabel = $label;
+            }
+
+            if ($queue instanceof QueueInterface) {
+                $queue->setProgress($progress, $label);
+            }
         }
     }
 }

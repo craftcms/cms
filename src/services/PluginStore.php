@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Table;
-use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
@@ -256,28 +255,5 @@ class PluginStore extends Component
         }
 
         return new CraftIdToken($record->getAttributes());
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Returns a plugin store token record based on its ID.
-     *
-     * @param int $id
-     * @return OauthTokenRecord
-     */
-    private function _getOauthTokenRecordById($id = null)
-    {
-        if ($id) {
-            $record = OauthTokenRecord::findOne($id);
-            if (!$record) {
-                throw new TokenNotFoundException("No token exists with the ID '{$id}'");
-            }
-        } else {
-            $record = new OauthTokenRecord();
-        }
-
-        return $record;
     }
 }

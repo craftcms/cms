@@ -9,9 +9,9 @@
 ```twig
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="users/set-password">
-    <input type="hidden" name="code" value="{{ code }}">
-    <input type="hidden" name="id" value="{{ id }}">
+    {{ actionInput('users/set-password') }}
+    {{ hiddenInput('code', code) }}
+    {{ hiddenInput('id', id) }}
 
     <h3><label for="newPassword">New Password</label></h3>
     <input id="newPassword" type="password" name="newPassword">
@@ -27,5 +27,5 @@
 </form>
 ```
 
-コンフィグ設定の <config:setPasswordSuccessPath> は、ユーザーがパスワードのリセットを完了（かつ、自動的にログイン）した後にリダイレクトすべき場所を指定します。
+ユーザーがログインに成功すると、コンフィグ設定 <config:setPasswordSuccessPath> で定義されたパスにリダイレクトされます。
 

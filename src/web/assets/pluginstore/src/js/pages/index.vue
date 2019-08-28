@@ -17,19 +17,16 @@
     </div>
 </template>
 
-
 <script>
     import {mapState, mapGetters} from 'vuex'
     import PluginGrid from '../components/PluginGrid'
 
     export default {
-
         components: {
             PluginGrid,
         },
 
         computed: {
-
             ...mapState({
                 featuredPlugins: state => state.pluginStore.featuredPlugins,
             }),
@@ -38,7 +35,6 @@
                 activeTrialPlugins: 'cart/activeTrialPlugins',
                 getPluginsByIds: 'pluginStore/getPluginsByIds',
             }),
-
         },
 
         mounted() {
@@ -60,6 +56,5 @@
                 }
             }
         }
-
     }
 </script>

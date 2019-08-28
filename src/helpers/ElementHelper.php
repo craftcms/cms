@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
@@ -26,6 +27,29 @@ class ElementHelper
     // =========================================================================
 
     /**
+     * Generates a new temporary slug.
+     *
+     * @return string
+     * @since 3.2.2
+     */
+    public static function tempSlug(): string
+    {
+        return '__temp_' . StringHelper::randomString();
+    }
+
+    /**
+     * Returns whether the given slug is temporary.
+     *
+     * @param string $slug
+     * @return bool
+     * @since 3.2.2
+     */
+    public static function isTempSlug(string $slug): bool
+    {
+        return strpos($slug, '__temp_') === 0;
+    }
+
+    /**
      * Creates a slug based on a given string.
      *
      * @param string $str
@@ -33,15 +57,28 @@ class ElementHelper
      */
     public static function createSlug(string $str): string
     {
+        // Special case for the homepage
+        if ($str === '__home__') {
+            return $str;
+        }
+
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
 
-        // Convert to kebab case
-        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $lower = !Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
-        $str = StringHelper::toKebabCase($str, $glue, $lower, false);
+        // Remove inner-word punctuation
+        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $str);
 
-        return $str;
+        // Make it lowercase
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->allowUppercaseInSlug) {
+            $str = mb_strtolower($str);
+        }
+
+        // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
+        // Reference: http://www.regular-expressions.info/unicode.html
+        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
+
+        return implode($generalConfig->slugWordSeparator, $words);
     }
 
     /**
@@ -53,26 +90,29 @@ class ElementHelper
     public static function setUniqueUri(ElementInterface $element)
     {
         /** @var Element $element */
-        $uriFormat = $element->getUriFormat();
+        $uriFormat = Craft::$app->getConfig()->getGeneral()->headlessMode ? null : $element->getUriFormat();
 
         // No URL format, no URI.
         if ($uriFormat === null) {
             $element->uri = null;
+            return;
+        }
 
+        // If the URL format returns an empty string, the URL format probably wrapped everything in a condition
+        $testUri = self::_renderUriFormat($uriFormat, $element);
+        if ($testUri === '') {
+            $element->uri = null;
             return;
         }
 
         // Does the URL format even have a {slug} tag?
         if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
-            $testUri = self::_renderUriFormat($uriFormat, $element);
-
             // Make sure it's unique
             if (!self::_isUniqueUri($testUri, $element)) {
                 throw new OperationAbortedException('Could not find a unique URI for this element');
             }
 
             $element->uri = $testUri;
-
             return;
         }
 
@@ -114,7 +154,6 @@ class ElementHelper
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
-
                 return;
             }
 
@@ -165,6 +204,8 @@ class ElementHelper
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $element->siteId,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
                 'elements.dateDeleted' => null,
             ]);
 
@@ -179,8 +220,10 @@ class ElementHelper
             ]);
         }
 
-        if ($element->id) {
-            $query->andWhere(['not', ['elements.id' => $element->id]]);
+        if (($sourceId = $element->getSourceId()) !== null) {
+            $query->andWhere(['not', [
+                'elements.id' => $sourceId,
+            ]]);
         }
 
         return (int)$query->count() === 0;
@@ -276,6 +319,56 @@ class ElementHelper
         }
 
         return $siteIds;
+    }
+
+    /**
+     * Returns the root element of a given element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     */
+    public static function rootElement(ElementInterface $element): ElementInterface
+    {
+        if ($element instanceof BlockElementInterface) {
+            return static::rootElement($element->getOwner());
+        }
+        return $element;
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a draft or revision.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public static function isDraftOrRevision(ElementInterface $element): bool
+    {
+        /** @var Element $root */
+        $root = ElementHelper::rootElement($element);
+        return $root->getIsDraft() || $root->getIsRevision();
+    }
+
+    /**
+     * Returns the element, or if it’s a draft/revision, the source element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     * @since 3.3.0
+     */
+    public static function sourceElement(ElementInterface $element): ElementInterface
+    {
+        /** @var Element $element */
+        $sourceId = $element->getSourceId();
+        if ($sourceId === $element->id) {
+            return $element;
+        }
+
+        return $element::find()
+            ->id($sourceId)
+            ->siteId($element->siteId)
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->one();
     }
 
     /**

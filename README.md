@@ -1,5 +1,11 @@
 <p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
+<p align="center">
+<a href="https://travis-ci.com/craftcms/cms"><img src="https://img.shields.io/travis/com/craftcms/cms/develop.svg?label=build" alt="Build Status"></a>
+<a href="https://packagist.org/packages/craftcms/cms"><img src="https://img.shields.io/packagist/dt/craftcms/cms.svg?label=downloads" alt="Total Packagist Downloads"></a>
+<a href="https://github.com/craftcms/cms/releases"><img src="https://img.shields.io/github/tag/craftcms/cms.svg?label=stable" alt="Latest Stable Version"></a>
+</p>
+
 ## About Craft CMS
 
 Craft is a flexible, user-friendly CMS for creating custom digital experiences on the web and beyond.

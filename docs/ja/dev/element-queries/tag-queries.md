@@ -123,8 +123,8 @@ $tags = \craft\elements\Tag::find()
 
 ```php
 // Fetch tags created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $tags = \craft\elements\Tag::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -158,7 +158,7 @@ $tags = \craft\elements\Tag::find()
 
 ```php
 // Fetch tags updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $tags = \craft\elements\Tag::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -364,14 +364,14 @@ $tags = \craft\elements\Tag::find()
 ```twig
 {# Fetch all tags in order of date created #}
 {% set tags = craft.tags()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all tags in order of date created
 $tags = \craft\elements\Tag::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -381,7 +381,7 @@ $tags = \craft\elements\Tag::find()
 
 特定の他のエレメントと関連付けられたタグだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -405,7 +405,7 @@ $tags = \craft\elements\Tag::find()
 
 検索クエリにマッチするタグだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -499,7 +499,7 @@ $tags = \craft\elements\Tag::find()
 | `'*Foo'` | タイトルが `Foo` で終わる。
 | `'*Foo*'` | タイトルが `Foo` を含む。
 | `'not *Foo*'` | タイトルが `Foo` を含まない。
-| `['*Foo*', '*Bar*'` | タイトルが `Foo` または `Bar` を含む。
+| `['*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含む。
 | `['not', '*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含まない。
 
 ::: code
@@ -515,6 +515,28 @@ $tags = \craft\elements\Tag::find()
 // Fetch tags with a title that contains "Foo"
 $tags = \craft\elements\Tag::find()
     ->title('*Foo*')
+    ->all();
+```
+
+:::
+
+### `trashed`
+
+ソフトデリートされたタグだけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed tags #}
+{% set tags = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed tags
+$tags = \craft\elements\Tag::find()
+    ->trashed()
     ->all();
 ```
 
@@ -555,7 +577,7 @@ $tag = \craft\elements\Tag::find()
 | `'*foo'` | URI が `foo` で終わる。
 | `'*foo*'` | URI が `foo` を含む。
 | `'not *foo*'` | URI が `foo` を含まない。
-| `['*foo*', '*bar*'` | URI が `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | URI が `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | URI が `foo` または `bar` を含まない。
 
 ::: code
@@ -586,7 +608,7 @@ $tag = \craft\elements\Tag::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチしたタグをクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 

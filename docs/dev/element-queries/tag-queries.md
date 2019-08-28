@@ -464,7 +464,7 @@ $tags = \craft\elements\Tag::find()
 
 ### `site`
 
-Determines which site the tags should be queried in.
+Determines which site(s) the tags should be queried in.
 
 
 
@@ -475,7 +475,15 @@ Possible values include:
 | Value | Fetches tags…
 | - | -
 | `'foo'` | from the site with a handle of `foo`.
+| `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
 | a `\craft\elements\db\Site` object | from the site represented by the object.
+| `'*'` | from any site.
+
+::: tip
+If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+:::
 
 
 
@@ -498,7 +506,7 @@ $tags = \craft\elements\Tag::find()
 
 ### `siteId`
 
-Determines which site the tags should be queried in, per the site’s ID.
+Determines which site(s) the tags should be queried in, per the site’s ID.
 
 
 
@@ -538,7 +546,7 @@ Possible values include:
 | `'*Foo'` | with a title that ends with `Foo`.
 | `'*Foo*'` | with a title that contains `Foo`.
 | `'not *Foo*'` | with a title that doesn’t contain `Foo`.
-| `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+| `['*Foo*', '*Bar*']` | with a title that contains `Foo` or `Bar`.
 | `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
 
 
@@ -571,7 +579,7 @@ Narrows the query results to only tags that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed tags #}
-{% set tags = {twig-function}
+{% set tags = craft.tags()
     .trashed()
     .all() %}
 ```
@@ -625,7 +633,7 @@ Possible values include:
 | `'*foo'` | with a URI that ends with `foo`.
 | `'*foo*'` | with a URI that contains `foo`.
 | `'not *foo*'` | with a URI that doesn’t contain `foo`.
-| `['*foo*', '*bar*'` | with a URI that contains `foo` or `bar`.
+| `['*foo*', '*bar*']` | with a URI that contains `foo` or `bar`.
 | `['not', '*foo*', '*bar*']` | with a URI that doesn’t contain `foo` or `bar`.
 
 

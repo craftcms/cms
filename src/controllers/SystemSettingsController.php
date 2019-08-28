@@ -21,7 +21,6 @@ use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
-use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
@@ -47,6 +46,8 @@ class SystemSettingsController extends Controller
     {
         // All system setting actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

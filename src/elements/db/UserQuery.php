@@ -173,7 +173,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch admins #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .admin()
      *     .all() %}
      * ```
@@ -204,7 +204,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch users that can access the Control Panel #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .can('accessCp')
      *     .all() %}
      * ```
@@ -523,7 +523,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch active and locked {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .status(['active', 'locked'])
      *     .all() %}
      * ```
@@ -590,17 +590,11 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $userIds = (new Query())
-                ->select(['userId'])
-                ->from([Table::USERGROUPS_USERS])
-                ->where(Db::parseParam('groupId', $this->groupId))
-                ->column();
-
-            if (!empty($userIds)) {
-                $this->subQuery->andWhere(['elements.id' => $userIds]);
-            } else {
-                return false;
-            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['ugu' => Table::USERGROUPS_USERS])
+                ->where('[[elements.id]] = [[ugu.userId]]')
+                ->andWhere(Db::parseParam('groupId', $this->groupId))
+            ]);
         }
 
         if ($this->email) {

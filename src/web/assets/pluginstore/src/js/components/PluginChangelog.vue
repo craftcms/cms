@@ -3,7 +3,7 @@
         <h2>{{ "Changelog"|t('app') }}</h2>
 
         <template v-if="loading">
-            <div class="spinner mt-4"></div>
+            <spinner class="mt-4"></spinner>
         </template>
 
         <template v-else>
@@ -75,7 +75,7 @@
             height: 400px;
 
             .more {
-                @apply .block .absolute .pin-b .w-full;
+                @apply .block .absolute .pin-b .w-full .pb-4;
                 padding-top: 200px;
                 background: rgb(255,255,255);
                 background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 80%);

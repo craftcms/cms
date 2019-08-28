@@ -432,7 +432,7 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 ### `site`
 
-Determines which site the global sets should be queried in.
+Determines which site(s) the global sets should be queried in.
 
 
 
@@ -443,7 +443,15 @@ Possible values include:
 | Value | Fetches global sets…
 | - | -
 | `'foo'` | from the site with a handle of `foo`.
+| `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
 | a `\craft\elements\db\Site` object | from the site represented by the object.
+| `'*'` | from any site.
+
+::: tip
+If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+:::
 
 
 
@@ -466,7 +474,7 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 ### `siteId`
 
-Determines which site the global sets should be queried in, per the site’s ID.
+Determines which site(s) the global sets should be queried in, per the site’s ID.
 
 
 
@@ -502,7 +510,7 @@ Narrows the query results to only global sets that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed global sets #}
-{% set globalSets = {twig-function}
+{% set globalSets = craft.globalSets()
     .trashed()
     .all() %}
 ```

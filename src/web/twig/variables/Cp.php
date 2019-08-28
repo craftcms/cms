@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * CP functions
@@ -70,10 +71,48 @@ class Cp extends Component
     /**
      * Returns the Control Panel nav items.
      *
+     * Each CP nav item should be defined by an array with the following keys:
+     *
+     * - `label` – The human-facing nav item label
+     * - `url` – The URL the nav item should link to
+     * - `id` – The HTML `id` attribute the nav item should have (optional)
+     * - `icon` – The path to an SVG file that should be used as the nav item icon (optional)
+     * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
+     * - `badgeCount` – A number that should be displayed beside the nav item when unselected
+     * - `subnav` – A sub-array of subnav items
+     *
+     * Subnav arrays should be associative, with identifiable keys set to sub-arrays with the following keys:
+     *
+     * - `label` – The human-facing subnav item label
+     * - `url` – The URL the subnav item should link to
+     *
+     * For example:
+     *
+     * ```php
+     * [
+     *     'label' => 'Commerce',
+     *     'url' => 'commerce',
+     *     'subnav' => [
+     *         'orders' => ['label' => 'Orders', 'url' => 'commerce/orders',
+     *         'discounts' => ['label' => 'Discounts', 'url' => 'commerce/discounts',
+     *     ],
+     * ]
+     * ```
+     *
+     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     *
+     * ```twig
+     * {% set selectedSubnavItem = 'orders' %}
+     * ```
+     *
      * @return array
+     * @throws InvalidConfigException
      */
     public function nav(): array
     {
+        $craftPro = Craft::$app->getEdition() === Craft::Pro;
+        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+
         $navItems = [
             [
                 'label' => Craft::t('app', 'Dashboard'),
@@ -114,7 +153,7 @@ class Cp extends Component
             ];
         }
 
-        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -154,20 +193,37 @@ class Cp extends Component
             ];
         }
 
-        if (
-            Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
-        ) {
-            $navItems[] = [
-                'url' => 'settings',
-                'label' => Craft::t('app', 'Settings'),
-                'fontIcon' => 'settings'
-            ];
-            $navItems[] = [
-                'url' => 'plugin-store',
-                'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin'
-            ];
+        if ($isAdmin) {
+            if ($craftPro) {
+                $navItems[] = [
+                    'label' => Craft::t('app', 'GraphQL'),
+                    'url' => 'graphql',
+                    'icon' => '@app/icons/graphql.svg',
+                    'subnav' => [
+                        'explore' => [
+                            'label' => Craft::t('app', 'Explore'),
+                            'url' => 'graphql',
+                        ],
+                        'schemas' => [
+                            'label' => Craft::t('app', 'Schemas'),
+                            'url' => 'graphql/schemas',
+                        ]
+                    ]
+                ];
+            }
+
+            if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                $navItems[] = [
+                    'url' => 'settings',
+                    'label' => Craft::t('app', 'Settings'),
+                    'fontIcon' => 'settings'
+                ];
+                $navItems[] = [
+                    'url' => 'plugin-store',
+                    'label' => Craft::t('app', 'Plugin Store'),
+                    'fontIcon' => 'plugin'
+                ];
+            }
         }
 
         // Allow plugins to modify the nav
@@ -227,10 +283,14 @@ class Cp extends Component
             'icon' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
-        $settings[$label]['routes'] = [
-            'icon' => '@app/icons/routes.svg',
-            'label' => Craft::t('app', 'Routes')
-        ];
+
+        if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            $settings[$label]['routes'] = [
+                'icon' => '@app/icons/routes.svg',
+                'label' => Craft::t('app', 'Routes')
+            ];
+        }
+
         $settings[$label]['users'] = [
             'icon' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')

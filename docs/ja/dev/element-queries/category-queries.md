@@ -187,8 +187,8 @@ $categories = \craft\elements\Category::find()
 
 ```php
 // Fetch categories created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $categories = \craft\elements\Category::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -222,7 +222,7 @@ $categories = \craft\elements\Category::find()
 
 ```php
 // Fetch categories updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $categories = \craft\elements\Category::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -623,14 +623,14 @@ $categories = \craft\elements\Category::find()
 ```twig
 {# Fetch all categories in order of date created #}
 {% set categories = craft.categories()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all categories in order of date created
 $categories = \craft\elements\Category::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -727,7 +727,7 @@ $category = \craft\elements\Category::find()
 
 特定の他のエレメントと関連付けられたカテゴリだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -751,7 +751,7 @@ $categories = \craft\elements\Category::find()
 
 検索クエリにマッチするカテゴリだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -874,7 +874,7 @@ $categories = \craft\elements\Category::find()
 | `'*foo'` | スラグが `foo` で終わる。
 | `'*foo*'` | スラグが `foo` を含む。
 | `'not *foo*'` | スラグが `foo` を含まない。
-| `['*foo*', '*bar*'` | スラグが `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | スラグが `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | スラグが `foo` または `bar` を含まない。
 
 ::: code
@@ -943,7 +943,7 @@ $categories = \craft\elements\Category::find()
 | `'*Foo'` | タイトルが `Foo` で終わる。
 | `'*Foo*'` | タイトルが `Foo` を含む。
 | `'not *Foo*'` | タイトルが `Foo` を含まない。
-| `['*Foo*', '*Bar*'` | タイトルが `Foo` または `Bar` を含む。
+| `['*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含む。
 | `['not', '*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含まない。
 
 ::: code
@@ -959,6 +959,28 @@ $categories = \craft\elements\Category::find()
 // Fetch categories with a title that contains "Foo"
 $categories = \craft\elements\Category::find()
     ->title('*Foo*')
+    ->all();
+```
+
+:::
+
+### `trashed`
+
+ソフトデリートされたカテゴリだけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed categories #}
+{% set categories = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed categories
+$categories = \craft\elements\Category::find()
+    ->trashed()
     ->all();
 ```
 
@@ -999,7 +1021,7 @@ $category = \craft\elements\Category::find()
 | `'*foo'` | URI が `foo` で終わる。
 | `'*foo*'` | URI が `foo` を含む。
 | `'not *foo*'` | URI が `foo` を含まない。
-| `['*foo*', '*bar*'` | URI が `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | URI が `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | URI が `foo` または `bar` を含まない。
 
 ::: code
@@ -1030,7 +1052,7 @@ $category = \craft\elements\Category::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチしたカテゴリをクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 

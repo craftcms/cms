@@ -37,7 +37,14 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = true;
+    public $allowAnonymous = [
+        'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'config-sync-kickoff' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'incompatible-config-alert' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'render-error' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+    ];
 
     // Public Methods
     // =========================================================================
@@ -47,9 +54,19 @@ class TemplatesController extends Controller
      */
     public function beforeAction($action)
     {
-        $actionSegments = Craft::$app->getRequest()->getActionSegments();
+        $request = Craft::$app->getRequest();
+        $actionSegments = $request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
+        }
+
+        if ($action->id === 'render') {
+            // Allow anonymous access to the Login template even if the site is offline
+            if ($request->getIsLoginRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+            } else if ($request->getIsSiteRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+            }
         }
 
         return parent::beforeAction($action);
@@ -66,7 +83,13 @@ class TemplatesController extends Controller
     public function actionRender(string $template, array $variables = []): Response
     {
         // Does that template exist?
-        if (!$this->getView()->doesTemplateExist($template)) {
+        if (
+            (
+                Craft::$app->getConfig()->getGeneral()->headlessMode &&
+                Craft::$app->getRequest()->getIsSiteRequest()
+            ) ||
+            !$this->getView()->doesTemplateExist($template)
+        ) {
             throw new NotFoundHttpException('Template not found: ' . $template);
         }
 
@@ -120,9 +143,9 @@ class TemplatesController extends Controller
      *
      * @return Response
      */
-    public function actionIncompatibleConfigAlert(): Response
+    public function actionIncompatibleConfigAlert(array $issues = []): Response
     {
-        return $this->renderTemplate('_special/incompatibleconfigs');
+        return $this->renderTemplate('_special/incompatibleconfigs', ['issues' => $issues]);
     }
 
     /**

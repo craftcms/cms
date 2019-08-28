@@ -28,6 +28,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\validators\DateTimeValidator;
 use yii\base\Exception;
@@ -60,6 +61,14 @@ class Entry extends Element
     public static function displayName(): string
     {
         return Craft::t('app', 'Entry');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Entries');
     }
 
     /**
@@ -344,7 +353,7 @@ class Entry extends Element
                         $newChildUrl = 'entries/' . $section->handle . '/new';
 
                         if (Craft::$app->getIsMultiSite()) {
-                            $newChildUrl .= '/' . $site->handle;
+                            $newChildUrl .= '?site=' . $site->handle;
                         }
 
                         $actions[] = $elementsService->createAction([
@@ -430,6 +439,7 @@ class Entry extends Element
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
@@ -486,6 +496,29 @@ class Entry extends Element
         }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var EntryType $context */
+        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var EntryType $context */
+        return [
+            'sections.' . $context->getSection()->uid,
+            'entrytypes.' . $context->uid,
+        ];
     }
 
     /**
@@ -574,18 +607,6 @@ class Entry extends Element
     public $newParentId;
 
     /**
-     * @var int|null Revision creator ID
-     * @internal
-     */
-    public $revisionCreatorId;
-
-    /**
-     * @var string|null Revision notes
-     * @internal
-     */
-    public $revisionNotes;
-
-    /**
      * @var bool Whether the entry was deleted along with its entry type
      * @see beforeDelete()
      * @internal
@@ -605,6 +626,15 @@ class Entry extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __clone()
+    {
+        parent::__clone();
+        $this->_hasNewParent = null;
+    }
 
     /**
      * @inheritdoc
@@ -666,10 +696,27 @@ class Entry extends Element
     public function getSupportedSites(): array
     {
         $section = $this->getSection();
+        /** @var Site[] $allSites */
+        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
         foreach ($section->getSiteSettings() as $siteSettings) {
-            if ($section->propagateEntries || $siteSettings->siteId == $this->siteId) {
+            switch ($section->propagationMethod) {
+                case Section::PROPAGATION_METHOD_NONE:
+                    $include = $siteSettings->siteId == $this->siteId;
+                    break;
+                case Section::PROPAGATION_METHOD_SITE_GROUP:
+                    $include = $allSites[$siteSettings->siteId]->groupId == $allSites[$this->siteId]->groupId;
+                    break;
+                case Section::PROPAGATION_METHOD_LANGUAGE:
+                    $include = $allSites[$siteSettings->siteId]->language == $allSites[$this->siteId]->language;
+                    break;
+                default:
+                    $include = true;
+                    break;
+            }
+
+            if ($include) {
                 $sites[] = [
                     'siteId' => $siteSettings->siteId,
                     'enabledByDefault' => $siteSettings->enabledByDefault
@@ -701,7 +748,7 @@ class Entry extends Element
     protected function route()
     {
         // Make sure that the entry is actually live
-        if ($this->getStatus() != self::STATUS_LIVE) {
+        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
             return null;
         }
 
@@ -721,6 +768,17 @@ class Entry extends Element
                 ]
             ]
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function previewTargets(): array
+    {
+        return array_map(function($previewTarget) {
+            $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
+            return $previewTarget;
+        }, $this->getSection()->previewTargets);
     }
 
     /**
@@ -912,13 +970,24 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $url = UrlHelper::cpUrl('entries/' . $section->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
+        $path = 'entries/' . $section->handle . '/' . $this->getSourceId() .
+            ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
+        $params = [];
         if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
+            $params['site'] = $this->getSite()->handle;
         }
 
-        return $url;
+        return UrlHelper::cpUrl($path, $params);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getType());
     }
 
     /**
@@ -1069,6 +1138,24 @@ EOD;
             throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
         }
 
+        // Make sure the entry has at least one revision if the section has versioning enabled
+        if ($this->_shouldSaveRevision()) {
+            $hasRevisions = self::find()
+                ->revisionOf($this)
+                ->siteId('*')
+                ->anyStatus()
+                ->exists();
+            if (!$hasRevisions) {
+                $currentEntry = self::find()
+                    ->id($this->id)
+                    ->siteId('*')
+                    ->anyStatus()
+                    ->one();
+                $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
+                Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
+            }
+        }
+
         // Set the structure ID for Element::attributes() and afterSave()
         if ($section->type === Section::TYPE_STRUCTURE) {
             $this->structureId = $section->structureId;
@@ -1113,42 +1200,57 @@ EOD;
      */
     public function afterSave(bool $isNew)
     {
-        $section = $this->getSection();
+        if (!$this->propagating) {
+            $section = $this->getSection();
 
-        // Get the entry record
-        if (!$isNew) {
-            $record = EntryRecord::findOne($this->id);
+            // Get the entry record
+            if (!$isNew) {
+                $record = EntryRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid entry ID: ' . $this->id);
-            }
-        } else {
-            $record = new EntryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->sectionId = $this->sectionId;
-        $record->typeId = $this->typeId;
-        $record->authorId = $this->authorId;
-        $record->postDate = $this->postDate;
-        $record->expiryDate = $this->expiryDate;
-        $record->save(false);
-
-        if ($section->type == Section::TYPE_STRUCTURE) {
-            // Has the parent changed?
-            if ($this->_hasNewParent()) {
-                if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
-                } else {
-                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                if (!$record) {
+                    throw new Exception('Invalid entry ID: ' . $this->id);
                 }
+            } else {
+                $record = new EntryRecord();
+                $record->id = (int)$this->id;
             }
 
-            // Update the entry's descendants, who may be using this entry's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            $record->sectionId = (int)$this->sectionId;
+            $record->typeId = (int)$this->typeId;
+            $record->authorId = (int)$this->authorId ?: null;
+            $record->postDate = $this->postDate;
+            $record->expiryDate = $this->expiryDate;
+            $record->save(false);
+
+            if ($section->type == Section::TYPE_STRUCTURE) {
+                // Has the parent changed?
+                if ($this->_hasNewParent()) {
+                    if (!$this->newParentId) {
+                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                    } else {
+                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                    }
+                }
+
+                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            }
         }
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPropagate(bool $isNew)
+    {
+        parent::afterPropagate($isNew);
+
+        // Save a new revision?
+        if ($this->_shouldSaveRevision()) {
+            Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
+        }
     }
 
     /**
@@ -1284,5 +1386,22 @@ EOD;
         $oldParentId = $oldParentQuery->scalar();
 
         return $this->newParentId != $oldParentId;
+    }
+
+    /**
+     * Returns whether the entry should be saving revisions on save.
+     *
+     * @return bool
+     */
+    private function _shouldSaveRevision(): bool
+    {
+        return (
+            $this->id &&
+            !$this->propagating &&
+            !$this->resaving &&
+            !$this->getIsDraft() &&
+            !$this->getIsRevision() &&
+            $this->getSection()->enableVersioning
+        );
     }
 }

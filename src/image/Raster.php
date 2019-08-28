@@ -175,7 +175,8 @@ class Raster extends Image
         }
 
         // For Imagick, convert CMYK to RGB, save and re-open.
-        if (!Craft::$app->getImages()->getIsGd()
+        if (
+            !Craft::$app->getImages()->getIsGd()
             && !Craft::$app->getConfig()->getGeneral()->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
@@ -370,11 +371,9 @@ class Raster extends Image
             $this->_image = $gif;
         } else {
             if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
-                $config = Craft::$app->getConfig()->getGeneral();
-                $keepImageProfiles = $config->preserveImageColorProfiles;
-                $keepExifData = $config->preserveExifData;
+                $keepImageProfiles = Craft::$app->getConfig()->getGeneral()->preserveImageColorProfiles;
 
-                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, $keepExifData, $this->_quality);
+                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, true, $this->_quality);
             } else {
                 $this->_image->resize(new Box($targetWidth, $targetHeight), $this->_getResizeFilter());
             }
@@ -477,6 +476,9 @@ class Raster extends Image
                     Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": " . $e->getMessage(), __METHOD__);
                 }
             } else {
+                if (Craft::$app->getImages()->getIsImagick()) {
+                    ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+                }
                 $this->_image->save($targetPath, $options);
             }
         } catch (RuntimeException $e) {
@@ -608,6 +610,13 @@ class Raster extends Image
     {
         $this->_isAnimatedGif = false;
 
+        if ($this->_image->layers()->count() > 1) {
+            // Fetching the first layer returns the built-in Imagick object
+            // So cycle that through the loading phase to get one that sports the
+            // `smartResize` functionality.
+            $this->_image = $this->_instance->load((string) $this->_image->layers()->get(0));
+        }
+
         return $this;
     }
 
@@ -647,6 +656,10 @@ class Raster extends Image
             clearstatcache();
 
             // Generate one last time.
+            if (Craft::$app->getImages()->getIsImagick()) {
+                ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+            }
+
             $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 
             return $tempFileName;

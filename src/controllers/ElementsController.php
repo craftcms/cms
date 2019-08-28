@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
-use craft\elements\Entry;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -52,13 +51,32 @@ class ElementsController extends BaseElementsController
         }
 
         if (is_array($sourceKeys)) {
+            $sourceKeys = array_flip($sourceKeys);
+            $allSources = Craft::$app->getElementIndexes()->getSources($elementType);
             $sources = [];
+            $nextHeading = null;
 
-            foreach ($sourceKeys as $key) {
-                $source = ElementHelper::findSource($elementType, $key, $context);
+            foreach ($allSources as $source) {
+                if (isset($source['heading'])) {
+                    // Queue the heading up to be included only if one of the following sources were requested
+                    $nextHeading = $source;
+                } else if (isset($sourceKeys[$source['key']])) {
+                    if ($nextHeading !== null) {
+                        $sources[] = $nextHeading;
+                        $nextHeading = null;
+                    }
+                    $sources[] = $source;
+                    unset($sourceKeys[$source['key']]);
+                }
+            }
 
-                if ($source !== null) {
-                    $sources[$key] = $source;
+            // Did we miss any source keys? (This could happen if some are nested)
+            if (!empty($sourceKeys)) {
+                foreach (array_keys($sourceKeys) as $key) {
+                    $source = ElementHelper::findSource($elementType, $key, $context);
+                    if ($source !== null) {
+                        $sources[$key] = $source;
+                    }
                 }
             }
         } else {
@@ -127,12 +145,6 @@ class ElementsController extends BaseElementsController
         }
 
         if (Craft::$app->getElements()->saveElement($element)) {
-            // todo: super hacky. Adjust when we add revision support to all element types
-            // If this is an entry, should we save a new version?
-            if (($element instanceof Entry) && $element->getSection()->enableVersioning) {
-                Craft::$app->getEntryRevisions()->saveVersion($element);
-            }
-
             $response = [
                 'success' => true,
                 'id' => $element->id,
@@ -311,6 +323,12 @@ class ElementsController extends BaseElementsController
             throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
         }
 
+        // Prevalidate?
+        if ($request->getBodyParam('prevalidate') && $element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->validate();
+        }
+
         return $element;
     }
 
@@ -364,19 +382,15 @@ class ElementsController extends BaseElementsController
         $response = [];
 
         if ($includeSites) {
-            if (count($siteIds) > 1) {
-                $response['siteIds'] = [];
+            $response['sites'] = [];
 
-                foreach ($siteIds as $siteId) {
-                    $site = Craft::$app->getSites()->getSiteById($siteId);
+            foreach ($siteIds as $siteId) {
+                $site = Craft::$app->getSites()->getSiteById($siteId);
 
-                    $response['sites'][] = [
-                        'id' => $siteId,
-                        'name' => Craft::t('site', $site->name),
-                    ];
-                }
-            } else {
-                $response['sites'] = null;
+                $response['sites'][] = [
+                    'id' => $siteId,
+                    'name' => Craft::t('site', $site->name),
+                ];
             }
         }
 

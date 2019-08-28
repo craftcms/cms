@@ -35,6 +35,11 @@ class Deprecator extends Component
     // =========================================================================
 
     /**
+     * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
+     */
+    public $throwExceptions = false;
+
+    /**
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
      * error logs ('logs'), or not at all (false).
      *
@@ -63,6 +68,7 @@ class Deprecator extends Component
      * @param string $message
      * @param string|null $file
      * @param int|null $line
+     * @throws DeprecationException
      */
     public function log(string $key, string $message, string $file = null, int $line = null)
     {
@@ -86,6 +92,10 @@ class Deprecator extends Component
 
         if ($file === null) {
             list($file, $line) = $this->_findOrigin($traces);
+        }
+
+        if ($this->throwExceptions) {
+            throw new DeprecationException($message, $file, $line);
         }
 
         $fingerprint = $file . ($line ? ':' . $line : '');

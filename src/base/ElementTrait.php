@@ -31,6 +31,16 @@ trait ElementTrait
     public $tempId;
 
     /**
+     * @var int|null The ID of the draft’s row in the `drafts` table
+     */
+    public $draftId;
+
+    /**
+     * @var int The ID of the revision’s row in the `revisions` table
+     */
+    public $revisionId;
+
+    /**
      * @var string|null The element’s UID
      */
     public $uid;
@@ -96,6 +106,11 @@ trait ElementTrait
     public $dateUpdated;
 
     /**
+     * @var DateTime|null The date that the element was trashed
+     */
+    public $dateDeleted;
+
+    /**
      * @var int|null The element’s structure’s root ID
      */
     public $root;
@@ -136,7 +151,33 @@ trait ElementTrait
     public $propagating = false;
 
     /**
+     * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
+     * overwriting existing site-specific values.
+     */
+    public $propagateAll = false;
+
+    /**
+     * @var int[] The site IDs that the element was just propagated to for the first time.
+     */
+    public $newSiteIds = [];
+
+    /**
+     * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
+     */
+    public $resaving = false;
+
+    /**
      * @var ElementInterface|null The element that this element is being duplicated by.
      */
     public $duplicateOf;
+
+    /**
+     * @var bool Whether the element is currently being previewed.
+     */
+    public $previewing = false;
+
+    /**
+     * @var bool Whether the element is being hard-deleted.
+     */
+    public $hardDelete = false;
 }

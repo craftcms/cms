@@ -742,7 +742,7 @@ class EntryQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch disabled {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .status('disabled')
      *     .all() %}
      * ```
@@ -917,7 +917,7 @@ class EntryQuery extends ElementQuery
                     ->where(Db::parseParam('id', $this->sectionId))
                     ->andWhere(['type' => Section::TYPE_STRUCTURE])
                     ->scalar();
-                $this->structureId = $structureId ? (int)$structureId : false;
+                $this->structureId = (int)$structureId ?: false;
             }
 
             $this->subQuery->andWhere(Db::parseParam('entries.sectionId', $this->sectionId));

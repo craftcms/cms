@@ -17,7 +17,6 @@ const state = {
  * Getters
  */
 const getters = {
-
     getFeaturedPlugin(state) {
         return id => {
             return state.featuredPlugins.find(g => g.id == id)
@@ -86,65 +85,69 @@ const getters = {
             return edition.price === null
         }
     },
-
 }
 
 /**
  * Actions
  */
 const actions = {
-
     getDeveloper({commit}, developerId) {
         return new Promise((resolve, reject) => {
-            api.getDeveloper(developerId, developer => {
-                commit('updateDeveloper', {developer})
-                resolve(developer)
-            }, response => {
-                reject(response)
-            })
+            api.getDeveloper(developerId)
+                .then(response => {
+                    commit('updateDeveloper', { developer: response.data })
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
         })
     },
 
     getPluginStoreData({commit}) {
         return new Promise((resolve, reject) => {
-            api.getPluginStoreData(response => {
-                commit('updatePluginStoreData', {response})
-                resolve(response)
-            }, response => {
-                reject(response)
-            })
+            api.getPluginStoreData()
+                .then(response => {
+                    commit('updatePluginStoreData', {response})
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
         })
     },
 
     getPluginDetails({commit}, pluginId) {
         return new Promise((resolve, reject) => {
-            api.getPluginDetails(pluginId, response => {
-                commit('updatePluginDetails', response.data)
-                resolve(response)
-            }, response => {
-                reject(response)
-            })
+            api.getPluginDetails(pluginId)
+                .then(response => {
+                    commit('updatePluginDetails', response.data)
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
         })
     },
 
     getPluginChangelog({commit}, pluginId) {
         return new Promise((resolve, reject) => {
-            api.getPluginChangelog(pluginId, response => {
-                commit('updatePluginChangelog', response.data)
-                resolve(response)
-            }, response => {
-                reject(response)
-            })
+            api.getPluginChangelog(pluginId)
+                .then(response => {
+                    commit('updatePluginChangelog', response.data)
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
         })
     },
-
 }
 
 /**
  * Mutations
  */
 const mutations = {
-
     updateDeveloper(state, {developer}) {
         state.developer = developer
     },
@@ -163,7 +166,6 @@ const mutations = {
     updatePluginChangelog(state, changelog) {
         state.pluginChangelog = changelog
     },
-
 }
 
 export default {

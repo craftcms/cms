@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\mail\transportadapters\Sendmail;
 use craft\validators\TemplateValidator;
 
 /**
@@ -41,7 +42,7 @@ class MailSettings extends Model
     /**
      * @var string|null The transport type that should be used
      */
-    public $transportType;
+    public $transportType = Sendmail::class;
 
     /**
      * @var array|null The transport type’s settings

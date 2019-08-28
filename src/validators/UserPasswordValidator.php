@@ -8,6 +8,7 @@
 namespace craft\validators;
 
 use Craft;
+use yii\base\Model;
 use yii\validators\StringValidator;
 
 /**
@@ -74,6 +75,7 @@ class UserPasswordValidator extends StringValidator
      */
     public function validateAttribute($model, $attribute)
     {
+        /** @var Model $model */
         parent::validateAttribute($model, $attribute);
 
         if ($model->hasErrors($attribute)) {
@@ -82,12 +84,12 @@ class UserPasswordValidator extends StringValidator
 
         if ($this->forceDifferent && $this->currentPassword) {
             $newPassword = $model->$attribute;
-
             if (Craft::$app->getSecurity()->validatePassword($newPassword, $this->currentPassword)) {
                 $this->addError($model, $attribute, $this->sameAsCurrent);
             }
         }
     }
+
 
     /**
      * @inheritdoc

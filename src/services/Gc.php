@@ -8,11 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use DateInterval;
 use yii\base\Component;
 
 /**
@@ -56,6 +54,8 @@ class Gc extends Component
             return;
         }
 
+        Craft::$app->getDrafts()->purgeUnsavedDrafts();
+        Craft::$app->getTemplateCaches()->deleteExpiredCaches();
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
 
@@ -67,6 +67,8 @@ class Gc extends Component
             Table::TAGGROUPS,
             Table::VOLUMES,
         ]);
+
+        Craft::$app->getSearch()->deleteOrphanedIndexes();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -112,23 +114,6 @@ class Gc extends Component
         $db = Craft::$app->getDb();
 
         foreach ($tables as $table) {
-            // If we are deleting elements, delete their search indexes too
-            if ($table === Table::ELEMENTS) {
-                $elementIds = (new Query())
-                    ->select(['id'])
-                    ->from([$table])
-                    ->where($condition)
-                    ->column();
-
-                if (empty($elementIds)) {
-                    continue;
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::SEARCHINDEX, ['elementId' => $elementIds])
-                    ->execute();
-            }
-
             $db->createCommand()
                 ->delete($table, $condition)
                 ->execute();
@@ -140,7 +125,13 @@ class Gc extends Component
      */
     private function _deleteStaleSessions()
     {
-        $interval = new DateInterval('P3M');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgeStaleUserSessionDuration === 0) {
+            return;
+        }
+
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 

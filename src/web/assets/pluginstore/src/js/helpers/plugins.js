@@ -1,5 +1,4 @@
 export default {
-
     sortPlugins(plugins, sortingOptions) {
         if (!plugins) {
             return []
@@ -38,5 +37,4 @@ export default {
 
         return plugins
     }
-
 }

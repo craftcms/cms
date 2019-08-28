@@ -14,7 +14,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\events\DeleteTemplateCachesEvent;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;
@@ -49,13 +48,6 @@ class TemplateCaches extends Component
     // =========================================================================
 
     /**
-     * The duration (in seconds) between the times when Craft will delete any expired template caches.
-     *
-     * @var int
-     */
-    private static $_lastCleanupDateCacheDuration = 86400;
-
-    /**
      * The current request's path, as it will be stored in the templatecaches table.
      *
      * @var string|null
@@ -75,13 +67,6 @@ class TemplateCaches extends Component
      * @var array|null
      */
     private $_cacheElementIds;
-
-    /**
-     * Whether expired caches have already been deleted in this request.
-     *
-     * @var bool
-     */
-    private $_deletedExpiredCaches = false;
 
     /**
      * Whether all caches have been deleted in this request.
@@ -119,13 +104,15 @@ class TemplateCaches extends Component
             return null;
         }
 
+        // Don't return anything if it's not a global request and it is a console request.
+        if (!$global && Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return null;
+        }
+
         // Don't return anything if it's not a global request and the path > 255 characters.
         if (!$global && strlen($this->_getPath()) > 255) {
             return null;
         }
-
-        // Take the opportunity to delete any expired caches
-        $this->deleteExpiredCachesIfOverdue();
 
         /** @noinspection PhpUnhandledExceptionInspection */
         $query = (new Query())
@@ -259,6 +246,11 @@ class TemplateCaches extends Component
             return;
         }
 
+        // Don't return anything if it's not a global request and it's a console request.
+        if (!$global && Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return;
+        }
+
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
         if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {
@@ -321,6 +313,8 @@ class TemplateCaches extends Component
                         $query[0],
                         $query[1]
                     ];
+                    // We can no longer say we’ve deleted all template caches for this element type
+                    unset($this->_deletedCachesByElementType[$query[0]]);
                 }
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(Table::TEMPLATECACHEQUERIES, [
@@ -350,6 +344,9 @@ class TemplateCaches extends Component
 
                 unset($this->_cacheElementIds[$key]);
             }
+
+            // We can no longer say we’ve deleted all template caches
+            $this->_deletedAllCaches = false;
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -404,7 +401,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementType(string $elementType): bool
     {
-        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) === false) {
+        if ($this->_deletedAllCaches || isset($this->_deletedCachesByElementType[$elementType])) {
             return false;
         }
 
@@ -439,7 +436,7 @@ class TemplateCaches extends Component
         }
 
         $elementType = get_class($firstElement);
-        $deleteQueryCaches = empty($this->_deletedCachesByElementType[$elementType]);
+        $deleteQueryCaches = !isset($this->_deletedCachesByElementType[$elementType]);
         $elementIds = [];
 
         /** @var Element[] $elements */
@@ -558,7 +555,7 @@ class TemplateCaches extends Component
      */
     public function deleteExpiredCaches(): bool
     {
-        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -568,37 +565,18 @@ class TemplateCaches extends Component
             ->where(['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
             ->column();
 
-        $success = $this->deleteCacheById($cacheIds);
-
-        // Don't do it again for a while
-        Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
-        $this->_deletedExpiredCaches = true;
-
-        return $success;
+        return $this->deleteCacheById($cacheIds);
     }
 
     /**
-     * Deletes any expired caches if we haven't already done that within the past 24 hours.
+     * Deletes any expired caches.
      *
      * @return bool
+     * @deprecated in 3.2. Use [[deleteExpiredCaches()]] instead.
      */
     public function deleteExpiredCachesIfOverdue(): bool
     {
-        // Ignore if we've already done this once during the request
-        if ($this->_deletedExpiredCaches) {
-            return false;
-        }
-
-        $lastCleanupDate = Craft::$app->getCache()->get('lastTemplateCacheCleanupDate');
-
-        if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > self::$_lastCleanupDateCacheDuration) {
-            return $this->deleteExpiredCaches();
-        }
-
-        // Save ourselves some trouble if this gets called again in this request
-        $this->_deletedExpiredCaches = true;
-
-        return false;
+        return $this->deleteExpiredCaches();
     }
 
     /**
@@ -657,9 +635,12 @@ class TemplateCaches extends Component
         }
 
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $this->_path = StringHelper::encodeMb4($this->_path);
+        }
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->pageTrigger . $pageNum;
+            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->getPageTrigger() . $pageNum;
         }
 
         return $this->_path;

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
@@ -361,7 +362,7 @@ class Users extends Component
     /**
      * Sends a password reset email to a user.
      *
-     * A new verification code will generated for the user overwriting any existing one.
+     * A new verification code be will generated for the user, overwriting any existing one.
      *
      * @param User $user The user to send the forgot password email to.
      * @return bool Whether the email was sent successfully.
@@ -485,8 +486,6 @@ class Users extends Component
         $userRecord->lastLoginDate = $now;
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
-        $userRecord->verificationCode = null;
-        $userRecord->verificationCodeIssuedDate = null;
 
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
@@ -884,22 +883,15 @@ class Users extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        $userIds = (new Query())
-            ->select(['id'])
-            ->from([Table::USERS])
-            ->where([
-                'and',
-                ['pending' => true],
-                ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
-            ])
-            ->column();
+        $query = User::find()
+            ->status('pending')
+            ->andWhere(['<', 'users.verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]);
 
         $elementsService = Craft::$app->getElements();
 
-        foreach ($userIds as $userId) {
-            $user = $this->getUserById($userId);
+        foreach ($query->each() as $user) {
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
     }
 
@@ -982,9 +974,15 @@ class Users extends Component
     public function assignUserToDefaultGroup(User $user): bool
     {
         // Make sure there's a default group
-        $defaultGroupId = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
 
-        if (!$defaultGroupId) {
+        if (!$uid) {
+            return false;
+        }
+
+        $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
+
+        if (!$group) {
             return false;
         }
 
@@ -998,7 +996,7 @@ class Users extends Component
             return false;
         }
 
-        if (!$this->assignUserToGroups($user->id, [$defaultGroupId])) {
+        if (!$this->assignUserToGroups($user->id, [$group->id])) {
             return false;
         }
 
@@ -1062,6 +1060,44 @@ class Users extends Component
         return true;
     }
 
+    /**
+     * Returns whether a user is allowed to impersonate another user.
+     *
+     * @param User $impersonator
+     * @param User $impersonatee
+     * @return bool
+     * @since 3.2
+     */
+    public function canImpersonate(User $impersonator, User $impersonatee): bool
+    {
+        // Admins can do whatever they want
+        if ($impersonator->admin) {
+            return true;
+        }
+
+        // Only admins are allowed to impersonate another admin
+        if ($impersonatee->admin) {
+            return false;
+        }
+
+        // impersonateUsers permission is obviously required
+        if (!$impersonator->can('impersonateUsers')) {
+            return false;
+        }
+
+        // Make sure the impersonator has at least all the same permissions as the impersonatee
+        $permissionsService = Craft::$app->getUserPermissions();
+        $impersonatorPermissions = array_flip($permissionsService->getPermissionsByUserId($impersonator->id));
+        $impersonateePermissions = $permissionsService->getPermissionsByUserId($impersonatee->id);
+
+        foreach ($impersonateePermissions as $permission) {
+            if (!isset($impersonatorPermissions[$permission])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Prune a deleted field from user group layout.
@@ -1077,7 +1113,10 @@ class Users extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldLayouts = $projectConfig->get(self::CONFIG_USERLAYOUT_KEY);
 
-        // Loop through the volumes and prune the UID from field layouts.
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
+        // Prune the user field layout.
         if (is_array($fieldLayouts)) {
             foreach ($fieldLayouts as $layoutUid => $layout) {
                 if (!empty($layout['tabs'])) {
@@ -1087,6 +1126,12 @@ class Users extends Component
                 }
             }
         }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     // Private Methods

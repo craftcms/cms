@@ -1,6 +1,6 @@
 {% set id = (id ?? 'date'~random())~'-date' -%}
 {% set name = name ?? null -%}
-{% set value = value ?? null -%}
+{% set value = (value ?? false) ? date(value, false) : null -%}
 
 <div class="datewrapper"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
@@ -13,7 +13,7 @@
     } -%}
     <div data-icon="date"></div>
     {% if name -%}
-        <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
+        {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
 </div>
 

@@ -24,6 +24,7 @@ use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
+use yii\db\Exception;
 
 /**
  * User Permissions service.
@@ -85,6 +86,9 @@ class UserPermissions extends Component
                     ],
                 ]
             ],
+            'customizeSources' => [
+                'label' => Craft::t('app', 'Customize element sources'),
+            ],
         ];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
@@ -123,6 +127,9 @@ class UserPermissions extends Component
                             'label' => Craft::t('app', 'Administrate users'),
                             'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
+                        ],
+                        'impersonateUsers' => [
+                            'label' => Craft::t('app', 'Impersonate users'),
                         ],
                     ],
                 ],
@@ -364,6 +371,7 @@ class UserPermissions extends Component
      * @param array $permissions
      * @return bool
      * @throws WrongEditionException if this is called from Craft Solo edition
+     * @throws Exception
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
@@ -399,7 +407,7 @@ class UserPermissions extends Component
         }
 
         // Cache the new permissions
-        $this->_permissionsByUserId[$userId] = $permissions;
+        $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
         return true;
     }
@@ -594,6 +602,9 @@ class UserPermissions extends Component
                     ],
                     "deleteFilesAndFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Remove files and folders'),
+                    ],
+                    "editImagesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Edit images'),
                     ]
                 ]
             ]

@@ -40,6 +40,8 @@ class FieldsController extends Controller
     {
         // All field actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     // Groups

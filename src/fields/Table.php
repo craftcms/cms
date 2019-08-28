@@ -12,13 +12,16 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
-use craft\helpers\ArrayHelper;
+use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
@@ -37,6 +40,14 @@ class Table extends Field
     public static function displayName(): string
     {
         return Craft::t('app', 'Table');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'array|null';
     }
 
     // Properties
@@ -71,9 +82,7 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults = [
-        'row1' => []
-    ];
+    public $defaults;
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -96,12 +105,26 @@ class Table extends Field
 
         if (!is_array($this->columns)) {
             $this->columns = [];
+        } else {
+            foreach ($this->columns as $colId => &$column) {
+                if ($column['type'] === 'select') {
+                    if (!isset($column['options'])) {
+                        $column['options'] = [];
+                    } else if (is_string($column['options'])) {
+                        $column['options'] = Json::decode($column['options']);
+                    }
+                } else {
+                    unset($column['options']);
+                }
+            }
+            unset($column);
         }
 
         if (!is_array($this->defaults)) {
-            $this->defaults = [];
+            $this->defaults = $this->id || $this->defaults === '' ? [] : [[]];
         } else {
-            ArrayHelper::ensureNonAssociative($this->defaults);
+            // Make sure the array is non-associative and with incrementing keys
+            $this->defaults = array_values($this->defaults);
         }
 
         // Convert default date cell values to ISO8601 strings
@@ -109,7 +132,9 @@ class Table extends Field
             foreach ($this->columns as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($this->defaults as &$row) {
-                        $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        if (isset($row[$colId])) {
+                            $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        }
                     }
                 }
             }
@@ -125,7 +150,30 @@ class Table extends Field
         $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
+        $rules[] = [['columns'], 'validateColumns'];
         return $rules;
+    }
+
+    /**
+     * Validatse the column configs.
+     */
+    public function validateColumns()
+    {
+        $hasErrors = false;
+        foreach ($this->columns as &$col) {
+            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
+                $col['handle'] = [
+                    'value' => $col['handle'],
+                    'hasErrors' => true,
+                ];
+                $hasErrors = true;
+            }
+        }
+        if ($hasErrors) {
+            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                'format' => 'colX',
+            ]));
+        }
     }
 
     /**
@@ -161,11 +209,14 @@ class Table extends Field
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
             'date' => Craft::t('app', 'Date'),
+            'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
             'singleline' => Craft::t('app', 'Single-line text'),
             'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -196,6 +247,38 @@ class Table extends Field
             ],
         ];
 
+        $dropdownSettingsCols = [
+            'label' => [
+                'heading' => Craft::t('app', 'Option Label'),
+                'type' => 'singleline',
+                'autopopulate' => 'value',
+                'class' => 'option-label',
+            ],
+            'value' => [
+                'heading' => Craft::t('app', 'Value'),
+                'type' => 'singleline',
+                'class' => 'option-value code',
+            ],
+            'default' => [
+                'heading' => Craft::t('app', 'Default?'),
+                'type' => 'checkbox',
+                'radioMode' => true,
+                'class' => 'option-default thin',
+            ],
+        ];
+
+        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
+            [
+                'label' => Craft::t('app', 'Dropdown Options'),
+                'instructions' => Craft::t('app', 'Define the available options.'),
+                'id' => '__ID__',
+                'name' => '__NAME__',
+                'addRowLabel' => Craft::t('app', 'Add an option'),
+                'cols' => $dropdownSettingsCols,
+                'initJs' => false,
+            ]
+        ]);
+
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TimepickerAsset::class);
@@ -205,20 +288,14 @@ class Table extends Field
             Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
             ');');
 
-        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Table Columns'),
-                'instructions' => Craft::t('app', 'Define the columns your table should have.'),
-                'id' => 'columns',
-                'name' => 'columns',
-                'cols' => $columnSettings,
-                'rows' => $this->columns,
-                'addRowLabel' => Craft::t('app', 'Add a column'),
-                'initJs' => false
-            ]
+        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
+            'cols' => $columnSettings,
+            'rows' => $this->columns,
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -229,7 +306,8 @@ class Table extends Field
                 'name' => 'defaults',
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
-                'initJs' => false
+                'initJs' => false,
+                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
@@ -285,7 +363,7 @@ class Table extends Field
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === null && $this->isFresh($element) && is_array($this->defaults)) {
+        } else if ($value === null && $this->isFresh($element)) {
             $value = array_values($this->defaults);
         }
 
@@ -297,7 +375,7 @@ class Table extends Field
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
                 $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
-                if ($col['handle']) {
+                if ($col['handle'] && !isset($this->columns[$col['handle']])) {
                     $row[$col['handle']] = $row[$colId];
                 }
             }
@@ -334,6 +412,16 @@ class Table extends Field
     public function getStaticHtml($value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = TableRowTypeGenerator::generateTypes($this);
+        return Type::listOf(array_pop($typeArray));
     }
 
     // Private Methods
@@ -390,15 +478,28 @@ class Table extends Field
      */
     private function _validateCellValue(string $type, $value, string &$error = null): bool
     {
-        if ($type === 'color' && $value !== null) {
-            /** @var ColorData $value */
-            $validator = new ColorValidator();
-            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-            $hex = $value->getHex();
-            return $validator->validate($hex, $error);
+        if ($value === null || $value === '') {
+            return true;
         }
 
-        return true;
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
+        }
+
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        return $validator->validate($value, $error);
     }
 
     /**

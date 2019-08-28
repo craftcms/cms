@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -111,10 +112,8 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, int $siteId = null)
     {
-        /** @var Asset|null $asset */
-        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
-
-        return $asset;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
     /**
@@ -152,11 +151,13 @@ class Assets extends Component
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
-            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+            $event = new ReplaceAssetEvent([
                 'asset' => $asset,
                 'replaceWith' => $pathOnServer,
                 'filename' => $filename
-            ]));
+            ]);
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+            $filename = $event->filename;
         }
 
         $asset->tempFilePath = $pathOnServer;
@@ -717,13 +718,14 @@ class Assets extends Component
 
             // hail Mary
             try {
-                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
-                    ->scaleToFit($width, $height);
+                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize);
 
+                // Prevent resize of all layers
                 if ($image instanceof Raster) {
                     $image->disableAnimation();
                 }
 
+                $image->scaleToFit($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
@@ -865,13 +867,14 @@ class Assets extends Component
      * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return int
      * @throws VolumeException If the volume cannot be found.
      */
-    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): int
+    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
+        /** @var Volume $volume  */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -945,20 +948,54 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
+     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
-        return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
+        return $this->getUserTemporaryUploadFolder();
     }
 
     /**
-     * Get the user's temporary upload folder.
+     * Returns the given user's temporary upload folder.
      *
-     * @param User|null $userModel
+     * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
+     * the current session ID.
+     *
+     * @param User|null $user
      * @return VolumeFolder
+     * @throws VolumeException
      */
-    public function getUserTemporaryUploadFolder(User $userModel = null)
+    public function getUserTemporaryUploadFolder(User $user = null)
     {
+        if ($user === null) {
+            // Default to the logged-in user, if there is one
+            $user = Craft::$app->getUser()->getIdentity();
+        }
+
+        if ($user) {
+            $folderName = 'user_' . $user->id;
+        } else {
+            // A little obfuscation never hurt anyone
+            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
+        }
+
+        // Is there a designated temp uploads volume?
+        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
+        if (isset($assetSettings['tempVolumeUid'])) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
+            if (!$volume) {
+                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
+            }
+            /** @var Volume $volume */
+            $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
+                $folderName;
+            $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);
+            return $this->findFolder([
+                'volumeId' => $volume->id,
+                'id' => $folderId,
+            ]);
+        }
+
         $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
             'parentId' => ':empty:'
@@ -970,13 +1007,6 @@ class Assets extends Component
             $tempVolume = new Temp();
             $volumeTopFolder->name = $tempVolume->name;
             $this->storeFolderRecord($volumeTopFolder);
-        }
-
-        if ($userModel) {
-            $folderName = 'user_' . $userModel->id;
-        } else {
-            // A little obfuscation never hurt anyone
-            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
         }
 
         $folder = $this->findFolder([
@@ -994,9 +1024,6 @@ class Assets extends Component
 
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
-        /**
-         * @var VolumeFolder $folder ;
-         */
         return $folder;
     }
 

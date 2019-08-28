@@ -127,8 +127,8 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 ```php
 // Fetch Matrix blocks created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $MatrixBlocks = \craft\elements\MatrixBlock::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -162,7 +162,7 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 ```php
 // Fetch Matrix blocks updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $MatrixBlocks = \craft\elements\MatrixBlock::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -336,14 +336,14 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 ```twig
 {# Fetch all Matrix blocks in order of date created #}
 {% set MatrixBlocks = craft.matrixBlocks()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all Matrix blocks in order of date created
 $MatrixBlocks = \craft\elements\MatrixBlock::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -402,81 +402,11 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 :::
 
-### `ownerSite`
-
-オーナーエレメントが保存されたサイトに基づいて、クエリの結果を絞り込みます。
-
-このパラメータは、サイトごとにブロックを管理するようセットされた行列ブロックのみ関係があります。
-
-利用可能な値には、次のものが含まれます。
-
-| 値 | 取得する行列ブロック
-| - | -
-| `'foo'` | ハンドルが `foo` のサイト内のエレメントによって作成されたもの。
-| `[Site](api:craft\models\Site)` オブジェクト | オブジェクトで表されるサイト内のエレメントによって作成されたもの。
-
-::: code
-
-```twig
-{# Fetch Matrix blocks created for an element with an ID of 1,
-   for a site with a handle of 'foo' #}
-{% set MatrixBlocks = craft.matrixBlocks()
-    .ownerId(1)
-    .ownerSite('foo')
-    .all() %}
-```
-
-```php
-// Fetch Matrix blocks created for an element with an ID of 1,
-// for a site with a handle of 'foo'
-$MatrixBlocks = \craft\elements\MatrixBlock::find()
-    ->ownerId(1)
-    .ownerSite('foo')
-    ->all();
-```
-
-:::
-
-### `ownerSiteId`
-
-サイトの ID ごとに、オーナーエレメントが保存されたサイトに基づいて、クエリの結果が絞り込まれます。
-
-このパラメータは、サイトごとにブロックを管理するようセットされた行列ブロックのみ関係があります。
-
-利用可能な値には、次のものが含まれます。
-
-| 値 | 取得する行列ブロック
-| - | -
-| `1` | ID が 1 のサイト内のエレメントによって作成されたもの。
-| `':empty:'` | サイトごとにブロックを管理するよう設定されていないフィールド内で作成されたもの。
-
-::: code
-
-```twig
-{# Fetch Matrix blocks created for an element with an ID of 1,
-   for a site with an ID of 2 #}
-{% set MatrixBlocks = craft.matrixBlocks()
-    .ownerId(1)
-    .ownerSiteId(2)
-    .all() %}
-```
-
-```php
-// Fetch Matrix blocks created for an element with an ID of 1,
-// for a site with an ID of 2
-$MatrixBlocks = \craft\elements\MatrixBlock::find()
-    ->ownerId(1)
-    .ownerSiteId(2)
-    ->all();
-```
-
-:::
-
 ### `relatedTo`
 
 特定の他のエレメントと関連付けられた行列ブロックだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -500,7 +430,7 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 検索クエリにマッチする行列ブロックだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -610,6 +540,28 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 :::
 
+### `trashed`
+
+ソフトデリートされた行列ブロックだけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed Matrix blocks #}
+{% set MatrixBlocks = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed Matrix blocks
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->trashed()
+    ->all();
+```
+
+:::
+
 ### `type`
 
 行列ブロックのブロックタイプに基づいて、クエリの結果を絞り込みます。
@@ -699,7 +651,7 @@ $MatrixBlock = \craft\elements\MatrixBlock::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチした行列ブロックをクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 

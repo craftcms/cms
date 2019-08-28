@@ -39,7 +39,7 @@ We can display content from all the Matrix blocks of an element by doing the fol
 {% set matrixBlocks = myMatrixBlockQuery.all() %}
 
 {# Display their contents #}
-{% for block in blocks %}
+{% for block in matrixBlocks %}
     <p>{{ block.text }}</p>
 {% endfor %}
 ```
@@ -428,78 +428,6 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 :::
 
 
-### `ownerSite`
-
-Narrows the query results based on the site the owner element was saved for.
-
-This parameter is only relevant for Matrix fields that are set to manage blocks on a per-site basis.
-
-Possible values include:
-
-| Value | Fetches Matrix blocks…
-| - | -
-| `'foo'` | created for an element in a site with a handle of `foo`.
-| `a [Site](api:craft\models\Site)` object | created for an element in the site represented by the object.
-
-
-
-::: code
-```twig
-{# Fetch Matrix blocks created for an element with an ID of 1,
-   for a site with a handle of 'foo' #}
-{% set MatrixBlocks = craft.matrixBlocks()
-    .ownerId(1)
-    .ownerSite('foo')
-    .all() %}
-```
-
-```php
-// Fetch Matrix blocks created for an element with an ID of 1,
-// for a site with a handle of 'foo'
-$MatrixBlocks = \craft\elements\MatrixBlock::find()
-    ->ownerId(1)
-    .ownerSite('foo')
-    ->all();
-```
-:::
-
-
-### `ownerSiteId`
-
-Narrows the query results based on the site the owner element was saved for, per the site’s ID.
-
-This parameter is only relevant for Matrix fields that are set to manage blocks on a per-site basis.
-
-Possible values include:
-
-| Value | Fetches Matrix blocks…
-| - | -
-| `1` | created for an element in a site with an ID of 1.
-| `':empty:'` | created in a field that isn’t set to manage blocks on a per-site basis.
-
-
-
-::: code
-```twig
-{# Fetch Matrix blocks created for an element with an ID of 1,
-   for a site with an ID of 2 #}
-{% set MatrixBlocks = craft.matrixBlocks()
-    .ownerId(1)
-    .ownerSiteId(2)
-    .all() %}
-```
-
-```php
-// Fetch Matrix blocks created for an element with an ID of 1,
-// for a site with an ID of 2
-$MatrixBlocks = \craft\elements\MatrixBlock::find()
-    ->ownerId(1)
-    .ownerSiteId(2)
-    ->all();
-```
-:::
-
-
 ### `relatedTo`
 
 Narrows the query results to only Matrix blocks that are related to certain other elements.
@@ -562,7 +490,7 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 ### `site`
 
-Determines which site the Matrix blocks should be queried in.
+Determines which site(s) the Matrix blocks should be queried in.
 
 
 
@@ -573,7 +501,15 @@ Possible values include:
 | Value | Fetches Matrix blocks…
 | - | -
 | `'foo'` | from the site with a handle of `foo`.
+| `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
 | a [craft\models\Site](api:craft\models\Site) object | from the site represented by the object.
+| `'*'` | from any site.
+
+::: tip
+If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+:::
 
 
 
@@ -596,7 +532,7 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 
 ### `siteId`
 
-Determines which site the Matrix blocks should be queried in, per the site’s ID.
+Determines which site(s) the Matrix blocks should be queried in, per the site’s ID.
 
 
 
@@ -664,7 +600,7 @@ Narrows the query results to only Matrix blocks that have been soft-deleted.
 ::: code
 ```twig
 {# Fetch trashed Matrix blocks #}
-{% set MatrixBlocks = {twig-function}
+{% set MatrixBlocks = craft.matrixBlocks()
     .trashed()
     .all() %}
 ```

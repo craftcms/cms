@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -51,6 +52,11 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @event FieldElementEvent The event that is triggered after the element is saved
      */
     const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites
+     */
+    const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
 
     /**
      * @event FieldElementEvent The event that is triggered before the element is deleted
@@ -112,6 +118,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_CUSTOM,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'mixed';
     }
 
     // Properties
@@ -192,6 +206,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'archived',
                 'attributeLabel',
                 'attributes',
+                'behavior',
+                'behaviors',
                 'children',
                 'contentTable',
                 'dateCreated',
@@ -202,6 +218,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'error',
                 'errors',
                 'fieldValue',
+                'fieldValues',
                 'id',
                 'level',
                 'lft',
@@ -301,11 +318,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
-            [
-                'name' => $this->handle,
-                'value' => $value
-            ]);
+        return Html::textarea($this->handle, $value);
     }
 
     /**
@@ -377,6 +390,22 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
+     * Returns the sort option array that should be included in the element’s
+     * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
+     *
+     * @return array
+     * @see \craft\base\SortableFieldInterface::getSortOption()
+     */
+    public function getSortOption(): array
+    {
+        return [
+            'label' => $this->name,
+            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle,
+            'attribute' => 'field:' . $this->id,
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function serializeValue($value, ElementInterface $element = null)
@@ -445,6 +474,15 @@ abstract class Field extends SavableComponent implements FieldInterface
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return Type::string();
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -484,6 +522,20 @@ abstract class Field extends SavableComponent implements FieldInterface
         // Trigger an 'afterElementSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    {
+        // Trigger an 'afterElementPropagate' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent([
                 'element' => $element,
                 'isNew' => $isNew,
             ]));
@@ -542,6 +594,19 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'element' => $element,
             ]));
         }
+    }
+
+    /**
+     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
+     * should not be allowed in the GraphQL context.
+     *
+     * @return array|false
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        // No restrictions
+        return [];
     }
 
     // Protected Methods

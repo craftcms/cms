@@ -14,7 +14,7 @@ use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
@@ -173,6 +173,8 @@ class InstallController extends Controller
             $migrator->addMigrationHistory($name);
         }
 
+        $this->_ensureYamlFileExists();
+
         return ExitCode::OK;
     }
 
@@ -184,6 +186,8 @@ class InstallController extends Controller
      */
     public function actionPlugin(string $handle): int
     {
+        $this->_ensureYamlFileExists();
+
         $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
@@ -304,5 +308,14 @@ class InstallController extends Controller
             goto top;
         }
         return $password;
+    }
+
+    private function _ensureYamlFileExists()
+    {
+        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            $this->stdout('Generating project.yaml file from internal config ... ', Console::FG_YELLOW);
+            Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        }
     }
 }

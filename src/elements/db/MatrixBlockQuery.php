@@ -16,14 +16,11 @@ use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Db;
 use craft\models\MatrixBlockType;
-use craft\models\Site;
-use yii\base\Exception;
 use yii\db\Connection;
 
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @property string|string[]|Site $ownerSite The handle(s) of the site(s) that the owner element should be in
  * @property string|string[]|MatrixBlockType $type The handle(s) of the block type(s) that resulting Matrix blocks must have
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
@@ -65,9 +62,8 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var int|string|null The site ID that the resulting Matrix blocks must have been defined in, or ':empty:' to find blocks without an owner site ID.
-     * @used-by ownerSite()
-     * @used-by ownerSiteId()
+     * @var mixed
+     * @deprecated in 3.2
      */
     public $ownerSiteId;
 
@@ -101,14 +97,13 @@ class MatrixBlockQuery extends ElementQuery
     {
         switch ($name) {
             case 'ownerSite':
-                $this->ownerSite($value);
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The “ownerSite” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
                 break;
             case 'type':
                 $this->type($value);
                 break;
             case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “ownerSite” or “ownerSiteId” instead.');
-                $this->ownerSite($value);
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -192,119 +187,32 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the site the owner element was saved for, per the site’s ID.
-     *
-     * This parameter is only relevant for Matrix fields that are set to manage blocks on a per-site basis.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `1` | created for an element in a site with an ID of 1.
-     * | `':empty:'` | created in a field that isn’t set to manage blocks on a per-site basis.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch {elements} created for an element with an ID of 1,
-     *    for a site with an ID of 2 #}
-     * {% set {elements-var} = {twig-method}
-     *     .ownerId(1)
-     *     .ownerSiteId(2)
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch {elements} created for an element with an ID of 1,
-     * // for a site with an ID of 2
-     * ${elements-var} = {php-method}
-     *     ->ownerId(1)
-     *     .ownerSiteId(2)
-     *     ->all();
-     * ```
-     *
-     * @param int|string|null $value The property value
      * @return static self reference
-     * @uses $ownerSiteId
+     * @deprecated in 3.2.
      */
-    public function ownerSiteId($value)
+    public function ownerSiteId()
     {
-        $this->ownerSiteId = $value;
-
-        if ($value && strtolower($value) !== ':empty:') {
-            // A block will never exist in a site that is different than its ownerSiteId,
-            // so let's set the siteId param here too.
-            $this->siteId = (int)$value;
-        }
-
+        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSiteId()', 'The “ownerSiteId” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
         return $this;
     }
 
     /**
-     * Narrows the query results based on the site the owner element was saved for.
-     *
-     * This parameter is only relevant for Matrix fields that are set to manage blocks on a per-site basis.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `'foo'` | created for an element in a site with a handle of `foo`.
-     * | `a [[Site|Site]]` object | created for an element in the site represented by the object.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch {elements} created for an element with an ID of 1,
-     *    for a site with a handle of 'foo' #}
-     * {% set {elements-var} = {twig-method}
-     *     .ownerId(1)
-     *     .ownerSite('foo')
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch {elements} created for an element with an ID of 1,
-     * // for a site with a handle of 'foo'
-     * ${elements-var} = {php-method}
-     *     ->ownerId(1)
-     *     .ownerSite('foo')
-     *     ->all();
-     * ```
-     *
-     * @param string|Site $value The property value
      * @return static self reference
-     * @throws Exception if $value is an invalid site handle
-     * @uses $ownerSiteId
+     * @deprecated in 3.2.
      */
-    public function ownerSite($value)
+    public function ownerSite()
     {
-        if ($value instanceof Site) {
-            $this->ownerSiteId($value->id);
-        } else {
-            $site = Craft::$app->getSites()->getSiteByHandle($value);
-
-            if (!$site) {
-                throw new Exception('Invalid site handle: ' . $value);
-            }
-
-            $this->ownerSiteId($site->id);
-        }
-
+        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The “ownerSite” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
         return $this;
     }
 
     /**
-     * Sets the [[$ownerLocale]] property.
-     *
-     * @param string|string[] $value The property value
      * @return static self reference
-     * @deprecated in 3.0. Use [[ownerSiteId()]] instead.
+     * @deprecated in 3.0.
      */
-    public function ownerLocale($value)
+    public function ownerLocale()
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
-        $this->ownerSite($value);
+        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
         return $this;
     }
 
@@ -463,7 +371,6 @@ class MatrixBlockQuery extends ElementQuery
         $this->query->select([
             'matrixblocks.fieldId',
             'matrixblocks.ownerId',
-            'matrixblocks.ownerSiteId',
             'matrixblocks.typeId',
             'matrixblocks.sortOrder',
         ]);
@@ -476,10 +383,6 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId));
         }
 
-        if ($this->ownerSiteId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId));
-        }
-
         if ($this->typeId !== null) {
             // If typeId is an empty array, it's because type() was called but no valid type handles were passed in
             if (empty($this->typeId)) {
@@ -487,6 +390,17 @@ class MatrixBlockQuery extends ElementQuery
             }
 
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
+        }
+
+        // Ignore revision/draft blocks by default
+        if (!$this->id && !$this->ownerId) {
+            // todo: we will need to expand on this when Matrix blocks can be nested.
+            $this->subQuery
+                ->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]')
+                ->andWhere([
+                    'owners.draftId' => null,
+                    'owners.revisionId' => null,
+                ]);
         }
 
         return parent::beforePrepare();

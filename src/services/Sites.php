@@ -660,10 +660,10 @@ class Sites extends Component
             'name' => $site->name,
             'handle' => $site->handle,
             'language' => $site->language,
-            'hasUrls' => $site->hasUrls,
+            'hasUrls' => (bool)$site->hasUrls,
             'baseUrl' => $site->baseUrl,
-            'sortOrder' => $site->sortOrder,
-            'primary' => $site->primary,
+            'sortOrder' => (int)$site->sortOrder,
+            'primary' => (bool)$site->primary,
         ];
 
         if ($isNewSite) {
@@ -795,9 +795,9 @@ class Sites extends Component
             // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
             $queue = Craft::$app->getQueue();
             $elementTypes = [
+                GlobalSet::class,
                 Asset::class,
                 Category::class,
-                GlobalSet::class,
                 Tag::class,
             ];
 
@@ -908,6 +908,8 @@ class Sites extends Component
             return false;
         }
 
+        $projectConfig = Craft::$app->getProjectConfig();
+
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
@@ -931,12 +933,25 @@ class Sites extends Component
         if (!empty($soloSectionIds)) {
             // Should we enable those for a different site?
             if ($transferContentTo !== null) {
+                $transferContentToSite = $this->getSiteById($transferContentTo);
+
                 Craft::$app->getDb()->createCommand()
                     ->update(
                         Table::SECTIONS_SITES,
                         ['siteId' => $transferContentTo],
                         ['sectionId' => $soloSectionIds])
                     ->execute();
+
+                // Update the project config too
+                $muteEvents = $projectConfig->muteEvents;
+                $projectConfig->muteEvents = true;
+                foreach ($projectConfig->get(Sections::CONFIG_SECTIONS_KEY) as $sectionUid => $sectionConfig) {
+                    if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
+                        $sectionConfig['siteSettings'][$transferContentToSite->uid] = ArrayHelper::remove($sectionConfig['siteSettings'], $site->uid);
+                        $projectConfig->set(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid, $sectionConfig);
+                    }
+                }
+                $projectConfig->muteEvents = $muteEvents;
 
                 // Get all of the entry IDs in those sections
                 $entryIds = (new Query())
@@ -966,20 +981,6 @@ class Sites extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            Table::ENTRYDRAFTS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::ENTRYVERSIONS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
                             Table::RELATIONS,
                             ['sourceSiteId' => $transferContentTo],
                             [
@@ -997,17 +998,6 @@ class Sites extends Component
                         ->column();
 
                     if (!empty($blockIds)) {
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                Table::MATRIXBLOCKS,
-                                ['ownerSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['id' => $blockIds],
-                                    ['not', ['ownerSiteId' => null]]
-                                ])
-                            ->execute();
-
                         Craft::$app->getDb()->createCommand()
                             ->delete(
                                 Table::ELEMENTS_SITES,
@@ -1028,12 +1018,9 @@ class Sites extends Component
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
                             if (strpos($tableName, $matrixTablePrefix) === 0) {
-                                $tableName = substr($tableName, $tablePrefixLength);
-
                                 Craft::$app->getDb()->createCommand()
                                     ->delete(
                                         $tableName,
@@ -1075,7 +1062,7 @@ class Sites extends Component
             }
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
+        $projectConfig->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
         return true;
     }
 
@@ -1194,6 +1181,8 @@ class Sites extends Component
                     's.baseUrl',
                     's.sortOrder',
                     's.uid',
+                    's.dateCreated',
+                    's.dateUpdated',
                 ])
                 ->from(['{{%sites}} s'])
                 ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')

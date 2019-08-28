@@ -49,11 +49,11 @@ Craft は次の検索構文をサポートしています。
    * slug
 
 * **ユーザー**
-   * username
+   * ユーザー名
    * firstName
    * lastName
    * fullName (firstName + lastName)
-   * email
+   * メール
 
 * **タグ**
    * title
@@ -77,7 +77,7 @@ Craft は次の検索構文をサポートしています。
 検索結果をベストマッチからワーストマッチの順に並び替えたい場合、`orderBy` パラメータに `'score'` をセットすることもできます。
 
 ```twig
-{% set results = craft.entries(){
+{% set results = craft.entries()
     .search(searchQuery)
     .orderBy('score')
     .all() %}

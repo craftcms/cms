@@ -34,6 +34,7 @@ use yii\web\NotFoundHttpException;
  * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
  * @property bool $isLivePreview Whether this is a Live Preview request.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
+ * @property-read bool $isPreview Whether this is an element preview request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -102,6 +103,11 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
+    private $_isLoginRequest = false;
+
+    /**
+     * @var bool
+     */
     private $_checkedRequestType = false;
 
     /**
@@ -143,6 +149,12 @@ class Request extends \yii\web\Request
      * @var bool
      */
     private $_encodedBodyParams = false;
+
+    /**
+     * @var string|false
+     * @see getToken()
+     */
+    public $_token;
 
     // Public Methods
     // =========================================================================
@@ -207,31 +219,23 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
             array_shift($this->_segments);
+
+            // Force 'p' pageTrigger
+            // (all that really matters is that it doesn't have a trailing slash, but whatever.)
+            $generalConfig->pageTrigger = 'p';
         }
 
         // Is this a paginated request?
-        $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-        if (!is_string($pageTrigger) || $pageTrigger === '') {
-            $pageTrigger = 'p';
-        }
+        $pageTrigger = $generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if ($pageTrigger[0] === '?') {
-            $pageTrigger = trim($pageTrigger, '?=');
-
-            // Avoid conflict with the path param
-            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-            if ($pageTrigger === $pathParam) {
-                $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-            }
-
-            $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
+        if (strpos($pageTrigger, '?') === 0) {
+            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
         } else if (!empty($this->_segments)) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
+            $pageTrigger = preg_quote($pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
@@ -385,12 +389,22 @@ class Request extends \yii\web\Request
      * Returns the token submitted with the request, if there is one.
      *
      * @return string|null The token, or `null` if there isn’t one.
+     * @throws BadRequestHttpException if an invalid token is supplied
      */
     public function getToken()
     {
-        $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
-        return $this->getQueryParam($param)
-            ?? $this->getHeaders()->get('X-Craft-Token');
+        if ($this->_token === null) {
+            $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
+            $this->_token = $this->getQueryParam($param)
+                ?? $this->getHeaders()->get('X-Craft-Token')
+                ?? false;
+            if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
+                $this->_token = false;
+                throw new BadRequestHttpException('Invalid token');
+            }
+        }
+
+        return $this->_token ?: null;
     }
 
     /**
@@ -436,9 +450,24 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request.
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
      */
-    public function getIsSingleActionRequest()
+    public function getIsLoginRequest(): bool
+    {
+        $this->_checkRequestType();
+        return $this->_isLoginRequest;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request.
+     *
+     * @return bool
+     * @deprecated in 3.2
+     */
+    public function getIsSingleActionRequest(): bool
     {
         $this->_checkRequestType();
         return $this->_isSingleActionRequest;
@@ -457,6 +486,25 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether this is an element preview request.
+     *
+     * ---
+     * ```php
+     * $isPreviewRequest = Craft::$app->request->isPreview;
+     * ```
+     * ```twig
+     * {% set isPreviewRequest = craft.app.request.isPreview %}
+     * ```
+     *
+     * @return bool
+     * @since 3.2.1
+     */
+    public function getIsPreview(): bool
+    {
+        return $this->getQueryParam('x-craft-preview') !== null;
+    }
+
+    /**
      * Returns whether this is a Live Preview request.
      *
      * ---
@@ -468,6 +516,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
+     * @deprecated in 3.2
      */
     public function getIsLivePreview(): bool
     {
@@ -1057,10 +1106,7 @@ class Request extends \yii\web\Request
      */
     private function _segments(string $path): array
     {
-        return array_values(array_filter(explode('/', $path), function($segment) {
-            // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
-            return $segment !== '';
-        }));
+        return array_values(ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)));
     }
 
     /**
@@ -1105,7 +1151,17 @@ class Request extends \yii\web\Request
             }
 
             // Does the site URL specify a host name?
-            if (!empty($parsed['host']) && $hostName && $parsed['host'] !== $hostName) {
+            if (
+                !empty($parsed['host']) &&
+                $hostName &&
+                $parsed['host'] !== $hostName &&
+                (
+                    !function_exists('idn_to_ascii') ||
+                    !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
+                    !defined('INTL_IDNA_VARIANT_UTS46') ||
+                    idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
+                )
+            ) {
                 continue;
             }
 
@@ -1209,6 +1265,7 @@ class Request extends \yii\web\Request
                     switch ($this->_path) {
                         case $loginPath:
                             $this->_actionSegments = ['users', 'login'];
+                            $this->_isLoginRequest = true;
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
@@ -1248,7 +1305,11 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($value);
         }
 
-        return StringHelper::convertToUtf8($value);
+        if (is_string($value)) {
+            return StringHelper::convertToUtf8($value);
+        }
+
+        return $value;
     }
 
     /**

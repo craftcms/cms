@@ -11,17 +11,22 @@ use Craft;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\services\Plugins;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
- * Manages the project config.
+ * Manages the Project Config.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
  */
 class ProjectConfigController extends Controller
 {
+    /**
+     * @var bool Whether every entry change should be force-synced.
+     */
+    public $force = false;
+
     /**
      * Syncs the project config.
      *
@@ -43,6 +48,23 @@ class ProjectConfigController extends Controller
 
         $projectConfig = Craft::$app->getProjectConfig();
 
+        $issues = [];
+        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+            $this->stderr('Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+
+            foreach ($issues as $issue) {
+                $this->stderr($issue['cause'], Console::FG_RED);
+                $this->stderr(' is installed with schema version of ', Console::FG_YELLOW);
+                $this->stderr($issue['existing'], Console::FG_RED);
+                $this->stderr(' while ', Console::FG_YELLOW);
+                $this->stderr($issue['incoming'], Console::FG_RED);
+                $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
+            }
+
+            $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
         // Do we need to create a new config file?
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
             $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
@@ -60,11 +82,37 @@ class ProjectConfigController extends Controller
 
             $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
             try {
+                $forceUpdate = $projectConfig->forceUpdate;
+                $projectConfig->forceUpdate = $this->force;
                 $projectConfig->applyYamlChanges();
+                $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Rebuilds the project config.
+     *
+     * @return int
+     */
+    public function actionRebuild(): int
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $this->stdout('Rebuilding the project config from the current state ... ', Console::FG_YELLOW);
+
+        try {
+            $projectConfig->rebuild();
+        } catch (\Throwable $e) {
+            $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            Craft::$app->getErrorHandler()->logException($e);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
@@ -134,5 +182,19 @@ class ProjectConfigController extends Controller
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+
+        if ($actionID == 'sync') {
+            $options[] = 'force';
+        }
+
+        return $options;
     }
 }

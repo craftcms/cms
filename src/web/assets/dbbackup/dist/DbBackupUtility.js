@@ -19,8 +19,7 @@
                 if (!this.$trigger.hasClass('disabled')) {
                     if (!this.progressBar) {
                         this.progressBar = new Craft.ProgressBar(this.$status);
-                    }
-                    else {
+                    } else {
                         this.progressBar.resetProgressBar();
                     }
 
@@ -32,42 +31,44 @@
                         },
                         {
                             complete: $.proxy(function() {
-                                var postData = Garnish.getPostData(this.$form),
-                                    params = Craft.expandPostArray(postData);
+                                var postData = Garnish.getPostData(this.$form);
 
-                                var data = {
-                                    params: params
-                                };
+                                // h/t https://nehalist.io/downloading-files-from-post-requests/
+                                var request = new XMLHttpRequest();
+                                request.open('POST', Craft.getActionUrl(postData.action), true);
+                                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                                request.responseType = postData.downloadBackup ? 'blob' : 'json';
 
-                                Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus) {
-                                        if(textStatus === 'success')
-                                        {
-                                            if (response && response.error) {
-                                                alert(response.error);
-                                            }
+                                request.onload = function() {
+                                    this.updateProgressBar();
 
-                                            this.updateProgressBar();
+                                    // Only handle status code 200
+                                    if (request.status === 200) {
+                                        if (postData.downloadBackup) {
+                                            // Try to find out the filename from the content disposition `filename` value
+                                            var disposition = request.getResponseHeader('content-disposition');
+                                            var matches = /"([^"]*)"/.exec(disposition);
+                                            var filename = (matches != null && matches[1] ? matches[1] : 'Backup.zip');
 
-                                            if (response && response.backupFile) {
-                                                var $iframe = $('<iframe/>', {'src': Craft.getActionUrl('utilities/download-backup-file', {'filename': response.backupFile})}).hide();
-                                                this.$form.append($iframe);
-                                            }
-
-                                            setTimeout($.proxy(this, 'onComplete'), 300);
+                                            // The actual download
+                                            var blob = new Blob([request.response], {type: 'application/zip'});
+                                            var link = document.createElement('a');
+                                            link.href = window.URL.createObjectURL(blob);
+                                            link.download = filename;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
                                         }
-                                        else
-                                        {
-                                            Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
 
-                                            this.onComplete(false);
-                                        }
+                                        setTimeout($.proxy(this, 'onComplete'), 300);
+                                    } else {
+                                        Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
+                                        this.onComplete(false);
+                                    }
+                                }.bind(this);
 
-                                    }, this),
-                                    {
-                                        complete: $.noop
-                                    });
-
-                            }, this)
+                                request.send(this.$form.serialize());
+                            }.bind(this))
                         });
 
                     if (this.$allDone) {
@@ -93,7 +94,7 @@
 
                 this.progressBar.$progressBar.velocity({opacity: 0}, {
                     duration: 'fast', complete: $.proxy(function() {
-                        if(typeof showAllDone === 'undefined' || showAllDone === true) {
+                        if (typeof showAllDone === 'undefined' || showAllDone === true) {
                             this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
                         }
 

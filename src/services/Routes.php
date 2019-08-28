@@ -121,22 +121,26 @@ class Routes extends Component
             return $this->_projectConfigRoutes;
         }
 
+        $this->_projectConfigRoutes = [];
+
+        if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            return $this->_projectConfigRoutes;
+        }
+
         $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
+        ArrayHelper::multisort($routes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
         $this->_projectConfigRoutes = [];
-        $sortOrders = [];
 
         foreach ($routes as $route) {
             if (
                 !isset($this->_projectConfigRoutes[$route['uriPattern']]) &&
-                (empty($route['site']) || $route['site'] == $currentSiteUid)
+                (empty($route['siteUid']) || $route['siteUid'] === $currentSiteUid)
             ) {
                 $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
-                $sortOrders[] = $route['sortOrder'];
             }
         }
 
-        array_multisort($sortOrders, SORT_ASC, SORT_NUMERIC, $this->_projectConfigRoutes);
         return $this->_projectConfigRoutes;
     }
 
@@ -172,7 +176,7 @@ class Routes extends Component
 
         // Compile the URI parts into a regex pattern
         $uriPattern = '';
-        $uriParts = array_filter($uriParts);
+        $uriParts = ArrayHelper::filterEmptyStringsFromArray($uriParts);
         $subpatternNameCounts = [];
 
         foreach ($uriParts as $part) {
@@ -205,7 +209,7 @@ class Routes extends Component
             'template' => $template,
             'uriParts' => $uriParts,
             'uriPattern' => $uriPattern,
-            'sortOrder' => $sortOrder,
+            'sortOrder' => (int)$sortOrder,
             'siteUid' => $siteUid
         ];
 

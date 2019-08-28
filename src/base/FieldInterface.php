@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\records\FieldGroup;
+use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
 
 /**
@@ -43,6 +44,24 @@ interface FieldInterface extends SavableComponentInterface
      * @see getTranslationKey()
      */
     public static function supportedTranslationMethods(): array;
+
+    /**
+     * Returns the PHPDoc type this field’s values will have.
+     *
+     * It will be used by generated `ContentBehavior` and `ElementQueryBehavior` classes.
+     *
+     * If the values can be of more than one type, return multiple types separated by `|`s.
+     *
+     * ```php
+     * public static function phpDocType()
+     * {
+     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     * }
+     * ```
+     *
+     * @return string
+     */
+    public static function valueType(): string;
 
     // Public Methods
     // =========================================================================
@@ -304,6 +323,14 @@ interface FieldInterface extends SavableComponentInterface
      */
     public function getGroup();
 
+    /**
+     * Returns the GraphQL type to be used for this field type.
+     *
+     * @return Type|array
+     * @since 3.3.0
+     */
+    public function getContentGqlType();
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -323,6 +350,14 @@ interface FieldInterface extends SavableComponentInterface
      * @param bool $isNew Whether the element is brand new
      */
     public function afterElementSave(ElementInterface $element, bool $isNew);
+
+    /**
+     * Performs actions after the element has been fully saved and propagated to other sites.
+     *
+     * @param ElementInterface $element The element that was just saved and propagated
+     * @param bool $isNew Whether the element is brand new
+     */
+    public function afterElementPropagate(ElementInterface $element, bool $isNew);
 
     /**
      * Performs actions before an element is deleted.

@@ -31,7 +31,7 @@ Redactor プラグインをインストールする場合、`config/redactor/` �
 
 ## 位置選択フィールド
 
-「位置選択」フィールドタイプは Craft 3 で削除されました。位置選択フィールドがある場合、すべてのオプションを保持したままドロップダウンフィールドに変換されます。
+「位置選択」フィールドタイプは Craft 3 で削除されました。位置選択フィールドがある場合、すべてのオプションを保持したままドロップダウンフィールドに変換されます。 
 
 位置選択フィールドが必要な場合、[Position Fieldtype](https://github.com/Rias500/craft-position-fieldtype) プラグインをインストールしてください。
 
@@ -47,28 +47,28 @@ Amazon S3、Rackspace Cloud Files、および、Google Cloud Storage のサポ�
 
 ### コンフィグ設定
 
-次の設定は Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
+いくつかの一般設定は Craft 3 でリネームされました。古い設定名は非推奨となりますが、Craft 4 までは動作し続けます。
 
-| ファイル | 旧設定 | 新設定 |
-| ------------- | ---------------------------- | ----------------------------- |
-| `general.php` | `activateAccountFailurePath` | `invalidUserTokenPath` |
-| `general.php` | `backupDbOnUpdate` | `backupOnUpdate`<sup>1</sup> |
-| `general.php` | `defaultFilePermissions` | `defaultFileMode`<sup>2</sup> |
-| `general.php` | `defaultFolderPermissions` | `defaultDirMode` |
-| `general.php` | `environmentVariables` | `aliases` <sup>3</sup> |
-| `general.php` | `restoreDbOnUpdateFailure` | `restoreOnUpdateFailure` |
-| `general.php` | `useWriteFileLock` | `useFileLocks` |
-| `general.php` | `validationKey` | `securityKey`<sup>4</sup> |
+| 旧設定 | 新設定 |
+| ---------------------------- | ----------------------------- |
+| `activateAccountFailurePath` | `invalidUserTokenPath` |
+| `backupDbOnUpdate` | `backupOnUpdate`<sup>1</sup> |
+| `defaultFilePermissions` | `defaultFileMode`<sup>2</sup> |
+| `defaultFolderPermissions` | `defaultDirMode` |
+| `environmentVariables` | `aliases` <sup>3</sup> |
+| `restoreDbOnUpdateFailure` | `restoreOnUpdateFailure` |
+| `useWriteFileLock` | `useFileLocks` |
+| `validationKey` | `securityKey`<sup>4</sup> |
 
 *<sup>1</sup> `backupOnUpdate` を `false` にすると、PHP によるバックアップの生成が行われないため、パフォーマンスは大きな要因になりえません。*
 
 *<sup>2</sup> `defaultFileMode` はデフォルトで `null` になりました。これは、現在の環境によって決定されることを意味します。*
 
-*<sup>3</sup> Craft 2 で環境変数をサポートしていた設定は、Craft 3 の [エイリアス](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) でサポートされるようになりました。Craft 3 にアップデートすると、サイト URL やローカルボリュームの設定は新しいエイリアス構文 （`{variable}` の代わりに `@variable`）へ自動的に変換されます。
+*<sup>3</sup> Craft 2 のコンフィグ設定 `environmentVariables` で定義された値をサポートする設定項目は、Craft 3 のシステム環境設定とエイリアスにセットできるようになりました。（詳細については、[環境設定](config/environments.md)を参照してください。）Craft 3 にアップデートすると、サイト URL やローカルボリュームの設定は新しい  `@alias/sub/path` 構文へ自動的に変換されます。
 
 *<sup>4</sup> `securityKey` は、もはやオプションではありません。まだ設定していない場合、（ファイルが存在していれば）`storage/runtime/validation.key` に設定します。自動生成された `validation.key` ファイルのバックアップは、Craft 4 で削除されるでしょう。*
 
-次の設定は完全に削除されました。
+いくつかの設定は完全に削除されました。
 
 | ファイル | 設定 |
 | ------------- | ----------- |
@@ -108,12 +108,14 @@ Amazon S3、Rackspace Cloud Files、および、Google Cloud Storage のサポ�
 
 ## PHP 定数
 
-次の PHP 定数は Craft 3 で非推奨となり、Craft 4 で動作しなくなります。
+いくつかの PHP 定数は Craft 3 で非推奨となり、Craft 4 で動作しなくなります
 
-| 旧 | 新 |
+| 旧 PHP 定数 | 代わりにすべきこと |
 | ---------------- | ---------------------------------------- |
-| `CRAFT_LOCALE` | [CRAFT_SITE](config/php-constants.md#craft-site) |
-| `CRAFT_SITE_URL` | 代わりに、コンフィグ設定の <config:siteUrl> を使用してください |
+| `CRAFT_LOCALE` | [CRAFT_SITE](config/php-constants.md#craft-site) 定数<sup>1</sup> を使用してください |
+| `CRAFT_SITE_URL` | コンフィグ設定 <config:siteUrl>、または、[環境変数](config/environments.md)を使用してください |
+
+*<sup>1</sup> Craft 3 ではそれぞれのサイト / ロケールごとに独自の `index.php` ファイルを用意することが必須ではなくなりました。そのため、不要になったすべてのサイト / ロケールのウェブルート、および、サブフォルダーを削除することもできます。詳細については、新しい [ローカライゼーションガイド](localization.md) を参照してください。*
 
 ## 静的な翻訳ファイル
 
@@ -189,29 +191,25 @@ Twig 2 では、`defined` のテストでない限り、エラーを返します
 
 ## テンプレートタグ
 
-次の Twig タグは削除されました。
+[{% paginate %}](dev/tags/paginate.md) タグは `{% endpaginate %}` 終了タグを持たなくなったため、そのインスタンスをすべて削除します。
 
-| 旧 | 新 |
-| ------------------- | ----------------------------------------- |
-| `{% endpaginate %}` | *（置き換えが必要なのではなく、単に削除してください）* |
+いくつかの Twig テンプレートタグは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
 
-次の Twig テンプレートタグは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
-
-| 旧 | 新 |
+| 旧タグ | 代わりにすべきこと |
 | ------------------------------- | --------------------------------------------- |
-| `{% includecss %}` | `{% css %}` |
-| `{% includehirescss %}` | `{% css %}` *（自身のメディアセレクタを記述します）* |
-| `{% includejs %}` | `{% js %}` |
-| `{% includecssfile url %}` | `{% do view.registerCssFile(url) %}` |
-| `{% includejsfile url %}` | `{% do view.registerJsFile(url) %}` |
-| `{% includecssresource path %}` | [アセットバンドル](extend/asset-bundles.md)を見てください |
-| `{% includejsresource path %}` | [アセットバンドル](extend/asset-bundles.md)を見てください |
+| `{% includeCss %}` | [{% css %}](dev/tags/css.md) タグを使用してください |
+| `{% includeHiResCss %}` | [{% css %}](dev/tags/css.md) タグを使用し、自身のメディアセレクタを記述してください |
+| `{% includeJs %}` | [{% js %}](dev/tags/js.md) タグを使用してください |
+| `{% includeCssFile url %}` | `{% do view.registerCssFile(url) %}` |
+| `{% includeJsFile url %}` | `{% do view.registerJsFile(url) %}` |
+| `{% includeCssResource path %}` | [アセットバンドル](extend/asset-bundles.md)を使用してください |
+| `{% includeJsResource path %}` | [アセットバンドル](extend/asset-bundles.md)を使用してください |
 
 ## テンプレートファンクション
 
-次のテンプレートファンクションは削除されました。
+いくつかのテンプレートファンクションは完全に削除されました。
 
-| 旧 | 新 |
+| 旧テンプレートファンクション | 代わりにすべきこと |
 | ------------------------------------------- | ------------------------------------ |
 | `craft.hasPackage()` | *（該当なし）* |
 | `craft.entryRevisions.getDraftByOffset()` | *（該当なし）* |
@@ -226,9 +224,9 @@ Twig 2 では、`defined` のテストでない限り、エラーを返します
 
 *<sup>1</sup> `queue` コンポーネントが <api:craft\queue\QueueInterface> を実装している場合のみ、使用可能です。*
 
-次のテンプレートファンクションは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
+いくつかのテンプレートファンクションは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
 
-| 旧 | 新 |
+| 旧テンプレートファンクション | 代わりにすべきこと |
 | ------------------------------------------------------- | --------------------------------------------- |
 | `round(num)` | `num|round` |
 | `getCsrfInput()` | `csrfInput()` |
@@ -389,21 +387,21 @@ New:
 
 ### クエリパラメータ
 
-次のパラメータは削除されました。
+いくつかのエレメントクエリパラメータは削除されました。
 
-| エレメントタイプ | 旧パラメータ | 新パラメータ |
+| エレメントタイプ | 旧パラメータ | 代わりにすべきこと |
 | ------------ | ------------------ | ------------------------- |
-| すべて | `childOf` | `relatedTo.sourceElement` |
-| すべて | `childField` | `relatedTo.field` |
-| すべて | `parentOf` | `relatedTo.targetElement` |
-| すべて | `parentField` | `relatedTo.field` |
-| すべて | `depth` | `level` |
-| タグ | `name` | `title` |
-| タグ | `setId` | `groupId` |
-| タグ | `set` | `group` |
-| タグ | `orderBy:"name"` | `orderBy:"title"` |
+| すべて | `childOf` | `sourceElement` キーと共に `relatedTo` パラメータを使用してください |
+| すべて | `childField` | `field` キーと共に `relatedTo` パラメータを使用してください |
+| すべて | `parentOf` | `targetElement` キーと共に `relatedTo` パラメータを使用してください |
+| すべて | `parentField` | `field` キーと共に `relatedTo` パラメータを使用してください |
+| すべて | `depth` | `level` パラメータを使用してください |
+| タグ | `name` | `title` パラメータを使用してください |
+| タグ | `setId` | `groupId` パラメータを使用してください |
+| タグ | `set` | `group` パラメータを使用してください |
+| タグ | `orderBy:"name"` | `orderBy` パラメータに `'title'` をセットしてください |
 
-次のパラメータは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
+いくつかのエレメントクエリパラメータは Craft 3 でリネームされました。古いパラメータは非推奨となりますが、Craft 4 までは動作し続けます。
 
 | エレメントタイプ | 旧パラメータ | 新パラメータ |
 | ------------ | ------------------------ | ---------------------------- |
@@ -413,7 +411,7 @@ New:
 | すべて | `relatedTo.sourceLocale` | `relatedTo.sourceSite` |
 | アセット | `source` | `volume` |
 | アセット | `sourceId` | `volumeId` |
-| 行列ブロック | `ownerLocale` | `ownerSite` または `ownerSiteId` |
+| 行列ブロック | `ownerLocale` | `site` または `siteId` |
 
 #### `limit` パラメータ
 
@@ -468,15 +466,11 @@ Craft 2 動作に影響を与えるテンプレートがある場合、[clone()]
 
 ### クエリメソッド
 
-次のメソッドは削除されました。
+`findElementAtOffset()` エレメントクエリメソッドは Craft 3 で削除されました。代わりに、`nth()` を使用してください。
 
-| 旧 | 新 |
-| ----------------------------- | ------------- |
-| `findElementAtOffset(offset)` | `nth(offset)` |
+いくつかのエレメントクエリメソッドは Craft 3 でリネームされました。古いメソッドは非推奨となりますが、Craft 4 までは動作し続けます。
 
-次のメソッドは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
-
-| 旧 | 新 |
+| 旧メソッド | 新メソッド |
 | --------------- | -------------------------------------------------------- |
 | `ids(criteria)` | `ids()`（criteria パラメータは非推奨になりました） |
 | `find()` | `all()` |
@@ -523,7 +517,7 @@ New:
 
 `last()` は Craft 3 で非推奨になりました。なぜなら、（`query.nth(query.count() - 1)` に相当する）2つのデータベースクエリを背後で実行する必要があることが明確ではないからです。
 
-ほとんどのケースでは、`.last()` の呼び出しを `.inReverse().one()` に置き換えることで、余分なデータベースクエリを必要とせず、同じ結果を得ることができます。（`inReverse()` は、生成された SQL のすべての `ORDER BY` カラムのソート方向を反転させます。）
+ほとんどのケースでは、`.last()` の呼び出しを `.inReverse().one()` に置き換えることで、余分なデータベースクエリを必要とせず、同じ結果を得ることができます。（`inReverse()` は、生成された SQL のすべての `ORDER BY` カラムのソート方向を反転させます。） 
 
 ```twig
 {# Channel entries are ordered by `postDate DESC` by default, so this will swap
@@ -551,31 +545,19 @@ New:
 
 ## エレメント
 
-次のエレメントプロパティは削除されました。
+タグエレメントは、もはや `name` プロパティを持ちません。代わりに、`title` を使用してください。
 
-| エレメントタイプ | 旧プロパティ | 新プロパティ |
-| ------------ | ------------ | ------------ |
-| タグ | `name` | `title` |
-
-次のエレメントプロパティは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
-
-| 旧 | 新 |
-| -------- | ------------------------------------------- |
-| `locale` | `siteId`、`site.handle`、または、`site.language` |
+すべてのエレメントの `locale` プロパティは非推奨となり、Craft 4 で完全に削除されます。エレメントのサイト ID が判る場合は `siteId`、ハンドルが判る場合は `site.handle`、サイトの言語が判る場合は `site.language` をそれぞれ使用してください。
 
 ## モデル
 
-次のモデルメソッドは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
-
-| 旧 | 新 |
-| ------------------- | ------------------------ |
-| `getError('field')` | `getFirstError('field')` |
+モデルの `getError('attribute')` メソッドは非推奨となり、Craft 4 で完全に削除されます。代わりに、`getFirstError('attribute')` を使用してください。
 
 ## ロケール
 
-次のロケールメソッドは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
+いくつかのロケールメソッドは Craft 3 で非推奨となり、Craft 4 で完全に削除されます。
 
-| 旧 | 新 |
+| 旧メソッド | 代わりにすべきこと |
 | ------------------ | ------------------------------------ |
 | `getId()` | `id` |
 | `getName()` | `getDisplayName(craft.app.language)` |
@@ -597,9 +579,9 @@ New:
 <input type="hidden" name="action" value="entries/save-entry">
 ```
 
-次のコントローラーアクションは削除されました。
+いくつかのコントローラーアクションはリネームされました。
 
-| 旧 | 新 |
+| 旧コントローラーアクション | 新コントローラーアクション |
 | ---------------------------- | -------------------------- |
 | `categories/create-category` | `categories/save-category` |
 | `users/validate` | `users/verify-email` |
@@ -623,7 +605,7 @@ New:
 {{ redirectInput('foo/bar') }}
 ```
 
-次の `redirect` パラメータトークンは、サポートされなくなりました。
+いくつかの `redirect` パラメータトークンはリネームされました。
 
 | コントローラーアクション | 旧トークン | 新トークン |
 | ------------------------------- | ------------- | --------- |
@@ -637,12 +619,12 @@ New:
 
 ### CSRF トークンパラメータ
 
-CSRF プロテクションは、Craft 3 ではデフォルトで有効になりました。（コンフィグ設定の `enableCsrfProtection` で）有効化していなかった場合、 コントローラーアクションで送信するフロントエンドのすべての `<form>` と JavaScript に新しい CSRF トークンパラメータを追加するアップデートが必要です。 あわせて、コンフィグ設定の `csrfTokenName` をセットする必要があります（デフォルトは `'CRAFT_CSRF_TOKEN'` となります）。
+CSRF プロテクションは、Craft 3 ではデフォルトで有効になりました。（コンフィグ設定 `enableCsrfProtection` で）有効化していなかった場合、 コントローラーアクションで送信するフロントエンドのすべての `<form>` と JavaScript に新しい CSRF トークンパラメータを追加するアップデートが必要です。
 
 ```twig
-{% set csrfTokenName = craft.app.config.general.csrfTokenName %}
+{% set csrfParam = craft.app.request.csrfParam %}
 {% set csrfToken = craft.app.request.csrfToken %}
-<input type="hidden" name="{{ csrfTokenName }}" value="{{ csrfToken }}">
+<input type="hidden" name="{{ csrfParam }}" value="{{ csrfToken }}">
 ```
 
 `csrfInput()` ファンクションは、ショートカットとして提供されています。
@@ -650,29 +632,6 @@ CSRF プロテクションは、Craft 3 ではデフォルトで有効になり�
 ```twig
 {{ csrfInput() }}
 ```
-
-## Memcache
-
-コンフィグ設定の <config:cacheMethod> に `memcache` を指定し、設定ファイル `config/memcache.php` で `useMemcached` に `true` をセットしていない場合、サーバーに memcached をインストールする必要があります。Craft 3 では、利用可能な memcache の PHP 7 互換バージョンがないため、それを使用します。
-
-## DbCache
-
-コンフィグ設定の <config:cacheMethod> に `db` を指定している場合、Craft 3 のアップデートを試す前に手動で SQL を実行する必要があります。
-
-```sql
-DROP TABLE IF EXISTS craft_cache;
-
-CREATE TABLE craft_cache (
-    id char(128) NOT NULL PRIMARY KEY,
-    expire int(11),
-    data BLOB,
-    dateCreated datetime NOT NULL,
-    dateUpdated datetime NOT NULL,
-    uid char(36) NOT NULL DEFAULT 0
-);
-```
-
-この例では、Craft 2 デフォルトの `craft` を DB コンフィグ設定の `tablePrefix` に設定している点に注意してください。コンフィグ設定を変更している場合、それに応じて前述のサンプルを調整してください。
 
 ## プラグイン
 

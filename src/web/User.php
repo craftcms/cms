@@ -150,7 +150,7 @@ class User extends \yii\web\User
      * ```twig{5}
      * <form method="post" action="" accept-charset="UTF-8">
      *     {{ csrfInput() }}
-     *     <input type="hidden" name="action" value="users/login">
+     *     {{ actionInput('users/login') }}
      *
      *     {% set username = craft.app.user.rememberedUsername %}
      *     <input type="text" name="loginName" value="{{ username }}">
@@ -307,7 +307,6 @@ class User extends \yii\web\User
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
-                ->admin(true)
                 ->one();
         } else {
             // Get the current user
@@ -404,7 +403,8 @@ class User extends \yii\web\User
         $session = Craft::$app->getSession();
 
         // Save the username cookie if they're not being impersonated
-        if ($session->get(UserElement::IMPERSONATE_KEY) === null) {
+        $impersonating = $session->get(UserElement::IMPERSONATE_KEY) !== null;
+        if (!$impersonating) {
             $this->sendUsernameCookie($identity);
         }
 
@@ -415,7 +415,9 @@ class User extends \yii\web\User
         $session->remove($this->elevatedSessionTimeoutParam);
 
         // Update the user record
-        Craft::$app->getUsers()->handleValidLogin($identity);
+        if (!$impersonating) {
+            Craft::$app->getUsers()->handleValidLogin($identity);
+        }
 
         parent::afterLogin($identity, $cookieBased, $duration);
     }
@@ -597,7 +599,6 @@ class User extends \yii\web\User
     /**
      * @param string $authError
      * @param UserElement $user
-     * @return null
      */
     private function _handleLoginFailure(string $authError = null, UserElement $user = null)
     {

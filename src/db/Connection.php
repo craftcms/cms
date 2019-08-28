@@ -90,6 +90,17 @@ class Connection extends \yii\db\Connection
      */
     private $_supportsMb4;
 
+    /**
+     * @var string[]
+     * @see quoteTableName()
+     */
+    private $_quotedTableNames;
+    /**
+     * @var string[]
+     * @see quoteColumnName()
+     */
+    private $_quotedColumnNames;
+
     // Public Methods
     // =========================================================================
 
@@ -336,6 +347,28 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * @inheritdoc
+     */
+    public function quoteTableName($name)
+    {
+        if (isset($this->_quotedTableNames[$name])) {
+            return $this->_quotedTableNames[$name];
+        }
+        return $this->_quotedTableNames[$name] = parent::quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteColumnName($name)
+    {
+        if (isset($this->_quotedColumnNames[$name])) {
+            return $this->_quotedColumnNames[$name];
+        }
+        return $this->_quotedColumnNames[$name] = parent::quoteColumnName($name);
+    }
+
+    /**
      * Returns whether a table exists.
      *
      * @param string $table
@@ -487,15 +520,8 @@ class Connection extends \yii\db\Connection
      */
     private function _getTableNameWithoutPrefix(string $table): string
     {
-        $table = $this->getSchema()->getRawTableName($table);
-
-        if ($this->tablePrefix) {
-            if (strpos($table, $this->tablePrefix) === 0) {
-                $table = substr($table, strlen($this->tablePrefix));
-            }
-        }
-
-        return $table;
+        $table = str_replace('%', '', $table);
+        return $this->getSchema()->getRawTableName($table);
     }
 
     /**
@@ -533,7 +559,7 @@ class Connection extends \yii\db\Connection
             '{port}' => $dbConfig->port,
             '{server}' => $dbConfig->server,
             '{user}' => $dbConfig->user,
-            '{password}' => addslashes($dbConfig->password),
+            '{password}' => addslashes(str_replace('$', '\\$', $dbConfig->password)),
             '{database}' => $dbConfig->database,
             '{schema}' => $dbConfig->schema,
         ];

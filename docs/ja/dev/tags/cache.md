@@ -131,16 +131,16 @@ URL ごとではなく、（現在のサイトロケールのための）グロ�
 
    ```twig
     {# Bad: #}
-
+    
     {% extends "_layout" %}
     {% cache %}
         {% block "content" %}
             ...
         {% endblock %}
     {% endcache %}
-
+    
     {# Good: #}
-
+    
     {% extends "_layout" %}
     {% block "content" %}
         {% cache %}

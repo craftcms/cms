@@ -657,6 +657,13 @@
                     name: this.inputNamePrefix + '[required]'
                 }).appendTo($container);
 
+                Craft.ui.createCheckboxField({
+                    label: Craft.t('app', 'Use this field’s values as search keywords?'),
+                    id: this.inputIdPrefix + '-searchable',
+                    name: this.inputNamePrefix + '[searchable]',
+                    checked: true,
+                }).appendTo($container);
+
                 var fieldTypeOptions = [];
 
                 for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++) {

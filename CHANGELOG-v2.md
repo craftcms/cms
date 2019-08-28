@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+## 2.7.10 - 2019-07-24
+
+### Security
+- The `preserveExifData` config setting is now also applied on image upload, not just on transform.
+
+## 2.7.9 - 2019-06-18
+
+### Fixed
+- Fixed a bug where users could not assign additional user groups to their own account if their permission to do so was granted by another user group they belonged to.
+
+### Security
+- Craft now redacts potentially sensitive values from the console output when running in Dev Mode.
+
+## 2.7.8 - 2019-04-02
+
+### Changed
+- Updated Yii to 1.1.21.
+- Updated PhpMailer to 5.2.27.
+- Updated Litemoji to 1.4.4.
+- Updated mcrypt_compat to 1.0.9.
+
+## 2.7.7.3 - 2019-03-26
+
+### Fixed
+- Fixed a bug where you could get incorrect cookie values.
+
+## 2.7.7.2 - 2019-03-25
+
+### Changed
+- Updated Yii to 1.1.20.4.
+
+## 2.7.7.1 - 2019-03-25
+
+### Fixed
+- Fixed another bug where CSRF validation was broken on servers running PHP 5.x.
+
+## 2.7.7 - 2019-03-23
+
+### Fixed
+- Fixed a bug where CSRF validation was broken on servers running PHP 5.x.
+
+### Changed
+- Updated Twig to 1.38.4.
+
+## 2.7.6 - 2019-03-15
+
+### Fixed
+- Fixed a bug where `IOHelper::cleanFilename()` could return inconsistent results.
+
+### Changed
+- Objects can no longer be unserialized from cookies.
+- Update Yii to 1.1.20.2.
+
+## 2.7.5 - 2019-02-15
+
 ### Changed
 - Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
 
@@ -10,10 +65,11 @@
 - Fixed a bug where element indexes wouldn’t return to the previous sort selection after the search input was cleared. ([#3548](https://github.com/craftcms/cms/issues/3548))
 - Fixed a bug where password-reset email send errors weren’t being properly reported on the login page if the `preventUserEnumeration` config setting was enabled.
 - Fixed a bug where Edit User pages weren’t reporting email send errors when the “Send password reset email” option was chosen. ([#3549](https://github.com/craftcms/cms/issues/3549))
+- Fixed an error that would occur when calling `RelationsService::saveRelations()` if `$targetIds` contained any empty values. ([#3850](https://github.com/craftcms/cms/pull/3850))
 
 ### Security
-- Fixed a self-XSS vulnerability in the Recent Entries widget.
-- Fixed a self-XSS vulnerability in the Feed widget.
+- Fixed XSS vulnerabilities.
+- URLs are no longer allowed in users’ first or last names.
 
 ## 2.7.4 - 2018-11-27
 

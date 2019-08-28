@@ -27,7 +27,11 @@
                             var item = response.items[i],
                                 $td = $($tds[i]);
 
-                            var widgetHtml = '<a href="' + item.permalink + '" target="_blank">' + item.title + '</a> ';
+                            var widgetHtml = $('<a/>', {
+                                href: item.permalink,
+                                target: '_blank',
+                                text: item.title
+                            }).get(0).outerHTML + ' ';
 
                             if (item.date) {
                                 widgetHtml += '<span class="light nowrap">' + item.date + '</span>';

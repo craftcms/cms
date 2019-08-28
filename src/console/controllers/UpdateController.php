@@ -9,18 +9,16 @@ namespace craft\console\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
-use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Update;
 use craft\models\Updates;
-use Ifsnop\Mysqldump\Mysqldump;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use yii\base\InvalidConfigException;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
@@ -93,7 +91,7 @@ class UpdateController extends Controller
      */
     public function actionInfo(): int
     {
-        $updates = $this->_getUpdates(true);
+        $updates = $this->_getUpdates();
 
         if (($total = $updates->getTotal()) === 0) {
             $this->stdout('You’re all up-to-date!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
@@ -124,9 +122,9 @@ class UpdateController extends Controller
         }
 
         $this->stdout(PHP_EOL . 'Run ');
-        Console::outputCommand('update all');
+        $this->outputCommand('update all');
         $this->stdout(' or ');
-        Console::outputCommand('update <handle>');
+        $this->outputCommand('update <handle>');
         $this->stdout(' to perform an update.' . PHP_EOL . PHP_EOL);
 
         return ExitCode::OK;
@@ -319,10 +317,10 @@ class UpdateController extends Controller
      * @param string $handle
      * @param string $from
      * @param string|null $to
-     * @param string $packageName
+     * @param string $oldPackageName
      * @param Update $update
      */
-    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $packageName, Update $update)
+    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $oldPackageName, Update $update)
     {
         if ($update->status === Update::STATUS_EXPIRED) {
             $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
@@ -338,8 +336,13 @@ class UpdateController extends Controller
             return;
         }
 
-        $requirements[$packageName] = $to;
+        $requirements[$update->packageName] = $to;
         $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status];
+
+        // Has the package name changed?
+        if ($update->packageName !== $oldPackageName) {
+            $requirements[$oldPackageName] = false;
+        }
     }
 
     /**
@@ -423,7 +426,7 @@ class UpdateController extends Controller
         $composerService->disablePackagist = false;
 
         try {
-            $composerService->install($requirements, $io, false);
+            $composerService->install($requirements, $io);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
@@ -452,7 +455,7 @@ class UpdateController extends Controller
         } catch (InvalidConfigException $e) {
             $this->stderr('Can’t apply new migrations: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             $this->stdout('You can apply new migrations manually by running ');
-            Console::outputCommand('migrate/all --no-content');
+            $this->outputCommand('migrate/all --no-content');
             $this->stdout(PHP_EOL);
             return false;
         }
@@ -542,7 +545,7 @@ class UpdateController extends Controller
         } catch (InvalidConfigException $e) {
             $this->stderr('Can’t revert Composer changes: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             $this->stdout('You can revert Composer changes manually by running ');
-            Console::outputCommand('update/composer-install');
+            $this->outputCommand('update/composer-install');
             $this->stdout(PHP_EOL);
             return;
         }

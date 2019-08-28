@@ -26,12 +26,12 @@
 │ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │#sidebar│ │ │                  │ │ │#details│ │ │ │ │ │
-│ │        │ │ │ │ │ │  (?)   │ │ │                  │ │ │  (?)   │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │     #content     │ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │  (?)   │ │ │     #content     │ │ │  (?)   │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
+│ │        │ │ │ │ │ │        │ │ │   #footer (?)    │ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
 │ │        │ │ │ │ │ └────────┘ └──────────────────────┘ └────────┘ │ │ │ │ │
 │ │        │ │ │ │ └────────────────────────────────────────────────┘ │ │ │ │
@@ -59,8 +59,6 @@
 {% endjs %}
 
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
-
-{% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
@@ -69,12 +67,18 @@
 
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set details = (details ?? block('details') ?? '')|trim %}
+{% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
+
+{% set showHeader = showHeader ?? true %}
+{% if not showHeader %}
+    {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ 'no-header' -%}
+{% endif %}
 
 {% block body %}
     <div id="global-container">
         <header id="global-sidebar" class="sidebar">
-            {% if currentUser.admin and craft.app.config.general.devMode %}
+            {% if currentUser.admin and devMode %}
                 <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
             {% endif %}
 
@@ -131,7 +135,7 @@
                                 </span>
 
                                 {%- if not item.sel and item.badgeCount -%}
-                                    <span class="badge">{{ item.badgeCount|number }}</span>
+                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
                                 {%- endif -%}
                             </a>
                             {% if item.sel and hasSubnav %}
@@ -143,9 +147,14 @@
                                         ) -%}
 
                                         <li>
-                                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
-                                        </li>
+                                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>
+                                                {{ item.label }}
 
+                                                {%- if not itemIsSelected and item.badgeCount is defined -%}
+                                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                                                {%- endif -%}
+                                            </a>
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             {% endif %}
@@ -219,23 +228,28 @@
                         {{- csrfInput() }}
                 {%- endif %}
 
-                {# main-header #}
-                <header id="header">
-                    {% block header %}
-                        {% block pageTitle %}
-                            {% if title is defined and title|length %}
-                                <h1>{{ title }}</h1>
-                            {% endif %}
+                {# header #}
+                {% if showHeader %}
+                    <header id="header">
+                        {% block header %}
+                            <div class="flex flex-nowrap">
+                                {% block pageTitle %}
+                                    {% if title is defined and title|length %}
+                                        <h1 title="{{ title }}">{{ title }}</h1>
+                                    {% endif %}
+                                {% endblock %}
+                                {% block contextMenu %}{% endblock %}
+                            </div>
+                            <div class="flex">
+                                {% block actionButton %}
+                                    {% if fullPageForm %}
+                                        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+                                    {% endif %}
+                                {% endblock %}
+                            </div>
                         {% endblock %}
-                        {% block contextMenu %}{% endblock %}
-                        <div class="flex-grow"></div>
-                        {% block actionButton %}
-                            {% if fullPageForm %}
-                                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                            {% endif %}
-                        {% endblock %}
-                    {% endblock %}
-                </header>
+                    </header>
+                {% endif %}
 
                 {# main-content #}
                 <div id="main-content" class="{% if sidebar %}has-sidebar{% endif %} {% if details %}has-details{% endif %}">
@@ -261,6 +275,13 @@
                                     {{ content is defined ? content }}
                                 {% endblock %}
                             </div>
+
+                            {# footer #}
+                            {% if footer is not empty %}
+                                <div id="footer" class="flex">
+                                    {{ footer|raw }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         {# details #}

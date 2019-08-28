@@ -28,11 +28,11 @@
 3. `<Property>` _（オプション）_ – リファレンスタグが返すべきエレメントのプロパティ。省略した場合、エレメントの URL が返されます。
 
    利用可能なプロパティのリストは、エレメントタイプのクラスリファレンスを参照してください。
-   - [api:craft\elements\Entry](craft\elements\Entry#public-properties)
-   - [api:craft\elements\Asset](craft\elements\Asset#public-properties)
-   - [api:craft\elements\Tag](craft\elements\Tag#public-properties)
-   - [api:craft\elements\User](craft\elements\User#public-properties)
-   - [api:craft\elements\GlobalSet](craft\elements\GlobalSet#public-properties)
+   - [api:craft\elements\Entry](api:craft\elements\Entry#public-properties)
+   - [api:craft\elements\Asset](api:craft\elements\Asset#public-properties)
+   - [api:craft\elements\Tag](api:craft\elements\Tag#public-properties)
+   - [api:craft\elements\User](api:craft\elements\User#public-properties)
+   - [api:craft\elements\GlobalSet](api:craft\elements\GlobalSet#public-properties)
 
    カスタムフィールドのハンドルもサポートされています。フィールドタイプは文字列として表すことができる値を持っています。
 

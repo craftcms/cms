@@ -208,13 +208,13 @@ class AssetTransforms extends Component
         $configData = [
             'format' => $transform->format,
             'handle' => $transform->handle,
-            'height' => $transform->height,
+            'height' => (int)$transform->height ?: null,
             'interlace' => $transform->interlace,
             'mode' => $transform->mode,
             'name' => $transform->name,
             'position' => $transform->position,
-            'quality' => $transform->quality,
-            'width' => $transform->width
+            'quality' => (int)$transform->quality ?: null,
+            'width' => (int)$transform->width ?: null,
         ];
 
         $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
@@ -238,6 +238,8 @@ class AssetTransforms extends Component
         $data = $event->newValue;
 
         $transaction = Craft::$app->getDb()->beginTransaction();
+        $deleteTransformIndexes = false;
+
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
             $isNewTransform = $transformRecord->getIsNewRecord();
@@ -252,6 +254,7 @@ class AssetTransforms extends Component
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
                 $transformRecord->dimensionChangeTime = new DateTime('@' . time());
+                $deleteTransformIndexes = true;
             }
 
             $transformRecord->mode = $data['mode'];
@@ -269,6 +272,14 @@ class AssetTransforms extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        if ($deleteTransformIndexes) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    Table::ASSETTRANSFORMINDEX,
+                    ['location' => $this->_getNamedTransformFolderName($transformRecord->handle)])
+                ->execute();
         }
 
         // Clear caches
@@ -350,7 +361,7 @@ class AssetTransforms extends Component
         // Fire a 'beforeApplyTransformDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
             $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new AssetTransformEvent([
-                'transform' => $transform,
+                'assetTransform' => $transform,
             ]));
         }
 
@@ -953,7 +964,7 @@ class AssetTransforms extends Component
         }
 
         if (!is_file($imageSourcePath)) {
-            throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist,");
+            throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist.");
         }
 
         $asset->setTransformSource($imageSourcePath);
@@ -1328,12 +1339,12 @@ class AssetTransforms extends Component
     /**
      * Returns a named transform's folder name.
      *
-     * @param AssetTransform $transform
+     * @param AssetTransform|string $transform
      * @return string
      */
-    private function _getNamedTransformFolderName(AssetTransform $transform): string
+    private function _getNamedTransformFolderName($transform): string
     {
-        return '_' . $transform->handle;
+        return '_' . ($transform instanceof AssetTransform ? $transform->handle : $transform);
     }
 
     /**
@@ -1375,7 +1386,20 @@ class AssetTransforms extends Component
 
         // Already created. Relax, grasshopper!
         if ($volume->fileExists($transformPath)) {
-            return;
+            $metaData = $volume->getFileMetadata($transformPath);
+            $dateModified = $metaData['timestamp'];
+            $dimensionChangeTime = $index->getTransform()->dimensionChangeTime;
+
+            if (!$dimensionChangeTime || $dimensionChangeTime->getTimestamp() <= $dateModified) {
+                return;
+            }
+
+            // Let's cook up a new one.
+            try {
+                $volume->deleteFile($transformPath);
+            } catch (\Throwable $exception) {
+                // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
+            }
         }
 
         $imageSource = $asset->getTransformSource();

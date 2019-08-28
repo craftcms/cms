@@ -102,6 +102,30 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 リクエストごとに定義される、カスタムの Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases)。
 
+### `allowAdminChanges`
+
+許可される型
+
+:   [boolean](http://php.net/language.types.boolean)
+
+デフォルト値
+
+:   `true`
+
+定義元
+
+:   [GeneralConfig::$allowAdminChanges](api:craft\config\GeneralConfig::$allowAdminChanges)
+
+管理者によるシステムへの管理上の変更を許可するかどうか。
+
+これを無効にすると、設定およびプラグインストアのセクションは非表示になり、Craft 本体のエディションとプラグインのバージョンがロックされ、プロジェクトコンフィグは読み取り専用になります。
+
+そのため、[useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#useprojectconfigfile) が有効になっている production 環境のみ、これを無効にするべきです。そして、デプロイメントワークフローでデプロイ時に自動的に `composer install` を実行するようにします。
+
+::: warning
+**すべての**環境が Craft 3.1.0 以降にアップデートされるまで、この設定を無効にしないでください。
+:::
+
 ### `allowSimilarTags`
 
 許可される型
@@ -134,6 +158,8 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 コントロールパネルでのシステムとプラグインのアップデート、および、プラグインストアからのプラグインのインストールを Craft が許可するかどうか。
 
+[allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#allowadminchanges) が無効になっている場合、この設定は自動的に無効になります。
+
 ### `allowUppercaseInSlug`
 
 許可される型
@@ -158,7 +184,7 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 デフォルト値
 
-:   `['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip']`
+:   `['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'webp', 'wma', 'wmv', 'xls', 'xlsx', 'zip']`
 
 定義元
 
@@ -180,7 +206,7 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 :   [GeneralConfig::$autoLoginAfterAccountActivation](api:craft\config\GeneralConfig::$autoLoginAfterAccountActivation)
 
-ユーザーがアカウントを有効化した後に、自動的にログインするかどうか。
+ユーザーがアカウントを有効化、または、パスワードをリセットした後で、自動的にログインさせるかどうか。
 
 ### `backupCommand`
 
@@ -246,7 +272,7 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 空白の場合、自動的に決定されます。
 
 ::: tip
-ベース CP URL に [CP トリガーワード](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-cptrigger)（例：`/admin`）を **含めない** でください。
+ベース CP URL に [CP トリガーワード](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#cptrigger)（例：`/admin`）を **含めない** でください。
 :::
 
 ### `blowfishHashCost`
@@ -372,7 +398,7 @@ Craft が `{% cache %}` タグ内にエレメントクエリをキャッシュ�
 
 :   [GeneralConfig::$csrfTokenName](api:craft\config\GeneralConfig::$csrfTokenName)
 
-[$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) が `true` にセットされている場合、CSRF の検証に使用される CSRF トークン名。
+[enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#enablecsrfprotection) が `true` にセットされている場合、CSRF の検証に使用される CSRF トークン名。
 
 ### `defaultCookieDomain`
 
@@ -524,7 +550,7 @@ JPG と PNG ファイルを保存する際に、Craft が使用する品質レ�
 
 デフォルト値
 
-:   `null`
+:   `1`
 
 定義元
 
@@ -558,7 +584,7 @@ JPG と PNG ファイルを保存する際に、Craft が使用する品質レ�
 
 デフォルトでは、フロントエンドの一般ユーザー登録で「パスワード」フィールドを送信する必要があります。`true` をセットすると、最初の登録フォームでパスワードを必要としなくなります。
 
-メールアドレスの確認が有効になっている場合、新しいユーザーは通知メールに記載されたリンクをクリックしてパスワードを設定できます。そうでなければ「パスワードを忘れた」際のワークフローを経由することがパスワードを設定できる唯一の方法となります。
+メールアドレスの確認が有効になっている場合、新しいユーザーは通知メールに記載されたリンクをクリックしてパスワードを設定できます。そうでなければ、「パスワードを忘れた」際のワークフローを経由することがパスワードをセットできる唯一の方法となります。
 
 ### `devMode`
 
@@ -575,6 +601,28 @@ JPG と PNG ファイルを保存する際に、Craft が使用する品質レ�
 :   [GeneralConfig::$devMode](api:craft\config\GeneralConfig::$devMode)
 
 システムを [Dev Mode](https://craftcms.com/support/dev-mode) で実行するかどうか。
+
+### `disabledPlugins`
+
+許可される型
+
+:   [string](http://php.net/language.types.string)[]
+
+デフォルト値
+
+:   `[]`
+
+定義元
+
+:   [GeneralConfig::$disabledPlugins](api:craft\config\GeneralConfig::$disabledPlugins)
+
+プロジェクトコンフィグの内容に関わらず無効にする、プラグインハンドルの配列。
+
+```php
+'dev' => [
+    'disabledPlugins' => ['webhooks'],
+],
+```
 
 ### `elevatedSessionDuration`
 
@@ -610,7 +658,7 @@ JPG と PNG ファイルを保存する際に、Craft が使用する品質レ�
 
 :   [GeneralConfig::$enableCsrfCookie](api:craft\config\GeneralConfig::$enableCsrfCookie)
 
-[$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) が有効な場合、CSRF トークンを保持するために Cookie を使用するかどうか。false の場合、CSRF トークンはコンフィグ設定名 'csrfTokenName' 配下のセッション内に保管されます。セッションの CSRF トークンを保存することでセキュリティが向上している間は、CSRF トークンをすべてのページでセッションを開始する必要があるため、サイトのパフォーマンスが低下する可能性がある点に注意してください。
+[enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#enablecsrfprotection) が有効な場合、CSRF トークンを保持するために Cookie を使用するかどうか。false の場合、CSRF トークンはコンフィグ設定名 `csrfTokenName` 配下のセッション内に保管されます。セッションの CSRF トークンを保存することでセキュリティが向上している間は、CSRF トークンをすべてのページでセッションを開始する必要があるため、サイトのパフォーマンスが低下する可能性がある点に注意してください。
 
 ### `enableCsrfProtection`
 
@@ -676,7 +724,7 @@ Craft 経由で送信されるすべてのフォームで、不可視項目に�
 
 :   [GeneralConfig::$extraAllowedFileExtensions](api:craft\config\GeneralConfig::$extraAllowedFileExtensions)
 
-コンフィグ設定 [$allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowedfileextensions) にマージされるファイル拡張子のリスト。
+コンフィグ設定 [allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#allowedfileextensions) にマージされるファイル拡張子のリスト。
 
 ### `extraAppLocales`
 
@@ -695,6 +743,40 @@ Craft 経由で送信されるすべてのフォームで、不可視項目に�
 アプリケーションがサポートすべき追加のロケール ID のリストで、ユーザーが優先言語として選択できる必要があります。
 
 サーバーに Intl PHP エクステンションがあるか、対応する[ロケールデータ](https://github.com/craftcms/locales)を `config/locales/` フォルダに保存している場合のみ、この設定を使用してください。
+
+### `extraFileKinds`
+
+許可される型
+
+:   [array](http://php.net/language.types.array)
+
+デフォルト値
+
+:   `[]`
+
+定義元
+
+:   [GeneralConfig::$extraFileKinds](api:craft\config\GeneralConfig::$extraFileKinds)
+
+Craft がサポートすべき追加のファイル種類のリスト。この配列は `\craft\config\craft\helpers\Assets::_buildFileKinds()` 内で定義されたものとマージされます。
+
+```php
+'extraFileKinds' => [
+    // merge .psb into list of Photoshop file kinds
+    'photoshop' => [
+        'extensions' => ['psb'],
+    ],
+    // register new "Stylesheet" file kind
+    'stylesheet' => [
+        'label' => 'Stylesheet',
+        'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
+    ],
+],
+```
+
+::: tip
+ここにリストされたファイル拡張子が、即座にアップロードを許可されるわけではありません。コンフィグ設定 [extraAllowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#extraallowedfileextensions) でそれらをリストする必要もあります。
+:::
 
 ### `filenameWordSeparator`
 
@@ -814,9 +896,9 @@ Craft がアカウントをロックするかを決定するために、ユー�
 
 詳細については、[yii\web\Request::$ipHeaders](https://www.yiiframework.com/doc/api/2.0/yii-web-request#$ipHeaders-detail) を参照してください。
 
-設定されていない場合、デフォルトで [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-ipheaders) 値が使用されます。
+設定されていない場合、デフォルトで [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#ipheaders) 値が使用されます。
 
-### `isSystemOn`
+### `isSystemLive`
 
 許可される型
 
@@ -828,9 +910,9 @@ Craft がアカウントをロックするかを決定するために、ユー�
 
 定義元
 
-:   [GeneralConfig::$isSystemOn](api:craft\config\GeneralConfig::$isSystemOn)
+:   [GeneralConfig::$isSystemLive](api:craft\config\GeneralConfig::$isSystemLive)
 
-サイトが現在オンラインかどうか。`true` または `false` をセットしている場合、「設定 > 一般」のシステムのステータス設定よりも優先されます。
+サイトが現在稼働しているかどうか。`true` または `false` をセットしている場合、「設定 > 一般」のシステムのステータス設定よりも優先されます。
 
 ### `limitAutoSlugsToAscii`
 
@@ -1012,6 +1094,17 @@ Craft が画質を著しく低下させることなく、画像のファイル�
 
 現在のリクエストがページ分割されたリストに含まれる特定ページのものかどうかを決定する際に、Craft が探す数値の前にある文字列。
 
+| サンプル値 | サンプル URI |
+| ------------- | ----------- |
+| `p` | `/news/p5` |
+| `page` | `/news/page5` |
+| `page/` | `/news/page/5` |
+| `?page` | `/news?page=5` |
+
+::: tip
+これを `?p`（例：`/news?p=5`）にセットしたい場合、デフォルトで `p` がセットされている [pathParam](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#pathparam) 設定も変更する必要があります。さらにサーバーが Apache で稼働している場合、新しい `pathParam` 値とマッチするよう `.htaccess` ファイル内のリダイレクトコードをアップデートする必要があります。
+:::
+
 ### `pathParam`
 
 許可される型
@@ -1028,15 +1121,19 @@ Craft が画質を著しく低下させることなく、画像のファイル�
 
 リクエストのパスを決定する際に、Craft がチェックするクエリ文字列のパラメータ。
 
+::: tip
+これを変更し、かつ、サーバーが Apache で稼働している場合、新しい値とマッチするよう `.htaccess` ファイルをアップデートすることを忘れないでください。
+:::
+
 ### `phpMaxMemoryLimit`
 
 許可される型
 
-:   [string](http://php.net/language.types.string)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 デフォルト値
 
-:   `''`
+:   `null`
 
 定義元
 
@@ -1401,10 +1498,10 @@ HTTP リクエストを通して、Craft が保留中のキュージョブを自
 
 無効にした場合、代わりのキューランナーを別途セットアップ*しなければなりません*。
 
-1分ごとに実行される cron ジョブをどのように設定するかの例です。
+これは、1分ごとに実行される cron ジョブからキューランナーを設定する方法の例です。
 
 ```text
-*/1 * * * * /path/to/project/root/craft queue/run
+/1 * * * * /path/to/project/root/craft queue/run
 ```
 
 ### `sanitizeSvgUploads`
@@ -1571,7 +1668,7 @@ Craft がフロントエンドからパスワードを設定したユーザー�
 
 プライマリサイトのベース URL だけを上書きするための文字列、または、サイトのハンドルをキーとして使用する配列をセットできます。
 
-URL は `http://`、`https://`、`//`（プロトコル相対）、または、[エイリアス](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-aliases)のいずれかではじまる必要があります。
+URL は `http://`、`https://`、`//`（プロトコル相対）、または、[エイリアス](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#aliases)のいずれかではじまる必要があります。
 
 ```php
 'siteUrl' => [
@@ -1596,6 +1693,42 @@ URL は `http://`、`https://`、`//`（プロトコル相対）、または、[
 
 スラグの単語を区切るために使用する文字。
 
+### `softDeleteDuration`
+
+許可される型
+
+:   `mixed`
+
+デフォルト値
+
+:   `2592000`
+
+定義元
+
+:   [GeneralConfig::$softDeleteDuration](api:craft\config\GeneralConfig::$softDeleteDuration)
+
+ソフトデリートされたアイテムが、ガベージコレクションによって完全に削除されるまでの時間。
+
+ソフトデリートされたアイテムを削除したくない場合、`0` をセットしてください。
+
+サポートされる値の種類は、[craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) のリストを参照してください。
+
+### `storeUserIps`
+
+許可される型
+
+:   [boolean](http://php.net/language.types.boolean)
+
+デフォルト値
+
+:   `false`
+
+定義元
+
+:   [GeneralConfig::$storeUserIps](api:craft\config\GeneralConfig::$storeUserIps)
+
+ユーザーの IP アドレスがシステムによって保存 / 記録されるべきかどうか。
+
 ### `suppressTemplateErrors`
 
 許可される型
@@ -1618,7 +1751,7 @@ Twig のランタイムエラーを抑制するかどうか。
 
 許可される型
 
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 デフォルト値
 
@@ -1664,7 +1797,7 @@ Twig のランタイムエラーを抑制するかどうか。
 
 :   [GeneralConfig::$tokenParam](api:craft\config\GeneralConfig::$tokenParam)
 
-トークンがセットされるクエリ文字列パラメータ名。
+Craft のトークンがセットされるクエリ文字列パラメータ名。
 
 ### `transformGifs`
 
@@ -1786,7 +1919,29 @@ NFS のような一部のファイルシステムでは、排他的なファイ�
 
 Craft が URL を生成する際、`PATH_INFO` を使用してパスを指定するか、クエリ文字列パラメータとして指定するかどうか。
 
-この設定は、[$omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-omitscriptnameinurls) が false にセットされている場合のみ影響することに注意してください。
+この設定は、[omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#omitscriptnameinurls) が false にセットされている場合のみ影響することに注意してください。
+
+### `useProjectConfigFile`
+
+許可される型
+
+:   [boolean](http://php.net/language.types.boolean)
+
+デフォルト値
+
+:   `false`
+
+定義元
+
+:   [GeneralConfig::$useProjectConfigFile](api:craft\config\GeneralConfig::$useProjectConfigFile)
+
+プロジェクトコンフィグを `config/project.yaml` に保存するかどうか。
+
+`true` をセットすると、システムのプロジェクトコンフィグのハードコピーが `config/project.yaml` に保存され、`config/project.yaml` の変更はシステムに適用されます。それによって、別々のデータベースを持つにも関わらず、マルチ環境で同じプロジェクトコンフィグを共有することが可能になります。
+
+::: warning
+この設定を有効にする場合、必ず[プロジェクトコンフィグ](../project-config.html)ドキュメント全体を読み、「プロジェクトコンフィグファイルを有効にする」のステップに慎重に従ってください。
+:::
 
 ### `useSecureCookies`
 
@@ -1804,7 +1959,7 @@ Craft が URL を生成する際、`PATH_INFO` を使用してパスを指定す
 
 `Cookie を作成するために Craft::cookieConfig()` を使用した際、Craft が保存する Cookie に "secure" フラグをセットするかどうか。
 
-有効な値は `true`、`false`、および、`'auto'` です。デフォルトは `'auto'` で、現在のアクセスが `https://` 越しの場合に secure フラグがセットされます。`true` はプロトコルに関係なく常にフラグをセットし、`false` は自動的にフラグをセットすることはありません。
+有効な値は `true`、`false`、および、`'auto'` です。デフォルトは `'auto'` で、現在のアクセスが `https://` 越しの場合に、secure フラグがセットされます。`true` はプロトコルに関係なく常にフラグをセットし、`false` は自動的にフラグをセットすることはありません。
 
 ### `useSslOnTokenizedUrls`
 
@@ -1861,6 +2016,24 @@ Craft が URL を生成する際、`PATH_INFO` を使用してパスを指定す
 期限切れになる前に、ユーザー確認コードを使用できる時間。
 
 サポートされる値の種類は、[craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) のリストを参照してください。
+
+### `verifyEmailSuccessPath`
+
+許可される型
+
+:   `mixed`
+
+デフォルト値
+
+:   `''`
+
+定義元
+
+:   [GeneralConfig::$verifyEmailSuccessPath](api:craft\config\GeneralConfig::$verifyEmailSuccessPath)
+
+コントロールパネルにアクセスできないユーザーが、新しいメールアドレスを確認したときにリダイレクトする URI。
+
+サポートされる値の種類は、[craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) のリストを参照してください。
 
 <!-- END SETTINGS -->
 

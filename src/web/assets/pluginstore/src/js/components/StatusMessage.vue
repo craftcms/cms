@@ -1,7 +1,12 @@
 <template>
     <div class="status-message">
         <div>
-            <div class="graphic spinner big" :class="{ error: error }"></div>
+            <template v-if="error">
+                <icon icon="exclamation-triangle"></icon>
+            </template>
+            <template v-else>
+                <spinner size="lg"></spinner>
+            </template>
             <div class="message">{{ message }}</div>
         </div>
     </div>
@@ -9,20 +14,26 @@
 
 <script>
     export default {
-
         props: ['message', 'error']
-
     }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
     .status-message {
-        @apply .flex-1 .flex .items-center .justify-center;
+        @apply .flex-1 .flex .items-center .justify-center .text-center;
 
         div {
-            .graphic {
-                @apply .block .mx-auto .mb-6;
+            .c-spinner {
+                @apply .mb-6;
             }
+
+            .c-icon {
+                @apply .mb-6;
+
+                width: 48px;
+                height: 48px;
+            }
+
             .message {
                 @apply .text-center;
             }

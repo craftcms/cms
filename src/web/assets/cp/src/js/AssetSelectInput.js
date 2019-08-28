@@ -82,7 +82,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
          * Create the element editor
          */
         createElementEditor: function($element) {
-            return Craft.createElementEditor(this.settings.elementType, $element, {
+            return this.base($element, {
                 params: {
                     defaultFieldLayoutId: this.settings.defaultFieldLayoutId
                 }
@@ -202,6 +202,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                     if (this.uploader.isLastUpload()) {
                         this.progressBar.hideProgressBar();
                         this.$container.removeClass('uploading');
+
+                        if (window.draftEditor) {
+                            window.draftEditor.checkForm();
+                        }
                     }
                 }.bind(this));
 

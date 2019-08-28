@@ -34,6 +34,14 @@ class Url extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'URL');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
     // Properties
     // =========================================================================
 
@@ -42,15 +50,31 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public $placeholder;
 
+    /**
+     * @var int The maximum length (in bytes) the field can hold
+     */
+    public $maxLength = 255;
+
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['maxLength'], 'required'];
+        $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING;
+        return Schema::TYPE_STRING . "({$this->maxLength})";
     }
 
     /**
@@ -59,15 +83,28 @@ class Url extends Field implements PreviewableFieldInterface
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Placeholder Text'),
-                'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
-                'id' => 'placeholder',
-                'name' => 'placeholder',
-                'value' => $this->placeholder,
-                'errors' => $this->getErrors('placeholder'),
-            ]
-        ]);
+                [
+                    'label' => Craft::t('app', 'Placeholder Text'),
+                    'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+                    'id' => 'placeholder',
+                    'name' => 'placeholder',
+                    'value' => $this->placeholder,
+                    'errors' => $this->getErrors('placeholder'),
+                ]
+            ]) .
+            Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+                [
+                    'label' => Craft::t('app', 'Max Length'),
+                    'instructions' => Craft::t('app', 'The maximum length (in bytes) the field can hold.'),
+                    'id' => 'maxLength',
+                    'name' => 'maxLength',
+                    'type' => 'number',
+                    'min' => '10',
+                    'step' => '10',
+                    'value' => $this->maxLength,
+                    'errors' => $this->getErrors('maxLength'),
+                ]
+            ]);
     }
 
     /**

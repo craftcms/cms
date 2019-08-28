@@ -3,7 +3,7 @@
 
 $sidebarWidth: 225px;
 $detailsWidth: 350px;
-$minFullUiWidth: 1224px;
+$minFullUiWidth: 1200px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 $sidebarBgColor: hsl($hue, 20%, 25%);
@@ -531,7 +531,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       display: flex;
       align-items: center;
       align-content: stretch;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: space-between;
       position: relative;
       z-index: 2;
@@ -560,17 +560,31 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         position: absolute;
       }
 
+      .flex {
+        flex-wrap: nowrap;
+        max-width: 100%;
+
+        &.flex-nowrap {
+          min-width: 0;
+        }
+
+        & > * {
+          margin-bottom: 0;
+        }
+      }
+
       h1 {
         line-height: 32px;
         margin-top: 0;
         margin-bottom: 0;
-        display: inline;
+        min-width: 0;
+
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
 
         &:not(:last-child) {
-          @include margin-right(24px !important);
+          @include margin-right(14px !important);
         }
       }
 
@@ -732,15 +746,22 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           flex: 1;
           background: #fff;
           background-clip: padding-box;
-          padding: 24px 24px 0;
+          padding: 24px 24px 48px;
           word-wrap: break-word;
           @include border-right(1px solid $hairlineColorAlpha);
-
-          & > *:last-child {
-            padding-bottom: 48px;
-          }
         }
 
+        #footer {
+          z-index: 1;
+          box-shadow: 0 -1px 0 $hairlineColorAlpha;
+          padding: 10px 24px;
+          background: #fff;
+
+          & > *,
+          .flex > * {
+            margin-bottom: 0;
+          }
+        }
       }
 
       #details {
@@ -811,7 +832,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 }
 
-// Hide the sidebar at < 1224
+// Hide the sidebar at < 1200
 @media only screen and (max-width: $minFullUiWidth - 1px) {
   #global-container {
     position: relative;
@@ -837,6 +858,18 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
   #main-container {
     max-width: none;
+
+    #crumbs {
+      display: flex !important;
+
+      body.no-header & {
+        padding-bottom: 16px;
+      }
+
+      #nav-toggle {
+        display: block;
+      }
+    }
 
     #main {
       #header {
@@ -868,14 +901,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       }
     }
   }
-
-  #crumbs {
-    display: flex !important;
-
-    #nav-toggle {
-      display: block;
-    }
-  }
 }
 
 // Rearrange #main-content to flow vertically at < 999
@@ -887,6 +912,14 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
   #main-container {
     #main {
+      #header {
+        flex-wrap: wrap;
+
+        .flex {
+          margin-top: 10px;
+        }
+      }
+
       #main-content {
         flex-direction: column;
         max-height: none !important;
@@ -971,38 +1004,28 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   overflow: auto;
 
   .job {
-    @include padding(14px, 138px, 14px, 24px);
-    overflow: hidden;
-
-    &:after {
-      @include clearafter;
-    }
+    padding: 14px 24px;
 
     & + .job {
       border-top: 1px solid $hairlineColor;
     }
 
-    .job-description {
-      position: relative;
+    .flex {
+      align-items: center;
 
-      .indent {
-        position: absolute;
-        top: -1px;
-        @include left(-24px);
-        @include margin-left(0);
+      & > * {
+        margin-bottom: 0;
       }
     }
 
     .job-status {
-      @include floatright;
-      @include margin-right(-114px);
+      @include margin-left(7px);
       width: 100px;
       color: $lightTextColor;
       text-align: center;
 
       .progressbar {
         position: static;
-        margin-top: 4px;
         width: auto;
       }
 
@@ -1100,7 +1123,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 }
 
 .lp-editor-container,
-.lp-iframe-container {
+.lp-preview-container {
   position: fixed;
   top: 0;
   height: 100%;
@@ -1108,64 +1131,92 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   z-index: 100;
 }
 
-.lp-iframe-container.dragging:after {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  content: '';
-  font-size: 0;
-}
-
-.lp-editor,
-.lp-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.lp-editor {
-  padding: 0 24px;
-  overflow: auto;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
+.lp-editor-container {
+  display: flex;
+  flex-direction: column;
 
   header {
-    margin: 0 -24px 24px;
-    padding: 14px 24px 13px;
-    background: rgba(0, 0, 0, 0.03);
+    padding: 10px 24px;
+    background: darken($bgColor, 3%);
 
-    .btn {
-      @include floatleft;
-
-      &.submit {
-        @include floatright;
-      }
+    .btn, .spinner, .checkmark-icon {
+      margin-bottom: 0;
     }
+  }
 
-    h1 {
-      margin: 0;
-      font-size: 25px;
-      line-height: 30px;
-      color: #333;
+  .lp-editor {
+    flex: 1;
+    padding: 24px;
+    overflow: auto;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+
+    & > .field:last-child {
+      margin-bottom: 24px !important;
     }
+  }
+
+  .lp-draghandle {
+    position: absolute;
+    top: 0;
+    @include right(-4px);
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
   }
 }
 
-.lp-editor > .field:last-child {
-  margin-bottom: 24px !important;
+.lp-preview-container {
+  display: flex;
+  flex-direction: column;
+
+  &.dragging:after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    content: '';
+    font-size: 0;
+  }
+
+  header {
+    padding: 10px 24px;
+    background: #222;
+    border-bottom: 1px solid #444;
+    justify-content: center;
+
+    .btn {
+      background: #444;
+      margin-bottom: 0;
+      color: #fff;
+      box-shadow: none;
+
+      &:active, &.active {
+        background: #333;
+      }
+    }
+  }
+
+  .lp-preview {
+    flex: 1;
+  }
 }
 
-.lp-draghandle {
-  position: absolute;
-  top: 0;
-  @include right(-4px);
-  width: 4px;
-  height: 100%;
-  cursor: col-resize;
+.lp-target-menu {
+  background: #444;
+
+  ul {
+    li {
+      a {
+        color: #fff !important;
+
+        &:not(.sel):not(.disabled):hover {
+          background: #555;
+        }
+      }
+    }
+  }
 }
 
 /* Sidebar */

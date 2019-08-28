@@ -17,11 +17,14 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
-use Twig\Error\LoaderError;
+use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Error\RuntimeError as TwigRuntimeError;
+use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
@@ -320,9 +323,9 @@ class View extends \yii\web\View
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @return string the rendering result
-     * @throws LoaderError if the template doesn’t exist
-     * @throws Exception in case of failure
-     * @throws \RuntimeException in case of failure
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
      */
     public function renderTemplate(string $template, array $variables = []): string
     {
@@ -335,19 +338,17 @@ class View extends \yii\web\View
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
-        Craft::beginProfile($template, __METHOD__);
 
         try {
             $output = $this->getTwig()->render($template, $variables);
         } catch (\RuntimeException $e) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
-                throw new Exception('An error occurred when rendering a template.', 0, $e);
+                throw new \RuntimeException('An error occurred when rendering a template.', 0, $e);
             }
             throw $e;
         }
 
-        Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
         $this->afterRenderTemplate($template, $variables, $output);
@@ -371,6 +372,9 @@ class View extends \yii\web\View
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @return string the rendering result
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
      */
     public function renderPageTemplate(string $template, array $variables = []): string
     {
@@ -404,8 +408,9 @@ class View extends \yii\web\View
      * @param string $macro The name of the macro.
      * @param array $args Any arguments that should be passed to the macro.
      * @return string The rendered macro output.
-     * @throws Exception in case of failure
-     * @throws \RuntimeException in case of failure
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
      */
     public function renderTemplateMacro(string $template, string $macro, array $args = []): string
     {
@@ -420,7 +425,7 @@ class View extends \yii\web\View
         } catch (\RuntimeException $e) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
-                throw new Exception('An error occurred when rendering a template.', 0, $e);
+                throw new \RuntimeException('An error occurred when rendering a template.', 0, $e);
             }
             throw $e;
         }
@@ -436,9 +441,16 @@ class View extends \yii\web\View
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
      * @return string The rendered template.
+     * @throws TwigLoaderError
+     * @throws TwigSyntaxError
      */
     public function renderString(string $template, array $variables = []): string
     {
+        // If there are no dynamic tags, just return the template
+        if (strpos($template, '{') === false) {
+            return $template;
+        }
+
         $twig = $this->getTwig();
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
@@ -594,7 +606,7 @@ class View extends \yii\web\View
     {
         try {
             return ($this->resolveTemplate($name) !== false);
-        } catch (LoaderError $e) {
+        } catch (TwigLoaderError $e) {
             // _validateTemplateName() han an issue with it
             return false;
         }
@@ -966,7 +978,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? "\n" : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
             }
         }
 
@@ -1026,13 +1038,18 @@ JS;
      * The template mode defines:
      * - the base path that templates should be looked for in
      * - the default template file extensions that should be automatically added when looking for templates
-     * - the "index" template filenames that sholud be checked when looking for templates
+     * - the "index" template filenames that should be checked when looking for templates
      *
      * @param string $templateMode Either 'site' or 'cp'
      * @throws Exception if $templateMode is invalid
      */
     public function setTemplateMode(string $templateMode)
     {
+        // Ignore if it's already set to that
+        if ($templateMode === $this->_templateMode) {
+            return;
+        }
+
         // Validate
         if (!in_array($templateMode, [
             self::TEMPLATE_MODE_CP,
@@ -1440,7 +1457,7 @@ JS;
      */
     protected function registerAssetFlashes()
     {
-        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
             return;
         }
 
@@ -1494,17 +1511,17 @@ JS;
      * [[\Twig\Loader\FilesystemLoader]].
      *
      * @param string $name
-     * @throws LoaderError
+     * @throws TwigLoaderError
      */
     private function _validateTemplateName(string $name)
     {
         if (StringHelper::contains($name, "\0")) {
-            throw new LoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
+            throw new TwigLoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
         }
 
         if (Path::ensurePathIsContained($name) === false) {
             Craft::error('Someone tried to load a template outside the templates folder: ' . $name);
-            throw new LoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
+            throw new TwigLoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }
 
@@ -1564,12 +1581,22 @@ JS;
         }
 
         $this->_twigOptions = [
-            'base_template_class' => Template::class,
             // See: https://github.com/twigphp/Twig/issues/1951
             'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
             'auto_reload' => true,
             'charset' => Craft::$app->charset,
         ];
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        // Only load our custom Template class if they still have suppressTemplateErrors enabled
+        if ($generalConfig->suppressTemplateErrors) {
+            $this->_twigOptions['base_template_class'] = Template::class;
+        }
+
+        if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $this->_twigOptions['autoescape'] = 'js';
+        }
 
         if (YII_DEBUG) {
             $this->_twigOptions['debug'] = true;
@@ -1657,6 +1684,7 @@ JS;
 
         /** @var Element $element */
         $element = $context['element'];
+        $label = $element->getUiLabel();
 
         if (!isset($context['context'])) {
             $context['context'] = 'index';
@@ -1707,10 +1735,15 @@ JS;
                 'data-label' => (string)$element,
                 'data-url' => $element->getUrl(),
                 'data-level' => $element->level,
+                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
             ]);
 
         if ($context['context'] === 'field') {
             $htmlAttributes['class'] .= ' removable';
+        }
+
+        if ($element->hasErrors()) {
+            $htmlAttributes['class'] .= ' error';
         }
 
         if ($element::hasStatuses()) {
@@ -1753,13 +1786,19 @@ JS;
 
         $html .= '<span class="title">';
 
-        $label = HtmlHelper::encode($element);
+        $encodedLabel = HtmlHelper::encode($label);
 
         if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+            if ($element->getIsDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
+            } else if ($element->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+            }
+
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
-            $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
+            $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
         } else {
-            $html .= $label;
+            $html .= $encodedLabel;
         }
 
         $html .= '</span></div></div>';

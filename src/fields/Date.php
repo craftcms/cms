@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
@@ -25,7 +26,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Date extends Field implements PreviewableFieldInterface
+class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     // Static
     // =========================================================================
@@ -36,6 +37,14 @@ class Date extends Field implements PreviewableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Date/Time');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return DateTime::class . '|null';
     }
 
     // Properties

@@ -809,7 +809,7 @@ Defined by
 
 
 Whether to use a cookie to persist the CSRF token if [enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#enablecsrfprotection) is enabled. If false, the CSRF token
-will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
+will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
 session increases security, it requires starting a session for every page that a CSRF token is need, which may
 degrade site performance.
 
@@ -998,6 +998,36 @@ Defined by
 
 
 Whether images transforms should be generated before page load.
+
+
+
+### `headlessMode`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$headlessMode](api:craft\config\GeneralConfig::$headlessMode)
+
+
+
+Bool Whether the system should run in Headless Mode, which
+optimizes the system and Control Panel for headless CMS implementations.
+
+When this is enabled, the following changes will take place:
+
+- URI Format settings for sections and category groups will be hidden.
+- Template route management will be hidden.
+- Front-end routing will skip checks for element and template requests.
+- Front-end responses will be JSON-formatted rather than HTML by default.
+- Twig will be configured to escape unsafe strings for JavaScript/JSON
+  rather than HTML by default for front-end requests.
 
 
 
@@ -1240,6 +1270,28 @@ Defined by
 
 The number of invalid login attempts Craft will allow within the specified duration before the account gets
 locked.
+
+
+
+### `maxRevisions`
+
+Allowed types
+
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+
+Default value
+
+:   `50`
+
+Defined by
+
+:   [GeneralConfig::$maxRevisions](api:craft\config\GeneralConfig::$maxRevisions)
+
+
+
+The maximum number of revisions that should be stored for each element.
+
+Set to `0` if you want to store an unlimited number of revisions.
 
 
 
@@ -1549,7 +1601,7 @@ Defined by
 
 
 
-Whether the EXIF data should be preserved when manipulating images.
+Whether the EXIF data should be preserved when manipulating and uploading images.
 
 Setting this to `true` will result in larger image file sizes.
 
@@ -1645,6 +1697,54 @@ Defined by
 The amount of time to wait before Craft purges pending users from the system that have not activated.
 
 Note that any content assigned to a pending user will be deleted as well when the given time interval passes.
+
+Set to `0` to disable this feature.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
+### `purgeStaleUserSessionDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `7776000`
+
+Defined by
+
+:   [GeneralConfig::$purgeStaleUserSessionDuration](api:craft\config\GeneralConfig::$purgeStaleUserSessionDuration)
+
+
+
+The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+
+Set to `0` to disable this feature.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
+### `purgeUnsavedDraftsDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `2592000`
+
+Defined by
+
+:   [GeneralConfig::$purgeUnsavedDraftsDuration](api:craft\config\GeneralConfig::$purgeUnsavedDraftsDuration)
+
+
+
+The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
 
 Set to `0` to disable this feature.
 
@@ -1863,6 +1963,36 @@ Here is an example of how you would setup a queue runner from a cron job that ra
 ```text
 /1 * * * * /path/to/project/root/craft queue/run
 ```
+
+
+
+### `sameSiteCookieValue`
+
+Allowed types
+
+:   [string](http://php.net/language.types.string)
+
+Default value
+
+:   `null`
+
+Defined by
+
+:   [GeneralConfig::$sameSiteCookieValue](api:craft\config\GeneralConfig::$sameSiteCookieValue)
+
+Since
+
+:   3.1.33
+
+
+
+The [SameSite](https://www.owasp.org/index.php/SameSite) value that should be set on Craft cookies, if any.
+
+This can be set to `'Lax'`, `'Strict'`, or `null`.
+
+::: note
+This setting requires PHP 7.3 or later.
+:::
 
 
 
@@ -2141,28 +2271,6 @@ Whether user IP addresses should be stored/logged by the system.
 
 
 
-### `suppressTemplateErrors`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Default value
-
-:   `false`
-
-Defined by
-
-:   [GeneralConfig::$suppressTemplateErrors](api:craft\config\GeneralConfig::$suppressTemplateErrors)
-
-
-
-Whether Twig runtime errors should be suppressed.
-
-If it is set to `true`, the errors will still be logged to Craft’s log files.
-
-
-
 ### `testToEmailAddress`
 
 Allowed types
@@ -2402,6 +2510,11 @@ If set to `true`, a hard copy of your system’s project config will be saved in
 and any changes to `config/project.yaml` will be applied back to the system, making it possible for
 multiple environments to share the same project config despite having separate databases.
 
+::: warning
+Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
+documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
+:::
+
 
 
 ### `useSecureCookies`
@@ -2496,6 +2609,28 @@ Defined by
 The amount of time a user verification code can be used before expiring.
 
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
+### `verifyEmailSuccessPath`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `''`
+
+Defined by
+
+:   [GeneralConfig::$verifyEmailSuccessPath](api:craft\config\GeneralConfig::$verifyEmailSuccessPath)
+
+
+
+The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
+
+See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
 

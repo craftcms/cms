@@ -27,15 +27,17 @@ As you can see, they are made up three segments:
     - `entry-slug`
     - `sectionHandle/entry-slug`
 
+    Identifiers can also include the site ID, UUID, or handle that the element should be loaded from, using an `@<Site>` syntax.
+
 3.  `<Property>` _(optional)_ – The element property that the reference tag should return. If omitted, the element’s URL will be returned.
 
     You can refer to the element types’ class references for a list of available properties:
 
-    - [api:craft\elements\Entry](craft\elements\Entry#public-properties)
-    - [api:craft\elements\Asset](craft\elements\Asset#public-properties)
-    - [api:craft\elements\Tag](craft\elements\Tag#public-properties)
-    - [api:craft\elements\User](craft\elements\User#public-properties)
-    - [api:craft\elements\GlobalSet](craft\elements\GlobalSet#public-properties)
+    - [api:craft\elements\Entry](api:craft\elements\Entry#public-properties)
+    - [api:craft\elements\Asset](api:craft\elements\Asset#public-properties)
+    - [api:craft\elements\Tag](api:craft\elements\Tag#public-properties)
+    - [api:craft\elements\User](api:craft\elements\User#public-properties)
+    - [api:craft\elements\GlobalSet](api:craft\elements\GlobalSet#public-properties)
 
     Custom field handles are also supported, for field types with values that can be represented as strings.
 
@@ -45,8 +47,10 @@ The following are valid reference tags:
 
 - `{asset:123:filename}` – returns the filename of an asset with the ID of `123` (via <api:craft\elements\Asset::getFilename()>).
 - `{entry:about-us:intro}` – returns the value of an `intro` custom field on an entry with the slug `about-us`.
+- `{entry:about-us@en:intro}` – returns the value of an `intro` custom field on an entry with the slug `about-us`, loaded from the site with the handle `en`.
 - `{entry:blog/whats-on-tap}` – returns the URL of an entry in a `blog` section with the slug `whats-on-tap`.
 - `{craft\commerce\Variant:123:price}` – returns the price of a Commerce Variant object with the id of `123`.
+- `{globalset:aGlobalSet:uid}` – returns the UID of a global set with the handle `aGlobalSet`.
 
 ## Parsing Reference Tags
 

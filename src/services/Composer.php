@@ -372,7 +372,7 @@ class Composer extends Component
     protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements)
     {
         $requireKey = 'require';
-        $removeKey = 'require-dev';
+        $requireDevKey = 'require-dev';
 
         // First try using JsonManipulator
         $success = true;
@@ -380,11 +380,16 @@ class Composer extends Component
         $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
 
         foreach ($requirements as $package => $constraint) {
-            if (
-                !$manipulator->addLink($requireKey, $package, $constraint, $sortPackages) ||
-                !$manipulator->removeSubNode($removeKey, $package)
-            ) {
-                $success = false;
+            if ($constraint === false) {
+                $success = $manipulator->removeSubNode($requireKey, $package);
+            } else {
+                $success = $manipulator->addLink($requireKey, $package, $constraint, $sortPackages);
+            }
+
+            // Also remove the package from require-dev
+            $success = $success && $manipulator->removeSubNode($requireDevKey, $package);
+
+            if (!$success) {
                 break;
             }
         }
@@ -398,9 +403,15 @@ class Composer extends Component
         $json = new JsonFile($jsonPath);
         $config = $json->read();
 
-        foreach ($requirements as $package => $version) {
-            $config[$requireKey][$package] = $version;
-            unset($config[$removeKey][$package]);
+        foreach ($requirements as $package => $constraint) {
+            if ($constraint === false) {
+                unset($config[$requireKey][$package]);
+            } else {
+                $config[$requireKey][$package] = $constraint;
+            }
+
+            // Also remove the package from require-dev
+            unset($config[$requireDevKey][$package]);
         }
 
         $json->write($config);

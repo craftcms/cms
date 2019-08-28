@@ -17,7 +17,6 @@
     /* global Craft */
 
     export default {
-
         props: ['attributes', 'value'],
 
         data() {
@@ -38,7 +37,6 @@
         },
 
         methods: {
-
             selectAttribute(attribute) {
                 this.$emit('update:value', {attribute: attribute, direction: this.value.direction})
             },
@@ -65,6 +63,5 @@
                 Craft.initUiElements(this.$refs.sortMenuBtn)
             })
         },
-
     }
 </script>

@@ -82,9 +82,34 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request. (Narrator: It isn't.)
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
      */
-    public function getIsSingleActionRequest()
+    public function getIsLoginRequest(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request. (Narrator: It isn't.)
+     *
+     * @return bool
+     * @deprecated in 3.2
+     */
+    public function getIsSingleActionRequest(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether this is an element preview request.
+     *
+     * @return bool
+     * @since 3.2.1
+     */
+    public function getIsPreview(): bool
     {
         return false;
     }
@@ -93,9 +118,20 @@ class Request extends \yii\console\Request
      * Returns whether this is a Live Preview request. (Narrator: It isn't.)
      *
      * @return bool Whether this is a Live Preview request.
+     * @deprecated in 3.2
      */
     public function getIsLivePreview(): bool
     {
         return false;
+    }
+
+    /**
+     * Returns the token submitted with the request, if there is one.
+     *
+     * @return string|null The token, or `null` if there isn’t one.
+     */
+    public function getToken()
+    {
+        return null;
     }
 }

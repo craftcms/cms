@@ -3,12 +3,11 @@
 
 {% import "_includes/forms" as forms %}
 
-
 {% block content %}
-    <input type="hidden" name="action" value="fields/save-field">
+    {{ actionInput('fields/save-field') }}
     {{ redirectInput('settings/fields/{groupId}') }}
     {% if fieldId is defined and fieldId %}
-        <input type="hidden" name="fieldId" value="{{ fieldId }}">
+        {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}
 
     {{ forms.selectField({
@@ -36,8 +35,10 @@
         label: "Handle"|t('app'),
         instructions: "How you’ll refer to this field in the templates."|t('app'),
         id: 'handle',
-        class: 'code',
         name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
         maxlength: 64,
         value: field.handle,
         errors: field.getErrors('handle'),

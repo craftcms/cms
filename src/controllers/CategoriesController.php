@@ -289,7 +289,20 @@ class CategoriesController extends Controller
             ];
 
             if ($variables['group']->maxLevels) {
-                $variables['parentOptionCriteria']['level'] = '< ' . $variables['group']->maxLevels;
+                if ($category->id) {
+                    // Figure out how deep the ancestors go
+                    $maxDepth = Category::find()
+                        ->select('level')
+                        ->descendantOf($category)
+                        ->anyStatus()
+                        ->leaves()
+                        ->scalar();
+                    $depth = 1 + ($maxDepth ?: $category->level) - $category->level;
+                } else {
+                    $depth = 1;
+                }
+
+                $variables['parentOptionCriteria']['level'] = '<= ' . ($variables['group']->maxLevels - $depth);
             }
 
             if ($category->id !== null) {
@@ -837,7 +850,9 @@ class CategoriesController extends Controller
         Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
 
         // Have this category override any freshly queried categories with the same ID/site
-        Craft::$app->getElements()->setPlaceholderElement($category);
+        if ($category->id) {
+            Craft::$app->getElements()->setPlaceholderElement($category);
+        }
 
         $this->getView()->getTwig()->disableStrictVariables();
 

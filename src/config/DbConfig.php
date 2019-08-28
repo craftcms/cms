@@ -75,7 +75,7 @@ class DbConfig extends BaseObject
      */
     public $port;
     /**
-     * @var string The database schema to use (PostgreSQL only).
+     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';
@@ -128,7 +128,7 @@ class DbConfig extends BaseObject
                     throw new InvalidConfigException('Invalid DSN param: ' . $param);
                 }
                 $paramName = substr($param, 0, $pos);
-                $paramValue = substr($params, $pos + 1);
+                $paramValue = substr($param, $pos + 1);
                 switch ($paramName) {
                     case 'host':
                         $this->server = $paramValue;
@@ -151,8 +151,6 @@ class DbConfig extends BaseObject
                     case 'password': // PG only
                         $this->password = $paramValue;
                         break;
-                    default:
-                        throw new InvalidConfigException('Unsupported DSN param: ' . $paramName);
                 }
             }
         }
@@ -219,7 +217,9 @@ class DbConfig extends BaseObject
         }
 
         // Set the DSN
-        $this->updateDsn();
+        if (!$this->dsn) {
+            $this->updateDsn();
+        }
     }
 
     /**

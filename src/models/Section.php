@@ -34,6 +34,11 @@ class Section extends Model
     const TYPE_CHANNEL = 'channel';
     const TYPE_STRUCTURE = 'structure';
 
+    const PROPAGATION_METHOD_NONE = 'none';
+    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    const PROPAGATION_METHOD_ALL = 'all';
+
     // Properties
     // =========================================================================
 
@@ -73,9 +78,27 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
+     * @var string Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     * - `none` – Only save entries in the site they were created in
+     * - `siteGroup` – Save entries to other sites in the same site group
+     * - `language` – Save entries to other sites with the same language
+     * - `all` – Save entries to all sites enabled for this section
+     */
+    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+
+    /**
      * @var bool Propagate entries
+     * @deprecated in 3.2. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
+
+    /**
+     * @var array Preview targets
+     */
+    public $previewTargets = [];
 
     /**
      * @var string|null Section's UID
@@ -98,6 +121,18 @@ class Section extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        // todo: remove this in 4.0
+        // Set propagateEntries in case anything is still checking it
+        $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
+
+        parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         return [
@@ -115,11 +150,26 @@ class Section extends Model
         $rules = parent::rules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
-        $rules[] = [['type'], 'in', 'range' => ['single', 'channel', 'structure']];
+        $rules[] = [
+            ['type'], 'in', 'range' => [
+                self::TYPE_SINGLE,
+                self::TYPE_CHANNEL,
+                self::TYPE_STRUCTURE
+            ]
+        ];
+        $rules[] = [
+            ['propagationMethod'], 'in', 'range' => [
+                self::PROPAGATION_METHOD_NONE,
+                self::PROPAGATION_METHOD_SITE_GROUP,
+                self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_ALL
+            ]
+        ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
-        $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        $rules[] = [['previewTargets'], 'validatePreviewTargets'];
         return $rules;
     }
 
@@ -146,6 +196,29 @@ class Section extends Model
             if (!$siteSettings->validate()) {
                 $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
+        }
+    }
+
+    /**
+     * Validates the preview targets.
+     */
+    public function validatePreviewTargets()
+    {
+        $hasErrors = false;
+
+        foreach ($this->previewTargets as &$target) {
+            $target['label'] = trim($target['label']);
+            $target['urlFormat'] = trim($target['urlFormat']);
+
+            if ($target['label'] === '') {
+                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
+                $hasErrors = true;
+            }
+        }
+        unset($target);
+
+        if ($hasErrors) {
+            $this->addError('previewTargets', Craft::t('app', 'All targets must have a label.'));
         }
     }
 
@@ -260,7 +333,7 @@ class Section extends Model
         return (
             Craft::$app->getIsMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
-            $this->propagateEntries
+            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
         );
     }
 }

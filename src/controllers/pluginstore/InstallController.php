@@ -9,6 +9,7 @@ namespace craft\controllers\pluginstore;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
+use craft\web\Response;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
@@ -67,12 +68,12 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
+        /** @var Response $tempResponse */
         list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
             $pluginName = $info['name'] ?? $this->data['packageName'];
-            $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             return $this->send([
                 'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),

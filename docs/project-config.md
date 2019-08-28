@@ -24,21 +24,28 @@ Craft stores the following settings in the project config:
 Plugins can store additional things in the project config as well. See [Supporting Project Config](extend/project-config.md) to learn how.
 :::
 
-To take advantage of the project config on your Craft project, enable the <config:useProjectConfigFile> setting in `config/general.php`.
+## Enabling the Project Config File
 
-```php
-return [
-    '*' => [
-        'useProjectConfigFile' => true,
-    ],
-];
-```
+To start sharing a project config across multiple environments, follow these steps:
 
-::: warning
-If your project is already live, make a backup of your production database and restore it on all development environments before you enable <config:useProjectConfigFile>, to ensure that all environments share the same component UIDs.
-:::
+1. Pick a primary environment that has the most up-to-date data. (If your project is already live, this should be your production environment.)
+2. Ensure that your primary environment is running the latest version of Craft.
+3. If you were already running Craft 3.1 or later, run `./craft project-config/rebuild` on that environment, to ensure that its project config is up-to-date with config settings stored throughout the database.
+4. Enable the <config:useProjectConfigFile> setting in `config/general.php` on your primary environment.
 
-Once that’s enabled, Craft will start storing the project config in a `config/project.yaml` file. Any time something changes that is managed by the project config, that file will get updated to match. And any time Craft detects that `project.yaml` has been updated on its own (e.g. if it was changed in a Git commit that was recently pulled down), any changes in it will be propagated to the local Craft install.
+    ```php
+    return [
+        '*' => [
+            'useProjectConfigFile' => true,
+        ],
+    ];
+    ```
+
+5. Load any page on the primary environment, so Craft can generate a `config/project.yaml` file.
+6. Backup the database on the primary environment.
+7. For all other environments, restore the database backup created in step 6, and save a copy of the `config/project.yaml` file created in step 5.
+
+Going forward, Craft will start updating `config/project.yaml` any time something changes that is managed by the project config. And any time Craft detects that `project.yaml` has been updated on its own (e.g. if it was changed in a Git commit that was recently pulled down), any changes in it will be propagated to the local Craft install.
 
 ## Caveats
 
@@ -100,3 +107,11 @@ That will remove the UI for most administrative settings that affect the project
 ### Plugins May Not Support It Yet
 
 Any plugins that are storing configuration settings outside of their main plugin settings will need to be updated to [support the project config](extend/project-config.md). So there may still be some cases where changes need to be manually made on each environment.
+
+### Config Data Could Get Out of Sync
+
+If any settings managed by the project config are modified elsewhere in the database, either manually or via a plugin/module that isn’t using the appropriate service, then the project config will be out of sync with those database values, which will likely lead to errors. If that happens, Craft provides a console command that can be run to patch up your project config.
+
+```bash
+./craft project-config/rebuild
+``` 

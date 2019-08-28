@@ -11,15 +11,24 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Volume;
+use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
+use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
 /**
@@ -55,6 +64,14 @@ class Assets extends BaseRelationField
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an asset');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return AssetQuery::class;
     }
 
     // Properties
@@ -104,6 +121,26 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
+     * @inheritdoc
+     */
+    protected $allowLargeThumbsView = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected $settingsTemplate = '_components/fieldtypes/Assets/settings';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputTemplate = '_components/fieldtypes/Assets/input';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputJsClass = 'Craft.AssetSelectInput';
+
+    /**
      * @var array|null References for files uploaded as data strings for this field.
      */
     private $_uploadedDataFiles;
@@ -117,10 +154,6 @@ class Assets extends BaseRelationField
     public function init()
     {
         parent::init();
-        $this->allowLargeThumbsView = true;
-        $this->settingsTemplate = '_components/fieldtypes/Assets/settings';
-        $this->inputTemplate = '_components/fieldtypes/Assets/input';
-        $this->inputJsClass = 'Craft.AssetSelectInput';
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -281,7 +314,7 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element)
     {
-
+        /** @var Element $element */
         $maxSize = AssetsHelper::getMaxUploadSize();
 
         $filenames = [];
@@ -320,16 +353,25 @@ class Assets extends BaseRelationField
             /** @var Asset $class */
             $class = static::elementType();
             /** @var ElementQuery $query */
-            $query = $class::find()
-                ->siteId($this->targetSiteId($element));
+            $query = $class::find();
+
+            $targetSite = $this->targetSiteId($element);
+            if ($this->targetSiteId) {
+                $query->siteId($targetSite);
+            } else {
+                $query
+                    ->siteId('*')
+                    ->unique()
+                    ->preferSites([$targetSite]);
+            }
 
             // $value might be an array of element IDs
             if (is_array($value)) {
                 $query
-                    ->id(array_filter($value))
+                    ->id(array_values(array_filter($value)))
                     ->fixedOrder();
 
-                if ($this->allowLimit === true && $this->limit) {
+                if ($this->allowLimit && $this->limit) {
                     $query->limit($this->limit);
                 }
 
@@ -359,6 +401,20 @@ class Assets extends BaseRelationField
         return $this->_determineUploadFolderId($element, true);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(AssetInterface::getType()),
+            'args' => AssetArguments::getArguments(),
+            'resolve' => AssetResolver::class . '::resolve',
+        ];
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -368,14 +424,25 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Everything has been handled for propagating fields already.
+        /** @var Element $element */
         if (!$element->propagating) {
+            $assetsService = Craft::$app->getAssets();
+
+            // Figure out what we're working with
+            $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+
+            $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+                static $targetFolderId;
+                return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+            };
+
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
 
             $query = $element->getFieldValue($this->handle);
 
             if (!empty($uploadedFiles)) {
-                $targetFolderId = $this->_determineUploadFolderId($element);
+                $targetFolderId = $getTargetFolderId();
 
                 // Convert them to assets
                 $assetIds = [];
@@ -389,7 +456,7 @@ class Assets extends BaseRelationField
                         FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
-                    $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
+                    $folder = $assetsService->getFolderById($targetFolderId);
                     $asset = new Asset();
                     $asset->tempFilePath = $tempPath;
                     $asset->filename = $file['filename'];
@@ -402,7 +469,7 @@ class Assets extends BaseRelationField
                     $assetIds[] = $asset->id;
                 }
 
-                // Add the with newly uploaded IDs to the mix.
+                // Add the newly uploaded IDs to the mix.
                 if (\is_array($query->id)) {
                     $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
                 } else {
@@ -421,48 +488,51 @@ class Assets extends BaseRelationField
             $assets = $query->all();
 
             if (!empty($assets)) {
-                $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element);
-
-                // Figure out which (if any) we need to move into place
-                $assetsToMove = [];
-
-                if ($this->useSingleFolder) {
-                    // Move only those Assets that have had their folder changed.
-                    foreach ($assets as $asset) {
-                        if ($targetFolderId != $asset->folderId) {
-                            $assetsToMove[] = $asset;
-                        }
-                    }
+                // Only enforce the single upload folder setting if this isn't a draft or revision
+                if ($this->useSingleFolder && !$isDraftOrRevision) {
+                    $targetFolderId = $getTargetFolderId();
+                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                        return $asset->folderId != $targetFolderId;
+                    });
                 } else {
-                    $assetIds = [];
-
-                    foreach ($assets as $elementFile) {
-                        $assetIds[] = $elementFile->id;
-                    }
-
                     // Find the files with temp sources and just move those.
-                    $query = Asset::find();
-                    Craft::configure($query, [
-                        'id' => $assetIds,
-                        'volumeId' => ':empty:'
-                    ]);
-                    $assetsToMove = $query->all();
+                    $assetsToMove = Asset::find()
+                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->volumeId(':empty:')
+                        ->all();
                 }
 
-                if (!empty($assetsToMove) && !empty($targetFolderId)) {
-                    $assetService = Craft::$app->getAssets();
-                    $folder = $assetService->getFolderById($targetFolderId);
+                if (!empty($assetsToMove)) {
+                    $folder = $assetsService->getFolderById($getTargetFolderId());
 
                     // Resolve all conflicts by keeping both
                     foreach ($assetsToMove as $asset) {
                         $asset->avoidFilenameConflicts = true;
-                        $assetService->moveAsset($asset, $folder);
+                        $assetsService->moveAsset($asset, $folder);
                     }
                 }
             }
         }
 
         parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
+
+        if (empty($allowedVolumeUids)) {
+            return false;
+        }
+
+        $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
+
+        return ['volumeId' => array_values($volumeIds)];
     }
 
     // Protected Methods
@@ -546,6 +616,10 @@ class Assets extends BaseRelationField
     {
         /** @var Element $element */
         $uploadedFiles = [];
+
+        if (ElementHelper::rootElement($element)->getIsRevision()) {
+            return $uploadedFiles;
+        }
 
         // Grab data strings
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
@@ -735,8 +809,7 @@ class Assets extends BaseRelationField
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
             if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
-                $userModel = Craft::$app->getUser()->getIdentity();
-                $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
+                $userFolder = $assets->getUserTemporaryUploadFolder();
                 $folderId = $userFolder->id;
             } else {
                 // Existing element, so this is just a bad subpath
@@ -765,6 +838,7 @@ class Assets extends BaseRelationField
             return null;
         }
 
+        /** @var Volume|null $volume */
         $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
         return $volume ? $volume->id : null;
@@ -804,7 +878,9 @@ class Assets extends BaseRelationField
 
             if ($folder) {
                 try {
-                    return 'volume:' . $folder->getVolume()->uid;
+                    /** @var Volume $volume */
+                    $volume = $folder->getVolume();
+                    return 'volume:' . $volume->uid;
                 } catch (InvalidConfigException $e) {
                     // The volume is probably soft-deleted. Just pretend the folder didn't exist.
                 }
@@ -824,6 +900,7 @@ class Assets extends BaseRelationField
     {
         if ($sourceKey && is_string($sourceKey) && strpos($sourceKey, 'volume:') === 0) {
             $parts = explode(':', $sourceKey);
+            /** @var Volume|null $volume */
             $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
             if ($volume && $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)) {

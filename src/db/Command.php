@@ -117,7 +117,9 @@ class Command extends \yii\db\Command
 
         // todo: hack for BC with our old upsert() method. Remove in Craft 4
         // Merge any updateColumn data into insertColumns
-        $insertColumns = array_merge($updateColumns, $insertColumns);
+        if (is_array($updateColumns)) {
+            $insertColumns = array_merge($updateColumns, $insertColumns);
+        }
 
         parent::upsert($table, $insertColumns, $updateColumns, $params);
         return $this;
@@ -135,7 +137,7 @@ class Command extends \yii\db\Command
      */
     public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
-        if ($includeAuditColumns) {
+        if ($includeAuditColumns && !isset($columns['dateUpdated'])) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 

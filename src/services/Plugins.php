@@ -1107,10 +1107,11 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @return string|null The plugin’s license key, or null if it isn’t known
+     * @throws InvalidLicenseKeyException
      */
     public function getPluginLicenseKey(string $handle)
     {
-        return $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
+        return $this->normalizePluginLicenseKey(Craft::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null));
     }
 
     /**
@@ -1132,18 +1133,7 @@ class Plugins extends Component
 
         /** @var Plugin $plugin */
         // Validate the license key
-        if ($licenseKey !== null) {
-            // Normalize to just uppercase numbers/letters
-            $normalizedLicenseKey = mb_strtoupper($licenseKey);
-            $normalizedLicenseKey = preg_replace('/[^A-Z0-9]/', '', $normalizedLicenseKey);
-
-            if (strlen($normalizedLicenseKey) != 24) {
-                // Invalid key
-                throw new InvalidLicenseKeyException($licenseKey);
-            }
-        } else {
-            $normalizedLicenseKey = null;
-        }
+        $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
         // Set the plugin's license key in the project config
         Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey);
@@ -1159,6 +1149,31 @@ class Plugins extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Normalizes a plugin license key.
+     *
+     * @param string|null $licenseKey
+     * @return string|null
+     * @throws InvalidLicenseKeyException
+     */
+    public function normalizePluginLicenseKey(string $licenseKey = null)
+    {
+        if ($licenseKey === null || strpos($licenseKey, '$') === 0) {
+            return $licenseKey;
+        }
+
+        // Normalize to just uppercase numbers/letters
+        $licenseKey = mb_strtoupper($licenseKey);
+        $licenseKey = preg_replace('/[^A-Z0-9]/', '', $licenseKey);
+
+        if (strlen($licenseKey) != 24) {
+            // Invalid key
+            throw new InvalidLicenseKeyException($licenseKey);
+        }
+
+        return $licenseKey;
     }
 
     /**
@@ -1225,7 +1240,7 @@ class Plugins extends Component
             ->from([Table::PLUGINS]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->addSelect(['licensedEdition']);
         }

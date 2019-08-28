@@ -5,16 +5,16 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\FileCookieJar;
 use yii\base\ExitException;
 use yii\db\Expression;
-use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -121,6 +121,15 @@ class Craft extends Yii
      */
     public static function dd($var, int $depth = 10, bool $highlight = true)
     {
+        // Turn off output buffering and discard OB contents
+        while (ob_get_length() !== false) {
+            // If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag, ob_get_clean() will cause a PHP notice
+            // and return false.
+            if (@ob_get_clean() === false) {
+                break;
+            }
+        }
+
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }
@@ -137,21 +146,19 @@ class Craft extends Yii
         if (self::$_baseCookieConfig === null) {
             $generalConfig = static::$app->getConfig()->getGeneral();
 
-            $defaultCookieDomain = $generalConfig->defaultCookieDomain;
-            $useSecureCookies = $generalConfig->useSecureCookies;
-
-            if ($useSecureCookies === 'auto') {
+            if ($generalConfig->useSecureCookies === 'auto') {
                 if ($request === null) {
                     $request = static::$app->getRequest();
                 }
 
-                $useSecureCookies = $request->getIsSecureConnection();
+                $generalConfig->useSecureCookies = $request->getIsSecureConnection();
             }
 
             self::$_baseCookieConfig = [
-                'domain' => $defaultCookieDomain,
-                'secure' => $useSecureCookies,
-                'httpOnly' => true
+                'domain' => $generalConfig->defaultCookieDomain,
+                'secure' => $generalConfig->useSecureCookies,
+                'httpOnly' => true,
+                'sameSite' => $generalConfig->sameSiteCookieValue,
             ];
         }
 
@@ -165,12 +172,6 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        // FileCookieJar is not supported
-        if ($className === FileCookieJar::class) {
-            require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
-            return;
-        }
-
         if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
             return;
         }
@@ -188,35 +189,54 @@ class Craft extends Yii
             return;
         }
 
+
+        $fieldHandles = [];
+
         if (self::$app->getIsInstalled()) {
             // Properties are case-sensitive, so get all the binary-unique field handles
             if (self::$app->getDb()->getIsMysql()) {
-                $column = new Expression('binary [[handle]] as [[handle]]');
+                $handleColumn = new Expression('binary [[handle]] as [[handle]]');
             } else {
-                $column = 'handle';
+                $handleColumn = 'handle';
             }
 
-            $fieldHandles = (new Query())
-                ->distinct(true)
+            // Create an array of field handles and their types
+            $fields = (new Query())
                 ->from([Table::FIELDS])
-                ->select([$column])
-                ->column();
-        } else {
-            $fieldHandles = [];
+                ->select([$handleColumn, 'type'])
+                ->all();
+            foreach ($fields as $field) {
+                /** @var FieldInterface|string $fieldClass */
+                $fieldClass = $field['type'];
+                if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
+                    $types = explode('|', $fieldClass::valueType());
+                } else {
+                    $types = ['mixed'];
+                }
+                foreach ($types as $type) {
+                    $type = trim($type, ' \\');
+                    // Add a leading `\` if there is a namespace
+                    if (strpos($type, '\\') !== false) {
+                        $type = '\\' . $type;
+                    }
+                    $fieldHandles[$field['handle']][$type] = true;
+                }
+            }
         }
 
         if (!$isContentBehaviorFileValid) {
             $handles = [];
             $properties = [];
 
-            foreach ($fieldHandles as $handle) {
+            foreach ($fieldHandles as $handle => $types) {
+                $phpDocTypes = implode('|', array_keys($types));
                 $handles[] = <<<EOD
         '{$handle}' => true,
 EOD;
 
                 $properties[] = <<<EOD
     /**
-     * @var mixed Value for field with the handle “{$handle}”.
+     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
@@ -233,7 +253,7 @@ EOD;
         if (!$isElementQueryBehaviorFileValid) {
             $methods = [];
 
-            foreach ($fieldHandles as $handle) {
+            foreach (array_keys($fieldHandles) as $handle) {
                 $methods[] = <<<EOD
  * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;

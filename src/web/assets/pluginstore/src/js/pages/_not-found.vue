@@ -6,7 +6,6 @@
     import StatusMessage from '../components/StatusMessage'
 
     export default {
-
         components: {
             StatusMessage
         },

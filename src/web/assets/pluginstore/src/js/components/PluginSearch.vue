@@ -1,14 +1,14 @@
 <template>
     <div class="mb-4">
         <form @submit.prevent="search()">
-            <div class="w-full texticon search icon clearable">
-                <text-input
+            <div class="ps-search">
+                <icon icon="search" />
+                <textbox
                         id="searchQuery"
                         v-model="searchQuery"
                         :placeholder="'Search plugins'|t('app')"
-                        class="text"
-                        ></text-input>
-                <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
+                        autocomplete="off"
+                />
             </div>
         </form>
     </div>
@@ -16,7 +16,6 @@
 
 <script>
     export default {
-
         data() {
             return {
                 searchQuery: '',
@@ -33,6 +32,23 @@
             }
 
         },
-
     }
 </script>
+
+<style lang="scss">
+    .ps-search {
+        @apply .relative;
+
+        .c-icon {
+            @apply .absolute .z-10 .text-grey;
+            top: 9px;
+            left: 10px;
+        }
+
+        .c-textbox {
+            input {
+                padding-left: 32px;
+            }
+        }
+    }
+</style>

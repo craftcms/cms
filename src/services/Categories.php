@@ -139,7 +139,7 @@ class Categories extends Component
     public function getEditableGroups(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::filterByValue($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
+        return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCategories:' . $group->uid);
         });
     }
@@ -244,6 +244,7 @@ class Categories extends Component
             $group->uid = StringHelper::UUID();
             $structureUid = StringHelper::UUID();
         } else {
+            /** @var CategoryGroupRecord|null $existingGroupRecord */
             $existingGroupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $group->id])
                 ->one();
@@ -267,7 +268,7 @@ class Categories extends Component
             'handle' => $group->handle,
             'structure' => [
                 'uid' => $structureUid,
-                'maxLevels' => $group->maxLevels,
+                'maxLevels' => (int)$group->maxLevels ?: null,
             ],
             'siteSettings' => []
         ];
@@ -301,7 +302,7 @@ class Categories extends Component
         foreach ($allSiteSettings as $siteId => $settings) {
             $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
-                'hasUrls' => $settings['hasUrls'],
+                'hasUrls' => (bool)$settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'],
                 'template' => $settings['template'],
             ];
@@ -669,6 +670,9 @@ class Categories extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
 
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
         // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
@@ -683,6 +687,12 @@ class Categories extends Component
                 }
             }
         }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     /**
@@ -734,12 +744,10 @@ class Categories extends Component
             return null;
         }
 
-        $query = Category::find();
-        $query->id($categoryId);
-        $query->structureId($structureId);
-        $query->siteId($siteId);
-        $query->anyStatus();
-        return $query->one();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, [
+            'structureId' => $structureId,
+        ]);
     }
 
     /**
