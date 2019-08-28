@@ -1485,10 +1485,10 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'New schema' => 'Yeni Şema',
     'The token that must be provided with GraphQL requests to access this schema.' => 'Bu şemaya erişmek için GraphQL istekleri ile sağlanması gereken simge.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
-    'Public Schema' => 'Public Schema',
-    'Regenerate' => 'Regenerate',
-    'Schemas' => 'Schemas',
-    'Define the schema’s scope' => 'Define the schema’s scope',
-    'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'Public Schema' => 'Genel Şema',
+    'Regenerate' => 'Yeniden Oluştur',
+    'Schemas' => 'Şemalar',
+    'Define the schema’s scope' => 'Şemanın konusunu tanımlayın',
+    'Edit the Public GraphQL Schema' => 'Genel GraphQL Şemasını Düzenle',
+    'Schema name' => 'Şema adı'
 ];
