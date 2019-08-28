@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `children` field to the `EntryInterface` and `CategoryInterface` GraphQL types. ([#4843](https://github.com/craftcms/cms/issues/4843))
+
 ## 3.3.0.1 - 2019-08-27
 
 ### Changed

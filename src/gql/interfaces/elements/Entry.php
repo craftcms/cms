@@ -8,6 +8,8 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\Entry as EntryElement;
+use craft\gql\arguments\elements\Entry as EntryArguments;
+use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
@@ -109,6 +111,12 @@ class Entry extends Structure
                 'name' => 'expiryDate',
                 'type' => DateTime::getType(),
                 'description' => 'The expiry date of the entry.'
+            ],
+            'children' => [
+                'name' => 'children',
+                'args' => EntryArguments::getArguments(),
+                'type' => Type::listOf(EntryInterface::getType()),
+                'description' => 'The entry’s children, if the section is a structure.'
             ],
         ]);
     }
