@@ -7,6 +7,7 @@
 
 ### Changed
 - `graphql/api` responses now set the `Access-Control-Allow-Headers: Content-Type` header for preflight requests.
+- Templates passed to `craft\web\View::renderString()` and `renderObjectTemplate()` can now incude front-end templates.
 
 ## 3.3.0.1 - 2019-08-27
 
