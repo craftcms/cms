@@ -1139,11 +1139,11 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Craft {licensedEdition} lisansı ile Craft {edition} çalıştırıyorsunuz.',
     'account_activation_body' => 'Merhaba {{user.friendlyName}},
 
-{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:
+{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için aşağıdaki bağlantıya tıklayın:
 
 <{{link}}>
 
-Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
+Bu, beklediğiniz bir e-posta değilse, lütfen dikkate almayın.',
     'account_activation_heading' => 'Biri hesap oluşturduğunda:',
     'account_activation_subject' => 'Hesabını aktif hale getir',
     'by {author}' => 'Yazar: {author}',
@@ -1480,10 +1480,10 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'View section - {section}' => '{section} bölümünü göster',
     'View global set - {globalSet}' => '{globalSet} genel setini göster',
     'Edit GraphQL Schema' => 'GraphQL Şemasını Düzenle',
-    'Expires' => 'Expires',
-    'View volume - {volume}' => 'View volume - {volume}',
-    'New schema' => 'New Schema',
-    'The token that must be provided with GraphQL requests to access this schema.' => 'The token that must be provided with GraphQL requests to access this schema.',
+    'Expires' => 'Bitiş tarihi',
+    'View volume - {volume}' => '{volume} birimini göster',
+    'New schema' => 'Yeni Şema',
+    'The token that must be provided with GraphQL requests to access this schema.' => 'Bu şemaya erişmek için GraphQL istekleri ile sağlanması gereken simge.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Public Schema' => 'Public Schema',
     'Regenerate' => 'Regenerate',
