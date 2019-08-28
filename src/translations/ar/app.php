@@ -1492,7 +1492,7 @@ return [
     'Public Schema' => 'مخطط عام',
     'Regenerate' => 'إعادة إنشاء',
     'Schemas' => 'مخططات',
-    'Define the schema’s scope' => 'Define the schema’s scope',
+    'Define the schema’s scope' => 'حدد نطاق المخطط',
     'Edit the Public GraphQL Schema' => 'تعديل مخطط GraphQL العام',
     'Schema name' => 'اسم المخطط'
 ];
