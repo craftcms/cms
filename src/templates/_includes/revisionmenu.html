@@ -18,7 +18,6 @@
     .anyStatus()
     .offset(1)
     .limit(10)
-    .orderBy('num desc')
     .all() %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}

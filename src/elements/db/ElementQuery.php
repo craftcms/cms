@@ -71,6 +71,31 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
+    // Static
+    // =========================================================================
+
+    /**
+     * @var bool
+     * @see _supportsRevisionParams()
+     */
+    private static $_supportsRevisionParams;
+
+    /**
+     * Returns whether querying for drafts/revisions is supported yet.
+     *
+     * @return bool
+     * @todo remove schema version condition after next beakpoint
+     */
+    private static function _supportsRevisionParams(): bool
+    {
+        if (self::$_supportsRevisionParams !== null) {
+            return self::$_supportsRevisionParams;
+        }
+
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+        return self::$_supportsRevisionParams = version_compare($schemaVersion, '3.2.6', '>=');
+    }
+
     // Properties
     // =========================================================================
 
@@ -2247,15 +2272,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
     }
 
-
     /**
      * Applies draft and revision params to the query being prepared.
      */
     private function _applyRevisionParams()
     {
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.2.6', '<')) {
+        if (!self::_supportsRevisionParams()) {
             return;
         }
 
@@ -2427,10 +2449,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if ($this->_shouldJoinStructureData()) {
-                $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
             } else {
-                $this->orderBy = $this->defaultOrderBy;
+                $default = self::_supportsRevisionParams() && $this->revisions
+                    ? ['num' => SORT_DESC]
+                    : $this->defaultOrderBy;
+                if ($this->_shouldJoinStructureData()) {
+                    $this->orderBy = ['structureelements.lft' => SORT_ASC] + $default;
+                } else {
+                    $this->orderBy = $default;
+                }
             }
         }
 
