@@ -11,9 +11,11 @@ This guide can be used for setting up tests for a Craft site & Modules/Plugins.
 
 [[toc]]
 
-## Step 1: Install Codeception 3.x
+## Step 1: Install Codeception 3.1 or higher
 
-Follow instruction 1 and 2 Codeception's [website](https://codeception.com/quickstart)
+Follow instruction 1 and 2 Codeception's [website](https://codeception.com/quickstart). Ensure you install 
+`codeception/codeception` at `3.1`or higher.
+
 ::: tip
 If you are setting up tests for a Craft CMS Site and not a module/plugin, 
 when running `composer install` on production, add the `--no-dev` flag to avoid
@@ -49,8 +51,7 @@ paths:
     data: tests/_data
     support: tests/_support
     envs: tests/_envs
-settings:
-    bootstrap: _bootstrap.php
+bootstrap: _bootstrap.php
 params:
     - tests/.env
 modules:
