@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\events\ExportEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\web\Controller;
@@ -28,6 +29,12 @@ use yii\web\Response;
  */
 class ExportController extends Controller
 {
+    // Constants
+    // =========================================================================
+
+    const EVENT_MODIFY_EXPORT_QUERY = 'modifyExportQuery';
+    const EVENT_MODIFY_EXPORT = 'modifyExport';
+
     // Properties
     // =========================================================================
 
@@ -79,9 +86,18 @@ class ExportController extends Controller
             Craft::configure($query, $criteria);
         }
 
+        // Raise the modifyExport event
+        $event = new ExportEvent([
+            'elementType' => $elementType,
+            'sourceKey' => $sourceKey,
+            'criteria' => $criteria,
+            'query' => $query,
+        ]);
+        $this->trigger(self::EVENT_MODIFY_EXPORT_QUERY, $event);
+
         // Get the results and add a header row to the beginning
         /** @var array $results */
-        $results = $query->asArray()->all();
+        $results = $event->query->asArray()->all();
         $header = !empty($results) ? array_keys(reset($results)) : [];
         array_unshift($results, $header);
 
@@ -103,10 +119,25 @@ class ExportController extends Controller
         $filename = mb_strtolower($elementType::pluralDisplayName()) . '.' . $format;
         $mimeType = FileHelper::getMimeTypeByExtension($filename);
 
+        // Raise the modifyExport event
+        $event = new ExportEvent([
+            'header' => $header,
+            'results' => $results,
+            'format' => $format,
+            'elementType' => $elementType,
+            'sourceKey' => $sourceKey,
+            'criteria' => $criteria,
+            'query' => $query,
+            'contents' => $contents,
+            'filename' => $filename,
+            'mimeType' => $mimeType,
+        ]);
+        $this->trigger(self::EVENT_MODIFY_EXPORT, $event);
+
         $response = Craft::$app->getResponse();
-        $response->content = $contents;
+        $response->content = $event->contents;
         $response->format = Response::FORMAT_RAW;
-        $response->setDownloadHeaders($filename, $mimeType);
+        $response->setDownloadHeaders($event->filename, $event->mimeType);
         return $response;
     }
 }
