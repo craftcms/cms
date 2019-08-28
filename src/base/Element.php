@@ -1458,7 +1458,7 @@ abstract class Element extends Component implements ElementInterface
         foreach ($previewTargets as &$previewTarget) {
             // urlFormat => url
             if (isset($previewTarget['urlFormat'])) {
-                $previewTarget['url'] = $view->renderObjectTemplate($previewTarget['urlFormat'], $this);
+                $previewTarget['url'] = $view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this);
                 unset($previewTarget['urlFormat']);
             }
             $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, $scheme, $this->siteId);

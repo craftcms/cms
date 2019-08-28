@@ -106,6 +106,8 @@ The URI is a mini Twig template (just like Entry URI Formats), so you can make i
 
 ![A section’s Preview Targets setting.](./images/preview-targets.png)
 
+You can also set the URI to a environment variable (e.g. `$NEWS_INDEX`, or a URL that begins with an alias (e.g. `@rootUrl/news` or `@rootUrl/news/{slug}`). See [Environmental Configuration](config/environments.md) to learn more about how those work.
+
 When an author is editing an entry from a section with custom preview targets, the “Share” button will be replaced with a menu that lists the “Primary entry page” (if the section has an Entry URI Format), plus the names of each preview target.
 
 ![An entry’s Share menu with 3 custom preview targets.](./images/share-with-targets.png =294x)
