@@ -11,6 +11,9 @@
 - Templates passed to `craft\web\View::renderString()` and `renderObjectTemplate()` can now incude front-end templates.
 - Element queries with the `revisions` param set will now return revisions ordered by `num DESC` by default. ([#4825](https://github.com/craftcms/cms/issues/4825))
 
+### Fixed
+- Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
+
 ## 3.3.0.1 - 2019-08-27
 
 ### Changed
