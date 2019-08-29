@@ -185,6 +185,21 @@ class Revisions extends Component
 
         $mutex->release($lockKey);
 
+        $this->pruneExcessRevisions($source);
+
+        return $revision;
+    }
+
+    /**
+     * Prunes any excess revisions on the element.
+     *
+     * @param Element $source
+     * @throws \Throwable
+     */
+    public function pruneExcessRevisions(Element $source)
+    {
+        $elementsService = Craft::$app->getElements();
+
         // Prune any excess revisions
         $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
         if ($maxRevisions > 0) {
@@ -201,8 +216,6 @@ class Revisions extends Component
                 $elementsService->deleteElement($extraRevision, true);
             }
         }
-
-        return $revision;
     }
 
     /**

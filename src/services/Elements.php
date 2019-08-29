@@ -506,6 +506,8 @@ class Elements extends Component
             ]));
         }
 
+        $revisionService = Craft::$app->getRevisions();
+        $errorHandler = Craft::$app->getErrorHandler();
         $position = 0;
 
         try {
@@ -544,11 +546,16 @@ class Elements extends Component
                 if ($e === null) {
                     try {
                         $this->saveElement($element);
+
+                        // Get rid of revisions?
+                        if (!$element->getIsRevision() && !$element->getIsDraft()) {
+                            $revisionService->pruneExcessRevisions($element);
+                        }
                     } catch (\Throwable $e) {
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+                        $errorHandler->logException($e);
                     }
                 }
 
