@@ -1485,12 +1485,12 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Expires' => 'Lejár',
     'View volume - {volume}' => 'Kötet megtekintése - {volume}',
     'New schema' => 'Új séma',
-    'The token that must be provided with GraphQL requests to access this schema.' => 'The token that must be provided with GraphQL requests to access this schema.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
-    'Public Schema' => 'Public Schema',
-    'Regenerate' => 'Regenerate',
-    'Schemas' => 'Schemas',
-    'Define the schema’s scope' => 'Define the schema’s scope',
-    'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'The token that must be provided with GraphQL requests to access this schema.' => 'A tokenhez, amelyet GraphQL mellé meg kell adni, el kell érni a sémát.',
+    'not an existing translation23131321313' => 'nem meglévő fordítás23131321313',
+    'Public Schema' => 'Nyilvános séma',
+    'Regenerate' => 'Újra létrehozni',
+    'Schemas' => 'Sémák',
+    'Define the schema’s scope' => 'A séma hatókörének a meghatározása',
+    'Edit the Public GraphQL Schema' => 'A nyilvános GraphQL séma szerkesztése',
+    'Schema name' => 'Séma neve'
 ];
