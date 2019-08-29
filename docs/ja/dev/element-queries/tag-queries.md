@@ -499,7 +499,7 @@ $tags = \craft\elements\Tag::find()
 | `'*Foo'` | タイトルが `Foo` で終わる。
 | `'*Foo*'` | タイトルが `Foo` を含む。
 | `'not *Foo*'` | タイトルが `Foo` を含まない。
-| `['*Foo*', '*Bar*'` | タイトルが `Foo` または `Bar` を含む。
+| `['*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含む。
 | `['not', '*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含まない。
 
 ::: code
@@ -577,7 +577,7 @@ $tag = \craft\elements\Tag::find()
 | `'*foo'` | URI が `foo` で終わる。
 | `'*foo*'` | URI が `foo` を含む。
 | `'not *foo*'` | URI が `foo` を含まない。
-| `['*foo*', '*bar*'` | URI が `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | URI が `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | URI が `foo` または `bar` を含まない。
 
 ::: code

@@ -373,6 +373,24 @@ interface ElementInterface extends ComponentInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle);
 
+    /**
+     * Returns the GraphQL type name by an element's context.
+     *
+     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @return string
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string;
+
+    /**
+     * Returns the GraphQL scopes required by element's context.
+     *
+     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @return array
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array;
+
     // Public Methods
     // =========================================================================
 
@@ -862,6 +880,14 @@ interface ElementInterface extends ComponentInterface
      * @return string The HTML for the editor HUD
      */
     public function getEditorHtml(): string;
+
+    /**
+     * Returns the GraphQL type name for this element type.
+     *
+     * @return string
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string;
 
     // Events
     // -------------------------------------------------------------------------

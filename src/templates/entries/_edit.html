@@ -18,6 +18,7 @@
     currentUser.can('publishEntries'~permissionSuffix) and
     (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 ) %}
+{% set canDuplicateSource = canUpdateSource and not isSingle %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
 
 {% if not isSingle and canUpdateSource %}
@@ -28,7 +29,9 @@
     {% if section.type == 'structure' %}
         {% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
     {% endif %}
-    {% set saveAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
+    {% set canDuplicateSource = true %}
+    {% set canAddAnother = true %}
+    {% set addAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
 {% endif %}
 
 
@@ -37,10 +40,10 @@
 
 {% block content %}
     {% if not isRevision %}
-        <input type="hidden" name="sectionId" value="{{ section.id }}">
-        <input type="hidden" name="entryId" value="{{ entry.sourceId }}">
+        {{ hiddenInput('sectionId', section.id) }}
+        {{ hiddenInput('entryId', entry.sourceId) }}
     {% else %}
-        <input type="hidden" name="revisionId" value="{{ entry.revisionId }}">
+        {{ hiddenInput('revisionId', entry.revisionId) }}
     {% endif %}
 
     <div id="fields">
@@ -128,6 +131,14 @@
     {% endif %}
 
     {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.settings" %}
+{% endblock %}
+
+{% block meta %}
+    {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.meta" %}
 {% endblock %}
 
 {% block details %}

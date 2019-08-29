@@ -520,15 +520,8 @@ class Connection extends \yii\db\Connection
      */
     private function _getTableNameWithoutPrefix(string $table): string
     {
-        $table = $this->getSchema()->getRawTableName($table);
-
-        if ($this->tablePrefix) {
-            if (strpos($table, $this->tablePrefix) === 0) {
-                $table = substr($table, strlen($this->tablePrefix));
-            }
-        }
-
-        return $table;
+        $table = str_replace('%', '', $table);
+        return $this->getSchema()->getRawTableName($table);
     }
 
     /**

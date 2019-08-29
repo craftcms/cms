@@ -8,14 +8,9 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\events\BatchElementActionEvent;
-use craft\helpers\App;
-use craft\helpers\ArrayHelper;
-use craft\helpers\ElementHelper;
 use craft\elements\db\ElementQueryInterface;
 use craft\queue\BaseJob;
 use craft\services\Elements;

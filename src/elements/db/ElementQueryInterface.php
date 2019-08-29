@@ -75,6 +75,14 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function asArray(bool $value = true);
 
     /**
+     * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
+     * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function ignorePlaceholders(bool $value = true);
+
+    /**
      * Narrows the query results to only drafts {elements}.
      *
      * ---
@@ -737,7 +745,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | `'*Foo'` | with a title that ends with `Foo`.
      * | `'*Foo*'` | with a title that contains `Foo`.
      * | `'not *Foo*'` | with a title that doesn’t contain `Foo`.
-     * | `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+     * | `['*Foo*', '*Bar*']` | with a title that contains `Foo` or `Bar`.
      * | `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
      *
      * ---
@@ -773,7 +781,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | `'*foo'` | with a slug that ends with `foo`.
      * | `'*foo*'` | with a slug that contains `foo`.
      * | `'not *foo*'` | with a slug that doesn’t contain `foo`.
-     * | `['*foo*', '*bar*'` | with a slug that contains `foo` or `bar`.
+     * | `['*foo*', '*bar*']` | with a slug that contains `foo` or `bar`.
      * | `['not', '*foo*', '*bar*']` | with a slug that doesn’t contain `foo` or `bar`.
      *
      * ---
@@ -815,7 +823,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | `'*foo'` | with a URI that ends with `foo`.
      * | `'*foo*'` | with a URI that contains `foo`.
      * | `'not *foo*'` | with a URI that doesn’t contain `foo`.
-     * | `['*foo*', '*bar*'` | with a URI that contains `foo` or `bar`.
+     * | `['*foo*', '*bar*']` | with a URI that contains `foo` or `bar`.
      * | `['not', '*foo*', '*bar*']` | with a URI that doesn’t contain `foo` or `bar`.
      *
      * ---

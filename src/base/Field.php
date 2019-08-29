@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -317,11 +318,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
-            [
-                'name' => $this->handle,
-                'value' => $value
-            ]);
+        return Html::textarea($this->handle, $value);
     }
 
     /**
@@ -477,6 +474,15 @@ abstract class Field extends SavableComponent implements FieldInterface
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return Type::string();
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -588,6 +594,19 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'element' => $element,
             ]));
         }
+    }
+
+    /**
+     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
+     * should not be allowed in the GraphQL context.
+     *
+     * @return array|false
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        // No restrictions
+        return [];
     }
 
     // Protected Methods

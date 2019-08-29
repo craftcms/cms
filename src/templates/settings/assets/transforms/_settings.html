@@ -12,10 +12,10 @@
 
 
 {% block content %}
-        <input type="hidden" name="action" value="asset-transforms/save-transform">
+        {{ actionInput('asset-transforms/save-transform') }}
         {{ redirectInput('settings/assets/transforms') }}
 
-        {% if transform.id %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
+        {% if transform.id %}{{ hiddenInput('transformId', transform.id) }}{% endif %}
 
         {{ forms.textField({
             first: true,

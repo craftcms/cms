@@ -219,6 +219,10 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
             array_shift($this->_segments);
+
+            // Force 'p' pageTrigger
+            // (all that really matters is that it doesn't have a trailing slash, but whatever.)
+            $generalConfig->pageTrigger = 'p';
         }
 
         // Is this a paginated request?
@@ -385,6 +389,7 @@ class Request extends \yii\web\Request
      * Returns the token submitted with the request, if there is one.
      *
      * @return string|null The token, or `null` if there isn’t one.
+     * @throws BadRequestHttpException if an invalid token is supplied
      */
     public function getToken()
     {
@@ -393,6 +398,10 @@ class Request extends \yii\web\Request
             $this->_token = $this->getQueryParam($param)
                 ?? $this->getHeaders()->get('X-Craft-Token')
                 ?? false;
+            if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
+                $this->_token = false;
+                throw new BadRequestHttpException('Invalid token');
+            }
         }
 
         return $this->_token ?: null;
@@ -1097,10 +1106,7 @@ class Request extends \yii\web\Request
      */
     private function _segments(string $path): array
     {
-        return array_values(array_filter(explode('/', $path), function($segment) {
-            // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
-            return $segment !== '';
-        }));
+        return array_values(ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)));
     }
 
     /**
@@ -1151,6 +1157,8 @@ class Request extends \yii\web\Request
                 $parsed['host'] !== $hostName &&
                 (
                     !function_exists('idn_to_ascii') ||
+                    !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
+                    !defined('INTL_IDNA_VARIANT_UTS46') ||
                     idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
                 )
             ) {
@@ -1297,7 +1305,11 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($value);
         }
 
-        return StringHelper::convertToUtf8($value);
+        if (is_string($value)) {
+            return StringHelper::convertToUtf8($value);
+        }
+
+        return $value;
     }
 
     /**

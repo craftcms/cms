@@ -11,13 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
@@ -209,8 +209,8 @@ class Drafts extends Component
         /** @var Element|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        /** @var Element|null $source */
-        $source = $behavior->getSource();
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($draft);
 
         // Fire a 'beforeApplyDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
@@ -227,7 +227,7 @@ class Drafts extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($source) {
+            if ($source !== $draft) {
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->duplicateElement($draft, [
                     'id' => $source->id,
@@ -236,35 +236,42 @@ class Drafts extends Component
                     'draftId' => null,
                     'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
-
-                // Now delete the draft
-                $elementsService->deleteElement($draft, true);
             } else {
-                // Delete the draftId from the elements table
-                $db = Craft::$app->getDb();
-                $db->createCommand()
-                    ->update(Table::ELEMENTS, ['draftId' => null], ['id' => $draft->id], [], false)
-                    ->execute();
+                // Detach the draft behavior
+                $behavior = $draft->detachBehavior('draft');
 
-                // Delete the row from the drafts table
-                $db->createCommand()
-                    ->delete(Table::DRAFTS, ['id' => $draft->draftId])
-                    ->execute();
-
-                // Resave the draft without its draftId
-                $draft->draftId = null;
-                $draft->detachBehavior('draft');
-                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!$elementsService->saveElement($draft)) {
-                    throw new InvalidElementException($draft, 'Couldn\'t save element.');
+                // Duplicate the draft as a new element
+                $e = null;
+                try {
+                    $newSource = $elementsService->duplicateElement($draft, [
+                        'draftId' => null,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Don't throw it just yet, until we reattach the draft behavior
                 }
 
-                $newSource = $draft;
+                // Now reattach the draft behavior to the draft
+                if ($behavior !== null) {
+                    $draft->attachBehavior('draft', $behavior);
+                }
+
+                if ($e !== null) {
+                    throw $e;
+                }
             }
+
+            // Now delete the draft
+            $elementsService->deleteElement($draft, true);
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+
+            if ($e instanceof InvalidElementException) {
+                // Add the errors from the duplicated element back onto the draft
+                $draft->addErrors($e->element->getErrors());
+            }
+
             throw $e;
         }
 
@@ -331,10 +338,10 @@ class Drafts extends Component
     /**
      * Creates a new row in the `drafts` table.
      *
+     * @param int|null $sourceId
      * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
-     * @param int|null $sourceId
      * @return int The new draft ID
      * @throws DbException
      */

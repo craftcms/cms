@@ -1102,7 +1102,7 @@ $entries = \craft\elements\Entry::find()
 | `'*foo'` | スラグが `foo` で終わる。
 | `'*foo*'` | スラグが `foo` を含む。
 | `'not *foo*'` | スラグが `foo` を含まない。
-| `['*foo*', '*bar*'` | スラグが `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | スラグが `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | スラグが `foo` または `bar` を含まない。
 
 ::: code
@@ -1174,7 +1174,7 @@ $entries = \craft\elements\Entry::find()
 | `'*Foo'` | タイトルが `Foo` で終わる。
 | `'*Foo*'` | タイトルが `Foo` を含む。
 | `'not *Foo*'` | タイトルが `Foo` を含まない。
-| `['*Foo*', '*Bar*'` | タイトルが `Foo` または `Bar` を含む。
+| `['*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含む。
 | `['not', '*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含まない。
 
 ::: code
@@ -1317,7 +1317,7 @@ $entry = \craft\elements\Entry::find()
 | `'*foo'` | URI が `foo` で終わる。
 | `'*foo*'` | URI が `foo` を含む。
 | `'not *foo*'` | URI が `foo` を含まない。
-| `['*foo*', '*bar*'` | URI が `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | URI が `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | URI が `foo` または `bar` を含まない。
 
 ::: code

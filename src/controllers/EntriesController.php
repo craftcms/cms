@@ -78,7 +78,9 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        $this->_prepEditEntryVariables($variables);
+        if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
+            return $response;
+        }
 
         $this->getView()->registerAssetBundle(EditEntryAsset::class);
 
@@ -250,7 +252,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Can the user delete the entry?
-        $variables['canDeleteSource'] = (
+        $variables['canDeleteSource'] = $section->type !== Section::TYPE_SINGLE && (
             ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
             ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
         );
@@ -279,7 +281,9 @@ class EntriesController extends BaseEntriesController
         $variables['entry'] = $entry;
         $variables['showEntryTypes'] = true;
 
-        $this->_prepEditEntryVariables($variables);
+        if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
+            return $response;
+        }
 
         $view = $this->getView();
         $tabsHtml = !empty($variables['tabs']) ? $view->renderTemplate('_includes/tabs', $variables) : null;
@@ -316,6 +320,7 @@ class EntriesController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->id &&
+            !$duplicate &&
             $entry->authorId != $currentUser->id &&
             $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
@@ -485,6 +490,7 @@ class EntriesController extends BaseEntriesController
      * Preps entry edit variables.
      *
      * @param array &$variables
+     * @return Response|null
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -569,6 +575,17 @@ class EntriesController extends BaseEntriesController
             }
 
             if (!$variables['entry']) {
+                // If they're just accessing an invalid draft/revision ID, redirect them to the source
+                if (!empty($variables['draftId']) || !empty($variables['revisionId'])) {
+                    $sourceEntry = Entry::find()
+                        ->id($variables['entryId'])
+                        ->siteId($site->id)
+                        ->anyStatus()
+                        ->one();
+                    if ($sourceEntry) {
+                        return $this->redirect($sourceEntry->getCpEditUrl(), 301);
+                    }
+                }
                 throw new NotFoundHttpException('Entry not found');
             }
         }
@@ -629,6 +646,8 @@ class EntriesController extends BaseEntriesController
                 'class' => $hasErrors ? 'error' : null
             ];
         }
+
+        return null;
     }
 
     /**
@@ -640,7 +659,7 @@ class EntriesController extends BaseEntriesController
     private function _getEntryModel(): Entry
     {
         $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('entryId');
+        $entryId = $request->getBodyParam('entryId');
         $siteId = $request->getBodyParam('siteId');
 
         if ($entryId) {

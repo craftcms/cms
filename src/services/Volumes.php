@@ -263,7 +263,7 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume the volume to be saved.
      * @param bool $runValidation Whether the volume should be validated
-     * @return bool Whether the field was saved successfully
+     * @return bool Whether the volume was saved successfully
      * @throws \Throwable
      */
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool

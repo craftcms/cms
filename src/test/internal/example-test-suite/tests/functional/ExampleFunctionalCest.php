@@ -2,8 +2,6 @@
 
 namespace myprojecttests;
 
-use Craft;
-use craft\elements\User;
 use FunctionalTester;
 
 class ExampleFunctionalCest
