@@ -548,7 +548,7 @@ class Elements extends Component
                         $this->saveElement($element);
 
                         // Get rid of revisions?
-                        if (!$element->getIsRevision() && !$element->getIsDraft()) {
+                        if (!ElementHelper::isDraftOrRevision($element)) {
                             $revisionService->pruneExcessRevisions($element);
                         }
                     } catch (\Throwable $e) {
