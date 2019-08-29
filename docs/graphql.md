@@ -686,7 +686,7 @@ The full name of the timezone, defaults to UTC. (E.g., America/New_York)
 Parses the field as Markdown, like the `md` filter in Twig.
 
 ### The `flavor` argument
-Similarly, you can pass a Markdown "flavor" to the parser if you have a preference about which is used. The same options are available as when using the Twig filter, or directly calling `MarkdownHelper::process($string, $flavor)`.
+Similarly, you can pass a Markdown "flavor" to the parser if you have a preference about which is used. The same options are available as when using the Twig filter, or directly calling `yii\\helpers\\Markdown::process($string, $flavor)`.
 
 ### The `transform` directive
 This directive is used to return a URL for an [asset tranform](https://docs.craftcms.com/v3/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.

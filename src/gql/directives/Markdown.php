@@ -46,7 +46,7 @@ class Markdown extends Directive
                     'name' => 'flavor',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FLAVOR,
-                    'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\\helpers\\Markdown::parse().'
+                    'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\\helpers\\Markdown::process().'
                 ]),
             ],
             'description' => 'Parses the passed field value as Markdown.'
