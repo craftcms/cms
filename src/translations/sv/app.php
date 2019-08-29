@@ -1493,6 +1493,6 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'Regenerate' => 'Regenerera',
     'Schemas' => 'Scheman',
     'Define the schema’s scope' => 'Definiera schemats omfattning',
-    'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'Edit the Public GraphQL Schema' => 'Redigera offentligt GraphQL-schema',
+    'Schema name' => 'Namn på schema'
 ];
