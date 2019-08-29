@@ -682,12 +682,6 @@ This specifies the format to use. It defaults to the [Atom date time format](htt
 #### The `timezone` argument
 The full name of the timezone, defaults to UTC. (E.g., America/New_York)
 
-### The `markdown` directive
-Parses the field as Markdown, like the `md` filter in Twig.
-
-### The `flavor` argument
-Similarly, you can pass a Markdown "flavor" to the parser if you have a preference about which is used. The same options are available as when using the Twig filter, or directly calling `yii\\helpers\\Markdown::process($string, $flavor)`.
-
 ### The `transform` directive
 This directive is used to return a URL for an [asset tranform](https://docs.craftcms.com/v3/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.
 
@@ -717,6 +711,12 @@ The format to use for the transform
 
 #### The `immediately` argument
 Whether the transform should be generated immediately or only when the image is requested used the generated URL
+
+### The `markdown` directive
+Parses the passed field value as Markdown.
+
+#### The `flavor` argument
+The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\helpers\Markdown::process().
 
 ## Pre-defined interfaces
 Craft defines several interfaces to be implemented by the different GraphQL types.
