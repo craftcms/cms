@@ -21,8 +21,6 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * The GqlController class is a controller that handles various GraphQL related tasks.
  *
@@ -43,9 +41,16 @@ class GraphqlController extends Controller
 
     /**
      * @inheritdoc
+     * @throws NotFoundHttpException
      */
     public function beforeAction($action)
     {
+        if (!Craft::$app->getConfig()->getGeneral()->enableGql) {
+            throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
+        }
+
+        Craft::$app->requireEdition(Craft::Pro);
+
         if ($action->id === 'api') {
             $this->enableCsrfValidation = false;
         }
