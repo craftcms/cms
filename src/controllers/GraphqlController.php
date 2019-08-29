@@ -153,7 +153,7 @@ class GraphqlController extends Controller
      */
     public function actionGraphiql(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->getView()->registerAssetBundle(GraphiqlAsset::class);
 
         $schemaUid = Craft::$app->getRequest()->getQueryParam('schemaUid');
@@ -190,7 +190,7 @@ class GraphqlController extends Controller
      */
     public function actionViewSchemas(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         return $this->renderTemplate('graphql/schemas/_index');
     }
 
@@ -203,7 +203,7 @@ class GraphqlController extends Controller
      */
     public function actionEditSchema(int $schemaId = null, GqlSchema $schema = null): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         $gqlService = Craft::$app->getGql();
         $accessToken = null;
@@ -246,7 +246,7 @@ class GraphqlController extends Controller
     public function actionSaveSchema()
     {
         $this->requirePostRequest();
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requireElevatedSession();
 
         $gqlService = Craft::$app->getGql();
@@ -299,7 +299,7 @@ class GraphqlController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requireElevatedSession();
 
         $schemaUid = Craft::$app->getRequest()->getRequiredBodyParam('schemaUid');
@@ -322,7 +322,7 @@ class GraphqlController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         return $this->asJson([
             'accessToken' => $this->_generateToken(),
@@ -337,7 +337,7 @@ class GraphqlController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         $schemaId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
