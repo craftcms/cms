@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `children` field to the `EntryInterface` and `CategoryInterface` GraphQL types. ([#4843](https://github.com/craftcms/cms/issues/4843))
+- Added the `markdown` GraphQL directive. ([#4832](https://github.com/craftcms/cms/issues/4832))
 
 ### Changed
 - Preview target URIs can now be set to environment variables (e.g. `$NEWS_INDEX`) or URLs that begin with an alias (e.g. `@rootUrl/news` or `@rootUrl/news/{slug}`).
