@@ -602,6 +602,10 @@ abstract class Element extends Component implements ElementInterface
                 ->where(['elementId' => $sourceElementIds])
                 ->all();
 
+            if (empty($structureData)) {
+                return;
+            }
+
             $db = Craft::$app->getDb();
             $qb = $db->getQueryBuilder();
             $query = new Query();
