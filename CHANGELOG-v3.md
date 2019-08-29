@@ -8,14 +8,14 @@
 
 ### Changed
 - Preview target URIs can now be set to environment variables (e.g. `$NEWS_INDEX`) or URLs that begin with an alias (e.g. `@rootUrl/news` or `@rootUrl/news/{slug}`).
-- `graphql/api` responses now set the `Access-Control-Allow-Headers: Content-Type` header for preflight requests.
 - Templates passed to `craft\web\View::renderString()` and `renderObjectTemplate()` can now incude front-end templates.
 - Element queries with the `revisions` param set will now return revisions ordered by `num DESC` by default. ([#4825](https://github.com/craftcms/cms/issues/4825))
+- `graphql/api` responses now set the `Access-Control-Allow-Headers: Content-Type` header for preflight requests.
 
 ### Fixed
-- Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
-- Fixed an error that could occur when executing a GraphQL query if a Matrix field had been converted to a different field type. ([#4848](https://github.com/craftcms/cms/issues/4848))
 - Fixed a bug where Number fields weren’t showing validation errors when non-numeric values were entered. ([#4849](https://github.com/craftcms/cms/issues/4849))
+- Fixed an error that could occur when executing a GraphQL query if a Matrix field had been converted to a different field type. ([#4848](https://github.com/craftcms/cms/issues/4848))
+- Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
 
 ## 3.3.0.1 - 2019-08-27
 
