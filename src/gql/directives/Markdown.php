@@ -21,7 +21,7 @@ use GraphQL\Type\Definition\Type;
  * Markdown GraphQL Directive
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.3.0.1
  */
 class Markdown extends Directive
 {
@@ -49,7 +49,7 @@ class Markdown extends Directive
                     'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\\helpers\\Markdown::parse().'
                 ]),
             ],
-            'description' => 'Parses the passed string or field value as Markdown.'
+            'description' => 'Parses the passed field value as Markdown.'
         ]));
 
         return $type;
