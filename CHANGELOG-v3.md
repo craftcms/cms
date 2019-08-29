@@ -14,6 +14,7 @@
 
 ### Fixed
 - Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
+- Fixed an error that could occur when executing a GraphQL query if a Matrix field had been converted to a different field type. ([#4848](https://github.com/craftcms/cms/issues/4848))
 
 ## 3.3.0.1 - 2019-08-27
 
