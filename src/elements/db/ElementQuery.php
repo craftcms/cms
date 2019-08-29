@@ -1680,6 +1680,108 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $fields;
     }
 
+    // Internal Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Converts a found row into an element instance.
+     *
+     * @param array $row
+     * @return ElementInterface
+     * @internal
+     * @since 3.3.1
+     */
+    public function createElement(array $row): ElementInterface
+    {
+        // Do we have a placeholder for this element?
+        if (
+            !$this->ignorePlaceholders &&
+            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+        ) {
+            return $element;
+        }
+
+        /** @var Element $class */
+        $class = $this->elementType;
+
+        // Instantiate the element
+        if ($this->structureId) {
+            $row['structureId'] = $this->structureId;
+        }
+
+        if ($class::hasContent() && $this->contentTable !== null) {
+            if ($class::hasTitles()) {
+                // Ensure the title is a string
+                $row['title'] = (string)($row['title'] ?? '');
+            }
+
+            // Separate the content values from the main element attributes
+            $fieldValues = [];
+
+            if (!empty($this->customFields)) {
+                foreach ($this->customFields as $field) {
+                    /** @var Field $field */
+                    if ($field->hasContentColumn()) {
+                        // Account for results where multiple fields have the same handle, but from
+                        // different columns e.g. two Matrix block types that each have a field with the
+                        // same handle
+                        $colName = $this->_getFieldContentColumnName($field);
+
+                        if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
+                            $fieldValues[$field->handle] = $row[$colName] ?? null;
+                        }
+
+                        unset($row[$colName]);
+                    }
+                }
+            }
+        }
+
+        if (array_key_exists('dateDeleted', $row)) {
+            $row['trashed'] = $row['dateDeleted'] !== null;
+        }
+
+        $behaviors = [];
+
+        if ($this->drafts) {
+            $behaviors['draft'] = new DraftBehavior([
+                'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
+                'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
+                'draftName' => ArrayHelper::remove($row, 'draftName'),
+                'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+            ]);
+        }
+
+        if ($this->revisions) {
+            $behaviors['revision'] = new RevisionBehavior([
+                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
+                'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
+                'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
+                'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+            ]);
+        }
+
+        /** @var Element $element */
+        $element = new $class($row);
+        $element->attachBehaviors($behaviors);
+
+        // Set the custom field values
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        if (isset($fieldValues)) {
+            $element->setFieldValues($fieldValues);
+        }
+
+        // Fire an 'afterPopulateElement' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+                'element' => $element,
+                'row' => $row
+            ]));
+        }
+
+        return $element;
+    }
+
     // Deprecated Methods
     // -------------------------------------------------------------------------
 
@@ -2677,7 +2779,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } else {
             foreach ($rows as $row) {
-                $element = $this->_createElement($row);
+                $element = $this->createElement($row);
 
                 // Add it to the elements array
                 if ($this->indexBy === null) {
@@ -2702,103 +2804,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $elements;
-    }
-
-    /**
-     * Converts a found row into an element instance.
-     *
-     * @param array $row
-     * @return ElementInterface
-     */
-    private function _createElement(array $row): ElementInterface
-    {
-        // Do we have a placeholder for this element?
-        if (
-            !$this->ignorePlaceholders &&
-            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
-        ) {
-            return $element;
-        }
-
-        /** @var Element $class */
-        $class = $this->elementType;
-
-        // Instantiate the element
-        if ($this->structureId) {
-            $row['structureId'] = $this->structureId;
-        }
-
-        if ($class::hasContent() && $this->contentTable !== null) {
-            if ($class::hasTitles()) {
-                // Ensure the title is a string
-                $row['title'] = (string)($row['title'] ?? '');
-            }
-
-            // Separate the content values from the main element attributes
-            $fieldValues = [];
-
-            if (!empty($this->customFields)) {
-                foreach ($this->customFields as $field) {
-                    /** @var Field $field */
-                    if ($field->hasContentColumn()) {
-                        // Account for results where multiple fields have the same handle, but from
-                        // different columns e.g. two Matrix block types that each have a field with the
-                        // same handle
-                        $colName = $this->_getFieldContentColumnName($field);
-
-                        if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
-                            $fieldValues[$field->handle] = $row[$colName] ?? null;
-                        }
-
-                        unset($row[$colName]);
-                    }
-                }
-            }
-        }
-
-        if (array_key_exists('dateDeleted', $row)) {
-            $row['trashed'] = $row['dateDeleted'] !== null;
-        }
-
-        $behaviors = [];
-
-        if ($this->drafts) {
-            $behaviors['draft'] = new DraftBehavior([
-                'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
-                'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
-                'draftName' => ArrayHelper::remove($row, 'draftName'),
-                'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-            ]);
-        }
-
-        if ($this->revisions) {
-            $behaviors['revision'] = new RevisionBehavior([
-                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
-                'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
-                'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
-                'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
-            ]);
-        }
-
-        /** @var Element $element */
-        $element = new $class($row);
-        $element->attachBehaviors($behaviors);
-
-        // Set the custom field values
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (isset($fieldValues)) {
-            $element->setFieldValues($fieldValues);
-        }
-
-        // Fire an 'afterPopulateElement' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
-                'element' => $element,
-                'row' => $row
-            ]));
-        }
-
-        return $element;
     }
 
     /**
