@@ -1488,7 +1488,7 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Public Schema' => 'Öffentliches Schema',
     'Regenerate' => 'Regenerieren',
     'Schemas' => 'Schemas',
-    'Define the schema’s scope' => 'Define the schema’s scope',
+    'Define the schema’s scope' => 'Legen Sie den Scope des Schemas fest',
     'Edit the Public GraphQL Schema' => 'Das öffentliche GraphQL Schema bearbeiten',
     'Schema name' => 'Schemaname'
 ];
