@@ -1489,10 +1489,10 @@ return [
     'New schema' => '新架构',
     'The token that must be provided with GraphQL requests to access this schema.' => '为访问此架构而必须随 GraphQL 请求一起提供的令牌。',
     'not an existing translation23131321313' => '不是现有翻译23131321313',
-    'Public Schema' => '公开架构',
+    'Public Schema' => '公共架构',
     'Regenerate' => '重新生成',
     'Schemas' => '架构',
-    'Define the schema’s scope' => 'Define the schema’s scope',
-    'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'Define the schema’s scope' => '定义架构的范围',
+    'Edit the Public GraphQL Schema' => '编辑公共 GraphQL 架构',
+    'Schema name' => '架构名称'
 ];
