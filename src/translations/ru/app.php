@@ -1485,14 +1485,14 @@ return [
     'View global set - {globalSet}' => 'Просмотреть глобальное множество - {globalSet}',
     'Edit GraphQL Schema' => 'Редактировать схему GraphQL',
     'Expires' => 'Истекает',
-    'View volume - {volume}' => 'View volume - {volume}',
-    'New schema' => 'New Schema',
-    'The token that must be provided with GraphQL requests to access this schema.' => 'The token that must be provided with GraphQL requests to access this schema.',
+    'View volume - {volume}' => 'Просмотреть объем - {volume}',
+    'New schema' => 'Новая схема',
+    'The token that must be provided with GraphQL requests to access this schema.' => 'Токен, который необходимо указывать вместе с запросами GraphQL для доступа к этой схеме.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
-    'Public Schema' => 'Public Schema',
-    'Regenerate' => 'Regenerate',
-    'Schemas' => 'Schemas',
-    'Define the schema’s scope' => 'Define the schema’s scope',
-    'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'Public Schema' => 'Публичная схема',
+    'Regenerate' => 'Восстановить',
+    'Schemas' => 'Схемы',
+    'Define the schema’s scope' => 'Определить область действия схемы',
+    'Edit the Public GraphQL Schema' => 'Редактировать публичную схему GraphQL',
+    'Schema name' => 'Имя схемы'
 ];
