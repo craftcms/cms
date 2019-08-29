@@ -1332,7 +1332,7 @@ JS;
      * @param array &$variables The variables that should be available to the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array &$variables): bool
+    public function beforeRenderTemplate(string &$template, array &$variables): bool
     {
         // Fire a 'beforeRenderTemplate' event
         $event = new TemplateEvent([
@@ -1341,6 +1341,7 @@ JS;
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
         $variables = $event->variables;
+        $template = $event->template;
         return $event->isValid;
     }
 
@@ -1372,7 +1373,7 @@ JS;
      * @param array &$variables The variables that should be available to the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array &$variables): bool
+    public function beforeRenderPageTemplate(string &$template, array &$variables): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         $event = new TemplateEvent([
@@ -1381,6 +1382,7 @@ JS;
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
         $variables = $event->variables;
+        $template = $event->template;
         return $event->isValid;
     }
 
