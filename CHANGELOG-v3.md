@@ -6,7 +6,7 @@
 - Added the `enableGql` config setting. ([#4836](https://github.com/craftcms/cms/issues/4836))
 - Added the `children` field to the `EntryInterface` and `CategoryInterface` GraphQL types. ([#4843](https://github.com/craftcms/cms/issues/4843))
 - Added the `markdown` GraphQL directive. ([#4832](https://github.com/craftcms/cms/issues/4832))
-- Added the `craft\services\Revisions::pruneExcessRevisions()`.
+- Added `craft\services\Revisions::pruneExcessRevisions()`.
 
 ### Changed
 - Craft will now prune excess revisions when resaving elements. ([#4851](https://github.com/craftcms/cms/issues/4851))
