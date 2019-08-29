@@ -25,7 +25,7 @@ You can verify that your endpoint is configured correctly, try sending a `{ping}
 curl -H "Content-Type: application/graphql" -d '{ping}' http://my-project.test/api
 ```
 
-(Replace `http://my-project.test/api` with the actua URL to your endpoint.)
+(Replace `http://my-project.test/api` with the actual URL to your endpoint.)
 
 If that comes back with the following JSON response, then your GraphQL API is up and running!
 
