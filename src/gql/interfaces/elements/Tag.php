@@ -68,7 +68,7 @@ class Tag extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
@@ -80,5 +80,7 @@ class Tag extends Element
                 'description' => 'The handle of the group that contains the tag.'
             ]
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }

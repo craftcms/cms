@@ -68,7 +68,7 @@ class GlobalSet extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'name' => [
                 'name' => 'name',
                 'type' => Type::string(),
@@ -80,5 +80,7 @@ class GlobalSet extends Element
                 'description' => 'The handle of the global set.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }

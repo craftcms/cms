@@ -68,7 +68,7 @@ class User extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'friendlyName' => [
                 'name' => 'friendlyName',
                 'type' => Type::string(),
@@ -120,5 +120,7 @@ class User extends Element
                 'description' => 'The user\'s email.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }

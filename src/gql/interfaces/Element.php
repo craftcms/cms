@@ -62,7 +62,7 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
@@ -119,6 +119,8 @@ class Element extends InterfaceType
                 'description' => 'The date the element was last updated.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 
     /**

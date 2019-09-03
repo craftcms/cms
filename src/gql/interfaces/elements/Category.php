@@ -70,7 +70,7 @@ class Category extends Structure
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
@@ -88,5 +88,7 @@ class Category extends Structure
                 'description' => 'The category’s children.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }

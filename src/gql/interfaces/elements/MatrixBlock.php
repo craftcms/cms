@@ -68,7 +68,7 @@ class MatrixBlock extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
@@ -95,5 +95,7 @@ class MatrixBlock extends Element
                 'description' => 'The sort order of the matrix block within the owner element field.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }

@@ -22,7 +22,7 @@ abstract class Structure extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'lft' => [
                 'name' => 'lft',
                 'type' => Type::int(),
@@ -49,6 +49,8 @@ abstract class Structure extends Element
                 'description' => 'The element’s structure ID.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 
     /**

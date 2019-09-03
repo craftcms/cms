@@ -71,7 +71,7 @@ class Entry extends Structure
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
@@ -119,5 +119,7 @@ class Entry extends Structure
                 'description' => 'The entry’s children, if the section is a structure.'
             ],
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }
