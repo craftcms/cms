@@ -1457,7 +1457,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Normalize the URLs
-        $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : null;
         $view = Craft::$app->getView();
         foreach ($previewTargets as &$previewTarget) {
             // urlFormat => url
@@ -1465,7 +1464,7 @@ abstract class Element extends Component implements ElementInterface
                 $previewTarget['url'] = $view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this);
                 unset($previewTarget['urlFormat']);
             }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, $scheme, $this->siteId);
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, null, $this->siteId);
         }
 
         return $previewTargets;

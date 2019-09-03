@@ -13,6 +13,7 @@
 - Templates passed to `craft\web\View::renderString()` and `renderObjectTemplate()` can now incude front-end templates.
 - Element queries with the `revisions` param set will now return revisions ordered by `num DESC` by default. ([#4825](https://github.com/craftcms/cms/issues/4825))
 - `graphql/api` responses now set the `Access-Control-Allow-Headers: Content-Type` header for preflight requests.
+- Craft no longer forces preview target URLs to use `https` if the current request is over SSL. ([#4867](https://github.com/craftcms/cms/issues/4867))
 
 ### Fixed
 - Fixed a bug where Number fields weren’t showing validation errors when non-numeric values were entered. ([#4849](https://github.com/craftcms/cms/issues/4849))
