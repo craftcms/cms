@@ -337,7 +337,7 @@ Groups the items of an array together based on common properties.
 
 ```twig
 {% set allEntries = craft.entries.section('blog').all() %}
-{% set allEntriesByYear = allEntries|group('postDate|date('Y')') %}
+{% set allEntriesByYear = allEntries|group('postDate|date("Y")') %}
 
 {% for year, entriesInYear in allEntriesByYear %}
     <h2>{{ year }}</h2>
