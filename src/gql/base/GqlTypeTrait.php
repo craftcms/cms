@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\gql\base\SchemaDefFieldsEventProxy;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\Type;
@@ -19,8 +20,11 @@ use GraphQL\Type\Definition\Type;
  */
 trait GqlTypeTrait
 {
+    // Public Methods
+    // =========================================================================
+
     /**
-     * List of fields for this type.
+     * List fields for this type.
      *
      * @return array
      */
@@ -52,5 +56,18 @@ trait GqlTypeTrait
             'name' => static::getName(),
             'fields' => $fields ?: (static::class . '::getFieldDefinitions'),
         ]));
+    }
+
+    /**
+     * @param string $type
+     * @param array $fields
+     * @return array
+     */
+    public static function updateFieldsFromGetSchemaDefEvent (string $type, array $fields) : array {
+
+        $proxy = new SchemaDefFieldsEventProxy();
+        $fields = $proxy->employ($type, $fields);
+
+        return $fields;
     }
 }

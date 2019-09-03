@@ -13,6 +13,7 @@ use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
+use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -70,7 +71,7 @@ class Asset extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        $fields = array_merge(parent::getFieldDefinitions(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
@@ -148,5 +149,7 @@ class Asset extends Element
             ],
 
         ]);
+
+        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
     }
 }
