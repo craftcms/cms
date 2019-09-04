@@ -20,7 +20,7 @@
 
 ### Fixed
 - Fixed a bug where Number fields weren’t showing validation errors when non-numeric values were entered. ([#4849](https://github.com/craftcms/cms/issues/4849))
-- Fixed an error that occurred when accesing the GraphQL section in the Control Panel if the `allowAdminChanges` config setting was disabled.
+- Fixed an error that occurred when accesing the GraphQL section in the Control Panel if the `allowAdminChanges` config setting was disabled. ([#4884](https://github.com/craftcms/cms/issues/4884))
 - Fixed an error that could occur when executing a GraphQL query if a Matrix field had been converted to a different field type. ([#4848](https://github.com/craftcms/cms/issues/4848))
 - Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
 - Fixed an SQL error that occured when eager-loading children for an element that wasn't in a structure.
