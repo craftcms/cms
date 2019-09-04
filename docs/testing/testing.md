@@ -93,12 +93,14 @@ developer was to change the `add` method of the `SalaryChecker` class to the fol
 ```php
 public function multiply(int $a, int $b) : int
 {
+    $result = $a * $b;
+    
     // Dont return salaries lower than 25000
-    if ($a < 25000 || b < 25000) {
+    if ($result < 25000) {
         return 25000
     }
     
-    return $a * $b;
+    return $result;
 }
 ```
 The test would fail. Obviously, this is a basic example but as your codebase expands/changes, new
