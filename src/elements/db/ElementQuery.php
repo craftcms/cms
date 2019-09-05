@@ -1449,7 +1449,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Should we set a search score on the elements?
         if ($this->_searchScores !== null) {
             foreach ($rows as &$row) {
-                if (isset($this->_searchScores[$row['id']])) {
+                if (isset($row['id'], $this->_searchScores[$row['id']])) {
                     $row['searchScore'] = $this->_searchScores[$row['id']];
                 }
             }
@@ -1696,6 +1696,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Do we have a placeholder for this element?
         if (
             !$this->ignorePlaceholders &&
+            isset($row['id'], $row['siteId']) &&
             ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
         ) {
             return $element;
