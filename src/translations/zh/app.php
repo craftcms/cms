@@ -1488,7 +1488,6 @@ return [
     'View volume - {volume}' => '查看存储卷 - {volume}',
     'New schema' => '新架构',
     'The token that must be provided with GraphQL requests to access this schema.' => '为访问此架构而必须随 GraphQL 请求一起提供的令牌。',
-    'not an existing translation23131321313' => '不是现有翻译23131321313',
     'Public Schema' => '公共架构',
     'Regenerate' => '重新生成',
     'Schemas' => '架构',

@@ -1488,7 +1488,6 @@ return [
     'View volume - {volume}' => 'Просмотреть объем - {volume}',
     'New schema' => 'Новая схема',
     'The token that must be provided with GraphQL requests to access this schema.' => 'Токен, который необходимо указывать вместе с запросами GraphQL для доступа к этой схеме.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Public Schema' => 'Публичная схема',
     'Regenerate' => 'Восстановить',
     'Schemas' => 'Схемы',

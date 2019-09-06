@@ -1488,7 +1488,6 @@ return [
     'View volume - {volume}' => 'הצג אמצעי אחסון - {volume}',
     'New schema' => 'סכימה חדשה',
     'The token that must be provided with GraphQL requests to access this schema.' => 'האסימון חייב להיות מסופק יחד עם בקשות GraphQL כדי לגשת לסכימה הזאת.',
-    'not an existing translation23131321313' => 'ignored',
     'Public Schema' => 'סכימה ציבורית',
     'Regenerate' => 'צור מחדש',
     'Schemas' => 'סכימות',
