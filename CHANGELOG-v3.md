@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.1 - 2019-09-06
 
 ### Added
 - Added support for setting `offset` and `limit` params to individual paths’ criterias when eager-loading elements.
