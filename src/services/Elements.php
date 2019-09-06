@@ -1632,11 +1632,14 @@ class Elements extends Component
                     // Get the eager-loading map from the source element type
                     /** @var Element $sourceElementType */
                     $sourceElementType = $elementTypesByPath[$sourcePath];
-                    $map = $sourceElementType::eagerLoadingMap($elementsByPath[$sourcePath], $segment);
+                    $map = $sourceElementType::eagerLoadingMap(array_values($elementsByPath[$sourcePath]), $segment);
 
                     if ($map === null) {
                         break;
                     }
+
+                    $offset = 0;
+                    $limit = null;
 
                     if ($map && !empty($map['map'])) {
                         // Remember the element type in case there are more segments after this
@@ -1653,7 +1656,7 @@ class Elements extends Component
                                 $uniqueTargetElementIds[] = $mapping['target'];
                             }
 
-                            $targetElementIdsBySourceIds[$mapping['source']][] = $mapping['target'];
+                            $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
                         }
 
                         // Get the target elements
@@ -1661,30 +1664,39 @@ class Elements extends Component
                         $targetElementType = $map['elementType'];
                         /** @var ElementQuery $query */
                         $query = $targetElementType::find();
-                        Craft::configure($query, array_merge(
-                        // Default to no order and limit, but allow the element type/path criteria to override
-                            ['orderBy' => null, 'limit' => null],
+
+                        // Default to no order, offset, or limit, but allow the element type/path criteria to override
+                        $query->orderBy = null;
+                        $query->offset = null;
+                        $query->limit = null;
+
+                        $criteria = array_merge(
                             $map['criteria'] ?? [],
                             $pathCriterias[$targetPath] ?? []
-                        ));
+                        );
+
+                        // Save the offset & limit params for later
+                        $offset = ArrayHelper::remove($criteria, 'offset', 0);
+                        $limit = ArrayHelper::remove($criteria, 'limit');
+
+                        Craft::configure($query, $criteria);
+
                         if (!$query->siteId) {
                             $query->siteId = reset($elements)->siteId;
                         }
+
                         $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
-                        /** @var Element[] $targetElements */
-                        $targetElements = $query->all();
 
-                        if (!empty($targetElements)) {
-                            // Success! Store those elements on $elementsByPath FFR
-                            $elementsByPath[$targetPath] = $targetElements;
+                        /** @var array|ElementInterface[] $targetElements */
+                        /** @var array|ElementInterface[] $targetElementsById */
+                        $targetElements = $query->asArray()->all();
+                        $elementsByPath[$targetPath] = [];
 
-                            // Index the target elements by their IDs if we are using the map-defined order
-                            if (!$useCustomOrder) {
-                                $targetElementsById = [];
-
-                                foreach ($targetElements as $targetElement) {
-                                    $targetElementsById[$targetElement->id] = $targetElement;
-                                }
+                        // Index the target elements by their IDs if we are using the map-defined order
+                        if (!$useCustomOrder) {
+                            $targetElementsById = [];
+                            foreach ($targetElements as &$targetElement) {
+                                $targetElementsById[$targetElement['id']] = &$targetElement;
                             }
                         }
                     }
@@ -1698,26 +1710,46 @@ class Elements extends Component
                         if (isset($targetElementIdsBySourceIds[$sourceElementId])) {
                             if ($useCustomOrder) {
                                 // Assign the elements in the order they were returned from the query
-                                foreach ($targetElements as $targetElement) {
-                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId], false)) {
-                                        $targetElementsForSource[] = $targetElement;
+                                foreach ($targetElements as &$targetElement) {
+                                    /** @var array|ElementInterface $targetElement */
+                                    $targetElementId = ArrayHelper::getValue($targetElement, 'id');
+                                    if (isset($targetElementIdsBySourceIds[$sourceElementId][$targetElementId])) {
+                                        $targetElementsForSource[] = &$targetElement;
                                     }
                                 }
                             } else {
                                 // Assign the elements in the order defined by the map
-                                foreach ($targetElementIdsBySourceIds[$sourceElementId] as $targetElementId) {
+                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElementId]) as $targetElementId) {
                                     if (isset($targetElementsById[$targetElementId])) {
-                                        $targetElementsForSource[] = $targetElementsById[$targetElementId];
+                                        $targetElementsForSource[] = &$targetElementsById[$targetElementId];
                                     }
                                 }
                             }
+
+                            // Ignore elements that don't fall within the offset & limit
+                            if ($offset || $limit) {
+                                $targetElementsForSource = array_slice($targetElementsForSource, $offset, $limit);
+                            }
+
+                            foreach ($targetElementsForSource as &$targetElement) {
+                                // Make sure the element has been instantiated
+                                if (is_array($targetElement)) {
+                                    $targetElement = $query->createElement($targetElement);
+                                }
+
+                                // Store it on $elementsByPath FFR
+                                if (!isset($elementsByPath[$targetPath][$targetElement->id])) {
+                                    $elementsByPath[$targetPath][$targetElement->id] = $targetElement;
+                                }
+                            }
+                            unset($targetElement);
                         }
 
                         $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
                     }
                 }
 
-                if (!$elementsByPath[$targetPath]) {
+                if (empty($elementsByPath[$targetPath])) {
                     // Dead end - stop wasting time on this path
                     break;
                 }
@@ -1924,7 +1956,7 @@ class Elements extends Component
             $siteSettingsRecord->uri = $element->uri;
 
             // Avoid `enabled` getting marked as dirty if it's not really changing
-            if ($siteSettingsRecord->enabled != $element->enabledForSite) {
+            if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $element->enabledForSite) {
                 $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
             }
 

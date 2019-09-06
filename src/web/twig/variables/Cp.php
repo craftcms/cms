@@ -112,6 +112,7 @@ class Cp extends Component
     {
         $craftPro = Craft::$app->getEdition() === Craft::Pro;
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         $navItems = [
             [
@@ -194,7 +195,7 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($craftPro) {
+            if ($craftPro && $generalConfig->enableGql) {
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
@@ -212,7 +213,7 @@ class Cp extends Component
                 ];
             }
 
-            if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            if ($generalConfig->allowAdminChanges) {
                 $navItems[] = [
                     'url' => 'settings',
                     'label' => Craft::t('app', 'Settings'),

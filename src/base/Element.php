@@ -602,6 +602,10 @@ abstract class Element extends Component implements ElementInterface
                 ->where(['elementId' => $sourceElementIds])
                 ->all();
 
+            if (empty($structureData)) {
+                return;
+            }
+
             $db = Craft::$app->getDb();
             $qb = $db->getQueryBuilder();
             $query = new Query();
@@ -1453,15 +1457,14 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Normalize the URLs
-        $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : null;
         $view = Craft::$app->getView();
         foreach ($previewTargets as &$previewTarget) {
             // urlFormat => url
             if (isset($previewTarget['urlFormat'])) {
-                $previewTarget['url'] = $view->renderObjectTemplate($previewTarget['urlFormat'], $this);
+                $previewTarget['url'] = $view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this);
                 unset($previewTarget['urlFormat']);
             }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, $scheme, $this->siteId);
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, null, $this->siteId);
         }
 
         return $previewTargets;

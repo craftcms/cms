@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.3.0.1",
+  "version": "3.3.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -53,7 +53,7 @@
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "^3.0",
+    "codeception/codeception": "^3.1",
     "codeception/mockery-module": "^0.3",
     "codeception/phpunit-wrapper": "^7.7",
     "codeception/specify": "^0.4",
@@ -79,7 +79,8 @@
   },
   "autoload": {
     "psr-4": {
-      "craft\\": "src/"
+      "craft\\": "src/",
+      "crafttests\\fixtures\\": "tests/fixtures/"
     }
   }
 }

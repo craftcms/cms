@@ -99,7 +99,7 @@ class ExtensionTest extends Unit
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
         $this->extensionRenderTest(
-            '{{ CraftEdition }} | {{ CraftSolo }} | {{ CraftPro }}',
+            Craft::$app->getEdition().' | 0 | 1',
             ''.Craft::$app->getEdition().' | '. Craft::Solo . ' | '. Craft::Pro
         );
     }

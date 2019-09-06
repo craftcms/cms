@@ -25,7 +25,7 @@ You can verify that your endpoint is configured correctly, try sending a `{ping}
 curl -H "Content-Type: application/graphql" -d '{ping}' http://my-project.test/api
 ```
 
-(Replace `http://my-project.test/api` with the actua URL to your endpoint.)
+(Replace `http://my-project.test/api` with the actual URL to your endpoint.)
 
 If that comes back with the following JSON response, then your GraphQL API is up and running!
 
@@ -712,6 +712,12 @@ The format to use for the transform
 #### The `immediately` argument
 Whether the transform should be generated immediately or only when the image is requested used the generated URL
 
+### The `markdown` directive
+Parses the passed field value as Markdown.
+
+#### The `flavor` argument
+The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\helpers\Markdown::process().
+
 ## Pre-defined interfaces
 Craft defines several interfaces to be implemented by the different GraphQL types.
 
@@ -882,6 +888,9 @@ The entry's post date.
 
 #### The `expiryDate` field
 The expiry date of the entry.
+
+#### The `children` field
+The entry’s children, if the section is a structure.
 
 ### The `GlobalSetInterface` interface
 This is the interface implemented by all global sets.
@@ -1123,6 +1132,9 @@ The ID of the group that contains the category.
 #### The `groupHandle` field
 The handle of the group that contains the category.
 
+#### The `children` field
+The category’s children.
+
 ### The `TagInterface` interface
 This is the interface implemented by all tags.
 
@@ -1184,6 +1196,9 @@ A defined type exists for each specific interface implementation. For example, i
   queryEntries (section: "news", limit: 2, orderBy: "dateCreated DESC"){
     dateCreated @formatDateTime (format: "Y-m-d")
     title
+    children {
+      title
+    }
     ... on news_article_Entry {
       shortDescription
       featuredImage {
@@ -1203,6 +1218,7 @@ A defined type exists for each specific interface implementation. For example, i
       {
         "dateCreated": "2019-08-21",
         "title": "An important news item",
+        "children": [],
         "shortDescription": "<p>This is how we roll these days.</p>",
         "featuredImage": [
           {
@@ -1213,6 +1229,14 @@ A defined type exists for each specific interface implementation. For example, i
       {
         "dateCreated": "2019-07-02",
         "title": "Dolorem ea eveniet alias",
+        "children": [
+          {
+            "title": "Child entry"
+          },
+          {
+            "title": "This is also a child entry"
+          }
+        ]
         "shortDescription": "Et omnis explicabo iusto eum nobis. Consequatur debitis architecto est exercitationem vitae velit repellendus. Aut consequatur maiores error ducimus ea et. Rem ipsa asperiores eius quas et omnis. Veniam quasi qui repellendus dignissimos et necessitatibus. Aut a illo tempora.",
         "featuredImage": []
       }

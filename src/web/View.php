@@ -452,11 +452,14 @@ class View extends \yii\web\View
         }
 
         $twig = $this->getTwig();
+        $templateMode = $this->templateMode;
+        $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
         $result = $twig->createTemplate($template)->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
+        $this->setTemplateMode($templateMode);
         $twig->setDefaultEscaperStrategy();
         return $result;
     }
@@ -530,6 +533,8 @@ class View extends \yii\web\View
         }
 
         // Render it!
+        $templateMode = $this->templateMode;
+        $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
@@ -543,6 +548,7 @@ class View extends \yii\web\View
         }
 
         $this->_renderingTemplate = $lastRenderingTemplate;
+        $this->setTemplateMode($templateMode);
         $twig->setDefaultEscaperStrategy();
 
         // Re-enable strict variables

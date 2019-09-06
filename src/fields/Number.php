@@ -172,7 +172,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value === '' || !is_numeric($value) ? null : $value;
+        return $value === '' ? null : $value;
     }
 
     /**
