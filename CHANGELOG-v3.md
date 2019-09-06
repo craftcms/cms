@@ -2,7 +2,12 @@
 
 ## Unreleased
 
+### Changed
 - `graphql/api` preflight responses now explicitly allow `Authorization` headers. ([#4830](https://github.com/craftcms/cms/issues/4830))
+- Updated Garnish to 0.1.30.
+
+### Fixed
+- Fixed a bug where selecting Matrix blocks would cause the content container to scroll. ([#3762](https://github.com/craftcms/cms/issues/3762))
 
 ## 3.3.1 - 2019-09-06
 
