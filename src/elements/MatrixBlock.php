@@ -239,7 +239,7 @@ class MatrixBlock extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->getField(), $owner);
+        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_field(), $owner);
     }
 
     /**
@@ -305,7 +305,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getContentTable(): string
     {
-        return $this->getField()->contentTable;
+        return $this->_field()->contentTable;
     }
 
     /**
@@ -446,12 +446,15 @@ class MatrixBlock extends Element implements BlockElementInterface
         parent::afterDelete();
     }
 
+    // Private Methods
+    // =========================================================================
+
     /**
      * Returns the Matrix field.
      *
      * @return Matrix
      */
-    public function getField(): Matrix
+    private function _field(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
