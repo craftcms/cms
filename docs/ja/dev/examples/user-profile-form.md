@@ -18,11 +18,11 @@
 {% requireLogin %}
 
 <form id="profile-form" class="profile-form" method="post" accept-charset="UTF-8" enctype="multipart/form-data">
-  <input type="hidden" name="action" value="users/save-user">
+  {{ actionInput('users/save-user') }}
 
   {{ csrfInput() }}
 
-  <input type="hidden" name="userId" value="{{ currentUser.id }}">
+  {{ hiddenInput('userId', currentUser.id) }}
 
   <div>
     <label for="first-name">First Name</label>
@@ -111,9 +111,9 @@
 
   {# {{ redirectInput('users/'~currentUser.username) }} #}
 
-  <input type="hidden" name="action" value="users/save-user">
+  {{ actionInput('users/save-user') }}
 
-  <input type="hidden" name="userId" value="{{ formUser.id }}">
+  {{ hiddenInput('userId', formUser.id) }}
 
   <div class="group">
     <label for="first-name">First Name</label>
@@ -219,7 +219,7 @@
 
 ```twig
 <form id="profile-form" class="profile-form" method="post" accept-charset="UTF-8">
-      <input type="hidden" name="action" value="users/save-user">
+      {{ actionInput('users/save-user') }}
 ```
 
 `<form>` タグは、意図的に `action=""` パラメータを持ちません。不可視要素の `name="action"` 項目が、どのコントローラーやコントローラーメソッドを使用するか Craft に伝えます。
@@ -264,7 +264,7 @@
 この行はコメントアウトされていますが、保存が成功したら別のページにリダイレクトできることを表しています。おそらく、ユーザー名に基づくユーザーのホームページです。
 
 ```twig
-<input type="hidden" name="userId" value="{{ formUser.id }}">
+{{ hiddenInput('userId', formUser.id) }}
 ```
 
 適切なユーザーをアップデートするには、ユーザー ID が必要です。他のユーザーのプロフィールを編集することを許可しないようグループ権限がセットされているか、確認してください。

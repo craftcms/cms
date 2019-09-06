@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\records\FieldGroup;
+use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
 
 /**
@@ -321,6 +322,14 @@ interface FieldInterface extends SavableComponentInterface
      * @return FieldGroup|null
      */
     public function getGroup();
+
+    /**
+     * Returns the GraphQL type to be used for this field type.
+     *
+     * @return Type|array
+     * @since 3.3.0
+     */
+    public function getContentGqlType();
 
     // Events
     // -------------------------------------------------------------------------

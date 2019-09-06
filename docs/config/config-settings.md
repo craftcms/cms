@@ -835,6 +835,28 @@ Whether to enable CSRF protection via hidden form inputs for all forms submitted
 
 
 
+### `enableGql`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `true`
+
+Defined by
+
+:   [GeneralConfig::$enableGql](api:craft\config\GeneralConfig::$enableGql)
+
+
+
+Whether the GraphQL API should be enabled.
+
+Note that the GraphQL API is only available for Craft Pro.
+
+
+
 ### `enableTemplateCaching`
 
 Allowed types
@@ -998,6 +1020,36 @@ Defined by
 
 
 Whether images transforms should be generated before page load.
+
+
+
+### `headlessMode`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$headlessMode](api:craft\config\GeneralConfig::$headlessMode)
+
+
+
+Bool Whether the system should run in Headless Mode, which
+optimizes the system and Control Panel for headless CMS implementations.
+
+When this is enabled, the following changes will take place:
+
+- URI Format settings for sections and category groups will be hidden.
+- Template route management will be hidden.
+- Front-end routing will skip checks for element and template requests.
+- Front-end responses will be JSON-formatted rather than HTML by default.
+- Twig will be configured to escape unsafe strings for JavaScript/JSON
+  rather than HTML by default for front-end requests.
 
 
 
@@ -1674,6 +1726,30 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 
 
+### `purgeStaleUserSessionDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `7776000`
+
+Defined by
+
+:   [GeneralConfig::$purgeStaleUserSessionDuration](api:craft\config\GeneralConfig::$purgeStaleUserSessionDuration)
+
+
+
+The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+
+Set to `0` to disable this feature.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
 ### `purgeUnsavedDraftsDuration`
 
 Allowed types
@@ -2214,28 +2290,6 @@ Defined by
 
 
 Whether user IP addresses should be stored/logged by the system.
-
-
-
-### `suppressTemplateErrors`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Default value
-
-:   `false`
-
-Defined by
-
-:   [GeneralConfig::$suppressTemplateErrors](api:craft\config\GeneralConfig::$suppressTemplateErrors)
-
-
-
-Whether Twig runtime errors should be suppressed.
-
-If it is set to `true`, the errors will still be logged to Craft’s log files.
 
 
 

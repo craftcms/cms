@@ -256,6 +256,15 @@ class Search extends Component
             // Sort found elementIds by score
             arsort($scoresByElementId);
 
+            // Fire an 'afterSearch' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+                $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
+                    'elementIds' => array_keys($scoresByElementId),
+                    'query' => $query,
+                    'siteId' => $siteId,
+                ]));
+            }
+
             if ($returnScores) {
                 return $scoresByElementId;
             }
@@ -283,6 +292,32 @@ class Search extends Component
         }
 
         return $elementIds;
+    }
+
+    /**
+     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     *
+     * @since 3.2.10
+     */
+    public function deleteOrphanedIndexes()
+    {
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE s.* FROM {{%searchindex}} s
+LEFT JOIN {{%elements}} e ON e.id = s.elementId
+WHERE e.id IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM {{%searchindex}} s
+WHERE NOT EXISTS (
+    SELECT * FROM {{%elements}}
+    WHERE id = s."elementId"
+)
+SQL;
+        }
+        $db->createCommand($sql)->execute();
     }
 
     // Private Methods

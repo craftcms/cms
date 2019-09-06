@@ -13,11 +13,10 @@ use craft\base\ElementInterface;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
@@ -219,7 +218,7 @@ class Revisions extends Component
     {
         /** @var Element|RevisionBehavior $revision */
         /** @var Element $source */
-        $source = $revision->getSource();
+        $source = ElementHelper::sourceElement($revision);
 
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {

@@ -88,6 +88,16 @@ class Site extends Model
      */
     public $uid;
 
+    /**
+     * @var \DateTime Date created
+     */
+    public $dateCreated;
+
+    /**
+     * @var \DateTime Date updated
+     */
+    public $dateUpdated;
+
     // Public Methods
     // =========================================================================
 

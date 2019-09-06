@@ -135,6 +135,8 @@
                 Craft.initUiElements($body);
 
                 var modal = new Garnish.Modal($modal, {
+                    hideOnEsc: false,
+                    hideOnShadeClick: false,
                     onHide: $.proxy(this, 'onActionResponse')
                 });
 

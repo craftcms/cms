@@ -964,7 +964,7 @@ class AssetTransforms extends Component
         }
 
         if (!is_file($imageSourcePath)) {
-            throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist,");
+            throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist.");
         }
 
         $asset->setTransformSource($imageSourcePath);

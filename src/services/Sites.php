@@ -1181,6 +1181,8 @@ class Sites extends Component
                     's.baseUrl',
                     's.sortOrder',
                     's.uid',
+                    's.dateCreated',
+                    's.dateUpdated',
                 ])
                 ->from(['{{%sites}} s'])
                 ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')

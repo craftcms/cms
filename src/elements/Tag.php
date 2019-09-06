@@ -112,6 +112,26 @@ class Tag extends Element
         return $sources;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var TagGroup $context */
+        return $context->handle . '_Tag';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var TagGroup $context */
+        return ['taggroups.' . $context->uid];
+    }
+
     // Properties
     // =========================================================================
 
@@ -182,6 +202,15 @@ class Tag extends Element
         }
 
         return $group;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getGroup());
     }
 
     // Indexes, etc.

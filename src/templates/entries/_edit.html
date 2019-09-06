@@ -40,10 +40,10 @@
 
 {% block content %}
     {% if not isRevision %}
-        <input type="hidden" name="sectionId" value="{{ section.id }}">
-        <input type="hidden" name="entryId" value="{{ entry.sourceId }}">
+        {{ hiddenInput('sectionId', section.id) }}
+        {{ hiddenInput('entryId', entry.sourceId) }}
     {% else %}
-        <input type="hidden" name="revisionId" value="{{ entry.revisionId }}">
+        {{ hiddenInput('revisionId', entry.revisionId) }}
     {% endif %}
 
     <div id="fields">
@@ -131,6 +131,14 @@
     {% endif %}
 
     {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.settings" %}
+{% endblock %}
+
+{% block meta %}
+    {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.meta" %}
 {% endblock %}
 
 {% block details %}

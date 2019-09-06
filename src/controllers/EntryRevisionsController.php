@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
+use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -124,7 +124,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Save it and redirect to its edit page
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId())) {
-            throw new Exception('Unable to save entry');
+            throw new Exception('Unable to save entry as a draft: ' . implode(', ', $entry->getErrorSummary(true)));
         }
 
         return $this->redirect(UrlHelper::url($entry->getCpEditUrl(), [
@@ -257,6 +257,7 @@ class EntryRevisionsController extends BaseEntriesController
                 'docTitle' => $this->docTitle($draft),
                 'title' => $this->pageTitle($draft),
                 'duplicatedElements' => $elementsService::$duplicatedElementIds,
+                'previewTargets' => $draft->getPreviewTargets(),
             ]);
         }
 
@@ -333,14 +334,13 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Permission enforcement
         /** @var Entry|null $entry */
-        $entry = $draft->getSource();
-        $this->enforceEditEntryPermissions($entry ?? $draft);
-        $section = ($entry ?? $draft)->getSection();
+        $entry = ElementHelper::sourceElement($draft);
+        $this->enforceEditEntryPermissions($entry);
+        $section = ($entry)->getSection();
 
         // Is this another user's entry (and it's not a Single)?
         $userId = Craft::$app->getUser()->getId();
         if (
-            $entry &&
             $entry->authorId != $userId &&
             $section->type != Section::TYPE_SINGLE &&
             $entry->enabled
@@ -372,7 +372,18 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($draft)) {
+        if ($draft->getIsUnsavedDraft() && $request->getBodyParam('propagateAll')) {
+            $draft->propagateAll = true;
+        }
+
+        try {
+            if (!Craft::$app->getElements()->saveElement($draft)) {
+                throw new InvalidElementException($draft);
+            }
+
+            // Publish the draft (finally!)
+            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
+        } catch (InvalidElementException $e) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
 
             // Send the draft back to the template
@@ -382,16 +393,13 @@ class EntryRevisionsController extends BaseEntriesController
             return null;
         }
 
-        // Publish the draft (finally!)
-        $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-
         if ($request->getAcceptsJson()) {
             return $this->asJson([
                 'success' => true,
             ]);
         }
 
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
         return $this->redirectToPostedUrl($newEntry);
     }
 
@@ -419,12 +427,8 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry|RevisionBehavior $revision */
-        $entry = $revision->getSource();
-
-        if (!$entry) {
-            throw new ServerErrorHttpException('Entry version is missing its entry');
-        }
+        /** @var Entry $entry */
+        $entry = ElementHelper::sourceElement($revision);
 
         $this->enforceEditEntryPermissions($entry);
         $userId = Craft::$app->getUser()->getId();

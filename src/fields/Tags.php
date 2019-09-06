@@ -10,10 +10,17 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
+use craft\gql\arguments\elements\Tag as TagArguments;
+use craft\gql\interfaces\elements\Tag as TagInterface;
+use craft\gql\resolvers\elements\Tag as TagResolver;
+use craft\helpers\Db;
+use craft\helpers\Gql;
 use craft\models\TagGroup;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Tags represents a Tags field.
@@ -114,6 +121,38 @@ class Tags extends BaseRelationField
         }
 
         return '<p class="error">' . Craft::t('app', 'This field is not set to a valid source.') . '</p>';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(TagInterface::getType()),
+            'args' => TagArguments::getArguments(),
+            'resolve' => TagResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedTagGroupUids = $allowedEntities['taggroups'] ?? [];
+
+        if (empty($allowedTagGroupUids)) {
+            return false;
+        }
+
+        $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
+
+        return ['groupId' => array_values($tagGroupIds)];
     }
 
     // Private Methods

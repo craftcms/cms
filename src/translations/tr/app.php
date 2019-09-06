@@ -1139,11 +1139,11 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Craft {licensedEdition} lisansı ile Craft {edition} çalıştırıyorsunuz.',
     'account_activation_body' => 'Merhaba {{user.friendlyName}},
 
-{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:
+{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için aşağıdaki bağlantıya tıklayın:
 
 <{{link}}>
 
-Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
+Bu, beklediğiniz bir e-posta değilse, lütfen dikkate almayın.',
     'account_activation_heading' => 'Biri hesap oluşturduğunda:',
     'account_activation_subject' => 'Hesabını aktif hale getir',
     'by {author}' => 'Yazar: {author}',
