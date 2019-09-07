@@ -23,7 +23,7 @@ use GraphQL\Utils\SchemaPrinter;
  * Allows you to manage GraphQL schemas.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3
+ * @since 3.3.2
  */
 class GraphqlController extends Controller
 {
