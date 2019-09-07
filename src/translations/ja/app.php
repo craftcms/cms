@@ -1488,7 +1488,6 @@ return [
     'View volume - {volume}' => 'ボリュームを表示 - {volume}',
     'New schema' => '新規スキーマ',
     'The token that must be provided with GraphQL requests to access this schema.' => 'このスキーマにアクセスするために、GraphQLリクエスト付きで提供する必要のあるトークン。',
-    'not an existing translation23131321313' => '既存の翻訳ではありません23131321313',
     'Public Schema' => '公開スキーマ',
     'Regenerate' => '再生成',
     'Schemas' => 'スキーマ',
