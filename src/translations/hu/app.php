@@ -1486,7 +1486,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'View volume - {volume}' => 'Kötet megtekintése - {volume}',
     'New schema' => 'Új séma',
     'The token that must be provided with GraphQL requests to access this schema.' => 'A tokenhez, amelyet GraphQL mellé meg kell adni, el kell érni a sémát.',
-    'not an existing translation23131321313' => 'nem meglévő fordítás23131321313',
     'Public Schema' => 'Nyilvános séma',
     'Regenerate' => 'Újra létrehozni',
     'Schemas' => 'Sémák',
