@@ -155,12 +155,12 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => ['usergroups.everyone:read']]);
+        $token = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'enabled' => true, 'scope' => ['usergroups.everyone:read']]);
         $schema = $gqlService->getSchemaDef($token);
 
         $gqlService->flushCaches();
 
-        $token = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => ['volumes.someVolume:read']]);
+        $token = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'enabled' => true, 'scope' => ['volumes.someVolume:read']]);
         $this->assertNotEquals($schema, $gqlService->getSchemaDef($token));
     }
 

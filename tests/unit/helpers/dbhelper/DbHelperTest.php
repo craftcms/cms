@@ -70,6 +70,11 @@ class DbHelperTest extends Unit
      */
     protected $asiaTokyoTimezone;
 
+    /**
+     * @var bool
+     */
+    protected $isMysql;
+
     // Public Methods
     // =========================================================================
 
@@ -341,7 +346,6 @@ class DbHelperTest extends Unit
             ['', '', ''],
             ['', 'foo', null],
             ['', 'foo', ''],
-
             [
                 ['foo' => ['field_1', 'field_2']],
                 'foo', ['or', 'field_1', 'field_2'],
@@ -577,5 +581,6 @@ class DbHelperTest extends Unit
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
+        $this->isMysql = Craft::$app->getDb()->getIsMysql();
     }
 }

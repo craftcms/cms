@@ -16,6 +16,7 @@ use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
+use craft\gql\directives\Markdown;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\base\InterfaceType;
@@ -528,6 +529,7 @@ class Gql extends Component
         $directiveClasses = [
             // Directives
             FormatDateTime::class,
+            Markdown::class,
             Transform::class,
         ];
 

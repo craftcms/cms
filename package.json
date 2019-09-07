@@ -22,7 +22,7 @@
     "es6-promise": "^4.2.8",
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
-    "garnishjs": "^0.1.29",
+    "garnishjs": "^0.1.30",
     "graphiql": "^0.14.2",
     "grunt": "^1.0.3",
     "grunt-contrib-concat": "latest",

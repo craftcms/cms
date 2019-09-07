@@ -141,6 +141,9 @@ class Response extends \yii\web\Response
             return;
         }
 
+        // Get the active user before headers are sent
+        Craft::$app->getUser()->getIdentity();
+
         // Prevent the script from ending when the browser closes the connection
         ignore_user_abort(true);
 

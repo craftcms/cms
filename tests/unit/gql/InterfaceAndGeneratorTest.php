@@ -157,12 +157,12 @@ class InterfaceAndGeneratorTest extends Unit
     public function interfaceDataProvider(): array
     {
         return [
-            [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'getGqlTypeNameByContext']],
-            [ElementInterface::class, function () {return ['Element'];}, [BaseElement::class, 'getGqlTypeNameByContext']],
-            [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'getGqlTypeNameByContext']],
-            [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'getGqlTypeNameByContext']],
-            [MatrixBlockInterface::class, function () { return Craft::$app->getMatrix()->getAllBlockTypes();}, [MatrixBlockElement::class, 'getGqlTypeNameByContext']],
-            [UserInterface::class, function () {return ['User'];}, [UserElement::class, 'getGqlTypeNameByContext']],
+            [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeNameByContext']],
+            [ElementInterface::class, function () {return ['Element'];}, [BaseElement::class, 'gqlTypeNameByContext']],
+            [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'gqlTypeNameByContext']],
+            [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
+            [MatrixBlockInterface::class, function () { return Craft::$app->getMatrix()->getAllBlockTypes();}, [MatrixBlockElement::class, 'gqlTypeNameByContext']],
+            [UserInterface::class, function () {return ['User'];}, [UserElement::class, 'gqlTypeNameByContext']],
         ];
     }
 

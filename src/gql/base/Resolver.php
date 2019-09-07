@@ -115,8 +115,10 @@ abstract class Resolver
                 // If that's a GraphQL field
                 if ($subNode instanceof FieldNode) {
 
-                    // That is a Craft field that can be eager-loaded
-                    if ($field = static::getPreloadableField($subNode->name->value, $context)) {
+                    $field = static::getPreloadableField($subNode->name->value, $context);
+
+                    // That is a Craft field that can be eager-loaded or is the special `children` property
+                    if ($field || $subNode->name->value === 'children') {
                         $arguments = [];
 
                         // Any arguments?
@@ -135,32 +137,34 @@ abstract class Resolver
                             }
                         }
 
-                        /** @var EagerLoadingFieldInterface $field */
-                        $additionalArguments = $field->getEagerLoadingGqlConditions();
+                        if ($field) {
+                            /** @var EagerLoadingFieldInterface $field */
+                            $additionalArguments = $field->getEagerLoadingGqlConditions();
 
-                        // Load additional requirements enforced by schema
-                        if ($additionalArguments === false) {
-                            // If `false` was returned, make sure nothing is returned.
-                            $arguments['id'] = 0;
-                        } else {
-                            foreach ($additionalArguments as $argumentName => $argumentValue) {
-                                if (isset($arguments[$argumentName])) {
-                                    // If a filter was used that was not an array, make it an array
-                                    if (!is_array($arguments[$argumentName])) {
-                                        $arguments[$argumentName] = [$arguments[$argumentName]];
-                                    }
+                            // Load additional requirements enforced by schema
+                            if ($additionalArguments === false) {
+                                // If `false` was returned, make sure nothing is returned.
+                                $arguments['id'] = 0;
+                            } else {
+                                foreach ($additionalArguments as $argumentName => $argumentValue) {
+                                    if (isset($arguments[$argumentName])) {
+                                        // If a filter was used that was not an array, make it an array
+                                        if (!is_array($arguments[$argumentName])) {
+                                            $arguments[$argumentName] = [$arguments[$argumentName]];
+                                        }
 
-                                    // See what remains after we enforce the scope by schema
-                                    $allowed = array_intersect($arguments[$argumentName], $argumentValue);
+                                        // See what remains after we enforce the scope by schema
+                                        $allowed = array_intersect($arguments[$argumentName], $argumentValue);
 
-                                    // If that cleared out all that they wanted, make it an impossible condition
-                                    if (empty($allowed)) {
-                                        $arguments['id'] = 0;
+                                        // If that cleared out all that they wanted, make it an impossible condition
+                                        if (empty($allowed)) {
+                                            $arguments['id'] = 0;
+                                        } else {
+                                            $arguments[$argumentName] = $allowed;
+                                        }
                                     } else {
-                                        $arguments[$argumentName] = $allowed;
+                                        $arguments[$argumentName] = $argumentValue;
                                     }
-                                } else {
-                                    $arguments[$argumentName] = $argumentValue;
                                 }
                             }
                         }
@@ -170,7 +174,9 @@ abstract class Resolver
 
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {
-                            $eagerLoadNodes += $traverseNodes($subNode, $prefix . $field->handle . '.', $field->context, $field);
+                            $traversePrefix = $prefix . ($field ? $field->handle : 'children');
+                            $traverseContext = $field ? $field->context : $context;
+                            $eagerLoadNodes += $traverseNodes($subNode, $traversePrefix . '.', $traverseContext, $field);
                         }
                     }
                 // If not, see if it's an inline fragment

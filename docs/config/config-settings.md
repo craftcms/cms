@@ -835,6 +835,28 @@ Whether to enable CSRF protection via hidden form inputs for all forms submitted
 
 
 
+### `enableGql`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `true`
+
+Defined by
+
+:   [GeneralConfig::$enableGql](api:craft\config\GeneralConfig::$enableGql)
+
+
+
+Whether the GraphQL API should be enabled.
+
+Note that the GraphQL API is only available for Craft Pro.
+
+
+
 ### `enableTemplateCaching`
 
 Allowed types
