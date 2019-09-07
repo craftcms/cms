@@ -1488,7 +1488,6 @@ return [
     'View volume - {volume}' => 'عرض وحدة التخزين - {volume}',
     'New schema' => 'مخطط جديد',
     'The token that must be provided with GraphQL requests to access this schema.' => 'الرمز المميز الذي يجب توفيره مع طلبات GraphQL للوصول إلى هذا المخطط.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Public Schema' => 'مخطط عام',
     'Regenerate' => 'إعادة إنشاء',
     'Schemas' => 'مخططات',
