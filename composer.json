@@ -32,7 +32,7 @@
     "craftcms/plugin-installer": "~1.5.3",
     "craftcms/server-check": "~1.1.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
-    "voku/stringy": "^5.1.0",
+    "voku/stringy": "~5.1.0",
     "elvanto/litemoji": "^1.3.1",
     "enshrined/svg-sanitize": "~0.9.0",
     "guzzlehttp/guzzle": "^6.3.0",

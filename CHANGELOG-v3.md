@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where selecting Matrix blocks would cause the content container to scroll. ([#3762](https://github.com/craftcms/cms/issues/3762))
+- Fixed an error that occurred if Stringy 5.2 was installed.
 
 ## 3.3.1 - 2019-09-06
 
