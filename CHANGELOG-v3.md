@@ -5,6 +5,11 @@
 ### Added
 - Added the `graphql/dump-schema` and `graphql/print-schema` console commands. ([#4834](https://github.com/craftcms/cms/pull/4834))
 
+## 3.3.1.2 - 2019-09-08
+
+### Fixed
+- Fixed an error that occurred after saving an element with a validation error. ([#4898](https://github.com/craftcms/cms/issues/4898))
+
 ## 3.3.1.1 - 2019-09-06
 
 ### Changed
