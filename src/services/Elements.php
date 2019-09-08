@@ -1956,7 +1956,7 @@ class Elements extends Component
             $siteSettingsRecord->uri = $element->uri;
 
             // Avoid `enabled` getting marked as dirty if it's not really changing
-            if ($siteSettingsRecord->enabled != $element->enabledForSite) {
+            if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $element->enabledForSite) {
                 $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
             }
 

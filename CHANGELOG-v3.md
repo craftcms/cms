@@ -3,6 +3,21 @@
 ## Unreleased
 
 ### Added
+- Added the `graphql/dump-schema` and `graphql/print-schema` console commands. ([#4834](https://github.com/craftcms/cms/pull/4834))
+
+## 3.3.1.1 - 2019-09-06
+
+### Changed
+- `graphql/api` preflight responses now explicitly allow `Authorization` headers. ([#4830](https://github.com/craftcms/cms/issues/4830))
+- Updated Garnish to 0.1.30.
+
+### Fixed
+- Fixed a bug where selecting Matrix blocks would cause the content container to scroll. ([#3762](https://github.com/craftcms/cms/issues/3762))
+- Fixed an error that occurred if Stringy 5.2 was installed.
+
+## 3.3.1 - 2019-09-06
+
+### Added
 - Added support for setting `offset` and `limit` params to individual paths’ criterias when eager-loading elements.
 - Added the `enableGql` config setting. ([#4836](https://github.com/craftcms/cms/issues/4836))
 - Added the `children` field to the `EntryInterface` and `CategoryInterface` GraphQL types. ([#4843](https://github.com/craftcms/cms/issues/4843))
@@ -26,6 +41,7 @@
 - Fixed an SQL error that occured when eager-loading children for an element that wasn't in a structure.
 - Fixed a bug that could cause queue jobs to fail when they were run automatically by Craft, if the `enableCsrfProtection` config setting was disabled. ([#4854](https://github.com/craftcms/cms/issues/4854))
 - Fixed an error that could occur if the `select` clause had been completely overridden on an element query, but the `asArray` param wasn’t enabled. ([#4886](https://github.com/craftcms/cms/issues/4886))
+- Fixed a bug where Craft wasn’t always respecting the site-specific status when saving new entries. ([#4892](https://github.com/craftcms/cms/issues/4892))
 
 ## 3.3.0.1 - 2019-08-27
 
