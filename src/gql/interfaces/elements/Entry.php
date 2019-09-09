@@ -118,6 +118,11 @@ class Entry extends Structure
                 'type' => Type::listOf(EntryInterface::getType()),
                 'description' => 'The entry’s children, if the section is a structure.'
             ],
+            'parent' => [
+                'name' => 'parent',
+                'type' => EntryInterface::getType(),
+                'description' => 'The entry’s parent, if the section is a structure.'
+            ]
         ]);
 
         return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);

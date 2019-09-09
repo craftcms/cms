@@ -497,7 +497,7 @@ Narrows the query results based on the users’ first names.
 Narrows the query results based on the users’ last names.
 
 ### The `tags` query
-This query is used to query for categories.
+This query is used to query for tags.
 
 #### The `id` argument
 Narrows the query results based on the elements’ IDs.
@@ -892,6 +892,9 @@ The expiry date of the entry.
 #### The `children` field
 The entry’s children, if the section is a structure.
 
+#### The `parent` field
+The entry’s parent, if the section is a structure.
+
 ### The `GlobalSetInterface` interface
 This is the interface implemented by all global sets.
 
@@ -1134,6 +1137,9 @@ The handle of the group that contains the category.
 
 #### The `children` field
 The category’s children.
+
+#### The `parent` field
+The category’s parent.
 
 ### The `TagInterface` interface
 This is the interface implemented by all tags.
