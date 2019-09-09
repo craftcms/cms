@@ -497,7 +497,7 @@ Narrows the query results based on the users’ first names.
 Narrows the query results based on the users’ last names.
 
 ### The `tags` query
-This query is used to query for categories.
+This query is used to query for tags.
 
 #### The `id` argument
 Narrows the query results based on the elements’ IDs.

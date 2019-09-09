@@ -36,7 +36,7 @@ class Tag extends Query
                 'type' => Type::listOf(TagInterface::getType()),
                 'args' => TagArguments::getArguments(),
                 'resolve' => TagResolver::class . '::resolve',
-                'description' => 'This query is used to query for categories.'
+                'description' => 'This query is used to query for tags.'
             ],
         ];
     }
