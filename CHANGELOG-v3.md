@@ -5,6 +5,9 @@
 ### Added
 - Added the `graphql/dump-schema` and `graphql/print-schema` console commands. ([#4834](https://github.com/craftcms/cms/pull/4834))
 
+### Fixed
+- Lightswitch fields now correctly return a boolean GraphQL value.
+
 ## 3.3.1.2 - 2019-09-08
 
 ### Fixed
