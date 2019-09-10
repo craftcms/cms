@@ -6,6 +6,10 @@
 - Added the `graphql/dump-schema` and `graphql/print-schema` console commands. ([#4834](https://github.com/craftcms/cms/pull/4834))
 - Added the `parent` field to GraphQL `EntryInterface` and `CategoryInterface` interfaces. ([#4880](https://github.com/craftcms/cms/issues/4880))
 
+### Changed
+- The `EntryInterface` GraphQL type no longer exposes the `author` field if the active schema is not allowed to query for users.
+- The `UserInterface` GraphQL type no longer exposes the `photo` field if the active schema is not allowed to query for relevant volume.
+
 ### Fixed
 - Lightswitch fields now correctly return a boolean GraphQL value.
 

@@ -15,6 +15,7 @@ use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -71,7 +72,7 @@ class Entry extends Structure
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
@@ -91,16 +92,6 @@ class Entry extends Structure
                 'name' => 'typeHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the entry type that contains the entry.'
-            ],
-            'authorId' => [
-                'name' => 'authorId',
-                'type' => Type::int(),
-                'description' => 'The ID of the author of this entry.'
-            ],
-            'author' => [
-                'name' => 'author',
-                'type' => User::getType(),
-                'description' => 'The entry\'s author.'
             ],
             'postDate' => [
                 'name' => 'postDate',
@@ -124,5 +115,28 @@ class Entry extends Structure
                 'description' => 'The entry’s parent, if the section is a structure.'
             ]
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function getConditionalFields(): array
+    {
+        if (Gql::canQueryUsers()) {
+            return [
+                'authorId' => [
+                    'name' => 'authorId',
+                    'type' => Type::int(),
+                    'description' => 'The ID of the author of this entry.'
+                ],
+                'author' => [
+                    'name' => 'author',
+                    'type' => User::getType(),
+                    'description' => 'The entry\'s author.'
+                ],
+            ];
+        }
+
+        return [];
     }
 }
