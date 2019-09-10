@@ -74,10 +74,11 @@ after_script:
   if [ $TASK_TESTS_COVERAGE == 1 ]; then
     bash <(curl -s https://codecov.io/bash)
   fi
-
 notifications:
-  slack: 'pixelandtonic:HtwOY10EF6IzlvGEdicr3GHP#travis'
+  slack:
+    rooms:
+      - secure: "3WDFBPYRUyxQZ+I3iCgPotykc0Fbl/bsSQVigOd/RP5QHzw6ex/6Ti+vD0KZgxc+Dj1tmqkdIOMge2OlH4cE2UgyWcTrOn8RpabNKHEXBIQv5+GmNkiw+3D9n9lHOxeQOWbASDRQDYW9Pv3v0tQ/nFgzDmf8Cjr4cxexFhKV+Eo9og2ajqL0iRaXu+lmE3UaShA9VxOZswOkAgd1ZStH0AdbpaGcJxk7D+46kh6w9cyNtJHxJcvmi1lK8ZJxwCkUnxqMzVaicwpvHzW39FJTW+GK5puj7n6q0nuHLSE0q3Nf3LcCW9yWpd0Ykhm/w+F3+fg0Q5ztV9YVnlnazQpiEkfC1JJ0Qy6jVwTtUqoLOkGWhoXI4gPujL5QYJ7uIqLzo/a0ubhoJ5ZpfVlM9GYHX2bTLBvjUFONNiap5Ms+OuwKOEDoysVdhbcmR05CKo1yXXHmD6AO4tnVth8iWxJ7JQFjjPaOd7/ysVKhKgB/92oCskV02ElJbagliD/TwPw8+afjKcM8ilaBv5S6u4dHwX4dEoKQqwsuZ6zrjpB1KCTQ0SLARiqoomq0hxC5oibhVyZwaS+8zzzOzVhnTpR9ZQ406Ici+Rk/oayP438qZ2fon7cq1IWtc7Gyt+jERZqGQQd59XMG7gDRKcD9Ip/Jm7Y32xmJXNNlGybognqUomc="
   email:
     recipients:
-      - brad@craftcms.com
-      - brandon@craftcms.com
+    - brad@craftcms.com
+    - brandon@craftcms.com
