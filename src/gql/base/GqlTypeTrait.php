@@ -53,4 +53,14 @@ trait GqlTypeTrait
             'fields' => $fields ?: (static::class . '::getFieldDefinitions'),
         ]));
     }
+
+    /**
+     * Return conditional fields for this type.
+     *
+     * @return array
+     */
+    protected static function getConditionalFields(): array
+    {
+        return [];
+    }
 }
