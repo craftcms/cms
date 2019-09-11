@@ -14,6 +14,7 @@
 
 ### Fixed
 - Lightswitch fields now correctly return a boolean GraphQL value.
+- Fixed a bug where `craft\web\View::renderString()` and `renderObjectTemplate()` could leave Craft set to the `site` template mode if an error occurred when preparing or rendering the template. ([#4912](https://github.com/craftcms/cms/issues/4912))
 
 ## 3.3.1.2 - 2019-09-08
 
