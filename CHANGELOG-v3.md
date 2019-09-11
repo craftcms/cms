@@ -5,9 +5,16 @@
 ### Added
 - Added the `graphql/dump-schema` and `graphql/print-schema` console commands. ([#4834](https://github.com/craftcms/cms/pull/4834))
 - Added the `parent` field to GraphQL `EntryInterface` and `CategoryInterface` interfaces. ([#4880](https://github.com/craftcms/cms/issues/4880))
+- Added the possibility to generate transforms using the arguments on the `url` field on `AssetInterface` for GraphQL.
+
+### Changed
+- Craft now resets the `dateCreated` attribute when duplicating elements. ([#4906](https://github.com/craftcms/cms/issues/4906))
+- The `EntryInterface` GraphQL type no longer exposes the `author` field if the active schema is not allowed to query for users.
+- The `UserInterface` GraphQL type no longer exposes the `photo` field if the active schema is not allowed to query for relevant volume.
 
 ### Fixed
 - Lightswitch fields now correctly return a boolean GraphQL value.
+- Fixed a bug where `craft\web\View::renderString()` and `renderObjectTemplate()` could leave Craft set to the `site` template mode if an error occurred when preparing or rendering the template. ([#4912](https://github.com/craftcms/cms/issues/4912))
 
 ## 3.3.1.2 - 2019-09-08
 

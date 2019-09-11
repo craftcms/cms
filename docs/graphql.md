@@ -797,7 +797,7 @@ The width in pixels or null if it's not an image.
 An `<img>` tag based on this asset.
 
 #### The `url` field
-The full URL of the asset.
+The full URL of the asset. This field accepts the same fields as the `transform` directive.
 
 #### The `mimeType` field
 The file’s MIME type, if it can be determined.
@@ -890,7 +890,7 @@ The entry's post date.
 The expiry date of the entry.
 
 #### The `children` field
-The entry’s children, if the section is a structure.
+The entry’s children, if the section is a structure.  Accepts the same arguments as the `entries` query.
 
 #### The `parent` field
 The entry’s parent, if the section is a structure.
