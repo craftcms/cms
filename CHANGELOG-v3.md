@@ -15,6 +15,7 @@
 ### Fixed
 - Lightswitch fields now correctly return a boolean GraphQL value.
 - Fixed a bug where `craft\web\View::renderString()` and `renderObjectTemplate()` could leave Craft set to the `site` template mode if an error occurred when preparing or rendering the template. ([#4912](https://github.com/craftcms/cms/issues/4912))
+- Fixed a bug where the Plugin Store’s cart was showing the full price instead of the discounted upgrade price for active trials.
 
 ## 3.3.1.2 - 2019-09-08
 
