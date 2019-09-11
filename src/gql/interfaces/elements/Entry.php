@@ -107,7 +107,7 @@ class Entry extends Structure
                 'name' => 'children',
                 'args' => EntryArguments::getArguments(),
                 'type' => Type::listOf(EntryInterface::getType()),
-                'description' => 'The entry’s children, if the section is a structure.'
+                'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.'
             ],
             'parent' => [
                 'name' => 'parent',

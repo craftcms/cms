@@ -131,7 +131,7 @@ class Asset extends Element
                 'name' => 'url',
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
-                'description' => 'The full URL of the asset.'
+                'description' => 'The full URL of the asset. This field accepts the same fields as the `transform` directive.'
             ],
             'mimeType' => [
                 'name' => 'mimeType',
