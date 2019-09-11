@@ -8,6 +8,7 @@
 - Added the possibility to generate transforms using the arguments on the `url` field on `AssetInterface` for GraphQL.
 
 ### Changed
+- Craft now resets the `dateCreated` attribute when duplicating elements. ([#4906](https://github.com/craftcms/cms/issues/4906))
 - The `EntryInterface` GraphQL type no longer exposes the `author` field if the active schema is not allowed to query for users.
 - The `UserInterface` GraphQL type no longer exposes the `photo` field if the active schema is not allowed to query for relevant volume.
 
