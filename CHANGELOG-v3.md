@@ -5,6 +5,7 @@
 ### Added
 - Added the `graphql/dump-schema` and `graphql/print-schema` console commands. ([#4834](https://github.com/craftcms/cms/pull/4834))
 - Added the `parent` field to GraphQL `EntryInterface` and `CategoryInterface` interfaces. ([#4880](https://github.com/craftcms/cms/issues/4880))
+- Added the possibility to generate transforms using the arguments on the `url` field on `AssetInterface` for GraphQL.
 
 ### Changed
 - The `EntryInterface` GraphQL type no longer exposes the `author` field if the active schema is not allowed to query for users.

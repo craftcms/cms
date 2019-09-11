@@ -8,6 +8,7 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\Asset as AssetElement;
+use craft\gql\arguments\Transform;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
@@ -128,6 +129,7 @@ class Asset extends Element
             ],
             'url' => [
                 'name' => 'url',
+                'args' => Transform::getArguments(),
                 'type' => Type::string(),
                 'description' => 'The full URL of the asset.'
             ],
