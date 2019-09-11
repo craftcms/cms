@@ -7,7 +7,7 @@
 - It’s now possible to access a `parent` field on entries and categories when querying the GraphQL API. ([#4880](https://github.com/craftcms/cms/issues/4880))
 - It’s now possible to apply transforms to assets via `url` field arguments when querying the GraphQL API.
 
-### Changed
+### Changed
 - Craft now resets the `dateCreated` attribute when duplicating elements. ([#4906](https://github.com/craftcms/cms/issues/4906))
 - It’s no longer possible to access the `author` field for entries when querying the GraphQL API, if the schema doesn’t include user data.
 - It’s no longer possible to access the `photo` field for users when querying the GraphQL API, if the schema doesn’t include the user photo volume.
