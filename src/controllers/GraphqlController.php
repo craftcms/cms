@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiqlAsset;
@@ -139,8 +140,7 @@ class GraphqlController extends Controller
         }
 
         try {
-            $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-            $schemaDef = $gqlService->getSchemaDef($schema, $devMode);
+            $schemaDef = $gqlService->getSchemaDef($schema, StringHelper::contains($query, '__schema'));
             $result = GraphQL::executeQuery($schemaDef, $query, null, null, $variables, $operationName)
                 ->toArray(true);
         } catch (\Throwable $e) {

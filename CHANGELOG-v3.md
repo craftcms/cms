@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft no longer uses the `devMode` setting to decide if GraphQL schema should be pre-built, but pre-builds it when responding to introspection queries, instead.
+
 ## 3.3.2 - 2019-09-11
 
 ### Added
