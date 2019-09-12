@@ -5,6 +5,10 @@
 ### Changed
 - Craft no longer uses the `devMode` setting to decide if GraphQL schema should be pre-built, but pre-builds it when responding to introspection queries, instead.
 
+### Fixed
+- Fixed a bug where Craft was ignoring the `invalidUserTokenPath` request when it was set to an empty string. ([#1998](https://github.com/craftcms/cms/issues/1998))
+- Fixed a bug where the `invalidUserTokenPath` was affecting Control Panel requests.
+
 ## 3.3.2 - 2019-09-11
 
 ### Added
