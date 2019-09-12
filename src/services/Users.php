@@ -1231,12 +1231,6 @@ class Users extends Component
             $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else {
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        }
-
-        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
+        return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

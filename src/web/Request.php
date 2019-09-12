@@ -189,7 +189,6 @@ class Request extends \yii\web\Request
                 $site = $sitesService->getCurrentSite();
             } else {
                 $site = $this->_requestedSite($sitesService);
-                $sitesService->setCurrentSite($site);
             }
 
             // If the requested URI begins with the current site's base URL path,
@@ -223,6 +222,16 @@ class Request extends \yii\web\Request
             // Force 'p' pageTrigger
             // (all that really matters is that it doesn't have a trailing slash, but whatever.)
             $generalConfig->pageTrigger = 'p';
+        }
+
+        if (isset($sitesService)) {
+            // Set the active site to either the requested site or the primary site, depending on the request type
+            if ($this->_isCpRequest) {
+                // The current site could have been set by the bootstrop script if the CRAFT_SITE constant is defined
+                $sitesService->setCurrentSite(null);
+            } else if (isset($site)) {
+                $sitesService->setCurrentSite($site);
+            }
         }
 
         // Is this a paginated request?
