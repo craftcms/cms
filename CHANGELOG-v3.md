@@ -9,6 +9,7 @@
 - Fixed a bug where Craft was ignoring the `invalidUserTokenPath` request when it was set to an empty string. ([#1998](https://github.com/craftcms/cms/issues/1998))
 - Fixed a bug where the `invalidUserTokenPath` was affecting Control Panel requests.
 - Fixed a bug where revisions weren’t being sorted correctly in Structure sections.
+- Fixed a bug where Edit Entry pages weren’t working with certain versions of PHP if the user’s preferred language was set to French. ([#4930](https://github.com/craftcms/cms/issues/4930))
 
 ## 3.3.2 - 2019-09-11
 
