@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.3 - 2019-09-12
 
 ### Changed
 - The GraphQL API now prebuilds the schema for all introspection queries, regardless of whether Dev Mode is enabled.
