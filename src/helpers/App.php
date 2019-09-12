@@ -22,6 +22,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
+use craft\web\Request;
 use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\Session;
@@ -567,7 +568,7 @@ class App
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
             $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
         } else {
-            $loginUrl = UrlHelper::cpUrl('login');
+            $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
         $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);

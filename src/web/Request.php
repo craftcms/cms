@@ -45,6 +45,13 @@ class Request extends \yii\web\Request
 
     use RequestTrait;
 
+    // Constants
+    // =========================================================================
+
+    const CP_PATH_LOGIN = 'login';
+    const CP_PATH_LOGOUT = 'logout';
+    const CP_PATH_UPDATE = 'update';
+
     // Properties
     // =========================================================================
 
@@ -1243,9 +1250,9 @@ class Request extends \yii\web\Request
 
             // Is this an action request?
             if ($this->_isCpRequest) {
-                $loginPath = 'login';
-                $logoutPath = 'logout';
-                $updatePath = 'update';
+                $loginPath = self::CP_PATH_LOGIN;
+                $logoutPath = self::CP_PATH_LOGOUT;
+                $updatePath = self::CP_PATH_UPDATE;
             } else {
                 $loginPath = trim($generalConfig->getLoginPath(), '/');
                 $logoutPath = trim($generalConfig->getLogoutPath(), '/');

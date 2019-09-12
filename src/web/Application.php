@@ -522,7 +522,7 @@ class Application extends \yii\web\Application
         }
 
         // Is this an installer action request?
-        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== Request::CP_PATH_LOGIN)) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);

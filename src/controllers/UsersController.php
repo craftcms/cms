@@ -28,6 +28,7 @@ use craft\helpers\User as UserHelper;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
+use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
@@ -297,7 +298,7 @@ class UsersController extends Controller
 
         // Redirect to the login page if this is a CP request
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->redirect('login');
+            return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
         return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
@@ -459,7 +460,7 @@ class UsersController extends Controller
             // Can they access the CP?
             if ($user->can('accessCp')) {
                 // Send them to the CP login page
-                $url = UrlHelper::cpUrl('login');
+                $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
             } else {
                 // Send them to the 'setPasswordSuccessPath'.
                 $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
