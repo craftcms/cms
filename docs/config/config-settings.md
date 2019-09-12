@@ -2148,7 +2148,7 @@ Defined by
 
 
 
-The password-reset template path. Note that this only affects front-end site requests.
+The URI Craft should use for Set Password forms on the front-end.
 
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
@@ -2631,6 +2631,32 @@ Defined by
 The amount of time a user verification code can be used before expiring.
 
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
+### `verifyEmailPath`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `'verifyemail'`
+
+Defined by
+
+:   [GeneralConfig::$verifyEmailPath](api:craft\config\GeneralConfig::$verifyEmailPath)
+
+Since
+
+:   3.4.0
+
+
+
+The URI Craft should use for email verification links on the front-end.
+
+See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
 
