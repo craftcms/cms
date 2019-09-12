@@ -1885,7 +1885,6 @@ class UsersController extends Controller
     {
         $uid = Craft::$app->getRequest()->getRequiredParam('id');
         $code = Craft::$app->getRequest()->getRequiredParam('code');
-        $isCodeValid = false;
 
         /** @var User|null $user */
         $user = User::find()
@@ -1894,31 +1893,34 @@ class UsersController extends Controller
             ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
 
+        if (!$user) {
+            return $this->_processInvalidToken();
+        }
+
         // If someone is logged in and it's not this person, log them out
         $userSession = Craft::$app->getUser();
-        if (($identity = $userSession->getIdentity()) !== null && $user && $identity->id != $user->id) {
+        if (!$userSession->getIsGuest() && $userSession->getId() != $user->id) {
             $userSession->logout();
         }
 
-        if ($user) {
-            // Fire a 'beforeVerifyUser' event
-            Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL,
-                new UserEvent([
-                    'user' => $user
-                ]));
-
-            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
+        // Fire a 'beforeVerifyUser' event
+        $usersService = Craft::$app->getUsers();
+        if ($usersService->hasEventHandlers(Users::EVENT_BEFORE_VERIFY_EMAIL)) {
+            $usersService->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL, new UserEvent([
+                'user' => $user
+            ]));
         }
 
-        if (!$user || !$isCodeValid) {
+        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
             return $this->_processInvalidToken();
         }
 
         // Fire an 'afterVerifyUser' event
-        Craft::$app->getUsers()->trigger(Users::EVENT_AFTER_VERIFY_EMAIL,
-            new UserEvent([
+        if ($usersService->hasEventHandlers(Users::EVENT_AFTER_VERIFY_EMAIL)) {
+            $usersService->trigger(Users::EVENT_AFTER_VERIFY_EMAIL, new UserEvent([
                 'user' => $user
             ]));
+        }
 
         return [$user, $uid, $code];
     }
@@ -1934,12 +1936,12 @@ class UsersController extends Controller
         if (!$userSession->getIsGuest()) {
             $returnUrl = $userSession->getReturnUrl();
             $userSession->removeReturnUrl();
-
             return $this->redirect($returnUrl);
         }
 
         // If the invalidUserTokenPath config setting is set, send them there
-        if ($url = Craft::$app->getConfig()->getGeneral()->getInvalidUserTokenPath()) {
+        if (Craft::$app->getRequest()->getIsSiteRequest()) {
+            $url = Craft::$app->getConfig()->getGeneral()->getInvalidUserTokenPath();
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 

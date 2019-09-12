@@ -561,7 +561,6 @@ class EntriesController extends BaseEntriesController
                 $variables['entry'] = Entry::find()
                     ->revisionId($variables['revisionId'])
                     ->structureId($structureId)
-                    ->structureId($structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();
