@@ -1437,7 +1437,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri) {
             $previewTargets[] = [
                 'label' => Craft::t('app', 'Primary {type} page', [
-                    'type' => strtolower(static::displayName())
+                    'type' => StringHelper::toLowerCase(static::displayName()),
                 ]),
                 'url' => $this->uri === '__home__' ? '' : $this->uri
             ];
