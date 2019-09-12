@@ -709,7 +709,7 @@ class GeneralConfig extends BaseObject
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var mixed The password-reset template path. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for Set Password forms on the front-end.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getSetPasswordPath()
@@ -886,6 +886,14 @@ class GeneralConfig extends BaseObject
      */
     public $verificationCodeDuration = 86400;
     /**
+     * @var mixed The URI Craft should use for email verification links on the front-end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * @see getVerifyEmailPath()
+     * @since 3.4.0
+     */
+    public $verifyEmailPath = 'verifyemail';
+    /**
      * @var mixed The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
@@ -1042,6 +1050,19 @@ class GeneralConfig extends BaseObject
     public function getActivateAccountSuccessPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Verify Email Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     * @return string
+     * @see verifyEmailPath
+     * @since 3.4.0
+     */
+    public function getVerifyEmailPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
     }
 
     /**

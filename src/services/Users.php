@@ -34,6 +34,7 @@ use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
+use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -385,7 +386,8 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'verify-email');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getVerifyEmailPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
     }
 
     /**
@@ -396,7 +398,8 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'set-password');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
     }
 
     /**
@@ -1198,22 +1201,22 @@ class Users extends Component
     }
 
     /**
-     * Sets a new verification code on a user, and returns their new verification URL
+     * Sets a new verification code on a user, and returns a verification URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     * @param string $action The UsersController action that the URL should point to
-     * @return string The new Password Reset URL.
+     * @param string $fePath The path to use if we end up linking to the front end
+     * @param string $cpPath The path to use if we end up linking to the Control Panel
+     * @return string
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
      */
-    private function _getUserUrl(User $user, string $action): string
+    private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1221,16 +1224,17 @@ class Users extends Component
 
         $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
-        if ($user->can('accessCp')) {
-            // Only use getCpUrl() if the base CP URL has been explicitly set,
-            // so UrlHelper won't use HTTP_HOST
-            if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $scheme);
-            }
-
-            $path = $generalConfig->cpTrigger . '/' . $path;
+        if (!$user->can('accessCp')) {
+            return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
+        // Only use cpUrl() if the base CP URL has been explicitly set,
+        // so UrlHelper won't use HTTP_HOST
+        if ($generalConfig->baseCpUrl) {
+            return UrlHelper::cpUrl($cpPath, $params, $scheme);
+        }
+
+        $path = $generalConfig->cpTrigger . '/' . $cpPath;
         return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

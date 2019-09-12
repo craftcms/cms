@@ -421,7 +421,7 @@ class UsersController extends Controller
             Craft::$app->getUser()->sendUsernameCookie($user);
 
             // Send them to the set password template.
-            return $this->_renderSetPasswordTemplate($user, [
+            return $this->_renderSetPasswordTemplate([
                 'code' => $code,
                 'id' => $uid,
                 'newUser' => $user->password ? false : true,
@@ -474,7 +474,7 @@ class UsersController extends Controller
 
         $errors = $user->getErrors('newPassword');
 
-        return $this->_renderSetPasswordTemplate($user, [
+        return $this->_renderSetPasswordTemplate([
             'errors' => $errors,
             'code' => $code,
             'id' => $uid,
@@ -1682,19 +1682,16 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
      * @param array $variables
      * @return Response
      */
-    private function _renderSetPasswordTemplate(User $user, array $variables): Response
+    private function _renderSetPasswordTemplate(array $variables): Response
     {
         $view = $this->getView();
 
-        // If the user doesn't have CP access, see if a custom Set Password template exists
-        if (!$user->can('accessCp')) {
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+        // If this is a site request, see if a custom Set Password template exists
+        if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $templatePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
-
             if ($view->doesTemplateExist($templatePath)) {
                 return $this->renderTemplate($templatePath, $variables);
             }
