@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- Craft no longer uses the `devMode` setting to decide if GraphQL schema should be pre-built, but pre-builds it when responding to introspection queries, instead.
+- The GraphQL API now prebuilds the schema for all introspection queries, regardless of whether Dev Mode is enabled.
 
 ### Fixed
 - Fixed a bug where Craft was ignoring the `invalidUserTokenPath` request when it was set to an empty string. ([#1998](https://github.com/craftcms/cms/issues/1998))
