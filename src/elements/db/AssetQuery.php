@@ -708,7 +708,7 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if ($this->asArray === false && $this->withTransforms) {
+        if ($this->withTransforms) {
             $transforms = $this->withTransforms;
             if (!is_array($transforms)) {
                 $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
