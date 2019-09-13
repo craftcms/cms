@@ -63,4 +63,17 @@ trait GqlTypeTrait
     {
         return [];
     }
+
+    /**
+     * @param string $type
+     * @param array $fields
+     * @return array
+     */
+    public static function updateFieldsFromGetSchemaDefEvent (string $type, array $fields) : array {
+
+        $proxy = new SchemaDefFieldsEventProxy();
+        $fields = $proxy->employ($type, $fields);
+
+        return $fields;
+    }
 }
