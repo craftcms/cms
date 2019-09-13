@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t working for eager-loaded assets. ([#4931](https://github.com/craftcms/cms/issues/4931))
+- Fixed a bug where the "Edit Image" element action sometimes would be missing. ([#3349](https://github.com/craftcms/cms/issues/3349))
 
 ## 3.3.3 - 2019-09-12
 

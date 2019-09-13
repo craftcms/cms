@@ -286,7 +286,7 @@ class Asset extends Element
             );
 
             // Edit Image
-            if ($canDeleteAndSave) {
+            if ($userSession->checkPermission('editImagesInVolume:' . $volume->uid)) {
                 $actions[] = EditImage::class;
             }
 
