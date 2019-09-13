@@ -619,12 +619,11 @@ class Users extends Component
 
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->email = $user->unverifiedEmail;
+        $userRecord->unverifiedEmail = null;
 
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $userRecord->username = $user->unverifiedEmail;
         }
-
-        $userRecord->unverifiedEmail = null;
 
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());

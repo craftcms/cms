@@ -686,6 +686,7 @@ class Elements extends Component
         $mainClone->id = null;
         $mainClone->uid = null;
         $mainClone->contentId = null;
+        $mainClone->dateCreated = null;
         $mainClone->duplicateOf = $element;
 
         $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
@@ -754,6 +755,7 @@ class Elements extends Component
                     $siteClone->id = $mainClone->id;
                     $siteClone->uid = $mainClone->uid;
                     $siteClone->contentId = null;
+                    $siteClone->dateCreated = null;
 
                     // Attach behaviors
                     foreach ($behaviors as $name => $behavior) {
