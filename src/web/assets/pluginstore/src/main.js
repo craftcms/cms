@@ -120,30 +120,29 @@ Garnish.$doc.ready(function() {
              */
             initializeOuterComponents() {
                 // Header Title
-                let $this = this
                 this.$headerTitle = $('#header h1');
                 this.$headerTitle.on('click', function() {
-                    $this.$router.push({path: '/'})
-                })
+                    this.$router.push({path: '/'})
+                }.bind(this))
 
                 // Cart button
                 this.$cartButton = $('#cart-button')
 
-                this.$cartButton.on('click', (e) => {
+                this.$cartButton.on('click', function(e) {
                     e.preventDefault()
-                    $this.openModal('cart')
-                })
+                    this.openModal('cart')
+                }.bind(this))
 
-                this.$cartButton.keydown(e => {
+                this.$cartButton.keydown(function(e) {
                     switch (e.which) {
                         case 13: // Enter
                         case 32: // Space
                             e.preventDefault()
-                            $this.openModal('cart')
+                            this.openModal('cart')
                             break
 
                     }
-                })
+                }.bind(this))
 
                 // Plugin Store actions
                 this.$pluginStoreActions = $('#pluginstore-actions')
