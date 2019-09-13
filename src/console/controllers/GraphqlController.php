@@ -85,7 +85,7 @@ class GraphqlController extends Controller
             $schemaDef = $gqlService->getSchemaDef($schema, true);
             // Output the schema
             $filename = Inflector::slug($schema->name, '_').self::GQL_SCHEMA_EXTENSION;
-            $schemaDump = SchemaPrinter::doPrint($schemaDef);;
+            $schemaDump = SchemaPrinter::doPrint($schemaDef);
             $result = file_put_contents($filename, $schemaDump);
             $this->stdout('Dumping GraphQL schema to file: ', Console::FG_YELLOW);
             $this->stdout($filename.PHP_EOL);

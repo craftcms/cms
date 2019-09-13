@@ -7,11 +7,13 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\elements\User as UserElement;
 use craft\gql\interfaces\Element;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\UserType;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -68,7 +70,7 @@ class User extends Element
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        $fields = array_merge(parent::getFieldDefinitions(), [
+        return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'friendlyName' => [
                 'name' => 'friendlyName',
                 'type' => Type::string(),
@@ -83,11 +85,6 @@ class User extends Element
                 'name' => 'name',
                 'type' => Type::string(),
                 'description' => 'The user\'s full name or username.'
-            ],
-            'photo' => [
-                'name' => 'photo',
-                'type' => Asset::getType(),
-                'description' => 'The user\'s photo.'
             ],
             'preferences' => [
                 'name' => 'preferences',
@@ -120,7 +117,24 @@ class User extends Element
                 'description' => 'The user\'s email.'
             ],
         ]);
+    }
 
-        return self::updateFieldsFromGetSchemaDefEvent(self::getName(), $fields);
+    /**
+     * @inheritdoc
+     */
+    protected static function getConditionalFields(): array
+    {
+        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+
+        if (Gql::isTokenAwareOf('volumes.' . $volumeUid)) {
+            return ['photo' => [
+                'name' => 'photo',
+                'type' => Asset::getType(),
+                'description' => 'The user\'s photo.'
+            ]
+            ];
+        }
+
+        return [];
     }
 }

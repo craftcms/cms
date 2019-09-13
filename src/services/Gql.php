@@ -15,6 +15,7 @@ use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\base\Directive;
+use craft\gql\base\GeneratorInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Transform;
@@ -159,6 +160,7 @@ class Gql extends Component
         }
 
         if (!$this->_schemaDef || $prebuildSchema) {
+            // Either cached version was not found or we need a pre-built schema.
             $this->_registerGqlTypes();
             $this->_registerGqlQueries();
 
@@ -168,37 +170,44 @@ class Gql extends Component
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
+            // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
+            // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
-            } else {
-                $interfaces = [
-                    EntryInterface::class,
-                    MatrixBlockInterface::class,
-                    AssetInterface::class,
-                    UserInterface::class,
-                    GlobalSetInterface::class,
-                    ElementInterface::class,
-                    CategoryInterface::class,
-                    TagInterface::class,
-                ];
 
-                foreach ($interfaces as $interfaceClass) {
-                    if (!is_subclass_of($interfaceClass, InterfaceType::class)) {
-                        throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
-                    }
+                return $this->_schemaDef;
+            }
 
-                    $typeGeneratorClass = $interfaceClass::getTypeGenerator();
+            // Create a pre-built schema if that's what they want.
+            $interfaces = [
+                EntryInterface::class,
+                MatrixBlockInterface::class,
+                AssetInterface::class,
+                UserInterface::class,
+                GlobalSetInterface::class,
+                ElementInterface::class,
+                CategoryInterface::class,
+                TagInterface::class,
+            ];
 
-                    foreach ($typeGeneratorClass::generateTypes() as $type) {
-                        $schemaConfig['types'][] = $type;
-                    }
+            foreach ($interfaces as $interfaceClass) {
+                if (!is_subclass_of($interfaceClass, InterfaceType::class)) {
+                    throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
                 }
-                try {
-                    $this->_schemaDef = new Schema($schemaConfig);
-                    $this->_schemaDef->getTypeMap();
-                } catch (\Throwable $exception) {
-                    throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
+
+                /** @var GeneratorInterface $typeGeneratorClass */
+                $typeGeneratorClass = $interfaceClass::getTypeGenerator();
+
+                foreach ($typeGeneratorClass::generateTypes() as $type) {
+                    $schemaConfig['types'][] = $type;
                 }
+            }
+
+            try {
+                $this->_schemaDef = new Schema($schemaConfig);
+                $this->_schemaDef->getTypeMap();
+            } catch (\Throwable $exception) {
+                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
             }
         }
 

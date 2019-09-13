@@ -128,32 +128,7 @@
                     </tr>
                     </thead>
                     <tbody v-for="(plugin, key) in pendingActiveTrials" :key="key">
-                        <tr>
-                            <template v-if="plugin">
-                                <td class="thin">
-                                    <div class="plugin-icon">
-                                        <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="40" width="40" />
-                                        <div class="default-icon" v-else></div>
-                                    </div>
-                                </td>
-                                <td class="item-name">
-                                    <strong>{{ plugin.name }}</strong>
-
-                                    <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
-                                </td>
-                                <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
-                                <td class="w-1/4">
-                                    <div class="text-right">
-                                        <template v-if="!activeTrialLoading(plugin.handle)">
-                                            <a @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)" :loading="activeTrialLoading(plugin.handle)">{{ "Add to cart"|t('app') }}</a>
-                                        </template>
-                                        <template v-else>
-                                            <spinner size="sm"></spinner>
-                                        </template>
-                                    </div>
-                                </td>
-                            </template>
-                        </tr>
+                        <active-trials-table-row :plugin="plugin"></active-trials-table-row>
                     </tbody>
                 </table>
             </template>
@@ -167,17 +142,18 @@
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
     import EditionBadge from '../../EditionBadge'
+    import ActiveTrialsTableRow from './cart/ActiveTrialsTableRow';
 
     export default {
         data() {
             return {
                 loadingItems: {},
-                loadingActiveTrials: {},
                 loadingRemoveFromCart: {},
             }
         },
 
         components: {
+            ActiveTrialsTableRow,
             Step,
             EditionBadge,
         },
@@ -196,9 +172,6 @@
                 cartItems: 'cart/cartItems',
                 cartItemsData: 'cart/cartItemsData',
                 getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
-                activeTrialPluginEditions: 'cart/activeTrialPluginEditions',
-                getPluginEdition: 'pluginStore/getPluginEdition',
-                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
             selectedExpiryDates: {
@@ -229,26 +202,6 @@
             ...mapActions({
                 removeFromCart: 'cart/removeFromCart'
             }),
-
-            addToCart(plugin, editionHandle) {
-                this.$set(this.loadingActiveTrials, plugin.handle, true)
-
-                const item = {
-                    type: 'plugin-edition',
-                    plugin: plugin.handle,
-                    edition: editionHandle
-                }
-
-                this.$store.dispatch('cart/addToCart', [item])
-                    .then(() => {
-                        this.$delete(this.loadingActiveTrials, plugin.handle)
-                    })
-                    .catch(response => {
-                        this.$delete(this.loadingActiveTrials, plugin.handle)
-                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t add item to cart.';
-                        this.$root.displayError(errorMessage)
-                    })
-            },
 
             removeFromCart(itemKey) {
                 this.$set(this.loadingRemoveFromCart, itemKey, true)
@@ -352,14 +305,6 @@
                 return true
             },
 
-            activeTrialLoading(pluginHandle) {
-                if (!this.loadingActiveTrials[pluginHandle]) {
-                    return false
-                }
-
-                return true
-            },
-
             removeFromCartLoading(itemKey) {
                 if (!this.loadingRemoveFromCart[itemKey]) {
                     return false
@@ -370,27 +315,13 @@
 
             updatesUntil(date) {
                 return this.$options.filters.t("Updates until {date}", 'app', {date})
-            }
+            },
         },
     }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
-
-    .item-name {
-        .edition-badge {
-            @apply .ml-2;
-        }
-    }
-
-    .plugin-icon {
-        margin-right: 10px !important;
-
-        img {
-            max-width: none;
-        }
-    }
 
     table.cart-data {
         thead,
@@ -419,6 +350,20 @@
                 .c-btn {
                     white-space: nowrap;
                 }
+            }
+        }
+
+        .item-name {
+            .edition-badge {
+                @apply .ml-2;
+            }
+        }
+
+        .plugin-icon {
+            margin-right: 10px !important;
+
+            img {
+                max-width: none;
             }
         }
     }
