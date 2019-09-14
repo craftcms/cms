@@ -3,6 +3,8 @@
 
 {% import "_includes/forms" as forms %}
 
+{% set headlessMode = craft.app.config.general.headlessMode %}
+
 
 {% block content %}
     {{ actionInput('sections/save-section') }}
@@ -87,7 +89,7 @@
                     value: siteSettings ? siteSettings.uriFormat,
                     hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                template: {
+                template: not headlessMode ? {
                     value: siteSettings ? siteSettings.template,
                     hasErrors: siteSettings ? siteSettings.hasErrors('template'),
                 },
@@ -126,6 +128,7 @@
                 heading: "URI"|t('app'),
                 info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
                 code: true,
+                width: headlessMode ? 500,
                 class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
             uriFormat: {
@@ -133,9 +136,10 @@
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 code: true,
+                width: headlessMode ? 500,
                 class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             },
-            template: {
+            template: not headlessMode ? {
                 type: 'template',
                 heading: "Template"|t('app'),
                 info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
@@ -149,6 +153,7 @@
             }
         }|filter,
         rows: siteRows,
+        fullWidth: not headlessMode,
         staticRows: true,
         errors: siteErrors|unique
     }) }}

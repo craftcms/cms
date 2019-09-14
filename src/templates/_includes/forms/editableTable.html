@@ -60,7 +60,7 @@
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set textual = (col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
-                        <td class="{% if textual %}textual{% endif %} {{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+                        <td class="{% if textual %}textual{% endif %} {{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}
