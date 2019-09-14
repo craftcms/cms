@@ -69,7 +69,7 @@
 
                             if (this.allowUpdates && this.installableUpdates.length > 1) {
                                 this.createUpdateForm(Craft.t('app', 'Update all'), this.installableUpdates)
-                                    .insertAfter($('#header h1 + .flex-grow'));
+                                    .insertAfter($('#header > .flex:last'));
                             }
                         } else {
                             $graphic.addClass('success');
