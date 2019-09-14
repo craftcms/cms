@@ -3,8 +3,6 @@
 
 {% import "_includes/forms" as forms %}
 
-{% set headlessMode = craft.app.config.general.headlessMode %}
-
 
 {% block content %}
     {{ actionInput('sections/save-section') }}
@@ -78,18 +76,18 @@
                     value: site.id,
                     small: true
                 }),
-                singleHomepage: not headlessMode ? {
+                singleHomepage: {
                     value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
                 },
-                singleUri: not headlessMode ? {
+                singleUri: {
                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
                    hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                uriFormat: not headlessMode ? {
+                uriFormat: {
                     value: siteSettings ? siteSettings.uriFormat,
                     hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                template: not headlessMode ? {
+                template: {
                     value: siteSettings ? siteSettings.template,
                     hasErrors: siteSettings ? siteSettings.hasErrors('template'),
                 },
@@ -114,7 +112,7 @@
                 thin: true,
                 class: not craft.app.getIsMultiSite() ? 'hidden'
             },
-            singleHomepage: not headlessMode ? {
+            singleHomepage: {
                 type: 'checkbox',
                 headingHtml: tag('div', {
                     data: {icon: 'home'},
@@ -123,21 +121,21 @@
                 thin: true,
                 class: ['single-homepage', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            singleUri: not headlessMode ? {
+            singleUri: {
                 type: 'singleline',
                 heading: "URI"|t('app'),
                 info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
                 code: true,
                 class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            uriFormat: not headlessMode ? {
+            uriFormat: {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 code: true,
                 class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             },
-            template: not headlessMode ? {
+            template: {
                 type: 'template',
                 heading: "Template"|t('app'),
                 info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
@@ -151,7 +149,6 @@
             }
         }|filter,
         rows: siteRows,
-        fullWidth: not headlessMode,
         staticRows: true,
         errors: siteErrors|unique
     }) }}
@@ -190,9 +187,7 @@
     {% if CraftEdition == CraftPro %}
         {{ forms.editableTableField({
             label: 'Preview Targets'|t('app'),
-            instructions: headlessMode
-                ? 'Locations that should be available for previewing entries in this section.'|t('app')
-                : 'Additional locations that should be available for previewing entries in this section.'|t('app'),
+            instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
             id: 'previewTargets',
             name: 'previewTargets',
             cols: {
