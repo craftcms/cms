@@ -1044,7 +1044,7 @@ optimizes the system and Control Panel for headless CMS implementations.
 
 When this is enabled, the following changes will take place:
 
-- URI Format settings for sections and category groups will be hidden.
+- Template settings for sections and category groups will be hidden.
 - Template route management will be hidden.
 - Front-end routing will skip checks for element and template requests.
 - Front-end responses will be JSON-formatted rather than HTML by default.
