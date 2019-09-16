@@ -121,7 +121,8 @@ class Template
     public static function paginateCriteria(QueryInterface $query): array
     {
         /** @var Query $query */
-        $paginator = new Paginator((clone $query)->limit(null), [
+        $paginatorQuery = clone $query;
+        $paginator = new Paginator($paginatorQuery->limit(null), [
             'currentPage' => Craft::$app->getRequest()->getPageNum(),
             'pageSize' => $query->limit ?: 100,
         ]);

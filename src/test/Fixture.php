@@ -77,8 +77,9 @@ class Fixture extends ActiveFixture
      */
     public function unload()
     {
+        $modelClass = $this->modelClass;
         foreach ($this->ids as $id) {
-            $arInstance = $this->modelClass::find()
+            $arInstance = $modelClass::find()
                 ->where(['id' => $id])
                 ->one();
 
