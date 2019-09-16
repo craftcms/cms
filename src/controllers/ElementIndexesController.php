@@ -370,7 +370,8 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            $descendantQuery = (clone $query)
+            $descendantQuery = clone $query;
+            $descendantQuery
                 ->offset(null)
                 ->limit(null)
                 ->orderBy(null)
@@ -380,7 +381,8 @@ class ElementIndexesController extends BaseElementsController
 
             // Get the actual elements
             /** @var Element[] $collapsedElements */
-            $collapsedElements = (clone $descendantQuery)
+            $collapsedElementsQuery = clone $descendantQuery;
+            $collapsedElements = $collapsedElementsQuery
                 ->id($collapsedElementIds)
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
@@ -394,7 +396,8 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $elementDescendantIds = (clone $descendantQuery)
+                    $elementDescendantsQuery = clone $descendantQuery;
+                    $elementDescendantIds = $elementDescendantsQuery
                         ->descendantOf($element)
                         ->ids();
 
