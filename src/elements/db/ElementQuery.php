@@ -2483,7 +2483,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->search) {
             // Get the element IDs
-            $elementIds = (clone $this)
+            $elementIdsQuery = clone $this;
+            $elementIds = $elementIdsQuery
                 ->search(null)
                 ->offset(null)
                 ->limit(null)
@@ -2717,7 +2718,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
 
-        $subSelectSql = (clone $this->subQuery)
+        $subSelectSqlQuery = clone $this->subQuery;
+        $subSelectSql = $subSelectSqlQuery
             ->select(['elements_sites.id'])
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([

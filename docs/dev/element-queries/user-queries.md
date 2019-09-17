@@ -224,6 +224,128 @@ $elements = ElementClass::find()
 :::
 
 
+### `draftCreator`
+
+Narrows the query results to only drafts created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a [craft\elements\User](api:craft\elements\User) object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts by the current user #}
+{% set elements = craft.queryFunction()
+    .draftCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch drafts by the current user
+$elements = ElementClass::find()
+    ->draftCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `draftId`
+
+Narrows the query results based on the elements’ draft’s ID (from the `drafts` table).
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the draft with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a draft #}
+{% set elements = craft.queryFunction()
+    .draftId(10)
+    .all() %}
+```
+
+```php
+// Fetch a draft
+$elements = ElementClass::find()
+    ->draftIf(10)
+    ->all();
+```
+:::
+
+
+### `draftOf`
+
+Narrows the query results to only drafts of a given element.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the element with an ID of 1.
+| a ElementClass object | for the element represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts of the element #}
+{% set elements = craft.queryFunction()
+    .draftOf(myElement)
+    .all() %}
+```
+
+```php
+// Fetch drafts of the element
+$elements = ElementClass::find()
+    ->draftOf($myElement)
+    ->all();
+```
+:::
+
+
+### `drafts`
+
+Narrows the query results to only drafts elements.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a draft element #}
+{% set elements = {twig-function}
+    .drafts()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a draft element
+$elements = ElementClass::find()
+    ->drafts()
+    ->id(123)
+    ->one();
+```
+:::
+
+
 ### `email`
 
 Narrows the query results based on the users’ email addresses.
@@ -417,6 +539,20 @@ This can be combined with [fixedOrder](#fixedorder) if you want the results to b
 :::
 
 
+### `ignorePlaceholders`
+
+Causes the query to return matching elements as they are stored in the database, ignoring matching placeholder
+elements that were set by [craft\services\Elements::setPlaceholderElement()](https://docs.craftcms.com/api/v3/craft-services-elements.html#method-setplaceholderelement).
+
+
+
+
+
+
+
+
+
+
 ### `inReverse`
 
 Causes the query results to be returned in reverse order.
@@ -576,6 +712,41 @@ $elements = ElementClass::find()
 :::
 
 
+### `preferSites`
+
+If [unique()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-unique) is set, this determines which site should be selected when querying multi-site elements.
+
+
+
+For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+for Site B.
+
+If this isn’t set, then preference goes to the current site.
+
+
+
+::: code
+```twig
+{# Fetch unique elements from Site A, or Site B if they don’t exist in Site A #}
+{% set elements = craft.queryFunction()
+    .site('*')
+    .unique()
+    .preferSites(['a', 'b'])
+    .all() %}
+```
+
+```php
+// Fetch unique elements from Site A, or Site B if they don’t exist in Site A
+$elements = ElementClass::find()
+    ->site('*')
+    ->unique()
+    ->preferSites(['a', 'b'])
+    ->all();
+```
+:::
+
+
 ### `relatedTo`
 
 Narrows the query results to only elements that are related to certain other elements.
@@ -599,6 +770,128 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanat
 $elements = ElementClass::find()
     ->relatedTo($myCategory)
     ->all();
+```
+:::
+
+
+### `revisionCreator`
+
+Narrows the query results to only revisions created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a [craft\elements\User](api:craft\elements\User) object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions by the current user #}
+{% set elements = craft.queryFunction()
+    .revisionCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch revisions by the current user
+$elements = ElementClass::find()
+    ->revisionCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `revisionId`
+
+Narrows the query results based on the elements’ revision’s ID (from the `revisions` table).
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the revision with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a revision #}
+{% set elements = craft.queryFunction()
+    .revisionId(10)
+    .all() %}
+```
+
+```php
+// Fetch a revision
+$elements = ElementClass::find()
+    ->revisionIf(10)
+    ->all();
+```
+:::
+
+
+### `revisionOf`
+
+Narrows the query results to only revisions of a given element.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the element with an ID of 1.
+| a ElementClass object | for the element represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions of the element #}
+{% set elements = craft.queryFunction()
+    .revisionOf(myElement)
+    .all() %}
+```
+
+```php
+// Fetch revisions of the element
+$elements = ElementClass::find()
+    ->revisionOf($myElement)
+    ->all();
+```
+:::
+
+
+### `revisions`
+
+Narrows the query results to only revision elements.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a revision element #}
+{% set elements = {twig-function}
+    .revisions()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a revision element
+$elements = ElementClass::find()
+    ->revisions()
+    ->id(123)
+    ->one();
 ```
 :::
 
