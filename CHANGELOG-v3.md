@@ -12,6 +12,7 @@
 - Fixed a bug where the "Update all" button was missing on the updates page. ([#4938](https://github.com/craftcms/cms/issues/4938))
 - Fixed a bug where the “Updating search indexes” job could fail when updating search indexes for a Matrix block that contained a relational field.
 - Fixed a bug where it was impossible to query for entries using author id with the GraphQL API.
+- Fixed a bug where querying for Marix Blocks using the GraphQL API would not work.
 
 ## 3.3.3 - 2019-09-12
 
