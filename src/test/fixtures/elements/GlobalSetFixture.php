@@ -38,20 +38,55 @@ abstract class GlobalSetFixture extends ElementFixture
     public $tableName = Table::GLOBALSETS;
 
     /**
+     * @var boolean
+     */
+    public $useActiveRecord = true;
+
+    /**
      * @inheritdoc
      */
     public function load()
     {
-        parent::load();
+        if ($this->useActiveRecord) {
+            parent::load();
 
-        // TODO: layouts?
-        foreach ($this->data as $alias => $data) {
-            $record = new GlobalSetRecord();
-            $record->id = $data['id'];
-            $record->name = $data['name'];
-            $record->handle = $data['handle'];
-            $record->uid = $data['uid'];
-            $record->save();
+            // TODO: layouts?
+            foreach ($this->data as $alias => $data) {
+                $record = new GlobalSetRecord();
+                $record->id = $data['id'];
+                $record->name = $data['name'];
+                $record->handle = $data['handle'];
+                $record->uid = $data['uid'];
+                $record->save();
+            }
+
+            return;
+        }
+
+        $this->data = [];
+        foreach ($this->getData() as $alias => $data) {
+            // Pass in $data so we get an existing element
+            $element = $this->getElement($data);
+
+            foreach ($data as $handle => $value) {
+                $element->$handle = $value;
+            }
+
+            if (!$this->saveElement($element)) {
+                $this->getErrors($element);
+            }
+
+            $this->data[$alias] = array_merge($data, ['id' => $element->id]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unload(): void
+    {
+        if ($this->useActiveRecord) {
+            parent::unload();
         }
     }
 
