@@ -959,7 +959,8 @@ JS;
      */
     private function _all(ElementQueryInterface $query): ElementQueryInterface
     {
-        return (clone $query)
+        $clone = clone $query;
+        return $clone
             ->anyStatus();
     }
 }

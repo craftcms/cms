@@ -313,6 +313,128 @@ This can be combined with [descendantDist](#descendantdist) if you want to limit
 :::
 
 
+### `draftCreator`
+
+Narrows the query results to only drafts created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a `\craft\elements\db\User` object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts by the current user #}
+{% set categories = craft.categories()
+    .draftCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch drafts by the current user
+$categories = \craft\elements\Category::find()
+    ->draftCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `draftId`
+
+Narrows the query results based on the categories’ draft’s ID (from the `drafts` table).
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the draft with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a draft #}
+{% set categories = craft.categories()
+    .draftId(10)
+    .all() %}
+```
+
+```php
+// Fetch a draft
+$categories = \craft\elements\Category::find()
+    ->draftIf(10)
+    ->all();
+```
+:::
+
+
+### `draftOf`
+
+Narrows the query results to only drafts of a given category.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | for the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts of the category #}
+{% set categories = craft.categories()
+    .draftOf(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch drafts of the category
+$categories = \craft\elements\Category::find()
+    ->draftOf($myCategory)
+    ->all();
+```
+:::
+
+
+### `drafts`
+
+Narrows the query results to only drafts categories.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a draft category #}
+{% set categories = {twig-function}
+    .drafts()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a draft category
+$categories = \craft\elements\Category::find()
+    ->drafts()
+    ->id(123)
+    ->one();
+```
+:::
+
+
 ### `enabledForSite`
 
 Narrows the query results based on whether the categories are enabled in the site they’re being queried in, per the [site](#site) parameter.
@@ -502,6 +624,20 @@ $category = \craft\elements\Category::find()
 ::: tip
 This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
 :::
+
+
+### `ignorePlaceholders`
+
+Causes the query to return matching categories as they are stored in the database, ignoring matching placeholder
+elements that were set by [craft\services\Elements::setPlaceholderElement()](https://docs.craftcms.com/api/v3/craft-services-elements.html#method-setplaceholderelement).
+
+
+
+
+
+
+
+
 
 
 ### `inReverse`
@@ -756,6 +892,41 @@ $categories = \craft\elements\Category::find()
 :::
 
 
+### `preferSites`
+
+If [unique](#unique) is set, this determines which site should be selected when querying multi-site elements.
+
+
+
+For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+for Site B.
+
+If this isn’t set, then preference goes to the current site.
+
+
+
+::: code
+```twig
+{# Fetch unique categories from Site A, or Site B if they don’t exist in Site A #}
+{% set categories = craft.categories()
+    .site('*')
+    .unique()
+    .preferSites(['a', 'b'])
+    .all() %}
+```
+
+```php
+// Fetch unique categories from Site A, or Site B if they don’t exist in Site A
+$categories = \craft\elements\Category::find()
+    ->site('*')
+    ->unique()
+    ->preferSites(['a', 'b'])
+    ->all();
+```
+:::
+
+
 ### `prevSiblingOf`
 
 Narrows the query results to only the category that comes immediately before another category.
@@ -811,6 +982,128 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanat
 $categories = \craft\elements\Category::find()
     ->relatedTo($myCategory)
     ->all();
+```
+:::
+
+
+### `revisionCreator`
+
+Narrows the query results to only revisions created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a `\craft\elements\db\User` object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions by the current user #}
+{% set categories = craft.categories()
+    .revisionCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch revisions by the current user
+$categories = \craft\elements\Category::find()
+    ->revisionCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `revisionId`
+
+Narrows the query results based on the categories’ revision’s ID (from the `revisions` table).
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the revision with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a revision #}
+{% set categories = craft.categories()
+    .revisionId(10)
+    .all() %}
+```
+
+```php
+// Fetch a revision
+$categories = \craft\elements\Category::find()
+    ->revisionIf(10)
+    ->all();
+```
+:::
+
+
+### `revisionOf`
+
+Narrows the query results to only revisions of a given category.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | for the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions of the category #}
+{% set categories = craft.categories()
+    .revisionOf(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch revisions of the category
+$categories = \craft\elements\Category::find()
+    ->revisionOf($myCategory)
+    ->all();
+```
+:::
+
+
+### `revisions`
+
+Narrows the query results to only revision categories.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a revision category #}
+{% set categories = {twig-function}
+    .revisions()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a revision category
+$categories = \craft\elements\Category::find()
+    ->revisions()
+    ->id(123)
+    ->one();
 ```
 :::
 
@@ -900,7 +1193,7 @@ Possible values include:
 
 ::: tip
 If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
-only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+only want unique elements to be returned, use [unique](#unique) in conjunction with this.
 :::
 
 
@@ -1107,6 +1400,36 @@ Narrows the query results based on the categories’ UIDs.
 $category = \craft\elements\Category::find()
     ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
     ->one();
+```
+:::
+
+
+### `unique`
+
+Determines whether only elements with unique IDs should be returned by the query.
+
+
+
+This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+desired.
+
+
+
+::: code
+```twig
+{# Fetch unique categories across all sites #}
+{% set categories = craft.categories()
+    .site('*')
+    .unique()
+    .all() %}
+```
+
+```php
+// Fetch unique categories across all sites
+$categories = \craft\elements\Category::find()
+    ->site('*')
+    ->unique()
+    ->all();
 ```
 :::
 

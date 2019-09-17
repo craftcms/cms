@@ -103,8 +103,9 @@ class MailerController extends Controller
         }
 
         // Otherwise we let the user decide....
+        $transportType = $settingsModel->transportType;
         $transportAdapters = array_unique([
-            $settingsModel->transportType::displayName() => $settingsModel->transportType,
+            $transportType::displayName() => $settingsModel->transportType,
             'Smtp' => Smtp::class,
             'Gmail' => Gmail::class,
             'Sendmail' => Sendmail::class,

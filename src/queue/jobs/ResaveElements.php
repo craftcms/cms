@@ -93,7 +93,8 @@ class ResaveElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
-        $query = $this->elementType::find();
+        $elementType = $this->elementType;
+        $query = $elementType::find();
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);

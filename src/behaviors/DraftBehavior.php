@@ -91,7 +91,8 @@ class DraftBehavior extends Behavior
             return null;
         }
 
-        return $this->owner::find()
+        $owner = $this->owner;
+        return $owner::find()
             ->id($this->sourceId)
             ->siteId($this->owner->siteId)
             ->anyStatus()

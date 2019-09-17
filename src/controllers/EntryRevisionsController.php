@@ -336,7 +336,7 @@ class EntryRevisionsController extends BaseEntriesController
         /** @var Entry|null $entry */
         $entry = ElementHelper::sourceElement($draft);
         $this->enforceEditEntryPermissions($entry);
-        $section = ($entry)->getSection();
+        $section = $entry->getSection();
 
         // Is this another user's entry (and it's not a Single)?
         $userId = Craft::$app->getUser()->getId();
