@@ -15,6 +15,7 @@
 - Fixed a bug where it was impossible to query for entries using author id with the GraphQL API.
 - Fixed a bug where querying for Marix Blocks using the GraphQL API would not work.
 - Fixed a bug where category groups' site settings weren't being added to the project config when a new site was created.
+- Fixed a bug where the Translation Method setting wasn’t immediately shown for Matrix sub-fields, if the field type was changed from one that didn’t have multiple translation methods to one that does. ([#4949](https://github.com/craftcms/cms/issues/4949))
 
 ## 3.3.3 - 2019-09-12
 
