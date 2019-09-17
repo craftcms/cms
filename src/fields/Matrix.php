@@ -699,25 +699,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $contentService = Craft::$app->getContent();
 
         foreach ($value->all() as $block) {
-            $originalContentTable = $contentService->contentTable;
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-            $originalFieldContext = $contentService->fieldContext;
-
-            $contentService->contentTable = $block->getContentTable();
-            $contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
-            $contentService->fieldContext = $block->getFieldContext();
-
-            foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            $fields = Craft::$app->getFields()->getAllFields($block->getFieldContext());
+            foreach ($fields as $field) {
                 /** @var Field $field */
                 if ($field->searchable) {
                     $fieldValue = $block->getFieldValue($field->handle);
                     $keywords[] = $field->getSearchKeywords($fieldValue, $element);
                 }
             }
-
-            $contentService->contentTable = $originalContentTable;
-            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-            $contentService->fieldContext = $originalFieldContext;
         }
 
         return parent::getSearchKeywords($keywords, $element);
@@ -984,7 +973,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         parent::afterElementRestore($element);
     }
-    
+
     // Private Methods
     // =========================================================================
 
