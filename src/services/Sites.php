@@ -765,9 +765,11 @@ class Sites extends Component
             $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
             $existingCategorySettings = $projectConfig->get(Categories::CONFIG_CATEGORYROUP_KEY);
 
-            foreach ($existingCategorySettings as $categoryUid => $settings) {
-                $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
-                $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings);
+            if (is_array($existingCategorySettings)) {
+                foreach ($existingCategorySettings as $categoryUid => $settings) {
+                    $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
+                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings);
+                }
             }
 
             // Re-save most localizable element types
