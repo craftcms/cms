@@ -52,7 +52,15 @@ class SchemaDefFieldsEventProxy extends Component
      *                       'resolve' => function ($source, $args, $context, $info) {
      *                           if (\array_key_exists('transform', $args)) {
      *                               return $source->getUrl($args['transform']);
-     *                           } else { // other keys will get other resolution, after which this default
+     *
+     *                               // other argument keys will get other resolutions, after
+     *                               // which this back-out normally to parent for possible
+     *                               // directive resolve, or failing that, appropriate default
+     *                               // for the Element and Field Type we're modifying
+     *
+     *                           } else if (\is_array($resolve = $info->parentType->resolveFieldFn)) {
+     *                               return $resolve ($source, $args, $context, $info);
+     *                           } else {
      *                               return $source->getUrl();
      *                           }
      *                       },
@@ -96,8 +104,17 @@ class SchemaDefFieldsEventProxy extends Component
         // also, not impossible some validation could be worth the effort, as Exceptions
         // from mis-constructed $modDefs can be inscrutable, concern internals points
 
+        // n.b. this appears to be sufficient to allow both directives and configured
+        // field resolvers to operate for fields, with both kinds of queries on the
+        // same server -- given there are not as-yet unseen cases.
+
         if (\array_key_exists($elementType, $event->fieldsToChange)) {
             foreach ($event->fieldsToChange[$elementType] as $modName => $modDefs) {
+
+                // assure any prior arguments are retained, as for directives
+                $modDefs['args'] = \array_merge($fields[$modName]['args'], $modDefs['args']);
+
+                // then merge including our field args and resolver for them
                 $fields[$modName] = \array_merge($fields[$modName], $modDefs);
             }
         }
