@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where elements with enabled Lightswitch fields weren’t getting returned in element queries. ([#4951](https://github.com/craftcms/cms/issues/4951))
+
 ## 3.3.4 - 2019-09-17
 
 ### Changed
