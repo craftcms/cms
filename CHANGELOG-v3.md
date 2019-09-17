@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.4 - 2019-09-17
 
 ### Changed
 - It’s now possible to run the `migrate/create install` command for uninstalled plugins.
