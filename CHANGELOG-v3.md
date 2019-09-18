@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added the option to automatically apply all migrations in the `CRAFT_MIGRATIONS_PATH` when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
+
 ### Changed
+- Any migrations applied during testing will now be stored in the database as content migrations. 
 - It’s now possible to run the `migrate/create install` command for uninstalled plugins.
 - Improved the button labels in the confirmation dialog that can appear after running the Asset Indexes utility. ([#4943](https://github.com/craftcms/cms/issues/4943))
 
