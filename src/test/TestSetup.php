@@ -158,7 +158,7 @@ class TestSetup
      * @param bool $ignorePreviousMigrations
      * @return false|null
      */
-    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
+    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false) : bool
     {
         if (!class_exists($class)) {
             throw new InvalidArgumentException('Migration class: '. $class .' does not exist');
