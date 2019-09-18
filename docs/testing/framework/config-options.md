@@ -57,8 +57,9 @@ Accepts: Object
 The `setupDb` parameter controls how the database is setup before tests. 
 It accepts an object with the following parameters.  
 
-- clean (Required): Whether all tables should be deleted before any tests 
-- setupCraft (Required): Whether the `Install.php` migration should be run  before any tests. 
+- clean: Whether all tables should be deleted before any tests 
+- setupCraft: Whether the `Install.php` migration should be run before any tests. 
+- applyMigrations: Whether migrations stored in `CRAFT_MIGRATIONS_PATH` should be applied before any tests are run.
 
 ### `edition`
 Accepts: int
