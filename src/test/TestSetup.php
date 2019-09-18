@@ -174,14 +174,10 @@ class TestSetup
 
         // Should we ignore this migration?
         if ($ignorePreviousMigrations) {
-            $history = ArrayHelper::firstWhere(
-                Craft::$app->getContentMigrator()->getMigrationHistory(),
-                'name',
-                get_class($migration)
-            );
+            $history = Craft::$app->getContentMigrator()->getMigrationHistory();
 
             // Technically... This migration is applied.
-            if ($history) {
+            if (isset($history[$class])) {
                 return true;
             }
         }
