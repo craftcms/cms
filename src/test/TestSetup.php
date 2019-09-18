@@ -154,9 +154,12 @@ class TestSetup
 
     /**
      * @param string $class
-     * @param array $params
-     * @param bool $ignorePreviousMigrations
-     * @return false|null
+     * @param array  $params
+     * @param bool   $ignorePreviousMigrations
+     *
+     * @return bool
+     * @throws InvalidConfigException
+     * @throws \craft\errors\MigrationException
      */
     public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false) : bool
     {
@@ -182,7 +185,9 @@ class TestSetup
             }
         }
 
-        return $migration->safeUp();
+        Craft::$app->getContentMigrator()->migrateUp($migration);
+
+        return true;
     }
 
     /**
