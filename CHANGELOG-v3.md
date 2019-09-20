@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added the option to automatically apply all migrations in the `CRAFT_MIGRATIONS_PATH` when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
+
 ### Changed
+- Any migrations applied during testing will now be stored in the database as content migrations. 
 - Live Preview requests now have an `x-craft-live-preview` query string param, rather than `x-craft-preview`. ([#4950](https://github.com/craftcms/cms/issues/4950))
 
 ## 3.3.4.1 - 2019-09-17
