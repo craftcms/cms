@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\errors;
@@ -13,7 +13,7 @@ use yii\base\Exception;
  * MigrateException represents an error that occurred while migrating Craft or a plugin.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MigrateException extends Exception
 {
@@ -30,11 +30,11 @@ class MigrateException extends Exception
     /**
      * Constructor.
      *
-     * @param string          $ownerName   The name of the thing being updated
-     * @param string          $ownerHandle The handle of the thing being updated
-     * @param string|null     $message     The error message
-     * @param int             $code        The error code
-     * @param \Throwable|null $previous    The previous exception
+     * @param string $ownerName The name of the thing being updated
+     * @param string $ownerHandle The handle of the thing being updated
+     * @param string|null $message The error message
+     * @param int $code The error code
+     * @param \Throwable|null $previous The previous exception
      */
     public function __construct(string $ownerName, string $ownerHandle, string $message = null, int $code = 0, \Throwable $previous = null)
     {
@@ -42,7 +42,7 @@ class MigrateException extends Exception
         $this->ownerHandle = $ownerHandle;
 
         if ($message === null) {
-            $message = 'An error occurred while migrating '.$ownerName.'.';
+            $message = 'An error occurred while migrating ' . $ownerName . '.';
         }
 
         parent::__construct($message, $code, $previous);

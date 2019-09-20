@@ -1,21 +1,22 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\queue\BaseJob;
 
 /**
  * LocalizeRelations job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class LocalizeRelations extends BaseJob
 {
@@ -37,7 +38,7 @@ class LocalizeRelations extends BaseJob
     {
         $relations = (new Query())
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->from(['{{%relations}}'])
+            ->from([Table::RELATIONS])
             ->where([
                 'fieldId' => $this->fieldId,
                 'sourceSiteId' => null
@@ -55,7 +56,7 @@ class LocalizeRelations extends BaseJob
             // Set the existing relation to the primary site
             $db->createCommand()
                 ->update(
-                    '{{%relations}}',
+                    Table::RELATIONS,
                     ['sourceSiteId' => $primarySiteId],
                     ['id' => $relation['id']])
                 ->execute();
@@ -64,9 +65,9 @@ class LocalizeRelations extends BaseJob
             foreach ($allSiteIds as $siteId) {
                 $db->createCommand()
                     ->insert(
-                        '{{%relations}}',
+                        Table::RELATIONS,
                         [
-                            'fieldid' => $this->fieldId,
+                            'fieldId' => $this->fieldId,
                             'sourceId' => $relation['sourceId'],
                             'sourceSiteId' => $siteId,
                             'targetId' => $relation['targetId'],

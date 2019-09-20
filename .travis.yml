@@ -1,0 +1,86 @@
+language: php
+dist: bionic
+sudo: required
+group: edge
+env:
+  global:
+  - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
+branches:
+  only:
+  - develop
+  - feature/tests
+services:
+- mysql
+- postgresql
+matrix:
+  fast_finish: true
+  include:
+  - php: 7.3
+    env: DB=mysql
+  - php: 7.3
+    env: DB=pgsql
+  - php: 7.2
+    env: DB=mysql
+  - php: 7.2
+    env: DB=pgsql
+  - php: 7.1
+    env: TASK_TESTS_COVERAGE=1 DB=mysql
+  - php: 7.1
+    env: TASK_TESTS_COVERAGE=1 DB=pgsql
+cache:
+  directories:
+  - "$HOME/.composer/cache"
+  - "$HOME/.npm"
+addons:
+  postgresql: '9.6'
+install:
+- |
+  if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+    # disable xdebug for performance reasons when code coverage is not needed.
+    phpenv config-rm xdebug.ini || echo "xdebug is not installed"
+  fi
+
+  # install composer dependencies
+  export PATH="$HOME/.composer/vendor/bin:$PATH"
+  composer validate
+  travis_retry composer install $DEFAULT_COMPOSER_FLAGS
+before_script:
+- |
+  # show some version and environment information
+  php --version
+  composer --version
+  php -r "echo INTL_ICU_VERSION . \"\n\";"
+  php -r "echo INTL_ICU_DATA_VERSION . \"\n\";"
+  psql --version
+  mysql --version
+  sudo mysql_upgrade || echo "MySQL is already up to date"
+- travis_retry mysql -e 'CREATE DATABASE `craft-test`;';
+- mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
+- psql -U postgres -c 'CREATE DATABASE "craft-test";';
+- pear config-set preferred_state beta
+- pecl channel-update pecl.php.net
+- yes | pecl install imagick
+- cp tests/.env.example.$DB tests/.env
+script:
+- |
+  if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+    vendor/bin/codecept run unit,functional
+  else
+    mkdir -p build/logs
+    vendor/bin/codecept run unit,functional --coverage-xml coverage.xml;
+  fi
+after_script:
+- |
+  if [ $TASK_TESTS_COVERAGE == 1 ]; then
+    bash <(curl -s https://codecov.io/bash)
+  fi
+notifications:
+  slack:
+    on_success: always
+    on_failure: always
+    rooms:
+      secure: NyWJ9IXuZLV4CIykNca5AgtuvyNVSpazpL95JwbrlmMkOTlF9wkuCHprqb2kaoKuSfTAGWfaTbRr/nnQX2Uwk6aurwB1duxeHTSm6fzBQ+uuargJbxON4v3xVSskcJDGT3sr/U7rOlFNUx/0y6UlF1Ms3+yW8bWdN+UJBYGnuvaGDpKHTycUvDewggkJ9wiqo47ISB7pewc3HeU7roa4sDw6k1XqpZiDJaA534zDmBOnDjyPX8Aeov/5OE+9J0HVcgeyDF8rR789z2czSAi3ffRn1PcsQTiit/ZStrlhuVSRFZbQq2L1bxjpFAUkmqYPvMbyVO9UgdAOTzrxuL9pWiSzsNQxF1XaYKZD29ckPZi35yYg64eF+Sjldf6l+ccwkrj2UtfmXsP5O4A5Nz5KagJdEuT/VQ8E/wZ4rlGlS+OW0bqzz9JSh+Apg9U0M1sJ/QiA5mHjfK8xE6WT+wI6xwmzrDA2eAI6iFWM30u/yTn7wFWnYJv11DK3mAUJrQTVDdkkFi8NP21/2DHAuKUj0k2soxof9NgR7G1Fv37XTZIkLSl4/xU1EGwhdytmp3FE764k5GVZWbCugt/OSmHRJynKyViF21zhD/5KeahsITzAcGgXvZ8trMaQYhEN5+v+Bk6DP7wnCLUaHTnrVR3JmMnfHjUGe8EmeJkIGYT3XKk=
+  email:
+    recipients:
+    - brad@craftcms.com
+    - brandon@craftcms.com

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -10,25 +10,25 @@ namespace craft\records;
 use Craft;
 use craft\db\ActiveRecord;
 use craft\db\StructuredElementQuery;
+use craft\db\Table;
 use creocoder\nestedsets\NestedSetsBehavior;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class StructureElement record.
  *
- * @property int       $id          ID
- * @property int       $structureId Structure ID
- * @property int       $elementId   Element ID
- * @property int       $root        Root
- * @property int       $lft         Lft
- * @property int       $rgt         Rgt
- * @property int       $level       Level
- * @property Structure $structure   Structure
- * @property Element   $element     Element
+ * @property int $id ID
+ * @property int $structureId Structure ID
+ * @property int $elementId Element ID
+ * @property int $root Root
+ * @property int $lft Lft
+ * @property int $rgt Rgt
+ * @property int $level Level
+ * @property Structure $structure Structure
+ * @property Element $element Element
  * @mixin NestedSetsBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class StructureElement extends ActiveRecord
 {
@@ -49,23 +49,21 @@ class StructureElement extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%structureelements}}';
+        return Table::STRUCTUREELEMENTS;
     }
 
     /**
      * @inheritdoc
-     *
      * @return StructuredElementQuery
      */
     public static function find(): StructuredElementQuery
     {
         /** @var StructuredElementQuery $query */
-        $query = Craft::createObject(StructuredElementQuery::class, [get_called_class()]);
+        $query = Craft::createObject(StructuredElementQuery::class, [static::class]);
 
         return $query;
     }

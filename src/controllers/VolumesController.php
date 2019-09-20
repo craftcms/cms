@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -24,11 +24,10 @@ use yii\web\Response;
 /**
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as
  * creating, editing, renaming and reordering them.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class VolumesController extends Controller
 {
@@ -42,6 +41,8 @@ class VolumesController extends Controller
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -60,9 +61,8 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param int|null             $volumeId The volume’s ID, if editing an existing volume.
-     * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
-     *
+     * @param int|null $volumeId The volume’s ID, if editing an existing volume.
+     * @param VolumeInterface|null $volume The volume being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
@@ -72,6 +72,8 @@ class VolumesController extends Controller
         $this->requireAdmin();
 
         $volumes = Craft::$app->getVolumes();
+
+        $missingVolumePlaceholder = null;
 
         /** @var Volume $volume */
         if ($volume === null) {
@@ -83,19 +85,15 @@ class VolumesController extends Controller
                 }
 
                 if ($volume instanceof MissingVolume) {
-                    $expectedType = $volume->expectedType;
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    $missingVolumePlaceholder = $volume->getPlaceholderHtml();
                     $volume = $volume->createFallback(Local::class);
-                    $volume->addError('type', Craft::t('app', 'The volume type “{type}” could not be found.', [
-                        'type' => $expectedType
-                    ]));
                 }
             } else {
                 $volume = $volumes->createVolume(Local::class);
             }
         }
 
-        /** @var string[] $allVolumeTypes */
+        /** @var string[]|VolumeInterface[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there
@@ -125,7 +123,7 @@ class VolumesController extends Controller
         if ($isNewVolume) {
             $title = Craft::t('app', 'Create a new asset volume');
         } else {
-            $title = $volume->name;
+            $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
         $crumbs = [
@@ -160,6 +158,7 @@ class VolumesController extends Controller
             'isNewVolume' => $isNewVolume,
             'volumeTypes' => $allVolumeTypes,
             'volumeTypeOptions' => $volumeTypeOptions,
+            'missingVolumePlaceholder' => $missingVolumePlaceholder,
             'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,
@@ -181,16 +180,28 @@ class VolumesController extends Controller
 
         $type = $request->getBodyParam('type');
 
-        /** @var Volume $volume */
-        $volume = $volumes->createVolume([
-            'id' => $request->getBodyParam('volumeId'),
+        $volumeId = $request->getBodyParam('volumeId');
+
+        $volumeData = [
+            'id' => $volumeId,
             'type' => $type,
             'name' => $request->getBodyParam('name'),
             'handle' => $request->getBodyParam('handle'),
             'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
             'url' => $request->getBodyParam('url'),
-            'settings' => $request->getBodyParam('types.'.$type)
-        ]);
+            'settings' => $request->getBodyParam('types.' . $type)
+        ];
+
+        // If this is an existing volume, populate with properties unchangeable by this action.
+        if ($volumeId) {
+            /** @var Volume $savedVolume */
+            $savedVolume = $volumes->getVolumeById($volumeId);
+            $volumeData['uid'] = $savedVolume->uid;
+            $volumeData['sortOrder'] = $savedVolume->sortOrder;
+        }
+
+        /** @var Volume $volume */
+        $volume = $volumes->createVolume($volumeData);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();

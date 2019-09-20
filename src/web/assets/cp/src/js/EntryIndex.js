@@ -9,6 +9,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         $newEntryBtnGroup: null,
         $newEntryBtn: null,
 
+        init: function(elementType, $container, settings) {
+            this.on('selectSource', $.proxy(this, 'updateButton'));
+            this.on('selectSite', $.proxy(this, 'updateButton'));
+            this.base(elementType, $container, settings);
+        },
+
         afterInit: function() {
             // Find which of the visible sections the user has permission to create new entries in
             this.publishableSections = [];
@@ -16,7 +22,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.id)) {
+                if (this.getSourceByKey('section:' + section.uid)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -44,7 +50,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        onSelectSource: function() {
+        updateButton: function() {
+            if (!this.$source) {
+                return;
+            }
+
             var handle;
 
             // Get the handle of the selected source
@@ -108,7 +118,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                     for (i = 0; i < this.publishableSections.length; i++) {
                         var section = this.publishableSections[i];
 
-                        if (this.settings.context === 'index' || section !== selectedSection) {
+                        if (
+                            (this.settings.context === 'index' && $.inArray(this.siteId, section.sites) !== -1) ||
+                            (this.settings.context !== 'index' && section !== selectedSection)
+                        ) {
                             href = this._getSectionTriggerHref(section);
                             label = (this.settings.context === 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
                             menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
@@ -142,15 +155,21 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
                 history.replaceState({}, '', Craft.getUrl(uri));
             }
-
-            this.base();
         },
 
         _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
-                return 'href="' + Craft.getUrl('entries/' + section.handle + '/new') + '"';
-            }
-            else {
+                var uri = 'entries/' + section.handle + '/new';
+                params = {};
+                if (this.siteId) {
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == this.siteId) {
+                            params.site = Craft.sites[i].handle;
+                        }
+                    }
+                }
+                return 'href="' + Craft.getUrl(uri, params) + '"';
+            } else {
                 return 'data-id="' + section.id + '"';
             }
         },
@@ -197,7 +216,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + sectionId;
+                    var sectionSourceKey = 'section:' + section.uid;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);

@@ -1,25 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers\pluginstore;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
-use craft\errors\MigrateException;
-use craft\errors\MigrationException;
-use craft\web\Response as CraftResponse;
-use yii\base\Exception as YiiException;
+use craft\web\Response;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
 /**
  * InstallController handles the plugin installation workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class InstallController extends BaseUpdaterController
 {
@@ -27,6 +25,8 @@ class InstallController extends BaseUpdaterController
     // =========================================================================
 
     const ACTION_CRAFT_INSTALL = 'craft-install';
+    const ACTION_ENABLE = 'enable';
+    const ACTION_MIGRATE = 'migrate';
 
     // Properties
     // =========================================================================
@@ -51,6 +51,13 @@ class InstallController extends BaseUpdaterController
         // Only admins can install plugins
         $this->requireAdmin();
 
+        if (
+            !Craft::$app->getConfig()->getGeneral()->allowUpdates ||
+            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
+        }
+
         return true;
     }
 
@@ -61,60 +68,28 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
-        // Prevent the plugin from sending any headers, etc.
-        $realResponse = Craft::$app->getResponse();
-        $tempResponse = new CraftResponse(['isSent' => true]);
-        Craft::$app->set('response', $tempResponse);
+        /** @var Response $tempResponse */
+        list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
-        try {
-            Craft::$app->getPlugins()->installPlugin($this->data['handle']);
-        } catch (\Throwable $e) {
-            Craft::$app->set('response', $realResponse);
-            $migration = $output = null;
-
+        if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
-            $pluginName = $info['name'] ?? $this->data['name'];
-            $email = $info['developerEmail'] ?? 'support@craftcms.com';
-
-            if ($e instanceof MigrateException) {
-                /** @var \Throwable $e */
-                $e = $e->getPrevious();
-
-                if ($e instanceof MigrationException) {
-                    /** @var \Throwable|null $previous */
-                    $previous = $e->getPrevious();
-                    $migration = $e->migration;
-                    $output = $e->output;
-                    $e = $previous ?? $e;
-                }
-            }
-
-            Craft::error('Plugin installation failed: '.$e->getMessage(), __METHOD__);
-
-            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
+            $pluginName = $info['name'] ?? $this->data['packageName'];
 
             return $this->send([
                 'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
-                'errorDetails' => $eName.': '.$e->getMessage().
-                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
-                    ($output ? "\n\nOutput:\n\n".$output : ''),
+                'errorDetails' => $errorDetails,
                 'options' => [
                     $this->finishedState([
                         'label' => Craft::t('app', 'Leave it uninstalled'),
                     ]),
                     $this->actionOption(Craft::t('app', 'Remove it'), self::ACTION_COMPOSER_REMOVE),
                     [
-                        'label' => Craft::t('app', 'Send for help'),
-                        'submit' => true,
-                        'email' => $email,
-                        'subject' => $pluginName.' update failure',
+                        'label' => Craft::t('app', 'Troubleshoot'),
+                        'url' => 'https://craftcms.com/guides/failed-updates',
                     ],
                 ],
             ]);
         }
-
-        // Put the real response back
-        Craft::$app->set('response', $realResponse);
 
         // Did the plugin want to redirect us somewhere?
         $headers = $tempResponse->getHeaders();
@@ -126,6 +101,29 @@ class InstallController extends BaseUpdaterController
         }
 
         return $this->sendFinished();
+    }
+
+    /**
+     * Enables the plugin. Called if the plugin was already Craft-installed
+     * before being installed from the Plugin Store, but it was disabled.
+     *
+     * @return YiiResponse
+     */
+    public function actionEnable(): YiiResponse
+    {
+        Craft::$app->getPlugins()->enablePlugin($this->data['handle']);
+        return $this->sendNextAction(self::ACTION_MIGRATE);
+    }
+
+    /**
+     * Updates the plugin. Called if the plugin was already Craft-installed
+     * before being installed from the Plugin Store.
+     *
+     * @return YiiResponse
+     */
+    public function actionMigrate(): YiiResponse
+    {
+        return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
 
     // Protected Methods
@@ -145,16 +143,28 @@ class InstallController extends BaseUpdaterController
     protected function initialData(): array
     {
         $request = Craft::$app->getRequest();
-        $name = $request->getRequiredQueryParam('name');
-        $handle = $request->getRequiredQueryParam('handle');
-        $version = $request->getRequiredQueryParam('version');
+        $packageName = strip_tags($request->getRequiredBodyParam('packageName'));
+        $handle = strip_tags($request->getRequiredBodyParam('handle'));
+        $edition = strip_tags($request->getRequiredBodyParam('edition'));
+        $version = strip_tags($request->getRequiredBodyParam('version'));
+        $licenseKey = $request->getBodyParam('licenseKey');
+
+        if (
+            ($returnUrl = $request->getBodyParam('return')) !== null &&
+            !in_array($returnUrl, ['plugin-store', 'settings/plugins'], true)
+        ) {
+            $returnUrl = null;
+        }
 
         return [
-            'name' => $name,
+            'packageName' => $packageName,
             'handle' => $handle,
+            'edition' => $edition,
             'version' => $version,
-            'requirements' => [$name => $version],
+            'requirements' => [$packageName => $version],
             'removed' => false,
+            'licenseKey' => $licenseKey,
+            'returnUrl' => $returnUrl,
         ];
     }
 
@@ -166,6 +176,10 @@ class InstallController extends BaseUpdaterController
         switch ($action) {
             case self::ACTION_CRAFT_INSTALL:
                 return Craft::t('app', 'Installing the plugin…');
+            case self::ACTION_ENABLE:
+                return Craft::t('app', 'Enabling the plugin…');
+            case self::ACTION_MIGRATE:
+                return Craft::t('app', 'Updating the plugin…');
             default:
                 return parent::actionStatus($action);
         }
@@ -187,7 +201,7 @@ class InstallController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function postComposerOptimizeState(): array
+    protected function postComposerInstallState(): array
     {
         // Was this after a remove?
         if ($this->data['removed']) {
@@ -196,7 +210,36 @@ class InstallController extends BaseUpdaterController
             ]);
         }
 
+        // Is the plugin already Craft-installed?
+        $pluginsService = Craft::$app->getPlugins();
+        if ($pluginsService->isPluginInstalled($this->data['handle'])) {
+            // Is it disabled?
+            if (!$pluginsService->isPluginEnabled($this->data['handle'])) {
+                return $this->actionState(self::ACTION_ENABLE);
+            }
+
+            return $this->actionState(self::ACTION_MIGRATE);
+        }
+
         return $this->actionState(self::ACTION_CRAFT_INSTALL);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function sendFinished(array $state = []): YiiResponse
+    {
+        // Set the license key
+        if ($this->data['licenseKey'] !== null) {
+            try {
+                Craft::$app->getPlugins()->setPluginLicenseKey($this->data['handle'], $this->data['licenseKey']);
+            } catch (\Throwable $e) {
+                Craft::error("Could not set the license key on {$this->data['handle']}: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
+
+        return parent::sendFinished($state);
     }
 
     /**
@@ -204,6 +247,6 @@ class InstallController extends BaseUpdaterController
      */
     protected function returnUrl(): string
     {
-        return $this->_pluginRedirect ?? 'plugin-store';
+        return $this->_pluginRedirect ?? $this->data['returnUrl'] ?? 'plugin-store';
     }
 }

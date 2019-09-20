@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\errors;
@@ -13,7 +13,7 @@ use yii\base\Exception;
  * InvalidLicenseKeyException represents an exception caused by setting an invalid license key on a plugin.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class InvalidLicenseKeyException extends Exception
 {
@@ -25,9 +25,9 @@ class InvalidLicenseKeyException extends Exception
     /**
      * Constructor.
      *
-     * @param string      $licenseKey The invalid license key
-     * @param string|null $message    The error message
-     * @param int         $code       The error code
+     * @param string $licenseKey The invalid license key
+     * @param string|null $message The error message
+     * @param int $code The error code
      */
     public function __construct(string $licenseKey, string $message = null, int $code = 0)
     {
@@ -45,6 +45,6 @@ class InvalidLicenseKeyException extends Exception
      */
     public function getName(): string
     {
-        return 'Invalid License Key';
+        return 'Invalid license key';
     }
 }

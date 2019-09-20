@@ -1,22 +1,24 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\SortableFieldInterface;
+use craft\fields\data\SingleOptionFieldData;
 
 /**
  * Dropdown represents a Dropdown field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class Dropdown extends BaseOptionsField
+class Dropdown extends BaseOptionsField implements SortableFieldInterface
 {
     // Static
     // =========================================================================
@@ -29,6 +31,22 @@ class Dropdown extends BaseOptionsField
         return Craft::t('app', 'Dropdown');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return SingleOptionFieldData::class;
+    }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
+
     // Public Methods
     // =========================================================================
 
@@ -37,19 +55,11 @@ class Dropdown extends BaseOptionsField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->translatedOptions();
-
-        // If this is a new entry, look for a default option
-        if ($this->isFresh($element)) {
-            $value = $this->defaultValue();
-        }
-
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'options' => $options
-            ]);
+        return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+            'name' => $this->handle,
+            'value' => $value,
+            'options' => $this->translatedOptions(),
+        ]);
     }
 
     // Protected Methods

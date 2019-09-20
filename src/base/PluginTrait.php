@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -11,7 +11,7 @@ namespace craft\base;
  * PluginTrait implements the common methods and properties for plugin classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 trait PluginTrait
 {
@@ -62,7 +62,6 @@ trait PluginTrait
      * The plugin’s changelog URL.
      *
      * The URL should begin with `https://` and point to a plain text Markdown-formatted changelog.
-     *
      * Version headers must follow the general format:
      *
      * ```
@@ -119,4 +118,14 @@ trait PluginTrait
      * @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.)
      */
     public $isInstalled = false;
+
+    /**
+     * @var string The minimum required version the plugin has to be so it can be updated.
+     */
+    public $minVersionRequired;
+
+    /**
+     * @var string The active edition.
+     */
+    public $edition = 'standard';
 }

@@ -1,4 +1,4 @@
-*.idea/*
+.idea
 Source/.idea/*
 *.log
 *.bak
@@ -11,5 +11,5 @@ Build/*
 *.sass-cache
 node_modules/
 vendor/
-/composer.lock
 /bower_components
+cpresources/*

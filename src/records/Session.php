@@ -1,25 +1,25 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class Session record.
  *
- * @property int    $id     ID
- * @property int    $userId User ID
- * @property string $token  Token
- * @property User   $user   User
- *
+ * @property int $id ID
+ * @property int $userId User ID
+ * @property string $token Token
+ * @property User $user User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Session extends ActiveRecord
 {
@@ -39,12 +39,11 @@ class Session extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%sessions}}';
+        return Table::SESSIONS;
     }
 
     /**

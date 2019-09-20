@@ -16,6 +16,7 @@ Craft.LivePreview = Garnish.Base.extend(
         $fieldPlaceholder: null,
 
         previewUrl: null,
+        token: null,
         basePostData: null,
         inPreviewMode: false,
         fields: null,
@@ -27,8 +28,10 @@ Craft.LivePreview = Garnish.Base.extend(
         dragger: null,
         dragStartEditorWidth: null,
 
+        _slideInOnIframeLoad: false,
         _handleSuccessProxy: null,
         _handleErrorProxy: null,
+        _forceUpdateIframeProxy: null,
 
         _scrollX: null,
         _scrollY: null,
@@ -55,17 +58,11 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             // Set the base post data
-            this.basePostData = $.extend({
-                action: this.settings.previewAction,
-                livePreview: true
-            }, this.settings.previewParams);
-
-            if (Craft.csrfTokenName) {
-                this.basePostData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-            }
+            this.basePostData = $.extend({}, this.settings.previewParams);
 
             this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
             this._handleErrorProxy = $.proxy(this, 'handleError');
+            this._forceUpdateIframeProxy = $.proxy(this, 'forceUpdateIframe');
 
             // Find the DOM elements
             this.$extraFields = $(this.settings.extraFields);
@@ -129,21 +126,26 @@ Craft.LivePreview = Garnish.Base.extend(
                 return;
             }
 
+            if (!this.token) {
+                this.createToken();
+                return;
+            }
+
             this.trigger('beforeEnter');
 
-            $(document.activeElement).blur();
+            $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
-                this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
-                this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod);
-                this.$editor = $('<div class="lp-editor"/>').appendTo(this.$editorContainer);
-                this.$iframeContainer = $('<div class="lp-iframe-container"/>').appendTo(Garnish.$bod);
-                this.$iframe = $('<iframe class="lp-iframe" frameborder="0"/>').appendTo(this.$iframeContainer);
-                this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
+                this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
+                this.$iframeContainer =$('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
 
-                var $header = $('<header class="header"></header>').appendTo(this.$editor),
-                    $closeBtn = $('<div class="btn">' + Craft.t('app', 'Close Live Preview') + '</div>').appendTo($header),
-                    $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($header);
+                var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
+                this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
+                this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
+                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
+                var $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($editorHeader);
 
                 this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                     axis: Garnish.X_AXIS,
@@ -186,17 +188,27 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             if (this.updateIframe()) {
-                this.addListener(this.$iframe, 'load', function() {
-                    this.slideIn();
-                    this.removeListener(this.$iframe, 'load');
-                });
-            }
-            else {
+                this._slideInOnIframeLoad = true;
+            } else {
                 this.slideIn();
             }
 
+            Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+            Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
+
             this.inPreviewMode = true;
             this.trigger('enter');
+        },
+
+        createToken: function() {
+            Craft.postActionRequest('live-preview/create-token', {
+                previewAction: this.settings.previewAction
+            }, $.proxy(function(response, textStatus) {
+                if (textStatus === 'success') {
+                    this.token = response.token;
+                    this.enter();
+                }
+            }, this));
         },
 
         save: function() {
@@ -263,6 +275,8 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.$iframeContainer.hide();
             }, this));
 
+            Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+
             this.inPreviewMode = false;
             this.trigger('exit');
         },
@@ -313,15 +327,18 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.lastPostData = postData;
                 this.loading = true;
 
-                var $doc = $(this.$iframe[0].contentWindow.document);
+                var $doc = this.$iframe ? $(this.$iframe[0].contentWindow.document) : null;
 
-                this._scrollX = $doc.scrollLeft();
-                this._scrollY = $doc.scrollTop();
+                this._scrollX = $doc ? $doc.scrollLeft() : 0;
+                this._scrollY = $doc ? $doc.scrollTop() : 0;
 
                 $.ajax({
-                    url: this.previewUrl,
+                    url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
+                    headers: {
+                        'X-Craft-Token': this.token
+                    },
                     xhrFields: {
                         withCredentials: true
                     },
@@ -337,19 +354,42 @@ Craft.LivePreview = Garnish.Base.extend(
             }
         },
 
+        forceUpdateIframe: function() {
+            return this.updateIframe(true);
+        },
+
         handleSuccess: function(data) {
             var html = data +
                 '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
 
-            // Set the iframe to use the same bg as the iframe body,
-            // to reduce the blink when reloading the DOM
-            this.$iframe.css('background', $(this.$iframe[0].contentWindow.document.body).css('background'));
+            // Create a new iframe
+            var $iframe = $('<iframe class="lp-preview" frameborder="0"/>');
+            if (this.$iframe) {
+                $iframe.insertBefore(this.$iframe);
+            } else {
+                $iframe.appendTo(this.$iframeContainer);
+            }
 
-            this.$iframe[0].contentWindow.document.open();
-            this.$iframe[0].contentWindow.document.write(html);
-            this.$iframe[0].contentWindow.document.close();
+            this.addListener($iframe, 'load', function() {
+                if (this.$iframe) {
+                    this.$iframe.remove();
+                }
+                this.$iframe = $iframe;
 
-            this.onResponse();
+                if (this._slideInOnIframeLoad) {
+                    this.slideIn();
+                    this._slideInOnIframeLoad = false;
+                }
+
+                this.removeListener($iframe, 'load');
+            });
+
+            Garnish.requestAnimationFrame($.proxy(function() {
+                $iframe[0].contentWindow.document.open();
+                $iframe[0].contentWindow.document.write(html);
+                $iframe[0].contentWindow.document.close();
+                this.onResponse();
+            }, this));
         },
 
         handleError: function() {

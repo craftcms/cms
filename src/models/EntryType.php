@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -15,14 +15,14 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * EntryType model class.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryType extends Model
 {
@@ -69,6 +69,11 @@ class EntryType extends Model
      */
     public $titleFormat;
 
+    /**
+     * @var string UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -88,32 +93,52 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function attributeLabels()
     {
         return [
-            [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
-            ],
-            [
-                ['name'],
-                UniqueValidator::class,
-                'targetClass' => EntryTypeRecord::class,
-                'targetAttribute' => ['name', 'sectionId'],
-                'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-            ],
-            [
-                ['handle'],
-                UniqueValidator::class,
-                'targetClass' => EntryTypeRecord::class,
-                'targetAttribute' => ['handle', 'sectionId'],
-                'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-            ],
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+            'titleFormat' => Craft::t('app', 'Title Format'),
+            'titleLabel' => Craft::t('app', 'Title Field Label'),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+        ];
+        $rules[] = [
+            ['name'],
+            UniqueValidator::class,
+            'targetClass' => EntryTypeRecord::class,
+            'targetAttribute' => ['name', 'sectionId'],
+            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+        ];
+        $rules[] = [
+            ['handle'],
+            UniqueValidator::class,
+            'targetClass' => EntryTypeRecord::class,
+            'targetAttribute' => ['handle', 'sectionId'],
+            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+        ];
+
+        if ($this->hasTitleField) {
+            $rules[] = [['titleLabel'], 'required'];
+        } else {
+            $rules[] = [['titleFormat'], 'required'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -123,7 +148,7 @@ class EntryType extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->handle;
+        return (string)$this->handle ?: static::class;
     }
 
     /**
@@ -133,20 +158,25 @@ class EntryType extends Model
      */
     public function getCpEditUrl(): string
     {
-        return UrlHelper::cpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return UrlHelper::cpUrl('settings/sections/' . $this->sectionId . '/entrytypes/' . $this->id);
     }
 
     /**
      * Returns the entry type’s section.
      *
-     * @return Section|null
+     * @return Section
+     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
-        if ($this->sectionId) {
-            return Craft::$app->getSections()->getSectionById($this->sectionId);
+        if ($this->sectionId === null) {
+            throw new InvalidConfigException('Entry type is missing its section ID');
         }
 
-        return null;
+        if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
+        }
+
+        return $section;
     }
 }

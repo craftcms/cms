@@ -1,19 +1,18 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
 
 /**
  * SavableComponentInterface defines the common interface to be implemented by savable Craft component classes.
- *
  * A class implementing this interface should also use [[SavableComponentTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 interface SavableComponentInterface extends ComponentInterface
 {
@@ -40,11 +39,11 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Validates the component.
      *
-     * @param string[]|null $attributeNames List of attribute names that should be validated.
-     *                                      If this parameter is empty, it means any attribute listed in the applicable
-     *                                      validation rules should be validated.
-     * @param bool          $clearErrors    Whether existing errors should be cleared before performing validation
-     *
+     * @param string[]|null $attributeNames List of attribute names that should
+     * be validated. If this parameter is empty, it means any attribute listed
+     * in the applicable validation rules should be validated.
+     * @param bool $clearErrors Whether existing errors should be cleared before
+     * performing validation
      * @return bool Whether the validation is successful without any error.
      */
     public function validate($attributeNames = null, $clearErrors = true);
@@ -81,20 +80,18 @@ interface SavableComponentInterface extends ComponentInterface
      * `src/templates/_settings.html`, passing the settings to it:
      *
      * ```php
-     * return Craft::$app->getView()->renderTemplate('plugin-handle/_widget-settings', [
+     * return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
      *     'widget' => $this
      * ]);
      * ```
      *
      * If you need to tie any JavaScript code to your settings, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs() namespaced]],
+     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
      * however your JavaScript code will be left untouched.
-     *
      * For example, if getSettingsHtml() returns the following HTML:
      *
      * ```html
      * <textarea id="foo" name="foo"></textarea>
-     *
      * <script type="text/javascript">
      *     var textarea = document.getElementById('foo');
      * </script>
@@ -104,7 +101,6 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * ```html
      * <textarea id="namespace-foo" name="namespace[foo]"></textarea>
-     *
      * <script type="text/javascript">
      *     var textarea = document.getElementById('foo');
      * </script>
@@ -112,7 +108,6 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id=`
      * attribute was changed from `foo` to `namespace-foo`.
-     *
      * Before you start adding `namespace-` to the beginning of your element ID selectors, keep in mind that the actual
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
@@ -131,12 +126,10 @@ interface SavableComponentInterface extends ComponentInterface
      * {
      *     // Come up with an ID value for 'foo'
      *     $id = Craft::$app->getView()->formatInputId('foo');
-     *
      *     // Figure out what that ID is going to be namespaced into
-     *     $namespacedId = Craft::$app->getView()->namespaceInputId($id);
-     *
+     *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
-     *     return Craft::$app->getView()->renderTemplate('plugin-handle/_widget-settings', [
+     *     return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
      *         'id'           => $id,
      *         'namespacedId' => $namespacedId,
      *         'widget'       => $this
@@ -148,7 +141,6 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * ```twig
      * <textarea id="{{ id }}" name="foo">{{ widget.foo }}</textarea>
-     *
      * <script type="text/javascript">
      *     var textarea = document.getElementById('{{ namespacedId }}');
      * </script>
@@ -168,7 +160,6 @@ interface SavableComponentInterface extends ComponentInterface
      * Performs actions before a component is saved.
      *
      * @param bool $isNew Whether the component is brand new
-     *
      * @return bool Whether the component should be saved
      */
     public function beforeSave(bool $isNew): bool;
@@ -177,8 +168,6 @@ interface SavableComponentInterface extends ComponentInterface
      * Performs actions after a component is saved.
      *
      * @param bool $isNew Whether the component is brand new
-     *
-     * @return void
      */
     public function afterSave(bool $isNew);
 
@@ -190,9 +179,12 @@ interface SavableComponentInterface extends ComponentInterface
     public function beforeDelete(): bool;
 
     /**
+     * Performs actions before a component delete is applied to the database.
+     */
+    public function beforeApplyDelete();
+
+    /**
      * Performs actions after a component is deleted.
-     *
-     * @return void
      */
     public function afterDelete();
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\jqueryui;
@@ -27,7 +27,7 @@ class JqueryUiAsset extends AssetBundle
         ];
 
         $this->js = [
-            'jquery-ui'.$this->dotJs(),
+            'jquery-ui' . $this->dotJs(),
         ];
 
         parent::init();

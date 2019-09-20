@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -11,13 +11,14 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
  * FieldLayoutTab model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldLayoutTab extends Model
 {
@@ -45,6 +46,11 @@ class FieldLayoutTab extends Model
     public $sortOrder;
 
     /**
+     * @var string|null UID
+     */
+    public $uid;
+
+    /**
      * @var FieldLayout|null
      */
     private $_layout;
@@ -62,11 +68,11 @@ class FieldLayoutTab extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'layoutId'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255],
-            [['sortOrder'], 'string', 'max' => 4],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'layoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name'], 'string', 'max' => 255];
+        $rules[] = [['sortOrder'], 'string', 'max' => 4];
+        return $rules;
     }
 
     /**
@@ -86,7 +92,7 @@ class FieldLayoutTab extends Model
         }
 
         if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
-            throw new InvalidConfigException('Invalid layout ID: '.$this->layoutId);
+            throw new InvalidConfigException('Invalid layout ID: ' . $this->layoutId);
         }
 
         return $this->_layout;
@@ -96,8 +102,6 @@ class FieldLayoutTab extends Model
      * Sets the tab’s layout.
      *
      * @param FieldLayout $layout The tab’s layout.
-     *
-     * @return void
      */
     public function setLayout(FieldLayout $layout)
     {
@@ -133,11 +137,19 @@ class FieldLayoutTab extends Model
      * Sets the tab’s fields.
      *
      * @param FieldInterface[] $fields The tab’s fields.
-     *
-     * @return void
      */
     public function setFields(array $fields)
     {
         $this->_fields = $fields;
+    }
+
+    /**
+     * Returns the tab’s anchor name.
+     *
+     * @return string
+     */
+    public function getHtmlId(): string
+    {
+        return 'tab-' . StringHelper::toKebabCase($this->name);
     }
 }

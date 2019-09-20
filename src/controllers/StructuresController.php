@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\web\Response;
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within
  * a structure.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class StructuresController extends Controller
 {
@@ -45,7 +44,6 @@ class StructuresController extends Controller
     /**
      * Initializes the application component.
      *
-     * @return void
      * @throws ForbiddenHttpException if this is not a Control Panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */
@@ -66,7 +64,7 @@ class StructuresController extends Controller
         $siteId = $request->getRequiredBodyParam('siteId');
 
         // Make sure they have permission to edit this structure
-        $this->requireAuthorization('editStructure:'.$structureId);
+        $this->requireAuthorization('editStructure:' . $structureId);
 
         if (($this->_structure = Craft::$app->getStructures()->getStructureById($structureId)) === null) {
             throw new NotFoundHttpException('Structure not found');
@@ -76,20 +74,21 @@ class StructuresController extends Controller
 
         if (($elementType = $elementsService->getElementTypeById($elementId)) === null) {
             throw new NotFoundHttpException('Element not found');
-        };
+        }
 
         /** @var Element|string $elementType */
         $this->_element = $elementType::find()
             ->id($elementId)
             ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
+            ->anyStatus()
             ->structureId($structureId)
             ->one();
 
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
+
+        parent::init();
     }
 
     /**

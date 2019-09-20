@@ -1,27 +1,27 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\DateTimeValidator;
 
 /**
  * Token record.
  *
- * @property int       $id         ID
- * @property string    $token      Token
- * @property array     $route      Route
- * @property int       $usageLimit Usage limit
- * @property int       $usageCount Usage count
+ * @property int $id ID
+ * @property string $token Token
+ * @property array $route Route
+ * @property int $usageLimit Usage limit
+ * @property int $usageCount Usage count
  * @property \DateTime $expiryDate Expiry date
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Token extends ActiveRecord
 {
@@ -44,11 +44,10 @@ class Token extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%tokens}}';
+        return Table::TOKENS;
     }
 }
