@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
@@ -19,9 +20,9 @@ use craft\i18n\Locale;
  * Number represents a Number field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class Number extends Field implements PreviewableFieldInterface
+class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     // Static
     // =========================================================================
@@ -34,8 +35,21 @@ class Number extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Number');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'int|float|null';
+    }
+
     // Properties
     // =========================================================================
+
+    /**
+     * @var int|float|null The default value for new elements
+     */
+    public $defaultValue;
 
     /**
      * @var int|float The minimum allowed number
@@ -57,6 +71,16 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public $size;
 
+    /**
+     * @var string|null Text that should be displayed before the input
+     */
+    public $prefix;
+
+    /**
+     * @var string|null Text that should be displayed after the input
+     */
+    public $suffix;
+
     // Public Methods
     // =========================================================================
 
@@ -67,18 +91,28 @@ class Number extends Field implements PreviewableFieldInterface
     {
         parent::init();
 
+        // Normalize $defaultValue
+        if ($this->defaultValue === '') {
+            $this->defaultValue = null;
+        }
+
         // Normalize $max
-        if ($this->max !== null && empty($this->max)) {
+        if ($this->max === '') {
             $this->max = null;
         }
 
         // Normalize $min
-        if ($this->min !== null && empty($this->min)) {
+        if ($this->min === '') {
             $this->min = null;
         }
 
+        // Normalize $decimals
+        if (!$this->decimals) {
+            $this->decimals = 0;
+        }
+
         // Normalize $size
-        if ($this->size !== null && empty($this->size)) {
+        if ($this->size !== null && !$this->size) {
             $this->size = null;
         }
     }
@@ -129,12 +163,16 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value === null && $this->defaultValue !== null && $this->isFresh($element)) {
+            return $this->defaultValue;
+        }
+
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value;
+        return $value === '' ? null : $value;
     }
 
     /**
@@ -142,20 +180,20 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $decimals = $this->decimals;
-
         // If decimals is 0 (or null, empty for whatever reason), don't run this
-        if ($decimals) {
+        if ($value !== null && $this->decimals) {
             $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $value = number_format($value, $decimals, $decimalSeparator, '');
+            try {
+                $value = number_format($value, $this->decimals, $decimalSeparator, '');
+            } catch (\Throwable $e) {
+                // NaN
+            }
         }
 
-        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">' .
-            Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-                'name' => $this->handle.'[value]',
-                'value' => $value,
-                'size' => $this->size
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+            'field' => $this,
+            'value' => $value,
+        ]);
     }
 
     /**
@@ -164,7 +202,19 @@ class Number extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
-            ['number', 'min' => $this->min ?: null, 'max' => $this->max ?: null],
+            ['number', 'min' => $this->min, 'max' => $this->max],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, ElementInterface $element): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
     }
 }

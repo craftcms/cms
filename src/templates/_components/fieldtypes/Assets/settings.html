@@ -3,7 +3,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set fileKindOptions = field.getFileKindOptions() %}
-{% set isMatrix = craft.app.view.getNamespace()[0:26] == 'types[Matrix][blockTypes][' %}
+{% set isMatrix = 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
 
 {% macro uploadLocationInput(name, field, inputSourceOptions) %}
     {% from "_includes/forms" import select, text %}
@@ -92,11 +92,13 @@
                     checked: (option.value in field.allowedKinds)
                 }) }}
             {% endfor %}
+            {{ forms.errorList(field.getErrors('allowedKinds')) }}
         </div>
     {% endblock %}
 
     {{ block('limitField') }}
     {{ block('viewModeField') }}
     {{ block('selectionLabelField') }}
+    {{ block('validateRelatedElementsField') }}
     {{ block('advancedSettings') }}
 {% endblock %}

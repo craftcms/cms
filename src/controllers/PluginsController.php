@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -16,11 +16,10 @@ use yii\web\Response;
 /**
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,
  * enabling, disabling and saving plugin settings in the control panel.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginsController extends Controller
 {
@@ -34,6 +33,8 @@ class PluginsController extends Controller
     {
         // All plugin actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -44,14 +45,38 @@ class PluginsController extends Controller
     public function actionInstallPlugin(): Response
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-        if (Craft::$app->getPlugins()->installPlugin($pluginHandle)) {
+        $request = Craft::$app->getRequest();
+        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
+        $edition = $request->getBodyParam('edition');
+
+        if (Craft::$app->getPlugins()->installPlugin($pluginHandle, $edition)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin installed.'));
         } else {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t install plugin.'));
         }
 
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Installs a plugin.
+     *
+     * @return Response
+     */
+    public function actionSwitchEdition(): Response
+    {
+        $this->requirePostRequest();
+        $request = Craft::$app->getRequest();
+        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
+        $edition = $request->getRequiredBodyParam('edition');
+        Craft::$app->getPlugins()->switchEdition($pluginHandle, $edition);
+
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin edition changed.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -77,9 +102,8 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string               $handle The plugin’s handle
+     * @param string $handle The plugin’s handle
      * @param PluginInterface|null $plugin The plugin, if there were validation errors
-     *
      * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
@@ -111,6 +135,7 @@ class PluginsController extends Controller
         }
         return $this->redirectToPostedUrl();
     }
+
     /**
      * Disables a plugin.
      *

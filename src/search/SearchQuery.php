@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\search;
@@ -13,7 +13,7 @@ use craft\helpers\StringHelper;
  * Search Query class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SearchQuery
 {
@@ -21,17 +21,17 @@ class SearchQuery
     // =========================================================================
 
     /**
-     * @var string|null
+     * @var string
      */
     private $_query;
 
     /**
-     * @var array|null
+     * @var array
      */
     private $_termOptions;
 
     /**
-     * @var array|null
+     * @var SearchQueryTerm[]|SearchQueryTermGroup
      */
     private $_tokens;
 
@@ -42,7 +42,7 @@ class SearchQuery
      * Constructor
      *
      * @param string $query
-     * @param array  $termOptions
+     * @param array $termOptions
      */
     public function __construct(string $query, array $termOptions = [])
     {
@@ -77,8 +77,6 @@ class SearchQuery
 
     /**
      * Parses the query into an array of tokens.
-     *
-     * @return void
      */
     private function _parse()
     {
@@ -107,12 +105,8 @@ class SearchQuery
                 }
             }
 
-            $term = new SearchQueryTerm();
-
-            // Set the default options
-            foreach ($this->_termOptions as $option => $value) {
-                $term->$option = $value;
-            }
+            // Instantiate the term w/ default options
+            $term = new SearchQueryTerm($this->_termOptions);
 
             // Is this an exclude term?
             if (StringHelper::first($token, 1) === '-') {
@@ -125,6 +119,8 @@ class SearchQuery
                 list(, $term->attribute, $colons, $token) = $match;
                 if ($colons === '::') {
                     $term->exact = true;
+                    $term->subLeft = false;
+                    $term->subRight = false;
                 }
             }
 
@@ -135,7 +131,7 @@ class SearchQuery
                 if (StringHelper::last($token, 1) === StringHelper::first($token, 1)) {
                     $token = mb_substr($token, 1, -1);
                 } else {
-                    $token = mb_substr($token, 1).' '.strtok(StringHelper::first($token, 1));
+                    $token = mb_substr($token, 1) . ' ' . strtok(StringHelper::first($token, 1));
                 }
 
                 $term->phrase = true;
@@ -147,9 +143,14 @@ class SearchQuery
                 $token = mb_substr($token, 1);
             }
 
-            if ($token && substr($token, -1) === '*') {
-                $term->subRight = true;
-                $token = mb_substr($token, 0, -1);
+            if ($token) {
+                if (substr($token, -1) === '*') {
+                    $term->subRight = true;
+                    $token = mb_substr($token, 0, -1);
+                }
+            } else {
+                // subRight messes `attr:*` queries up
+                $term->subRight = false;
             }
 
             $term->term = $token;

@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -15,7 +16,10 @@ class m170228_171113_system_messages extends Migration
      */
     public function safeUp()
     {
-        MigrationHelper::renameTable('{{%emailmessages}}', '{{%systemmessages}}');
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists(Table::SYSTEMMESSAGES);
+
+        MigrationHelper::renameTable('{{%emailmessages}}', Table::SYSTEMMESSAGES);
 
         return true;
     }

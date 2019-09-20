@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -14,6 +14,7 @@ use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -22,11 +23,10 @@ use yii\web\Response;
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as
  * displaying, saving, deleting and reordering them in the control panel.
- *
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SectionsController extends Controller
 {
@@ -40,13 +40,14 @@ class SectionsController extends Controller
     {
         // All section actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
      * Sections index.
      *
      * @param array $variables
-     *
      * @return Response The rendering result
      */
     public function actionIndex(array $variables = []): Response
@@ -59,9 +60,8 @@ class SectionsController extends Controller
     /**
      * Edit a section.
      *
-     * @param int|null     $sectionId The section’s id, if any.
-     * @param Section|null $section   The section being edited, if there were any validation errors.
-     *
+     * @param int|null $sectionId The section’s id, if any.
+     * @param Section|null $section The section being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
@@ -82,7 +82,7 @@ class SectionsController extends Controller
                 }
             }
 
-            $variables['title'] = $section->name;
+            $variables['title'] = trim($section->name) ?: Craft::t('app', 'Edit Section');
         } else {
             if ($section === null) {
                 $section = new Section();
@@ -124,6 +124,8 @@ class SectionsController extends Controller
             ],
         ];
 
+        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
+
         return $this->renderTemplate('settings/sections/_edit', $variables);
     }
 
@@ -147,6 +149,8 @@ class SectionsController extends Controller
         $section->handle = $request->getBodyParam('handle');
         $section->type = $request->getBodyParam('type');
         $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
+        $section->propagationMethod = $request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
+        $section->previewTargets = $request->getBodyParam('previewTargets') ?: [];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $request->getBodyParam('maxLevels');
@@ -156,7 +160,7 @@ class SectionsController extends Controller
         $allSiteSettings = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $postedSettings = $request->getBodyParam('sites.'.$site->handle);
+            $postedSettings = $request->getBodyParam('sites.' . $site->handle);
 
             // Skip disabled sites if this is a multi-site install
             if (Craft::$app->getIsMultiSite() && empty($postedSettings['enabled'])) {
@@ -167,21 +171,14 @@ class SectionsController extends Controller
             $siteSettings->siteId = $site->id;
 
             if ($section->type === Section::TYPE_SINGLE) {
-                $siteSettings->hasUrls = true;
-                $siteSettings->uriFormat = $postedSettings['singleUri'] ?: '__home__';
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->uriFormat = ($postedSettings['singleHomepage'] ?? false) ? '__home__' : ($postedSettings['singleUri'] ?? null);
             } else {
-                $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
-
-                if ($siteSettings->hasUrls) {
-                    $siteSettings->uriFormat = $postedSettings['uriFormat'];
-                    $siteSettings->template = $postedSettings['template'];
-                } else {
-                    $siteSettings->uriFormat = null;
-                    $siteSettings->template = null;
-                }
-
+                $siteSettings->uriFormat = $postedSettings['uriFormat'] ?? null;
                 $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
+            }
+
+            if ($siteSettings->hasUrls = (bool)$siteSettings->uriFormat) {
+                $siteSettings->template = $postedSettings['template'];
             }
 
             $allSiteSettings[$site->id] = $siteSettings;
@@ -229,7 +226,6 @@ class SectionsController extends Controller
      * Entry types index
      *
      * @param int $sectionId The ID of the section whose entry types we’re listing
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
      */
@@ -252,7 +248,7 @@ class SectionsController extends Controller
             ],
             [
                 'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::url('settings/sections/'.$section->id)
+                'url' => UrlHelper::url('settings/sections/' . $section->id)
             ],
         ];
 
@@ -270,10 +266,9 @@ class SectionsController extends Controller
     /**
      * Edit an entry type
      *
-     * @param int            $sectionId   The section’s ID.
-     * @param int|null       $entryTypeId The entry type’s ID, if any.
-     * @param EntryType|null $entryType   The entry type being edited, if there were any validation errors.
-     *
+     * @param int $sectionId The section’s ID.
+     * @param int|null $entryTypeId The entry type’s ID, if any.
+     * @param EntryType|null $entryType The entry type being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested section/entry type cannot be found
      * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
@@ -299,7 +294,7 @@ class SectionsController extends Controller
                 }
             }
 
-            $title = $entryType->name;
+            $title = trim($entryType->name) ?: Craft::t('app', 'Edit Entry Type');
         } else {
             if ($entryType === null) {
                 $entryType = new EntryType();
@@ -321,11 +316,11 @@ class SectionsController extends Controller
             ],
             [
                 'label' => $section->name,
-                'url' => UrlHelper::url('settings/sections/'.$section->id)
+                'url' => UrlHelper::url('settings/sections/' . $section->id)
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => UrlHelper::url('settings/sections/'.$sectionId.'/entrytypes')
+                'url' => UrlHelper::url('settings/sections/' . $sectionId . '/entrytypes')
             ],
         ];
 

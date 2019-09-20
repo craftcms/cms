@@ -10,7 +10,7 @@
 #content .update blockquote.ineligible:before { content: 'ban'; color: #110902; }
 #content .update .releases { position: relative; }
 #content .update .releases .release { padding: 0; }
-#content .update .releases .release.critical h2 { color: #da5a47; }
+#content .update .releases .release.critical h2 { color: #D0021B; }
 #content .update .releases .release.critical .critical { display: inline-block; vertical-align: text-bottom; border-radius: 3px; padding: 0 5px; font-size: 14px; line-height: 24px; color: #fff; font-weight: normal; background: #d6301a; text-transform: uppercase; }
 body.ltr #content .update .releases .release.critical .critical { margin-left: 7px; }
 body.rtl #content .update .releases .release.critical .critical { margin-right: 7px; }

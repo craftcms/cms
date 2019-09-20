@@ -1,20 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
 
+use Craft;
 use craft\base\Model;
 use craft\validators\DateTimeValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetTransformIndex model.
  *
+ * @property AssetTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetTransformIndex extends Model
 {
@@ -82,9 +85,9 @@ class AssetTransformIndex extends Model
     public $detectedFormat;
 
     /**
-     * @var AssetTransform|null Transform
+     * @var AssetTransform|null The transform associated with this index
      */
-    public $transform;
+    private $_transform;
 
     // Public Methods
     // =========================================================================
@@ -104,10 +107,10 @@ class AssetTransformIndex extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true],
-            [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true];
+        $rules[] = [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class];
+        return $rules;
     }
 
     /**
@@ -118,5 +121,34 @@ class AssetTransformIndex extends Model
     public function __toString(): string
     {
         return (string)$this->id;
+    }
+
+    /**
+     * Returns the transform associated with this index.
+     *
+     * @return AssetTransform
+     * @throws InvalidConfigException if [[location]] is invalid
+     */
+    public function getTransform(): AssetTransform
+    {
+        if ($this->_transform !== null) {
+            return $this->_transform;
+        }
+
+        if (($this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform(mb_substr($this->location, 1))) === null) {
+            throw new InvalidConfigException('Invalid transform location: ' . $this->location);
+        }
+
+        return $this->_transform;
+    }
+
+    /**
+     * Sets the transform associated with this index.
+     *
+     * @param AssetTransform $transform
+     */
+    public function setTransform(AssetTransform $transform)
+    {
+        $this->_transform = $transform;
     }
 }

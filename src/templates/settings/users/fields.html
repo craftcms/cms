@@ -5,8 +5,8 @@
 
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8" data-saveshortcut>
-        <input type="hidden" name="action" value="users/save-field-layout">
+    <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
+        {{ actionInput('users/save-field-layout') }}
         {{ redirectInput('settings') }}
         {{ csrfInput() }}
 

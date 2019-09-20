@@ -6,8 +6,8 @@
             $body: null,
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
-            showUpdateAllBtn: true,
-            updates: null,
+            allowUpdates: null,
+            installableUpdates: null,
 
             init: function() {
                 this.$body = $('#content');
@@ -15,7 +15,7 @@
                 var $graphic = $('#graphic'),
                     $status = $('#status');
 
-                this.updates = [];
+                this.installableUpdates = [];
 
                 var data = {
                     forceRefresh: true,
@@ -37,6 +37,8 @@
                         $status.text(error);
                     }
                     else {
+                        this.allowUpdates = response.allowUpdates;
+
                         // Craft CMS update?
                         if (response.updates.cms) {
                             this.processUpdate(response.updates.cms, false);
@@ -63,14 +65,11 @@
                                 headingText = Craft.t('app', '{num} Available Updates', {num: this.totalAvailableUpdates});
                             }
 
-                            $('#page-title').find('h1').text(headingText);
+                            $('#header h1').text(headingText);
 
-                            if (this.showUpdateAllBtn && this.updates.length > 1) {
-                                $('<a/>', {
-                                    'class': 'btn submit',
-                                    text: Craft.t('app', 'Update all'),
-                                    href: this.buildUpdateUrl(this.updates)
-                                }).insertAfter($('#header').children('h1'));
+                            if (this.allowUpdates && this.installableUpdates.length > 1) {
+                                this.createUpdateForm(Craft.t('app', 'Update all'), this.installableUpdates)
+                                    .insertAfter($('#header > .flex:last'));
                             }
                         } else {
                             $graphic.addClass('success');
@@ -81,31 +80,56 @@
             },
 
             processUpdate: function(updateInfo, isPlugin) {
-                if (!updateInfo.releases.length && updateInfo.status !== 'expired') {
+                if (!updateInfo.releases.length) {
                     return;
                 }
 
                 this.totalAvailableUpdates++;
 
-                this.updates.push(new Update(this, updateInfo, isPlugin));
+                var update = new Update(this, updateInfo, isPlugin);
+                if (update.installable) {
+                    this.installableUpdates.push(update);
+                }
             },
 
-            buildUpdateUrl: function(updates)
+            createUpdateForm: function(label, updates)
             {
-                return Craft.getUrl('update', {
-                    install: this.buildRequirements(updates)
+                var $form = $('<form/>', {
+                    method: 'post'
                 });
-            },
 
-            buildRequirements: function(updates)
-            {
-                var requirements = [];
+                $form.append(Craft.getCsrfInput());
+                $form.append($('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    value: 'updater'
+                }));
+                $form.append($('<input/>', {
+                    type: 'hidden',
+                    name: 'return',
+                    value: 'utilities/updates'
+                }));
 
                 for (var i = 0; i < updates.length; i++) {
-                    requirements.push(updates[i].updateInfo.handle+':'+updates[i].updateInfo.latestAllowedVersion);
+                    $form.append($('<input/>', {
+                        type: 'hidden',
+                        name: 'install['+updates[i].updateInfo.handle+']',
+                        value: updates[i].updateInfo.latestVersion
+                    }));
+                    $form.append($('<input/>', {
+                        type: 'hidden',
+                        name: 'packageNames['+updates[i].updateInfo.handle+']',
+                        value: updates[i].updateInfo.packageName
+                    }));
                 }
 
-                return requirements.join(',');
+                $form.append($('<input/>', {
+                    type: 'submit',
+                    value: label,
+                    class: 'btn submit'
+                }));
+
+                return $form;
             }
         }
     );
@@ -114,7 +138,7 @@
         {
             updateInfo: null,
             isPlugin: null,
-            latestVersion: null,
+            installable: true,
 
             $container: null,
             $header: null,
@@ -138,17 +162,12 @@
 
                 // Any ineligible releases?
                 if (this.updateInfo.status !== 'eligible') {
-                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p>').insertBefore(this.$releaseContainer);
+                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p></blockquote>').insertBefore(this.$releaseContainer);
 
-                    if (this.updateInfo.status === 'expired' || this.updateInfo.latestAllowedVersion === null) {
-                        this.updatesPage.showUpdateAllBtn = false;
+                    if (this.updateInfo.status === 'expired' || this.updateInfo.latestVersion === null) {
+                        this.installable = false;
                     }
                 }
-            },
-
-            canUpdateToLatest: function()
-            {
-                return this.updateInfo.releases.length && this.updateInfo.latestAllowedVersion === this.updateInfo.releases[0].version;
             },
 
             createPane: function() {
@@ -165,24 +184,25 @@
             },
 
             createCta: function() {
-                if (this.latestAllowedVersion === null) {
+                if (!this.updatesPage.allowUpdates || !this.updateInfo.latestVersion) {
                     return;
                 }
 
                 var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header);
-                $('<a/>', {
-                    'class': 'btn submit',
-                    text: this.updateInfo.ctaText,
-                    href: typeof this.updateInfo.ctaUrl !== 'undefined' ? this.updateInfo.ctaUrl : this.updatesPage.buildUpdateUrl([this])
-                }).appendTo($buttonContainer);
+                if (typeof this.updateInfo.ctaUrl !== 'undefined') {
+                    $('<a/>', {
+                        'class': 'btn submit',
+                        text: this.updateInfo.ctaText,
+                        href: this.updateInfo.ctaUrl
+                    }).appendTo($buttonContainer);
+                } else {
+                    this.updatesPage.createUpdateForm(this.updateInfo.ctaText, [this])
+                        .appendTo($buttonContainer);
+                }
             },
 
             initReleases: function() {
                 for (var i = 0; i < this.updateInfo.releases.length; i++) {
-                    if (this.latestAllowedVersion === null && this.updateInfo.releases[i].allowed) {
-                        this.latestAllowedVersion = this.updateInfo.releases[i].version;
-                    }
-
                     new Release(this, this.updateInfo.releases[i]);
                 }
             }

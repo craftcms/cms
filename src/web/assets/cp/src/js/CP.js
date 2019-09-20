@@ -10,6 +10,7 @@ Craft.CP = Garnish.Base.extend(
         $nav: null,
         $mainContainer: null,
         $alerts: null,
+        $crumbs: null,
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
@@ -18,6 +19,8 @@ Craft.CP = Garnish.Base.extend(
         $details: null,
         $selectedTab: null,
         $sidebar: null,
+        $contentContainer: null,
+        $edition: null,
 
         $collapsibleTables: null,
 
@@ -29,9 +32,6 @@ Craft.CP = Garnish.Base.extend(
         displayedJobInfoUnchanged: 1,
         trackJobProgressTimeout: null,
         jobProgressIcon: null,
-
-        $edition: null,
-        upgradeModal: null,
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
@@ -47,14 +47,15 @@ Craft.CP = Garnish.Base.extend(
             this.$nav = $('#nav');
             this.$mainContainer = $('#main-container');
             this.$alerts = $('#alerts');
+            this.$crumbs = $('#crumbs');
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
-            this.$details = $('#details').children('.fixed-container');
-            this.$sidebar = $('#sidebar').children('.fixed-container');
-
+            this.$details = $('#details');
+            this.$sidebar = $('#sidebar');
+            this.$contentContainer = $('#content-container');
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
 
@@ -64,7 +65,7 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Set up responsibe tables
+                // Update responsive tables on window resize
                 this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
                 this.updateResponsiveTables();
 
@@ -74,6 +75,10 @@ Craft.CP = Garnish.Base.extend(
 
                 $errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
                 $otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+
+                // Wait a frame before initializing any confirm-unload forms,
+                // so other JS that runs on ready() has a chance to initialize
+                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
             }, this));
 
             // Alerts
@@ -104,57 +109,84 @@ Craft.CP = Garnish.Base.extend(
 
             this.initTabs();
 
-            Garnish.$doc.on('ready', $.proxy(function() {
-                // Look for forms that we should watch for changes on
-                this.$confirmUnloadForms = $('form[data-confirm-unload]');
-
-                if (this.$confirmUnloadForms.length) {
-                    if (!Craft.forceConfirmUnload) {
-                        this.initialFormValues = [];
-                    }
-
-                    for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                        var $form = $(this.$confirmUnloadForms);
-
-                        if (!Craft.forceConfirmUnload) {
-                            this.initialFormValues[i] = $form.serialize();
-                        }
-
-                        this.addListener($form, 'submit', function() {
-                            this.removeListener(Garnish.$win, 'beforeunload');
-                        });
-                    }
-
-                    this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-                        for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                            if (
-                                Craft.forceConfirmUnload ||
-                                this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
-                            ) {
-                                var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
-
-                                if (ev) {
-                                    ev.originalEvent.returnValue = message;
-                                }
-                                else {
-                                    window.event.returnValue = message;
-                                }
-
-                                return message;
-                            }
-                        }
-                    });
-                }
-            }, this));
-
             if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', 'showUpgradeModal');
+                this.addListener(this.$edition, 'click', function() {
+                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+                });
             }
 
             if ($.isTouchCapable()) {
                 this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
                 this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('rel', 'noopener').attr('target', '_blank')
+                }
+            });
+        },
+
+        initConfirmUnloadForms: function() {
+            // Look for forms that we should watch for changes on
+            this.$confirmUnloadForms = $('form[data-confirm-unload]');
+
+            if (!this.$confirmUnloadForms.length) {
+                return;
+            }
+
+            var $form, serialized;
+
+            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                $form = this.$confirmUnloadForms.eq(i);
+                if (!$form.data('initialSerializedValue')) {
+                    if (typeof $form.data('serializer') === 'function') {
+                        serialized = $form.data('serializer')();
+                    } else {
+                        serialized = $form.serialize();
+                    }
+                    $form.data('initialSerializedValue', serialized);
+                }
+                this.addListener($form, 'submit', function() {
+                    this.removeListener(Garnish.$win, 'beforeunload');
+                });
+            }
+
+            this.addListener(Garnish.$win, 'beforeunload', function(ev) {
+                var confirmUnload = false;
+                var $form, serialized;
+                if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
+                    confirmUnload = true;
+                } else {
+                    for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                        $form = this.$confirmUnloadForms.eq(i);
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        if ($form.data('initialSerializedValue') !== serialized) {
+                            confirmUnload = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (confirmUnload) {
+                    var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
+
+                    if (ev) {
+                        ev.originalEvent.returnValue = message;
+                    }
+                    else {
+                        window.event.returnValue = message;
+                    }
+
+                    return message;
+                }
+            });
         },
 
         _handleInputFocus: function() {
@@ -173,13 +205,16 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.submit();
+            this.$primaryForm.trigger({
+                type: 'submit',
+                saveShortcut: true,
+            });
         },
 
         updateSidebarMenuLabel: function() {
             var $item = this.$sidebar.find('a.sel:first');
             var $label = $item.children('.label');
-            $('#sidebar-toggle').text($label.length ? $label.text() : $item.text());
+            $('#selected-sidebar-item-label').text($label.length ? $label.text() : $item.text());
             Garnish.$bod.removeClass('showing-sidebar');
         },
 
@@ -194,23 +229,39 @@ Craft.CP = Garnish.Base.extend(
         initTabs: function() {
             this.$selectedTab = null;
 
-            // Are there any tabs that link to anchors?
-            var $tabs = $('#tabs').find('> ul > li > a');
+            var $tabs = $('#tabs').find('> ul > li');
+            var tabs = [];
+            var tabWidths = [];
+            var totalWidth = 0;
+            var i, a, href;
 
-            for (var i = 0; i < $tabs.length; i++) {
-                var $tab = $($tabs[i]),
-                    href = $tab.attr('href');
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i] = $($tabs[i]);
+                tabWidths[i] = tabs[i].width();
+                totalWidth += tabWidths[i];
 
+                // Does it link to an anchor?
+                a = tabs[i].children('a');
+                href = a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener($tab, 'click', function(ev) {
+                    this.addListener(a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
+
+                    if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
+                        this.selectTab(a);
+                    }
                 }
 
-                if (!this.$selectedTab && $tab.hasClass('sel')) {
-                    this.$selectedTab = $tab;
+                if (!this.$selectedTab && a.hasClass('sel')) {
+                    this.$selectedTab = a;
                 }
+            }
+
+            // Now set their max widths
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 
@@ -225,7 +276,11 @@ Craft.CP = Garnish.Base.extend(
             }
 
             $tab.addClass('sel');
-            $($tab.attr('href')).removeClass('hidden');
+            var href = $tab.attr('href')
+            $(href).removeClass('hidden');
+            if (typeof history !== 'undefined') {
+                history.replaceState(undefined, undefined, href);
+            }
             Garnish.$win.trigger('resize');
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');
@@ -395,30 +450,6 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initAlerts: function() {
-            // Is there a domain mismatch?
-            var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-            if ($transferDomainLink.length) {
-                this.addListener($transferDomainLink, 'click', $.proxy(function(ev) {
-                    ev.preventDefault();
-
-                    if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?'))) {
-                        Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                if (response.success) {
-                                    $transferDomainLink.parent().remove();
-                                    this.displayNotice(Craft.t('app', 'License transferred.'));
-                                }
-                                else {
-                                    this.displayError(response.error);
-                                }
-                            }
-
-                        }, this));
-                    }
-                }, this));
-            }
-
             // Are there any shunnable alerts?
             var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
@@ -445,13 +476,6 @@ Craft.CP = Garnish.Base.extend(
                     }, this));
 
                 }, this));
-            }
-
-            // Is there an edition resolution link?
-            var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
-
-            if ($editionResolutionLink.length) {
-                this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
             }
         },
 
@@ -594,6 +618,7 @@ Craft.CP = Garnish.Base.extend(
                 this.displayedJobInfo &&
                 oldInfo.id === this.displayedJobInfo.id &&
                 oldInfo.progress === this.displayedJobInfo.progress &&
+                oldInfo.progressLabel === this.displayedJobInfo.progressLabel &&
                 oldInfo.status === this.displayedJobInfo.status
             ) {
                 this.displayedJobInfoUnchanged++;
@@ -658,15 +683,6 @@ Craft.CP = Garnish.Base.extend(
                     delete this.jobProgressIcon;
                 }
             }
-        },
-
-        showUpgradeModal: function() {
-            if (!this.upgradeModal) {
-                this.upgradeModal = new Craft.UpgradeModal();
-            }
-            else {
-                this.upgradeModal.show();
-            }
         }
     },
     {
@@ -679,6 +695,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
+Garnish.$scrollContainer = $('#content');
 Craft.cp = new Craft.CP();
 
 
@@ -719,7 +736,7 @@ var JobProgressIcon = Garnish.Base.extend(
         _progressBar: null,
 
         init: function() {
-            this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+            this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
             this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
             this.$label = $('<span class="label"></span>').appendTo(this.$a);
@@ -1003,6 +1020,7 @@ QueueHUD.Job = Garnish.Base.extend(
         $container: null,
         $statusContainer: null,
         $descriptionContainer: null,
+        $progressLabel: null,
 
         _progressBar: null,
 
@@ -1012,9 +1030,10 @@ QueueHUD.Job = Garnish.Base.extend(
             this.id = info.id;
             this.description = info.description;
 
-            this.$container = $('<div class="job"/>');
-            this.$statusContainer = $('<div class="job-status"/>').appendTo(this.$container);
-            this.$descriptionContainer = $('<div class="job-description"/>').appendTo(this.$container).text(info.description);
+            this.$container = $('<div/>', { 'class': 'job' });
+            var $flex = $('<div/>', { 'class': 'flex' }).appendTo(this.$container);
+            $('<div/>', { 'class': 'flex-grow' }).text(info.description).appendTo($flex);
+            this.$statusContainer = $('<div class="job-status"/>').appendTo($flex);
 
             this.$container.data('job', this);
 
@@ -1063,6 +1082,16 @@ QueueHUD.Job = Garnish.Base.extend(
 
             if (this.status === Craft.CP.JOB_STATUS_RESERVED) {
                 this._progressBar.setProgressPercentage(info.progress);
+
+                if (info.progressLabel) {
+                    if (!this.$progressLabel) {
+                        this.$progressLabel = $('<div class="light smalltext"/>').appendTo(this.$container);
+                    }
+                    this.$progressLabel.text(info.progressLabel);
+                }
+            } else if (this.$progressLabel) {
+                this.$progressLabel.remove();
+                this.$progressLabel = null;
             }
         },
 

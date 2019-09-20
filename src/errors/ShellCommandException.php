@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\errors;
@@ -14,7 +14,7 @@ use yii\base\Exception;
  * ShellCommandException represents an exception caused by setting an invalid license key on a plugin.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ShellCommandException extends Exception
 {
@@ -37,7 +37,6 @@ class ShellCommandException extends Exception
      * Creates a ShellCommandException from a [[Command]] object
      *
      * @param Command $command The failed Command object
-     *
      * @return static|false
      */
     public static function createFromCommand(Command $command)
@@ -54,11 +53,11 @@ class ShellCommandException extends Exception
     /**
      * Constructor.
      *
-     * @param string      $command  The command that was executed
-     * @param int         $exitCode The command’s exit code
-     * @param string|null $error    The command’s error output
-     * @param string|null $message  The error message
-     * @param int         $code     The error code
+     * @param string $command The command that was executed
+     * @param int $exitCode The command’s exit code
+     * @param string|null $error The command’s error output
+     * @param string|null $message The error message
+     * @param int $code The error code
      */
     public function __construct(string $command, int $exitCode, string $error = null, string $message = null, int $code = 0)
     {
@@ -73,7 +72,7 @@ class ShellCommandException extends Exception
             } else {
                 $command = '`false`';
             }
-            $message = "The shell command {$command} failed with exit code {$exitCode}".($error ? ": {$error}" : '.');
+            $message = "The shell command {$command} failed with exit code {$exitCode}" . ($error ? ": {$error}" : '.');
         }
 
         parent::__construct($message, $code);

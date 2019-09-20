@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -12,11 +12,10 @@ use craft\events\ModelEvent;
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
  *
- * @property bool  $isNew    Whether the component is new (unsaved)
+ * @property bool $isNew Whether the component is new (unsaved)
  * @property array $settings The component’s settings
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class SavableComponent extends Component implements SavableComponentInterface
 {
@@ -30,7 +29,6 @@ abstract class SavableComponent extends Component implements SavableComponentInt
 
     /**
      * @event ModelEvent The event that is triggered before the component is saved
-     *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the component from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
@@ -42,10 +40,14 @@ abstract class SavableComponent extends Component implements SavableComponentInt
 
     /**
      * @event ModelEvent The event that is triggered before the component is deleted
-     *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the component from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
+
+    /**
+     * @event ModelEvent The event that is triggered before the delete is applied to the database
+     */
+    const EVENT_BEFORE_APPLY_DELETE = 'beforeApplyDelete';
 
     /**
      * @event \yii\base\Event The event that is triggered after the component is deleted
@@ -154,6 +156,17 @@ abstract class SavableComponent extends Component implements SavableComponentInt
         $this->trigger(self::EVENT_BEFORE_DELETE, $event);
 
         return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeApplyDelete()
+    {
+        // Trigger an 'beforeApplyDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_DELETE);
+        }
     }
 
     /**

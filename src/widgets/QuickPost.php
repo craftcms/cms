@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -18,7 +18,7 @@ use craft\web\assets\quickpost\QuickPostAsset;
  * QuickPost represents a Quick Post dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class QuickPost extends Widget
 {
@@ -36,7 +36,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/newspaper.svg');
     }
@@ -95,7 +95,6 @@ class QuickPost extends Widget
         $rules = parent::rules();
         $rules[] = [['section'], 'required'];
         $rules[] = [['section', 'entryType'], 'integer'];
-
         return $rules;
     }
 
@@ -109,7 +108,7 @@ class QuickPost extends Widget
 
         foreach (Craft::$app->getSections()->getAllSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE) {
-                if (Craft::$app->getUser()->checkPermission('createEntries:'.$section->id)) {
+                if (Craft::$app->getUser()->checkPermission('createEntries:' . $section->uid)) {
                     $sections[] = $section;
                 }
             }
@@ -147,13 +146,13 @@ class QuickPost extends Widget
         $section = $this->_getSection();
 
         if ($section === null) {
-            return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
+            return '<p>' . Craft::t('app', 'No section has been selected yet.') . '</p>';
         }
 
         $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
 
         if (empty($entryTypes)) {
-            return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
+            return '<p>' . Craft::t('app', 'No entry types exist for this section.') . '</p>';
         }
 
         if ($this->entryType && isset($entryTypes[$this->entryType])) {
@@ -180,10 +179,10 @@ class QuickPost extends Widget
 
         $fieldJs = $view->clearJsBuffer(false);
 
-        $view->registerJs('new Craft.QuickPostWidget('.
-            $this->id.', '.
-            Json::encode($params).', '.
-            "function() {\n".$fieldJs.
+        $view->registerJs('new Craft.QuickPostWidget(' .
+            $this->id . ', ' .
+            Json::encode($params) . ', ' .
+            "function() {\n" . $fieldJs .
             "\n});");
 
         return $html;

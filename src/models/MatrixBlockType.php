@@ -1,33 +1,35 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
 
-use craft\base\FieldInterface;
+use Craft;
+use craft\base\GqlInlineFragmentInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
+use craft\fields\Matrix;
+use yii\base\InvalidConfigException;
 
 /**
  * MatrixBlockType model class.
  *
  * @property bool $isNew Whether this is a new block type
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class MatrixBlockType extends Model
+class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var int|null ID
+     * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
     public $id;
 
@@ -61,6 +63,11 @@ class MatrixBlockType extends Model
      */
     public $hasFieldErrors = false;
 
+    /**
+     * @var string|mixed
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -82,9 +89,9 @@ class MatrixBlockType extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**
@@ -94,7 +101,7 @@ class MatrixBlockType extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->handle;
+        return (string)$this->handle ?: static::class;
     }
 
     /**
@@ -108,24 +115,41 @@ class MatrixBlockType extends Model
     }
 
     /**
-     * Returns the fields associated with this block type.
+     * Returns the block type's field.
      *
-     * @return FieldInterface[]
+     * @return Matrix
+     * @throws InvalidConfigException if [[fieldId]] is missing or invalid
+     * @since 3.3.0
      */
-    public function getFields(): array
+    public function getField(): Matrix
     {
-        return $this->getFieldLayout()->getFields();
+        if ($this->fieldId === null) {
+            throw new InvalidConfigException('Block type missing its field ID');
+        }
+
+        /** @var Matrix $field */
+        if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
+            throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
+        }
+
+        return $field;
     }
 
     /**
-     * Sets the fields associated with this block type.
-     *
-     * @param FieldInterface[] $fields
-     *
-     * @return void
+     * @inheritdoc
+     * @since 3.3.0
      */
-    public function setFields(array $fields)
+    public function getFieldContext(): string
     {
-        $this->getFieldLayout()->setFields($fields);
+        return 'matrixBlockType:' . $this->uid;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingPrefix(): string
+    {
+        return $this->handle;
     }
 }

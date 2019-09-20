@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -15,7 +15,7 @@ use craft\helpers\Json;
  * DownloadAssetFile represents a Download Asset element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DownloadAssetFile extends ElementAction
 {
@@ -60,12 +60,13 @@ class DownloadAssetFile extends ElementAction
 })();
 EOD;
 
+        $request = Craft::$app->getRequest();
         $js = str_replace([
             '{csrfName}',
             '{csrfValue}'
         ], [
-            Craft::$app->getConfig()->getGeneral()->csrfTokenName,
-            Craft::$app->getRequest()->getCsrfToken()
+            $request->csrfParam,
+            $request->getCsrfToken()
         ], $js);
 
         Craft::$app->getView()->registerJs($js);

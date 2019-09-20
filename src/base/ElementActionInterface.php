@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -13,7 +13,7 @@ use craft\elements\db\ElementQueryInterface;
  * ElementActionInterface defines the common interface to be implemented by element action classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 interface ElementActionInterface extends SavableComponentInterface
 {
@@ -29,6 +29,13 @@ interface ElementActionInterface extends SavableComponentInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Sets the element type on the action.
+     *
+     * @param string $elementType
+     */
+    public function setElementType(string $elementType);
 
     /**
      * Returns the action’s trigger label.
@@ -55,7 +62,6 @@ interface ElementActionInterface extends SavableComponentInterface
      * Performs the action on any elements that match the given criteria.
      *
      * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-     *
      * @return bool Whether the action was performed successfully.
      */
     public function performAction(ElementQueryInterface $query): bool;

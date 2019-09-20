@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -15,7 +15,7 @@ use craft\web\UploadedFile;
  * Class CraftSupport model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftSupport extends Model
 {
@@ -61,6 +61,7 @@ class CraftSupport extends Model
     public function attributeLabels()
     {
         return [
+            'attachment' => Craft::t('app', 'Attachment'),
             'fromEmail' => Craft::t('app', 'Your Email'),
         ];
     }
@@ -70,11 +71,11 @@ class CraftSupport extends Model
      */
     public function rules()
     {
-        return [
-            [['fromEmail', 'message'], 'required'],
-            [['fromEmail'], 'email'],
-            [['fromEmail'], 'string', 'min' => 5, 'max' => 255],
-            [['attachment'], 'file', 'maxSize' => 3145728],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['fromEmail', 'message'], 'required'];
+        $rules[] = [['fromEmail'], 'email'];
+        $rules[] = [['fromEmail'], 'string', 'min' => 5, 'max' => 255];
+        $rules[] = [['attachment'], 'file', 'maxSize' => 3145728];
+        return $rules;
     }
 }

@@ -3,6 +3,8 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\MigrationManager;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -18,23 +20,23 @@ class m150403_183908_migrations_table_changes extends Migration
      */
     public function safeUp()
     {
-        if (!$this->db->columnExists('{{%migrations}}', 'name')) {
-            MigrationHelper::renameColumn('{{%migrations}}', 'version', 'name', $this);
+        if (!$this->db->columnExists(Table::MIGRATIONS, 'name')) {
+            MigrationHelper::renameColumn(Table::MIGRATIONS, 'version', 'name', $this);
         }
 
-        if (!$this->db->columnExists('{{%migrations}}', 'type')) {
-            $this->addColumn('{{%migrations}}', 'type', "enum('app', 'plugin', 'content') NOT NULL DEFAULT 'app'");
-
-            $this->createIndex(
-                $this->db->getIndexName('{{%migrations}}', 'type,pluginId'),
-                '{{%migrations}}',
-                'type,pluginId'
-            );
+        if (!$this->db->columnExists(Table::MIGRATIONS, 'type')) {
+            $values = [
+                MigrationManager::TYPE_APP,
+                MigrationManager::TYPE_PLUGIN,
+                MigrationManager::TYPE_CONTENT,
+            ];
+            $this->addColumn(Table::MIGRATIONS, 'type', $this->enum('type', $values)->after('pluginId')->notNull()->defaultValue(MigrationManager::TYPE_APP));
+            $this->createIndex(null, Table::MIGRATIONS, ['type', 'pluginId']);
         }
 
-        MigrationHelper::dropIndexIfExists('{{%migrations}}', ['name'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::MIGRATIONS, ['name'], true, $this);
 
-        $this->update('{{%migrations}}', ['type' => 'plugin'], 'pluginId is not null');
+        $this->update(Table::MIGRATIONS, ['type' => 'plugin'], ['not', ['pluginId' => null]]);
     }
 
     /**

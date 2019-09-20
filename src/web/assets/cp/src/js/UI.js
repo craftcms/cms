@@ -4,19 +4,24 @@ Craft.ui =
     {
         createTextInput: function(config) {
             var $input = $('<input/>', {
-                'class': 'text',
-                type: (config.type || 'text'),
-                id: config.id,
-                size: config.size,
-                name: config.name,
-                value: config.value,
-                maxlength: config.maxlength,
-                autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
-                disabled: this.getDisabledValue(config.disabled),
-                readonly: config.readonly,
-                title: config.title,
-                placeholder: config.placeholder
+                attr: {
+                    'class': 'text',
+                    type: (config.type || 'text'),
+                    id: config.id,
+                    size: config.size,
+                    name: config.name,
+                    value: config.value,
+                    maxlength: config.maxlength,
+                    autofocus: this.getAutofocusValue(config.autofocus),
+                    autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
+                    disabled: this.getDisabledValue(config.disabled),
+                    readonly: config.readonly,
+                    title: config.title,
+                    placeholder: config.placeholder,
+                    step: config.step,
+                    min: config.min,
+                    max: config.max
+                }
             });
 
             if (config.class) {
@@ -174,7 +179,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                html: config.label
+                text: config.label
             });
 
             // Should we include a hidden input first?
@@ -327,6 +332,134 @@ Craft.ui =
 
         createLightswitchField: function(config) {
             return this.createField(this.createLightswitch(config), config);
+        },
+
+        createColorInput: function(config) {
+            var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
+            var containerId = config.containerId || id + '-container';
+            var name = config.name || null;
+            var value = config.value || null;
+            var small = config.small || false;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                id: containerId,
+                'class': 'flex color-container'
+            });
+
+            var $colorPreviewContainer = $('<div/>', {
+                'class': 'color static' + (small ? ' small' : '')
+            }).appendTo($container);
+
+            var $colorPreview = $('<div/>', {
+                'class': 'color-preview',
+                style: config.value ? {backgroundColor: config.value} : null
+            }).appendTo($colorPreviewContainer);
+
+            var $input = this.createTextInput({
+                id: id,
+                name: name,
+                value: value,
+                size: 10,
+                'class': 'color-input',
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            new Craft.ColorInput($container);
+            return $container;
+        },
+
+        createColorField: function(config) {
+            return this.createField(this.createColorInput(config), config);
+        },
+
+        createDateInput: function(config) {
+            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000))+'-date';
+            var name = config.name || null;
+            var inputName = name ? name+'[date]' : null;
+            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            var formattedValue = value ? Craft.formatDate(value) : null;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                'class': 'datewrapper'
+            });
+
+            var $input = this.createTextInput({
+                id: id,
+                name: inputName,
+                value: formattedValue,
+                placeholder: ' ',
+                autocomplete: false,
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            $('<div data-icon="date"></div>').appendTo($container);
+
+            if (name) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: name+'[timezone]',
+                    val: Craft.timezone
+                }).appendTo($container);
+            }
+
+            $input.datepicker($.extend({
+                defaultDate: value || new Date()
+            }, Craft.datepickerOptions));
+
+            return $container;
+        },
+
+        createDateField: function(config) {
+            return this.createField(this.createDateInput(config), config);
+        },
+
+        createTimeInput: function(config) {
+            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000))+'-time';
+            var name = config.name || null;
+            var inputName = name ? name+'[time]' : null;
+            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                'class': 'timewrapper'
+            });
+
+            var $input = this.createTextInput({
+                id: id,
+                name: inputName,
+                placeholder: ' ',
+                autocomplete: false,
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            $('<div data-icon="time"></div>').appendTo($container);
+
+            if (name) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: name+'[timezone]',
+                    val: Craft.timezone
+                }).appendTo($container);
+            }
+
+            $input.timepicker(Craft.timepickerOptions);
+            if (value) {
+                $input.timepicker('setTime', value.getHours()*3600 + value.getMinutes()*60 + value.getSeconds());
+            }
+
+            return $container;
+        },
+
+        createTimeField: function(config) {
+            return this.createField(this.createTimeInput(config), config);
         },
 
         createField: function(input, config) {

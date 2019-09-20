@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -13,7 +13,7 @@ use Craft;
  * Class Number
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Number
 {
@@ -24,7 +24,6 @@ class Number
      * Returns the "word" version of a number
      *
      * @param int $num The number
-     *
      * @return string The number word, or the original number if it's >= 10
      */
     public static function word(int $num): string
@@ -53,7 +52,6 @@ class Number
      * Returns the uppercase alphabetic version of a number
      *
      * @param int $num The number
-     *
      * @return string The alphabetic version of the number
      */
     public static function upperAlpha(int $num): string
@@ -63,7 +61,7 @@ class Number
 
         while ($num >= 0) {
             $ascii = ($num % 26) + 65;
-            $alpha = chr($ascii).$alpha;
+            $alpha = chr($ascii) . $alpha;
 
             $num = (int)($num / 26) - 1;
         }
@@ -75,21 +73,19 @@ class Number
      * Returns the lowercase alphabetic version of a number
      *
      * @param int $num The number
-     *
      * @return string The alphabetic version of the number
      */
     public static function lowerAlpha(int $num): string
     {
         $alpha = static::upperAlpha($num);
 
-        return StringHelper::toLowerCase($alpha);
+        return mb_strtolower($alpha);
     }
 
     /**
      * Returns the uppercase roman numeral version of a number
      *
      * @param int $num The number
-     *
      * @return string The roman numeral version of the number
      */
     public static function upperRoman(int $num): string
@@ -126,14 +122,13 @@ class Number
      * Returns the lowercase roman numeral version of a number
      *
      * @param int $num The number
-     *
      * @return string The roman numeral version of the number
      */
     public static function lowerRoman(int $num): string
     {
         $roman = static::upperRoman($num);
 
-        return StringHelper::toLowerCase($roman);
+        return mb_strtolower($roman);
     }
 
     /**
@@ -143,7 +138,6 @@ class Number
      * returned.
      *
      * @param mixed $var
-     *
      * @return mixed
      */
     public static function makeNumeric($var)

@@ -1,43 +1,50 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class Section record.
  *
- * @property int                    $id               ID
- * @property int                    $structureId      Structure ID
- * @property string                 $name             Name
- * @property string                 $handle           Handle
- * @property string                 $type             Type
- * @property bool                   $enableVersioning Enable versioning
- * @property Section_SiteSettings[] $siteSettings     Site settings
- * @property Structure              $structure        Structure
- *
+ * @property int $id ID
+ * @property int $structureId Structure ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property string $type Type
+ * @property bool $enableVersioning Enable versioning
+ * @property bool $propagationMethod Propagation method
+ * @property array $previewTargets Preview targets
+ * @property Section_SiteSettings[] $siteSettings Site settings
+ * @property Structure $structure Structure
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Section extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%sections}}';
+        return Table::SECTIONS;
     }
 
     /**

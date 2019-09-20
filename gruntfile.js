@@ -130,5 +130,6 @@ module.exports = function(grunt) {
     // Default task(s).
     grunt.registerTask('css', ['sass', 'postcss']);
     grunt.registerTask('js', ['jshint:beforeconcat', 'concat', 'jshint:afterconcat', 'uglify']);
+    grunt.registerTask('cpjs', ['concat', 'uglify:cpjs']);
     grunt.registerTask('default', ['css', 'js']);
 };
