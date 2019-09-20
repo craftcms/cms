@@ -37,6 +37,13 @@ abstract class ElementFixture extends ActiveFixture
      */
     protected $siteIds = [];
 
+    /**
+     * Whether the fixture data should be unloaded
+     *
+     * @var bool
+     */
+    public $unload = true;
+
     // Public Methods
     // =========================================================================
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the option to specify whether `craft\test\fixtures\elements\GlobalSetFixture` should load the AR instance. ([#4947](https://github.com/craftcms/cms/pull/4947))
+- Added `craft\test\fixtures\elements\ElementFixture::$unload` option to specify whether fixture data should be unloaded. 
+
 ### Changed
 - Improved the button labels in the confirmation dialog that can appear after running the Asset Indexes utility. ([#4943](https://github.com/craftcms/cms/issues/4943))
 

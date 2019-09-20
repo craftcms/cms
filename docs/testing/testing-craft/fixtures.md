@@ -123,6 +123,12 @@ return [
 
 The primary keys are: `handle`.
 
+::: tip
+Global set's do not get their own database row by default. 
+If you need the Global Sets to have their own database row you can set 
+the `$useActiveRecord` to true.
+:::
+
 ### `Tag fixtures`
 
 Extend `craft\test\fixtures\elements\TagFixture` to add tags. 
