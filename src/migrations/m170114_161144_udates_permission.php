@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m170114_161144_udates_permission migration.
@@ -14,7 +15,7 @@ class m170114_161144_udates_permission extends Migration
      */
     public function safeUp()
     {
-        $this->update('{{%userpermissions}}', ['name' => 'utility:updates'], ['name' => 'performupdates']);
+        $this->update(Table::USERPERMISSIONS, ['name' => 'utility:updates'], ['name' => 'performupdates']);
 
         return true;
     }

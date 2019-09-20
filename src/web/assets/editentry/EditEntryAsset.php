@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\editentry;
@@ -20,7 +20,7 @@ class EditEntryAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,8 +31,7 @@ class EditEntryAsset extends AssetBundle
         ];
 
         $this->js = [
-            'EntryDraftEditor'.$this->dotJs(),
-            'EntryTypeSwitcher'.$this->dotJs(),
+            'EntryTypeSwitcher' . $this->dotJs(),
         ];
 
         parent::init();

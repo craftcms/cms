@@ -8,7 +8,7 @@
 {%- set hasOptgroups = false -%}
 
 {% if name is defined and name %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif -%}
 
 <div class="{{ class }}"

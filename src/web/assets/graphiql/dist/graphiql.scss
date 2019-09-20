@@ -1,0 +1,146 @@
+@charset "UTF-8";
+@import "../../../../../lib/craftcms-sass/mixins";
+
+#main {
+  background: darken($bgColor, 3%);
+}
+
+#graphiql {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: $textColor;
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  .graphiql-container .topBar,
+  .graphiql-container .docExplorerShow,
+  .graphiql-container .historyShow,
+  .graphiql-container .docExplorerWrap,
+  .graphiql-container .historyPaneWrap,
+  .graphiql-container .variable-editor-title,
+  .graphiql-container .footer,
+  .result-window .CodeMirror,
+  .graphiql-container .result-window .CodeMirror-gutters,
+  .graphiql-container .toolbar-button,
+  .graphiql-container .toolbar-button:active,
+  .graphiql-container .execute-button,
+  .graphiql-container .execute-button:active,
+  .graphiql-container .execute-options,
+  .graphiql-container .toolbar-menu-items,
+  .graphiql-container .toolbar-select-options,
+  .graphiql-container .execute-options > li.selected,
+  .graphiql-container .toolbar-menu-items > li.hover,
+  .graphiql-container .toolbar-menu-items > li:active,
+  .graphiql-container .toolbar-menu-items > li:hover,
+  .graphiql-container .toolbar-select-options > li.hover,
+  .graphiql-container .toolbar-select-options > li:active,
+  .graphiql-container .toolbar-select-options > li:hover,
+  .graphiql-container .history-contents > p:hover,
+  .graphiql-container .history-contents > p:active,
+  .CodeMirror-gutters{
+    background: none;
+    border: none;
+  }
+
+  .topBar {
+    padding: 33px 24px;
+
+    .title {
+      @include sans-serif-font;
+      font-size: 24px;
+      font-weight: 300;
+      line-height: 32px;
+      color: $textColor;
+    }
+  }
+
+  .queryWrap {
+    box-shadow: 0 0 0 1px $hairlineColorAlpha;
+    background: #fff;
+
+    .CodeMirror-gutters {
+      background: $lightBgColor;
+      box-shadow: inset -1px 0 0 $hairlineColor;
+    }
+
+    .variable-editor-title {
+      background: $bgColor;
+      box-shadow: 0 -1px 0 $hairlineColorAlpha, 0 1px 0 $hairlineColorAlpha;
+      z-index: 4;
+    }
+  }
+
+  .docExplorerWrap {
+    background: #fff;
+    box-shadow: 0 0 0 1px $hairlineColorAlpha;
+  }
+
+  .graphiql-container {
+    .toolbar {
+      margin-left: 16px;
+    }
+    .toolbar-menu {
+      &.toolbar-button {
+        display: inline-block;
+        background-color: #FFFFFF;
+        border-radius: 2px;
+        padding: 6px 12px;
+        border: none;
+        text-align: center;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+        box-sizing: border-box;
+        appearance: none;
+        box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+        color: #29323d;
+        height: 32px;
+        max-width: 100%;
+
+        svg {
+          margin-left: 5px;
+        }
+      }
+    }
+    .toolbar-menu-items {
+      min-width: 100%;
+      margin-top: 0;
+      @include menu-styles;
+
+      li {
+        @include menu-option-styles;
+        text-align: left;
+        padding-left: 24px;
+        max-width: unset;
+
+        &:hover {
+          @include menu-option-active-styles;
+        }
+
+        &.selected-schema {
+          cursor: default;
+          background: none;
+          &:before {
+            @include icon;
+            content: 'check';
+            @include floatleft;
+            @include margin(3px, 0, 0, -17px);
+            font-size: 14px;
+            color: $lightTextColor;
+          }
+          &:hover {
+            background-color: #FFFFFF;
+          }
+        }
+      }
+    }
+
+    .execute-button {
+      background: linear-gradient(#fdfdfd, #CFD6DC);
+      border: 1px solid #CFD6DC;
+    }
+  }
+}

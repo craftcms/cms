@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\jquerytouchevents;
@@ -22,7 +22,7 @@ class JqueryTouchEventsAsset extends AssetBundle
         $this->sourcePath = '@lib/jquery-touch-events';
 
         $this->js = [
-            'jquery.mobile-events'.$this->dotJs(),
+            'jquery.mobile-events' . $this->dotJs(),
         ];
 
         parent::init();

@@ -1,16 +1,16 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
 
+use Craft;
 use craft\errors\MissingComponentException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
-use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
@@ -23,7 +23,7 @@ use yii\base\Event;
  * Class MailerHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MailerHelper
 {
@@ -32,6 +32,21 @@ class MailerHelper
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering mailer transport adapter types.
+     *
+     * Mailer transports must implement [[TransportAdapterInterface]]. [[BaseTransportAdapter]] provides a base implementation.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\helpers\MailerHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(MailerHelper::class,
+     *     MailerHelper::EVENT_REGISTER_MAILER_TRANSPORT_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyTransportType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
 
@@ -62,9 +77,8 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @param string     $type
+     * @param string $type
      * @param array|null $settings
-     *
      * @return TransportAdapterInterface
      * @throws MissingComponentException if $type is missing
      */
@@ -83,25 +97,12 @@ class MailerHelper
      * Creates a mailer component based on the given mail settings.
      *
      * @param MailSettings $settings
-     *
      * @return Mailer
+     * @deprecated in 3.0.18. Use [[App::mailerConfig()]] instead.
      */
     public static function createMailer(MailSettings $settings): Mailer
     {
-        try {
-            $adapter = self::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        } catch (MissingComponentException $e) {
-            // Fallback to the PHP mailer
-            $adapter = new Sendmail();
-        }
-
-        $mailer = new Mailer([
-            'messageClass' => Message::class,
-            'from' => [$settings->fromEmail => $settings->fromName],
-            'template' => $settings->template,
-            'transport' => $adapter->defineTransport(),
-        ]);
-
-        return $mailer;
+        $config = App::mailerConfig($settings);
+        return Craft::createObject($config);
     }
 }

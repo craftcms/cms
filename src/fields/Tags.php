@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -10,16 +10,23 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\TagQuery;
 use craft\elements\Tag;
+use craft\gql\arguments\elements\Tag as TagArguments;
+use craft\gql\interfaces\elements\Tag as TagInterface;
+use craft\gql\resolvers\elements\Tag as TagResolver;
+use craft\helpers\Db;
+use craft\helpers\Gql;
 use craft\models\TagGroup;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Tags represents a Tags field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Tags extends BaseRelationField
 {
@@ -50,8 +57,26 @@ class Tags extends BaseRelationField
         return Craft::t('app', 'Add a tag');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return TagQuery::class;
+    }
+
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $allowMultipleSources = false;
+
+    /**
+     * @inheritdoc
+     */
+    public $allowLimit = false;
 
     /**
      * @var
@@ -60,16 +85,6 @@ class Tags extends BaseRelationField
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->allowMultipleSources = false;
-        $this->allowLimit = false;
-    }
 
     /**
      * @inheritdoc
@@ -83,8 +98,7 @@ class Tags extends BaseRelationField
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -99,14 +113,46 @@ class Tags extends BaseRelationField
                     'id' => Craft::$app->getView()->formatInputId($this->handle),
                     'name' => $this->handle,
                     'elements' => $value,
-                    'tagGroupId' => $this->_getTagGroupId(),
+                    'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
-        } else {
-            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
         }
+
+        return '<p class="error">' . Craft::t('app', 'This field is not set to a valid source.') . '</p>';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(TagInterface::getType()),
+            'args' => TagArguments::getArguments(),
+            'resolve' => TagResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedTagGroupUids = $allowedEntities['taggroups'] ?? [];
+
+        if (empty($allowedTagGroupUids)) {
+            return false;
+        }
+
+        $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
+
+        return ['groupId' => array_values($tagGroupIds)];
     }
 
     // Private Methods
@@ -122,7 +168,7 @@ class Tags extends BaseRelationField
         $tagGroupId = $this->_getTagGroupId();
 
         if ($tagGroupId !== false) {
-            return Craft::$app->getTags()->getTagGroupById($tagGroupId);
+            return Craft::$app->getTags()->getTagGroupByUid($tagGroupId);
         }
 
         return null;
@@ -139,10 +185,10 @@ class Tags extends BaseRelationField
             return $this->_tagGroupId;
         }
 
-        if (!preg_match('/^taggroup:(\d+)$/', $this->source, $matches)) {
+        if (!preg_match('/^taggroup:(([0-9a-f\-]+))$/', $this->source, $matches)) {
             return $this->_tagGroupId = false;
         }
 
-        return $this->_tagGroupId = (int)$matches[1];
+        return $this->_tagGroupId = $matches[1];
     }
 }

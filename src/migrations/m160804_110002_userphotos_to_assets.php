@@ -5,13 +5,14 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\volumes\Local;
 use yii\base\Exception;
 
@@ -30,13 +31,13 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeUp()
     {
-        $this->_basePath = Craft::$app->getPath()->getStoragePath().DIRECTORY_SEPARATOR.'userphotos';
+        $this->_basePath = Craft::$app->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'userphotos';
 
         // Make sure the userphotos folder actually exists
         FileHelper::createDirectory($this->_basePath);
 
         echo "    > Removing __default__ folder\n";
-        FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
+        FileHelper::removeDirectory($this->_basePath . DIRECTORY_SEPARATOR . '__default__');
 
         echo "    > Changing the relative path from username/original.ext to original.ext\n";
         $affectedUsers = $this->_moveUserphotos();
@@ -51,9 +52,9 @@ class m160804_110002_userphotos_to_assets extends Migration
         $affectedUsers = $this->_convertPhotosToAssets($volumeId, $affectedUsers);
 
         echo "    > Updating Users table to drop the photo column and add photoId column.\n";
-        $this->dropColumn('{{%users}}', 'photo');
-        $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
-        $this->addForeignKey(null, '{{%users}}', ['photoId'], '{{%assets}}', ['id'], 'SET NULL', null);
+        $this->dropColumn(Table::USERS, 'photo');
+        $this->addColumn(Table::USERS, 'photoId', $this->integer()->after('username')->null());
+        $this->addForeignKey(null, Table::USERS, ['photoId'], Table::ASSETS, ['id'], 'SET NULL', null);
 
         echo "    > Setting the photoId value\n";
         $this->_setPhotoIdValues($affectedUsers);
@@ -97,14 +98,14 @@ class m160804_110002_userphotos_to_assets extends Migration
             if ($subDir === '.' || $subDir === '..') {
                 continue;
             }
-            $path = $this->_basePath.DIRECTORY_SEPARATOR.$subDir;
+            $path = $this->_basePath . DIRECTORY_SEPARATOR . $subDir;
             if (is_file($path)) {
                 continue;
             }
 
             $user = (new Query())
                 ->select(['id', 'photo'])
-                ->from(['{{%users}}'])
+                ->from([Table::USERS])
                 ->where(['username' => $subDir])
                 ->one($this->db);
 
@@ -114,7 +115,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             }
 
             // Make sure the original file still exists
-            $sourcePath = $this->_basePath.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.'original'.DIRECTORY_SEPARATOR.$user['photo'];
+            $sourcePath = $this->_basePath . DIRECTORY_SEPARATOR . $subDir . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . $user['photo'];
             if (!is_file($sourcePath)) {
                 continue;
             }
@@ -124,10 +125,10 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
             $extension = pathinfo($user['photo'], PATHINFO_EXTENSION);
-            $filename = $baseFilename.'.'.$extension;
+            $filename = $baseFilename . '.' . $extension;
 
-            while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {
-                $filename = $baseFilename.'_'.++$counter.'.'.$extension;
+            while (is_file($this->_basePath . DIRECTORY_SEPARATOR . $filename)) {
+                $filename = $baseFilename . '_' . ++$counter . '.' . $extension;
             }
 
             // In case the filename changed
@@ -136,7 +137,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             // Store for reference
             $affectedUsers[] = $user;
 
-            $targetPath = $this->_basePath.DIRECTORY_SEPARATOR.$filename;
+            $targetPath = $this->_basePath . DIRECTORY_SEPARATOR . $filename;
 
             // Move the file to the new location
             rename($sourcePath, $targetPath);
@@ -160,16 +161,16 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $existingVolume = (new Query())
             ->select(['id'])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->where(['handle' => $handle])
             ->one($this->db);
 
         while ($existingVolume !== null) {
-            $handle = 'userPhotos'.++$counter;
-            $name = 'User Photos '.$counter;
+            $handle = 'userPhotos' . ++$counter;
+            $name = 'User Photos ' . $counter;
             $existingVolume = (new Query())
                 ->select(['id'])
-                ->from(['{{%volumes}}'])
+                ->from([Table::VOLUMES])
                 ->where([
                     'or',
                     ['handle' => $handle],
@@ -180,7 +181,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         // Set the sort order
         $maxSortOrder = (new Query())
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->max('[[sortOrder]]', $this->db);
 
         $volumeData = [
@@ -189,14 +190,14 @@ class m160804_110002_userphotos_to_assets extends Migration
             'handle' => $handle,
             'hasUrls' => false,
             'url' => null,
-            'settings' => Json::encode(['path' => $this->_basePath]),
+            'settings' => Json::encode(['path' => '@storage/userphotos']),
             'fieldLayoutId' => null,
             'sortOrder' => $maxSortOrder + 1
         ];
 
         $db = Craft::$app->getDb();
         $db->createCommand()
-            ->insert('{{%volumes}}', $volumeData)
+            ->insert(Table::VOLUMES, $volumeData)
             ->execute();
 
         $volumeId = $db->getLastInsertID();
@@ -208,7 +209,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'path' => null
         ];
         $db->createCommand()
-            ->insert('{{%volumefolders}}', $folderData)
+            ->insert(Table::VOLUMEFOLDERS, $folderData)
             ->execute();
 
         return $volumeId;
@@ -218,24 +219,29 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set the photo volume setting for users.
      *
      * @param int $volumeId
-     *
-     * @return void
      */
     private function _setUserphotoVolume(int $volumeId)
     {
-        $systemSettings = Craft::$app->getSystemSettings();
-        $settings = $systemSettings->getSettings('users');
-        $settings['photoVolumeId'] = $volumeId;
-        $systemSettings->saveSettings('users', $settings);
+        $settings = (new Query())
+            ->select(['settings'])
+            ->where(['category' => 'users'])
+            ->from(['{{%systemsettings}}'])
+            ->scalar();
+
+        if ($settings) {
+            $settings = Json::decodeIfJson($settings);
+            $settings['photoVolumeId'] = $volumeId;
+
+            $this->update('{{%systemsettings}}', ['settings' => Json::encode($settings)], ['category' => 'users'], [], false);
+        }
     }
 
     /**
      * Convert matching user photos to Assets in a Volume and add that information
      * to the array passed in.
      *
-     * @param int   $volumeId
+     * @param int $volumeId
      * @param array $userList
-     *
      * @return array $userList
      */
     private function _convertPhotosToAssets(int $volumeId, array $userList): array
@@ -249,7 +255,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $folderId = (new Query())
             ->select(['id'])
-            ->from(['{{%volumefolders}}'])
+            ->from([Table::VOLUMEFOLDERS])
             ->where([
                 'parentId' => null,
                 'volumeId' => $volumeId
@@ -259,7 +265,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $changes = [];
 
         foreach ($userList as $user) {
-            $filePath = $this->_basePath.DIRECTORY_SEPARATOR.$user['photo'];
+            $filePath = $this->_basePath . DIRECTORY_SEPARATOR . $user['photo'];
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
@@ -278,7 +284,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'archived' => 0
                 ];
                 $db->createCommand()
-                    ->insert('{{%elements}}', $elementData)
+                    ->insert(Table::ELEMENTS, $elementData)
                     ->execute();
 
                 $elementId = $db->getLastInsertID();
@@ -298,10 +304,10 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => StringHelper::toTitleCase(pathinfo($user['photo'], PATHINFO_FILENAME))
+                        'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
-                        ->insert('{{%content}}', $contentData)
+                        ->insert(Table::CONTENT, $contentData)
                         ->execute();
                 }
 
@@ -311,14 +317,14 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'volumeId' => $volumeId,
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
-                    'kind' => 'image',
+                    'kind' => Asset::KIND_IMAGE,
                     'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
                     'dateModified' => Db::prepareDateForDb(filemtime($filePath))
                 ];
                 $db->createCommand()
-                    ->insert('{{%assets}}', $assetData)
+                    ->insert(Table::ASSETS, $assetData)
                     ->execute();
 
                 $changes[$user['id']] = $elementId;
@@ -332,8 +338,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set photo ID values for the user array passed in.
      *
      * @param array $userlist userId => assetId
-     *
-     * @return void
      */
     private function _setPhotoIdValues(array $userlist)
     {
@@ -341,7 +345,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $db = Craft::$app->getDb();
             foreach ($userlist as $userId => $assetId) {
                 $db->createCommand()
-                    ->update('{{%users}}', ['photoId' => $assetId], ['id' => $userId])
+                    ->update(Table::USERS, ['photoId' => $assetId], ['id' => $userId])
                     ->execute();
             }
         }
@@ -352,7 +356,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     private function _removeSubdirectories()
     {
-        $subDirs = glob($this->_basePath.DIRECTORY_SEPARATOR.'*', GLOB_ONLYDIR);
+        $subDirs = glob($this->_basePath . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
         foreach ($subDirs as $dir) {
             FileHelper::removeDirectory($dir);

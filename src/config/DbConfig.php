@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\config;
@@ -15,7 +15,7 @@ use yii\base\InvalidConfigException;
  * DB config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DbConfig extends BaseObject
 {
@@ -31,7 +31,7 @@ class DbConfig extends BaseObject
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
-     * For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
+     * For example, when using the MySQL PDO driver (http://php.net/manual/en/ref.pdo-mysql.php),
      * if you wanted to enable a SSL database connection (assuming SSL is enabled in MySQL
      * (https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'`
      * can connect via SSL, you'd set these:
@@ -60,9 +60,8 @@ class DbConfig extends BaseObject
     /**
      * @var string If you want to manually specify your PDO DSN connection string you can do so here.
      *
-     * - MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
-     * - PostgreSQL: https://secure.php.net/manual/en/ref.pdo-pgsql.connection.php
-     *
+     * - MySQL: http://php.net/manual/en/ref.pdo-mysql.connection.php
+     * - PostgreSQL: http://php.net/manual/en/ref.pdo-pgsql.connection.php
      * If you set this, then the [[server]], [[port]], [[user]], [[password]], [[database]],
      * [[driver]] and [[unixSocket]] config settings will be ignored.
      */
@@ -76,8 +75,7 @@ class DbConfig extends BaseObject
      */
     public $port;
     /**
-     * @var string The database schema to use (PostgreSQL only).
-     *
+     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';
@@ -100,6 +98,7 @@ class DbConfig extends BaseObject
     public $unixSocket;
     /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.
+     *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]]
      * will be extracted from it.
      */
@@ -120,16 +119,16 @@ class DbConfig extends BaseObject
         // If the DSN is already set, parse it
         if ($this->dsn) {
             if (($pos = strpos($this->dsn, ':')) === false) {
-                throw new InvalidConfigException('Invalid DSN: '.$this->dsn);
+                throw new InvalidConfigException('Invalid DSN: ' . $this->dsn);
             }
             $this->driver = substr($this->dsn, 0, $pos);
             $params = substr($this->dsn, $pos + 1);
             foreach (explode(';', $params) as $param) {
                 if (($pos = strpos($param, '=')) === false) {
-                    throw new InvalidConfigException('Invalid DSN param: '.$param);
+                    throw new InvalidConfigException('Invalid DSN param: ' . $param);
                 }
                 $paramName = substr($param, 0, $pos);
-                $paramValue = substr($params, $pos + 1);
+                $paramValue = substr($param, $pos + 1);
                 switch ($paramName) {
                     case 'host':
                         $this->server = $paramValue;
@@ -152,8 +151,6 @@ class DbConfig extends BaseObject
                     case 'password': // PG only
                         $this->password = $paramValue;
                         break;
-                    default:
-                        throw new InvalidConfigException('Unsupported DSN param: '.$paramName);
                 }
             }
         }
@@ -188,14 +185,14 @@ class DbConfig extends BaseObject
 
         // Validate driver
         if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
-            throw new InvalidConfigException('Unsupported DB driver value: '.$this->driver);
+            throw new InvalidConfigException('Unsupported DB driver value: ' . $this->driver);
         }
 
         // Validate tablePrefix
         if ($this->tablePrefix) {
             $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
             if (strlen($this->tablePrefix) > 6) {
-                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
+                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: ' . $this->tablePrefix);
             }
         }
 
@@ -220,7 +217,9 @@ class DbConfig extends BaseObject
         }
 
         // Set the DSN
-        $this->updateDsn();
+        if (!$this->dsn) {
+            $this->updateDsn();
+        }
     }
 
     /**

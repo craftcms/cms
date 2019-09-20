@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -10,15 +10,15 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Plugin;
 use craft\base\Widget;
+use craft\helpers\App;
 use craft\helpers\Json;
 use craft\web\assets\craftsupport\CraftSupportAsset;
-use PDO;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftSupport extends Widget
 {
@@ -53,7 +53,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/buoey.svg');
     }
@@ -72,25 +72,34 @@ class CraftSupport extends Widget
         }
 
         $view = Craft::$app->getView();
-        $view->registerAssetBundle(CraftSupportAsset::class);
+        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $plugins .= "\n    - ".$plugin->name.' '.$plugin->getVersion();
+            $plugins .= "\n    - " . $plugin->name . ' ' . $plugin->getVersion();
         }
 
         $db = Craft::$app->getDb();
         if ($db->getIsMysql()) {
-            $driver = 'MySQL';
+            $dbDriver = 'MySQL';
         } else {
-            $driver = 'PostgreSQL';
+            $dbDriver = 'PostgreSQL';
+        }
+
+        $imagesService = Craft::$app->getImages();
+        if ($imagesService->getIsGd()) {
+            $imageDriver = 'GD';
+        } else {
+            $imageDriver = 'Imagick';
         }
 
         $envInfoJs = Json::encode([
-            'Craft version' => Craft::$app->getVersion().' ('.Craft::$app->getEditionName().')',
-            'PHP version' => str_replace('~', '\~', PHP_VERSION),
-            'Database driver & version' => $driver.' '.str_replace('~', '\~', $db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION)),
+            'Craft version' => Craft::$app->getVersion() . ' (' . Craft::$app->getEditionName() . ')',
+            'PHP version' => App::phpVersion(),
+            'OS version' => PHP_OS . ' ' . php_uname('r'),
+            'Database driver & version' => $dbDriver . ' ' . $db->getVersion(),
+            'Image driver & version' => $imageDriver . ' ' . $imagesService->getVersion(),
             'Plugins & versions' => $plugins,
         ]);
 
@@ -104,11 +113,12 @@ class CraftSupport extends Widget
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body', [
             'widget' => $this,
-            'buoeyIcon' => file_get_contents($iconsDir.'/buoey.svg'),
-            'bullhornIcon' => file_get_contents($iconsDir.'/bullhorn.svg'),
-            'seIcon' => file_get_contents($iconsDir.'/craft-stack-exchange.svg'),
-            'ghIcon' => file_get_contents($iconsDir.'/github.svg'),
-            'showBackupOption' => $showBackupOption
+            'buoeyIcon' => file_get_contents($iconsDir . '/buoey.svg'),
+            'bullhornIcon' => file_get_contents($iconsDir . '/bullhorn.svg'),
+            'seIcon' => file_get_contents($iconsDir . '/craft-stack-exchange.svg'),
+            'ghIcon' => file_get_contents($iconsDir . '/github.svg'),
+            'showBackupOption' => $showBackupOption,
+            'bundleUrl' => $assetBundle->baseUrl,
         ]);
     }
 }

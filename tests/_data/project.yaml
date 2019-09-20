@@ -1,0 +1,132 @@
+dateModified: 1556009220
+email:
+  fromEmail: info@crafttest.com
+  fromName: 'Craft CMS Test From Name'
+  template: ''
+  transportType: craft\mail\transportadapters\Sendmail
+  transportSettings: null
+fieldGroups:
+  3470df71-5cf1-4ad7-bd38-eeaeb4258b13:
+    name: 'Test field group 1'
+fields:
+  024666e4-a54f-49b4-aea7-f1a3c1eb0994:
+    name: 'Example text field 1'
+    handle: exampleTextField1
+    instructions: ''
+    searchable: true
+    translationMethod: none
+    translationKeyFormat: null
+    type: craft\fields\PlainText
+    settings:
+      placeholder: ''
+      code: ''
+      multiline: ''
+      initialRows: '4'
+      charLimit: ''
+      columnType: text
+    contentColumnType: text
+    fieldGroup: 3470df71-5cf1-4ad7-bd38-eeaeb4258b13
+routes:
+  4e726457-352a-4baf-9435-1c2a09aa7eea:
+    template: _includes/route-handler
+    uriParts:
+      - part1
+      - part2
+    uriPattern: part1part2
+    sortOrder: 1
+    siteUid: null
+siteGroups:
+  05c96016-eb7d-4aa8-9715-2f0aa36c66a8:
+    name: 'Craft CMS Test Site Group'
+sections:
+  d927f367-5ec3-43d8-a273-0ee688875ece:
+    name: 'Craft CMS Test Section'
+    handle: craftCmsTestSection
+    type: channel
+    enableVersioning: true
+    propagationMethod: all
+    siteSettings:
+      2fa19d28-c359-4955-8b0d-35a35e3f1128:
+        enabledByDefault: true
+        hasUrls: false
+        uriFormat: null
+        template: null
+    entryTypes:
+      185e535e-69b2-4a10-8ae1-3420343b4972:
+        name: 'Craft CMS Test Section'
+        handle: craftCmsTestSection
+        hasTitleField: true
+        titleLabel: Title
+        titleFormat: ''
+        sortOrder: 1
+sites:
+  2fa19d28-c359-4955-8b0d-35a35e3f1128:
+    siteGroup: 05c96016-eb7d-4aa8-9715-2f0aa36c66a8
+    name: 'Craft CMS Test Site'
+    handle: default
+    language: en-US
+    hasUrls: true
+    baseUrl: $DEFAULT_SITE_URL
+    sortOrder: 1
+    primary: true
+system:
+  edition: pro
+  name: 'Craft CMS Test Site'
+  live: true
+  schemaVersion: 3.2.13
+  timeZone: America/Los_Angeles
+users:
+  allowPublicRegistration: false
+  defaultGroup: ''
+  fieldLayouts:
+    2da91a33-0856-4fe4-a2ae-ca3fb7b5eaed:
+      tabs:
+        - name: General
+          sortOrder: '1'
+          fields:
+            024666e4-a54f-49b4-aea7-f1a3c1eb0994:
+              required: true
+              sortOrder: '1'
+  groups:
+    ed97d72d-63ec-4d68-8f2c-b37e33a5109a:
+      name: Test group1
+      handle: testGroup1
+      permissions:
+        - accesscp
+imageTransforms:
+  b756da68-5290-4145-b7d9-180a1d869b5a:
+    format: null
+    handle: 'exampleTransform'
+    height: '15'
+    interlace: none
+    mode: crop
+    name: 'Example transform 1'
+    position: center-center
+    quality: null
+    width: '10'
+volumes:
+  13b7bf8c-b8d7-44e1-a45c-20899421387d:
+    name: 'Test volume 1'
+    handle: testVolume1
+    type: craft\volumes\Local
+    hasUrls: '0'
+    url: null
+    settings:
+      path: '@root/test-assets'
+    sortOrder: '1'
+tagGroups:
+  bfa412a6-ae34-4aa7-90fd-65c134d5b540:
+    name: 'Test tag group 1'
+    handle: testTaggroup1
+categoryGroups:
+  1792602b-f24c-41c7-8833-8524330d66df:
+    name: 'Test category group 1'
+    handle: testCategoryGroup1
+    structure:
+      uid: a2031944-d42b-4fa2-9ac2-3d099166d7f9
+      maxLevels: null
+    siteSettings:
+      2fa19d28-c359-4955-8b0d-35a35e3f1128:
+        hasUrls: true
+        uriFormat: 'test-category-group-1/{slug}'
+        template: ''

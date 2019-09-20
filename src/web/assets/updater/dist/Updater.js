@@ -95,6 +95,9 @@
 
                     if (option.email) {
                         $button.attr('href', this.getEmailLink(state, option));
+                    } else if (option.url) {
+                        $button.attr('href', option.url);
+                        $button.attr('target', '_blank');
                     } else {
                         this.addListener($button, 'click', option, 'onOptionSelect');
                     }
@@ -141,8 +144,11 @@
                     errorDetails: details,
                     options: [
                         {
+                            label: Craft.t('app', 'Troubleshoot'),
+                            url: 'https://craftcms.com/guides/failed-updates'
+                        },
+                        {
                             label: Craft.t('app', 'Send for help'),
-                            submit: true,
                             email: 'support@craftcms.com'
                         }
                     ]

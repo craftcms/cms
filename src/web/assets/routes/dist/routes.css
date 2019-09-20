@@ -6,7 +6,7 @@
 body.ltr .route:hover:after { right: 5px; }
 body.rtl .route:hover:after { left: 5px; }
 
-.route .uri-container, .route .template { padding: 7px 14px; }
+.route .uri-container, .route .template { padding: 7px 14px; line-height: 18px; min-height: 18px; }
 
 .route .uri-container { position: relative; color: #0d78f2; background: #fff; }
 body.ltr .route .uri-container { margin-right: 20px; }
@@ -28,7 +28,7 @@ body.rtl .route .uri-container:after { background-image: url(images/route-bg_rtl
 body.ltr .route .uri-container .site { margin: -1px 8px -1px 0 ; }
 body.rtl .route .uri-container .site { margin: -1px 0 -1px 8px ; }
 
-.route .uri-container .uri .token { margin: 0 2px; }
+.route .uri-container .uri .token { margin: 0 2px -1px; }
 
 .route .template { color: #8f98a3; }
 
@@ -40,7 +40,7 @@ body.rtl .route .template:before { margin: 0 0 0 5px ; }
 
 .modal.route-settings .body { height: calc(100% - 130px); overflow: auto; }
 
-.modal.route-settings .body .uri { width: auto; padding-top: 0; padding-bottom: 0; cursor: text; }
+.modal.route-settings .body .uri { width: auto; cursor: text; }
 
 .modal.route-settings .body .uri .token { cursor: default; }
 
@@ -52,7 +52,7 @@ body.rtl .route .template:before { margin: 0 0 0 5px ; }
 body.ltr .route-settings .uri-tokens .token { margin: 5px 5px 0 0 ; }
 body.rtl .route-settings .uri-tokens .token { margin: 5px 0 0 5px ; }
 
-.route-settings .delete { display: block; margin-top: 7px; color: #da5a47; }
+.route-settings .delete { display: block; margin-top: 7px; color: #D0021B; }
 body.ltr .route-settings .delete { float: left; }
 body.rtl .route-settings .delete { float: right; }
 

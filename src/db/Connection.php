@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db;
@@ -18,26 +18,26 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
 /**
  * @inheritdoc
- *
  * @property MysqlQueryBuilder|PgsqlQueryBuilder $queryBuilder The query builder for the current DB connection.
- * @property MysqlSchema|PgsqlSchema             $schema       The schema information for the database opened by this connection.
- *
+ * @property MysqlSchema|PgsqlSchema $schema The schema information for the database opened by this connection.
+ * @property bool $supportsMb4 Whether the database supports 4+ byte characters.
  * @method MysqlQueryBuilder|PgsqlQueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method MysqlSchema|PgsqlSchema getSchema() Returns the schema information for the database opened by this connection.
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Connection extends \yii\db\Connection
 {
@@ -71,37 +71,35 @@ class Connection extends \yii\db\Connection
      * Creates a new Connection instance based off the given DbConfig object.
      *
      * @param DbConfig $config
-     *
      * @return static
+     * @deprecated in 3.0.18. Use [[App::dbConfig()]] instead.
      */
     public static function createFromConfig(DbConfig $config): Connection
     {
-        if ($config->driver === DbConfig::DRIVER_MYSQL) {
-            $schemaConfig = [
-                'class' => MysqlSchema::class,
-            ];
-        } else {
-            $schemaConfig = [
-                'class' => PgsqlSchema::class,
-                'defaultSchema' => $config->schema,
-            ];
-        }
-
-        return Craft::createObject([
-            'class' => static::class,
-            'driverName' => $config->driver,
-            'dsn' => $config->dsn,
-            'username' => $config->user,
-            'password' => $config->password,
-            'charset' => $config->charset,
-            'tablePrefix' => $config->tablePrefix,
-            'schemaMap' => [
-                $config->driver => $schemaConfig,
-            ],
-            'commandClass' => Command::class,
-            'attributes' => $config->attributes,
-        ]);
+        $config = App::dbConfig($config);
+        return Craft::createObject($config);
     }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool|null whether the database supports 4+ byte characters
+     * @see getSupportsMb4()
+     * @see setSupportsMb4()
+     */
+    private $_supportsMb4;
+
+    /**
+     * @var string[]
+     * @see quoteTableName()
+     */
+    private $_quotedTableNames;
+    /**
+     * @var string[]
+     * @see quoteColumnName()
+     */
+    private $_quotedColumnNames;
 
     // Public Methods
     // =========================================================================
@@ -127,8 +125,41 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * @inheritdoc
+     * Returns the version of the DB.
      *
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        $version = $this->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        return App::normalizeVersion($version);
+    }
+
+    /**
+     * Returns whether the database supports 4+ byte characters.
+     *
+     * @return bool
+     */
+    public function getSupportsMb4(): bool
+    {
+        if ($this->_supportsMb4 !== null) {
+            return $this->_supportsMb4;
+        }
+        return $this->_supportsMb4 = $this->getIsPgsql();
+    }
+
+    /**
+     * Sets whether the database supports 4+ byte characters.
+     *
+     * @param bool $supportsMb4
+     */
+    public function setSupportsMb4(bool $supportsMb4)
+    {
+        $this->_supportsMb4 = $supportsMb4;
+    }
+
+    /**
+     * @inheritdoc
      * @throws DbConnectException if there are any issues
      * @throws \Throwable
      */
@@ -141,26 +172,67 @@ class Connection extends \yii\db\Connection
 
             if ($this->getIsMysql()) {
                 if (!extension_loaded('pdo')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO extension to operate.', 0, $e);
                 }
                 if (!extension_loaded('pdo_mysql')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO_MYSQL driver to operate.', 0, $e);
                 }
             } else {
                 if (!extension_loaded('pdo')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO extension to operate.', 0, $e);
                 }
                 if (!extension_loaded('pdo_pgsql')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO_PGSQL driver to operate.', 0, $e);
                 }
             }
 
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'), 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         } catch (\Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'), 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         }
+    }
+
+    /**
+     * Returns the path for a new backup file.
+     *
+     * @return string
+     */
+    public function getBackupFilePath(): string
+    {
+        // Determine the backup file path
+        $currentVersion = 'v' . Craft::$app->getVersion();
+        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
+        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
+        return Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
+    }
+
+    /**
+     * Returns the raw database table names that should be ignored by default.
+     *
+     * @return string[]
+     */
+    public function getIgnoredBackupTables(): array
+    {
+        $tables = [
+            Table::ASSETINDEXDATA,
+            Table::ASSETTRANSFORMINDEX,
+            Table::SESSIONS,
+            Table::TEMPLATECACHES,
+            Table::TEMPLATECACHEQUERIES,
+            Table::TEMPLATECACHEELEMENTS,
+            '{{%cache}}',
+            '{{%templatecachecriteria}}',
+        ];
+
+        $schema = $this->getSchema();
+
+        foreach ($tables as $i => $table) {
+            $tables[$i] = $schema->getRawTableName($table);
+        }
+
+        return $tables;
     }
 
     /**
@@ -174,14 +246,8 @@ class Connection extends \yii\db\Connection
      */
     public function backup(): string
     {
-        // Determine the backup file path
-        $currentVersion = 'v'.Craft::$app->getVersion();
-        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
-        $filename = ($systemName ? $systemName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
-        $file = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
-
+        $file = $this->getBackupFilePath();
         $this->backupTo($file);
-
         return $file;
     }
 
@@ -191,8 +257,6 @@ class Connection extends \yii\db\Connection
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
      * @param string $filePath The file path the database backup should be saved at
-     *
-     * @return void
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
@@ -211,8 +275,8 @@ class Connection extends \yii\db\Connection
         }
 
         // Create the shell command
+        $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
         $command = $this->_createShellCommand($backupCommand);
-        $command = $this->_parseCommandTokens($command, $filePath);
 
         // Fire a 'beforeCreateBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
@@ -235,8 +299,6 @@ class Connection extends \yii\db\Connection
      * Restores a database at the given file path.
      *
      * @param string $filePath The path of the database backup to restore.
-     *
-     * @return void
      * @throws Exception if the restoreCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
@@ -255,8 +317,8 @@ class Connection extends \yii\db\Connection
         }
 
         // Create the shell command
+        $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
         $command = $this->_createShellCommand($restoreCommand);
-        $command = $this->_parseCommandTokens($command, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
@@ -277,7 +339,6 @@ class Connection extends \yii\db\Connection
 
     /**
      * @param string $name
-     *
      * @return string
      */
     public function quoteDatabaseName(string $name): string
@@ -286,11 +347,32 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * @inheritdoc
+     */
+    public function quoteTableName($name)
+    {
+        if (isset($this->_quotedTableNames[$name])) {
+            return $this->_quotedTableNames[$name];
+        }
+        return $this->_quotedTableNames[$name] = parent::quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteColumnName($name)
+    {
+        if (isset($this->_quotedColumnNames[$name])) {
+            return $this->_quotedColumnNames[$name];
+        }
+        return $this->_quotedColumnNames[$name] = parent::quoteColumnName($name);
+    }
+
+    /**
      * Returns whether a table exists.
      *
-     * @param string    $table
+     * @param string $table
      * @param bool|null $refresh
-     *
      * @return bool
      */
     public function tableExists(string $table, bool $refresh = null): bool
@@ -308,10 +390,9 @@ class Connection extends \yii\db\Connection
     /**
      * Checks if a column exists in a table.
      *
-     * @param string    $table
-     * @param string    $column
+     * @param string $table
+     * @param string $column
      * @param bool|null $refresh
-     *
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
@@ -332,9 +413,8 @@ class Connection extends \yii\db\Connection
     /**
      * Returns a primary key name based on the table and column names.
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $columns
-     *
      * @return string
      */
     public function getPrimaryKeyName(string $table, $columns): string
@@ -343,7 +423,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_pk';
 
         return $this->trimObjectName($name);
     }
@@ -351,9 +431,8 @@ class Connection extends \yii\db\Connection
     /**
      * Returns a foreign key name based on the table and column names.
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $columns
-     *
      * @return string
      */
     public function getForeignKeyName(string $table, $columns): string
@@ -362,7 +441,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_fk';
 
         return $this->trimObjectName($name);
     }
@@ -371,11 +450,10 @@ class Connection extends \yii\db\Connection
      * Returns an index name based on the table, column names, and whether
      * it should be unique.
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $columns
-     * @param bool         $unique
-     * @param bool         $foreignKey
-     *
+     * @param bool $unique
+     * @param bool $foreignKey
      * @return string
      */
     public function getIndexName(string $table, $columns, bool $unique = false, bool $foreignKey = false): string
@@ -384,7 +462,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').($foreignKey ? '_fk' : '_idx');
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . ($unique ? '_unq' : '') . ($foreignKey ? '_fk' : '_idx');
 
         return $this->trimObjectName($name);
     }
@@ -393,7 +471,6 @@ class Connection extends \yii\db\Connection
      * Ensures that an object name is within the schema's limit.
      *
      * @param string $name
-     *
      * @return string
      */
     public function trimObjectName(string $name): string
@@ -439,27 +516,18 @@ class Connection extends \yii\db\Connection
      * Returns a table name without the table prefix
      *
      * @param string $table
-     *
      * @return string
      */
     private function _getTableNameWithoutPrefix(string $table): string
     {
-        $table = $this->getSchema()->getRawTableName($table);
-
-        if ($this->tablePrefix) {
-            if (strpos($table, $this->tablePrefix) === 0) {
-                $table = substr($table, strlen($this->tablePrefix));
-            }
-        }
-
-        return $table;
+        $table = str_replace('%', '', $table);
+        return $this->getSchema()->getRawTableName($table);
     }
 
     /**
      * Creates a shell command set to the given string
      *
      * @param string $command The command to be executed
-     *
      * @return ShellCommand
      */
     private function _createShellCommand(string $command): ShellCommand
@@ -477,35 +545,30 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * @param ShellCommand $shellCommand
-     * @param string       $file    The path to the backup file
+     * Parses a database backup/restore command for config tokens
      *
-     * @return ShellCommand
+     * @param string $command The command to parse tokens in
+     * @param string $file The path to the backup file
+     * @return string
      */
-    private function _parseCommandTokens(ShellCommand $shellCommand, $file): ShellCommand
+    private function _parseCommandTokens(string $command, $file): string
     {
-        $command = $shellCommand->getCommand();
-
-        // Swap out any tokens in the command
         $dbConfig = Craft::$app->getConfig()->getDb();
         $tokens = [
             '{file}' => $file,
             '{port}' => $dbConfig->port,
             '{server}' => $dbConfig->server,
             '{user}' => $dbConfig->user,
+            '{password}' => addslashes(str_replace('$', '\\$', $dbConfig->password)),
             '{database}' => $dbConfig->database,
             '{schema}' => $dbConfig->schema,
         ];
 
-        $command = str_replace(array_keys($tokens), array_values($tokens), $command);
-        $shellCommand->setCommand($command);
-
-        return $shellCommand;
+        return str_replace(array_keys($tokens), $tokens, $command);
     }
 
     /**
      * @param ShellCommand $command
-     *
      * @throws ShellCommandException
      */
     private function _executeDatabaseShellCommand(ShellCommand $command)
@@ -513,10 +576,14 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
+        try {
+            FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath(false));
+        } catch (InvalidArgumentException $e) {
+            // the directory doesn't exist
+        }
 
         // PostgreSQL specific cleanup.
-        if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_PGSQL) {
+        if ($this->getIsPgsql()) {
             if (Platform::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
@@ -528,7 +595,16 @@ class Connection extends \yii\db\Connection
         }
 
         if (!$success) {
-            throw ShellCommandException::createFromCommand($command);
+            $execCommand = $command->getExecCommand();
+
+            // Redact the PGPASSWORD
+            if ($this->getIsPgsql()) {
+                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function($match) {
+                    return $match[1] . str_repeat('•', strlen($match[2])) . '"';
+                }, $execCommand);
+            }
+
+            throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
         }
     }
 
@@ -542,10 +618,10 @@ class Connection extends \yii\db\Connection
         try {
             return (new Query())
                 ->select(['siteName'])
-                ->from(['{{%info}}'])
+                ->from([Table::INFO])
                 ->column()[0];
         } catch (\Throwable $e) {
-            return Craft::$app->getInfo()->name ?: Craft::$app->getSites()->getPrimarySite()->name;
+            return Craft::$app->getSystemName();
         }
     }
 }

@@ -1,29 +1,28 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\DateTimeValidator;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class Plugin record.
  *
- * @property int         $id          ID
- * @property string      $class       Class
- * @property string      $version     Version
- * @property bool        $enabled     Enabled
- * @property array       $settings    Settings
- * @property \DateTime   $installDate Install date
- * @property Migration[] $migrations  Migrations
- *
+ * @property int $id ID
+ * @property string $class Class
+ * @property string $version Version
+ * @property bool $enabled Enabled
+ * @property \DateTime $installDate Install date
+ * @property Migration[] $migrations Migrations
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Plugin extends ActiveRecord
 {
@@ -45,12 +44,11 @@ class Plugin extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%plugins}}';
+        return Table::PLUGINS;
     }
 
     /**

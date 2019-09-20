@@ -1,6 +1,6 @@
-{% set id = id ~ '-date' -%}
-{% set name = name is defined ? name -%}
-{% set value = value is defined ? value -%}
+{% set id = (id ?? 'date'~random())~'-date' -%}
+{% set name = name ?? null -%}
+{% set value = (value ?? false) ? date(value, false) : null -%}
 
 <div class="datewrapper"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
@@ -13,12 +13,12 @@
     } -%}
     <div data-icon="date"></div>
     {% if name -%}
-        <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
+        {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
 </div>
 
 {%- js %}
     $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
-    defaultDate: new Date({% if value %}{{ value|date('Y') }}, {{ value|date('n')-1 }}, {{ value|date('j') }}{% endif %})
+        defaultDate: new Date({% if value %}{{ value.format('Y') }}, {{ value.format('n')-1 }}, {{ value.format('j') }}{% endif %})
     }, Craft.datepickerOptions));
 {%- endjs %}

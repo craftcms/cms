@@ -1,5 +1,5 @@
 {% if name is defined and name %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif -%}
 
 {% set elements = (elements is defined ? elements : []) -%}
@@ -21,6 +21,8 @@
     <div class="btn add icon dashed">{{ selectionLabel }}</div>
 </div>
 
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+
 {% set jsSettings = {
     id: id|namespaceInputId,
     name: name|namespaceInputName,
@@ -32,6 +34,7 @@
     limit: limit,
     modalStorageKey: storageKey,
     fieldId: fieldId,
+    prevalidate: prevalidate ?? false,
     defaultFieldLayoutId: defaultFieldLayoutId,
     modalSettings: {hideSidebar: hideSidebar}
 } %}

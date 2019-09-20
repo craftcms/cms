@@ -41,6 +41,8 @@
                 this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
                 this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
 
+                this.$container.data('matrix', this);
+
                 this.setNewBlockBtn();
 
                 this.blockTypesByHandle = {};
@@ -118,6 +120,8 @@
 
                 this.addListener(this.$container, 'resize', 'setNewBlockBtn');
                 Garnish.$doc.ready($.proxy(this, 'setNewBlockBtn'));
+
+                this.trigger('afterInit');
             },
 
             setNewBlockBtn: function() {
@@ -223,6 +227,10 @@
                     '<li class="hidden"><a data-icon="enabled" data-action="enable">' + Craft.t('app', 'Enable') + '</a></li>' +
                     '</ul>' +
                     '<hr class="padded"/>' +
+                    '<ul class="padded">' +
+                    '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
+                    '</ul>' +
+                    '<hr class="padded"/>' +
                     '<ul class="padded">';
 
                 for (var i = 0; i < this.blockTypes.length; i++) {
@@ -231,10 +239,6 @@
                 }
 
                 html +=
-                    '</ul>' +
-                    '<hr class="padded"/>' +
-                    '<ul class="padded">' +
-                    '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
                     '</ul>' +
                     '</div>' +
                     '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '" role="button"></a> ' +
@@ -256,6 +260,10 @@
 
                 $(bodyHtml).appendTo($fieldsContainer);
 
+                this.trigger('blockAdded', {
+                    $block: $block
+                });
+
                 // Animate the block into position
                 $block.css(this.getHiddenBlockCss($block)).velocity({
                     opacity: 1,
@@ -272,6 +280,9 @@
                     Garnish.requestAnimationFrame(function() {
                         // Scroll to the block
                         Garnish.scrollContainerToElement($block);
+
+                        // Focus on the first text input
+                        $block.find('.text:first').trigger('focus');
                     });
                 }, this));
             },
@@ -660,6 +671,10 @@
                 this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function() {
                     this.$container.remove();
                     this.matrix.updateAddBlockBtn();
+
+                    if (window.draftEditor) {
+                        window.draftEditor.checkForm();
+                    }
                 }, this));
             }
         });

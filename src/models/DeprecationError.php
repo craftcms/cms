@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -16,7 +16,7 @@ use DateTime;
  * DeprecationError model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DeprecationError extends Model
 {
@@ -93,9 +93,9 @@ class DeprecationError extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'line'], 'number', 'integerOnly' => true],
-            [['lastOccurrence'], DateTimeValidator::class],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'line'], 'number', 'integerOnly' => true];
+        $rules[] = [['lastOccurrence'], DateTimeValidator::class];
+        return $rules;
     }
 }

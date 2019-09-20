@@ -45,7 +45,7 @@ body.rtl .widget > .front > .pane > .icon.settings { margin-right: 7px; }
 
 .widget form + .errors { margin-top: 15px; }
 
-.widget > .back > .pane { background: #fafafa; }
+.widget > .back > .pane { background: #fbfcfd; }
 
 .widget > .back > .pane > .errors { margin-top: 24px; }
 

@@ -3,7 +3,10 @@
 
 {% block message %}
     <p>{{ "To complete the update, some changes must be made to your database."|t('app') }}</p>
-    <div class="buttons">
-        <a class="btn submit" href="{{ url('update', { return: craft.app.request.getPathInfo() }) }}">{{ "Finish up"|t('app') }}</a>
-    </div>
+    <form method="post" class="buttons">
+        {{ csrfInput() }}
+        {{ actionInput('updater') }}
+        {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
+        <input type="submit" class="btn submit" value="{{ 'Finish up'|t('app') }}">
+    </form>
 {% endblock %}

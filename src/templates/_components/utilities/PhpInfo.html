@@ -10,7 +10,7 @@
                             {%- if value is iterable %}
                                 {{- value|join(', ') }}
                             {%- else %}
-                                {{- value|raw }}
+                                {{- value }}
                             {%- endif -%}
                         </td>
                     </tr>

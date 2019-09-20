@@ -1,21 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
 
 use Craft;
+use Twig\Compiler;
+use Twig\Node\Node;
 
 /**
  * Class RequireLoginNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class RequireLoginNode extends \Twig_Node
+class RequireLoginNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,14 +25,12 @@ class RequireLoginNode extends \Twig_Node
     /**
      * Compiles a RequireLoginNode into PHP.
      *
-     * @param \Twig_Compiler $compiler
-     *
-     * @return void
+     * @param Compiler $compiler
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(Craft::class."::\$app->controller->requireLogin();\n");
+            ->write(Craft::class . "::\$app->controller->requireLogin();\n");
     }
 }

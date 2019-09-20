@@ -2,6 +2,9 @@
 <div class="menu">
     <ul>
         <li><a class="formsubmit" data-param="status" data-value="enabled"><span class="status enabled"></span> {{ "Enabled"|t('app') }}</a></li>
-        <li><a class="formsubmit" data-param="status" data-value="disabled"><span class="status disabled"></span> {{ "Disabled"|t('app') }}</a></li>
+        <li><a class="formsubmit" data-param="status" data-value="disabled"><span class="status disabled"></span> {{ allowDisabledForSite ? "Disabled Globally"|t('app') : "Disabled"|t('app') }}</a></li>
+        {% if allowDisabledForSite %}
+            <li><a class="formsubmit" data-param="status" data-value="disabled-for-site"><span class="status disabled"></span> {{ "Disabled for Site"|t('app') }}</a></li>
+        {% endif %}
     </ul>
 </div>
