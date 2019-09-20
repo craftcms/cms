@@ -1,83 +1,225 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use yii\base\InvalidParamException;
+use GuzzleHttp\Exception\ClientException;
+use yii\base\Action;
+use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
+use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
- *
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
  * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Controller extends \yii\web\Controller
 {
+    // Constants
+    // =========================================================================
+
+    const ALLOW_ANONYMOUS_NEVER = 0;
+    const ALLOW_ANONYMOUS_LIVE = 1;
+    const ALLOW_ANONYMOUS_OFFLINE = 2;
+
     // Properties
     // =========================================================================
 
     /**
-     * @var bool|string[] Whether this controller’s actions can be accessed anonymously
+     * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
      *
-     * If set to false, you are required to be logged in to execute any of the given controller's actions.
+     * This can be set to any of the following:
      *
-     * If set to true, anonymous access is allowed for all of the given controller's actions.
-     *
-     * If the value is an array of action IDs, then you must be logged in for any actions except for the ones in
-     * the array list.
-     *
-     * If you have a controller that where the majority of actions allow anonymous access, but you only want require
-     * login on a few, you can set this to true and call [[requireLogin()]] in the individual methods.
+     * - `false` or `self::ALLOW_ANONYMOUS_NEVER` (default) – indicates that all controller actions should never be
+     *   accessed anonymously
+     * - `true` or `self::ALLOW_ANONYMOUS_LIVE` – indicates that all controller actions can be accessed anonymously when
+     *    the system is live
+     * - `self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be accessed anonymously when the
+     *    system is offline
+     * - `self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be
+     *    accessed anonymously when the system is live or offline
+     * - An array of action IDs (e.g. `['save-guest-entry', 'edit-guest-entry']`) – indicates that the listed action IDs
+     *   can be accessed anonymously when the system is live
+     * - An array of action ID/bitwise pairs (e.g. `['save-guest-entry' => self::ALLOW_ANONYMOUS_OFFLINE]` – indicates
+     *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
-    protected $allowAnonymous = false;
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException if [[$allowAnonymous]] is set to an invalid value
+     */
+    public function init()
+    {
+        // Normalize $allowAnonymous
+        if (is_bool($this->allowAnonymous)) {
+            $this->allowAnonymous = (int)$this->allowAnonymous;
+        } else if (is_array($this->allowAnonymous)) {
+            $normalized = [];
+            foreach ($this->allowAnonymous as $k => $v) {
+                if (
+                    (is_int($k) && !is_string($v)) ||
+                    (is_string($k) && !is_int($v))
+                ) {
+                    throw new InvalidArgumentException("Invalid \$allowAnonymous value for key \"{$k}\"");
+                }
+                if (is_int($k)) {
+                    $normalized[$v] = self::ALLOW_ANONYMOUS_LIVE;
+                } else {
+                    $normalized[$k] = $v;
+                }
+            }
+            $this->allowAnonymous = $normalized;
+        } else if (!is_int($this->allowAnonymous)) {
+            throw new InvalidConfigException('Invalid $allowAnonymous value');
+        }
+
+        parent::init();
+    }
+
+    /**
+     * This method is invoked right before an action is executed.
+     *
+     * The method will trigger the [[EVENT_BEFORE_ACTION]] event. The return value of the method
+     * will determine whether the action should continue to run.
+     *
+     * In case the action should not run, the request should be handled inside of the `beforeAction` code
+     * by either providing the necessary output or redirecting the request. Otherwise the response will be empty.
+     *
+     * If you override this method, your code should look like the following:
+     *
+     * ```php
+     * public function beforeAction($action)
+     * {
+     *     // your custom code here, if you want the code to run before action filters,
+     *     // which are triggered on the [[EVENT_BEFORE_ACTION]] event, e.g. PageCache or AccessControl
+     *
+     *     if (!parent::beforeAction($action)) {
+     *         return false;
+     *     }
+     *
+     *     // other custom code here
+     *
+     *     return true; // or false to not run the action
+     * }
+     * ```
+     *
+     * @param Action $action the action to be executed.
+     * @return bool whether the action should continue to run.
+     * @throws BadRequestHttpException if the request is missing a valid CSRF token
+     * @throws ForbiddenHttpException if the user is not logged in or locks the necessary permissions
+     * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
      */
     public function beforeAction($action)
     {
+        $request = Craft::$app->getRequest();
+
+        // Don't enable CSRF validation for Live Preview requests
+        if ($request->getIsLivePreview()) {
+            $this->enableCsrfValidation = false;
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
 
         // Enforce $allowAnonymous
-        if (
-            (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
-            $this->allowAnonymous === false
-        ) {
-            $this->requireLogin();
+        $isLive = Craft::$app->getIsLive();
+        $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
+
+        if (is_int($this->allowAnonymous)) {
+            $allowAnonymous = $this->allowAnonymous;
+        } else {
+            $allowAnonymous = $this->allowAnonymous[$action->id] ?? self::ALLOW_ANONYMOUS_NEVER;
+        }
+
+        if (!($test & $allowAnonymous)) {
+            // If this is a CP request, make sure they have access to the CP
+            if ($request->getIsCpRequest()) {
+                $this->requireLogin();
+                $this->requirePermission('accessCp');
+            } else if (Craft::$app->getUser()->getIsGuest()) {
+                throw new ServiceUnavailableHttpException();
+            }
+
+            // If the system is offline, make sure they have permission to access the CP/site
+            if (!$isLive) {
+                $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
+                if (!Craft::$app->getUser()->checkPermission($permission)) {
+                    $error = $request->getIsCpRequest()
+                        ? Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.')
+                        : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
+                    throw new ServiceUnavailableHttpException($error);
+                }
+            }
         }
 
         return true;
     }
 
     /**
+     * @inheritdoc
+     */
+    public function runAction($id, $params = [])
+    {
+        try {
+            return parent::runAction($id, $params);
+        } catch (\Throwable $e) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                Craft::$app->getErrorHandler()->logException($e);
+                if (!YII_DEBUG && !$e instanceof UserException) {
+                    $message = Craft::t('app', 'An unknown error occurred.');
+                } else {
+                    $message = $e->getMessage();
+                }
+                if ($e instanceof ClientException) {
+                    $statusCode = $e->getCode();
+                    if (($response = $e->getResponse()) !== null) {
+                        $body = Json::decodeIfJson((string)$response->getBody());
+                        if (isset($body['message'])) {
+                            $message = $body['message'];
+                        }
+                    }
+                } else if ($e instanceof HttpException) {
+                    $statusCode = $e->statusCode;
+                } else {
+                    $statusCode = 500;
+                }
+                return $this->asErrorJson($message)
+                    ->setStatusCode($statusCode);
+            }
+            throw $e;
+        }
+    }
+
+    /**
      * Renders a template.
      *
-     * @param string $template  The name of the template to load
-     * @param array  $variables The variables that should be available to the template
-     *
+     * @param string $template The name of the template to load
+     * @param array $variables The variables that should be available to the template
      * @return YiiResponse
-     * @throws InvalidParamException if the view file does not exist.
+     * @throws InvalidArgumentException if the view file does not exist.
      */
     public function renderTemplate(string $template, array $variables = []): YiiResponse
     {
@@ -90,11 +232,11 @@ abstract class Controller extends \yii\web\Controller
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null) {
+            if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
                 $mimeType = 'text/html';
             }
 
-            $headers->set('content-type', $mimeType.'; charset='.$response->charset);
+            $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }
 
         // Render and return the template
@@ -108,15 +250,13 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * Redirects the user to the login template if they're not logged in.
-     *
-     * @return void
      */
     public function requireLogin()
     {
-        $user = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
-        if ($user->getIsGuest()) {
-            $user->loginRequired();
+        if ($userSession->getIsGuest()) {
+            $userSession->loginRequired();
             Craft::$app->end();
         }
     }
@@ -124,17 +264,23 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @return void
+     * @param bool $requireAdminChanges Whether the [[\craft\config\GeneralConfig::$allowAdminChanges|`allowAdminChanges`]]
+     * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
-    public function requireAdmin()
+    public function requireAdmin(bool $requireAdminChanges = true)
     {
         // First make sure someone's actually logged in
         $this->requireLogin();
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
+            throw new ForbiddenHttpException('User is not permitted to perform this action.');
+        }
+
+        // Make sure admin changes are allowed
+        if ($requireAdminChanges && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
     }
 
@@ -142,8 +288,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
      *
      * @param string $permissionName The name of the permission.
-     *
-     * @return void
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission(string $permissionName)
@@ -157,8 +301,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user can perform a given action, and ends the request with a 403 error if they don’t.
      *
      * @param string $action The name of the action to check.
-     *
-     * @return void
      * @throws ForbiddenHttpException if the current user is not authorized
      */
     public function requireAuthorization(string $action)
@@ -171,7 +313,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Requires that the user has an elevated session.
      *
-     * @return void
      * @throws ForbiddenHttpException if the current user does not have an elevated session
      */
     public function requireElevatedSession()
@@ -184,7 +325,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @return void
      * @throws BadRequestHttpException if the request is not a post request
      */
     public function requirePostRequest()
@@ -197,7 +337,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if the request doesn't accept JSON.
      *
-     * @return void
      * @throws BadRequestHttpException if the request doesn't accept JSON
      */
     public function requireAcceptsJson()
@@ -208,25 +347,47 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Throws a 400 error if the current request doesn’t have a valid token.
+     * Throws a 400 error if the current request doesn’t have a valid Craft token.
      *
-     * @return void
-     * @throws BadRequestHttpException if the request does not have a valid token
+     * @throws BadRequestHttpException if the request does not have a valid Craft token
      */
     public function requireToken()
     {
-        if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->getGeneral()->tokenParam)) {
+        if (Craft::$app->getRequest()->getToken() === null) {
             throw new BadRequestHttpException('Valid token required');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a Control Panel request.
+     *
+     * @throws BadRequestHttpException if the request is not a CP request
+     */
+    public function requireCpRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            throw new BadRequestHttpException('Request must be a Control Panel request');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a site request.
+     *
+     * @throws BadRequestHttpException if the request is not a site request
+     */
+    public function requireSiteRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+            throw new BadRequestHttpException('Request must be a site request');
         }
     }
 
     /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed       $object  Object containing properties that should be parsed for in the URL.
+     * @param mixed $object Object containing properties that should be parsed for in the URL.
      * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
-     *                             null, then the current request’s path will be used.
-     *
+     * null, then the current request’s path will be used.
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
@@ -254,7 +415,6 @@ abstract class Controller extends \yii\web\Controller
      * Sets the response format of the given data as JSONP.
      *
      * @param mixed $data The data that should be formatted.
-     *
      * @return YiiResponse A response that is configured to send `$data` formatted as JSON.
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_JSONP
@@ -274,7 +434,6 @@ abstract class Controller extends \yii\web\Controller
      * Sets the response format of the given data as RAW.
      *
      * @param mixed $data The data that should *not* be formatted.
-     *
      * @return YiiResponse A response that is configured to send `$data` without formatting.
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_RAW
@@ -292,7 +451,6 @@ abstract class Controller extends \yii\web\Controller
      * Responds to the request with a JSON error message.
      *
      * @param string $error The error message.
-     *
      * @return YiiResponse
      */
     public function asErrorJson(string $error): YiiResponse
@@ -302,7 +460,6 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @inheritdoc
-     *
      * @return YiiResponse
      */
     public function redirect($url, $statusCode = 302): YiiResponse

@@ -28,7 +28,7 @@
             {% endfor %}
 
             {% if entryTypeOptions|length == 1 %}
-                <input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ widget.entryType }}" />
+                {{ hiddenInput("sections[#{section.id}][entryType]", widget.entryType) }}
             {% else %}
                 {{ forms.selectField({
                     label: "Entry Type"|t('app'),
@@ -50,7 +50,7 @@
                         {% for field in entryType.getFieldLayout().getFields() %}
                             <div>
                                 {{ forms.checkbox({
-                                    label: field.name~(field.required ? ' <span class="required"></span>' : ''),
+                                    label: field.name|e~(field.required ? ' <span class="required"></span>' : ''),
                                     name: 'sections['~section.id~'][fields][]',
                                     value: field.id,
                                     checked: (field.required or field.id in widget.fields),

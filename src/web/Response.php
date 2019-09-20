@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -12,9 +12,8 @@ use yii\web\HttpException;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Response extends \yii\web\Response
 {
@@ -34,7 +33,7 @@ class Response extends \yii\web\Response
      *
      * @return string|null
      */
-    public function getContentType(): string
+    public function getContentType()
     {
         // If the response hasn't been prepared yet, go with what the formatter is going to set
         if (!$this->_isPrepared) {
@@ -71,9 +70,9 @@ class Response extends \yii\web\Response
     {
         $cacheTime = 31536000; // 1 year
         $this->getHeaders()
-            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
+            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
             ->set('Pragma', 'cache')
-            ->set('Cache-Control', 'max-age='.$cacheTime);
+            ->set('Cache-Control', 'max-age=' . $cacheTime);
 
         return $this;
     }
@@ -82,7 +81,6 @@ class Response extends \yii\web\Response
      * Sets a Last-Modified header based on a given file path.
      *
      * @param string $path The file to read the last modified date from.
-     *
      * @return static self reference
      */
     public function setLastModifiedHeader(string $path)
@@ -90,7 +88,7 @@ class Response extends \yii\web\Response
         $modifiedTime = filemtime($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT');
         }
 
         return $this;
@@ -98,11 +96,9 @@ class Response extends \yii\web\Response
 
     /**
      * @inheritdoc \yii\web\Response::sendFile()
-     *
-     * @param string      $filePath
+     * @param string $filePath
      * @param string|null $attachmentName
-     * @param array       $options
-     *
+     * @param array $options
      * @return static self reference
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
@@ -115,11 +111,9 @@ class Response extends \yii\web\Response
 
     /**
      * @inheritdoc \yii\web\Response::sendContentAsFile()
-     *
      * @param string $content
      * @param string $attachmentName
-     * @param array  $options
-     *
+     * @param array $options
      * @return static self reference
      * @throws HttpException
      */
@@ -139,7 +133,6 @@ class Response extends \yii\web\Response
      *
      * @see http://stackoverflow.com/a/141026
      * @throws \Throwable An exception will be thrown if content has already been output.
-     * @return void
      */
     public function sendAndClose()
     {
@@ -147,6 +140,9 @@ class Response extends \yii\web\Response
         if (headers_sent()) {
             return;
         }
+
+        // Get the active user before headers are sent
+        Craft::$app->getUser()->getIdentity();
 
         // Prevent the script from ending when the browser closes the connection
         ignore_user_abort(true);
@@ -158,7 +154,7 @@ class Response extends \yii\web\Response
             $obContent = @ob_get_clean();
 
             if ($obContent !== false) {
-                $this->content = $obContent.$this->content;
+                $this->content = $obContent . $this->content;
             } else {
                 break;
             }
@@ -178,6 +174,42 @@ class Response extends \yii\web\Response
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @internal this is an exact copy of yii\web\Response::sendContent(), except for the `@` before `set_time_limit(0)`
+     * @todo remove this if Yii ever merges https://github.com/yiisoft/yii2/pull/15679 or similar
+     */
+    protected function sendContent()
+    {
+        if ($this->stream === null) {
+            echo $this->content;
+
+            return;
+        }
+
+        @set_time_limit(0); // Reset time limit for big files
+        $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
+
+        if (is_array($this->stream)) {
+            list($handle, $begin, $end) = $this->stream;
+            fseek($handle, $begin);
+            while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
+                if ($pos + $chunkSize > $end) {
+                    $chunkSize = $end - $pos + 1;
+                }
+                echo fread($handle, $chunkSize);
+                flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
+            }
+            fclose($handle);
+        } else {
+            while (!feof($this->stream)) {
+                echo fread($this->stream, $chunkSize);
+                flush();
+            }
+            fclose($this->stream);
         }
     }
 

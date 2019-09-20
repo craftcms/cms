@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -19,12 +20,12 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
         $this->_handleDupes('handle');
         $this->_handleDupes('name');
 
-        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'handle', true)) {
-            $this->createIndex(null, '{{%usergroups}}', ['handle'], true);
+        if (!MigrationHelper::doesIndexExist(Table::USERGROUPS, 'handle', true, $this->db)) {
+            $this->createIndex(null, Table::USERGROUPS, ['handle'], true);
         }
 
-        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'name', true)) {
-            $this->createIndex(null, '{{%usergroups}}', ['name'], true);
+        if (!MigrationHelper::doesIndexExist(Table::USERGROUPS, 'name', true, $this->db)) {
+            $this->createIndex(null, Table::USERGROUPS, ['name'], true);
         }
     }
 
@@ -33,23 +34,23 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
      */
     private function _handleDupes(string $type)
     {
-        echo '    > looking for duplicate user group '.$type.'s ...';
+        echo '    > looking for duplicate user group ' . $type . 's ...';
         // Get any duplicates.
         $duplicates = (new Query())
             ->select($type)
-            ->from(['{{%usergroups}}'])
+            ->from([Table::USERGROUPS])
             ->groupBy([$type])
-            ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
+            ->having('count(' . $this->db->quoteValue($type) . ') > ' . $this->db->quoteValue('1'))
             ->all($this->db);
 
         if (!empty($duplicates)) {
-            echo ' found '.count($duplicates)."\n";
+            echo ' found ' . count($duplicates) . "\n";
 
             foreach ($duplicates as $duplicate) {
-                echo '    > fixing duplicate "'.$duplicate[$type].'" user group '.$type."s\n";
+                echo '    > fixing duplicate "' . $duplicate[$type] . '" user group ' . $type . "s\n";
 
                 $rows = (new Query())
-                    ->from(['{{%usergroups}}'])
+                    ->from([Table::USERGROUPS])
                     ->where([$type => $duplicate[$type]])
                     ->orderBy(['dateCreated' => SORT_ASC])
                     ->all($this->db);
@@ -65,13 +66,13 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                         // Let's give this 100 tries.
                         for ($counter = 1; $counter <= 100; $counter++) {
                             if ($type === 'handle') {
-                                $newString = $duplicate[$type].$counter;
+                                $newString = $duplicate[$type] . $counter;
                             } else {
-                                $newString = $duplicate[$type].' '.$counter;
+                                $newString = $duplicate[$type] . ' ' . $counter;
                             }
 
                             $exists = (new Query())
-                                ->from(['{{%usergroups}}'])
+                                ->from([Table::USERGROUPS])
                                 ->where([$type => $newString])
                                 ->exists($this->db);
 
@@ -82,7 +83,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                         }
 
                         // Let's update with a unique one.
-                        $this->update('{{%usergroups}}', [$type => $newString], ['id' => $row['id']]);
+                        $this->update(Table::USERGROUPS, [$type => $newString], ['id' => $row['id']]);
                     }
                 }
             }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\deprecationerrors;
@@ -11,7 +11,7 @@ use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
- * Asset bundle for the Deprecation Errors utility
+ * Asset bundle for the Deprecation Warnings utility
  */
 class DeprecationErrorsAsset extends AssetBundle
 {
@@ -20,7 +20,7 @@ class DeprecationErrorsAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,7 +31,7 @@ class DeprecationErrorsAsset extends AssetBundle
         ];
 
         $this->js = [
-            'deprecator'.$this->dotJs(),
+            'deprecator' . $this->dotJs(),
         ];
 
         parent::init();

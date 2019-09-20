@@ -1,24 +1,27 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig;
 
 use Craft;
 use craft\web\View;
+use Twig\Loader\ExistsLoaderInterface;
+use Twig\Loader\LoaderInterface;
+use Twig\Source;
 
 /**
  * Loads Craft templates into Twig.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-
 /** @noinspection PhpDeprecationInspection */
-class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
+
+class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
 {
     // Properties
     // =========================================================================
@@ -60,14 +63,13 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
             throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
         }
 
-        return new \Twig_Source(file_get_contents($template), $name, $template);
+        return new Source(file_get_contents($template), $name, $template);
     }
 
     /**
      * Gets the cache key to use for the cache for a given template.
      *
      * @param string $name The name of the template to load
-     *
      * @return string The cache key (the path to the template)
      * @throws TemplateLoaderException if the template doesn’t exist
      */
@@ -80,8 +82,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      * Returns whether the cached template is still up-to-date with the latest template.
      *
      * @param string $name The template name
-     * @param int    $time The last modification time of the cached template
-     *
+     * @param int $time The last modification time of the cached template
      * @return bool
      * @throws TemplateLoaderException if the template doesn’t exist
      */
@@ -110,7 +111,6 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      * Returns the path to a given template, or throws a TemplateLoaderException.
      *
      * @param string $name
-     *
      * @return string
      * @throws TemplateLoaderException if the template doesn’t exist
      */

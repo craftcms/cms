@@ -12,6 +12,7 @@
                     {%- if source.structureId is defined %} data-has-structure{% endif %}
                     {%- if source.defaultSort is defined %}{% set defaultSort = source.defaultSort %} data-default-sort="{{ defaultSort is iterable ? defaultSort|join(':') : defaultSort }}"{% endif %}
                     {%- if source.sites is defined %} data-sites="{{ source.sites|join(',') }}"{% endif %}
+                    {%- if source.criteria.status is defined %} data-override-status{% endif %}
                     {%- if source.data is defined -%}
                         {% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
                     {%- endif %}>
@@ -19,14 +20,17 @@
                             <span class="status {{ source.status }}"></span>
                         {% elseif source.icon is defined %}
                             <span class="icon">
-                                {{ (svg(source.icon) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
+                                {{ (svg(source.icon, sanitize=true, namespace=true) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
                             </span>
                         {% elseif source.iconMask is defined %}
                             <span class="icon icon-mask">
-                                {{ (svg(source.iconMask) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
+                                {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
                             </span>
                         {% endif %}
                         <span class="label">{{ source.label }}</span>
+                        {% if source.badgeCount is defined %}
+                            <span class="badge">{{ source.badgeCount|number(decimals=0) }}</span>
+                        {% endif %}
                 </a>
                 {% if source.nested is defined and source.nested is not empty %}
                     <div class="toggle"></div>

@@ -3,12 +3,11 @@
 
 {% import "_includes/forms" as forms %}
 
-
 {% block content %}
-    <input type="hidden" name="action" value="fields/save-field">
+    {{ actionInput('fields/save-field') }}
     {{ redirectInput('settings/fields/{groupId}') }}
     {% if fieldId is defined and fieldId %}
-        <input type="hidden" name="fieldId" value="{{ fieldId }}">
+        {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}
 
     {{ forms.selectField({
@@ -26,10 +25,9 @@
         instructions: "What this field will be called in the CP."|t('app'),
         id: 'name',
         name: 'name',
-        value: (field is not empty ? field.name : null),
-        errors: (field is not empty ? field.getErrors('name') : null),
+        value: field.name,
+        errors: field.getErrors('name'),
         required: true,
-        translatable: true,
         autofocus: true
     }) }}
 
@@ -37,11 +35,13 @@
         label: "Handle"|t('app'),
         instructions: "How you’ll refer to this field in the templates."|t('app'),
         id: 'handle',
-        class: 'code',
         name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
         maxlength: 64,
-        value: (field is not empty ? field.handle : null),
-        errors: (field is not empty ? field.getErrors('handle') : null),
+        value: field.handle,
+        errors: field.getErrors('handle'),
         required: true,
     }) }}
 
@@ -51,9 +51,15 @@
         id: 'instructions',
         class: 'nicetext',
         name: 'instructions',
-        value: (field is not empty ? field.instructions : null),
-        errors: (field is not empty ? field.getErrors('instructions') : null),
-        translatable: true
+        value: field.instructions,
+        errors: field.getErrors('instructions'),
+    }) }}
+
+    {{ forms.checkboxField({
+        label: "Use this field’s values as search keywords?"|t('app'),
+        id: 'searchable',
+        name: 'searchable',
+        checked: field.searchable
     }) }}
 
     {{ forms.selectField({
@@ -64,9 +70,10 @@
         name: 'type',
         options: fieldTypeOptions,
         value: className(field),
-        errors: field.getErrors('type') ?? null,
         toggle: true
     }) }}
+
+    {{ missingFieldPlaceholder|raw }}
 
     {% if craft.app.getIsMultiSite() %}
         {% set translationMethods = field.supportedTranslationMethods %}
@@ -107,7 +114,7 @@
 
     <hr>
 
-    {% for type in allowedFieldTypes %}
+    {% for type in allFieldTypes %}
         {% set isCurrent = (type == className(field)) %}
         <div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
             {% namespace 'types['~type~']' %}
@@ -137,8 +144,9 @@
             // Rebuild the options based on the field type's supported translation methods
             $container.find('select').html(
                 ($.inArray('none', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="none">{{ "Not translatable"|t('app')|e('js') }}</option>' : '') +
-                ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('site', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('custom', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="custom">{{ "Custom…"|t('app')|e('js') }}</option>' : '')
             );
         }

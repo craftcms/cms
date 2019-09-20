@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
@@ -14,7 +14,7 @@ use craft\queue\BaseJob;
  * GeneratePendingTransforms job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GeneratePendingTransforms extends BaseJob
 {
@@ -34,7 +34,10 @@ class GeneratePendingTransforms extends BaseJob
 
         foreach ($indexIds as $i => $id) {
             if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
-                $this->setProgress($queue, $i / $totalIndexes);
+                $this->setProgress($queue, $i / $totalIndexes, Craft::t('app', '{step} of {total}', [
+                    'step' => $i + 1,
+                    'total' => $totalIndexes,
+                ]));
 
                 // Don't let an exception stop us from processing the rest
                 try {

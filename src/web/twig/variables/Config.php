@@ -1,21 +1,21 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
 
 use Craft;
 use craft\services\Config as ConfigService;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Config variable.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class Config
@@ -28,7 +28,6 @@ class Config
      * Returns whether a config item exists.
      *
      * @param string $name
-     *
      * @return bool
      */
     public function __isset(string $name): bool
@@ -41,7 +40,6 @@ class Config
      * Returns a config item.
      *
      * @param string $name
-     *
      * @return mixed
      */
     public function __get(string $name)
@@ -56,7 +54,6 @@ class Config
      *
      * @param string $name
      * @param string $category
-     *
      * @return mixed
      */
     public function get(string $name, string $category = ConfigService::CATEGORY_GENERAL)
@@ -65,7 +62,7 @@ class Config
 
         try {
             return Craft::$app->getConfig()->getConfigSettings($category)->$name ?? null;
-        } catch (InvalidParamException $e) {
+        } catch (InvalidArgumentException $e) {
             return null;
         }
     }

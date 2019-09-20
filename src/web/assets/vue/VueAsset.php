@@ -1,17 +1,13 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\vue;
 
-use Craft;
-use craft\helpers\ChartHelper;
-use craft\helpers\Json;
 use craft\web\AssetBundle;
-use craft\web\View;
 
 /**
  * Vue asset bundle.
@@ -26,10 +22,11 @@ class VueAsset extends AssetBundle
         $this->sourcePath = '@lib';
 
         $this->js = [
-            'vue/vue.js',
+            'vue/vue' . $this->dotJs(),
             'vue-router/vue-router.js',
             'vuex/vuex.js',
             'axios/axios.js',
+            'vue-autosuggest/vue-autosuggest.js',
         ];
 
         parent::init();

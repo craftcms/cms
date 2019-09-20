@@ -1,26 +1,24 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\debug;
 
 use Craft;
-use yii\data\ArrayDataProvider;
-use yii\db\ActiveRecord;
 
 /**
  * Debugger panel that collects and displays user info..
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UserPanel extends \yii\debug\panels\UserPanel
 {
     /**
-     * @inheritdoc
+     *
      */
     public function save()
     {

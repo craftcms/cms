@@ -1,19 +1,20 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\mail\transportadapters;
 
 use Craft;
+use craft\behaviors\EnvAttributeParserBehavior;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Gmail extends BaseTransportAdapter
 {
@@ -52,6 +53,22 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
+    public function behaviors()
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'username',
+                    'password',
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         return [
@@ -66,10 +83,11 @@ class Gmail extends BaseTransportAdapter
      */
     public function rules()
     {
-        return [
-            [['username', 'password', 'timeout'], 'required'],
-            [['timeout'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['username', 'password'], 'trim'];
+        $rules[] = [['username', 'password', 'timeout'], 'required'];
+        $rules[] = [['timeout'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**
@@ -92,8 +110,8 @@ class Gmail extends BaseTransportAdapter
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',
-            'username' => $this->username,
-            'password' => $this->password,
+            'username' => Craft::parseEnv($this->username),
+            'password' => Craft::parseEnv($this->password),
             'timeout' => $this->timeout,
         ];
     }

@@ -28,8 +28,8 @@ class m170706_183216_rename_sequences extends Migration
         ];
 
         foreach ($sequences as $oldName => $newName) {
-            $oldName = $this->db->tablePrefix.$oldName.'_id_seq';
-            $newName = $this->db->tablePrefix.$newName.'_id_seq';
+            $oldName = $this->db->tablePrefix . $oldName . '_id_seq';
+            $newName = $this->db->tablePrefix . $newName . '_id_seq';
 
             $transaction = $this->db->beginTransaction();
             try {

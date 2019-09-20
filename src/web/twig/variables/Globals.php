@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -15,8 +15,8 @@ use yii\base\Exception;
 /**
  * Globals functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class Globals
@@ -28,7 +28,6 @@ class Globals
      * Returns all global sets.
      *
      * @param string|null $indexBy
-     *
      * @return array
      */
     public function getAllSets(string $indexBy = null): array
@@ -44,7 +43,6 @@ class Globals
      * Returns all global sets that are editable by the current user.
      *
      * @param string|null $indexBy
-     *
      * @return array
      */
     public function getEditableSets(string $indexBy = null): array
@@ -83,9 +81,8 @@ class Globals
     /**
      * Returns a global set by its ID.
      *
-     * @param int         $globalSetId
+     * @param int $globalSetId
      * @param string|null $siteHandle
-     *
      * @return GlobalSet|null
      * @throws Exception if|null $siteHandle is invlaid
      */
@@ -97,7 +94,7 @@ class Globals
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;
@@ -111,9 +108,8 @@ class Globals
     /**
      * Returns a global set by its handle.
      *
-     * @param string      $globalSetHandle
+     * @param string $globalSetHandle
      * @param string|null $siteHandle
-     *
      * @return GlobalSet|null
      * @throws Exception if|null $siteHandle is invalid
      */
@@ -125,7 +121,7 @@ class Globals
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;

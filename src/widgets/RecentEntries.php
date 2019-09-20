@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -18,7 +18,7 @@ use craft\web\assets\recententries\RecentEntriesAsset;
  * RecentEntries represents a Recent Entries dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class RecentEntries extends Widget
 {
@@ -36,7 +36,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/clock.svg');
     }
@@ -70,7 +70,7 @@ class RecentEntries extends Widget
         parent::init();
 
         if ($this->siteId === null) {
-            $this->siteId = Craft::$app->getSites()->currentSite->id;
+            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
     }
 
@@ -81,7 +81,6 @@ class RecentEntries extends Widget
     {
         $rules = parent::rules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 
@@ -119,7 +118,7 @@ class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
+        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {
@@ -147,7 +146,7 @@ class RecentEntries extends Widget
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(RecentEntriesAsset::class);
-        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
+        $js = 'new Craft.RecentEntriesWidget(' . $this->id . ', ' . Json::encode($params) . ');';
         $view->registerJs($js);
 
         $entries = $this->_getEntries();
@@ -188,8 +187,7 @@ class RecentEntries extends Widget
         }
 
         $query = Entry::find();
-        $query->status(null);
-        $query->enabledForSite(false);
+        $query->anyStatus();
         $query->siteId($targetSiteId);
         $query->sectionId($targetSectionId);
         $query->editable(true);

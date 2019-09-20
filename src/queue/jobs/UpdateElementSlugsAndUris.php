@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
@@ -20,7 +20,7 @@ use yii\queue\Queue;
  * UpdateElementSlugsAndUris job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UpdateElementSlugsAndUris extends BaseJob
 {
@@ -105,14 +105,13 @@ class UpdateElementSlugsAndUris extends BaseJob
 
         return $class::find()
             ->siteId($this->siteId)
-            ->status(null)
-            ->enabledForSite(false);
+            ->anyStatus();
     }
 
     /**
      * Updates the given elements’ slugs and URIs
      *
-     * @param Queue|QueueInterface  $queue
+     * @param Queue|QueueInterface $queue
      * @param ElementQuery|ElementQueryInterface $query
      */
     private function _processElements($queue, $query)

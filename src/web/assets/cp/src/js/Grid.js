@@ -56,7 +56,6 @@ Craft.Grid = Garnish.Base.extend(
             this.$items = $().add(this.$items.add(items));
             this.setItems();
             this.refreshCols(true, true);
-            $(items).velocity('finish');
         },
 
         removeItems: function(items) {
@@ -83,7 +82,7 @@ Craft.Grid = Garnish.Base.extend(
             delete this.setItems._;
         },
 
-        refreshCols: function(force, animate) {
+        refreshCols: function(force) {
             if (this._refreshingCols) {
                 this._refreshColsAfterRefresh = true;
                 if (force) {
@@ -117,6 +116,11 @@ Craft.Grid = Garnish.Base.extend(
             }
             else {
                 this.refreshCols._.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+
+                // If we're adding a new column, require an extra 20 pixels in case a scrollbar shows up
+                if (this.totalCols !== null && this.refreshCols._.totalCols > this.totalCols) {
+                    this.refreshCols._.totalCols = Math.floor((this.$container.width() - 20) / this.settings.minColWidth)
+                }
 
                 if (this.settings.maxCols && this.refreshCols._.totalCols > this.settings.maxCols) {
                     this.refreshCols._.totalCols = this.settings.maxCols;
@@ -321,40 +325,24 @@ Craft.Grid = Garnish.Base.extend(
                             width: this.getItemWidthCss(this.layout.colspans[this.refreshCols._.i])
                         };
                         this.refreshCols._.css[Craft.left] = this.getItemLeftPosCss(this.layout.positions[this.refreshCols._.i]);
-
-                        if (animate) {
-                            // Get the target CSS in pixels for Velocity
-                            this.refreshCols._.velocityCss = {
-                                width: this.getItemWidthInPx(this.layout.colspans[this.refreshCols._.i])
-                            };
-                            this.refreshCols._.velocityCss[Craft.left] = this.getItemLeftPosInPx(this.layout.positions[this.refreshCols._.i]);
-
-                            this.items[this.refreshCols._.i].velocity(this.refreshCols._.velocityCss, {
-                                queue: false,
-                                complete: (function(css) {
-                                    // Set to calc()-based width/position on complete
-                                    return function(elements) {
-                                        $(elements).css(css);
-                                    };
-                                })(this.refreshCols._.css)
-                            });
-                        }
-                        else {
-                            this.items[this.refreshCols._.i].velocity('finish').css(this.refreshCols._.css);
-                        }
+                        this.items[this.refreshCols._.i].css(this.refreshCols._.css);
                     }
 
                     // If every item is at position 0, then let them lay out au naturel
                     if (this.isSimpleLayout()) {
 
                         this.$container.height('auto');
-                        this.$items.css('position', 'relative');
+                        this.$items.css({
+                            position: 'relative',
+                            top: 0,
+                            'margin-bottom': this.settings.gutter+'px'
+                        });
                     }
                     else {
                         this.$items.css('position', 'absolute');
 
                         // Now position the items
-                        this.positionItems(animate);
+                        this.positionItems();
 
                         // Update the positions as the items' heigthts change
                         this.addListener(this.$items, 'resize', 'onItemResize');
@@ -427,7 +415,7 @@ Craft.Grid = Garnish.Base.extend(
             return true;
         },
 
-        positionItems: function(animate) {
+        positionItems: function() {
             this.positionItems._ = {};
 
             this.positionItems._.colHeights = [];
@@ -449,14 +437,7 @@ Craft.Grid = Garnish.Base.extend(
                     this.positionItems._.top += this.settings.gutter;
                 }
 
-                if (animate) {
-                    this.items[this.positionItems._.i].velocity({top: this.positionItems._.top}, {
-                        queue: false
-                    });
-                }
-                else {
-                    this.items[this.positionItems._.i].velocity('finish').css('top', this.positionItems._.top);
-                }
+                this.items[this.positionItems._.i].css('top', this.positionItems._.top);
 
                 // Now add the new heights to those columns
                 for (this.positionItems._.col = this.layout.positions[this.positionItems._.i]; this.positionItems._.col <= this.positionItems._.endingCol; this.positionItems._.col++) {

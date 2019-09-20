@@ -1,21 +1,21 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
 
-use craft\db\Query;
+use Craft;
 use craft\helpers\Html;
-use craft\helpers\Json;
+use craft\services\Routes as RoutesService;
 
 /**
  * Route functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Routes
 {
@@ -27,40 +27,40 @@ class Routes
      *
      * @return array
      */
-    public function getDbRoutes(): array
+    public function getProjectConfigRoutes(): array
     {
         $routes = [];
+        $sortOrders = [];
 
-        $results = (new Query())
-            ->select(['id', 'siteId', 'uriParts', 'template'])
-            ->from(['{{%routes}}'])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
+        $results = Craft::$app->getProjectConfig()->get(RoutesService::CONFIG_ROUTES_KEY) ?? [];
 
-        foreach ($results as $result) {
+        foreach ($results as $routeUid => $route) {
             $uriDisplayHtml = '';
-            $uriParts = Json::decode($result['uriParts']);
 
-            foreach ($uriParts as $part) {
-                if (is_string($part)) {
-                    $uriDisplayHtml .= Html::encode($part);
-                } else {
-                    $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
-                        [
-                            'name' => $part[0],
-                            'value' => $part[1]
-                        ]);
+            if (!empty($route['uriParts'])) {
+                foreach ($route['uriParts'] as $part) {
+                    if (is_string($part)) {
+                        $uriDisplayHtml .= Html::encode($part);
+                    } else {
+                        $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
+                            [
+                                'name' => $part[0],
+                                'value' => $part[1]
+                            ]);
+                    }
                 }
             }
 
             $routes[] = [
-                'id' => $result['id'],
-                'siteId' => $result['siteId'],
+                'uid' => $routeUid,
+                'siteUid' => $route['siteUid'],
                 'uriDisplayHtml' => $uriDisplayHtml,
-                'template' => $result['template']
+                'template' => $route['template']
             ];
+            $sortOrders[] = $route['sortOrder'];
         }
 
+        array_multisort($sortOrders, SORT_ASC, SORT_NUMERIC, $routes);
         return $routes;
     }
 }

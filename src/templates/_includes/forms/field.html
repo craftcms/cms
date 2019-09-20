@@ -1,10 +1,11 @@
 {%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
-{%- set label = (label is defined and label != '__blank__' ? label : null) %}
+{%- set label %}{% filter raw %}{% block label %}{{ label is defined and label != '__blank__' ? label }}{% endblock %}{% endfilter %}{% endset %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
-{%- set instructions = (instructions is defined ? instructions : null) %}
-{%- set warning = (warning is defined ? warning : null) %}
+{%- set instructions %}{% filter raw %}{% block instructions %}{{ instructions ?? '' }}{% endblock %}{% endfilter %}{% endset %}
+{%- set tip = tip ?? block('tip') ?? null %}
+{%- set warning %}{% filter raw %}{% block warning %}{{ warning ?? '' }}{% endblock %}{% endfilter %}{% endset %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
@@ -23,17 +24,22 @@
             {% if label %}
                 <label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
                     {{- label|raw -}}
-                    {%- if translatable %} <span class="extralight" data-icon="language" title="{{ 'This field is translatable.'|t('app') }}"></span>{% endif -%}
+                    {%- if translatable %} <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.'|t('app') }}"></span>{% endif -%}
                 </label>
             {% endif %}
             {% if instructions %}
-                <div class="instructions">{{ instructions|md|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
+                <div class="instructions">{{ instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
             {% endif %}
         </div>
     {% endif %}
     <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
-        {{ input|raw }}
+        {% block input %}
+            {{ input|raw }}
+        {% endblock %}
     </div>
+    {% if tip %}
+        <p class="notice">{{ tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+    {% endif %}
     {% if warning %}
         <p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
     {% endif %}

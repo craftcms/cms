@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -16,7 +16,7 @@ use craft\base\MissingComponentTrait;
  * MissingField represents a field with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MissingField extends Field implements MissingComponentInterface
 {
@@ -44,6 +44,6 @@ class MissingField extends Field implements MissingComponentInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        return '<p class="error">'.$this->errorMessage.'</p>';
+        return $this->getPlaceholderHtml();
     }
 }

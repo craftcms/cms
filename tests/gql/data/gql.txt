@@ -1,0 +1,69 @@
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{entries (sectionId: 1000) {title slug}}
+-----RESPONSE DELIMITER-----
+{"data":{"entries":[{"title":"Theories of matrix","slug":"Theories--of--matrix"}]}}
+
+-----TEST DELIMITER-----
+
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{entries (sectionId: 1000) {title slug}}
+-----RESPONSE DELIMITER-----
+{"data":{"entries":[{"title":"Theories of matrix","slug":"Theories--of--matrix"}]}}
+
+-----TEST DELIMITER-----
+
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{entries (sectionId: 1000) { title slug ... on test1_test1_Entry { appointments { col1 col3 } } }}
+-----RESPONSE DELIMITER-----
+{"data":{"entries":[{"title":"Theories of matrix","slug":"Theories--of--matrix","appointments":[{"col1":"A rally","col3":"7"},{"col1":"A protest","col3":"500"}]}]}}
+
+-----TEST DELIMITER-----
+
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{  entries (sectionId: 1000) {  slug  ... on test1_test1_Entry {  matrixFirst (limit: 1){  ... on matrixFirst_aBlock_BlockType {  firstSubfield  }  }  }  }  }
+-----RESPONSE DELIMITER-----
+{"data":{"entries":[{"slug":"Theories--of--matrix","matrixFirst":[{"firstSubfield":"Some text"}]}]}}
+
+-----TEST DELIMITER-----
+
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{  entries (sectionId: 1000) {  slug  ... on test1_test1_Entry {  appointments {  col2 @formatDateTime (format: "---")  }  }  }  }
+-----RESPONSE DELIMITER-----
+{"data":{"entries":[{"slug":"Theories--of--matrix","appointments":[{"col2":"---"},{"col2":"---"}]}]}}
+
+-----TEST DELIMITER-----
+
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{entries (sectionId: 1000) {title slug}}
+-----RESPONSE DELIMITER-----
+{"data":{"entries":[{"title":"Theories of matrix","slug":"Theories--of--matrix"}]}}
+
+-----TEST DELIMITER-----
+
+My+voice+is+my+passport.+Verify me.
+-----TOKEN DELIMITER-----
+{globalSets (handle: "aDifferentGlobalSet") {name ... on aDifferentGlobalSet_GlobalSet { plainTextField}}}
+-----RESPONSE DELIMITER-----
+{"data":{"globalSets":[{"name":"A different global set","plainTextField":"No more information to give."}]}}
+
+-----TEST DELIMITER-----
+
+Some+other+token+please
+-----TOKEN DELIMITER-----
+{globalSets (handle: "aDifferentGlobalSet") {name ... on aDifferentGlobalSet_GlobalSet { plainTextField}}}
+-----RESPONSE DELIMITER-----
+{"data":{"globalSets":[{"name":"A different global set","plainTextField":"No more information to give."}]}}
+
+-----TEST DELIMITER-----
+
+Some+other+token+please
+-----TOKEN DELIMITER-----
+{entries (sectionId: 1000) {title slug}}
+-----RESPONSE DELIMITER-----
+{"errors":[{"message":"Cannot query field \"entries\" on type \"Query\"

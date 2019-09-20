@@ -1,6 +1,15 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
+    label: "Default Value"|t('app'),
+    id: 'defaultValue',
+    name: 'defaultValue',
+    value: field.defaultValue,
+    size: 5,
+    errors: field.getErrors('defaultValue')
+}) }}
+
+{{ forms.textField({
     label: "Min Value"|t('app'),
     id: 'min',
     name: 'min',
@@ -34,4 +43,22 @@
     value: field.size,
     size: 2,
     errors: field.getErrors('size')
+}) }}
+
+{{ forms.textField({
+    label: "Prefix Text"|t('app'),
+    instructions: "Text that should be shown before the input."|t('app'),
+    id: 'prefix',
+    name: 'prefix',
+    value: field.prefix,
+    errors: field.getErrors('prefix')
+}) }}
+
+{{ forms.textField({
+    label: "Suffix Text"|t('app'),
+    instructions: "Text that should be shown after the input."|t('app'),
+    id: 'suffix',
+    name: 'suffix',
+    value: field.suffix,
+    errors: field.getErrors('suffix')
 }) }}

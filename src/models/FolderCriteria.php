@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -13,7 +13,7 @@ use craft\base\Model;
  * Folders parameters.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FolderCriteria extends Model
 {
@@ -60,6 +60,11 @@ class FolderCriteria extends Model
      */
     public $limit;
 
+    /**
+     * @var string|string[]|null
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -68,8 +73,8 @@ class FolderCriteria extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'parentId', 'sourceId', 'offset', 'limit'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'parentId', 'sourceId', 'offset', 'limit'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 }

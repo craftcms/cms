@@ -1,21 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
 
+use Twig\Compiler;
+use Twig\Node\Node;
 use yii\web\NotFoundHttpException;
 
 /**
  * Class RequireEditionNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class RequireEditionNode extends \Twig_Node
+class RequireEditionNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,7 +25,7 @@ class RequireEditionNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)
@@ -32,7 +34,7 @@ class RequireEditionNode extends \Twig_Node
             ->raw(")\n")
             ->write("{\n")
             ->indent()
-            ->write('throw new '.NotFoundHttpException::class.";\n")
+            ->write('throw new ' . NotFoundHttpException::class . ";\n")
             ->outdent()
             ->write("}\n");
     }

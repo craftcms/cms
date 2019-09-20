@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\craftsupport;
@@ -21,7 +21,7 @@ class CraftSupportAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -32,7 +32,7 @@ class CraftSupportAsset extends AssetBundle
         ];
 
         $this->js = [
-            'CraftSupportWidget'.$this->dotJs(),
+            'CraftSupportWidget' . $this->dotJs(),
         ];
 
         parent::init();

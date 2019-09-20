@@ -57,7 +57,7 @@
         </thead>
         <tbody>
             {% for site in sites %}
-                <tr data-id="{{ site.id }}" data-name="{{ site.name|t('site') }}">
+                <tr data-id="{{ site.id }}" data-uid="{{ site.uid }}" data-name="{{ site.name|t('site') }}">
                     <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sites/' ~ site.id) }}">{{ site.name|t('site') }}</a></th>
                     <td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
                     <td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
