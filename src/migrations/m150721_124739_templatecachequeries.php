@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -18,12 +19,15 @@ class m150721_124739_templatecachequeries extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists(Table::TEMPLATECACHEQUERIES);
+
         // Delete all existing template caches
-        $this->delete('{{%templatecaches}}');
+        $this->delete(Table::TEMPLATECACHES);
 
         // templatecachecriteria => templatecachequeries
-        MigrationHelper::renameTable('{{%templatecachecriteria}}', '{{%templatecachequeries}}', $this);
-        MigrationHelper::renameColumn('{{%templatecachequeries}}', 'criteria', 'query', $this);
+        MigrationHelper::renameTable('{{%templatecachecriteria}}', Table::TEMPLATECACHEQUERIES, $this);
+        MigrationHelper::renameColumn(Table::TEMPLATECACHEQUERIES, 'criteria', 'query', $this);
     }
 
     /**

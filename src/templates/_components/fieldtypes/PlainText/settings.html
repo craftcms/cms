@@ -7,7 +7,6 @@
     id: 'placeholder',
     name: 'placeholder',
     value: field.placeholder,
-    translatable: true,
     errors: field.getErrors('placeholder')
 }) }}
 
@@ -19,6 +18,12 @@
     value: field.charLimit,
     size: 3,
     errors: field.getErrors('charLimit')
+}) }}
+
+{{ forms.checkboxField({
+    label: "Use a monospaced font"|t('app'),
+    name: 'code',
+    checked: field.code,
 }) }}
 
 {{ forms.checkboxField({

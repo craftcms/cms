@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -16,21 +16,18 @@ use craft\helpers\Image as ImageHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
-use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
 
 /**
  * Service for image operations.
+ * An instance of the Images service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->images`]].
  *
- * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
- *
- * @property bool  $isGd                  Whether image manipulations will be performed using GD or not
- * @property bool  $isImagick             Whether image manipulations will be performed using Imagick or not
+ * @property bool $isGd Whether image manipulations will be performed using GD or not
+ * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  * @property array $supportedImageFormats A list of all supported image formats
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Images extends Component
 {
@@ -43,6 +40,13 @@ class Images extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * Image formats that can be manipulated.
+     *
+     * @var array
+     */
+    public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
      * Image driver.
@@ -63,8 +67,6 @@ class Images extends Component
 
     /**
      * Decide on the image driver being used.
-     *
-     * @return void
      */
     public function init()
     {
@@ -100,35 +102,30 @@ class Images extends Component
     }
 
     /**
+     * Returns the version of the image driver.
+     */
+    public function getVersion(): string
+    {
+        if ($this->getIsGd()) {
+            return App::extensionVersion('gd');
+        }
+
+        $version = App::extensionVersion('imagick');
+        try {
+            $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
+        } catch (\Throwable $e) {
+        }
+        return $version;
+    }
+
+    /**
      * Returns a list of all supported image formats.
      *
      * @return array
      */
     public function getSupportedImageFormats(): array
     {
-        if ($this->getIsImagick()) {
-            return array_map('strtolower', Imagick::queryFormats());
-        }
-
-        $output = [];
-        $map = [
-            IMG_JPG => ['jpg', 'jpeg'],
-            IMG_GIF => ['gif'],
-            IMG_PNG => ['png'],
-        ];
-
-        // IMG_WEBP was added in PHP 7.0.10
-        if (defined('IMG_WEBP')) {
-            $map[IMG_WEBP] = ['webp'];
-        }
-
-        foreach ($map as $key => $extensions) {
-            if (imagetypes() & $key) {
-                $output = array_merge($output, $extensions);
-            }
-        }
-
-        return $output;
+        return $this->supportedImageFormats;
     }
 
     /**
@@ -150,7 +147,7 @@ class Images extends Component
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
         /** @noinspection PhpStaticAsDynamicMethodCallInspection */
-        $versionString = (new \Imagick)::getVersion()['versionString'];
+        $versionString = \Imagick::getVersion()['versionString'];
         list($this->_imagickVersion) = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
         return $this->_imagickVersion;
@@ -179,9 +176,8 @@ class Images extends Component
      * Loads an image from a file system path.
      *
      * @param string $path
-     * @param bool   $rasterize Whether the image should be rasterized if it's an SVG
-     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
-     *
+     * @param bool $rasterize Whether the image should be rasterized if it's an SVG
+     * @param int $svgSize The size SVG should be scaled up to, if rasterized
      * @return Image
      */
     public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
@@ -209,11 +205,10 @@ class Images extends Component
      *
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
+     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, then try again.
      *
      * @param string $filePath The path to the image file.
-     * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
-     *
+     * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
      * @return bool
      */
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
@@ -263,8 +258,6 @@ class Images extends Component
      * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
-     *
-     * @return void
      * @throws Exception if $filePath is a malformed SVG image
      */
     public function cleanImage(string $filePath)
@@ -290,6 +283,10 @@ class Images extends Component
             return;
         }
 
+        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return;
+        }
+
         try {
             if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
@@ -297,7 +294,7 @@ class Images extends Component
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
         } catch (\Throwable $e) {
-            Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), __METHOD__);
+            Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
         }
 
         // Image has already been cleaned if it had exif/orientation data
@@ -312,7 +309,6 @@ class Images extends Component
      * Rotate image according to it's EXIF data.
      *
      * @param string $filePath
-     *
      * @return bool
      */
     public function rotateImageByExifData(string $filePath): bool
@@ -358,7 +354,6 @@ class Images extends Component
      * Get EXIF metadata for a file by it's path.
      *
      * @param string $filePath
-     *
      * @return array|null
      */
     public function getExifData(string $filePath)
@@ -376,7 +371,6 @@ class Images extends Component
      * Strip orientation from EXIF data for an image at a path.
      *
      * @param string $filePath
-     *
      * @return bool
      */
     public function stripOrientationFromExifData(string $filePath): bool
@@ -392,6 +386,7 @@ class Images extends Component
 
         $image = new \Imagick($filePath);
         $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+        ImageHelper::cleanExifDataFromImagickImage($image);
         $image->writeImages($filePath, true);
 
         return true;

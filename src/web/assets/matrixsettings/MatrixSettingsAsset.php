@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\matrixsettings;
@@ -21,14 +21,14 @@ class MatrixSettingsAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'MatrixConfigurator'.$this->dotJs(),
+            'MatrixConfigurator' . $this->dotJs(),
         ];
 
         parent::init();
@@ -45,15 +45,16 @@ class MatrixSettingsAsset extends AssetBundle
             $view->registerTranslations('app', [
                 'Are you sure you want to delete this block type?',
                 'Are you sure you want to delete this field?',
+                'Custom…',
                 'Field Type',
                 'How you’ll refer to this block type in the templates.',
-                'This field is required',
-                'Translation Method',
                 'Not translatable',
+                'This field is required',
                 'Translate for each language',
                 'Translate for each site',
-                'Custom…',
                 'Translation Key Format',
+                'Translation Method',
+                'Use this field’s values as search keywords?',
                 'What this block type will be called in the CP.',
             ]);
         }

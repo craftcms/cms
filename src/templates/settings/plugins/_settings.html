@@ -14,9 +14,9 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="plugins/save-plugin-settings">
-    <input type="hidden" name="pluginHandle" value="{{ plugin.handle }}">
-    {{ redirectInput('settings/plugins') }}
+    {{ actionInput('plugins/save-plugin-settings') }}
+    {{ hiddenInput('pluginHandle', plugin.handle) }}
+    {{ redirectInput('settings') }}
 
     {% namespace 'settings' %}
         {{ settingsHtml|raw }}

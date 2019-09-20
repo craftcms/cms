@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\validators\UrlValidator;
 use yii\db\Schema;
@@ -20,7 +19,7 @@ use yii\db\Schema;
  * Url represents a URL field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Url extends Field implements PreviewableFieldInterface
 {
@@ -35,15 +34,77 @@ class Url extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'URL');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string|null The input’s placeholder text
+     */
+    public $placeholder;
+
+    /**
+     * @var int The maximum length (in bytes) the field can hold
+     */
+    public $maxLength = 255;
+
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['maxLength'], 'required'];
+        $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING;
+        return Schema::TYPE_STRING . "({$this->maxLength})";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+                [
+                    'label' => Craft::t('app', 'Placeholder Text'),
+                    'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+                    'id' => 'placeholder',
+                    'name' => 'placeholder',
+                    'value' => $this->placeholder,
+                    'errors' => $this->getErrors('placeholder'),
+                ]
+            ]) .
+            Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+                [
+                    'label' => Craft::t('app', 'Max Length'),
+                    'instructions' => Craft::t('app', 'The maximum length (in bytes) the field can hold.'),
+                    'id' => 'maxLength',
+                    'name' => 'maxLength',
+                    'type' => 'number',
+                    'min' => '10',
+                    'step' => '10',
+                    'value' => $this->maxLength,
+                    'errors' => $this->getErrors('maxLength'),
+                ]
+            ]);
     }
 
     /**
@@ -55,6 +116,7 @@ class Url extends Field implements PreviewableFieldInterface
             'type' => 'url',
             'id' => $this->handle,
             'name' => $this->handle,
+            'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);
     }

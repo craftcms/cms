@@ -20,10 +20,10 @@ class m170707_094758_delete_compiled_traits extends Migration
         $compiledClassesPath = Craft::$app->getPath()->getCompiledClassesPath();
 
         foreach ($files as $file) {
-            $path = $compiledClassesPath.DIRECTORY_SEPARATOR.$file.'.php';
+            $path = $compiledClassesPath . DIRECTORY_SEPARATOR . $file . '.php';
             if (file_exists($path)) {
                 echo "    > removing $path ...";
-                FileHelper::removeFile($path);
+                FileHelper::unlink($path);
                 echo " done\n";
             }
         }

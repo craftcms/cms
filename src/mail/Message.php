@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\mail;
@@ -13,7 +13,7 @@ use craft\elements\User;
  * Represents an email message.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Message extends \yii\swiftmailer\Message
 {
@@ -41,11 +41,10 @@ class Message extends \yii\swiftmailer\Message
     /**
      * Sets the message sender.
      *
-     * @param string|array|User|User[] $from The sender’s email address, or their user model(s).
-     *                                       You may pass an array of addresses if this message is from multiple people.
-     *                                       You may also specify sender name in addition to email address using format:
-     *                                       `[email => name]`.
-     *
+     * @param string|array|User|User[] $from The sender’s email address, or their
+     * user model(s). You may pass an array of addresses if this message is from
+     * multiple people. You may also specify sender name in addition to email
+     * address using format: `[email => name]`.
      * @return static self reference
      */
     public function setFrom($from)
@@ -59,11 +58,10 @@ class Message extends \yii\swiftmailer\Message
     /**
      * Sets the message recipient(s).
      *
-     * @param string|array|User|User[] $to The receiver’s email address, or their user model(s).
-     *                                     You may pass an array of addresses if multiple recipients should receive this message.
-     *                                     You may also specify receiver name in addition to email address using format:
-     *                                     `[email => name]`.
-     *
+     * @param string|array|User|User[] $to The receiver’s email address, or their
+     * user model(s). You may pass an array of addresses if multiple recipients
+     * should receive this message. You may also specify receiver name in addition
+     * to email address using format: `[email => name]`.
      * @return static self reference
      */
     public function setTo($to)
@@ -86,10 +84,9 @@ class Message extends \yii\swiftmailer\Message
      * Sets the CC (additional copy receiver) addresses of this message.
      *
      * @param string|array|User|User[] $cc The copied receiver’s email address, or their user model(s).
-     *                                     You may pass an array of addresses if multiple recipients should receive this message.
-     *                                     You may also specify receiver name in addition to email address using format:
-     *                                     `[email => name]`.
-     *
+     * You may pass an array of addresses if multiple recipients should receive this message.
+     * You may also specify receiver name in addition to email address using format:
+     * `[email => name]`.
      * @return static self reference
      */
     public function setCc($cc)
@@ -103,11 +100,10 @@ class Message extends \yii\swiftmailer\Message
     /**
      * Sets the BCC (hidden copy receiver) addresses of this message.
      *
-     * @param string|array|User|User[] $bcc The hidden copied receiver’ email address, or their user model(s).
-     *                                      You may pass an array of addresses if multiple recipients should receive this message.
-     *                                      You may also specify receiver name in addition to email address using format:
-     *                                      `[email => name]`.
-     *
+     * @param string|array|User|User[] $bcc The hidden copied receiver’s email address, or their user model(s).
+     * You may pass an array of addresses if multiple recipients should receive this message.
+     * You may also specify receiver name in addition to email address using format:
+     * `[email => name]`.
      * @return static self reference
      */
     public function setBcc($bcc)
@@ -122,36 +118,35 @@ class Message extends \yii\swiftmailer\Message
     // =========================================================================
 
     /**
-     * @param string|array|User|User[] $emails
-     *
+     * @param string|array|User|User[]|null $emails
      * @return string|array
      */
     private function _normalizeEmails($emails)
     {
-        if (is_array($emails)) {
-            foreach ($emails as $key => $email) {
-                if (is_numeric($key)) {
-                    $emails[$key] = $this->_normalizeEmail($email);
+        if (empty($emails)) {
+            return null;
+        }
+
+        if (!is_array($emails)) {
+            $emails = [$emails];
+        }
+
+        $normalized = [];
+
+        foreach ($emails as $key => $value) {
+            if ($value instanceof User) {
+                if (($name = $value->getFullName()) !== null) {
+                    $normalized[$value->email] = $name;
+                } else {
+                    $normalized[] = $value->email;
                 }
+            } else if (is_numeric($key)) {
+                $normalized[] = $value;
+            } else {
+                $normalized[$key] = $value;
             }
-        } else {
-            $emails = $this->_normalizeEmail($emails);
         }
 
-        return $emails;
-    }
-
-    /**
-     * @param string|User $email
-     *
-     * @return string|array
-     */
-    private function _normalizeEmail($email)
-    {
-        if ($email instanceof User) {
-            return [$email->email => $email->getName()];
-        }
-
-        return $email;
+        return $normalized;
     }
 }

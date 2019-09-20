@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\login;
@@ -20,7 +20,7 @@ class LoginAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,7 +31,7 @@ class LoginAsset extends AssetBundle
         ];
 
         $this->js = [
-            'login'.$this->dotJs(),
+            'login' . $this->dotJs(),
         ];
 
         parent::init();

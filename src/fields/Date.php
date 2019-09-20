@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
@@ -23,9 +24,9 @@ use yii\db\Schema;
  * Date represents a Date/Time field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class Date extends Field implements PreviewableFieldInterface
+class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     // Static
     // =========================================================================
@@ -36,6 +37,14 @@ class Date extends Field implements PreviewableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Date/Time');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return DateTime::class . '|null';
     }
 
     // Properties
@@ -108,7 +117,6 @@ class Date extends Field implements PreviewableFieldInterface
         $rules = parent::rules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-
         return $rules;
     }
 
@@ -183,7 +191,7 @@ class Date extends Field implements PreviewableFieldInterface
         }
 
         if ($this->showTime) {
-            $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
+            $input .= ' ' . Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
         }
 
         if ($this->showDate && $this->showTime) {
@@ -210,7 +218,7 @@ class Date extends Field implements PreviewableFieldInterface
             $formatter = Craft::$app->getFormatter();
 
             /** @var DateTime $value */
-            return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+            return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
         }
 
         return '';
@@ -234,9 +242,8 @@ class Date extends Field implements PreviewableFieldInterface
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
+            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
     }
 }

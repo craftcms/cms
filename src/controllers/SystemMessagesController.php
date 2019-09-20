@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,16 +12,15 @@ use craft\models\SystemMessage;
 use craft\web\Controller;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The SystemMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemMessagesController extends Controller
 {
@@ -33,8 +32,10 @@ class SystemMessagesController extends Controller
      */
     public function init()
     {
-        // All email message actions require an admin
-        $this->requireAdmin();
+        // Make sure they have access to the System Messages utility
+        $this->requirePermission('utility:system-messages');
+
+        parent::init();
     }
 
     /**
@@ -49,10 +50,15 @@ class SystemMessagesController extends Controller
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
         $language = $request->getBodyParam('language');
+
+        if (!$language) {
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
+        }
+
         $message = Craft::$app->getSystemMessages()->getMessage($key, $language);
 
         return $this->asJson([
-            'body' => $this->getView()->renderTemplate('settings/email/_message_modal', [
+            'body' => $this->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal', [
                 'message' => $message,
                 'language' => $language,
             ])
@@ -77,7 +83,7 @@ class SystemMessagesController extends Controller
         if (Craft::$app->getIsMultiSite()) {
             $language = Craft::$app->getRequest()->getBodyParam('language');
         } else {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {

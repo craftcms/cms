@@ -1,12 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db;
 
+use craft\base\ClonefixTrait;
+use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -15,18 +17,60 @@ use yii\db\Connection as YiiConnection;
  * Class Query
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Query extends \yii\db\Query
 {
+    // Traits
+    // =========================================================================
+
+    use ClonefixTrait;
+
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the query's init cycle
+     * @see init()
+     */
+    const EVENT_INIT = 'init';
+
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->hasEventHandlers(self::EVENT_INIT)) {
+            $this->trigger(self::EVENT_INIT);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        // Fire a 'defineBehaviors' event
+        $event = new DefineBehaviorsEvent();
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        return $event->behaviors;
+    }
 
     /**
      * Returns whether a given table has been joined in this query.
      *
      * @param string $table
-     *
      * @return bool
      */
     public function isJoined(string $table): bool
@@ -83,8 +127,7 @@ class Query extends \yii\db\Query
      * Executes the query and returns the first two columns in the results as key/value pairs.
      *
      * @param YiiConnection|null $db The database connection used to execute the query.
-     *                               If this parameter is not given, the `db` application component will be used.
-     *
+     * If this parameter is not given, the `db` application component will be used.
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
      */
@@ -172,12 +215,23 @@ class Query extends \yii\db\Query
     }
 
     /**
+     * @inheritdoc
+     */
+    public function exists($db = null)
+    {
+        try {
+            return parent::exists($db);
+        } catch (QueryAbortedException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Executes the query and returns a single row of result at a given offset.
      *
-     * @param int                $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
-     *                               If this parameter is not given, the `db` application component will be used.
-     *
+     * If this parameter is not given, the `db` application component will be used.
      * @return array|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
@@ -195,8 +249,7 @@ class Query extends \yii\db\Query
      * Shortcut for `createCommand()->getRawSql()`.
      *
      * @param YiiConnection|null $db the database connection used to generate the SQL statement.
-     *                               If this parameter is not given, the `db` application component will be used.
-     *
+     * If this parameter is not given, the `db` application component will be used.
      * @return string
      * @see createCommand()
      * @see \yii\db\Command::getRawSql()

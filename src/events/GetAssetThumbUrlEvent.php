@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\events;
@@ -14,7 +14,8 @@ use yii\base\Event;
  * Get Asset thumb url event class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
+ * @todo rename to AssetThumbUrlEvent in Craft 4
  */
 class GetAssetThumbUrlEvent extends Event
 {
@@ -27,7 +28,18 @@ class GetAssetThumbUrlEvent extends Event
     public $asset;
 
     /**
+     * @var int Requested thumbnail width
+     */
+    public $width;
+
+    /**
+     * @var int Requested thumbnail height
+     */
+    public $height;
+
+    /**
      * @var int Requested thumbnail size (width and height)
+     * @deprecated in 3.0.0-RC7. Use [[width]] and [[height]] instead
      */
     public $size;
 

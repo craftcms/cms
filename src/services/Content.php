@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -12,19 +12,18 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Content service.
- *
- * An instance of the Content service is globally accessible in Craft via [[Application::content `Craft::$app->getContent()`]].
+ * Content service.
+ * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Content extends Component
 {
@@ -47,7 +46,7 @@ class Content extends Component
     /**
      * @var string
      */
-    public $contentTable = '{{%content}}';
+    public $contentTable = Table::CONTENT;
 
     /**
      * @var string
@@ -66,7 +65,6 @@ class Content extends Component
      * Returns the content row for a given element, with field column prefixes removed from the keys.
      *
      * @param ElementInterface $element The element whose content we're looking for.
-     *
      * @return array|null The element's content row values, or null if the row could not be found
      */
     public function getContentRow(ElementInterface $element)
@@ -107,8 +105,6 @@ class Content extends Component
      * Populates a given element with its custom field values.
      *
      * @param ElementInterface $element The element for which we should create a new content model.
-     *
-     * @return void
      */
     public function populateElementContent(ElementInterface $element)
     {
@@ -142,9 +138,8 @@ class Content extends Component
      * Saves an element's content.
      *
      * @param ElementInterface $element The element whose content we're saving.
-     *
      * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
-     *                 element and its content model.
+     * element and its content model.
      * @throws Exception if $element has not been saved yet
      */
     public function saveContent(ElementInterface $element): bool
@@ -182,10 +177,22 @@ class Content extends Component
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
-                    $column = $this->fieldColumnPrefix.$field->handle;
+                    $column = $this->fieldColumnPrefix . $field->handle;
                     $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
             }
+        }
+
+        if (!$element->contentId) {
+            // It could be a draft that's getting published
+            $element->contentId = (new Query())
+                ->select(['id'])
+                ->from([$this->contentTable])
+                ->where([
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId
+                ])
+                ->scalar();
         }
 
         // Insert/update the DB row
@@ -200,10 +207,6 @@ class Content extends Component
                 ->insert($this->contentTable, $values)
                 ->execute();
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
-        }
-
-        if ($fieldLayout) {
-            $this->_updateSearchIndexes($element, $fieldLayout);
         }
 
         // Fire an 'afterSaveContent' event
@@ -224,36 +227,9 @@ class Content extends Component
     // =========================================================================
 
     /**
-     * Updates the search indexes based on the new content values.
-     *
-     * @param ElementInterface $element
-     * @param FieldLayout      $fieldLayout
-     *
-     * @return void
-     */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
-    {
-        /** @var Element $element */
-        $searchKeywordsBySiteId = [];
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            // Set the keywords for the content's site
-            $fieldValue = $element->getFieldValue($field->handle);
-            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-            $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-        }
-
-        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
-        }
-    }
-
-    /**
      * Removes the column prefixes from a given row.
      *
      * @param array $row
-     *
      * @return array
      */
     private function _removeColumnPrefixesFromRow(array $row): array

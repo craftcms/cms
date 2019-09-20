@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -17,7 +17,7 @@ use yii\base\InvalidConfigException;
  * Class ElementUriValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementUriValidator extends UriValidator
 {
@@ -36,7 +36,6 @@ class ElementUriValidator extends UriValidator
 
     /**
      * @inheritdoc
-     *
      * @throws InvalidConfigException if $attribute is not 'uri'
      */
     public function validateAttribute($model, $attribute)
@@ -45,12 +44,16 @@ class ElementUriValidator extends UriValidator
             throw new InvalidConfigException('Invalid use of ElementUriValidator');
         }
 
+        // If this is a draft or revision and it already has a URI, leave it alone
+        /** @var Element $model */
+        if (($model->getIsDraft() || $model->getIsRevision()) && $model->uri) {
+            return;
+        }
+
         try {
-            /** @var Element $model */
             ElementHelper::setUniqueUri($model);
         } catch (OperationAbortedException $e) {
             $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
-
             return;
         }
 

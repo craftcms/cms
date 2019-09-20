@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\behaviors;
@@ -16,12 +16,9 @@ use yii\web\AssetBundle;
 /**
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
  *
- * An instance of the HttpSession service is globally accessible in Craft via [[Application::httpSession `Craft::$app->getSession()`]].
- *
  * @property Session $owner
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SessionBehavior extends Behavior
 {
@@ -56,13 +53,10 @@ class SessionBehavior extends Behavior
      * Stores a notice in the user’s flash data.
      *
      * The message will be stored on the session, and can be retrieved by calling
-     * [[getFlash() `getFlash('notice')`]] or [[getAllFlashes()]].
-     *
+     * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
      * Only one flash notice can be stored at a time.
      *
      * @param string $message The message.
-     *
-     * @return void
      */
     public function setNotice(string $message)
     {
@@ -73,13 +67,10 @@ class SessionBehavior extends Behavior
      * Stores an error message in the user’s flash data.
      *
      * The message will be stored on the session, and can be retrieved by calling
-     * [[getFlash() `getFlash('error')`]] or [[getAllFlashes()]].
-     *
+     * [[getFlash()|`getFlash('error')`]] or [[getAllFlashes()]].
      * Only one flash error message can be stored at a time.
      *
      * @param string $message The message.
-     *
-     * @return void
      */
     public function setError(string $message)
     {
@@ -92,10 +83,8 @@ class SessionBehavior extends Behavior
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
      * [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string       $name     the class name of the asset bundle (without the leading backslash)
+     * @param string $name the class name of the asset bundle (without the leading backslash)
      * @param integer|null $position if set, this forces a minimum position for javascript files.
-     *
-     * @return void
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
      */
@@ -114,7 +103,6 @@ class SessionBehavior extends Behavior
      * Returns the list of queued-up asset bundles in the session flash data.
      *
      * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
-     *
      * @return array The queued-up asset bundles.
      * @see addAssetBundleFlash()
      */
@@ -126,15 +114,13 @@ class SessionBehavior extends Behavior
     /**
      * Stores JS in the user’s flash data.
      *
-     * The JavaScript code will be stored on the session, and can be retrieved by calling
-     * [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
+     * The JavaScript code will be stored on the session, and can be retrieved
+     * by calling [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string      $js       the JS code block to be registered
-     * @param integer     $position the position at which the JS script tag should be inserted
-     *                              in a page.
-     * @param string|null $key      the key that identifies the JS code block.
-     *
-     * @return void
+     * @param string $js the JS code block to be registered
+     * @param integer $position the position at which the JS script tag should
+     * be inserted in a page.
+     * @param string|null $key the key that identifies the JS code block.
      * @see getJsFlashes()
      * @see View::registerJs()
      */
@@ -149,7 +135,6 @@ class SessionBehavior extends Behavior
      * Returns the stored JS flashes.
      *
      * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
-     *
      * @return array The stored JS flashes.
      * @see addJsFlash()
      */
@@ -165,8 +150,6 @@ class SessionBehavior extends Behavior
      * Authorizes the user to perform an action for the duration of the session.
      *
      * @param string $action
-     *
-     * @return void
      */
     public function authorize(string $action)
     {
@@ -182,8 +165,6 @@ class SessionBehavior extends Behavior
      * Deauthorizes the user from performing an action.
      *
      * @param string $action
-     *
-     * @return void
      */
     public function deauthorize(string $action)
     {
@@ -200,7 +181,6 @@ class SessionBehavior extends Behavior
      * Returns whether the user is authorized to perform an action.
      *
      * @param string $action
-     *
      * @return bool
      */
     public function checkAuthorization(string $action): bool

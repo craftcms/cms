@@ -1,27 +1,27 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\DateTimeValidator;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class Migration record.
  *
- * @property int       $id        ID
- * @property int       $pluginId  Plugin ID
- * @property string    $version   Version
+ * @property int $id ID
+ * @property int $pluginId Plugin ID
+ * @property string $version Version
  * @property \DateTime $applyTime Apply time
- * @property Plugin    $plugin    Plugin
- *
+ * @property Plugin $plugin Plugin
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Migration extends ActiveRecord
 {
@@ -43,12 +43,11 @@ class Migration extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%migrations}}';
+        return Table::MIGRATIONS;
     }
 
     /**

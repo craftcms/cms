@@ -1,21 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
 
+use Twig\Compiler;
+use Twig\Node\Node;
+
 /**
  * Class SwitchNode
- *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class SwitchNode extends \Twig_Node
+class SwitchNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,7 +25,7 @@ class SwitchNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)
@@ -33,7 +35,7 @@ class SwitchNode extends \Twig_Node
             ->indent();
 
         foreach ($this->getNode('cases') as $case) {
-            /** @var \Twig_Node $case */
+            /** @var Node $case */
             // The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
             // outside of any blocks
             if (!$case->hasNode('body')) {

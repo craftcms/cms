@@ -6,137 +6,6 @@ $.extend(Craft,
         navHeight: 48,
 
         /**
-         * Map of high-ASCII codes to their low-ASCII characters.
-         *
-         * @var object
-         */
-        asciiCharMap: {
-            'a': [
-                'à', 'á', 'ả', 'ã', 'ạ', 'ă', 'ắ', 'ằ', 'ẳ', 'ẵ', 'ặ', 'â', 'ấ', 'ầ', 'ẩ', 'ẫ', 'ậ',
-                'ä', 'ā', 'ą', 'å', 'α', 'ά', 'ἀ', 'ἁ', 'ἂ', 'ἃ', 'ἄ', 'ἅ', 'ἆ', 'ἇ', 'ᾀ', 'ᾁ', 'ᾂ',
-                'ᾃ', 'ᾄ', 'ᾅ', 'ᾆ', 'ᾇ', 'ὰ', 'ά', 'ᾰ', 'ᾱ', 'ᾲ', 'ᾳ', 'ᾴ', 'ᾶ', 'ᾷ', 'а', 'أ'
-            ],
-            'b': ['б', 'β', 'Ъ', 'Ь', 'ب'],
-            'c': ['ç', 'ć', 'č', 'ĉ', 'ċ'],
-            'd': ['ď', 'ð', 'đ', 'ƌ', 'ȡ', 'ɖ', 'ɗ', 'ᵭ', 'ᶁ', 'ᶑ', 'д', 'δ', 'د', 'ض'],
-            'e': [
-                'é', 'è', 'ẻ', 'ẽ', 'ẹ', 'ê', 'ế', 'ề', 'ể', 'ễ', 'ệ', 'ë', 'ē', 'ę', 'ě', 'ĕ', 'ė',
-                'ε', 'έ', 'ἐ', 'ἑ', 'ἒ', 'ἓ', 'ἔ', 'ἕ', 'ὲ', 'έ', 'е', 'ё', 'э', 'є', 'ə'
-            ],
-            'f': ['ф', 'φ', 'ف'],
-            'g': ['ĝ', 'ğ', 'ġ', 'ģ', 'г', 'ґ', 'γ', 'ج'],
-            'h': ['ĥ', 'ħ', 'η', 'ή', 'ح', 'ه'],
-            'i': [
-                'í', 'ì', 'ỉ', 'ĩ', 'ị', 'î', 'ï', 'ī', 'ĭ', 'į', 'ı', 'ι', 'ί', 'ϊ', 'ΐ', 'ἰ', 'ἱ',
-                'ἲ', 'ἳ', 'ἴ', 'ἵ', 'ἶ', 'ἷ', 'ὶ', 'ί', 'ῐ', 'ῑ', 'ῒ', 'ΐ', 'ῖ', 'ῗ', 'і', 'ї', 'и'
-            ],
-            'j': ['ĵ', 'ј', 'Ј'],
-            'k': ['ķ', 'ĸ', 'к', 'κ', 'Ķ', 'ق', 'ك'],
-            'l': ['ł', 'ľ', 'ĺ', 'ļ', 'ŀ', 'л', 'λ', 'ل'],
-            'm': ['м', 'μ', 'م'],
-            'n': ['ñ', 'ń', 'ň', 'ņ', 'ŉ', 'ŋ', 'ν', 'н', 'ن'],
-            'o': [
-                'ó', 'ò', 'ỏ', 'õ', 'ọ', 'ô', 'ố', 'ồ', 'ổ', 'ỗ', 'ộ', 'ơ', 'ớ', 'ờ', 'ở', 'ỡ', 'ợ',
-                'ø', 'ō', 'ő', 'ŏ', 'ο', 'ὀ', 'ὁ', 'ὂ', 'ὃ', 'ὄ', 'ὅ', 'ὸ', 'ό', 'ö', 'о', 'و', 'θ'
-            ],
-            'p': ['п', 'π'],
-            'r': ['ŕ', 'ř', 'ŗ', 'р', 'ρ', 'ر'],
-            's': ['ś', 'š', 'ş', 'с', 'σ', 'ș', 'ς', 'س', 'ص'],
-            't': ['ť', 'ţ', 'т', 'τ', 'ț', 'ت', 'ط'],
-            'u': [
-                'ú', 'ù', 'ủ', 'ũ', 'ụ', 'ư', 'ứ', 'ừ', 'ử', 'ữ', 'ự', 'ü', 'û', 'ū', 'ů', 'ű', 'ŭ',
-                'ų', 'µ', 'у'
-            ],
-            'v': ['в'],
-            'w': ['ŵ', 'ω', 'ώ'],
-            'x': ['χ'],
-            'y': ['ý', 'ỳ', 'ỷ', 'ỹ', 'ỵ', 'ÿ', 'ŷ', 'й', 'ы', 'υ', 'ϋ', 'ύ', 'ΰ', 'ي'],
-            'z': ['ź', 'ž', 'ż', 'з', 'ζ', 'ز'],
-            'aa': ['ع'],
-            'ae': ['æ'],
-            'ch': ['ч'],
-            'dj': ['ђ', 'đ'],
-            'dz': ['џ'],
-            'gh': ['غ'],
-            'kh': ['х', 'خ'],
-            'lj': ['љ'],
-            'nj': ['њ'],
-            'oe': ['œ'],
-            'ps': ['ψ'],
-            'sh': ['ш'],
-            'shch': ['щ'],
-            'ss': ['ß'],
-            'th': ['þ', 'ث', 'ذ', 'ظ'],
-            'ts': ['ц'],
-            'ya': ['я'],
-            'yu': ['ю'],
-            'zh': ['ж'],
-            '(c)': ['©'],
-            'A': [
-                'Á', 'À', 'Ả', 'Ã', 'Ạ', 'Ă', 'Ắ', 'Ằ', 'Ẳ', 'Ẵ', 'Ặ', 'Â', 'Ấ', 'Ầ', 'Ẩ', 'Ẫ',
-                'Ậ', 'Ä', 'Å', 'Ā', 'Ą', 'Α', 'Ά', 'Ἀ', 'Ἁ', 'Ἂ', 'Ἃ', 'Ἄ', 'Ἅ', 'Ἆ', 'Ἇ', 'ᾈ',
-                'ᾉ', 'ᾊ', 'ᾋ', 'ᾌ', 'ᾍ', 'ᾎ', 'ᾏ', 'Ᾰ', 'Ᾱ', 'Ὰ', 'Ά', 'ᾼ', 'А'
-            ],
-            'B': ['Б', 'Β'],
-            'C': ['Ć', 'Č', 'Ĉ', 'Ċ'],
-            'D': ['Ď', 'Ð', 'Đ', 'Ɖ', 'Ɗ', 'Ƌ', 'ᴅ', 'ᴆ', 'Д', 'Δ'],
-            'E': [
-                'É', 'È', 'Ẻ', 'Ẽ', 'Ẹ', 'Ê', 'Ế', 'Ề', 'Ể', 'Ễ', 'Ệ', 'Ë', 'Ē', 'Ę', 'Ě', 'Ĕ',
-                'Ė', 'Ε', 'Έ', 'Ἐ', 'Ἑ', 'Ἒ', 'Ἓ', 'Ἔ', 'Ἕ', 'Έ', 'Ὲ', 'Е', 'Ё', 'Э', 'Є', 'Ə'
-            ],
-            'F': ['Ф', 'Φ'],
-            'G': ['Ğ', 'Ġ', 'Ģ', 'Г', 'Ґ', 'Γ'],
-            'H': ['Η', 'Ή'],
-            'I': [
-                'Í', 'Ì', 'Ỉ', 'Ĩ', 'Ị', 'Î', 'Ï', 'Ī', 'Ĭ', 'Į', 'İ', 'Ι', 'Ί', 'Ϊ', 'Ἰ', 'Ἱ',
-                'Ἳ', 'Ἴ', 'Ἵ', 'Ἶ', 'Ἷ', 'Ῐ', 'Ῑ', 'Ὶ', 'Ί', 'И', 'І', 'Ї'
-            ],
-            'K': ['К', 'Κ'],
-            'L': ['Ĺ', 'Ł', 'Л', 'Λ', 'Ļ'],
-            'M': ['М', 'Μ'],
-            'N': ['Ń', 'Ñ', 'Ň', 'Ņ', 'Ŋ', 'Н', 'Ν'],
-            'O': [
-                'Ó', 'Ò', 'Ỏ', 'Õ', 'Ọ', 'Ô', 'Ố', 'Ồ', 'Ổ', 'Ỗ', 'Ộ', 'Ơ', 'Ớ', 'Ờ', 'Ở', 'Ỡ',
-                'Ợ', 'Ö', 'Ø', 'Ō', 'Ő', 'Ŏ', 'Ο', 'Ό', 'Ὀ', 'Ὁ', 'Ὂ', 'Ὃ', 'Ὄ', 'Ὅ', 'Ὸ', 'Ό',
-                'О', 'Θ', 'Ө'
-            ],
-            'P': ['П', 'Π'],
-            'R': ['Ř', 'Ŕ', 'Р', 'Ρ'],
-            'S': ['Ş', 'Ŝ', 'Ș', 'Š', 'Ś', 'С', 'Σ'],
-            'T': ['Ť', 'Ţ', 'Ŧ', 'Ț', 'Т', 'Τ'],
-            'U': [
-                'Ú', 'Ù', 'Ủ', 'Ũ', 'Ụ', 'Ư', 'Ứ', 'Ừ', 'Ử', 'Ữ', 'Ự', 'Û', 'Ü', 'Ū', 'Ů', 'Ű',
-                'Ŭ', 'Ų', 'У'
-            ],
-            'V': ['В'],
-            'W': ['Ω', 'Ώ'],
-            'X': ['Χ'],
-            'Y': ['Ý', 'Ỳ', 'Ỷ', 'Ỹ', 'Ỵ', 'Ÿ', 'Ῠ', 'Ῡ', 'Ὺ', 'Ύ', 'Ы', 'Й', 'Υ', 'Ϋ'],
-            'Z': ['Ź', 'Ž', 'Ż', 'З', 'Ζ'],
-            'AE': ['Æ'],
-            'CH': ['Ч'],
-            'DJ': ['Ђ'],
-            'DZ': ['Џ'],
-            'KH': ['Х'],
-            'LJ': ['Љ'],
-            'NJ': ['Њ'],
-            'PS': ['Ψ'],
-            'SH': ['Ш'],
-            'SHCH': ['Щ'],
-            'SS': ['ẞ'],
-            'TH': ['Þ'],
-            'TS': ['Ц'],
-            'YA': ['Я'],
-            'YU': ['Ю'],
-            'ZH': ['Ж'],
-            ' ': [
-                "\xC2\xA0", "\xE2\x80\x80", "\xE2\x80\x81", "\xE2\x80\x82", "\xE2\x80\x83", "\xE2\x80\x84",
-                "\xE2\x80\x85", "\xE2\x80\x86", "\xE2\x80\x87", "\xE2\x80\x88", "\xE2\x80\x89", "\xE2\x80\x8A",
-                "\xE2\x80\xAF", "\xE2\x81\x9F", "\xE3\x80\x80"
-            ]
-        },
-
-        /**
          * Get a translated message.
          *
          * @param {string} category
@@ -174,6 +43,22 @@ $.extend(Craft,
         },
 
         /**
+         * Formats a number.
+         *
+         * @param {string} number
+         * @return string D3 format
+         */
+        formatNumber: function(number, format) {
+            if(typeof format == 'undefined') {
+                format = ',.0f';
+            }
+
+            var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
+
+            return formatter(number);
+        },
+
+        /**
          * Escapes some HTML.
          *
          * @param {string} str
@@ -181,6 +66,17 @@ $.extend(Craft,
          */
         escapeHtml: function(str) {
             return $('<div/>').text(str).html();
+        },
+
+        /**
+         * Escapes special regular expression characters.
+         *
+         * @param {string} str
+         * @return string
+         */
+        escapeRegex: function(str) {
+            // h/t https://stackoverflow.com/a/9310752
+            return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
         },
 
         /**
@@ -261,16 +157,9 @@ $.extend(Craft,
                 path = '';
             }
 
-            // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path.substr(0, 2) === '//') {
-                return path;
-            }
-
-            path = Craft.trim(path, '/');
-
+            // Normalize the params
             var anchor = '';
 
-            // Normalize the params
             if ($.isPlainObject(params)) {
                 var aParams = [];
 
@@ -306,6 +195,13 @@ $.extend(Craft,
                 path = path.substr(0, qpos);
             }
 
+            // Return path if it appears to be an absolute URL.
+            if (path.search('://') !== -1 || path[0] === '/') {
+                return path + (params ? '?' + params : '');
+            }
+
+            path = Craft.trim(path, '/');
+
             // Put it all together
             var url;
 
@@ -314,9 +210,9 @@ $.extend(Craft,
 
                 if (path) {
                     // Does baseUrl already contain a path?
-                    var pathMatch = url.match(/[&\?]p=[^&]+/);
+                    var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
-                        url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
+                        url = url.replace(pathMatch[0], Craft.rtrim(pathMatch[0], '/') + '/' + path);
                         path = '';
                     }
                 }
@@ -342,8 +238,8 @@ $.extend(Craft,
                 else {
                     // Move the path into the query string params
 
-                    // Is the p= param already set?
-                    if (params && params.substr(0, 2) === 'p=') {
+                    // Is the path param already set?
+                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
                         var basePath,
                             endPath = params.indexOf('&');
 
@@ -363,7 +259,7 @@ $.extend(Craft,
                     }
 
                     // Now move the path into the params
-                    params = 'p=' + path + (params ? '&' + params : '');
+                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
                     path = null;
                 }
             }
@@ -452,7 +348,10 @@ $.extend(Craft,
                 data = {};
             }
 
-            var headers = {};
+            var headers = {
+                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
+                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
+            };
 
             if (Craft.csrfTokenValue && Craft.csrfTokenName) {
                 headers['X-CSRF-Token'] = Craft.csrfTokenValue;
@@ -465,18 +364,22 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus) {
-                    if (callback) {
-                        callback(null, textStatus, jqXHR);
-                    }
-                },
                 complete: function(jqXHR, textStatus) {
-                    if (textStatus !== 'success') {
+                    if (textStatus === 'error') {
+                        // Ignore incomplete requests, likely due to navigating away from the page
+                        // h/t https://stackoverflow.com/a/22107079/1688568
+                        if (jqXHR.readyState !== 4) {
+                            return;
+                        }
+
                         if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
-                        }
-                        else {
+                        } else {
                             alert(Craft.t('app', 'An unknown error occurred.'));
+                        }
+
+                        if (callback) {
+                            callback(null, textStatus, jqXHR);
                         }
                     }
                 }
@@ -763,6 +666,17 @@ $.extend(Craft,
         },
 
         /**
+         * Returns whether a string starts with another string.
+         *
+         * @param {string} str
+         * @param {string} substr
+         * @return boolean
+         */
+        startsWith: function(str, substr) {
+            return str.substr(0, substr.length) === substr;
+        },
+
+        /**
          * Filters an array.
          *
          * @param {object} arr
@@ -853,6 +767,34 @@ $.extend(Craft,
             return str.charAt(0).toLowerCase() + str.slice(1);
         },
 
+        parseUrl: function(url) {
+            var m = url.match(/^(?:(https?):\/\/|\/\/)([^\/\:]*)(?:\:(\d+))?(\/[^\?]*)?(?:\?([^#]*))?(#.*)?/);
+            if (!m) {
+                return {};
+            }
+            return {
+                scheme: m[1],
+                host: m[2] + (m[3] ? ':' + m[3] : ''),
+                hostname: m[2],
+                port: m[3] || null,
+                path: m[4] || '/',
+                query: m[5] || null,
+                hash: m[6] || null,
+            };
+        },
+
+        isSameHost: function(url) {
+            var requestUrlInfo = this.parseUrl(document.location.href);
+            if (!requestUrlInfo) {
+                return false;
+            }
+            var urlInfo = this.parseUrl(url);
+            if (!urlInfo) {
+                return false;
+            }
+            return requestUrlInfo.host === urlInfo.host;
+        },
+
         /**
          * Converts a number of seconds into a human-facing time duration.
          */
@@ -915,32 +857,29 @@ $.extend(Craft,
          * Converts extended ASCII characters to ASCII.
          *
          * @param {string} str
+         * @param {object|undefined} charMap
          * @return string
          */
-        asciiString: function(str) {
+        asciiString: function(str, charMap) {
             var asciiStr = '';
+            var char;
 
-            for (var stringCounter = 0; stringCounter < str.length; stringCounter++) {
-                var asciiCode = str.charCodeAt(stringCounter);
-                var char = str.charAt(stringCounter);
-
-                if (asciiCode >= 32 && asciiCode < 128) {
-                    asciiStr += char;
-                }
-                else {
-                    for (var property in Craft.asciiCharMap) {
-                        if (Craft.asciiCharMap.hasOwnProperty(property)) {
-                            for (var searchCounter = 0; searchCounter < Craft.asciiCharMap[property].length; searchCounter++) {
-                                if (Craft.asciiCharMap[property][searchCounter] === char) {
-                                    asciiStr += property;
-                                }
-                            }
-                        }
-                    }
-                }
+            for (var i = 0; i < str.length; i++) {
+                char = str.charAt(i);
+                asciiStr += (charMap || Craft.asciiCharMap)[char] || char;
             }
 
             return asciiStr;
+        },
+
+        randomString: function(length) {
+            // h/t https://stackoverflow.com/a/1349426/1688568
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * 62));
+            }
+            return result;
         },
 
         /**
@@ -954,7 +893,7 @@ $.extend(Craft,
 
             $elem.on('mousedown' + namespace, function() {
                     $elem.addClass('no-outline');
-                    $elem.focus();
+                    $elem.trigger('focus');
                 })
                 .on('keydown' + namespace + ' blur' + namespace, function(event) {
                     if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
@@ -991,10 +930,11 @@ $.extend(Craft,
 
             if ($existingCss.length) {
                 var existingCss = [];
+                var href;
 
                 for (var i = 0; i < $existingCss.length; i++) {
-                    var href = $existingCss.eq(i).attr('href');
-                    existingCss.push(href.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+                    href = $existingCss.eq(i).attr('href').replace(/&/g, '&amp;');
+                    existingCss.push(Craft.escapeRegex(href));
                 }
 
                 var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
@@ -1015,10 +955,11 @@ $.extend(Craft,
 
             if ($existingJs.length) {
                 var existingJs = [];
+                var src;
 
                 for (var i = 0; i < $existingJs.length; i++) {
-                    var src = $existingJs.eq(i).attr('src');
-                    existingJs.push(src.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+                    src = $existingJs.eq(i).attr('src').replace(/&/g, '&amp;');
+                    existingJs.push(Craft.escapeRegex(src));
                 }
 
                 var regexp = new RegExp('<script\\s[^>]*src="(?:' + existingJs.join('|') + ')".*?></script>', 'g');
@@ -1439,28 +1380,31 @@ $.extend($.fn,
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
-                if ($btn.attr('data-action')) {
+                if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
-                        .val($btn.attr('data-action'))
+                        .val($btn.data('action'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-redirect')) {
+                if ($btn.data('redirect')) {
                     $('<input type="hidden" name="redirect"/>')
-                        .val($btn.attr('data-redirect'))
+                        .val($btn.data('redirect'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-param')) {
+                if ($btn.data('param')) {
                     $('<input type="hidden"/>')
                         .attr({
-                            name: $btn.attr('data-param'),
-                            value: $btn.attr('data-value')
+                            name: $btn.data('param'),
+                            value: $btn.data('value')
                         })
                         .appendTo($form);
                 }
 
-                $form.submit();
+                $form.trigger({
+                    type: 'submit',
+                    customTrigger: $btn,
+                });
             });
         },
 

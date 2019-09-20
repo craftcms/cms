@@ -1,0 +1,42 @@
+{% import "_includes/forms" as forms %}
+
+<header class="header">
+    <h1 class="left">{{ "Edit Message"|t('app') }}</h1>
+
+    {% if craft.app.getIsMultiSite() %}
+        <ul class="right">
+            <li class="select language">
+                <select>
+                    {% for locale in craft.app.i18n.getSiteLocales() %}
+                        <option value="{{ locale.id }}" {% if locale.id == language %}selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
+                    {% endfor %}
+                </select>
+            </li>
+        </ul>
+    {% endif %}
+</header>
+
+<div class="body">
+    {{ forms.textField({
+        label: "Subject"|t('app'),
+        id: 'message-subject',
+        class: 'message-subject',
+        value: message.subject,
+        required: true
+    }) }}
+
+    {{ forms.textareaField({
+        label: "Body"|t('app'),
+        id: 'message-body',
+        class: 'message-body code',
+        value: message.body,
+        rows: 15
+    }) }}
+</div>
+
+<footer class="footer">
+    <div class="buttons right">
+        <input type="button" class="btn cancel" value="{{ 'Cancel'|t('app') }}">
+        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+    </div>
+</footer>

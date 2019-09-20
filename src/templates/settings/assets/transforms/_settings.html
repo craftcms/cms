@@ -10,21 +10,12 @@
 
 {% set fullPageForm = true %}
 
-{% set isNewTransform = (transform is not defined or not transform.id) %}
-
-
-{% if isNewTransform %}
-    {% set title = "Create a new image transform"|t('app') %}
-{% else %}
-    {% set title = transform.name %}
-{% endif %}
-
 
 {% block content %}
-        <input type="hidden" name="action" value="asset-transforms/save-transform">
+        {{ actionInput('asset-transforms/save-transform') }}
         {{ redirectInput('settings/assets/transforms') }}
 
-        {% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
+        {% if transform.id %}{{ hiddenInput('transformId', transform.id) }}{% endif %}
 
         {{ forms.textField({
             first: true,
@@ -35,17 +26,18 @@
             errors: (transform is defined ? transform.getErrors('name') : null),
             autofocus: true,
             required: true,
-            translatable: true
         }) }}
 
         {{ forms.textField({
             label: "Handle"|t('app'),
             id: "handle",
             name: "handle",
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
             value: (transform is defined ? transform.handle : null),
             errors: (transform is defined ? transform.getErrors('handle') : null),
             required: true,
-            translatable: true
         }) }}
 
         {% set modeInput %}
@@ -98,7 +90,6 @@
             size: 5,
             value: (transform is defined ? transform.width : null),
             errors: (transform is defined ? transform.getErrors('width') : null),
-            translatable: true
         }) }}
 
         {{ forms.textField({
@@ -108,7 +99,6 @@
             size: 5,
             value: (transform is defined ? transform.height : null),
             errors: (transform is defined ? transform.getErrors('height') : null),
-            translatable: true
         }) }}
 
         {{ forms.selectField({
@@ -125,7 +115,6 @@
             },
             value: (transform is defined ? transform.quality : 82),
             errors: (transform is defined ? transform.getErrors('quality') : null),
-            translatable: true
         }) }}
 
         {{ forms.selectField({
@@ -140,7 +129,6 @@
             },
             value: (transform is defined ? transform.interlace : 'none'),
             errors: (transform is defined ? transform.getErrors('interlace') : null),
-            translatable: true
         }) }}
 
         {% set formatOptions = [
@@ -158,7 +146,6 @@
             value: (transform is defined ? transform.format : null),
             errors: (transform is defined ? transform.getErrors('format') : null),
             options: formatOptions,
-            translatable: true
         }) }}
 
 

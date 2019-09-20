@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -14,8 +14,8 @@ use craft\models\CategoryGroup;
 /**
  * Class CategoryGroupsVariable
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class CategoryGroups
@@ -51,7 +51,6 @@ class CategoryGroups
      * Returns all category groups.
      *
      * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
     public function getAllGroups(string $indexBy = null): array
@@ -67,7 +66,6 @@ class CategoryGroups
      * Returns all editable groups.
      *
      * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
     public function getEditableGroups(string $indexBy = null): array
@@ -95,7 +93,6 @@ class CategoryGroups
      * Returns a group by its ID.
      *
      * @param int $groupId
-     *
      * @return CategoryGroup|null
      */
     public function getGroupById(int $groupId)
@@ -109,7 +106,6 @@ class CategoryGroups
      * Returns a group by its handle.
      *
      * @param string $groupHandle
-     *
      * @return CategoryGroup|null
      */
     public function getGroupByHandle(string $groupHandle)

@@ -1,55 +1,55 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
+use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\db\TagQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
-use craft\events\DefineComponentsEvent;
 use yii\di\ServiceLocator;
 
 /**
  * Craft defines the `craft` global template variable.
  *
- * @property Config          $config
- * @property ElementIndexes  $elementIndexes
- * @property CategoryGroups  $categoryGroups
- * @property Cp              $cp
- * @property Deprecator      $deprecator
- * @property Fields          $fields
- * @property Feeds           $feeds
- * @property Globals         $globals
- * @property Request         $request
- * @property Routes          $routes
- * @property Sections        $sections
- * @property SystemSettings  $systemSettings
- * @property UserSession     $session
- * @property I18n            $i18n
- * @property Io              $io
- * @property UserGroups      $userGroups
+ * @property Config $config
+ * @property ElementIndexes $elementIndexes
+ * @property CategoryGroups $categoryGroups
+ * @property Cp $cp
+ * @property Deprecator $deprecator
+ * @property Fields $fields
+ * @property Feeds $feeds
+ * @property Globals $globals
+ * @property Request $request
+ * @property Routes $routes
+ * @property Sections $sections
+ * @property SystemSettings $systemSettings
+ * @property UserSession $session
+ * @property I18n $i18n
+ * @property Io $io
+ * @property UserGroups $userGroups
  * @property UserPermissions $userPermissions
- * @property EmailMessages   $emailMessages
- * @property EntryRevisions  $entryRevisions
- * @property Rebrand         $rebrand
- *
+ * @property EmailMessages $emailMessages
+ * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftVariable extends ServiceLocator
 {
@@ -58,24 +58,22 @@ class CraftVariable extends ServiceLocator
 
     /**
      * @event \yii\base\Event The event that is triggered after the component's init cycle
-     *
-     * This is a good place to register custom behaviors on the component.
+     * @see init()
      */
     const EVENT_INIT = 'init';
 
     /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
      * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
-     * @see   __construct()
+     * @see __construct()
      * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
-
-    /**
-     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
-     * @see   behaviors()
-     * @deprecated since 3.0.0-beta.23
-     */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     // Properties
     // =========================================================================
@@ -105,7 +103,6 @@ class CraftVariable extends ServiceLocator
             'config' => Config::class,
             'deprecator' => Deprecator::class,
             'elementIndexes' => ElementIndexes::class,
-            'entryRevisions' => EntryRevisions::class,
             'feeds' => Feeds::class,
             'fields' => Fields::class,
             'globals' => Globals::class,
@@ -116,36 +113,19 @@ class CraftVariable extends ServiceLocator
             'session' => UserSession::class,
         ];
 
-        switch (Craft::$app->getEdition()) {
-            case Craft::Pro:
-                /** @noinspection PhpDeprecationInspection */
-                $components = array_merge($components, [
-                    // Deprecated
-                    'userGroups' => UserGroups::class,
-                ]);
-            // no break
-            case Craft::Client:
-                /** @noinspection PhpDeprecationInspection */
-                /** @noinspection SuspiciousAssignmentsInspection */
-                $components = array_merge($components, [
-                    'rebrand' => Rebrand::class,
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            /** @noinspection PhpDeprecationInspection */
+            /** @noinspection PhpDeprecationInspection */
+            /** @noinspection SuspiciousAssignmentsInspection */
+            $components = array_merge($components, [
+                'rebrand' => Rebrand::class,
 
-                    // Deprecated
-                    'emailMessages' => EmailMessages::class,
-                    'userPermissions' => UserPermissions::class,
-                ]);
+                // Deprecated
+                'emailMessages' => EmailMessages::class,
+                'userGroups' => UserGroups::class,
+                'userPermissions' => UserPermissions::class,
+            ]);
         }
-
-        // todo: remove all this before 3.0 GA
-        // Let plugins add their own components
-        $event = new DefineComponentsEvent([
-            'components' => $components,
-        ]);
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPONENTS)) {
-            Craft::$app->getDeprecator()->log('CraftVariable::defineComponents', 'The `defineComponents` event on CraftVariable has been deprecated. Use the `init` event to register custom components instead.');
-            $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
-        }
-        $components = $event->components;
 
         $config['components'] = $components;
 
@@ -174,7 +154,6 @@ class CraftVariable extends ServiceLocator
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
             Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
-
             return $this->get($name);
         }
 
@@ -186,13 +165,9 @@ class CraftVariable extends ServiceLocator
      */
     public function behaviors()
     {
-        // todo: remove all this before 3.0 GA
-        // Give plugins a chance to add new properties/methods on here
+        // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
-            Craft::$app->getDeprecator()->log('CraftVariable::defineBehaviors', 'The `defineBehaviors` event on CraftVariable has been deprecated. Use the `init` event to register custom behaviors instead.');
-            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
-        }
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
         return $event->behaviors;
     }
 
@@ -221,7 +196,6 @@ class CraftVariable extends ServiceLocator
     public function locale(): string
     {
         Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
-
         return Craft::$app->language;
     }
 
@@ -234,112 +208,110 @@ class CraftVariable extends ServiceLocator
     public function isLocalized(): bool
     {
         Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
-
         return Craft::$app->getIsMultiSite();
     }
 
-    // Element queries
+    // Queries
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a new AssetQuery instance.
+     * Returns a new [asset query](https://docs.craftcms.com/v3/dev/element-queries/asset-queries.html).
      *
-     * @param mixed $criteria
-     *
+     * @param array $criteria
      * @return AssetQuery
      */
-    public function assets($criteria = null): AssetQuery
+    public function assets(array $criteria = []): AssetQuery
     {
         $query = Asset::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
-     * Returns a new CategoryQuery instance.
+     * Returns a new [category query](https://docs.craftcms.com/v3/dev/element-queries/category-queries.html).
      *
-     * @param mixed $criteria
-     *
+     * @param array $criteria
      * @return CategoryQuery
      */
-    public function categories($criteria = null): CategoryQuery
+    public function categories(array $criteria = []): CategoryQuery
     {
         $query = Category::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
-     * Returns a new EntryQuery instance.
+     * Returns a new [entry query](https://docs.craftcms.com/v3/dev/element-queries/entry-queries.html).
      *
-     * @param mixed $criteria
-     *
+     * @param array $criteria
      * @return EntryQuery
      */
-    public function entries($criteria = null): EntryQuery
+    public function entries(array $criteria = []): EntryQuery
     {
         $query = Entry::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
-     * Returns a new MatrixBlockQuery instance.
+     * Returns a new [global set query](https://docs.craftcms.com/v3/dev/element-queries/global-set-queries.html).
      *
-     * @param mixed $criteria
+     * @param array $criteria
+     * @return GlobalSetQuery
+     */
+    public function globalSets(array $criteria = []): GlobalSetQuery
+    {
+        $query = GlobalSet::find();
+        Craft::configure($query, $criteria);
+        return $query;
+    }
+
+    /**
+     * Returns a new [Matrix block query](https://docs.craftcms.com/v3/dev/element-queries/matrix-block-queries.html).
      *
+     * @param array $criteria
      * @return MatrixBlockQuery
      */
-    public function matrixBlocks($criteria = null): MatrixBlockQuery
+    public function matrixBlocks(array $criteria = []): MatrixBlockQuery
     {
         $query = MatrixBlock::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
-     * Returns a new TagQuery instance.
+     * Returns a new generic query.
      *
-     * @param mixed $criteria
+     * @return Query
+     */
+    public function query(): Query
+    {
+        return new Query();
+    }
+
+    /**
+     * Returns a new [tag query](https://docs.craftcms.com/v3/dev/element-queries/tag-queries.html).
      *
+     * @param array $criteria
      * @return TagQuery
      */
-    public function tags($criteria = null): TagQuery
+    public function tags(array $criteria = []): TagQuery
     {
         $query = Tag::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
-     * Returns a new UserQuery instance
+     * Returns a new [user query](https://docs.craftcms.com/v3/dev/element-queries/user-queries.html).
      *
-     * @param mixed $criteria
-     *
+     * @param array $criteria
      * @return UserQuery
      */
-    public function users($criteria = null): UserQuery
+    public function users(array $criteria = []): UserQuery
     {
         $query = User::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 }

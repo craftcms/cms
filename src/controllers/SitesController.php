@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -21,11 +21,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SitesController extends Controller
 {
@@ -39,13 +38,14 @@ class SitesController extends Controller
     {
         // All actions require an admin account
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
      * Site settings index.
      *
      * @param int|null $groupId
-     *
      * @return Response
      * @throws NotFoundHttpException if $groupId is invalid
      */
@@ -56,7 +56,7 @@ class SitesController extends Controller
 
         if ($groupId) {
             if (($group = $sitesService->getGroupById($groupId)) === null) {
-                throw new NotFoundHttpException('Invalid site group ID: '.$groupId);
+                throw new NotFoundHttpException('Invalid site group ID: ' . $groupId);
             }
             $sites = $sitesService->getSitesByGroupId($groupId);
         } else {
@@ -151,10 +151,9 @@ class SitesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param int|null  $siteId  The site’s ID, if editing an existing site
-     * @param Site|null $site    The site being edited, if there were any validation errors
-     * @param int|null  $groupId The default group ID that the site should be saved in
-     *
+     * @param int|null $siteId The site’s ID, if editing an existing site
+     * @param Site|null $site The site being edited, if there were any validation errors
+     * @param int|null $groupId The default group ID that the site should be saved in
      * @return Response
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist
@@ -174,7 +173,7 @@ class SitesController extends Controller
                 }
             }
 
-            $title = $site->name;
+            $title = trim($site->name) ?: Craft::t('app', 'Edit Site');
         } else {
             if ($site === null) {
                 $site = new Site();
@@ -261,8 +260,15 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $request = Craft::$app->getRequest();
 
-        $site = new Site();
-        $site->id = $request->getBodyParam('siteId');
+        $siteId = $request->getBodyParam('siteId');
+
+        if ($siteId) {
+            $site = Craft::$app->getSites()->getSiteById($siteId);
+        } else {
+            $site = new Site();
+            $site->id = $request->getBodyParam('siteId');
+        }
+
         $site->groupId = $request->getBodyParam('group');
         $site->name = $request->getBodyParam('name');
         $site->handle = $request->getBodyParam('handle');

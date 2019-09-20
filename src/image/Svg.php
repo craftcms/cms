@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\image;
@@ -17,7 +17,7 @@ use craft\helpers\Image as ImageHelper;
  * Svg class is used for SVG file manipulations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Svg extends Image
 {
@@ -26,7 +26,7 @@ class Svg extends Image
 
     const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
     const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
-    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")([\d.]+(?:,|\s)[\d.]+(?:,|\s)([\d.]+)(?:,|\s)([.\d]+))"/i';
+    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(-?[\d.]+(?:,|\s)-?[\d.]+(?:,|\s)-?([\d.]+)(?:,|\s)(-?[\d.]+))"/i';
     const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/i';
     const SVG_TAG_RE = '/<svg/i';
     const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
@@ -83,7 +83,7 @@ class Svg extends Image
     public function loadImage(string $path)
     {
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at '.$path.', but the file does not exist.', __METHOD__);
+            Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
@@ -92,7 +92,7 @@ class Svg extends Image
         $svg = file_get_contents($path);
 
         if ($svg === false) {
-            Craft::error('Tried to read the SVG contents at '.$path.', but could not.', __METHOD__);
+            Craft::error('Tried to read the SVG contents at ' . $path . ', but could not.', __METHOD__);
             throw new ImageException(Craft::t('app', 'Could not read SVG contents.'));
         }
 
@@ -153,15 +153,14 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth,
                 $this->getHeight() / $targetHeight);
-            $this->resize(round($this->getWidth() / $factor),
-                round($this->getHeight() / $factor));
+            $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
         }
 
         return $this;
@@ -186,14 +185,14 @@ class Svg extends Image
             // Reverse the components
             $cropPositions = implode('-', array_reverse(explode('-', $cropPosition)));
 
-            $value = 'x'.strtr($cropPositions, [
+            $value = 'x' . strtr($cropPositions, [
                     'left' => 'Min',
                     'center' => 'Mid',
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
                     '-' => 'Y'
-                ]).' slice';
+                ]) . ' slice';
 
             // Add/modify aspect ratio information
             if (preg_match(self::SVG_ASPECT_RE, $this->_svgContent)) {
@@ -212,12 +211,11 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth, int $targetHeight = null)
+    public function resize(int $targetWidth = null, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if (preg_match(self::SVG_WIDTH_RE, $this->_svgContent) && preg_match(self::SVG_HEIGHT_RE, $this->_svgContent)
-        ) {
+        if (preg_match(self::SVG_WIDTH_RE, $this->_svgContent) && preg_match(self::SVG_HEIGHT_RE, $this->_svgContent)) {
             $this->_svgContent = preg_replace(self::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
             $this->_svgContent = preg_replace(self::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
         } else {
@@ -235,8 +233,8 @@ class Svg extends Image
             $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"{$viewBox}\"", $this->_svgContent);
         }
 
-        $this->_width = (int)$targetWidth;
-        $this->_height = (int)$targetHeight;
+        $this->_width = $targetWidth;
+        $this->_height = $targetHeight;
 
         return $this;
     }

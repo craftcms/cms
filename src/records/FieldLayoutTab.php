@@ -1,27 +1,27 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Field record class.
  *
- * @property int                $id        ID
- * @property int                $layoutId  Layout ID
- * @property string             $name      Name
- * @property int                $sortOrder Sort order
- * @property FieldLayout        $layout    Layout
- * @property FieldLayoutField[] $fields    Fields
- *
+ * @property int $id ID
+ * @property int $layoutId Layout ID
+ * @property string $name Name
+ * @property int $sortOrder Sort order
+ * @property FieldLayout $layout Layout
+ * @property FieldLayoutField[] $fields Fields
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldLayoutTab extends ActiveRecord
 {
@@ -41,12 +41,11 @@ class FieldLayoutTab extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%fieldlayouttabs}}';
+        return Table::FIELDLAYOUTTABS;
     }
 
     /**

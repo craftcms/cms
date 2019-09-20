@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -23,11 +22,10 @@ use yii\web\Response;
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
  * saving, deleting, searching and creating tags and tag groups in the control panel.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TagsController extends Controller
 {
@@ -53,9 +51,8 @@ class TagsController extends Controller
     /**
      * Edit a tag group.
      *
-     * @param int|null      $tagGroupId The tag group’s ID, if any.
-     * @param TagGroup|null $tagGroup   The tag group being edited, if there were any validation errors.
-     *
+     * @param int|null $tagGroupId The tag group’s ID, if any.
+     * @param TagGroup|null $tagGroup The tag group being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
@@ -72,7 +69,7 @@ class TagsController extends Controller
                 }
             }
 
-            $title = $tagGroup->name;
+            $title = trim($tagGroup->name) ?: Craft::t('app', 'Edit Tag Group');
         } else {
             if ($tagGroup === null) {
                 $tagGroup = new TagGroup();
@@ -164,9 +161,9 @@ class TagsController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getTags()->deleteTagGroupById($sectionId);
+        Craft::$app->getTags()->deleteTagGroupById($groupId);
 
         return $this->asJson(['success' => true]);
     }
@@ -188,12 +185,12 @@ class TagsController extends Controller
 
         $tags = Tag::find()
             ->groupId($tagGroupId)
-            ->title(Db::escapeParam($search).'*')
-            ->where(['not', ['elements.id' => $excludeIds]])
+            ->title(Db::escapeParam($search) . '*')
             ->all();
 
         $return = [];
         $exactMatches = [];
+        $excludes = [];
         $tagTitleLengths = [];
         $exactMatch = false;
 
@@ -204,9 +201,12 @@ class TagsController extends Controller
         }
 
         foreach ($tags as $tag) {
+            $exclude = in_array($tag->id, $excludeIds, false);
+
             $return[] = [
                 'id' => $tag->id,
-                'title' => $tag->title
+                'title' => $tag->title,
+                'exclude' => $exclude,
             ];
 
             $tagTitleLengths[] = StringHelper::length($tag->title);
@@ -223,13 +223,11 @@ class TagsController extends Controller
             } else {
                 $exactMatches[] = 0;
             }
+
+            $excludes[] = $exclude ? 1 : 0;
         }
 
-        array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
-
-        foreach ($return as &$tag) {
-            $tag['title'] = Html::encode($tag['title']);
-        }
+        array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $tagTitleLengths, $return);
 
         return $this->asJson([
             'tags' => $return,
@@ -250,12 +248,11 @@ class TagsController extends Controller
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
         if (($group = Craft::$app->getTags()->getTagGroupById($groupId)) === null) {
-            throw new BadRequestHttpException('Invalid tag group ID: '.$groupId);
+            throw new BadRequestHttpException('Invalid tag group ID: ' . $groupId);
         }
 
         $tag = new Tag();
         $tag->groupId = $group->id;
-        $tag->fieldLayoutId = $group->fieldLayoutId;
         $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields

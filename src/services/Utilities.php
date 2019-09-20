@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -17,18 +17,17 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
-use craft\utilities\SearchIndexes;
+use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
 use yii\base\Component;
 
 /**
  * The Utilities service provides APIs for managing utilities.
- *
- * An instance of the Utilities service is globally accessible in Craft via [[Application::utilities `Craft::$app->getUtilities()`]].
+ * An instance of the Utilities service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->utilities()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Utilities extends Component
 {
@@ -37,6 +36,23 @@ class Utilities extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
+     *
+     * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+     *
+     * See [Utility Types](https://docs.craftcms.com/v3/utility-types.html) for documentation on creating utility types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Utilities;
+     * use yii\base\Event;
+     *
+     * Event::on(Utilities::class,
+     *     Utilities::EVENT_REGISTER_UTILITY_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyUtilityType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
 
@@ -54,8 +70,11 @@ class Utilities extends Component
             UpdatesUtility::class,
             SystemReport::class,
             PhpInfo::class,
-            SearchIndexes::class,
         ];
+
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            $utilityTypes[] = SystemMessagesUtility::class;
+        }
 
         if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {
             $utilityTypes[] = AssetIndexes::class;
@@ -97,20 +116,18 @@ class Utilities extends Component
      * Returns whether the current user is authorized to use a given utility.
      *
      * @param string $class The utility class
-     *
      * @return bool
      */
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
-        return Craft::$app->getUser()->checkPermission('utility:'.$class::id());
+        return Craft::$app->getUser()->checkPermission('utility:' . $class::id());
     }
 
     /**
      * Returns a utility class by its ID
      *
      * @param string $id
-     *
      * @return string|null
      */
     public function getUtilityTypeById(string $id)

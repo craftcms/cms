@@ -1,10 +1,11 @@
 // TODO: following deps are still manual:
 // - colorpicker
 // - datepicker-i18n
-// - fileupload
 // - jquery-touch-events
 // - jquery-ui
 // - qunit
+// - prismjs (custom css added)
+// - fabricjs
 
 var es = require('event-stream');
 var gulp = require('gulp');
@@ -17,10 +18,12 @@ var uglify = require('gulp-uglify');
 var libPath = 'lib/';
 
 var jsDeps = [
+    { srcGlob: 'node_modules/blueimp-file-upload/js/jquery.fileupload.js', dest: libPath+'fileupload' },
     { srcGlob: 'node_modules/bootstrap/dist/js/bootstrap.js', dest: libPath+'bootstrap/js' },
     { srcGlob: 'node_modules/d3/build/d3.js', dest: libPath+'d3' },
     { srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: libPath+'element-resize-detector' },
     { srcGlob: 'node_modules/fabric/dist/fabric.js', dest: libPath+'fabric' },
+    { srcGlob: 'node_modules/whatwg-fetch/fetch.js', dest: libPath+'fetch' },
     { srcGlob: 'node_modules/garnishjs/dist/garnish.js', dest: libPath+'garnishjs' },
     { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'inputmask' },
     { srcGlob: 'node_modules/jquery/dist/jquery.js', dest: libPath+'jquery' },
@@ -33,9 +36,11 @@ var jsDeps = [
     { srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: libPath+'xregexp' },
     { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' },
     { srcGlob: 'node_modules/vue/dist/vue.js', dest: libPath+'vue' },
+    { srcGlob: 'node_modules/vue/dist/vue.min.js', dest: libPath+'vue' },
     { srcGlob: 'node_modules/vue-router/dist/vue-router.js', dest: libPath+'vue-router' },
     { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' },
-    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' }
+    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' },
+    { srcGlob: 'node_modules/vue-autosuggest/dist/vue-autosuggest.js', dest: libPath+'vue-autosuggest' }
 
 ];
 
@@ -47,6 +52,11 @@ var d3LocaleData = [
 var staticDeps = [
     { srcGlob: 'node_modules/bootstrap/dist/css/*', dest: libPath+'bootstrap/css' },
     { srcGlob: 'node_modules/bootstrap/dist/fonts/*', dest: libPath+'bootstrap/fonts' },
+    { srcGlob: 'node_modules/es6-promise/dist/es6-promise.min.js', dest: libPath+'es6-promise' },
+    { srcGlob: 'node_modules/graphiql/graphiql.css', dest: libPath+'graphiql/css' },
+    { srcGlob: 'node_modules/graphiql/graphiql.min.js', dest: libPath+'graphiql/js' },
+    { srcGlob: 'node_modules/react/umd/react.production.min.js', dest: libPath+'react' },
+    { srcGlob: 'node_modules/react-dom/umd/react-dom.production.min.js', dest: libPath+'react-dom' },
     { srcGlob: 'node_modules/selectize/dist/css/selectize.css', dest: libPath+'selectize' }
 ];
 
