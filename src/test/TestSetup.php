@@ -175,9 +175,10 @@ class TestSetup
             );
         }
 
+        $contentMigrator = Craft::$app->getContentMigrator();
         // Should we ignore this migration?
         if ($ignorePreviousMigrations) {
-            $history = Craft::$app->getContentMigrator()->getMigrationHistory();
+            $history = $contentMigrator->getMigrationHistory();
 
             // Technically... This migration is applied.
             if (isset($history[$class])) {
@@ -185,7 +186,7 @@ class TestSetup
             }
         }
 
-        Craft::$app->getContentMigrator()->migrateUp($migration);
+        $contentMigrator->migrateUp($migration);
 
         return true;
     }
