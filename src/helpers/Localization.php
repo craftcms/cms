@@ -1,21 +1,22 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
 
 use Craft;
 use craft\i18n\Locale;
+use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;
 
 /**
  * Class Localization
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Localization
 {
@@ -31,6 +32,28 @@ class Localization
     // =========================================================================
 
     /**
+     * Normalizes a language into the correct format (e.g. `en-US`).
+     *
+     * @param string $language
+     * @return string
+     * @throws InvalidArgumentException if $language is invalid.
+     */
+    public static function normalizeLanguage(string $language): string
+    {
+        $language = strtolower(str_replace('_', '-', $language));
+
+        $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
+        $lcLanguages = array_map('strtolower', $allLanguages);
+        $allLanguages = array_combine($lcLanguages, $allLanguages);
+
+        if (!isset($allLanguages[$language])) {
+            throw new InvalidArgumentException('Invalid language: ' . $language);
+        }
+
+        return $allLanguages[$language];
+    }
+
+    /**
      * Normalizes a user-submitted number for use in code and/or to be saved into the database.
      *
      * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
@@ -38,7 +61,6 @@ class Localization
      *
      * @param mixed $number The number that should be normalized.
      * @param string|null $localeId The locale ID that the number is set in
-     *
      * @return mixed The normalized number.
      */
     public static function normalizeNumber($number, string $localeId = null)
@@ -64,7 +86,6 @@ class Localization
      * Returns fallback data for a locale if the Intl extension isn't loaded.
      *
      * @param string $localeId
-     *
      * @return array|null
      */
     public static function localeData(string $localeId)
@@ -72,8 +93,8 @@ class Localization
         $data = null;
 
         // Load the locale data
-        $appDataPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
+        $appDataPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
+        $customDataPath = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
 
         if (is_file($appDataPath)) {
             $data = require $appDataPath;
@@ -94,8 +115,6 @@ class Localization
      * Looks for a missing translation string in Yii's core translations.
      *
      * @param MissingTranslationEvent $event
-     *
-     * @return void
      */
     public static function findMissingTranslation(MissingTranslationEvent $event)
     {
@@ -141,7 +160,7 @@ class Localization
         $frameworkMessagePath = FileHelper::normalizePath(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
-            $path = $frameworkMessagePath.DIRECTORY_SEPARATOR.$translationFile.DIRECTORY_SEPARATOR.'yii.php';
+            $path = $frameworkMessagePath . DIRECTORY_SEPARATOR . $translationFile . DIRECTORY_SEPARATOR . 'yii.php';
 
             if (is_file($path)) {
                 // Load it up.

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,11 +12,10 @@ use yii\web\Response;
 
 /**
  * The ElementIndexSettingsController class is a controller that handles various element index settings-related actions.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementIndexSettingsController extends BaseElementsController
 {
@@ -30,7 +29,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requireAdmin();
+        $this->requirePermission('customizeSources');
 
         $elementType = $this->elementType();
 
@@ -78,7 +77,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requireAdmin();
+        $this->requirePermission('customizeSources');
 
         $elementType = $this->elementType();
 

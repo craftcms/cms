@@ -170,7 +170,7 @@
             sendingSupportTicket: false,
 
             afterInit: function() {
-                this.$body = this.$screen.find('.cs-body-text:first').focus();
+                this.$body = this.$screen.find('.cs-body-text:first').trigger('focus');
                 this.$formContainer = this.$screen.children('.cs-forms');
 
                 // Search mode stuff
@@ -249,9 +249,9 @@
                     case Garnish.RETURN_KEY:
                         if (Garnish.isCtrlKeyPressed(ev)) {
                             if (this.mode === BaseSearchScreen.MODE_SEARCH) {
-                                this.$searchForm.submit();
+                                this.$searchForm.trigger('submit');
                             } else {
-                                this.$supportForm.submit();
+                                this.$supportForm.trigger('submit');
                             }
                         }
                         break;
@@ -365,7 +365,7 @@
             },
 
             reinit: function() {
-                this.$body.focus();
+                this.$body.trigger('focus');
             },
 
             prepForSearch: function(animate) {
@@ -373,7 +373,7 @@
 
                 this.$body
                     .velocity('stop')
-                    .focus();
+                    .trigger('focus');
 
                 if (this.$supportErrorList) {
                     this.$supportErrorList.remove();
@@ -401,7 +401,7 @@
 
                 this.$body
                     .velocity('stop')
-                    .focus();
+                    .trigger('focus');
 
                 if (animate) {
                     this.$body.velocity({height: this.bodyStartHeight * 2});

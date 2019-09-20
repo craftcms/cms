@@ -1,10 +1,10 @@
-{% if entryType.hasTitleField %}
+{% if entryType.hasTitleField or entry.hasErrors('title') %}
     {% include "entries/_titlefield" %}
 {% endif %}
 
 <div>
     {% for tab in entryType.getFieldLayout().getTabs() %}
-        <div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
+        <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
             {% include "_includes/fields" with {
                 fields:  tab.getFields(),
                 element: entry,

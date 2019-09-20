@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
@@ -15,7 +15,7 @@ use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DeprecationErrors extends Utility
 {
@@ -27,7 +27,7 @@ class DeprecationErrors extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Deprecation Errors');
+        return Craft::t('app', 'Deprecation Warnings');
     }
 
     /**

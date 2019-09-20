@@ -9,14 +9,14 @@
     <p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t('app') }}</p>
 
     {% if logs %}
-        <table id="deprecationerrors" class="data fullwidth">
+        <table id="deprecationerrors" class="data fullwidth fixed-layout">
             <thead>
                 <tr>
                     <th>{{ "Message"|t('app') }}</th>
                     <th>{{ "Origin"|t('app') }}</th>
                     <th class="nowrap">{{ "Last Occurrence"|t('app') }}</th>
                     <th class="nowrap">{{ "Stack Trace"|t('app') }}</th>
-                    <th class="thin"></th>
+                    <th style="width: 14px;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -31,7 +31,7 @@
                     </td>
                     <td>{{ log.lastOccurrence|timestamp }}</td>
                     <td class="nowrap viewtraces"><a role="button">{{ "Stack Trace"|t('app') }}</a></td>
-                    <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                    <td><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
                 </tr>
             {% endfor %}
             </tbody>

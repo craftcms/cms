@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -16,12 +16,24 @@ use craft\elements\db\ElementQueryInterface;
  * SetStatus represents a Set Status element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SetStatus extends ElementAction
 {
+    // Constants
+    // =========================================================================
+
+    const ENABLED = 'enabled';
+    const DISABLED_GLOBALLY = 'disabled';
+    const DISABLED_FOR_SITE = 'disabled-for-site';
+
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether to show the “Disabled for Site” status option.
+     */
+    public $allowDisabledForSite = false;
 
     /**
      * @var string|null The status elements should be set to
@@ -34,13 +46,24 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        // Only allow the "Disabled for site" option if there are multiple sites and the element type is localized
+        if ($this->allowDisabledForSite) {
+            $elementType = $this->elementType;
+            $this->allowDisabledForSite = $elementType && $elementType::isLocalized() && Craft::$app->getIsMultiSite();
+        }
+
+        parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Set Status');
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -52,7 +75,9 @@ class SetStatus extends ElementAction
         $rules[] = [
             ['status'],
             'in',
-            'range' => [Element::STATUS_ENABLED, Element::STATUS_DISABLED]
+            'range' => $this->allowDisabledForSite
+                ? [self::ENABLED, self::DISABLED_GLOBALLY, self::DISABLED_FOR_SITE]
+                : [self::ENABLED, self::DISABLED_GLOBALLY]
         ];
 
         return $rules;
@@ -63,37 +88,51 @@ class SetStatus extends ElementAction
      */
     public function getTriggerHtml()
     {
-        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger');
+        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger', [
+            'allowDisabledForSite' => $this->allowDisabledForSite,
+        ]);
     }
 
     /**
-     * Performs the action on any elements that match the given criteria.
-     *
-     * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-     *
-     * @return bool Whether the action was performed successfully.
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
-        $enabled = ($this->status === Element::STATUS_ENABLED);
 
         /** @var Element[] $elements */
         $elements = $query->all();
         $failCount = 0;
 
         foreach ($elements as $element) {
-            // Skip if there's nothing to change
-            if ($element->enabled == $enabled && (!$enabled || $element->enabledForSite)) {
-                continue;
-            }
+            switch ($this->status) {
+                case self::ENABLED:
+                    // Skip if there's nothing to change
+                    if ($element->enabled && $element->enabledForSite) {
+                        continue 2;
+                    }
 
-            if ($enabled) {
-                // Also enable for this site
-                $element->enabled = $element->enabledForSite = true;
-                $element->setScenario(Element::SCENARIO_LIVE);
-            } else {
-                $element->enabled = false;
+                    $element->enabled = $element->enabledForSite = true;
+                    $element->setScenario(Element::SCENARIO_LIVE);
+                    break;
+
+                case self::DISABLED_GLOBALLY:
+                    // Skip if there's nothing to change
+                    if (!$element->enabled) {
+                        continue 2;
+                    }
+
+                    $element->enabled = false;
+                    break;
+
+                case self::DISABLED_FOR_SITE:
+                    // Skip if there's nothing to change
+                    if (!$element->enabledForSite) {
+                        continue 2;
+                    }
+
+                    $element->enabledForSite = false;
+                    break;
             }
 
             if ($elementsService->saveElement($element) === false) {

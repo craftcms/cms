@@ -1,9 +1,9 @@
 <?php
 /**
- * The base class for all asset Volumes.  All Volume types must extend this class.
+ * The base class for all asset Volumes. All Volume types must extend this class.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 
 namespace craft\base;
@@ -11,17 +11,9 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
-use craft\errors\AssetException;
-use craft\errors\VolumeObjectExistsException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Config;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
-use League\Flysystem\Filesystem;
 
 /**
  * Volume is the base class for classes representing volumes in terms of objects.
@@ -43,12 +35,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Asset::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Asset::class,
         ];
+        return $behaviors;
     }
 
     /**
@@ -66,23 +58,22 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function rules()
     {
-        $rules = [
-            [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class],
-            [['hasUrls'], 'boolean'],
-            [['name', 'handle', 'url'], 'string', 'max' => 255],
-            [['name', 'handle'], 'required'],
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
+        $rules = parent::rules();
+        $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
+        $rules[] = [['hasUrls'], 'boolean'];
+        $rules[] = [['name', 'handle', 'url'], 'string', 'max' => 255];
+        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => [
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+                'title'
+            ]
         ];
 
         // Require URLs for public Volumes.
@@ -91,5 +82,17 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        if (!$this->hasUrls) {
+            return false;
+        }
+
+        return rtrim(Craft::parseEnv($this->url), '/') . '/';
     }
 }

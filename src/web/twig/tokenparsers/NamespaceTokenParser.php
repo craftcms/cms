@@ -1,21 +1,24 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\NamespaceNode;
+use Twig\Parser;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class NamespaceTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class NamespaceTokenParser extends \Twig_TokenParser
+class NamespaceTokenParser extends AbstractTokenParser
 {
     // Public Methods
     // =========================================================================
@@ -31,27 +34,29 @@ class NamespaceTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+
         $nodes = [
-            'namespace' => $this->parser->getExpressionParser()->parseExpression(),
+            'namespace' => $parser->getExpressionParser()->parseExpression(),
         ];
-        $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-        $nodes['body'] = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
-        $stream->expect(\Twig_Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
+        $nodes['body'] = $parser->subparse([$this, 'decideNamespaceEnd'], true);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
         return new NamespaceNode($nodes, [], $lineno, $this->getTag());
     }
 
 
     /**
-     * @param \Twig_Token $token
-     *
+     * @param Token $token
      * @return bool
      */
-    public function decideNamespaceEnd(\Twig_Token $token): bool
+    public function decideNamespaceEnd(Token $token): bool
     {
         return $token->test('endnamespace');
     }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -17,8 +17,8 @@ class ServiceUnavailableHttpException extends HttpException
     /**
      * Constructor.
      *
-     * @param string|null     $message  The error message.
-     * @param int             $code     The error code.
+     * @param string|null $message The error message.
+     * @param int $code The error code.
      * @param \Exception|null $previous The previous exception used for the exception chaining.
      */
     public function __construct(string $message = null, int $code = 0, \Exception $previous = null)

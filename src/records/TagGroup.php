@@ -1,41 +1,46 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class TagGroup record.
  *
- * @property int         $id            ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
- * @property FieldLayout $fieldLayout   Field layout
- * @property Tag[]       $tags          Tags
- *
+ * @property int $id ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property FieldLayout $fieldLayout Field layout
+ * @property Tag[] $tags Tags
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TagGroup extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
     {
-        return '{{%taggroups}}';
+        return Table::TAGGROUPS;
     }
 
     /**

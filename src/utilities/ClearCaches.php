@@ -1,24 +1,27 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\db\Table;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ClearCaches extends Utility
 {
@@ -71,6 +74,7 @@ class ClearCaches extends Utility
             ];
         }
 
+        ArrayHelper::multisort($options, 'label');
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(ClearCachesAsset::class);
@@ -100,15 +104,43 @@ class ClearCaches extends Utility
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
                 'action' => function() use ($pathService) {
-                    FileHelper::clearDirectory($pathService->getAssetSourcesPath());
-                    FileHelper::clearDirectory($pathService->getAssetThumbsPath());
-                    FileHelper::clearDirectory($pathService->getAssetsIconsPath());
+                    $dirs = [
+                        $pathService->getAssetSourcesPath(false),
+                        $pathService->getAssetThumbsPath(false),
+                        $pathService->getAssetsIconsPath(false),
+                    ];
+                    foreach ($dirs as $dir) {
+                        try {
+                            FileHelper::clearDirectory($dir);
+                        } catch (InvalidArgumentException $e) {
+                            // the directory doesn't exist
+                        }
+                    }
                 }
             ],
             [
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
-                'action' => $pathService->getCompiledTemplatesPath(),
+                'action' => $pathService->getCompiledTemplatesPath(false),
+            ],
+            [
+                'key' => 'cp-resources',
+                'label' => Craft::t('app', 'Control Panel resources'),
+                'action' => function() {
+                    $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
+                    $request = Craft::$app->getRequest();
+                    if (
+                        $request->getIsConsoleRequest() &&
+                        $request->isWebrootAliasSetDynamically &&
+                        strpos($basePath, '@webroot') === 0
+                    ) {
+                        throw new \Exception('Unable to clear Control Panel resources because the location isn\'t known for console commands.');
+                    }
+
+                    FileHelper::clearDirectory(Craft::getAlias($basePath), [
+                        'except' => ['/.gitignore']
+                    ]);
+                },
             ],
             [
                 'key' => 'temp-files',
@@ -120,7 +152,7 @@ class ClearCaches extends Utility
                 'label' => Craft::t('app', 'Asset transform index'),
                 'action' => function() {
                     Craft::$app->getDb()->createCommand()
-                        ->truncateTable('{{%assettransformindex}}')
+                        ->truncateTable(Table::ASSETTRANSFORMINDEX)
                         ->execute();
                 }
             ],
@@ -129,7 +161,7 @@ class ClearCaches extends Utility
                 'label' => Craft::t('app', 'Asset indexing data'),
                 'action' => function() {
                     Craft::$app->getDb()->createCommand()
-                        ->truncateTable('{{%assetindexdata}}')
+                        ->truncateTable(Table::ASSETINDEXDATA)
                         ->execute();
                 }
             ],

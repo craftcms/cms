@@ -3,10 +3,5 @@
 
 {% block message %}
     <h2>{{ title }}</h2>
-
-    {% if message %}
-        {% filter md %}{{ message }}{% endfilter %}
-    {% else %}
-        <p>{{ "You don’t have the proper credentials to access this page."|t('app') }}</p>
-    {% endif %}
+    <p>{{ (message ?? null) ?: "You don’t have the proper credentials to access this page."|t('app') }}</p>
 {% endblock %}

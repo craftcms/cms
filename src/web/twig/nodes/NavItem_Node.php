@@ -1,21 +1,25 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
 
-use craft\helpers\Template;
+use craft\helpers\Template as TemplateHelper;
+use Twig\Compiler;
+use Twig\Node\Expression\AssignNameExpression;
+use Twig\Node\Node;
+use Twig\Template;
 
 /**
  * Internal node used by the nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
-class NavItem_Node extends \Twig_Node
+class NavItem_Node extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,14 +27,14 @@ class NavItem_Node extends \Twig_Node
     /**
      * NavItem_Node constructor.
      *
-     * @param \Twig_Node_Expression_AssignName $valueTarget
-     * @param \Twig_Node|null                  $indent
-     * @param \Twig_Node|null                  $outdent
-     * @param \Twig_Node|null                  $lowerBody
-     * @param                                  $lineno
-     * @param                                  $tag
+     * @param AssignNameExpression $valueTarget
+     * @param Node|null $indent
+     * @param Node|null $outdent
+     * @param Node|null $lowerBody
+     * @param $lineno
+     * @param $tag
      */
-    public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_Node $indent = null, \Twig_Node $outdent = null, \Twig_Node $lowerBody = null, $lineno, $tag = null)
+    public function __construct(AssignNameExpression $valueTarget, Node $indent = null, Node $outdent = null, Node $lowerBody = null, $lineno, $tag = null)
     {
         parent::__construct([
             'value_target' => $valueTarget,
@@ -43,13 +47,13 @@ class NavItem_Node extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             // Get this item's level
-            ->write('$_thisItemLevel = (int)'.Template::class.'::attribute($this->env, $this->getSourceContext(), ')
+            ->write('$_thisItemLevel = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
-            ->raw(', \'level\', [], '.\Twig_Template::class."::ANY_CALL, false, true);\n")
+            ->raw(', \'level\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
             // Was there a previous item?
             ->write("if (isset(\$_contextsByLevel)) {\n")
             ->indent()

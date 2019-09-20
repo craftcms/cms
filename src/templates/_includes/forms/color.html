@@ -1,25 +1,33 @@
-{% import "_includes/forms" as forms %}
+{% import "_includes/forms" as forms -%}
 
-{% set id = id ?? 'color'~random() %}
+{% set id = id ?? 'color'~random() -%}
+{% set containerId = containerId ?? id~'-container' -%}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
+{% set small = small ?? false -%}
+{% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
+{% set disabled = disabled ?? false -%}
 
-<div class="flex"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    <div class="color static">
-        <div class="colorpreview"
-            {%- if value %} style="background-color: {{ value }};"{% endif -%}
-        ></div>
+{% spaceless %}
+    <div id="{{ containerId }}" class="flex color-container"
+            {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+        <div class="color static{% if small %} small{% endif %}">
+            <div class="color-preview"
+                {%- if value %} style="background-color: {{ value }};"{% endif -%}
+            ></div>
+        </div>
+        {{ forms.text({
+            id: id,
+            name: name,
+            value: value,
+            size: 10,
+            class: 'color-input',
+            autofocus: autofocus,
+            disabled: disabled
+        }) }}
     </div>
-    {{ forms.text({
-        id: id,
-        name: name ?? null,
-        value: value ?? null,
-        size: 10,
-        class: 'code',
-        autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
-        disabled: disabled ?? false
-    }) }}
-</div>
+{% endspaceless -%}
 
-{%- js %}
-    new Craft.ColorInput('{{ id|namespaceInputId }}');
-{% endjs %}
+{% js %}
+    new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
+{% endjs -%}

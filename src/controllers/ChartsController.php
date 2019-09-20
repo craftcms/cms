@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\base\Response;
 /**
  * The ChartsController class is a controller that handles charts related operations such as preparing and returning data,
  * in a format ready to being displayed by Craft charts.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ChartsController extends Controller
 {
@@ -48,13 +47,15 @@ class ChartsController extends Controller
             throw new Exception('There was a problem calculating the start and end dates');
         }
 
-        $endDate->modify('+1 day');
+        // Start at midnight on the start date, end at midnight after the end date
+        $timeZone = new \DateTimeZone(Craft::$app->getTimeZone());
+        $startDate = new \DateTime($startDate->format('Y-m-d'), $timeZone);
+        $endDate = new \DateTime($endDate->modify('+1 day')->format('Y-m-d'), $timeZone);
 
         $intervalUnit = 'day';
 
         // Prep the query
         $query = (new Query())
-            ->select(['COUNT(*) as [[value]]'])
             ->from(['{{%users}} users']);
 
         if ($userGroupId) {
@@ -63,7 +64,7 @@ class ChartsController extends Controller
         }
 
         // Get the chart data table
-        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', [
+        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [
             'intervalUnit' => $intervalUnit,
             'valueLabel' => Craft::t('app', 'New Users'),
         ]);

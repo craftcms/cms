@@ -1,20 +1,21 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\fields\data\MultiOptionsFieldData;
 
 /**
  * MultiSelect represents a Multi-select field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MultiSelect extends BaseOptionsField
 {
@@ -29,36 +30,40 @@ class MultiSelect extends BaseOptionsField
         return Craft::t('app', 'Multi-select');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return MultiOptionsFieldData::class;
+    }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
+
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->multi = true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->translatedOptions();
-
-        // If this is a new entry, look for any default options
-        if ($this->isFresh($element)) {
-            $value = $this->defaultValue();
-        }
-
-        return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect',
-            [
-                'name' => $this->handle,
-                'values' => $value,
-                'options' => $options
-            ]);
+        return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
+            'name' => $this->handle,
+            'values' => $value,
+            'options' => $this->translatedOptions(),
+        ]);
     }
 
     // Protected Methods

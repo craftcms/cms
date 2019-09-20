@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -14,8 +14,8 @@ use yii\web\Cookie;
 /**
  * Request functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class Request
@@ -122,9 +122,9 @@ class Request
     /**
      * Returns the request's URI.
      *
-     * @return mixed
+     * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         Craft::$app->getDeprecator()->log('craft.request.getPath()', 'craft.request.getPath() has been deprecated. Use craft.app.request.pathInfo instead.');
 
@@ -134,11 +134,11 @@ class Request
     /**
      * Returns the request's full URL.
      *
-     * @return mixed
+     * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use url(craft.app.request.pathInfo) instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use craft.app.request.absoluteUrl instead.');
 
         return UrlHelper::url(Craft::$app->getRequest()->getPathInfo());
     }
@@ -159,7 +159,6 @@ class Request
      * Returns a specific URI segment, or null if the segment doesn't exist.
      *
      * @param int $num
-     *
      * @return string|null
      */
     public function getSegment(int $num)
@@ -196,9 +195,8 @@ class Request
     /**
      * Returns a variable from either the query string or the post data.
      *
-     * @param string      $name
+     * @param string $name
      * @param string|null $default
-     *
      * @return mixed
      */
     public function getParam(string $name, string $default = null)
@@ -212,7 +210,6 @@ class Request
      * Returns a [[Cookie]] if it exists, otherwise, null.
      *
      * @param string $name
-     *
      * @return Cookie|null
      */
     public function getCookie(string $name)
@@ -225,9 +222,9 @@ class Request
     /**
      * Returns the server name.
      *
-     * @return string
+     * @return string|null
      */
-    public function getServerName(): string
+    public function getServerName()
     {
         Craft::$app->getDeprecator()->log('craft.request.getServerName()', 'craft.request.getServerName() has been deprecated. Use craft.app.request.serverName instead.');
 
@@ -250,7 +247,6 @@ class Request
      * Returns whether the request is coming from a mobile browser.
      *
      * @param bool $detectTablets
-     *
      * @return bool
      */
     public function isMobileBrowser(bool $detectTablets = false): bool
@@ -273,12 +269,12 @@ class Request
     }
 
     /**
-     * Returns the schema and host part of the application URL.  The returned URL does not have an ending slash. By
+     * Returns the schema and host part of the application URL. The returned URL does not have an ending slash. By
      * default this is determined based on the user request information.
      *
-     * @return string
+     * @return string|null
      */
-    public function getHostInfo(): string
+    public function getHostInfo()
     {
         Craft::$app->getDeprecator()->log('craft.request.getHostInfo()', 'craft.request.getHostInfo() has been deprecated. Use craft.app.request.hostInfo instead.');
 
@@ -326,9 +322,9 @@ class Request
     /**
      * Returns the server port number.
      *
-     * @return int
+     * @return int|null
      */
-    public function getServerPort(): int
+    public function getServerPort()
     {
         Craft::$app->getDeprecator()->log('craft.request.getServerPort()', 'craft.request.getServerPort() has been deprecated. Use craft.app.request.serverPort instead.');
 
@@ -338,9 +334,9 @@ class Request
     /**
      * Returns the URL referrer or null if not present.
      *
-     * @return string
+     * @return string|null
      */
-    public function getUrlReferrer(): string
+    public function getUrlReferrer()
     {
         Craft::$app->getDeprecator()->log('craft.request.getUrlReferrer()', 'craft.request.getUrlReferrer() has been deprecated. Use craft.app.request.referrer instead.');
 
@@ -350,9 +346,9 @@ class Request
     /**
      * Returns the user agent or null if not present.
      *
-     * @return string
+     * @return string|null
      */
-    public function getUserAgent(): string
+    public function getUserAgent()
     {
         Craft::$app->getDeprecator()->log('craft.request.getUserAgent()', 'craft.request.getUserAgent() has been deprecated. Use craft.app.request.userAgent instead.');
 
@@ -362,9 +358,9 @@ class Request
     /**
      * Returns the user host name or null if it cannot be determined.
      *
-     * @return string
+     * @return string|null
      */
-    public function getUserHost(): string
+    public function getUserHost()
     {
         Craft::$app->getDeprecator()->log('craft.request.getUserHost()', 'craft.request.getUserHost() has been deprecated. Use craft.app.request.userHost instead.');
 
@@ -427,7 +423,6 @@ class Request
      *
      * @param string|null $name
      * @param string|null $default
-     *
      * @return mixed
      */
     public function getQuery(string $name = null, string $default = null)
@@ -442,7 +437,6 @@ class Request
      *
      * @param string|null $name
      * @param string|null $default
-     *
      * @return mixed
      */
     public function getPost(string $name = null, string $default = null)
@@ -455,9 +449,9 @@ class Request
     /**
      * Returns the user IP address.
      *
-     * @return string
+     * @return string|null
      */
-    public function getUserHostAddress(): string
+    public function getUserHostAddress()
     {
         Craft::$app->getDeprecator()->log('craft.request.getUserHostAddress()', 'craft.request.getUserHostAddress() has been deprecated. Use craft.app.request.userIP instead.');
 
@@ -467,13 +461,12 @@ class Request
     /**
      * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
      * variations in how different ISPs handle IP addresses in headers between hops.
-     *
      * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
      * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
      *
-     * @return string The IP address.
+     * @return string|null The IP address.
      */
-    public function getIpAddress(): string
+    public function getIpAddress()
     {
         Craft::$app->getDeprecator()->log('craft.request.getIpAddress()', 'craft.request.getIpAddress() has been deprecated. Use craft.app.request.userIP instead.');
 

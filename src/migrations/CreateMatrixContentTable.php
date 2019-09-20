@@ -1,19 +1,20 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * CreateMatrixContentTable Migration
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CreateMatrixContentTable extends Migration
 {
@@ -43,8 +44,16 @@ class CreateMatrixContentTable extends Migration
         ]);
 
         $this->createIndex(null, $this->tableName, ['elementId', 'siteId'], true);
-        $this->addForeignKey(null, $this->tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, $this->tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKeys();
+    }
+
+    /**
+     * Adds the foreign keys.
+     */
+    public function addForeignKeys()
+    {
+        $this->addForeignKey(null, $this->tableName, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, $this->tableName, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
     }
 
     /**

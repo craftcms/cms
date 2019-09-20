@@ -9,16 +9,16 @@
             </div>
             <div class="items">
                 <div class="blocktypes">
-                    {% for blockType in matrixField.getBlockTypes() %}
-                        <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
+                    {% for blockTypeId, blockType in blockTypes %}
+                        <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockTypeId }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
                             <div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
                             <div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
                             <div class="actions">
                                 <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
                                 <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
                             </div>
-                            <input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
-                            <input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
+                            <input class="hidden" name="blockTypes[{{ blockTypeId }}][name]" value="{{ blockType.name }}">
+                            <input class="hidden" name="blockTypes[{{ blockTypeId }}][handle]" value="{{ blockType.handle }}">
                         </div>
                     {% endfor %}
                 </div>
@@ -32,10 +32,10 @@
                 <h5>{{ "Fields"|t('app') }}</h5>
             </div>
             <div class="items">
-                {% for blockType in matrixField.getBlockTypes() %}
-                    <div data-id="{{ blockType.id }}" class="hidden">
-                        {% for field in blockType.getFields() %}
-                            <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
+                {% for blockTypeId, blockType in blockTypes %}
+                    <div data-id="{{ blockTypeId }}" class="hidden">
+                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
+                            <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ fieldId }}">
                                 <div class="name{% if field.required %} required{% endif %}">
                                     {%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t('app') }}</em>{% endif -%}
                                 &nbsp;</div>
@@ -57,12 +57,11 @@
                 <h5>{{ "Field Settings"|t('app') }}</h5>
             </div>
             <div class="items">
-                {% for blockType in matrixField.getBlockTypes() %}
-                    <div data-id="{{ blockType.id }}">
-                        {% for field in blockType.getFields() %}
-                            {% set fieldId = field.id %}
+                {% for blockTypeId, blockType in blockTypes %}
+                    <div data-id="{{ blockTypeId }}">
+                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
                             <div data-id="{{ fieldId }}" class="hidden">
-                                {% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~']' %}
+                                {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~']' %}
                                     {{ forms.textField({
                                         label: "Name"|t('app'),
                                         id: 'name',
@@ -75,8 +74,10 @@
                                     {{ forms.textField({
                                         label: "Handle"|t('app'),
                                         id: 'handle',
-                                        class: 'code',
                                         name: 'handle',
+                                        class: 'code',
+                                        autocorrect: false,
+                                        autocapitalize: false,
                                         maxlength: 64,
                                         value: field.handle,
                                         errors: field.getErrors('handle'),
@@ -99,49 +100,54 @@
                                         checked: field.required
                                     }) }}
 
+                                    {{ forms.checkboxField({
+                                        label: "Use this field’s values as search keywords?"|t('app'),
+                                        id: 'searchable',
+                                        name: 'searchable',
+                                        checked: field.searchable
+                                    }) }}
+
                                     {{ forms.selectField({
                                         label: "Field Type"|t('app'),
                                         warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
                                         id: 'type',
                                         name: 'type',
-                                        options: field.id and field.id[0:3] != 'new' ? fieldTypes[field.id] : fieldTypes.new,
+                                        options: fieldId[0:3] != 'new' ? fieldTypes[fieldId] : fieldTypes.new,
                                         value: className(field),
                                         errors: field.getErrors('type') ?? null
                                     }) }}
 
                                     {% if craft.app.getIsMultiSite() %}
                                         {% set translationMethods = field.supportedTranslationMethods %}
-                                        {% if translationMethods|length > 1 %}
-                                            <div id="translation-settings">
-                                                {{ forms.selectField({
-                                                    label: "Translation Method"|t('app'),
-                                                    id: 'translation-method',
-                                                    name: 'translationMethod',
-                                                    options: [
-                                                        'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
-                                                        'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
-                                                        'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
-                                                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
-                                                        'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
-                                                    ]|filter,
-                                                    value: field.translationMethod,
-                                                    toggle: true,
-                                                    targetPrefix: 'translation-method-'
-                                                }) }}
+                                        <div id="translation-settings"{% if translationMethods|length < 2 %} class="hidden"{% endif %}>
+                                            {{ forms.selectField({
+                                                label: "Translation Method"|t('app'),
+                                                id: 'translation-method',
+                                                name: 'translationMethod',
+                                                options: [
+                                                    'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
+                                                    'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
+                                                    'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
+                                                    'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
+                                                    'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
+                                                ]|filter,
+                                                value: field.translationMethod,
+                                                toggle: true,
+                                                targetPrefix: 'translation-method-'
+                                            }) }}
 
-                                                {% if 'custom' in translationMethods %}
-                                                    <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
-                                                        {{ forms.textField({
-                                                            label: "Translation Key Format"|t('app'),
-                                                            id: 'translation-key-format',
-                                                            name: 'translationKeyFormat',
-                                                            value: field.translationKeyFormat,
-                                                            errors: field.getErrors('translationKeyFormat')
-                                                        }) }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        {% endif %}
+                                            {% if 'custom' in translationMethods %}
+                                                <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                                                    {{ forms.textField({
+                                                        label: "Translation Key Format"|t('app'),
+                                                        id: 'translation-key-format',
+                                                        name: 'translationKeyFormat',
+                                                        value: field.translationKeyFormat,
+                                                        errors: field.getErrors('translationKeyFormat')
+                                                    }) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 {% endnamespace %}
 
@@ -149,7 +155,7 @@
 
                                 <div class="fieldtype-settings">
                                     <div>
-                                        {% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~'][typesettings]' %}
+                                        {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~'][typesettings]' %}
                                             {{ field.getSettingsHtml()|raw  }}
                                         {% endnamespace %}
                                     </div>
@@ -176,13 +182,31 @@
 </div>
 
 {% if craft.app.getIsMultiSite() %}
-    {{ forms.checkboxField({
-        label: "Manage blocks on a per-site basis"|t('app'),
-        id: 'localize-blocks',
-        name: 'localizeBlocks',
-        checked: matrixField.localizeBlocks
+    {{ forms.selectField({
+        label: 'Propagation Method'|t('app'),
+        instructions: 'Which sites should blocks be saved to?'|t('app'),
+        warning: matrixField.id and matrixField.propagationMethod != 'none' ? 'Changing this may result in data loss.'|t('app'),
+        id: 'propagationMethod',
+        name: 'propagationMethod',
+        options: [
+            { value: 'none', label: 'Only save blocks to the site they were created in'|t('app') },
+            { value: 'siteGroup', label: 'Save blocks to other sites in the same site group'|t('app') },
+            { value: 'language', label: 'Save blocks to other sites with the same language'|t('app') },
+            { value: 'all', label: 'Save blocks to all sites the owner element is saved in'|t('app') },
+        ],
+        value: matrixField.propagationMethod
     }) }}
 {% endif %}
+
+{{ forms.textField({
+    label: "Min Blocks"|t('app'),
+    instructions: "The minimum number of blocks the field is allowed to have."|t('app'),
+    id: 'minBlocks',
+    name: 'minBlocks',
+    value: matrixField.minBlocks,
+    size: 3,
+    errors: matrixField.getErrors('minBlocks')
+}) }}
 
 {{ forms.textField({
     label: "Max Blocks"|t('app'),

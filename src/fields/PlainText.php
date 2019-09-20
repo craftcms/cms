@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -12,13 +12,14 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Db;
+use LitEmoji\LitEmoji;
 use yii\db\Schema;
 
 /**
  * PlainText represents a Plain Text field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PlainText extends Field implements PreviewableFieldInterface
 {
@@ -33,6 +34,14 @@ class PlainText extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Plain Text');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
     // Properties
     // =========================================================================
 
@@ -40,6 +49,11 @@ class PlainText extends Field implements PreviewableFieldInterface
      * @var string|null The input’s placeholder text
      */
     public $placeholder;
+
+    /**
+     * @var bool Whether the input should use monospace font
+     */
+    public $code = false;
 
     /**
      * @var bool Whether the input should allow line breaks
@@ -67,12 +81,24 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function __construct(array $config = [])
+    {
+        // This existed at one point way back in the day.
+        if (isset($config['maxLengthUnit'])) {
+            unset($config['maxLengthUnit']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
         $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
         $rules[] = [['charLimit'], 'validateCharLimit'];
-
         return $rules;
     }
 
@@ -80,8 +106,6 @@ class PlainText extends Field implements PreviewableFieldInterface
      * Validates that the Character Limit isn't set to something higher than the Column Type will hold.
      *
      * @param string $attribute
-     *
-     * @return void
      */
     public function validateCharLimit(string $attribute)
     {
@@ -116,6 +140,19 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        if ($value !== null) {
+            $value = LitEmoji::shortcodeToUnicode($value);
+            $value = trim(preg_replace('/\R/u', "\n", $value));
+        }
+
+        return $value !== '' ? $value : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
@@ -134,5 +171,26 @@ class PlainText extends Field implements PreviewableFieldInterface
         return [
             ['string', 'max' => $this->charLimit ?: null],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        if ($value !== null) {
+            $value = LitEmoji::unicodeToShortcode($value);
+        }
+        return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        $value = (string)$value;
+        $value = LitEmoji::unicodeToShortcode($value);
+        return $value;
     }
 }

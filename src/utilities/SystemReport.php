@@ -1,27 +1,28 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
 
 use Craft;
+use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\helpers\App;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
-use PDO;
 use RequirementsChecker;
-use Twig_Environment;
+use Twig\Environment;
 use Yii;
+use yii\base\Module;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemReport extends Utility
 {
@@ -57,9 +58,26 @@ class SystemReport extends Utility
      */
     public static function contentHtml(): string
     {
+        $modules = [];
+        foreach (Craft::$app->getModules() as $id => $module) {
+            if ($module instanceof PluginInterface) {
+                continue;
+            }
+            if ($module instanceof Module) {
+                $modules[$id] = get_class($module);
+            } else if (is_string($module)) {
+                $modules[$id] = $module;
+            } else if (is_array($module) && isset($module['class'])) {
+                $modules[$id] = $module['class'];
+            } else {
+                $modules[$id] = Craft::t('app', 'Unknown type');
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport', [
             'appInfo' => self::_appInfo(),
             'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
+            'modules' => $modules,
             'requirements' => self::_requirementResults(),
         ]);
     }
@@ -72,12 +90,13 @@ class SystemReport extends Utility
     private static function _appInfo(): array
     {
         return [
-            'PHP version' => PHP_VERSION,
+            'PHP version' => App::phpVersion(),
+            'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
-            'Craft edition & version' => 'Craft '.App::editionName(Craft::$app->getEdition()).' '.Craft::$app->getVersion(),
+            'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
             'Yii version' => Yii::getVersion(),
-            'Twig version' => Twig_Environment::VERSION,
+            'Twig version' => Environment::VERSION,
             'Guzzle version' => Client::VERSION,
             'Imagine version' => Imagine::VERSION,
         ];
@@ -98,7 +117,7 @@ class SystemReport extends Utility
             $driverName = 'PostgreSQL';
         }
 
-        return $driverName.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION);
+        return $driverName . ' ' . $db->getVersion();
     }
 
     /**
@@ -111,10 +130,12 @@ class SystemReport extends Utility
         $imagesService = Craft::$app->getImages();
 
         if ($imagesService->getIsGd()) {
-            return 'GD '.phpversion('gd');
+            $driverName = 'GD';
+        } else {
+            $driverName = 'Imagick';
         }
 
-        return 'Imagick '.phpversion('imagick').', ImageMagick '.$imagesService->getImageMagickApiVersion();
+        return $driverName . ' ' . $imagesService->getVersion();
     }
 
     /**

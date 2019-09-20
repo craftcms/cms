@@ -1,13 +1,13 @@
-{% from "_includes/forms" import textField %}
+{% from "_includes/forms" import autosuggestField %}
 
-{{ textField({
+{{ autosuggestField({
     label: "File System Path"|t('app'),
-    instructions: "The path to the volume’s directory on the file system. An absolute path ({ex}) is recommended."|t('app', {
-        ex: '“`/path/to/folder`”'
-    }),
+    instructions: "The path to the volume’s directory on the file system."|t('app'),
     id: 'path',
     class: 'ltr',
     name: 'path',
+    suggestEnvVars: true,
+    suggestAliases: true,
     value: volume.path,
     errors: volume.getErrors('path'),
     required: true,

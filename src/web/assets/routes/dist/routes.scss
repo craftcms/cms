@@ -27,6 +27,8 @@
 .route .uri-container,
 .route .template {
   padding: 7px 14px;
+  line-height: 18px;
+  min-height: 18px;
 }
 
 .route .uri-container {
@@ -69,7 +71,7 @@
 }
 
 .route .uri-container .uri .token {
-  margin: 0 2px;
+  margin: 0 2px -1px;
 }
 
 .route .template {
@@ -93,8 +95,6 @@
 
 .modal.route-settings .body .uri {
   width: auto;
-  padding-top: 0;
-  padding-bottom: 0;
   cursor: text;
 }
 
@@ -124,7 +124,7 @@
   display: block;
   @include floatleft;
   margin-top: 7px;
-  color: $errorColor;
+  color: $red;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
