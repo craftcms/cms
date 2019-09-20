@@ -1,0 +1,176 @@
+{% extends "_layouts/cp" %}
+
+{% requireEdition CraftPro %}
+
+{% set selectedSubnavItem = 'schemas' %}
+
+{% set fullPageForm = true %}
+
+{% set crumbs = [
+    { label: "GraphQL Schemas"|t('app'), url: url('graphql/schemas') }
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% macro permissionList(schema, permissions, id, disabled) %}
+    {% from "_includes/forms" import checkbox %}
+    {% from _self import permissionList %}
+
+    <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
+        {% for permissionName, props in permissions %}
+            {% if schema.has(permissionName) %}
+                {% set checked = true %}
+            {% else %}
+                {% set checked = false %}
+            {% endif %}
+
+            <li>
+                {{ checkbox({
+                    label: props.label|e,
+                    name: 'permissions[]',
+                    value: permissionName,
+                    checked: checked,
+                    disabled: disabled
+                }) }}
+
+                {% if props.info ?? false %}
+                    <div class="info">{{ props.info }}</div>
+                {% endif %}
+
+                {% if props.warning ?? false %}
+                    <div class="info warning">{{ props.warning }}</div>
+                {% endif %}
+
+                {% if props.nested ?? false %}
+                    {{ permissionList(schema, props.nested, permissionName~'-nested', not checked) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% from _self import permissionList %}
+
+{% block content %}
+    <input type="hidden" name="action" value="graphql/save-schema">
+    {{ redirectInput('graphql/schemas') }}
+    {% if schema.id %}<input type="hidden" name="schemaId" value="{{ schema.id }}">{% endif %}
+
+    <div id="schema-settings">
+        {% if not schema.isPublic %}
+            {{ forms.textField({
+                first: true,
+                label: "Name"|t('app'),
+                instructions: "What this schema will be called in the CP."|t('app'),
+                id: 'name',
+                name: 'name',
+                value: schema.name,
+                errors: schema.getErrors('name'),
+                autofocus: true,
+                required: true,
+            }) }}
+
+            {% embed '_includes/forms/field' with {
+                label: "Access Token"|t('app'),
+                instructions: 'The token that must be provided with GraphQL requests to access this schema.'|t('app'),
+                id: 'accessToken',
+            } %}
+                {% block input %}
+                    {% import '_includes/forms' as forms %}
+                    <div class="flex">
+                        {{ forms.text({
+                            id: 'accessToken',
+                            name: 'accessToken',
+                            value: accessToken ?? '••••••••••••••••••••••••••••••••',
+                            errors: schema.getErrors('accessToken'),
+                            readonly: true,
+                            disabled: not (accessToken ?? false),
+                            class: 'code',
+                            size: 32
+                        }) }}
+                        <div class="btngroup">
+                            {% if not (accessToken ?? false) %}
+                                <div id="show-btn" class="btn">{{ 'Show'|t('app') }}</div>
+                            {% endif %}
+                            <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>
+                        </div>
+                        <div id="token-spinner" class="spinner hidden"></div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+        {% endif %}
+
+        {{ forms.dateTimeField({
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (schema.expiryDate ? schema.expiryDate : null),
+            errors: schema.getErrors('expiryDate')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: schema.enabled,
+        }) }}
+
+        <hr>
+
+        <h2>{{ 'Define the schema’s scope'|t('app') }}</h2>
+
+        {% do view.registerTranslations('app', [
+            "Select All",
+            "Deselect All",
+        ]) %}
+
+        {% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+
+        {% set gqlPermissions = craft.app.gql.allPermissions %}
+
+        {% for category, catPermissions in craft.app.gql.allPermissions %}
+        <div class="user-permissions">
+            <h3>{{ category }}</h3>
+            <div class="select-all"></div>
+
+            {{ permissionList(schema, catPermissions) }}
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% js %}
+    {% if not schema.isPublic %}
+        {% if schema.id %}
+            $('#show-btn').on('click', function() {
+                Craft.elevatedSessionManager.requireElevatedSession(function() {
+                    $('#token-spinner').removeClass('hidden');
+                    var data = {{ {schemaUid: schema.uid}|json_encode|raw }};
+                    Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
+                        $('#token-spinner').addClass('hidden');
+                        if (textStatus === 'success') {
+                            $('#accessToken')
+                                .val(response.accessToken)
+                                .removeClass('disabled');
+                            $('#show-btn').remove();
+                        }
+                    });
+                });
+            });
+        {% endif %}
+        $('#regen-btn').on('click', function() {
+            $('#token-spinner').removeClass('hidden');
+            Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
+                $('#token-spinner').addClass('hidden');
+                if (textStatus === 'success') {
+                    $('#accessToken')
+                        .val(response.accessToken)
+                        .prop('disabled', false)
+                        .removeClass('disabled');
+                }
+            });
+        });
+    {% endif %}
+
+    new Craft.ElevatedSessionForm('#main-form');
+{% endjs %}

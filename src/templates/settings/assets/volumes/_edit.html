@@ -6,9 +6,9 @@
 
 
 {% block content %}
-        <input type="hidden" name="action" value="volumes/save-volume">
+        {{ actionInput('volumes/save-volume') }}
         {{ redirectInput('settings/assets') }}
-        {% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
+        {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
 
         <div id="assetvolume-settings">
             {{ forms.textField({
@@ -20,7 +20,6 @@
                 errors: (volume is defined ? volume.getErrors('name') : null),
                 autofocus: true,
                 required: true,
-                translatable: true
             }) }}
 
             {{ forms.textField({
@@ -29,6 +28,8 @@
                 id: 'handle',
                 name: 'handle',
                 class: 'code',
+                autocorrect: false,
+                autocapitalize: false,
                 value: (volume is defined ? volume.handle : null),
                 errors: (volume is defined ? volume.getErrors('handle') : null),
                 required: true,
@@ -42,15 +43,14 @@
             }) }}
 
             <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-                {{ forms.textField({
+                {{ forms.autosuggestField({
                     label: "Base URL"|t('app'),
-                    instructions: "The base URL to the assets in this volume. An absolute URL ({ex1}) or protocol-relative URL ({ex2}) is recommended."|t('app', {
-                        ex1: '“`http://example.com/path/to/folder`”',
-                        ex2: '“`//example.com/path/to/folder”`'
-                    }),
+                    instructions: "The base URL to the assets in this volume."|t('app'),
                     id: 'url',
                     class: 'ltr volume-url',
                     name: 'url',
+                    suggestEnvVars: true,
+                    suggestAliases: true,
                     value: (volume is defined ? volume.url : null),
                     errors: (volume is defined ? volume.getErrors('url') : null),
                     required: true,
@@ -67,9 +67,10 @@
                 name: 'type',
                 options: volumeTypeOptions,
                 value: className(volume),
-                errors: volume.getErrors('type') ?? null,
                 toggle: true
             }) }}
+
+            {{ missingVolumePlaceholder|raw }}
 
             {% for volumeType in volumeTypes %}
                 {% set isCurrent = (volumeType == className(volume)) %}

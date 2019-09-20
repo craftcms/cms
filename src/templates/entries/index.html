@@ -2,6 +2,10 @@
 {% set title = "Entries"|t('app') %}
 {% set elementType = 'craft\\elements\\Entry' %}
 
+{% do view.registerTranslations('app', [
+    'New entry',
+]) %}
+
 
 {% if sectionHandle is defined %}
     {% js %}

@@ -1,44 +1,50 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
-use craft\events\UserEvent;
+use craft\events\ConfigEvent;
+use craft\events\FieldEvent;
 use craft\events\UserAssignGroupEvent;
+use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
 use DateTime;
 use yii\base\Component;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
- *
- * An instance of the Users service is globally accessible in Craft via [[Application::users `Craft::$app->getUsers()`]].
+ * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Users extends Component
 {
@@ -133,6 +139,8 @@ class Users extends Component
      */
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
+    const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
+
     // Public Methods
     // =========================================================================
 
@@ -140,11 +148,10 @@ class Users extends Component
      * Returns a user by their ID.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserById($userId);
+     * $user = Craft::$app->users->getUserById($userId);
      * ```
      *
      * @param int $userId The user’s ID.
-     *
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
     public function getUserById(int $userId)
@@ -157,56 +164,67 @@ class Users extends Component
      * Returns a user by their username or email.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+     * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
      * ```
      *
      * @param string $usernameOrEmail The user’s username or email.
-     *
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail)
     {
-        return User::find()
-            ->where([
-                'or',
-                ['username' => $usernameOrEmail],
-                ['email' => $usernameOrEmail]
-            ])
+        $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null)
-            ->one() ?: null;
+            ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query
+                ->where([
+                    'username' => $usernameOrEmail,
+                ])
+                ->orWhere([
+                    'email' => $usernameOrEmail,
+                ]);
+        } else {
+            // Postgres is case-sensitive
+            $query
+                ->where([
+                    'lower([[username]])' => mb_strtolower($usernameOrEmail),
+                ])
+                ->orWhere([
+                    'lower([[email]])' => mb_strtolower($usernameOrEmail),
+                ]);
+        }
+
+        return $query->one();
     }
 
     /**
      * Returns a user by their UID.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserByUid($userUid);
+     * $user = Craft::$app->users->getUserByUid($userUid);
      * ```
      *
      * @param string $uid The user’s UID.
-     *
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
     public function getUserByUid(string $uid)
     {
         return User::find()
             ->uid($uid)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one() ?: null;
+            ->anyStatus()
+            ->one();
     }
 
     /**
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * [verificationCodeDuration](http://craftcms.com/docs/config-settings#verificationCodeDuration) config
+     * [[\craft\config\GeneralConfig::verificationCodeDuration|verificationCodeDuration]] config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
      *
-     * @param User   $user The user to check the code for.
+     * @param User $user The user to check the code for.
      * @param string $code The verification code to check for.
-     *
      * @return bool Whether the code is still valid.
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
@@ -226,18 +244,18 @@ class Users extends Component
             $userRecord->verificationCode = null;
             $userRecord->save();
 
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' is expired.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', __METHOD__);
             return false;
         }
 
         try {
             $valid = Craft::$app->getSecurity()->validatePassword($code, $userRecord->verificationCode);
-        } catch (InvalidParamException $e) {
+        } catch (InvalidArgumentException $e) {
             $valid = false;
         }
 
         if (!$valid) {
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' does not match the hash in the database.', __METHOD__);
             return false;
         }
 
@@ -248,7 +266,6 @@ class Users extends Component
      * Returns a user’s preferences.
      *
      * @param int|null $userId The user’s ID
-     *
      * @return array The user’s preferences
      */
     public function getUserPreferences(int $userId = null): array
@@ -257,7 +274,7 @@ class Users extends Component
         try {
             $preferences = (new Query())
                 ->select(['preferences'])
-                ->from(['{{%userpreferences}}'])
+                ->from([Table::USERPREFERENCES])
                 ->where(['userId' => $userId])
                 ->scalar();
 
@@ -270,10 +287,8 @@ class Users extends Component
     /**
      * Saves a user’s preferences.
      *
-     * @param User  $user        The user
+     * @param User $user The user
      * @param array $preferences The user’s new preferences
-     *
-     * @return void
      */
     public function saveUserPreferences(User $user, array $preferences)
     {
@@ -281,11 +296,26 @@ class Users extends Component
 
         Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%userpreferences}}',
+                Table::USERPREFERENCES,
                 ['userId' => $user->id],
                 ['preferences' => Json::encode($preferences)],
+                [],
                 false)
             ->execute();
+    }
+
+    /**
+     * Returns one of a user’s preferences by its key.
+     *
+     * @param int|null $userId The user’s ID
+     * @param string $key The preference’s key
+     * @param mixed $default The default value, if the preference hasn’t been set
+     * @return mixed The user’s preference
+     */
+    public function getUserPreference(int $userId = null, string $key, $default = null)
+    {
+        $preferences = $this->getUserPreferences($userId);
+        return $preferences[$key] ?? $default;
     }
 
     /**
@@ -294,7 +324,6 @@ class Users extends Component
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendActivationEmail(User $user): bool
@@ -318,7 +347,6 @@ class Users extends Component
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendNewEmailVerifyEmail(User $user): bool
@@ -334,10 +362,9 @@ class Users extends Component
     /**
      * Sends a password reset email to a user.
      *
-     * A new verification code will generated for the user overwriting any existing one.
+     * A new verification code be will generated for the user, overwriting any existing one.
      *
      * @param User $user The user to send the forgot password email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendPasswordResetEmail(User $user): bool
@@ -354,7 +381,6 @@ class Users extends Component
      * Sets a new verification code on a user, and returns their new Email Verification URL.
      *
      * @param User $user The user that should get the new Email Verification URL.
-     *
      * @return string The new Email Verification URL.
      */
     public function getEmailVerifyUrl(User $user): string
@@ -366,7 +392,6 @@ class Users extends Component
      * Sets a new verification code on a user, and returns their new Password Reset URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     *
      * @return string The new Password Reset URL.
      */
     public function getPasswordResetUrl(User $user): string
@@ -377,11 +402,9 @@ class Users extends Component
     /**
      * Crops and saves a user’s photo.
      *
-     * @param User   $user         the user.
+     * @param User $user the user.
      * @param string $fileLocation the local image path on server
-     * @param string $filename     name of the file to use, defaults to filename of $imagePath
-     *
-     * @return void
+     * @param string $filename name of the file to use, defaults to filename of $imagePath
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
@@ -394,14 +417,14 @@ class Users extends Component
         }
 
         $volumes = Craft::$app->getVolumes();
-        $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeId');
+        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
 
-        if (!$volumeId || ($volume = $volumes->getVolumeById($volumeId)) === null) {
+        if (!$volumeUid || ($volume = $volumes->getVolumeByUid($volumeUid)) === null) {
             throw new VolumeException(Craft::t('app',
                 'The volume set for user photo storage is not valid.'));
         }
 
-        $subpath = (string) Craft::$app->getSystemSettings()->getSetting('users', 'photoSubpath');
+        $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
 
         if ($subpath) {
             try {
@@ -415,7 +438,7 @@ class Users extends Component
         $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
-        if ($user->photoId) {
+        if ($user->photoId && $user->getPhoto() !== null) {
             // No longer a new file.
             $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
@@ -427,14 +450,13 @@ class Users extends Component
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
-            $photo->volumeId = $volumeId;
-            $photo->fieldLayoutId = $volume->fieldLayoutId;
+            $photo->volumeId = $volume->id;
 
             // Save photo.
             $elementsService = Craft::$app->getElements();
             $elementsService->saveElement($photo);
 
-            $user->photoId = $photo->id;
+            $user->setPhoto($photo);
             $elementsService->saveElement($user, false);
         }
     }
@@ -443,7 +465,6 @@ class Users extends Component
      * Deletes a user’s photo.
      *
      * @param User $user The user
-     *
      * @return bool Whether the user’s photo was deleted successfully
      */
     public function deleteUserPhoto(User $user): bool
@@ -455,8 +476,6 @@ class Users extends Component
      * Handles a valid login for a user.
      *
      * @param User $user The user
-     *
-     * @return void
      */
     public function handleValidLogin(User $user)
     {
@@ -465,11 +484,13 @@ class Users extends Component
         // Update the User record
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->lastLoginDate = $now;
-        $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
-        $userRecord->verificationCode = null;
-        $userRecord->verificationCodeIssuedDate = null;
+
+        if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
+            $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+        }
+
         $userRecord->save();
 
         // Update the User model too
@@ -481,8 +502,6 @@ class Users extends Component
      * Handles an invalid login for a user.
      *
      * @param User $user The user
-     *
-     * @return void
      */
     public function handleInvalidLogin(User $user)
     {
@@ -490,7 +509,10 @@ class Users extends Component
         $now = DateTimeHelper::currentUTCDateTime();
 
         $userRecord->lastInvalidLoginDate = $now;
-        $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+
+        if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
+            $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+        }
 
         // Was that one too many?
         $maxInvalidLogins = Craft::$app->getConfig()->getGeneral()->maxInvalidLogins;
@@ -537,7 +559,6 @@ class Users extends Component
      * Activates a user, bypassing email verification.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was activated successfully.
      * @throws \Throwable if reasons
      */
@@ -556,12 +577,12 @@ class Users extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->setActive();
+            $userRecord->pending = false;
             $userRecord->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = null;
             $userRecord->save();
 
-            $user->setActive();
+            $user->pending = false;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
@@ -587,7 +608,6 @@ class Users extends Component
      * and clear the unverified one.
      *
      * @param User $user
-     *
      * @return bool
      */
     public function verifyEmailForUser(User $user): bool
@@ -599,12 +619,11 @@ class Users extends Component
 
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->email = $user->unverifiedEmail;
+        $userRecord->unverifiedEmail = null;
 
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $userRecord->username = $user->unverifiedEmail;
         }
-
-        $userRecord->unverifiedEmail = null;
 
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());
@@ -623,7 +642,6 @@ class Users extends Component
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was unlocked successfully.
      * @throws \Throwable if reasons
      */
@@ -673,7 +691,6 @@ class Users extends Component
      * Suspends a user.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was suspended successfully.
      * @throws \Throwable if reasons
      */
@@ -716,7 +733,6 @@ class Users extends Component
      * Unsuspends a user.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was unsuspended successfully.
      * @throws \Throwable if reasons
      */
@@ -762,17 +778,16 @@ class Users extends Component
     /**
      * Shuns a message for a user.
      *
-     * @param int           $userId     The user’s ID.
-     * @param string        $message    The message to be shunned.
+     * @param int $userId The user’s ID.
+     * @param string $message The message to be shunned.
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
-     *
      * @return bool Whether the message was shunned successfully.
      */
     public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%shunnedmessages}}',
+                Table::SHUNNEDMESSAGES,
                 [
                     'userId' => $userId,
                     'message' => $message
@@ -788,16 +803,15 @@ class Users extends Component
     /**
      * Un-shuns a message for a user.
      *
-     * @param int    $userId  The user’s ID.
+     * @param int $userId The user’s ID.
      * @param string $message The message to un-shun.
-     *
      * @return bool Whether the message was un-shunned successfully.
      */
     public function unshunMessageForUser(int $userId, string $message): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(
-                '{{%shunnedmessages}}',
+                Table::SHUNNEDMESSAGES,
                 [
                     'userId' => $userId,
                     'message' => $message
@@ -810,15 +824,14 @@ class Users extends Component
     /**
      * Returns whether a message is shunned for a user.
      *
-     * @param int    $userId  The user’s ID.
+     * @param int $userId The user’s ID.
      * @param string $message The message to check.
-     *
      * @return bool Whether the user has shunned the message.
      */
     public function hasUserShunnedMessage(int $userId, string $message): bool
     {
         return (new Query())
-            ->from(['{{%shunnedmessages}}'])
+            ->from([Table::SHUNNEDMESSAGES])
             ->where([
                 'and',
                 [
@@ -838,7 +851,6 @@ class Users extends Component
      * Sets a new verification code on the user's record.
      *
      * @param User $user The user.
-     *
      * @return string The user’s brand new verification code.
      */
     public function setVerificationCodeOnUser(User $user): string
@@ -854,11 +866,9 @@ class Users extends Component
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
      *
      * This method will check the
-     * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
+     * [[\craft\config\GeneralConfig::purgePendingUsersDuration|purgePendingUsersDuration]] config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
-     *
-     * @return void
      */
     public function purgeExpiredPendingUsers()
     {
@@ -872,31 +882,23 @@ class Users extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        $userIds = (new Query())
-            ->select(['id'])
-            ->from(['{{%users}}'])
-            ->where([
-                'and',
-                ['pending' => '1'],
-                ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
-            ])
-            ->column();
+        $query = User::find()
+            ->status('pending')
+            ->andWhere(['<', 'users.verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]);
 
         $elementsService = Craft::$app->getElements();
 
-        foreach ($userIds as $userId) {
-            $user = $this->getUserById($userId);
+        foreach ($query->each() as $user) {
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
     }
 
     /**
      * Assigns a user to a given list of user groups.
      *
-     * @param int   $userId   The user’s ID
+     * @param int $userId The user’s ID
      * @param int[] $groupIds The groups’ IDs. Pass an empty array to remove a user from all groups.
-     *
      * @return bool Whether the users were successfully assigned to the groups.
      */
     public function assignUserToGroups(int $userId, array $groupIds): bool
@@ -914,7 +916,7 @@ class Users extends Component
 
         // Delete their existing groups
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%usergroups_users}}', ['userId' => $userId])
+            ->delete(Table::USERGROUPS_USERS, ['userId' => $userId])
             ->execute();
 
         if (!empty($groupIds)) {
@@ -926,7 +928,7 @@ class Users extends Component
 
             Craft::$app->getDb()->createCommand()
                 ->batchInsert(
-                    '{{%usergroups_users}}',
+                    Table::USERGROUPS_USERS,
                     [
                         'groupId',
                         'userId'
@@ -966,15 +968,20 @@ class Users extends Component
      * This method is called toward the end of a public registration request.
      *
      * @param User $user The user that was just registered.
-     *
      * @return bool Whether the user was assigned to the default group.
      */
     public function assignUserToDefaultGroup(User $user): bool
     {
         // Make sure there's a default group
-        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
+        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
 
-        if (!$defaultGroupId) {
+        if (!$uid) {
+            return false;
+        }
+
+        $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
+
+        if (!$group) {
             return false;
         }
 
@@ -988,7 +995,7 @@ class Users extends Component
             return false;
         }
 
-        if (!$this->assignUserToGroups($user->id, [$defaultGroupId])) {
+        if (!$this->assignUserToGroups($user->id, [$group->id])) {
             return false;
         }
 
@@ -1002,6 +1009,130 @@ class Users extends Component
         return true;
     }
 
+    /**
+     * Handle user field layout changes.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedUserFieldLayout(ConfigEvent $event)
+    {
+        // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
+        static $parsed = false;
+        if ($parsed) {
+            return;
+        }
+
+        $parsed = true;
+        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
+
+        $fieldsService = Craft::$app->getFields();
+
+        if (empty($data) || empty($config = reset($data))) {
+            $fieldsService->deleteLayoutsByType(User::class);
+            return;
+        }
+
+        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllFieldsProcessed();
+
+        // Save the field layout
+        $layout = FieldLayout::createFromConfig($config);
+        $layout->id = $fieldsService->getLayoutByType(User::class)->id;
+        $layout->type = User::class;
+        $layout->uid = key($data);
+        $fieldsService->saveLayout($layout);
+    }
+
+    /**
+     * Save the user field layout
+     *
+     * @param FieldLayout $layout
+     * @return bool
+     */
+    public function saveLayout(FieldLayout $layout)
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $fieldLayoutConfig = $layout->getConfig();
+        $uid = StringHelper::UUID();
+
+        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
+        return true;
+    }
+
+    /**
+     * Returns whether a user is allowed to impersonate another user.
+     *
+     * @param User $impersonator
+     * @param User $impersonatee
+     * @return bool
+     * @since 3.2
+     */
+    public function canImpersonate(User $impersonator, User $impersonatee): bool
+    {
+        // Admins can do whatever they want
+        if ($impersonator->admin) {
+            return true;
+        }
+
+        // Only admins are allowed to impersonate another admin
+        if ($impersonatee->admin) {
+            return false;
+        }
+
+        // impersonateUsers permission is obviously required
+        if (!$impersonator->can('impersonateUsers')) {
+            return false;
+        }
+
+        // Make sure the impersonator has at least all the same permissions as the impersonatee
+        $permissionsService = Craft::$app->getUserPermissions();
+        $impersonatorPermissions = array_flip($permissionsService->getPermissionsByUserId($impersonator->id));
+        $impersonateePermissions = $permissionsService->getPermissionsByUserId($impersonatee->id);
+
+        foreach ($impersonateePermissions as $permission) {
+            if (!isset($impersonatorPermissions[$permission])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Prune a deleted field from user group layout.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $fieldLayouts = $projectConfig->get(self::CONFIG_USERLAYOUT_KEY);
+
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
+        // Prune the user field layout.
+        if (is_array($fieldLayouts)) {
+            foreach ($fieldLayouts as $layoutUid => $layout) {
+                if (!empty($layout['tabs'])) {
+                    foreach ($layout['tabs'] as $tabUid => $tab) {
+                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                    }
+                }
+            }
+        }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -1009,7 +1140,6 @@ class Users extends Component
      * Gets a user record by its ID.
      *
      * @param int $userId
-     *
      * @return UserRecord
      * @throws UserNotFoundException if $userId is invalid
      */
@@ -1027,14 +1157,17 @@ class Users extends Component
     /**
      * Sets a user record up for a new verification code without saving it.
      *
-     * @param  UserRecord $userRecord
-     *
+     * @param UserRecord $userRecord
      * @return string
      */
     private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
     {
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
         $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
@@ -1046,7 +1179,6 @@ class Users extends Component
      * Determines if a user is within their invalid login window.
      *
      * @param UserRecord $userRecord
-     *
      * @return bool
      */
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
@@ -1067,9 +1199,8 @@ class Users extends Component
     /**
      * Sets a new verification code on a user, and returns their new verification URL
      *
-     * @param User   $user   The user that should get the new Password Reset URL
+     * @param User $user The user that should get the new Password Reset URL
      * @param string $action The UsersController action that the URL should point to
-     *
      * @return string The new Password Reset URL.
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
@@ -1081,26 +1212,30 @@ class Users extends Component
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger.'/users/'.$action;
+        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
         ];
 
-        $protocol = UrlHelper::getProtocolForTokenizedUrl();
+        $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
         if ($user->can('accessCp')) {
             // Only use getCpUrl() if the base CP URL has been explicitly set,
             // so UrlHelper won't use HTTP_HOST
             if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $protocol);
+                return UrlHelper::cpUrl($path, $params, $scheme);
             }
 
-            $path = $generalConfig->cpTrigger.'/'.$path;
+            $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
-        // todo: should we factor in the user's preferred language (as we did in v2)?
-        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        return UrlHelper::siteUrl($path, $params, $protocol, $siteId);
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else {
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
+        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }

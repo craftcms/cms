@@ -1,4 +1,19 @@
 <?php
+/**
+ * Craft console bootstrap file.
+ *
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+use yii\console\ExitCode;
+
+// Make sure they're running PHP 7+
+if (PHP_VERSION_ID < 70000) {
+    echo "Craft requires PHP 7.0 or later.\n";
+    exit(ExitCode::UNSPECIFIED_ERROR);
+}
 
 mb_detect_order('auto');
 
@@ -16,4 +31,4 @@ date_default_timezone_set('UTC');
 
 $appType = 'console';
 
-return require __DIR__.'/bootstrap.php';
+return require __DIR__ . '/bootstrap.php';

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -14,7 +14,7 @@ use DateTime;
  * AssetIndexData model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetIndexData extends Model
 {
@@ -84,10 +84,10 @@ class AssetIndexData extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'volumeId', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true],
-            [['completed', 'inProgress'], 'boolean'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'volumeId', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true];
+        $rules[] = [['completed', 'inProgress'], 'boolean'];
+        return $rules;
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -14,8 +14,8 @@ use craft\helpers\Template;
 /**
  * Class Feeds variable.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class Feeds
@@ -24,11 +24,10 @@ class Feeds
     // =========================================================================
 
     /**
-     * @param string      $url
-     * @param int         $limit
-     * @param int         $offset
+     * @param string $url
+     * @param int $limit
+     * @param int $offset
      * @param string|null $cacheDuration
-     *
      * @return array
      */
     public function getFeedItems(string $url, int $limit = 0, int $offset = 0, string $cacheDuration = null): array

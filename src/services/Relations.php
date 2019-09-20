@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -10,16 +10,16 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\fields\BaseRelationField;
 use yii\base\Component;
 
 /**
- * Class Relations service.
- *
- * An instance of the Relations service is globally accessible in Craft via [[Application::relations `Craft::$app->getRelations()`]].
+ * Relations service.
+ * An instance of the Relations service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRelations()|`Craft::$app->relations`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Relations extends Component
 {
@@ -30,11 +30,9 @@ class Relations extends Component
      * Saves some relations for a field.
      *
      * @param BaseRelationField $field
-     * @param ElementInterface  $source
-     * @param array             $targetIds
-     *
+     * @param ElementInterface $source
+     * @param array $targetIds
      * @throws \Throwable
-     * @return void
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
     {
@@ -43,8 +41,8 @@ class Relations extends Component
             $targetIds = [];
         }
 
-        // Prevent duplicate target IDs.
-        $targetIds = array_unique($targetIds);
+        // Prevent duplicate/empty target IDs.
+        $targetIds = array_unique(array_filter($targetIds));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -67,7 +65,7 @@ class Relations extends Component
             }
 
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%relations}}', $oldRelationConditions)
+                ->delete(Table::RELATIONS, $oldRelationConditions)
                 ->execute();
 
             // Add the new ones
@@ -98,7 +96,7 @@ class Relations extends Component
                     'sortOrder'
                 ];
                 Craft::$app->getDb()->createCommand()
-                    ->batchInsert('{{%relations}}', $columns, $values)
+                    ->batchInsert(Table::RELATIONS, $columns, $values)
                     ->execute();
             }
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -14,15 +14,17 @@ use craft\base\PreviewableFieldInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
  * BaseOptionsField is the base class for classes representing an options field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
@@ -38,6 +40,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @var bool Whether the field should support multiple selections
      */
     protected $multi = false;
+
+    /**
+     * @var bool Whether the field should support optgroups
+     */
+    protected $optgroups = false;
 
     // Public Methods
     // =========================================================================
@@ -61,7 +68,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                         'value' => $key,
                         'default' => ''
                     ];
+                } else if (!empty($option['isOptgroup'])) {
+                    // isOptgroup will be set if this is a settings request
+                    $options[] = [
+                        'optgroup' => $option['label'],
+                    ];
                 } else {
+                    unset($option['isOptgroup']);
                     $options[] = $option;
                 }
             }
@@ -116,6 +129,41 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $this->options = [['label' => '', 'value' => '']];
         }
 
+        $cols = [];
+        if ($this->optgroups) {
+            $cols['isOptgroup'] = [
+                'heading' => Craft::t('app', 'Optgroup?'),
+                'type' => 'checkbox',
+                'class' => 'thin',
+                'toggle' => ['!value', '!default'],
+            ];
+        }
+        $cols['label'] = [
+            'heading' => Craft::t('app', 'Option Label'),
+            'type' => 'singleline',
+            'autopopulate' => 'value'
+        ];
+        $cols['value'] = [
+            'heading' => Craft::t('app', 'Value'),
+            'type' => 'singleline',
+            'class' => 'code'
+        ];
+        $cols['default'] = [
+            'heading' => Craft::t('app', 'Default?'),
+            'type' => 'checkbox',
+            'radioMode' => !$this->multi,
+            'class' => 'thin'
+        ];
+
+        $rows = [];
+        foreach ($this->options as $option) {
+            if (isset($option['optgroup'])) {
+                $option['isOptgroup'] = true;
+                $option['label'] = ArrayHelper::remove($option, 'optgroup');
+            }
+            $rows[] = $option;
+        }
+
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
             [
                 [
@@ -124,25 +172,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     'id' => 'options',
                     'name' => 'options',
                     'addRowLabel' => Craft::t('app', 'Add an option'),
-                    'cols' => [
-                        'label' => [
-                            'heading' => Craft::t('app', 'Option Label'),
-                            'type' => 'singleline',
-                            'autopopulate' => 'value'
-                        ],
-                        'value' => [
-                            'heading' => Craft::t('app', 'Value'),
-                            'type' => 'singleline',
-                            'class' => 'code'
-                        ],
-                        'default' => [
-                            'heading' => Craft::t('app', 'Default?'),
-                            'type' => 'checkbox',
-                            'radioMode' => !$this->multi,
-                            'class' => 'thin'
-                        ],
-                    ],
-                    'rows' => $this->options
+                    'cols' => $cols,
+                    'rows' => $rows,
                 ]
             ]);
     }
@@ -156,38 +187,41 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             return $value;
         }
 
-        if (is_string($value)) {
+        if (is_string($value) && (
+                $value === '' ||
+                strpos($value, '[') === 0 ||
+                strpos($value, '{') === 0
+            )) {
             $value = Json::decodeIfJson($value);
+        } else if ($value === null && $this->isFresh($element)) {
+            $value = $this->defaultValue();
         }
 
+        // Normalize to an array
+        $selectedValues = (array)$value;
+
         if ($this->multi) {
-            // In case the field used to be a single-option field
-            $value = (array)$value;
-
-            // Convert all the values to OptionData objects
-            foreach ($value as &$val) {
+            // Convert the value to a MultiOptionsFieldData object
+            $options = [];
+            foreach ($selectedValues as $val) {
                 $label = $this->optionLabel($val);
-                $val = new OptionData($label, $val, true);
+                $options[] = new OptionData($label, $val, true);
             }
-            unset($val);
-
-            $value = new MultiOptionsFieldData($value);
+            $value = new MultiOptionsFieldData($options);
         } else {
-            // In case the field used to be a multi-option field
-            if (is_array($value)) {
-                $value = reset($value) ?: null;
-            }
-
             // Convert the value to a SingleOptionFieldData object
+            $value = !empty($selectedValues) ? reset($selectedValues) : null;
             $label = $this->optionLabel($value);
             $value = new SingleOptionFieldData($label, $value, true);
         }
 
         $options = [];
-        $selectedValues = (array)$value;
 
         if ($this->options) {
             foreach ($this->options as $option) {
+                if (isset($option['optgroup'])) {
+                    continue;
+                }
                 $selected = in_array($option['value'], $selectedValues, true);
                 $options[] = new OptionData($option['label'], $option['value'], $selected);
             }
@@ -201,6 +235,23 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        if ($value instanceof MultiOptionsFieldData) {
+            $serialized = [];
+            foreach ($value as $selectedValue) {
+                /** @var OptionData $selectedValue */
+                $serialized[] = $selectedValue->value;
+            }
+            return $serialized;
+        }
+
+        return parent::serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementValidationRules(): array
     {
         // Get all of the acceptable values
@@ -208,7 +259,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         if ($this->options) {
             foreach ($this->options as $option) {
-                $range[] = $option['value'];
+                if (!isset($option['optgroup'])) {
+                    $range[] = $option['value'];
+                }
             }
         }
 
@@ -220,7 +273,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function isEmpty($value): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
         if ($value instanceof SingleOptionFieldData) {
@@ -247,7 +300,31 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return (string)$value->value;
+        return (string)$value->label;
+    }
+
+    /**
+     * Returns whether the field type supports storing multiple selected options.
+     *
+     * @return bool
+     * @see multi
+     */
+    public function getIsMultiOptionsField(): bool
+    {
+        return $this->multi;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        if (!$this->multi) {
+            return parent::getContentGqlType();
+        }
+
+        return Type::listOf(Type::string());
     }
 
     // Protected Methods
@@ -271,10 +348,16 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         if ($this->options) {
             foreach ($this->options as $option) {
-                $translatedOptions[] = [
-                    'label' => Craft::t('site', $option['label']),
-                    'value' => $option['value']
-                ];
+                if (isset($option['optgroup'])) {
+                    $translatedOptions[] = [
+                        'optgroup' => Craft::t('site',$option['optgroup']),
+                    ];
+                } else {
+                    $translatedOptions[] = [
+                        'label' => Craft::t('site', $option['label']),
+                        'value' => $option['value']
+                    ];
+                }
             }
         }
 
@@ -285,14 +368,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Returns an option's label by its value.
      *
      * @param string|null $value
-     *
      * @return string|null
      */
     protected function optionLabel(string $value = null)
     {
         if ($this->options) {
             foreach ($this->options as $option) {
-                if ($option['value'] == $value) {
+                if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
                     return $option['label'];
                 }
             }

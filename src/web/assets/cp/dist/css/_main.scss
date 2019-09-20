@@ -8,9 +8,7 @@
 
 @font-face {
   font-family: 'Craft';
-  src: url('../fonts/Craft.eot');
-  src: url('../fonts/Craft.eot?#iefix') format('embedded-opentype'),
-  url('../fonts/Craft.woff') format('woff'),
+  src: url('../fonts/Craft.woff') format('woff'),
   url('../fonts/Craft.ttf') format('truetype'),
   url('../fonts/Craft.svg#Craft') format('svg');
   font-weight: normal;
@@ -84,8 +82,8 @@ body.rtl .text.ltr {
 .go:after,
 .menubtn:after,
 .required:after,
-.livepreviewbtn:before,
-.sharebtn:before,
+#preview-btn:before,
+#share-btn:before,
 .toggle:before,
 a.fieldtoggle:before,
 [data-icon]:before,
@@ -154,18 +152,19 @@ body.rtl [data-icon-after=structure]:after {
   color: #9d2dcc;
 }
 
-.livepreviewbtn,
-.sharebtn {
+#preview-btn,
+#share-btn {
   &:before {
     @include margin-right(7px);
   }
 }
 
-.livepreviewbtn:before {
+#preview-btn:before {
+  margin-top: -2px;
   content: 'view';
 }
 
-.sharebtn:before {
+#share-btn:before {
   body.ltr & {
     content: 'share';
   }
@@ -214,7 +213,7 @@ body.rtl [data-icon-after=structure]:after {
 /* headings */
 h1 {
   margin-bottom: 24px;
-  font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif;
+  font-weight: 300;
   font-size: 24px;
   line-height: 1;
 }
@@ -310,8 +309,7 @@ code,
 .code,
 .code input,
 .code textarea {
-  font-family: Menlo, monospace;
-  font-size: 0.9em !important;
+  @include fixed-width-font;
 }
 
 /* links */
@@ -345,6 +343,49 @@ li.sel a {
 
 .go:hover:after {
   color: $linkColor;
+}
+
+/* revision button */
+#revision-btngroup {
+  @include margin-right(7px);
+}
+#revision-btn.disabled {
+  opacity: 1;
+  color: $mediumDarkTextColor;
+  background: transparent;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+/* status icons */
+.checkmark-icon,
+.alert-icon {
+  padding: 5px;
+  margin-bottom: 0 !important;
+  line-height: 10px;
+  border-radius: 20px;
+  cursor: pointer;
+
+  &:before {
+    @include icon;
+  }
+}
+
+.checkmark-icon {
+  background: darken($bgColor, 10%);
+
+  &:before {
+    content: 'check';
+    color: $successColor;
+  }
+}
+
+.alert-icon {
+  background: darken($bgColor, 10%);
+
+  &:before {
+    content: 'alert';
+    color: $errorColor;
+  }
 }
 
 /* toggles */
@@ -405,106 +446,7 @@ strong, b, i em {
 
 /* readable blocks */
 .readable {
-  font-size: 16px;
-  line-height: 22px;
-}
-
-.readable h1 {
-  margin: 24px 0 16px;
-  font-size: 32px;
-  line-height: 40px;
-  font-weight: 600;
-  color: #000;
-}
-
-.readable h2 {
-  margin: 24px 0 16px;
-  font-size: 24px;
-  line-height: 30px;
-  font-weight: 600;
-}
-
-.readable h3 {
-  margin: 24px 0 16px;
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 600;
-}
-
-.readable ul,
-.readable ol {
-  @include padding-left(2em);
-}
-
-.readable ul li {
-  list-style-type: disc;
-}
-
-.readable li + li {
-  margin-top: 0.25em;
-}
-
-.readable blockquote {
-  margin: 16px 0;
-}
-
-.readable blockquote:not(.note) {
-  padding: 0 16px;
-  color: $mediumTextColor;
-  @include border-left(4px solid $hairlineColor);
-}
-
-.readable blockquote.note {
-  position: relative;
-  border-radius: 4px;
-  padding: 1em;
-  @include padding-left(56px);
-  border: 1px solid;
-}
-
-.readable blockquote.note:not(.tip):not(.warning) {
-  border-color: $errorColor;
-}
-
-.readable blockquote.note.tip {
-  border-color: $linkColor;
-}
-
-.readable blockquote.note.warning {
-  border-color: $warningColor;
-}
-
-.readable blockquote.note:before {
-  @include icon;
-  position: absolute;
-  top: 12px;
-  @include left(16px);
-  font-size: 30px;
-  width: 24px;
-}
-
-.readable blockquote.note:not(.tip):not(.warning) {
-  color: #bf503f;
-  &:before {
-    content: 'alert';
-    color: $errorColor;
-  }
-}
-
-.readable blockquote.note.tip {
-  color: $mediumTextColor;
-  &:before {
-    content: 'lightbulb';
-    color: $linkColor;
-  }
-}
-
-.readable blockquote.note.warning {
-  color: #cf783a;
-  &:before {
-    content: 'alert';
-    color: $warningColor;
-  }
+  @include readable;
 }
 
 /* text styles */
@@ -570,6 +512,19 @@ td {
   vertical-align: middle;
 }
 
+body.ltr table[dir='rtl'] {
+  th,
+  td {
+    text-align: right;
+  }
+}
+body.rtl table[dir='ltr'] {
+  th,
+  td {
+    text-align: left;
+  }
+}
+
 th.right,
 td.right {
   float: none;
@@ -626,6 +581,10 @@ td.right {
   color: $successColor !important;
 }
 
+.notice {
+  color: $noticeColor !important;
+}
+
 .warning {
   color: $warningColor !important;
 }
@@ -661,15 +620,19 @@ td.right {
 }
 
 .icon.delete:not(.disabled):hover:before {
-  color: $errorColor;
+  color: $red;
 }
 
 .icon.delete:not(.disabled):active:before {
-  color: #8c3b2e;
+  color: darken($red, 10%);
 }
 
 .hidden {
   display: none !important;
+}
+
+.invisible {
+  visibility: hidden;
 }
 
 .clearafter:after {
@@ -677,25 +640,66 @@ td.right {
 }
 
 .info {
-  font-size: 0;
-  vertical-align: top;
+  vertical-align: bottom;
   display: inline-block;
+  width: 1em;
+  height: 1.375em;
+  text-align: center;
   cursor: pointer;
-}
+  overflow: hidden;
 
-.info:before {
-  @include icon;
-  content: 'info';
-  color: $lightTextColor;
-  font-size: 13px;
-}
+  &:before {
+    @include icon;
+    vertical-align: baseline;
+    width: 100%;
+    line-height: 1.375;
+    color: $lightTextColor;
+  }
 
-.info:hover:before {
-  color: $linkColor;
+  &:not(.warning) {
+    &:before {
+      content: 'info';
+    }
+    &:hover:before {
+      color: $linkColor;
+    }
+  }
+
+  &.warning {
+    &:before {
+      content: 'alert';
+    }
+    &:hover:before {
+      color: $warningColor;
+    }
+  }
 }
 
 .info-hud {
-  max-width: 250px;
+
+  table {
+    max-width: 280px;
+    table-layout: auto;
+  }
+
+  td {
+    word-wrap: break-word;
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 450px) {
+
+  .info-hud {
+
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+  }
+
 }
 
 /* ----------------------------------------
@@ -892,17 +896,26 @@ ul.icons li a:hover {
     background: #fff;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
   }
+
+  .flex {
+    align-items: flex-start;
+  }
 }
 
 .flex {
   display: flex;
   align-items: center;
   align-content: stretch;
-  flex-wrap: wrap;
+
+  &:not(.flex-nowrap) {
+    flex-wrap: wrap;
+
+    & > * {
+      margin-bottom: 7px;
+    }
+  }
 
   & > * {
-    margin-bottom: 7px;
-
     &.label {
       white-space: nowrap;
     }
@@ -910,15 +923,19 @@ ul.icons li a:hover {
     &:not(:last-child) {
       @include margin-right(7px !important);
     }
-
-    &.invisible {
-      visibility: hidden;
-    }
   }
 }
 
 .flex-grow {
   flex: 1;
+}
+
+.flex-center {
+  align-items: center;
+}
+
+.spacer {
+  width: 14px;
 }
 
 .buttons {
@@ -931,7 +948,7 @@ ul.icons li a:hover {
     &:not(.hidden) {
       & + .btn,
       & + .btngroup {
-        margin-left: 5px;
+        @include margin-left(5px);
       }
     }
   }
@@ -958,12 +975,12 @@ ul.icons li a:hover {
 
   &:focus {
     outline: none;
-    box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
   }
 
   &:active,
   &.active {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0,0,0,0.15);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15);
   }
 
   &:not(.submit) {
@@ -991,6 +1008,10 @@ ul.icons li a:hover {
 
   &:active {
     outline: none;
+  }
+
+  div.checkbox {
+    margin-top: 4px;
   }
 }
 
@@ -1059,7 +1080,8 @@ ul.icons li a:hover {
   background-image: url(../images/spinner_submit.gif);
 }
 
-.secondary-buttons .btn.icon.add.loading.submit:after {
+.secondary-buttons .btn.icon.add.loading.submit:after,
+.btn.secondary.icon.add.loading.submit:after {
   background-image: url(../images/spinner_submit_secondary.gif);
 }
 
@@ -1183,8 +1205,8 @@ ul.icons li a:hover {
 }
 
 .btn.big[data-icon]:before,
-.livepreviewbtn:before,
-.sharebtn:before {
+#preview-btn:before,
+#share-btn:before {
   @include margin-left(-2px);
 }
 
@@ -1196,10 +1218,14 @@ ul.icons li a:hover {
 }
 
 /* submit buttons */
-.btn.submit {
+.btn.submit,
+.btn.secondary {
   color: #fff;
-  background-image: linear-gradient($submitColor, #cc5643);
   @include light-on-dark-text;
+}
+
+.btn.submit {
+  background-image: linear-gradient($submitColor, #cc5643);
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
@@ -1212,17 +1238,22 @@ ul.icons li a:hover {
   background-image: linear-gradient($submitActiveColor, #994032);
 }
 
-.secondary-buttons .btn.submit {
+.secondary-buttons .btn.submit,
+.btn.secondary {
   background-image: linear-gradient($secondarySubmitColor, #878f99);
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
+.btn.secondary:not(.disabled):not(.inactive):hover,
+.btn.secondary:not(.disabled):not(.inactive).hover {
   background-image: linear-gradient($secondarySubmitHoverColor, #697480);
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active,
+.btn.secondary:not(.disabled):not(.inactive):active,
+.btn.secondary:not(.disabled):not(.inactive).active {
   background-image: linear-gradient($secondarySubmitActiveColor, #697380);
 }
 
@@ -1248,7 +1279,11 @@ div.btn.submit input {
   background-color: hsla($hue, 10%, 50%, 0.1) !important;
 }
 
-/* color buttons */
+/* color inputs */
+.color-input {
+  @include fixed-width-font;
+}
+
 .color {
   display: inline-block;
   position: relative;
@@ -1266,14 +1301,14 @@ div.btn.submit input {
       &:hover,
       &:active,
       &.active {
-        .colorpreview {
+        .color-preview {
           box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05);
         }
       }
 
       &:active,
       &.active {
-        .colorpreview {
+        .color-preview {
           background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
         }
       }
@@ -1286,7 +1321,7 @@ div.btn.submit input {
     background-size: 16px;
   }
 
-  .colorpreview {
+  .color-preview {
     top: 0;
     @include left(0);
     width: 100%;
@@ -1412,6 +1447,41 @@ div.btn.submit input {
   }
 }
 
+/* pagination */
+.pagination {
+  table.data + & {
+    margin-top: 24px;
+  }
+
+  .page-link {
+    padding: 4px 13px 8px;
+    border-radius: $btnBorderRadius;
+    color: $textColor;
+
+    &:before {
+      font-size: 1.2em;
+    }
+
+    &:not(.disabled) {
+      transition: box-shadow linear 100ms;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: none;
+        box-shadow: inset 0 0 0 1px $linkColor;
+      }
+    }
+
+    &.disabled {
+      opacity: 1;
+      background: $bgColor;
+      font-weight: bold;
+      color: $lightTextColor;
+    }
+  }
+}
+
 /* action buttons */
 .actions {
   @include floatright;
@@ -1489,9 +1559,19 @@ td.thin {
 }
 
 /* data */
-table.data th:not(:first-child),
-table.data td:not(:first-child) {
-  @include padding-left(14px);
+body.ltr table.data:not([dir='rtl']),
+body.rtl table.data[dir='ltr'] {
+  th:not(:first-child),
+  td:not(:first-child) {
+    padding-left: 14px;
+  }
+}
+body.rtl table.data:not([dir='ltr']),
+body.ltr table.data[dir='rtl'] {
+  th:not(:first-child),
+  td:not(:first-child) {
+    padding-right: 14px;
+  }
 }
 
 table.data thead th,
@@ -1811,213 +1891,254 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
   }
 }
 
-/* table views */
-.elements .tableview tr {
-  outline: none;
-}
-
-.elements .tableview th,
-.elements .tableview td {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.elements .tableview td {
-  position: relative;
-}
-
-.elements .tableview td.checkbox-cell {
-  @include padding-right(7px);
-  width: 12px !important;
-}
-
-.elements .tableview td.checkbox-cell + td,
-.elements .tableview td.checkbox-cell + th {
-  @include padding-left(7px);
-}
-
-.elements .tableview tr.sel td:not(.checkbox-cell) {
-  background: $lightSelColor;
-}
-
-.elements .tableview .move {
-  display: block;
-  position: absolute;
-  top: calc(50% - 9px);
-  @include margin-left(-14px);
-  font-size: 11px;
-  text-decoration: none;
-}
-
-.elements .tableview .toggle {
-  display: block;
-  position: absolute;
-  top: 9px;
-  @include margin-left(-20px);
-}
-
-.elements .tableview .move + .toggle {
-  @include margin-left(-34px);
-}
-
-/* thumbs views */
-.elements .thumbsview {
-  @include margin(-14px, 0, 0, -14px);
-}
-
-.elements .thumbsview li {
-  position: relative;
-  @include floatleft;
-  @include margin(14px, 0, 0, 14px);
-  outline: none;
-}
-
-.elements .thumbsview li.has-checkbox .checkbox {
-  position: absolute;
-  top: 106px;
-  @include left(4px);
-}
-
 $checkboxPadding: 20px;
-.elements .thumbsview li.has-checkbox .element.large.hasthumb {
-  &:not(.hasstatus) {
-    @include padding-left($checkboxPadding);
-  }
-  &.hasstatus {
-    @include padding-left($checkboxPadding + $elementStatusPadding);
 
-    .status {
-      @include left($checkboxPadding);
+.elements {
+  // table views
+  .tableview {
+    tr {
+      outline: none;
+
+      &.sel {
+        td {
+          &:not(.checkbox-cell) {
+            background: $lightSelColor;
+          }
+        }
+      }
     }
+
+    th,
+    td {
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    td {
+      position: relative;
+
+      &.checkbox-cell {
+        @include padding-right(7px);
+        width: 12px !important;
+        position: relative;
+
+        input.checkbox + label,
+        div.checkbox {
+          position: absolute;
+          top: calc(50% - 6px);
+        }
+
+        & + td,
+        & + th {
+          @include padding-left(7px);
+        }
+      }
+    }
+
+    .move {
+      display: block;
+      position: absolute;
+      top: calc(50% - 9px);
+      @include margin-left(-14px);
+      font-size: 11px;
+      text-decoration: none;
+    }
+
+    .toggle {
+      display: block;
+      position: absolute;
+      top: 13px;
+      @include margin-left(-20px);
+    }
+
+    .move + .toggle {
+      @include margin-left(-34px);
+    }
+  }
+
+  // thumbs views
+  .thumbsview {
+    @include margin(-14px, 0, 0, -14px);
+
+    li {
+      position: relative;
+      @include floatleft;
+      @include margin(14px, 0, 0, 14px);
+      outline: none;
+
+      &.has-checkbox {
+        .checkbox {
+          position: absolute;
+          top: 108px;
+          @include left(4px);
+        }
+
+        .element.large.hasthumb {
+          &:not(.hasstatus) {
+            @include padding-left($checkboxPadding);
+          }
+          &.hasstatus {
+            @include padding-left($checkboxPadding + $elementStatusPadding);
+
+            .status {
+              @include left($checkboxPadding);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.export-form {
+  position: relative;
+  .spinner {
+    position: absolute;
+    bottom: 0;
+    @include right(-24px);
   }
 }
 
 .thumbviewhelper {
   margin: -7px;
   padding: 7px;
-}
 
-.thumbviewhelper .thumbsview,
-.thumbviewhelper .thumbsview li {
-  margin: 0 !important;
+  .thumbsview {
+    &,
+    li {
+      margin: 0 !important;
+    }
+  }
 }
 
 /* structures */
 .structure {
   position: relative;
   z-index: 1;
-}
 
-.structure li {
-  @include padding-left(8px);
-}
+  li {
+    @include padding-left(8px);
 
-.structure ul {
-  @include margin-left(-3px);
-}
+    &.collapsed > ul {
+      display: none;
+    }
 
-.structure ul li {
-  @include padding-left(38px);
-  background-repeat: no-repeat;
-  body.ltr & {
-    background-image: url(../images/branch.png);
-    background-position: 0 0;
+    .row:hover > .icon,
+    &.draghelper > .row .move,
+    .add.active {
+      opacity: 1;
+    }
+
+    &.draghelper {
+      & > .row {
+        .add {
+          opacity: 0;
+        }
+
+        .move:before {
+          color: $linkColor;
+        }
+      }
+    }
+
+    &.draginsertion {
+      position: relative;
+      @include margin(-1px, 0, -1px, 8px);
+      @include padding-left(0);
+      height: 2px;
+      background: $linkColor !important;
+      @include border-left(none);
+      border-radius: 1px;
+    }
+
+    .toggle {
+      position: relative;
+      z-index: 1;
+      @include floatleft;
+      @include margin(4px, -8px, 0, -12px);
+    }
+
+    .row:after {
+      @include clearafter;
+    }
+
+    .move,
+    .add {
+      @include margin(5px, 5px, 0, 0);
+      opacity: 0;
+      transition: opacity linear 100ms;
+    }
+
+    .add {
+      padding: 0 5px;
+
+      &:before {
+        content: 'downangle';
+        color: rgba(0, 0, 0, 0.2);
+      }
+
+      &:not(.disabled):hover:before,
+      &.active:before {
+        color: $linkColor;
+      }
+    }
+
+    .checkbox {
+      @include floatleft;
+      @include margin(7px, 0, 0, 7px);
+    }
   }
-  body.rtl & {
-    background-image: url(../images/branch_rtl.png);
-    background-position: 100% 0;
+
+  ul {
+    @include margin-left(-3px);
+
+    li {
+      @include padding-left(38px);
+      background-repeat: no-repeat;
+
+      body.ltr & {
+        background-image: url(../images/branch.png);
+        background-position: 0 0;
+      }
+
+      body.rtl & {
+        background-image: url(../images/branch_rtl.png);
+        background-position: 100% 0;
+      }
+
+      &:not(:last-child):not(.last) {
+        @include padding-left(37px);
+        @include border-left(1px solid $hairlineColor);
+
+        body.ltr & {
+          background-position: -1px 0;
+        }
+
+        body.rtl & {
+          background-position: calc(100% + 1px) 0;
+        }
+      }
+
+      &.draginsertion {
+        @include margin-left(38px);
+      }
+    }
   }
-}
 
-.structure ul li:not(:last-child):not(.last) {
-  @include padding-left(37px);
-  @include border-left(1px solid $hairlineColor);
-  body.ltr & {
-    background-position: -1px 0;
+  .row {
+    &.draghover {
+      .element {
+        z-index: 2;
+        border-radius: 15px;
+        box-shadow: inset 0 0 0 2px $linkColor;
+      }
+    }
+
+    &.droptarget {
+      border-radius: 5px;
+      box-shadow: inset 0 0 0 2px $linkColor;
+    }
   }
-  body.rtl & {
-    background-position: calc(100% + 1px) 0;
-  }
-}
-
-.structure li .toggle {
-  position: relative;
-  z-index: 1;
-  @include floatleft;
-  @include margin(4px, -8px, 0, -12px);
-}
-
-.structure li.collapsed > ul {
-  display: none;
-}
-
-.structure li .row:after {
-  @include clearafter;
-}
-
-.structure li .move,
-.structure li .add {
-  @include margin(5px, 5px, 0, 0);
-  opacity: 0;
-  transition: opacity linear 100ms;
-}
-
-.structure li .add {
-  padding: 0 5px;
-}
-
-.structure li .add:before {
-  content: 'downangle';
-  color: rgba(0, 0, 0, 0.2);
-}
-
-.structure li .add:not(.disabled):hover:before,
-.structure li .add.active:before {
-  color: $linkColor;
-}
-
-.structure li .row:hover > .icon,
-.structure li.draghelper > .row .move,
-.structure li .add.active {
-  opacity: 1;
-}
-
-.structure li .checkbox {
-  @include floatleft;
-  @include margin(7px, 0, 0, 7px);
-}
-
-.structure li.draghelper > .row .add {
-  opacity: 0;
-}
-
-.structure li.draghelper > .row .move:before {
-  color: $linkColor;
-}
-
-.structure li.draginsertion {
-  position: relative;
-  @include margin(-1px, 0, -1px, 8px);
-  @include padding-left(0);
-  height: 2px;
-  background: $linkColor !important;
-  @include border-left(none);
-  border-radius: 1px;
-}
-
-.structure ul li.draginsertion {
-  @include margin-left(38px);
-}
-
-.structure .row.draghover .element {
-  z-index: 2;
-  border-radius: 15px;
-  box-shadow: inset 0 0 0 2px $linkColor;
-}
-
-.structure .row.droptarget {
-  border-radius: 5px;
-  box-shadow: inset 0 0 0 2px $linkColor;
 }
 
 /* element select fields */
@@ -2025,168 +2146,224 @@ $checkboxPadding: 20px;
   position: relative;
   min-height: 37px;
   margin-top: -7px;
-}
 
-.elementselect:after {
-  @include clearafter;
-}
+  &:after {
+    @include clearafter;
+  }
 
-.elementselect .element,
-.elementselect .btn {
-  @include floatleft;
-  @include margin(7px, 7px, 0, 0);
-}
+  .element,
+  .btn {
+    @include floatleft;
+    @include margin(7px, 7px, 0, 0);
+  }
 
-.elementselect .element.small,
-.elementselect .btn {
-  clear: both;
-}
+  .element.small,
+  .btn {
+    clear: both;
+  }
 
-.elementselect .element {
-  z-index: 1;
-}
+  .element {
+    z-index: 1;
+  }
 
-.elementselect .caboose {
-  @include floatleft;
-}
-
-/* editable tables */
-table.editable tbody tr:not(:first-child) th,
-table.editable tbody tr:not(:first-child) td {
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
-}
-
-table.editable thead tr th,
-table.editable tbody tr th {
-  padding: 6px 10px;
-  white-space: nowrap;
-}
-
-table.editable tbody tr td:not(.textual) {
-  padding: 4px 10px;
-}
-
-table.editable thead tr th {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-table.editable thead tr th span.info {
-  margin-left: 5px;
-}
-
-table.editable tbody tr td {
-  vertical-align: middle;
-  text-align: center;
-  background: #fff;
-}
-
-table.editable tbody tr td.textual {
-  vertical-align: top;
-}
-
-// Set a dark border-left for the first <td> that follows a <th>, if there is one.
-// This is a ridiculous CSS hack since there's no operator/pseudo-class that mimics jQuery's next(selector) function.
-// If there was it could have been as simple as: th ??? td:not(.hidden) { dark left border }
-// kudos to Mark Huot for coming up with it!
-table.editable tbody tr th ~ td:not(:first-child) {
-  @include border-left(1px solid #dbdddf);
-}
-
-table.editable tbody tr td:not(:first-child),
-table.editable tbody tr th ~ td:not(.hidden) ~ td {
-  @include border-left(1px solid rgba(0, 0, 0, 0.07));
-}
-
-table.editable tbody tr td.error {
-  box-shadow: inset 0 0 0 1px $errorColor;
-}
-
-table.editable tbody tr td.disabled {
-  position: relative;
-  opacity: 1;
-}
-
-table.editable tbody tr td.disabled:after {
-  content: '.';
-  font-size: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: hsla($hue, 10%, 96%, 0.75);
-  user-select: none;
-}
-
-table.editable tbody tr th,
-table.editable tbody tr td.action {
-  background: $bgColor;
-}
-
-table.editable tbody tr td.action {
-  padding: 4px 7px;
-}
-
-table.editable tbody tr td.action + td.action {
-  @include border-left(none);
-  @include padding-left(0);
-}
-
-table.editable tbody textarea {
-  display: block;
-  width: 100%;
-  border: none;
-  padding: 7px 10px;
-  background: transparent;
-  overflow: hidden;
-}
-
-table.editable tbody textarea:focus {
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  padding: 6px 9px;
-  outline: none;
-}
-
-table.editable tbody tr td.code textarea::-webkit-input-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textareainput:-ms-input-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea::-ms-input-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea:-moz-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea::-moz-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea::placeholder {
-  @include sans-serif-font;
-}
-
-table.editable + .btn.add {
-  display: block;
-  border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
-  border: 1px dashed $darkHairlineColorAlpha;
-  border-top-width: 0;
-  background: none;
-  box-shadow: none;
-
-  &:focus {
-    border-style: solid;
+  .caboose {
+    @include floatleft;
   }
 }
 
-.border-box + .buttons,
-.shadow-box + .buttons {
-  margin-top: 7px;
+/* editable tables */
+table.editable {
+  th,
+  td.action {
+    color: $mediumTextColor;
+    font-weight: normal;
+    background: $bgColor;
+  }
+
+  thead,
+  tbody {
+    tr {
+      th {
+        padding: 6px 10px;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  thead {
+    tr {
+      th {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+        span.info {
+          position: absolute;
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      &:not(:first-child) {
+        th,
+        td {
+          border-top: 1px solid rgba(0, 0, 0, 0.07);
+        }
+      }
+
+      &:last-child {
+        td:first-child {
+          @include border-bottom-left-radius($paneBorderRadius);
+
+          textarea,
+          input.text {
+            @include border-bottom-left-radius($paneBorderRadius - 1);
+          }
+        }
+      }
+
+      td:not(:first-child),
+      th ~ td:not(.hidden) ~ td {
+        @include border-left(1px solid rgba(0, 0, 0, 0.07));
+      }
+
+      th {
+        // Set a dark border-left for the first <td> that follows a <th>, if there is one.
+        // This is a ridiculous CSS hack since there's no operator/pseudo-class that mimics jQuery's next(selector) function.
+        // If there was it could have been as simple as: th ??? td:not(.hidden) { dark left border }
+        // kudos to Mark Huot for coming up with it!
+        & ~ td:not(:first-child) {
+          @include border-left(1px solid #dbdddf);
+        }
+      }
+
+      td {
+        vertical-align: middle;
+        text-align: center;
+        background: #fff;
+
+        &.textual {
+          vertical-align: top;
+
+          textarea {
+            resize: none;
+          }
+        }
+
+        &:not(.textual) {
+          padding: 4px 10px;
+        }
+
+        &.error {
+          box-shadow: inset 0 0 0 1px $errorColor;
+        }
+
+        &.disabled {
+          position: relative;
+          opacity: 1;
+
+          &:after {
+            content: '.';
+            font-size: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: hsla($hue, 10%, 96%, 0.75);
+            user-select: none;
+          }
+        }
+
+        &.action {
+          padding: 4px 7px;
+
+          & + td.action {
+            @include border-left(none);
+            @include padding-left(0);
+          }
+        }
+
+        .flex > * {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    textarea,
+    textarea.text,
+    input.text {
+      display: block;
+      width: 100%;
+      border: none;
+      border-radius: 0;
+      padding: 7px 10px;
+      background: transparent;
+      overflow: hidden;
+      transition: none;
+
+      &:focus {
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        padding: 6px 9px;
+        outline: none;
+      }
+    }
+
+    .color-container {
+      display: block;
+      position: relative;
+
+      & > .color,
+      & > .color-input {
+        margin-bottom: 0;
+      }
+
+      & > .color {
+        position: absolute;
+        top: calc(50% - 8px);
+        @include left(10px);
+      }
+
+      & > .color-input {
+        @include padding-left(35px);
+
+        &:focus {
+          @include padding-left(34px);
+        }
+      }
+    }
+
+    .datewrapper,
+    .timewrapper {
+      width: 100%;
+
+      .text:placeholder-shown + div[data-icon] {
+        @include left(10px);
+      }
+    }
+  }
+
+  & + .btn.add {
+    display: block;
+    border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
+    border: 1px dashed $darkHairlineColorAlpha;
+    border-top-width: 0;
+    background: none;
+    box-shadow: none;
+
+    &:focus {
+      border-style: solid;
+      border-color: $blue;
+    }
+  }
+}
+
+.border-box,
+.shadow-box {
+  & + .buttons {
+    margin-top: 7px;
+  }
 }
 
 /* ----------------------------------------
@@ -2212,7 +2389,7 @@ ul.tree,
   border: 1px solid transparent;
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.locked):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
   border-color: rgba(0, 0, 0, 0.40);
 }
 
@@ -2221,15 +2398,14 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: #27AE60;
+  background-color: $green;
 }
 
 /* green */
 
 .status.orange,
-.status.locked,
 .status.pending {
-  background-color: #F2842D;
+  background-color: $orange;
 }
 
 /* orange */
@@ -2238,43 +2414,44 @@ ul.tree,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: #D0021B;
+  background-color: $red;
 }
 
 /* red */
 
 .status.yellow {
-  background-color: #F1C40E;
+  background-color: $yellow;
 }
 
 .status.pink {
-  background-color: #FF50F2;
+  background-color: $pink;
 }
 
 .status.purple {
-  background-color: #9B59B6;
+  background-color: $purple;
 }
 
 .status.blue {
-  background-color: #0D99F2;
+  background-color: $blue;
 }
 
 .status.turquoise {
-  background-color: #2CE0BD;
+  background-color: $turquoise;
 }
 
 .status.light {
-  background-color: #CCD1D6;
+  background-color: $light;
 }
 
 .status.grey {
-  background-color: #98A3AE;
+  background-color: $grey;
 }
 
 .status.black {
-  background-color: #32475E;
+  background-color: $black;
 }
 
+.status.white,
 .status.disabled {
   opacity: 1;
 }
@@ -2389,6 +2566,47 @@ ul.tree,
   z-index: 2;
 }
 
+// Plugin installers
+
+.missing-component {
+  padding: 7px 10px !important;
+  max-width: 400px;
+  background: $lightBgColor !important;
+
+  .error {
+    margin: 0;
+  }
+
+  .install-plugin {
+    margin: 7px 0 -7px;
+    border-top: 1px solid $hairlineColor;
+    position: relative;
+    @include padding(10px, 0, 10px, 40px);
+
+    .icon {
+      width: 32px;
+      height: 32px;
+      position: absolute;
+      top: calc(50% - 16px);
+      @include left(0);
+
+      img, svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    h3 {
+      flex: 1;
+      margin: 8px 0 !important;
+    }
+
+    .btn {
+      margin: 0;
+    }
+  }
+}
+
 /* ----------------------------------------
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
@@ -2403,7 +2621,6 @@ ul.tree,
   box-sizing: border-box;
 
   .pane {
-    box-shadow: none;
     background: $lightBgColor;
   }
 }
@@ -2426,6 +2643,10 @@ ul.tree,
       flex: 0 0 105px;
       margin-bottom: 0;
       line-height: 18px;
+    }
+
+    &.lightswitch-field > .heading {
+      flex: 1;
     }
 
     & > .input {
@@ -2456,6 +2677,10 @@ ul.tree,
   & > .data > .value {
     padding: 8px 0;
     width: calc(100% - 112px);
+  }
+
+  & > .field.lightswitch-field > .input {
+    width: auto;
   }
 
   & > .field {
@@ -2553,10 +2778,6 @@ ul.tree,
       list-style-type: none;
     }
   }
-
-  .text {
-    background: transparent;
-  }
 }
 
 .meta > .field > .input .select {
@@ -2638,6 +2859,12 @@ ul.tree,
   padding: 14px 24px;
   background-image: linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
   box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+
+  &.flex {
+    & > * {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .modal .body,
@@ -2831,7 +3058,52 @@ ul.tree,
 
   .main {
     padding: 8px 0;
+
     .meta {
+      .image-preview-container {
+        position: relative;
+        margin: -8px 0 8px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 190px;
+        background: #222;
+
+        .image-preview {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+
+          img {
+            display: block;
+            max-width: 100%;
+            max-height: 190px;
+          }
+        }
+
+        &.editable {
+          cursor: pointer;
+
+          .btn {
+            opacity: 0;
+            position: absolute;
+            top: 10px;
+            @include right(10px);
+            background: rgba(34, 34, 34, 0.9);
+            color: #fff;
+            border: 1px solid rgba(153, 153, 153, 0.9);
+            background-clip: padding-box;
+            box-shadow: none;
+            transition: opacity linear 100ms;
+          }
+
+          &:hover .btn {
+            opacity: 1;
+          }
+        }
+      }
+
       .field {
         padding-left: 24px;
         padding-right: 24px;
@@ -2953,10 +3225,20 @@ ul.tree,
 }
 
 /* logout warning/login/elevated session modals */
+.logoutwarningmodalshade,
+.loginmodalshade {
+  z-index: 101;
+}
+
 #logoutwarningmodal,
 #loginmodal,
 #elevatedsessionmodal {
   width: 500px;
+}
+
+#logoutwarningmodal,
+#loginmodal {
+  z-index: 101;
 }
 
 #loginmodal,
@@ -2975,6 +3257,12 @@ ul.tree,
 
 /* delete user modal */
 .deleteusermodal {
+  .content-summary {
+    margin: -24px -24px 24px;
+    padding: 24px;
+    background: $lightBgColor;
+  }
+
   .options {
     label {
       display: inline-block;
@@ -2994,6 +3282,19 @@ ul.tree,
       @include margin-right(-20px);
       @include margin-left(-4px);
     }
+  }
+}
+
+.dropdownsettingsmodal {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 400px;
+
+  .body {
+    max-height: 100%;
+    overflow-y: auto;
   }
 }
 
@@ -3074,6 +3375,19 @@ ul.tree,
   }
 }
 
+.menubtn,
+.menu {
+  span.icon {
+    display: inline-block;
+    margin-top: -1px;
+    width: 10px;
+    margin-right: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: $lightTextColor;
+  }
+}
+
 .menu ul li a:not(.sel):not(.disabled):hover,
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.disabled).hover,
@@ -3098,6 +3412,7 @@ ul.tree,
   .add {
     position: relative;
     z-index: 1;
+    @include margin(7px, 7px, 0, 0);
     display: inline-block;
     width: 12em;
 
@@ -3146,9 +3461,48 @@ ul.tree,
 .shadow-box {
   border-radius: $paneBorderRadius;
   border: 1px solid #ccc;
-  overflow: hidden;
-  width: 100%;
   box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+}
+
+table.shadow-box {
+  thead:first-child,
+  tbody:first-child {
+    tr:first-child {
+      th:first-child,
+      td:first-child {
+        &,
+        &.disabled:after {
+          border-top-left-radius: $paneBorderRadius - 1;
+        }
+      }
+      th:last-child,
+      td:last-child {
+        &,
+        &.disabled:after {
+          border-top-right-radius: $paneBorderRadius - 1;
+        }
+      }
+    }
+  }
+  thead:last-child,
+  tbody:last-child {
+    tr:last-child {
+      th:first-child,
+      td:first-child {
+        &,
+        &.disabled:after {
+          border-bottom-left-radius: $paneBorderRadius - 1;
+        }
+      }
+      th:last-child,
+      td:last-child {
+        &,
+        &.disabled:after {
+          border-bottom-right-radius: $paneBorderRadius - 1;
+        }
+      }
+    }
+  }
 }
 
 .text:not(.selectize-text),
@@ -3289,12 +3643,21 @@ textarea.text.fullwidth {
     }
   }
 
+  & > .notice,
   & > .warning {
     margin: 2px 0 0;
 
     &:before {
       @include margin(-2px, 2px, 0, 0);
       @include icon;
+      width: 1em;
+    }
+
+    &.notice:before {
+      content: 'lightbulb';
+    }
+
+    &.warning:before {
       content: 'alert';
     }
   }
@@ -3312,8 +3675,23 @@ textarea.text.fullwidth {
 .checkboxfield.has-instructions .instructions {
   margin-top: 2px;
   color: $mediumTextColor;
+
   img {
     max-width: 100%;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    @include padding-left(2em);
+  }
+
+  ul li {
+    list-style-type: disc;
+  }
+
+  li + li {
+    margin-top: 0.25em;
   }
 }
 
@@ -3321,7 +3699,6 @@ textarea.text.fullwidth {
 .nested-fields {
   margin: -24px;
   padding: 24px 24px 0;
-  overflow: hidden;
 
   &.hidden {
     display: block;
@@ -3343,7 +3720,7 @@ input.checkbox {
 
 input.checkbox + label,
 div.checkbox {
-  display: inline;
+  display: inline-block;
   clear: none;
   position: relative;
   @include padding-left(20px);
@@ -3371,7 +3748,6 @@ input.checkbox + label:before,
 div.checkbox:before {
   display: block;
   position: absolute;
-  top: 2px;
   @include left(0);
   width: 12px !important;
   height: 12px;
@@ -3380,6 +3756,10 @@ div.checkbox:before {
   border-radius: 1px;
   background: #fff;
   box-shadow: 0 0 0 1px $mediumHairlineColorAlpha;
+}
+
+input.checkbox + label:before {
+  top: 3px;
 }
 
 input.checkbox:disabled + label,
@@ -3414,7 +3794,7 @@ div.checkbox.indeterminate:before {
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
   outline: none;
-  box-shadow: 0 0 0 1px $darkHairlineColorAlpha;
+  box-shadow: 0 0 0 1px $blue;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
@@ -3423,6 +3803,22 @@ input.checkbox:focus + label:before,
 
 .checkboxfield.has-instructions .instructions {
   @include padding-left(20px);
+}
+
+/* multiselect */
+.multiselect > select {
+  @include text-input-styles;
+  color: $textColor;
+  font-size: 14px;
+  appearance: none;
+
+  &:focus {
+    @include text-input-focused-styles;
+  }
+
+  option {
+    padding: 1px 8px;
+  }
 }
 
 .text:not(.selectize-text),
@@ -3449,6 +3845,7 @@ input.checkbox:focus + label:before,
 .input.errors > .text,
 .input.errors > .border-box,
 .input.errors > .passwordwrapper > .text,
+.input.errors > .autosuggest-container .text,
 .text.error {
   border: 1px solid $errorColor !important;
 }
@@ -3524,10 +3921,6 @@ input.checkbox:focus + label:before,
 
 .password {
   @include padding-right(5em);
-
-  &.capslock:focus {
-    background: #fff url(../images/capslock.png) no-repeat 100% 50%;
-  }
 }
 
 .datewrapper,
@@ -3629,18 +4022,28 @@ input:-ms-input-placeholder {
 .select:not(.selectize) select {
   @include select-styles;
 }
+
 .select:not(.selectize) {
   @include select-container-styles;
 }
+
 .select:not(.selectize):after {
   @include select-arrow-styles;
 }
+
 .select:not(.selectize) select {
   @include select-input-styles;
+  white-space: pre;
+
+  option {
+    background: #fff;
+  }
 }
+
 .select:not(.selectize).fullwidth select {
   @include select-input-fullwidth-styles;
 }
+
 .select:not(.selectize) select:focus {
   @include select-input-focused-styles;
 }
@@ -3648,9 +4051,10 @@ input:-ms-input-placeholder {
 .select:not(.selectize).small:after {
   top: 9px;
 }
+
 .select:not(.selectize).small select {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
   font-size: 11px;
 }
 
@@ -3760,8 +4164,8 @@ body .selectize-dropdown .active {
   @include margin-left(1px);
   -padding: 10px;
   width: 210px;
-  height: 240px;
-  z-index: 100 !important;
+  height: 242px;
+  z-index: 101 !important;
 }
 
 .ui-datepicker-header {
@@ -3853,7 +4257,7 @@ body .selectize-dropdown .active {
 
 /* timepicker */
 .ui-timepicker-wrapper {
-  z-index: 100;
+  z-index: 101;
 }
 
 .ui-timepicker-list {
@@ -3892,25 +4296,59 @@ ul.errors li {
 }
 
 /* message pages */
-body.message .message-container {
+.message-container {
   position: absolute;
   z-index: 100;
   top: 0;
   @include left(0);
   width: 100%;
   height: 100%;
+
+  &.no-access {
+    background: rgba(50, 50, 50, 0.9);
+  }
+
+  .pane {
+    top: 50%;
+    margin-top: -33px !important;
+    margin-left: auto;
+    margin-right: auto;
+    width: 320px;
+  }
 }
 
-body.message .message-container.no-access {
-  background: rgba(50, 50, 50, 0.9);
+/* auto-suggest */
+.autosuggest-container {
+  position: relative;
 }
 
-body.message .message-container .pane {
-  top: 50%;
-  margin-top: -33px !important;
-  margin-left: auto;
-  margin-right: auto;
-  width: 320px;
+.autosuggest__results-container {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  border-radius: $paneBorderRadius;
+  background: #fff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  padding: 0 14px;
+  text-align: left;
+  @include sans-serif-font;
+  font-size: 1em !important;
+
+  .autosuggest__results_title {
+    @include h6-styles;
+    margin-top: 14px !important;
+  }
+
+  .autosuggest__results_item {
+    @include menu-option-styles;
+
+    &:hover,
+    &.autosuggest__results_item-highlighted {
+      @include menu-option-active-styles;
+      cursor: pointer;
+    }
+  }
 }
 
 /* ----------------------------------------
@@ -4032,6 +4470,8 @@ body.message .message-container .pane {
 }
 
 /* blocks */
+$titlebarBorderRadius: $paneBorderRadius - 1;
+
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
@@ -4040,109 +4480,119 @@ body.message .message-container .pane {
   border: 1px solid $hairlineColor;
   background: $lightBgColor;
   outline: none;
-}
 
-.matrixblock.disabled {
-  opacity: 1;
-}
+  & > .titlebar {
+    margin: 0 -14px 14px;
+    width: calc(100% + 28px);
+    box-sizing: border-box;
+    border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
+    @include padding(5px, 70px, 5px, 33px);
+    border-bottom: 1px solid $hairlineColor;
+    background: $bgColor;
+    color: $lightTextColor;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    word-wrap: normal;
+    cursor: default;
+    user-select: none;
 
-.matrixblock > .titlebar {
-  margin: 0 -14px 14px;
-  width: calc(100% + 28px);
-  box-sizing: border-box;
-  border-radius: 2px 2px 0 0;
-  @include padding(6px, 70px, 6px, 33px);
-  border-bottom: 1px solid $hairlineColor;
-  background: hsl(212, 10%, 94%);
-  color: $lightTextColor;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  word-wrap: normal;
-  cursor: default;
-  user-select: none;
-}
+    & > .blocktype {
+      display: inline;
+      color: $mediumTextColor;
+    }
 
-.matrixblock.collapsed > .titlebar {
-  border-radius: 2px;
-  border-bottom: none;
-}
+    & > .preview {
+      @include margin-left(7px);
+      display: inline;
+      opacity: 0;
+      transition: opacity linear 100ms;
 
-.matrixblock.disabled > .titlebar {
-  @include padding-right(90px);
-}
+      span {
+        opacity: 0.5;
+      }
+    }
+  }
 
-.matrixblock > .titlebar > .blocktype {
-  display: inline;
-  color: $mediumTextColor;
-}
+  &.disabled {
+    opacity: 1;
 
-.matrixblock > .titlebar > .preview {
-  @include margin-left(7px);
-  display: inline;
-  opacity: 0;
-  transition: opacity linear 100ms;
-}
+    & > .titlebar {
+      @include padding-right(90px);
+    }
 
-.matrixblock.collapsed > .titlebar > .preview {
-  opacity: 1;
-}
+    & > .actions {
+      & > .status {
+        &.off {
+          display: inline-block;
+          @include floatleft;
+          @include margin(6px, 10px, 0, 0);
+        }
+      }
+    }
+  }
 
-.matrixblock > .titlebar > .preview span {
-  opacity: 0.5;
-}
+  &.collapsed {
+    & > .titlebar {
+      border-radius: $titlebarBorderRadius;
+      border-bottom: none;
 
-.matrixblock > .checkbox {
-  position: absolute;
-  top: 7px;
-  @include left(14px);
-}
+      & > .preview {
+        opacity: 1;
+      }
+    }
+  }
 
-.matrixblock > .actions > .status.off {
-  display: none;
-}
+  & > .checkbox {
+    position: absolute;
+    top: 7px;
+    @include left(14px);
+  }
 
-.matrixblock.disabled > .actions > .status.off {
-  display: inline-block;
-  @include floatleft;
-  @include margin(4px, 10px, 0, 0);
-}
+  & > .actions {
+    position: absolute;
+    z-index: 1;
+    top: 4px;
+    @include right(5px);
+    cursor: default;
 
-.matrixblock > .actions {
-  position: absolute;
-  z-index: 1;
-  top: 6px;
-  @include right(5px);
-  cursor: default;
-}
+    & > .status {
+      &.off {
+        display: none;
+      }
+    }
 
-.matrixblock > .actions a {
-  padding: 0;
-  @include margin-right(2px);
-  width: 15px;
-  height: 20px;
-  text-align: center;
-  color: rgba(0, 0, 0, 0.25)
-}
+    a {
+      padding: 0;
+      @include margin-right(2px);
+      width: 15px;
+      height: 20px;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.25);
 
-.matrixblock > .actions a:hover {
-  width: 15px;
-  height: 20px;
-  text-align: center;
-  color: $linkColor;
-}
+      &:hover {
+        width: 15px;
+        height: 20px;
+        text-align: center;
+        color: $linkColor;
+      }
 
-.matrixblock > .actions a.settings:after {
-  @include margin-left(3px);
-}
+      &.settings:after {
+        @include margin-left(3px);
+      }
+    }
+  }
 
-.matrixblock > .fields > .field {
-  margin: 15px 0;
-}
+  & > .fields {
+    & > .field {
+      margin: 15px 0;
+    }
+  }
 
-.matrix > .buttons {
-  margin-top: 0;
-  height: 30px;
+  & > .buttons {
+    margin-top: 0;
+    height: 30px;
+  }
 }
 
 /* categories */
@@ -4173,6 +4623,71 @@ body.message .message-container .pane {
 
 .categoriesfield .structure ul {
   @include margin-left(12px);
+}
+
+/* site pickers */
+body.sitepicker {
+  #main-container {
+    #main {
+      #main-content {
+        padding: 30px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.sitepicker-group {
+  li {
+    &:not(:first-child) {
+      a {
+        margin-top: -1px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+
+        &:not(:hover) {
+          border-top-color: transparent;
+        }
+      }
+    }
+
+    &:not(:last-child) {
+      a {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    a {
+      display: block;
+      position: relative;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid $hairlineColorAlpha;
+      border-radius: $btnBorderRadius;
+      @include padding(9px, 42px, 9px, 15px);
+      font-size: 16px;
+      line-height: 1.4;
+
+      &:after {
+        font-size: 14px;
+        position: absolute;
+        top: calc(50% - 7px);
+        @include right(12px);
+        margin: 0;
+        padding: 0;
+      }
+
+      &:hover {
+        border-color: $linkColor;
+        text-decoration: none;
+        z-index: 1;
+      }
+    }
+  }
 }
 
 /* ----------------------------------------
@@ -4230,7 +4745,8 @@ only screen and (min-resolution: 1.5dppx) {
   .btn.icon.add.loading.submit:after {
     background-image: url(../images/spinner_submit_2x.gif);
   }
-  .secondary-buttons .btn.icon.add.loading.submit:after {
+  .secondary-buttons .btn.icon.add.loading.submit:after,
+  .btn.secondary.icon.add.loading.submit:after {
     background-image: url(../images/spinner_submit_secondary_2x.gif);
   }
 

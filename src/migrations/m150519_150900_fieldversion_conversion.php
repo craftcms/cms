@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m150519_150900_fieldversion_conversion migration.
@@ -17,7 +18,7 @@ class m150519_150900_fieldversion_conversion extends Migration
      */
     public function safeUp()
     {
-        $this->alterColumn('{{%info}}', 'fieldVersion', 'char(12)');
+        $this->alterColumn(Table::INFO, 'fieldVersion', 'char(12)');
     }
 
     /**

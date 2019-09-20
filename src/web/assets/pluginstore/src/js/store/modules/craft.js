@@ -1,84 +1,213 @@
-import api from '../../api'
-import * as types from '../mutation-types'
+import api from '../../api/craft'
 
+/**
+ * State
+ */
 const state = {
-    craftData: {},
-    // installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
-};
+    CraftEdition: null,
+    CraftPro: null,
+    CraftSolo: null,
+    canTestEditions: null,
+    countries: null,
+    craftId: null,
+    craftLogo: null,
+    currentUser: null,
+    editions: null,
+    licensedEdition: null,
+    poweredByStripe: null,
+    defaultPluginSvg: null,
+    pluginLicenseInfo: {},
+}
 
+/**
+ * Getters
+ */
 const getters = {
-
-    craftData: (state) => {
-        return state.craftData;
-    },
-
-    installedPlugins: (state, rootState) => {
-        if(!rootState.allPlugins) {
-            return [];
-        }
-
-        return rootState.allPlugins.filter(p => {
-            if(state.craftData.installedPlugins) {
-                return state.craftData.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle);
+    isPluginInstalled(state) {
+        return pluginHandle => {
+            if (!state.pluginLicenseInfo) {
+                return false
             }
-            return false;
-        })
-    },
 
-    craftIdAccount: state => {
-        return state.craftData.craftId
-    },
+            if (!state.pluginLicenseInfo[pluginHandle]) {
+                return false
+            }
 
-    countries: state => {
-        return state.craftData.countries;
-    },
+            if (!state.pluginLicenseInfo[pluginHandle].isInstalled) {
+                return false
+            }
 
-    states: state => {
-        return state.craftData.states;
-    }
-
-};
-
-const actions = {
-
-    getCraftData ({ commit }) {
-        return new Promise((resolve, reject) => {
-            api.getCraftData(data => {
-                commit(types.RECEIVE_CRAFT_DATA, { data });
-                resolve(data);
-            }, response => {
-                reject(response);
-            })
-        })
-    },
-
-    updateCraftId({ commit }, craftId) {
-        commit(types.UPDATE_CRAFT_ID, craftId);
-    },
-
-};
-
-const mutations = {
-
-    [types.INSTALL_PLUGIN] (state, { plugin }) {
-        const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id);
-
-        if (!record) {
-            state.craftData.installedPlugins.push(plugin.id)
+            return true
         }
     },
 
-    [types.RECEIVE_CRAFT_DATA] (state, { data }) {
-        state.craftData = data
+    getPluginLicenseInfo(state) {
+        return pluginHandle => {
+            if (!state.pluginLicenseInfo) {
+                return null
+            }
+
+            if (!state.pluginLicenseInfo[pluginHandle]) {
+                return null
+            }
+
+            return state.pluginLicenseInfo[pluginHandle]
+        }
     },
 
-    [types.UPDATE_CRAFT_ID] (state, { craftId }) {
-        state.craftData.craftId = craftId;
+    getCmsEditionFeatures() {
+        return editionHandle => {
+            const features = {
+                "solo": [
+                    {
+                        name: "Ultra-flexible content modeling",
+                        description: "Define custom content types, fields, and relations needed to perfectly contain your unique content requirements."
+                    },
+                    {
+                        name: "Powerful front-end tools",
+                        description: "Develop custom front-end templates with Twig, or use Craft as a headless CMS."
+                    },
+                    {
+                        name: "Multi-Site",
+                        description: "Run multiple related sites from a single installation, with shared content and user accounts."
+                    },
+                    {
+                        name: "Localization",
+                        description: "Cater to distinct audiences from around the world with Craft’s best-in-class localization capabilities."
+                    },
+                    {
+                        name: "Single admin account",
+                        description: "The Solo edition is limited to a single admin account."
+                    }
+                ],
+                "pro": [
+                    {
+                        name: "Unlimited user accounts",
+                        description: "Create unlimited user accounts, user groups, user permissions, and public user registration.",
+                    },
+                    {
+                        name: "Enhanced content previewing",
+                        description: "Preview your content from multiple targets, including single-page applications.",
+                    },
+                    {
+                        name: "GraphQL API",
+                        description: "Make your content available to other applications with a self-generating GraphQL API.",
+                    },
+                    {
+                        name: "System branding",
+                        description: "Personalize the Control Panel for your brand.",
+                    },
+                    {
+                        name: "Basic developer support",
+                        description: "Get developer-to-developer support right from the Craft core development team.",
+                    },
+                ]
+            }
+
+            if (!features[editionHandle]) {
+                return null
+            }
+
+            return features[editionHandle]
+        }
+    }
+}
+
+/**
+ * Actions
+ */
+const actions = {
+    getCraftData({commit}) {
+        return new Promise((resolve, reject) => {
+            api.getCraftData()
+                .then(response => {
+                    commit('updateCraftData', {response})
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
+        })
     },
 
-};
+    getPluginLicenseInfo({commit}) {
+        return new Promise((resolve, reject) => {
+            api.getPluginLicenseInfo()
+                .then(response => {
+                    commit('updatePluginLicenseInfo', {response})
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
+        })
+    },
+
+    updateCraftId({commit}, craftId) {
+        commit('updateCraftId', craftId)
+    },
+
+    // eslint-disable-next-line
+    tryEdition({}, edition) {
+        return new Promise((resolve, reject) => {
+            api.tryEdition(edition)
+                .then(response => {
+                    resolve(response)
+                })
+                .catch(response => {
+                    reject(response)
+                })
+        })
+    },
+
+    switchPluginEdition({dispatch}, {pluginHandle, edition}) {
+        return new Promise((resolve, reject) => {
+            api.switchPluginEdition(pluginHandle, edition)
+                .then(switchPluginEditionResponse => {
+                    dispatch('getPluginLicenseInfo')
+                        .then(getPluginLicenseInfoResponse => {
+                            resolve({
+                                switchPluginEditionResponse,
+                                getPluginLicenseInfoResponse,
+                            })
+                        })
+                        .catch(response => reject(response))
+                })
+                .catch(response => reject(response))
+        })
+    }
+}
+
+/**
+ * Mutations
+ */
+const mutations = {
+    updateCraftData(state, {response}) {
+        state.CraftEdition = response.data.CraftEdition
+        state.CraftPro = response.data.CraftPro
+        state.CraftSolo = response.data.CraftSolo
+        state.canTestEditions = response.data.canTestEditions
+        state.countries = response.data.countries
+        state.craftId = response.data.craftId
+        state.craftLogo = response.data.craftLogo
+        state.currentUser = response.data.currentUser
+        state.editions = response.data.editions
+        state.licensedEdition = response.data.licensedEdition
+        state.poweredByStripe = response.data.poweredByStripe
+        state.defaultPluginSvg = response.data.defaultPluginSvg
+    },
+
+    updatePluginLicenseInfo(state, {response}) {
+        state.pluginLicenseInfo = response.data
+    },
+
+    updateCraftId(state, {craftId}) {
+        state.craftId = craftId
+    },
+}
 
 export default {
+    namespaced: true,
     state,
     getters,
     actions,

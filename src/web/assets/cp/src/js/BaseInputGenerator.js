@@ -85,8 +85,14 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
-            var sourceVal = this.$source.val(),
-                targetVal = this.generateTargetValue(sourceVal);
+            var sourceVal = this.$source.val();
+
+            if (typeof sourceVal === 'undefined') {
+                // The source input may not exist anymore
+                return;
+            }
+
+            var targetVal = this.generateTargetValue(sourceVal);
 
             this.$target.val(targetVal);
             this.$target.trigger('change');

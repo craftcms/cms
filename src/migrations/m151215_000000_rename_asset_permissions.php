@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -18,7 +19,7 @@ class m151215_000000_rename_asset_permissions extends Migration
         // Update permissions
         $permissions = (new Query())
             ->select(['id', 'name'])
-            ->from(['{{%userpermissions}}'])
+            ->from([Table::USERPERMISSIONS])
             ->where(['like', 'name', 'volume'])
             ->all($this->db);
 
@@ -33,7 +34,7 @@ class m151215_000000_rename_asset_permissions extends Migration
                 'deletefilesandfoldersinvolume'
             ], $permission['name']);
 
-            $this->update('{{%userpermissions}}', ['name' => $newName], ['id' => $permission['id']], [], false);
+            $this->update(Table::USERPERMISSIONS, ['name' => $newName], ['id' => $permission['id']], [], false);
         }
     }
 

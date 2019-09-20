@@ -3,6 +3,7 @@
 {% set title = 'Modal Callback' %}
 
 {% js %}
-	window.opener.pluginStoreApp.updateCraftId({{ craftIdAccount|json_encode|raw }});
-	window.close();
+    var craftIdJson = '{{ craftIdAccount|json_encode|raw|e('js') }}';
+    window.opener.pluginStoreApp.updateCraftId(craftIdJson);
+    window.close();
 {% endjs %}

@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
 
@@ -23,11 +24,11 @@ class m161029_124145_email_message_languages extends Migration
         }
 
         // Add the new language column and populate from site/language mapping
-        $this->addColumn('{{%emailmessages}}', 'language', $this->string());
+        $this->addColumn('{{%emailmessages}}', 'language', $this->string()->after('id'));
 
         $siteResults = (new Query())
             ->select(['id', 'language'])
-            ->from('{{%sites}}')
+            ->from(Table::SITES)
             ->all($this->db);
 
         $siteLanguages = ArrayHelper::map($siteResults, 'id', 'language');

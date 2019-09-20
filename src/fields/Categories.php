@@ -1,23 +1,31 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\db\Table as DbTable;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
+use craft\gql\arguments\elements\Category as CategoryArguments;
+use craft\gql\interfaces\elements\Category as CategoryInterface;
+use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Categories represents a Categories field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Categories extends BaseRelationField
 {
@@ -48,30 +56,54 @@ class Categories extends BaseRelationField
         return Craft::t('app', 'Add a category');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return CategoryQuery::class;
+    }
+
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $allowLimit = false;
+
+    /**
+     * @inheritdoc
+     */
+    public $allowMultipleSources = false;
 
     /**
      * @var int|null Branch limit
      */
     public $branchLimit;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    protected $settingsTemplate = '_components/fieldtypes/Categories/settings';
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->allowLimit = false;
-        $this->allowMultipleSources = false;
-        $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
-        $this->inputTemplate = '_components/fieldtypes/Categories/input';
-        $this->inputJsClass = 'Craft.CategorySelectInput';
-        $this->sortable = false;
-    }
+    protected $inputTemplate = '_components/fieldtypes/Categories/input';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputJsClass = 'Craft.CategorySelectInput';
+
+    /**
+     * @inheritdoc
+     */
+    protected $sortable = false;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc
@@ -81,9 +113,9 @@ class Categories extends BaseRelationField
         if (is_array($value)) {
             /** @var Category[] $categories */
             $categories = Category::find()
-                ->id($value)
-                ->status(null)
-                ->enabledForSite(false)
+                ->siteId($this->targetSiteId($element))
+                ->id(array_values(array_filter($value)))
+                ->anyStatus()
                 ->all();
 
             // Fill in any gaps
@@ -112,7 +144,7 @@ class Categories extends BaseRelationField
         }
 
         if (empty($source)) {
-            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
+            return '<p class="error">' . Craft::t('app', 'This field is not set to a valid category group.') . '</p>';
         }
 
         return parent::getInputHtml($value, $element);
@@ -127,5 +159,37 @@ class Categories extends BaseRelationField
         $variables['branchLimit'] = $this->branchLimit;
 
         return $variables;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(CategoryInterface::getType()),
+            'args' => CategoryArguments::getArguments(),
+            'resolve' => CategoryResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
+
+        if (empty($allowedCategoryUids)) {
+            return false;
+        }
+
+        $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
+
+        return ['groupId' => array_values($categoryIds)];
     }
 }

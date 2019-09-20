@@ -32,11 +32,14 @@
 
                 this.addListener($('#beginbtn'), 'activate', 'showModal');
                 this.addListener(this.$dbDriverInput, 'change', 'updateDbPortInput');
+
+                new Craft.PasswordInput('#account-password');
             },
 
             showModal: function() {
                 if (!this.modal) {
                     this.modal = new Garnish.Modal($('#install-modal').removeClass('hidden'), {
+                        hideOnEsc: false,
                         shadeClass: ''
                     });
                     this.gotoScreen(1);
@@ -159,7 +162,7 @@
                     this.showInstallScreen();
                 } else if (i !== 1) {
                     // Give focus to the first input
-                    this.$currentScreen.find('input[type=text]:first').focus();
+                    this.$currentScreen.find('input[type=text]:first').trigger('focus');
                 }
             },
 

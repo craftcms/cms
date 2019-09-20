@@ -1,6 +1,6 @@
-{% set id = id ~ '-time' -%}
-{% set name = name is defined ? name -%}
-{% set value = value is defined ? value -%}
+{% set id = (id ?? 'time'~random())~'-time' -%}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
 
@@ -15,28 +15,19 @@
     } -%}
     <div data-icon="time"></div>
     {% if name -%}
-        <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
+        {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
 </div>
 
-{%-    set localeData = craft.app.locale %}
+{%- set localeData = craft.app.locale %}
 
 {%- js %}
     var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
-    $timePicker.timepicker({
-        timeFormat: '{{ craft.app.locale.getTimeFormat('short', 'php') }}',
-        closeOnWindowScroll: false,
-        orientation: '{{ localeData.getOrientation() == 'ltr' ? 'l' : 'r' }}',
-        {% if minuteIncrement is defined %}step: '{{ minuteIncrement }}',{% endif %}
-        lang: {
-            am: '{{ localeData.getAMName()|lower }}',
-            AM: '{{ localeData.getAMName() }}',
-            pm: '{{ localeData.getPMName()|lower }}',
-            PM: '{{ localeData.getPMName() }}'
-        }
-    });
+    $timePicker.timepicker($.extend({
+        {% if minuteIncrement is defined %}step: '{{ minuteIncrement }}'{% endif %}
+    }, Craft.timepickerOptions));
 
     {% if value and value.format is defined %}
-        $timePicker.timepicker('setTime', {{ value|date('G') }}*3600 + {{ value|date('i') }}*60 + {{ value|date('s') }});
+        $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
     {% endif %}
 {%- endjs %}

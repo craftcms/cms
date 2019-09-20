@@ -5,10 +5,10 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
-    <input type="hidden" name="action" value="tags/save-tag-group">
+    {{ actionInput('tags/save-tag-group') }}
     {{ redirectInput('settings/tags') }}
 
-    {% if tagGroup.id %}<input type="hidden" name="tagGroupId" value="{{ tagGroup.id }}">{% endif %}
+    {% if tagGroup.id %}{{ hiddenInput('tagGroupId', tagGroup.id) }}{% endif %}
 
     <div id="taggroup-settings">
         {{ forms.textField({
@@ -21,15 +21,16 @@
             errors: tagGroup.getErrors('name'),
             autofocus: true,
             required: true,
-            translatable: true
         }) }}
 
         {{ forms.textField({
             label: "Handle"|t('app'),
             instructions: "How you’ll refer to this tag group in the templates."|t('app'),
             id: 'handle',
-            class: 'code',
             name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
             value: tagGroup.handle,
             errors: tagGroup.getErrors('handle'),
             required: true

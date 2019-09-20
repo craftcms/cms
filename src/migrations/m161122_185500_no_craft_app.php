@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m161122_185500_no_craft_app migration.
@@ -15,13 +16,13 @@ class m161122_185500_no_craft_app extends Migration
     public function safeUp()
     {
         $tables = [
-            '{{%elementindexsettings}}',
-            '{{%elements}}',
-            '{{%fieldlayouts}}',
-            '{{%fields}}',
-            '{{%templatecachequeries}}',
-            '{{%volumes}}',
-            '{{%widgets}}',
+            Table::ELEMENTINDEXSETTINGS,
+            Table::ELEMENTS,
+            Table::FIELDLAYOUTS,
+            Table::FIELDS,
+            Table::TEMPLATECACHEQUERIES,
+            Table::VOLUMES,
+            Table::WIDGETS,
         ];
 
         foreach ($tables as $table) {

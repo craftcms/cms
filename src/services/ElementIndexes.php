@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -13,16 +13,16 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 use yii\base\Component;
 
 /**
  * The ElementIndexes service provides APIs for managing element indexes.
- *
- * An instance of ElementIndexes service is globally accessible in Craft via [[Application::elements `Craft::$app->getElements()`]].
+ * An instance of ElementIndexes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementIndexes extends Component
 {
@@ -38,7 +38,6 @@ class ElementIndexes extends Component
      * Returns the element index settings for a given element type.
      *
      * @param string $elementType The element type class
-     *
      * @return array|null
      */
     public function getSettings(string $elementType)
@@ -46,7 +45,7 @@ class ElementIndexes extends Component
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
                 ->select(['settings'])
-                ->from(['{{%elementindexsettings}}'])
+                ->from([Table::ELEMENTINDEXSETTINGS])
                 ->where(['type' => $elementType])
                 ->scalar();
 
@@ -64,8 +63,7 @@ class ElementIndexes extends Component
      * Saves new element index settings for a given element type.
      *
      * @param string $elementType The element type class
-     * @param array  $newSettings The new index settings
-     *
+     * @param array $newSettings The new index settings
      * @return bool Whether the settings were saved successfully
      */
     public function saveSettings(string $elementType, array $newSettings): bool
@@ -129,7 +127,7 @@ class ElementIndexes extends Component
 
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%elementindexsettings}}',
+                Table::ELEMENTINDEXSETTINGS,
                 ['type' => $elementType],
                 ['settings' => Json::encode($settings)])
             ->execute();
@@ -147,8 +145,7 @@ class ElementIndexes extends Component
      * Returns the element index sources in the custom groupings/order.
      *
      * @param string $elementType The element type class
-     * @param string $context     The context
-     *
+     * @param string $context The context
      * @return array
      */
     public function getSources(string $elementType, string $context = 'index'): array
@@ -202,9 +199,8 @@ class ElementIndexes extends Component
     /**
      * Returns all of the available attributes that can be shown for a given element type source.
      *
-     * @param string $elementType   The element type class
-     * @param bool   $includeFields Whether custom fields should be included in the list
-     *
+     * @param string $elementType The element type class
+     * @param bool $includeFields Whether custom fields should be included in the list
      * @return array
      */
     public function getAvailableTableAttributes(string $elementType, bool $includeFields = true): array
@@ -224,7 +220,7 @@ class ElementIndexes extends Component
             // Mix in custom fields
             foreach ($this->getAvailableTableFields($elementType) as $field) {
                 /** @var Field $field */
-                $attributes['field:'.$field->id] = ['label' => Craft::t('site', $field->name)];
+                $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }
 
@@ -235,12 +231,12 @@ class ElementIndexes extends Component
      * Returns the attributes that should be shown for a given element type source.
      *
      * @param string $elementType The element type class
-     * @param string $sourceKey   The element type source key
-     *
+     * @param string $sourceKey The element type source key
      * @return array
      */
     public function getTableAttributes(string $elementType, string $sourceKey): array
     {
+        /** @var ElementInterface|string $elementType */
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
@@ -281,7 +277,6 @@ class ElementIndexes extends Component
      * Returns the fields that are available to be shown as table attributes.
      *
      * @param string $elementType The element type class
-     *
      * @return FieldInterface[]
      */
     public function getAvailableTableFields(string $elementType): array
@@ -306,7 +301,6 @@ class ElementIndexes extends Component
      * Normalizes an element type’s source list.
      *
      * @param array $sources
-     *
      * @return array
      */
     private function _normalizeSources(array $sources): array
@@ -345,7 +339,6 @@ class ElementIndexes extends Component
      * Indexes a list of sources by their key.
      *
      * @param array $sources
-     *
      * @return array
      */
     private function _indexSourcesByKey(array $sources): array

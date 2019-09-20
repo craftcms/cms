@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 <form id="db-backup" class="utility" method="post" accept-charset="UTF-8">
-    <input type="hidden" name="action" value="utilities/db-backup-perform-action">
+    {{ actionInput('utilities/db-backup-perform-action') }}
     {{ csrfInput() }}
 
     {{ forms.checkbox({

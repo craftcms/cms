@@ -7,5 +7,7 @@
 class_name: FunctionalTester
 modules:
     enabled:
-        - Yii2
+        - Asserts
+        - \craft\test\Craft:
+              projectConfig: {file: 'tests/_data/project.yaml'}
         - \Helper\Functional
