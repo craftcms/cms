@@ -1493,5 +1493,9 @@ return [
     'Schemas' => 'スキーマ',
     'Define the schema’s scope' => 'スキーマの範囲を定義',
     'Edit the Public GraphQL Schema' => '公開GraphQLスキーマを編集',
-    'Schema name' => 'スキーマ名'
+    'Schema name' => 'スキーマ名',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
