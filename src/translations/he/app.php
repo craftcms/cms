@@ -1493,5 +1493,9 @@ return [
     'Schemas' => 'סכימות',
     'Define the schema’s scope' => 'הגדר את טווח הסכימה',
     'Edit the Public GraphQL Schema' => 'ערוך את סכימת ה-GraphQL הציבורית',
-    'Schema name' => 'שם הסכימה'
+    'Schema name' => 'שם הסכימה',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
