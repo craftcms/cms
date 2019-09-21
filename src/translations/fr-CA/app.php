@@ -1493,5 +1493,9 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'Schemas' => 'Schémas',
     'Define the schema’s scope' => 'Définir la portée du schéma',
     'Edit the Public GraphQL Schema' => 'Modifier le schéma GraphQL public',
-    'Schema name' => 'Nom du schéma'
+    'Schema name' => 'Nom du schéma',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

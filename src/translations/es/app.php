@@ -1493,5 +1493,9 @@ Si no estabas esperando este correo electrónico, ignóralo.',
     'Schemas' => 'Esquemas',
     'Define the schema’s scope' => 'Definir el alcance del esquema',
     'Edit the Public GraphQL Schema' => 'Editar el esquema público GraphQL',
-    'Schema name' => 'Nombre de esquema'
+    'Schema name' => 'Nombre de esquema',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

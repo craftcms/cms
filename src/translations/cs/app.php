@@ -1489,5 +1489,9 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'Schemas' => 'Schémata',
     'Define the schema’s scope' => 'Definovat rozsah schémat',
     'Edit the Public GraphQL Schema' => 'Upravit veřejné schéma GraphQL',
-    'Schema name' => 'Název schématu'
+    'Schema name' => 'Název schématu',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
