@@ -1493,5 +1493,9 @@ return [
     'Schemas' => '架构',
     'Define the schema’s scope' => '定义架构的范围',
     'Edit the Public GraphQL Schema' => '编辑公共 GraphQL 架构',
-    'Schema name' => '架构名称'
+    'Schema name' => '架构名称',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

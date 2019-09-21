@@ -1493,5 +1493,9 @@ Om du ikkje har bede om denne e-posten kan du berre sjå vekkifrå han.',
     'Expires' => 'Expires',
     'View volume - {volume}' => 'View volume - {volume}',
     'Schema name' => 'Schema name',
-    'Create a new GraphQL schema' => 'Create a new GraphQL schema'
+    'Create a new GraphQL schema' => 'Create a new GraphQL schema',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
