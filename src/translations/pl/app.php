@@ -1489,5 +1489,9 @@ Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'Schemas' => 'Schematy',
     'Define the schema’s scope' => 'Określ zakres schematu',
     'Edit the Public GraphQL Schema' => 'Edytuj publiczny schemat GraphQL',
-    'Schema name' => 'Nazwa schematu'
+    'Schema name' => 'Nazwa schematu',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
