@@ -1493,5 +1493,9 @@ return [
     'Schemas' => '스키마',
     'Define the schema’s scope' => '스키마 범위 정의',
     'Edit the Public GraphQL Schema' => '공개 GraphQL 스키마 수정',
-    'Schema name' => '스키마 이름'
+    'Schema name' => '스키마 이름',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

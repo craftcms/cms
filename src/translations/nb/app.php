@@ -1489,5 +1489,9 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'Schemas' => 'Skjemaer',
     'Define the schema’s scope' => 'Definer skjemaets omfang',
     'Edit the Public GraphQL Schema' => 'Rediger Public GraphQL-skjema',
-    'Schema name' => 'Skjemanavn'
+    'Schema name' => 'Skjemanavn',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
