@@ -1493,5 +1493,9 @@ If you weren’t expecting this email, just ignore it.',
     'Schemas' => 'Schemas',
     'Define the schema’s scope' => 'Define the schema’s scope',
     'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'Schema name' => 'Schema name',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
