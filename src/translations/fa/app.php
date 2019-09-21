@@ -1492,5 +1492,10 @@ return [
     'Schemas' => 'طرح ها',
     'Define the schema’s scope' => 'تعریف حوزه طرح',
     'Edit the Public GraphQL Schema' => 'ویرایش طرح عمومی GraphQL',
-    'Schema name' => 'نام طرح'
+    'Schema name' => 'نام طرح',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Your connection is insecure' => 'Your connection is insecure',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
