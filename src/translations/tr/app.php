@@ -1489,5 +1489,9 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'Schemas' => 'Şemalar',
     'Define the schema’s scope' => 'Şemanın konusunu tanımlayın',
     'Edit the Public GraphQL Schema' => 'Genel GraphQL Şemasını Düzenle',
-    'Schema name' => 'Şema adı'
+    'Schema name' => 'Şema adı',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
