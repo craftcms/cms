@@ -1491,7 +1491,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'Define the schema’s scope' => 'Definer skemaets omfang',
     'Edit the Public GraphQL Schema' => 'Rediger Public GraphQL-skema',
     'Schema name' => 'Skemanavn',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}', ,
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
     'Delete them' => 'Delete them',
     'Keep them' => 'Keep them',
     'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
