@@ -1493,5 +1493,9 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Schemas' => 'Schémy',
     'Define the schema’s scope' => 'Definovanie rozsahu schémy',
     'Edit the Public GraphQL Schema' => 'Upraviť verejnú schému GraphQL',
-    'Schema name' => 'Názov schémy'
+    'Schema name' => 'Názov schémy',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

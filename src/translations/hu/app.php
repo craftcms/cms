@@ -1491,5 +1491,9 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Schemas' => 'Sémák',
     'Define the schema’s scope' => 'A séma hatókörének a meghatározása',
     'Edit the Public GraphQL Schema' => 'A nyilvános GraphQL séma szerkesztése',
-    'Schema name' => 'Séma neve'
+    'Schema name' => 'Séma neve',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
