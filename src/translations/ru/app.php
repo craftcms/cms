@@ -1493,5 +1493,9 @@ return [
     'Schemas' => 'Схемы',
     'Define the schema’s scope' => 'Определить область действия схемы',
     'Edit the Public GraphQL Schema' => 'Редактировать публичную схему GraphQL',
-    'Schema name' => 'Имя схемы'
+    'Schema name' => 'Имя схемы',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

@@ -1493,5 +1493,9 @@ Se você não solicitou este e-mail, simplesmente ignore.',
     'Schemas' => 'Esquemas',
     'Define the schema’s scope' => 'Definir o alcance do esquema',
     'Edit the Public GraphQL Schema' => 'Editar o esquema público GraphQL',
-    'Schema name' => 'Nome do esquema'
+    'Schema name' => 'Nome do esquema',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
