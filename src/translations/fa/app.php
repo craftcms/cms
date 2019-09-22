@@ -1493,9 +1493,9 @@ return [
     'Define the schema’s scope' => 'تعریف حوزه طرح',
     'Edit the Public GraphQL Schema' => 'ویرایش طرح عمومی GraphQL',
     'Schema name' => 'نام طرح',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Your connection is insecure' => 'Your connection is insecure',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'مشاهده گروه دسته بندی - {categoryGroup}',
+    'Delete them' => 'حذفشان کن',
+    'Your connection is insecure' => 'ارتباط شما ناامن است',
+    'Keep them' => 'نگهشان دار',
+    'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}'
 ];
