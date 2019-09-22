@@ -4,7 +4,7 @@
 
 ### Added
 - Added the option to automatically apply all migrations in the `CRAFT_MIGRATIONS_PATH` when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
-- The Control Panel is not translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
+- The Control Panel is now translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
 
 ### Changed
 - Any migrations applied during testing will now be stored in the database as content migrations. 
