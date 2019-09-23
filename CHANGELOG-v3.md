@@ -5,6 +5,8 @@
 ### Added
 - Added the option to automatically apply all migrations in the `CRAFT_MIGRATIONS_PATH` when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
 - The Control Panel is now translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
+- Added an option to `craft\test\fixtures\elements\GlobalSetFixture` to specify whether it should load the Active Record instance. ([#4947](https://github.com/craftcms/cms/pull/4947))
+- Added the `craft\test\fixtures\elements\ElementFixture::$unload` option to specify whether fixture data should be unloaded. 
 
 ### Changed
 - Any migrations applied during testing will now be stored in the database as content migrations. 
