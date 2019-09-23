@@ -124,6 +124,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value === 'not 1' || $value === ':empty:') {
+            $value = false;
+        }
+
         return parent::modifyElementsQuery($query, $value ? ':notempty:' : ':empty:');
     }
 
