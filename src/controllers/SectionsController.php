@@ -178,7 +178,7 @@ class SectionsController extends Controller
             }
 
             if ($siteSettings->hasUrls = (bool)$siteSettings->uriFormat) {
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->template = $postedSettings['template'] ?? null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;
