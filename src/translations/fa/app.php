@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 return [
     '"{filename}" is not allowed in this field.' => '"{filename}" در این فیلد مجاز نیست.',
@@ -1126,6 +1126,7 @@ return [
     'Your account doesn’t have permission to access the Control Panel when the system is offline.' => 'حساب کاربری شما مجوز دسترسی به کنترل پنل وقتی که سیستم آفلاین است را ندارد.',
     'Your account doesn’t have permission to access the site when the system is offline.' => 'حساب کاربری شما مجوز دسترسی به سایت وقتی که سیستم آفلاین است را ندارد.',
     'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.' => 'فایل composer.json شما نمی تواند مکان یابی شود. در فایل index.php مقدار دهی ثابت CRAFT_COMPOSER_PATH به مکانش روی سرور را امتحان نمایید.',
+    'Your connection is insecure' => 'Your connection is insecure',
     'Your connection is secure' => 'ارتباط شما امن است.',
     'Your email settings are invalid.' => 'تنظیمات پست الکترونیکی شما غیر معتبر است.',
     'Your license key is invalid.' => 'کلید لایسنس شما غیر معتبر است.',
