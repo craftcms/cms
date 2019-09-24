@@ -75,7 +75,7 @@
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
+                    instructions: (requireEmailVerification and not currentUser.admin and not currentUser.can('administrateUsers') ? 'A verification email will be sent automatically.'|t('app')),
                     id: 'email',
                     name: 'email',
                     value: user.email,
@@ -84,7 +84,7 @@
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
-                {% if requireEmailVerification and currentUser.admin %}
+                {% if requireEmailVerification and currentUser.admin or currentUser.can('administrateUsers') %}
                     {{ forms.checkboxField({
                         label: "Send an activation email now?"|t('app'),
                         name: 'sendVerificationEmail',
