@@ -519,7 +519,7 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return $this->getQueryParam('x-craft-preview') !== null;
+        return $this->getQueryParam('x-craft-preview') !== null || $this->getQueryParam('x-craft-live-preview') !== null;
     }
 
     /**

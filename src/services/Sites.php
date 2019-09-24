@@ -700,7 +700,8 @@ class Sites extends Component
         $groupUid = $data['siteGroup'];
 
         // Ensure we have the site group in place first
-        Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
         // Did the primary site just change?
         try {
@@ -761,33 +762,14 @@ class Sites extends Component
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            // TODO: Move this code into element/category modules
-            // Create site settings for each of the category groups
-            $allSiteSettings = (new Query())
-                ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                ->from([Table::CATEGORYGROUPS_SITES])
-                ->where(['siteId' => $oldPrimarySiteId])
-                ->all();
+            $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
+            $existingCategorySettings = $projectConfig->get(Categories::CONFIG_CATEGORYROUP_KEY);
 
-            if (!empty($allSiteSettings)) {
-                $newSiteSettings = [];
-
-                foreach ($allSiteSettings as $siteSettings) {
-                    $newSiteSettings[] = [
-                        $siteSettings['groupId'],
-                        $site->id,
-                        $siteSettings['uriFormat'],
-                        $siteSettings['template'],
-                        $siteSettings['hasUrls']
-                    ];
+            if (is_array($existingCategorySettings)) {
+                foreach ($existingCategorySettings as $categoryUid => $settings) {
+                    $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
+                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings);
                 }
-
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::CATEGORYGROUPS_SITES,
-                        ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
-                        $newSiteSettings)
-                    ->execute();
             }
 
             // Re-save most localizable element types

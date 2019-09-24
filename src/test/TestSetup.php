@@ -154,24 +154,41 @@ class TestSetup
 
     /**
      * @param string $class
-     * @param array $params
-     * @return false|null
+     * @param array  $params
+     * @param bool   $ignorePreviousMigrations
+     *
+     * @return bool
+     * @throws InvalidConfigException
+     * @throws \craft\errors\MigrationException
      */
-    public static function validateAndApplyMigration(string $class, array $params): bool
+    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false) : bool
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException('Class does not exist');
+            throw new InvalidArgumentException('Migration class: '. $class .' does not exist');
         }
 
         $migration = new $class($params);
 
         if (!$migration instanceof Migration) {
             throw new InvalidArgumentException(
-                'Migration class is not an instance of ' . Migration::class . ''
+                'Migration class is not an instance of: ' . Migration::class . ''
             );
         }
 
-        return $migration->safeUp();
+        $contentMigrator = Craft::$app->getContentMigrator();
+        // Should we ignore this migration?
+        if ($ignorePreviousMigrations) {
+            $history = $contentMigrator->getMigrationHistory();
+
+            // Technically... This migration is applied.
+            if (isset($history[$class])) {
+                return true;
+            }
+        }
+
+        $contentMigrator->migrateUp($migration);
+
+        return true;
     }
 
     /**

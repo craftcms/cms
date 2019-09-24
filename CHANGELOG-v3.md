@@ -2,12 +2,35 @@
 
 ## Unreleased
 
+### Added
+- Added the option to automatically apply all migrations in the `CRAFT_MIGRATIONS_PATH` when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
+- The Control Panel is now translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
+
+### Changed
+- Any migrations applied during testing will now be stored in the database as content migrations. 
+- Live Preview requests now have an `x-craft-live-preview` query string param, rather than `x-craft-preview`. ([#4950](https://github.com/craftcms/cms/issues/4950))
+
+## 3.3.4.1 - 2019-09-17
+
+### Fixed
+- Fixed a bug where elements with enabled Lightswitch fields weren’t getting returned in element queries. ([#4951](https://github.com/craftcms/cms/issues/4951))
+
+## 3.3.4 - 2019-09-17
+
+### Changed
+- It’s now possible to run the `migrate/create install` command for uninstalled plugins.
+- Improved the button labels in the confirmation dialog that can appear after running the Asset Indexes utility. ([#4943](https://github.com/craftcms/cms/issues/4943))
+
 ### Fixed
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t working for eager-loaded assets. ([#4931](https://github.com/craftcms/cms/issues/4931))
-- Fixed a bug where the "Edit Image" element action sometimes would be missing. ([#3349](https://github.com/craftcms/cms/issues/3349))
+- Fixed a bug where the “Edit Image” asset action could be missing even if the user had the required permissions. ([#3349](https://github.com/craftcms/cms/issues/3349))
 - Fixed a bug where querying for elements by their Lightswitch field value could only return elements that had been saved since the Lightswitch field was added. ([#4939](https://github.com/craftcms/cms/issues/4939))
-- Fixed a bug where the "Update all" button was missing on the updates page. ([#4938](https://github.com/craftcms/cms/issues/4938))
+- Fixed a bug where the Updates utility wasn’t showing the “Update all” button when multiple updates were available. ([#4938](https://github.com/craftcms/cms/issues/4938))
 - Fixed a bug where the “Updating search indexes” job could fail when updating search indexes for a Matrix block that contained a relational field.
+- Fixed a bug where category groups’ site settings weren’t being added to the project config when a new site was created.
+- Fixed a bug where the Translation Method setting wasn’t immediately shown for Matrix sub-fields, if the field type was changed from one that didn’t have multiple translation methods to one that does. ([#4949](https://github.com/craftcms/cms/issues/4949))
+- Fixed a bug where it wasn’t possible to query for entries by author ID using the GraphQL API.
+- Fixed a bug where it wasn’t possible to query for Matrix blocks directly using the GraphQL API.
 
 ## 3.3.3 - 2019-09-12
 
@@ -75,7 +98,7 @@
 - Fixed an error that occurred when accessing the GraphQL section in the Control Panel if the `allowAdminChanges` config setting was disabled. ([#4884](https://github.com/craftcms/cms/issues/4884))
 - Fixed an error that could occur when executing a GraphQL query if a Matrix field had been converted to a different field type. ([#4848](https://github.com/craftcms/cms/issues/4848))
 - Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
-- Fixed an SQL error that occurred when eager-loading children for an element that wasn't in a structure.
+- Fixed an SQL error that occurred when eager-loading children for an element that wasn’t in a structure.
 - Fixed a bug that could cause queue jobs to fail when they were run automatically by Craft, if the `enableCsrfProtection` config setting was disabled. ([#4854](https://github.com/craftcms/cms/issues/4854))
 - Fixed an error that could occur if the `select` clause had been completely overridden on an element query, but the `asArray` param wasn’t enabled. ([#4886](https://github.com/craftcms/cms/issues/4886))
 - Fixed a bug where Craft wasn’t always respecting the site-specific status when saving new entries. ([#4892](https://github.com/craftcms/cms/issues/4892))
@@ -805,7 +828,7 @@
 ### Fixed
 - Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Fixed a bug where `Craft::alias()` wasn’t working on Windows servers. ([#4405](https://github.com/craftcms/cms/issues/4405))
-- Fixed a bug where Craft wasn't parsing the `dsn` DB connection setting properly if it was supplied.
+- Fixed a bug where Craft wasn’t parsing the `dsn` DB connection setting properly if it was supplied.
 
 ### Security
 - Fixed an XSS vulnerability.
@@ -1300,7 +1323,7 @@
 ### Changed
 - The “Port” SMTP mail transport setting can now be set to an environment variable. ([#3740](https://github.com/craftcms/cms/issues/3740))
 - `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).
-- The `project-config/sync` console command now creates a `project.yaml` file, if it's missing. ([#3736](https://github.com/craftcms/cms/issues/3736))
+- The `project-config/sync` console command now creates a `project.yaml` file, if it’s missing. ([#3736](https://github.com/craftcms/cms/issues/3736))
 - Querying for active users no longer excludes locked users.
 - `craft\helpers\FileHelper::getMimeType()` now returns `application/x-yaml` for `.yaml` and `.yml` files.
 - Updated Craft UI to 0.2.0.

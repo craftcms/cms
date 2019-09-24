@@ -1,4 +1,4 @@
-/*!   - 2019-08-27 */
+/*!   - 2019-09-18 */
 (function($){
 
 /** global: Craft */
@@ -13097,13 +13097,13 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this));
         },
 
-        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+        getTokenizedPreviewUrl: function(url, randoParam) {
             return new Promise(function(resolve, reject) {
                 var params = {};
 
-                if (forceRandomParam || !this.settings.isLive) {
+                if (randoParam || !this.settings.isLive) {
                     // Randomize the URL so CDNs don't return cached pages
-                    params['x-craft-preview'] = Craft.randomString(10);
+                    params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
                 }
 
                 // No need for a token if we're looking at a live element
@@ -17632,7 +17632,7 @@ Craft.Preview = Garnish.Base.extend(
 
             var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
 
-            this.draftEditor.getTokenizedPreviewUrl(url, true).then(function(url) {
+            this.draftEditor.getTokenizedPreviewUrl(url, 'x-craft-live-preview').then(function(url) {
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {

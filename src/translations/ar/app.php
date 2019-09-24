@@ -1493,5 +1493,9 @@ return [
     'Schemas' => 'مخططات',
     'Define the schema’s scope' => 'حدد نطاق المخطط',
     'Edit the Public GraphQL Schema' => 'تعديل مخطط GraphQL العام',
-    'Schema name' => 'اسم المخطط'
+    'Schema name' => 'اسم المخطط',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

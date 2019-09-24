@@ -748,7 +748,10 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
         /** @var MatrixBlock[] $blocks */
-        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        if (($blocks = $query->getCachedResult()) === null) {
+            $blocksQuery = clone $query;
+            $blocks = $blocksQuery->anyStatus()->all();
+        }
         $blockIds = [];
         $collapsedBlockIds = [];
 
@@ -797,7 +800,8 @@ class Matrix extends Component
                     // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
-                    $cachedQuery = (clone $query)->anyStatus();
+                    $cachedQuery = clone $query;
+                    $cachedQuery->anyStatus();
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
@@ -851,7 +855,10 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
         /** @var MatrixBlock[] $blocks */
-        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        if (($blocks = $query->getCachedResult()) === null) {
+            $blocksQuery = clone $query;
+            $blocks = $blocksQuery->anyStatus()->all();
+        }
         $newBlockIds = [];
 
         $transaction = Craft::$app->getDb()->beginTransaction();

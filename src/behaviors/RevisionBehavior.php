@@ -74,7 +74,8 @@ class RevisionBehavior extends Behavior
      */
     public function getSource(): ElementInterface
     {
-        return $this->owner::find()
+        $owner = $this->owner;
+        return $owner::find()
             ->id($this->sourceId)
             ->siteId($this->owner->siteId)
             ->anyStatus()
