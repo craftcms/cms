@@ -1170,7 +1170,7 @@ class ProjectConfig extends Component
 
             if (!array_key_exists($key, $flatCurrent)) {
                 $newItems[] = $immediateParent;
-            } elseif ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+            } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
                 $changedItems[] = $immediateParent;
             }
 
