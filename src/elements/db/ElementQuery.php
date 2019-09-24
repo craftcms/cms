@@ -2483,7 +2483,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->search) {
             // Get the element IDs
-            $elementIds = (clone $this)
+            $elementIdsQuery = clone $this;
+            $elementIds = $elementIdsQuery
                 ->search(null)
                 ->offset(null)
                 ->limit(null)
@@ -2552,15 +2553,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
+            } else if (self::_supportsRevisionParams() && $this->revisions) {
+                $this->orderBy = ['num' => SORT_DESC];
+            } else if ($this->_shouldJoinStructureData()) {
+                $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
             } else {
-                $default = self::_supportsRevisionParams() && $this->revisions
-                    ? ['num' => SORT_DESC]
-                    : $this->defaultOrderBy;
-                if ($this->_shouldJoinStructureData()) {
-                    $this->orderBy = ['structureelements.lft' => SORT_ASC] + $default;
-                } else {
-                    $this->orderBy = $default;
-                }
+                $this->orderBy = $this->defaultOrderBy;
             }
         }
 
@@ -2720,7 +2718,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
 
-        $subSelectSql = (clone $this->subQuery)
+        $subSelectSqlQuery = clone $this->subQuery;
+        $subSelectSql = $subSelectSqlQuery
             ->select(['elements_sites.id'])
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([

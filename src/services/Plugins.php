@@ -895,11 +895,7 @@ class Plugins extends Component
         // Create the plugin
         /** @var Plugin $plugin */
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
-
-        if ($info !== null) {
-            $this->_setPluginMigrator($plugin, $info['id']);
-        }
-
+        $this->_setPluginMigrator($plugin, $info['id'] ?? null);
         return $plugin;
     }
 
@@ -1293,9 +1289,9 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param int $id The plugin’s ID
+     * @param int|null $id The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, int $id)
+    private function _setPluginMigrator(PluginInterface $plugin, int $id = null)
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();

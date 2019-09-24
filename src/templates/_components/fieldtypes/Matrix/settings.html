@@ -119,37 +119,35 @@
 
                                     {% if craft.app.getIsMultiSite() %}
                                         {% set translationMethods = field.supportedTranslationMethods %}
-                                        {% if translationMethods|length > 1 %}
-                                            <div id="translation-settings">
-                                                {{ forms.selectField({
-                                                    label: "Translation Method"|t('app'),
-                                                    id: 'translation-method',
-                                                    name: 'translationMethod',
-                                                    options: [
-                                                        'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
-                                                        'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
-                                                        'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
-                                                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
-                                                        'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
-                                                    ]|filter,
-                                                    value: field.translationMethod,
-                                                    toggle: true,
-                                                    targetPrefix: 'translation-method-'
-                                                }) }}
+                                        <div id="translation-settings"{% if translationMethods|length < 2 %} class="hidden"{% endif %}>
+                                            {{ forms.selectField({
+                                                label: "Translation Method"|t('app'),
+                                                id: 'translation-method',
+                                                name: 'translationMethod',
+                                                options: [
+                                                    'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
+                                                    'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
+                                                    'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
+                                                    'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
+                                                    'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
+                                                ]|filter,
+                                                value: field.translationMethod,
+                                                toggle: true,
+                                                targetPrefix: 'translation-method-'
+                                            }) }}
 
-                                                {% if 'custom' in translationMethods %}
-                                                    <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
-                                                        {{ forms.textField({
-                                                            label: "Translation Key Format"|t('app'),
-                                                            id: 'translation-key-format',
-                                                            name: 'translationKeyFormat',
-                                                            value: field.translationKeyFormat,
-                                                            errors: field.getErrors('translationKeyFormat')
-                                                        }) }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        {% endif %}
+                                            {% if 'custom' in translationMethods %}
+                                                <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                                                    {{ forms.textField({
+                                                        label: "Translation Key Format"|t('app'),
+                                                        id: 'translation-key-format',
+                                                        name: 'translationKeyFormat',
+                                                        value: field.translationKeyFormat,
+                                                        errors: field.getErrors('translationKeyFormat')
+                                                    }) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 {% endnamespace %}
 

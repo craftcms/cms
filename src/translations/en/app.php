@@ -1488,11 +1488,14 @@ If you were not expecting this email, just ignore it.',
     'View volume - {volume}' => 'View volume - {volume}',
     'New schema' => 'New Schema',
     'The token that must be provided with GraphQL requests to access this schema.' => 'The token that must be provided with GraphQL requests to access this schema.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Public Schema' => 'Public Schema',
     'Regenerate' => 'Regenerate',
     'Schemas' => 'Schemas',
     'Define the schema’s scope' => 'Define the schema’s scope',
     'Edit the Public GraphQL Schema' => 'Edit the Public GraphQL Schema',
-    'Schema name' => 'Schema name'
+    'Schema name' => 'Schema name',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

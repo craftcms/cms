@@ -87,6 +87,11 @@ class Category extends Structure
                 'type' => Type::listOf(CategoryInterface::getType()),
                 'description' => 'The category’s children.'
             ],
+            'parent' => [
+                'name' => 'parent',
+                'type' => CategoryInterface::getType(),
+                'description' => 'The category’s parent.'
+            ],
         ]);
     }
 }

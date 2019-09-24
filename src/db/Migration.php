@@ -112,16 +112,6 @@ abstract class Migration extends \yii\db\Migration
         return null;
     }
 
-    /**
-     * @param \Throwable|\Exception $e
-     */
-    private function _printException($e)
-    {
-        // Copied from \yii\db\Migration::printException(), only because it’s private
-        echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";
-        echo $e->getTraceAsString() . "\n";
-    }
-
     // Schema Builder Methods
     // -------------------------------------------------------------------------
 
@@ -433,5 +423,18 @@ abstract class Migration extends \yii\db\Migration
             ->restore($table, $condition, $params)
             ->execute();
         echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * @param \Throwable|\Exception $e
+     */
+    private function _printException($e)
+    {
+        // Copied from \yii\db\Migration::printException(), only because it’s private
+        echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";
+        echo $e->getTraceAsString() . "\n";
     }
 }

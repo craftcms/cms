@@ -37,6 +37,13 @@ abstract class ElementFixture extends ActiveFixture
      */
     protected $siteIds = [];
 
+    /**
+     * Whether the fixture data should be unloaded
+     *
+     * @var bool
+     */
+    public $unload = true;
+
     // Public Methods
     // =========================================================================
 
@@ -139,15 +146,17 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->getData() as $data) {
-            $element = $this->getElement($data);
+        if ($this->unload) {
+            foreach ($this->getData() as $data) {
+                $element = $this->getElement($data);
 
-            if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
-                throw new InvalidElementException($element, 'Unable to delete element.');
+                if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
+                    throw new InvalidElementException($element, 'Unable to delete element.');
+                }
             }
-        }
 
-        $this->data = [];
+            $this->data = [];
+        }
     }
 
     /**
@@ -171,7 +180,8 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function generateElementQuery(array $data) : ElementQuery
     {
-        $query = $this->modelClass::find()->anyStatus()->trashed(null);
+        $modelClass = $this->modelClass;
+        $query = $modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {

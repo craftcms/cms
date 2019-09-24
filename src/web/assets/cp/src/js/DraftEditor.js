@@ -205,13 +205,13 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this));
         },
 
-        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+        getTokenizedPreviewUrl: function(url, randoParam) {
             return new Promise(function(resolve, reject) {
                 var params = {};
 
-                if (forceRandomParam || !this.settings.isLive) {
+                if (randoParam || !this.settings.isLive) {
                     // Randomize the URL so CDNs don't return cached pages
-                    params['x-craft-preview'] = Craft.randomString(10);
+                    params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
                 }
 
                 // No need for a token if we're looking at a live element

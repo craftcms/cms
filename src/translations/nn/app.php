@@ -1487,12 +1487,15 @@ Om du ikkje har bede om denne e-posten kan du berre sjå vekkifrå han.',
     'View section - {section}' => 'View section - {section}',
     'What this schema will be called in the CP.' => 'What this schema will be called in the CP.',
     'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Couldn’t save schema.' => 'Couldn’t save schema.',
     'New schema' => 'New schema',
     'View global set - {globalSet}' => 'View global set - {globalSet}',
     'Expires' => 'Expires',
     'View volume - {volume}' => 'View volume - {volume}',
     'Schema name' => 'Schema name',
-    'Create a new GraphQL schema' => 'Create a new GraphQL schema'
+    'Create a new GraphQL schema' => 'Create a new GraphQL schema',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

@@ -180,6 +180,128 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 :::
 
 
+### `draftCreator`
+
+Narrows the query results to only drafts created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a `\craft\elements\db\User` object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts by the current user #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .draftCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch drafts by the current user
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->draftCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `draftId`
+
+Narrows the query results based on the Matrix blocks’ draft’s ID (from the `drafts` table).
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the draft with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a draft #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .draftId(10)
+    .all() %}
+```
+
+```php
+// Fetch a draft
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->draftIf(10)
+    ->all();
+```
+:::
+
+
+### `draftOf`
+
+Narrows the query results to only drafts of a given Matrix block.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the Matrix block with an ID of 1.
+| a [MatrixBlock](api:craft\elements\MatrixBlock) object | for the Matrix block represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts of the Matrix block #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .draftOf(myBlock)
+    .all() %}
+```
+
+```php
+// Fetch drafts of the Matrix block
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->draftOf($myBlock)
+    ->all();
+```
+:::
+
+
+### `drafts`
+
+Narrows the query results to only drafts Matrix blocks.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a draft Matrix block #}
+{% set MatrixBlocks = {twig-function}
+    .drafts()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a draft Matrix block
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->drafts()
+    ->id(123)
+    ->one();
+```
+:::
+
+
 ### `fieldId`
 
 Narrows the query results based on the field the Matrix blocks belong to, per the fields’ IDs.
@@ -277,6 +399,20 @@ $MatrixBlock = \craft\elements\MatrixBlock::find()
 ::: tip
 This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
 :::
+
+
+### `ignorePlaceholders`
+
+Causes the query to return matching Matrix blocks as they are stored in the database, ignoring matching placeholder
+elements that were set by [craft\services\Elements::setPlaceholderElement()](https://docs.craftcms.com/api/v3/craft-services-elements.html#method-setplaceholderelement).
+
+
+
+
+
+
+
+
 
 
 ### `inReverse`
@@ -428,6 +564,41 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 :::
 
 
+### `preferSites`
+
+If [unique](#unique) is set, this determines which site should be selected when querying multi-site elements.
+
+
+
+For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+for Site B.
+
+If this isn’t set, then preference goes to the current site.
+
+
+
+::: code
+```twig
+{# Fetch unique Matrix blocks from Site A, or Site B if they don’t exist in Site A #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .site('*')
+    .unique()
+    .preferSites(['a', 'b'])
+    .all() %}
+```
+
+```php
+// Fetch unique Matrix blocks from Site A, or Site B if they don’t exist in Site A
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->site('*')
+    ->unique()
+    ->preferSites(['a', 'b'])
+    ->all();
+```
+:::
+
+
 ### `relatedTo`
 
 Narrows the query results to only Matrix blocks that are related to certain other elements.
@@ -451,6 +622,128 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanat
 $MatrixBlocks = \craft\elements\MatrixBlock::find()
     ->relatedTo($myCategory)
     ->all();
+```
+:::
+
+
+### `revisionCreator`
+
+Narrows the query results to only revisions created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a `\craft\elements\db\User` object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions by the current user #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .revisionCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch revisions by the current user
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->revisionCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `revisionId`
+
+Narrows the query results based on the Matrix blocks’ revision’s ID (from the `revisions` table).
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the revision with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a revision #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .revisionId(10)
+    .all() %}
+```
+
+```php
+// Fetch a revision
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->revisionIf(10)
+    ->all();
+```
+:::
+
+
+### `revisionOf`
+
+Narrows the query results to only revisions of a given Matrix block.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the Matrix block with an ID of 1.
+| a [MatrixBlock](api:craft\elements\MatrixBlock) object | for the Matrix block represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions of the Matrix block #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .revisionOf(myBlock)
+    .all() %}
+```
+
+```php
+// Fetch revisions of the Matrix block
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->revisionOf($myBlock)
+    ->all();
+```
+:::
+
+
+### `revisions`
+
+Narrows the query results to only revision Matrix blocks.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a revision Matrix block #}
+{% set MatrixBlocks = {twig-function}
+    .revisions()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a revision Matrix block
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->revisions()
+    ->id(123)
+    ->one();
 ```
 :::
 
@@ -503,12 +796,12 @@ Possible values include:
 | `'foo'` | from the site with a handle of `foo`.
 | `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
 | `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
-| a [craft\models\Site](api:craft\models\Site) object | from the site represented by the object.
+| a `\craft\elements\db\Site` object | from the site represented by the object.
 | `'*'` | from any site.
 
 ::: tip
 If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
-only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+only want unique elements to be returned, use [unique](#unique) in conjunction with this.
 :::
 
 
@@ -700,6 +993,36 @@ Narrows the query results based on the Matrix blocks’ UIDs.
 $MatrixBlock = \craft\elements\MatrixBlock::find()
     ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
     ->one();
+```
+:::
+
+
+### `unique`
+
+Determines whether only elements with unique IDs should be returned by the query.
+
+
+
+This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+desired.
+
+
+
+::: code
+```twig
+{# Fetch unique Matrix blocks across all sites #}
+{% set MatrixBlocks = craft.matrixBlocks()
+    .site('*')
+    .unique()
+    .all() %}
+```
+
+```php
+// Fetch unique Matrix blocks across all sites
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->site('*')
+    ->unique()
+    ->all();
 ```
 :::
 

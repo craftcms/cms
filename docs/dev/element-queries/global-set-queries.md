@@ -177,6 +177,128 @@ $globalSets = \craft\elements\GlobalSet::find()
 :::
 
 
+### `draftCreator`
+
+Narrows the query results to only drafts created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a `\craft\elements\db\User` object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts by the current user #}
+{% set globalSets = craft.globalSets()
+    .draftCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch drafts by the current user
+$globalSets = \craft\elements\GlobalSet::find()
+    ->draftCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `draftId`
+
+Narrows the query results based on the global sets’ draft’s ID (from the `drafts` table).
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the draft with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a draft #}
+{% set globalSets = craft.globalSets()
+    .draftId(10)
+    .all() %}
+```
+
+```php
+// Fetch a draft
+$globalSets = \craft\elements\GlobalSet::find()
+    ->draftIf(10)
+    ->all();
+```
+:::
+
+
+### `draftOf`
+
+Narrows the query results to only drafts of a given global set.
+
+
+
+Possible values include:
+
+| Value | Fetches drafts…
+| - | -
+| `1` | for the global set with an ID of 1.
+| a [GlobalSet](api:craft\elements\GlobalSet) object | for the global set represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch drafts of the global set #}
+{% set globalSets = craft.globalSets()
+    .draftOf(myGlobalSet)
+    .all() %}
+```
+
+```php
+// Fetch drafts of the global set
+$globalSets = \craft\elements\GlobalSet::find()
+    ->draftOf($myGlobalSet)
+    ->all();
+```
+:::
+
+
+### `drafts`
+
+Narrows the query results to only drafts global sets.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a draft global set #}
+{% set globalSets = {twig-function}
+    .drafts()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a draft global set
+$globalSets = \craft\elements\GlobalSet::find()
+    ->drafts()
+    ->id(123)
+    ->one();
+```
+:::
+
+
 ### `fixedOrder`
 
 Causes the query results to be returned in the order specified by [id](#id).
@@ -276,6 +398,20 @@ This can be combined with [fixedOrder](#fixedorder) if you want the results to b
 :::
 
 
+### `ignorePlaceholders`
+
+Causes the query to return matching global sets as they are stored in the database, ignoring matching placeholder
+elements that were set by [craft\services\Elements::setPlaceholderElement()](https://docs.craftcms.com/api/v3/craft-services-elements.html#method-setplaceholderelement).
+
+
+
+
+
+
+
+
+
+
 ### `inReverse`
 
 Causes the query results to be returned in reverse order.
@@ -370,6 +506,41 @@ $globalSets = \craft\elements\GlobalSet::find()
 :::
 
 
+### `preferSites`
+
+If [unique](#unique) is set, this determines which site should be selected when querying multi-site elements.
+
+
+
+For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+for Site B.
+
+If this isn’t set, then preference goes to the current site.
+
+
+
+::: code
+```twig
+{# Fetch unique global sets from Site A, or Site B if they don’t exist in Site A #}
+{% set globalSets = craft.globalSets()
+    .site('*')
+    .unique()
+    .preferSites(['a', 'b'])
+    .all() %}
+```
+
+```php
+// Fetch unique global sets from Site A, or Site B if they don’t exist in Site A
+$globalSets = \craft\elements\GlobalSet::find()
+    ->site('*')
+    ->unique()
+    ->preferSites(['a', 'b'])
+    ->all();
+```
+:::
+
+
 ### `relatedTo`
 
 Narrows the query results to only global sets that are related to certain other elements.
@@ -393,6 +564,128 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanat
 $globalSets = \craft\elements\GlobalSet::find()
     ->relatedTo($myCategory)
     ->all();
+```
+:::
+
+
+### `revisionCreator`
+
+Narrows the query results to only revisions created by a given user.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | created by the user with an ID of 1.
+| a `\craft\elements\db\User` object | by the user represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions by the current user #}
+{% set globalSets = craft.globalSets()
+    .revisionCreator(currentUser)
+    .all() %}
+```
+
+```php
+// Fetch revisions by the current user
+$globalSets = \craft\elements\GlobalSet::find()
+    ->revisionCreator(Craft::$app->user->identity)
+    ->all();
+```
+:::
+
+
+### `revisionId`
+
+Narrows the query results based on the global sets’ revision’s ID (from the `revisions` table).
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the revision with an ID of 1.
+
+
+
+::: code
+```twig
+{# Fetch a revision #}
+{% set globalSets = craft.globalSets()
+    .revisionId(10)
+    .all() %}
+```
+
+```php
+// Fetch a revision
+$globalSets = \craft\elements\GlobalSet::find()
+    ->revisionIf(10)
+    ->all();
+```
+:::
+
+
+### `revisionOf`
+
+Narrows the query results to only revisions of a given global set.
+
+
+
+Possible values include:
+
+| Value | Fetches revisions…
+| - | -
+| `1` | for the global set with an ID of 1.
+| a [GlobalSet](api:craft\elements\GlobalSet) object | for the global set represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch revisions of the global set #}
+{% set globalSets = craft.globalSets()
+    .revisionOf(myGlobalSet)
+    .all() %}
+```
+
+```php
+// Fetch revisions of the global set
+$globalSets = \craft\elements\GlobalSet::find()
+    ->revisionOf($myGlobalSet)
+    ->all();
+```
+:::
+
+
+### `revisions`
+
+Narrows the query results to only revision global sets.
+
+
+
+
+
+::: code
+```twig
+{# Fetch a revision global set #}
+{% set globalSets = {twig-function}
+    .revisions()
+    .id(123)
+    .one() %}
+```
+
+```php
+// Fetch a revision global set
+$globalSets = \craft\elements\GlobalSet::find()
+    ->revisions()
+    ->id(123)
+    ->one();
 ```
 :::
 
@@ -450,7 +743,7 @@ Possible values include:
 
 ::: tip
 If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
-only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+only want unique elements to be returned, use [unique](#unique) in conjunction with this.
 :::
 
 
@@ -545,6 +838,36 @@ Narrows the query results based on the global sets’ UIDs.
 $globalSet = \craft\elements\GlobalSet::find()
     ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
     ->one();
+```
+:::
+
+
+### `unique`
+
+Determines whether only elements with unique IDs should be returned by the query.
+
+
+
+This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+desired.
+
+
+
+::: code
+```twig
+{# Fetch unique global sets across all sites #}
+{% set globalSets = craft.globalSets()
+    .site('*')
+    .unique()
+    .all() %}
+```
+
+```php
+// Fetch unique global sets across all sites
+$globalSets = \craft\elements\GlobalSet::find()
+    ->site('*')
+    ->unique()
+    ->all();
 ```
 :::
 
