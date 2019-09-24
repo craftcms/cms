@@ -12,6 +12,9 @@
 - Any migrations applied during testing will now be stored in the database as content migrations. 
 - Live Preview requests now have an `x-craft-live-preview` query string param, rather than `x-craft-preview`. ([#4950](https://github.com/craftcms/cms/issues/4950))
 
+### Fixed
+- Fixed a bug where changing a project config value from scalar to an array could cause an error. ([#4932](https://github.com/craftcms/cms/issues/4932))
+
 ## 3.3.4.1 - 2019-09-17
 
 ### Fixed

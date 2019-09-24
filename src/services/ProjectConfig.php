@@ -1353,6 +1353,9 @@ class ProjectConfig extends Component
                 }
 
                 $data[$nextSegment] = [];
+            } else if (!is_array($data[$nextSegment])) {
+                // If the next part is not an array, but we have to travel further, make it an array.
+                $data[$nextSegment] = [];
             }
 
             return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
