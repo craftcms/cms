@@ -1,4 +1,4 @@
-/*!   - 2019-09-18 */
+/*!   - 2019-09-24 */
 (function($){
 
 /** global: Craft */
@@ -2373,7 +2373,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: $.extend({}, this.getSelectedSourceState())
+                viewState: $.extend({}, this.getSelectedSourceState()),
+                paginated: this._isViewPaginated() ? 1 : 0,
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -3293,6 +3294,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // View
         // -------------------------------------------------------------------------
 
+        _isViewPaginated: function() {
+            return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
+        },
+
         _updateView: function(params, response) {
             // Cleanup
             // -------------------------------------------------------------
@@ -3312,10 +3317,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.$countContainer.html('');
-            var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
 
-            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
-                this.$countContainer.text(response.count + ' ' + elementTypeName);
+            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.countLabel);
             } else {
                 var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
                 var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
@@ -3331,14 +3335,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     title: Craft.t('app', 'Next Page')
                 }).appendTo($paginationContainer);
 
-                var first = Math.min((this.settings.batchSize * (this.page - 1)) + 1, response.count);
                 $('<div/>', {
                     'class': 'page-info',
-                    text: Craft.t('app', '{first}-{last} of {total}', {
-                        first: Craft.formatNumber(first),
-                        last: Craft.formatNumber(Math.min(first + (this.settings.batchSize - 1), response.count)),
-                        total: Craft.formatNumber(response.count)
-                    }) + ' ' + elementTypeName
+                    text: response.countLabel
                 }).appendTo($paginationContainer);
 
                 if (this.page > 1) {
@@ -3623,9 +3622,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
             toolbarFixed: null,
-
-            elementTypeName: Craft.t('app', 'Element'),
-            elementTypePluralName: Craft.t('app', 'Elements'),
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
