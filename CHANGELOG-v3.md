@@ -9,6 +9,7 @@
 - Added the `craft\test\fixtures\elements\ElementFixture::$unload` option to specify whether fixture data should be unloaded. 
 
 ### Changed
+- All users with permission to register users can now choose to not have an activation email sent immediately, when registering a new user. ([#4981](https://github.com/craftcms/cms/pull/4981))
 - Any migrations applied during testing will now be stored in the database as content migrations. 
 - Live Preview requests now have an `x-craft-live-preview` query string param, rather than `x-craft-preview`. ([#4950](https://github.com/craftcms/cms/issues/4950))
 - The `_includes/pagination.html` template can now be passed `itemLabel` and `itemsLabel` variables.
