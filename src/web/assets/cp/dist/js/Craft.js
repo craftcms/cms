@@ -1,4 +1,4 @@
-/*!   - 2019-08-27 */
+/*!   - 2019-09-25 */
 (function($){
 
 /** global: Craft */
@@ -367,23 +367,21 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                complete: function(jqXHR, textStatus) {
-                    if (textStatus === 'error') {
-                        // Ignore incomplete requests, likely due to navigating away from the page
-                        // h/t https://stackoverflow.com/a/22107079/1688568
-                        if (jqXHR.readyState !== 4) {
-                            return;
-                        }
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Ignore incomplete requests, likely due to navigating away from the page
+                    // h/t https://stackoverflow.com/a/22107079/1688568
+                    if (jqXHR.readyState !== 4) {
+                        return;
+                    }
 
-                        if (typeof Craft.cp !== 'undefined') {
-                            Craft.cp.displayError();
-                        } else {
-                            alert(Craft.t('app', 'An unknown error occurred.'));
-                        }
+                    if (typeof Craft.cp !== 'undefined') {
+                        Craft.cp.displayError();
+                    } else {
+                        alert(Craft.t('app', 'An unknown error occurred.'));
+                    }
 
-                        if (callback) {
-                            callback(null, textStatus, jqXHR);
-                        }
+                    if (callback) {
+                        callback(null, textStatus, jqXHR);
                     }
                 }
             }, options));
@@ -2373,7 +2371,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: $.extend({}, this.getSelectedSourceState())
+                viewState: $.extend({}, this.getSelectedSourceState()),
+                paginated: this._isViewPaginated() ? 1 : 0,
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -3293,6 +3292,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // View
         // -------------------------------------------------------------------------
 
+        _isViewPaginated: function() {
+            return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
+        },
+
         _updateView: function(params, response) {
             // Cleanup
             // -------------------------------------------------------------
@@ -3312,10 +3315,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.$countContainer.html('');
-            var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
 
-            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
-                this.$countContainer.text(response.count + ' ' + elementTypeName);
+            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.countLabel);
             } else {
                 var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
                 var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
@@ -3331,14 +3333,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     title: Craft.t('app', 'Next Page')
                 }).appendTo($paginationContainer);
 
-                var first = Math.min((this.settings.batchSize * (this.page - 1)) + 1, response.count);
                 $('<div/>', {
                     'class': 'page-info',
-                    text: Craft.t('app', '{first}-{last} of {total}', {
-                        first: Craft.formatNumber(first),
-                        last: Craft.formatNumber(Math.min(first + (this.settings.batchSize - 1), response.count)),
-                        total: Craft.formatNumber(response.count)
-                    }) + ' ' + elementTypeName
+                    text: response.countLabel
                 }).appendTo($paginationContainer);
 
                 if (this.page > 1) {
@@ -3623,9 +3620,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
             toolbarFixed: null,
-
-            elementTypeName: Craft.t('app', 'Element'),
-            elementTypePluralName: Craft.t('app', 'Elements'),
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
@@ -13097,13 +13091,13 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this));
         },
 
-        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+        getTokenizedPreviewUrl: function(url, randoParam) {
             return new Promise(function(resolve, reject) {
                 var params = {};
 
-                if (forceRandomParam || !this.settings.isLive) {
+                if (randoParam || !this.settings.isLive) {
                     // Randomize the URL so CDNs don't return cached pages
-                    params['x-craft-preview'] = Craft.randomString(10);
+                    params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
                 }
 
                 // No need for a token if we're looking at a live element
@@ -17632,7 +17626,7 @@ Craft.Preview = Garnish.Base.extend(
 
             var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
 
-            this.draftEditor.getTokenizedPreviewUrl(url, true).then(function(url) {
+            this.draftEditor.getTokenizedPreviewUrl(url, 'x-craft-live-preview').then(function(url) {
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {

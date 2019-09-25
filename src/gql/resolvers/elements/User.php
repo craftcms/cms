@@ -43,13 +43,13 @@ class User extends ElementResolver
             $query->$key($value);
         }
 
-        $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
+        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryUsers()) {
             return [];
         }
 
-        if (!GqlHelper::canToken('usergroups.everyone')) {
+        if (!GqlHelper::canSchema('usergroups.everyone')) {
             $query->innerJoin(Table::USERGROUPS_USERS . ' usergroups_users',
                 ['and',
                     '[[users.id]] = [[usergroups_users.userId]]',

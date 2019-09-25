@@ -18,6 +18,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -61,6 +62,11 @@ class ElementIndexesController extends BaseElementsController
     protected $viewState;
 
     /**
+     * @var bool
+     */
+    protected $paginated = false;
+
+    /**
      * @var ElementQueryInterface|ElementQuery|null
      */
     protected $elementQuery;
@@ -82,11 +88,13 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
+        $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
-        $this->sourceKey = Craft::$app->getRequest()->getParam('source');
+        $this->sourceKey = $request->getParam('source');
         $this->source = $this->source();
         $this->viewState = $this->viewState();
+        $this->paginated = (bool)$request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
         if ($this->includeActions() && $this->sourceKey !== null) {
@@ -424,10 +432,29 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
+        $count = (int)$this->elementQuery->count();
 
         $responseData = [
-            'count' => $this->elementQuery->count(),
+            'count' => $count,
         ];
+
+        if (!$this->paginated || !$this->elementQuery->limit || $count < $this->elementQuery->limit) {
+            $responseData['countLabel'] = Craft::t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', [
+                'total' => $count,
+                'item' => StringHelper::toLowerCase($elementType::displayName()),
+                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+            ]);
+        } else {
+            $first = min(($this->elementQuery->offset ?: 0) + 1, $count);
+            $last = min($first + ($this->elementQuery->limit - 1), $count);
+            $responseData['countLabel'] = Craft::t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', [
+                'first' => $first,
+                'last' => $last,
+                'total' => $count,
+                'item' => StringHelper::toLowerCase($elementType::displayName()),
+                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+            ]);
+        }
 
         $view = $this->getView();
 

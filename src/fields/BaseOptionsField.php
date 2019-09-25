@@ -97,6 +97,61 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = ['options', 'validateOptions'];
+        return $rules;
+    }
+
+    /**
+     * Validates the field options.
+     *
+     * @since 3.3.5
+     */
+    public function validateOptions()
+    {
+        $labels = [];
+        $values = [];
+        $hasDuplicateLabels = false;
+        $hasDuplicateValues = false;
+
+        foreach ($this->options as &$option) {
+            // Ignore optgroups
+            if (array_key_exists('optgrou', $option)) {
+                continue;
+            }
+
+            $label = (string)$option['label'];
+            $value = (string)$option['value'];
+            if (isset($labels[$label])) {
+                $option['label'] = [
+                    'value' => $label,
+                    'hasErrors' => true,
+                ];
+                $hasDuplicateLabels = true;
+            }
+            if (isset($values[$value])) {
+                $option['value'] = [
+                    'value' => $value,
+                    'hasErrors' => true,
+                ];
+                $hasDuplicateValues = true;
+            }
+            $labels[$label] = $values[$value] = true;
+        }
+
+        if ($hasDuplicateLabels) {
+            $this->addError('options', Craft::t('app', 'All option labels must be unique.'));
+        }
+        if ($hasDuplicateValues) {
+            $this->addError('options', Craft::t('app', 'All option values must be unique.'));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentColumnType(): string
     {
         if ($this->multi) {
@@ -174,6 +229,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     'addRowLabel' => Craft::t('app', 'Add an option'),
                     'cols' => $cols,
                     'rows' => $rows,
+                    'errors' => $this->getErrors('options'),
                 ]
             ]);
     }

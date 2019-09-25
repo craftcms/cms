@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
+use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\ArrayHelper;
@@ -151,9 +152,14 @@ class MigrateController extends BaseMigrateController
                 $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
                 return false;
             }
-            if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
-                $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
-                return false;
+            $pluginsService = Craft::$app->getPlugins();
+            if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
+                try {
+                    $plugin = $pluginsService->createPlugin($this->plugin);
+                } catch (InvalidPluginException $e) {
+                    $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
+                    return false;
+                }
             }
             $this->plugin = $plugin;
         }

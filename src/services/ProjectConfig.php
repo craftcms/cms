@@ -1170,7 +1170,7 @@ class ProjectConfig extends Component
 
             if (!array_key_exists($key, $flatCurrent)) {
                 $newItems[] = $immediateParent;
-            } elseif ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+            } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
                 $changedItems[] = $immediateParent;
             }
 
@@ -1352,6 +1352,9 @@ class ProjectConfig extends Component
                     return null;
                 }
 
+                $data[$nextSegment] = [];
+            } else if (!is_array($data[$nextSegment])) {
+                // If the next part is not an array, but we have to travel further, make it an array.
                 $data[$nextSegment] = [];
             }
 

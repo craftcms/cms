@@ -37,7 +37,7 @@ class GlobalSetType implements GeneratorInterface
             $typeName = self::getName($globalSet);
             $requiredContexts = GlobalSetElement::gqlScopesByContext($globalSet);
 
-            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+            if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 

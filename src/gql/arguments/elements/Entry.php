@@ -51,7 +51,7 @@ class Entry extends StructureElementArguments
             ],
             'authorId' => [
                 'name' => 'authorId',
-                'type' => Type::listOf(Type::boolean()),
+                'type' => Type::listOf(Type::int()),
                 'description' => 'Narrows the query results based on the entries’ authors.'
             ],
             'authorGroup' => [

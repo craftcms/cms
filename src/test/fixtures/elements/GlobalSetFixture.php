@@ -38,20 +38,27 @@ abstract class GlobalSetFixture extends ElementFixture
     public $tableName = Table::GLOBALSETS;
 
     /**
+     * @var boolean
+     */
+    public $useActiveRecord = true;
+
+    /**
      * @inheritdoc
      */
     public function load()
     {
         parent::load();
 
-        // TODO: layouts?
-        foreach ($this->data as $alias => $data) {
-            $record = new GlobalSetRecord();
-            $record->id = $data['id'];
-            $record->name = $data['name'];
-            $record->handle = $data['handle'];
-            $record->uid = $data['uid'];
-            $record->save();
+        if ($this->useActiveRecord) {
+            // TODO: layouts?
+            foreach ($this->data as $alias => $data) {
+                $record = new GlobalSetRecord();
+                $record->id = $data['id'];
+                $record->name = $data['name'];
+                $record->handle = $data['handle'];
+                $record->uid = $data['uid'];
+                $record->save();
+            }
         }
     }
 

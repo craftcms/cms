@@ -38,7 +38,7 @@ class EntryType implements GeneratorInterface
             $typeName = EntryElement::gqlTypeNameByContext($entryType);
             $requiredContexts = EntryElement::gqlScopesByContext($entryType);
 
-            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+            if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 
