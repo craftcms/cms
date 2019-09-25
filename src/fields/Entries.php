@@ -84,7 +84,7 @@ class Entries extends BaseRelationField
      */
     public function getEagerLoadingGqlConditions()
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedSectionUids = $allowedEntities['sections'] ?? [];
         $allowedEntryTypeUids = $allowedEntities['entrytypes'] ?? [];
 

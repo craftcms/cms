@@ -54,13 +54,13 @@ class GqlHelperTest extends Unit
 
         // Token awareness
         if (!$failAll) {
-            $this->assertTrue(GqlHelper::canToken($permission, $scope));
-            $this->assertFalse(GqlHelper::canToken($permission, $failingScope));
-            $this->assertTrue(GqlHelper::isTokenAwareOf($permission));
+            $this->assertTrue(GqlHelper::canSchema($permission, $scope));
+            $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
+            $this->assertTrue(GqlHelper::isSchemaAwareOf($permission));
         } else {
-            $this->assertFalse(GqlHelper::canToken($permission, $scope));
-            $this->assertFalse(GqlHelper::canToken($permission, $failingScope));
-            $this->assertFalse(GqlHelper::isTokenAwareOf($permission));
+            $this->assertFalse(GqlHelper::canSchema($permission, $scope));
+            $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
+            $this->assertFalse(GqlHelper::isSchemaAwareOf($permission));
         }
     }
 
@@ -77,7 +77,7 @@ class GqlHelperTest extends Unit
     public function testTokenPermissionExtraction($permissionSet, $expectedPairs)
     {
         $this->_setTokenWithPermissions($permissionSet);
-        $this->assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromToken());
+        $this->assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
     }
 
     public function tokenPermissionDataProvider()

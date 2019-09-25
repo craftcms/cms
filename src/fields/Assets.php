@@ -523,7 +523,7 @@ class Assets extends BaseRelationField
      */
     public function getEagerLoadingGqlConditions()
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
 
         if (empty($allowedVolumeUids)) {
