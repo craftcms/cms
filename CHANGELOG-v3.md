@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.5 - 2019-09-25
 
 ### Added
 - The Control Panel is now translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
