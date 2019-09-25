@@ -181,7 +181,7 @@ class Categories extends BaseRelationField
      */
     public function getEagerLoadingGqlConditions()
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
 
         if (empty($allowedCategoryUids)) {

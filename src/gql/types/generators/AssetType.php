@@ -38,7 +38,7 @@ class AssetType implements GeneratorInterface
             $typeName = AssetElement::gqlTypeNameByContext($volume);
             $requiredContexts = AssetElement::gqlScopesByContext($volume);
 
-            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+            if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 

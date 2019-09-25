@@ -83,7 +83,7 @@ class Users extends BaseRelationField
      */
     public function getEagerLoadingGqlConditions()
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedGroupUids = $allowedEntities['usergroups'] ?? [];
 
         if (in_array('everyone', $allowedGroupUids, false)) {

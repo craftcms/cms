@@ -22,20 +22,20 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * Cached permission pairs for tokens by id.
+     * Cached permission pairs for schemas by id.
      *
      * @var array
      */
     private static $cachedPairs = [];
 
     /**
-     * Returns true if the current token is aware of the provided scope(s).
+     * Returns true if the active schema is aware of the provided scope(s).
      *
      * @param string|string[] $scopes The scope(s) to check.
      * @return bool
      * @throws GqlException
      */
-    public static function isTokenAwareOf($scopes): bool
+    public static function isSchemaAwareOf($scopes): bool
     {
         if (!is_array($scopes)) {
             $scopes = [$scopes];
@@ -58,18 +58,18 @@ class Gql
     }
 
     /**
-     * Extracts all the allowed entities from the token permissions for the action.
+     * Extracts all the allowed entities from the active schema for the action.
      *
      * @param string $action The action for which the entities should be extracted. Defaults to "read"
      * @return array
      */
-    public static function extractAllowedEntitiesFromToken($action = 'read'): array
+    public static function extractAllowedEntitiesFromSchema($action = 'read'): array
     {
-        $token = Craft::$app->getGql()->getActiveSchema();
+        $activeSchema = Craft::$app->getGql()->getActiveSchema();
 
-        if (empty(self::$cachedPairs[$token->id])) {
+        if (empty(self::$cachedPairs[$activeSchema->id])) {
             try {
-                $permissions = (array) $token->scope;
+                $permissions = (array) $activeSchema->scope;
                 $pairs = [];
 
                 foreach ($permissions as $permission) {
@@ -85,25 +85,25 @@ class Gql
                     }
                 }
 
-                self::$cachedPairs[$token->id] = $pairs;
+                self::$cachedPairs[$activeSchema->id] = $pairs;
             } catch (GqlException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 return [];
             }
         }
 
-        return self::$cachedPairs[$token->id];
+        return self::$cachedPairs[$activeSchema->id];
     }
 
     /**
-     * Returns true if the current token can perform the action on the scope.
+     * Returns true if the active schema can perform the action on the scope.
      *
      * @param string $scope The scope to check.
      * @param string $action The action. Defaults to "read"
      * @return bool
      * @throws GqlException
      */
-    public static function canToken($scope, $action = 'read'): bool
+    public static function canSchema($scope, $action = 'read'): bool
     {
         try {
             $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
@@ -115,64 +115,64 @@ class Gql
     }
 
     /**
-     * Return true if current token can query entries.
+     * Return true if active schema can query entries.
      *
      * @return bool
      */
     public static function canQueryEntries(): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromToken();
+        $allowedEntities = self::extractAllowedEntitiesFromSchema();
         return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
     }
 
     /**
-     * Return true if current token can query assets.
+     * Return true if active schema can query assets.
      *
      * @return bool
      */
     public static function canQueryAssets(): bool
     {
-        return isset(self::extractAllowedEntitiesFromToken()['volumes']);
+        return isset(self::extractAllowedEntitiesFromSchema()['volumes']);
     }
 
     /**
-     * Return true if current token can query categories.
+     * Return true if active schema can query categories.
      *
      * @return bool
      */
     public static function canQueryCategories(): bool
     {
-        return isset(self::extractAllowedEntitiesFromToken()['categorygroups']);
+        return isset(self::extractAllowedEntitiesFromSchema()['categorygroups']);
     }
 
     /**
-     * Return true if current token can query tags.
+     * Return true if active schema can query tags.
      *
      * @return bool
      */
     public static function canQueryTags(): bool
     {
-        return isset(self::extractAllowedEntitiesFromToken()['taggroups']);
+        return isset(self::extractAllowedEntitiesFromSchema()['taggroups']);
     }
 
     /**
-     * Return true if current token can query global sets.
+     * Return true if active schema can query global sets.
      *
      * @return bool
      */
     public static function canQueryGlobalSets(): bool
     {
-        return isset(self::extractAllowedEntitiesFromToken()['globalsets']);
+        return isset(self::extractAllowedEntitiesFromSchema()['globalsets']);
     }
 
     /**
-     * Return true if current token can query users.
+     * Return true if active schema can query users.
      *
      * @return bool
      */
     public static function canQueryUsers(): bool
     {
-        return isset(self::extractAllowedEntitiesFromToken()['usergroups']);
+        return isset(self::extractAllowedEntitiesFromSchema()['usergroups']);
     }
 
     /**

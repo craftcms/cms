@@ -23,7 +23,6 @@ coverage:
     - src/views/*
     - src/web/assets/*
     - bootstrap/*
-    - docs/*
     - lib/*
     - tests/*
     - vendor/*
