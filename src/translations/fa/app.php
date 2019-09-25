@@ -1212,6 +1212,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{آیتم} other{آیتم}} باشد.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{انتخاب} other{انتخاب}} باشد.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} باید شامل {count, number} {count, plural, one{آیتم} other{آیتم}} باشد.',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',
@@ -1444,6 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'شامل حساب های کاربری، گروه های کاربری، مجوزهای کاربری، ثبت نام عمومی کاربر',
     'Save as my new credit card' => 'ذخیره به عنوان کارت اعتباری جدید من',
     '{first}-{last} of {total}' => '{first}-{last} از {total}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'پیش نمایش',
     'Text that should be shown before the input.' => 'متنی که باید قبل از ورودی نمایش داده شود.',
     'Next Page' => 'صفحه بعدی',
@@ -1494,9 +1496,8 @@ return [
     'Define the schema’s scope' => 'تعریف حوزه طرح',
     'Edit the Public GraphQL Schema' => 'ویرایش طرح عمومی GraphQL',
     'Schema name' => 'نام طرح',
-    'View category group - {categoryGroup}' => 'مشاهده گروه دسته بندی - {categoryGroup}',
-    'Delete them' => 'حذفشان کن',
-    'Your connection is insecure' => 'ارتباط شما ناامن است',
-    'Keep them' => 'نگهشان دار',
-    'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}'
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];
