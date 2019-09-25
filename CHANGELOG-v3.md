@@ -8,6 +8,7 @@
 
 ### Changed
 - All users with permission to register users can now choose to not have an activation email sent immediately, when registering a new user. ([#4981](https://github.com/craftcms/cms/pull/4981))
+- Craft now shows validation errors when attempting to save a Dropdown, Radio Buttons, Checkboxes, or Multi-select field with duplicate option labels or values. ([#4983](https://github.com/craftcms/cms/issues/4983))
 - Live Preview requests now have an `x-craft-live-preview` query string param, rather than `x-craft-preview`. ([#4950](https://github.com/craftcms/cms/issues/4950))
 - The `_includes/pagination.html` template can now be passed `itemLabel` and `itemsLabel` variables.
 - Any migrations applied during testing are now recorded as content migrations.
