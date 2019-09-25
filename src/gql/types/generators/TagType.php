@@ -38,7 +38,7 @@ class TagType implements GeneratorInterface
             $typeName = TagElement::gqlTypeNameByContext($tagGroup);
             $requiredContexts = TagElement::gqlScopesByContext($tagGroup);
 
-            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+            if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 

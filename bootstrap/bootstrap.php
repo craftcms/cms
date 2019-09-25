@@ -198,10 +198,6 @@ $srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
-// Move Yii's autoloader to the end (Composer's is faster when optimized)
-spl_autoload_unregister(['Yii', 'autoload']);
-spl_autoload_register(['Yii', 'autoload'], true, false);
-
 // Set aliases
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);

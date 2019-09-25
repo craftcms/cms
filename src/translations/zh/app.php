@@ -1212,6 +1212,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} 应最多包含 {max, number} {max, plural, one{个项目} other{项目}}。',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} 应最多包含 {max, number} {max, plural, one{个选择} other{选择}}。',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} 应包含 {count, number} {count, plural, one{个项目} other{项目}}。',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{ctrl}C to copy.' => '单击 {ctrl}C 以复制。',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} 已添加，但在安装时出现错误。',
@@ -1444,6 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => '包括用户帐户、用户组、用户权限、公共用户注册',
     'Save as my new credit card' => '保存为我的新信用卡',
     '{first}-{last} of {total}' => '第 {first} - {last} 个，共 {total} 个',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '第 {first, number} - {last, number} 个，共 {total, number} 个 {total, plural, =1{{item}} other{{items}}}',
     'Preview' => '预览',
     'Text that should be shown before the input.' => '应显示在输入前面的文本。',
     'Next Page' => '下一页',
@@ -1493,5 +1495,9 @@ return [
     'Schemas' => '架构',
     'Define the schema’s scope' => '定义架构的范围',
     'Edit the Public GraphQL Schema' => '编辑公共 GraphQL 架构',
-    'Schema name' => '架构名称'
+    'Schema name' => '架构名称',
+    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
+    'Delete them' => 'Delete them',
+    'Keep them' => 'Keep them',
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
 ];

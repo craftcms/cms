@@ -65,9 +65,9 @@
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 
-{% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
-{% set details = (details ?? block('details') ?? '')|trim %}
-{% set footer = (footer ?? block('footer') ?? '')|trim %}
+{% set sidebar %}{% filter trim|raw %}{% block sidebar %}{{ sidebar ?? '' }}{% endblock %}{% endfilter %}{% endset %}
+{% set details %}{% filter trim|raw %}{% block details %}{{ details ?? '' }}{% endblock %}{% endfilter %}{% endset %}
+{% set footer %}{% filter trim|raw %}{% block footer %}{{ footer ?? '' }}{% endblock %}{% endfilter %}{% endset %}
 {% set crumbs = crumbs ?? null %}
 
 {% set showHeader = showHeader ?? true %}

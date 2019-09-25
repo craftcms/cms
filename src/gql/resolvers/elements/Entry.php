@@ -43,7 +43,7 @@ class Entry extends ElementResolver
             $query->$key($value);
         }
 
-        $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
+        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryEntries()) {
             return [];

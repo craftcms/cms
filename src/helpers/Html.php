@@ -221,7 +221,7 @@ class Html extends \yii\helpers\Html
     {
         // Normalize the attributes & merge with the old attributes
         $attributes = static::normalizeTagAttributes($attributes);
-        $oldAttributes = static::parseTagAttributes($tag, 0, $start, $end);
+        $oldAttributes = static::parseTagAttributes($tag, 0, $start, $end, true);
         $attributes = ArrayHelper::merge($oldAttributes, $attributes);
 
         // Ensure we don't have any duplicate classes
@@ -241,11 +241,12 @@ class Html extends \yii\helpers\Html
      * @param int $offset The offset to start looking for a tag
      * @param int|null $start The start position of the first attribute in the given tag
      * @param int|null $end The end position of the last attribute in the given tag
+     * @param bool $decode Whether the attributes should be HTML decoded in the process
      * @return array The parsed HTML tags
      * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */
-    public static function parseTagAttributes(string $tag, int $offset = 0, int &$start = null, int &$end = null): array
+    public static function parseTagAttributes(string $tag, int $offset = 0, int &$start = null, int &$end = null, bool $decode = false): array
     {
         list($type, $tagStart) = self::_findTag($tag, $offset);
         $start = $tagStart + strlen($type) + 1;
@@ -277,7 +278,17 @@ class Html extends \yii\helpers\Html
             $attributes[$name] = $value;
         } while (true);
 
-        return static::normalizeTagAttributes($attributes);
+        $attributes = static::normalizeTagAttributes($attributes);
+
+        if ($decode) {
+            foreach ($attributes as &$value) {
+                if (is_string($value)) {
+                    $value = static::decode($value);
+                }
+            }
+        }
+
+        return $attributes;
     }
 
     /**

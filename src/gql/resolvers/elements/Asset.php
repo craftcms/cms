@@ -43,7 +43,7 @@ class Asset extends ElementResolver
             $query->$key($value);
         }
 
-        $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
+        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryAssets()) {
             return [];
