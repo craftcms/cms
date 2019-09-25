@@ -3,7 +3,7 @@
 ## 3.3.5 - 2019-09-25
 
 ### Added
-- The Control Panel is now translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
+- The Control Panel is now translated into Persian. ([#4969](https://github.com/craftcms/cms/pull/4969))
 - Added `craft\test\fixtures\elements\ElementFixture::$unload`.
 
 ### Changed
