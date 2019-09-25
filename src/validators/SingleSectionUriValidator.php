@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\models\Section_SiteSettings;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\validators\Validator;
 
 /**
  * Will validate that the given attribute is a valid URI for a single section.
@@ -20,11 +19,8 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SingleSectionUriValidator extends Validator
+class SingleSectionUriValidator extends UriFormatValidator
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -33,6 +29,8 @@ class SingleSectionUriValidator extends Validator
         if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
+
+        parent::validateAttribute($model, $attribute);
 
         /** @var Section_SiteSettings $model */
         // Make sure it's a valid URI
@@ -48,6 +46,8 @@ class SingleSectionUriValidator extends Validator
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $model->siteId,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
                 'elements.dateDeleted' => null,
             ]);
 

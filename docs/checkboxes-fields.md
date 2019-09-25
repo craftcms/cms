@@ -78,7 +78,7 @@ If you have an [entry form](dev/examples/entry-form.md) that needs to contain a 
 
 {# Include a hidden input first so Craft knows to update the
    existing value, if no checkboxes are checked. #}
-<input type="hidden" name="fields[<FieldHandle>]" value="">
+{{ hiddenInput('fields[<FieldHandle>]', '') }}
 
 <ul>
     {% for option in field.options %}

@@ -98,7 +98,6 @@ module.exports = {
                 collapsable: false,
                 children: [
                     'testing-craft/getting-started',
-                    'testing-craft/examples',
                     'testing-craft/testing-tips',
                     'testing-craft/plugins-and-modules',
                     'testing-craft/fixtures',
@@ -264,6 +263,7 @@ module.exports = {
                 title: 'Development',
                 collapsable: false,
                 children: [
+                    'graphql',
                     'dev/',
                     'extend/',
                     'testing/'

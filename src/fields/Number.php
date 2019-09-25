@@ -163,6 +163,10 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value === null && $this->defaultValue !== null && $this->isFresh($element)) {
+            return $this->defaultValue;
+        }
+
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
@@ -176,10 +180,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        if ($this->isFresh($element) && $this->defaultValue !== null) {
-            $value = $this->defaultValue;
-        }
-
         // If decimals is 0 (or null, empty for whatever reason), don't run this
         if ($value !== null && $this->decimals) {
             $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);

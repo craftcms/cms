@@ -66,6 +66,17 @@ class ElementsController extends BaseElementsController
                         $nextHeading = null;
                     }
                     $sources[] = $source;
+                    unset($sourceKeys[$source['key']]);
+                }
+            }
+
+            // Did we miss any source keys? (This could happen if some are nested)
+            if (!empty($sourceKeys)) {
+                foreach (array_keys($sourceKeys) as $key) {
+                    $source = ElementHelper::findSource($elementType, $key, $context);
+                    if ($source !== null) {
+                        $sources[$key] = $source;
+                    }
                 }
             }
         } else {
@@ -371,19 +382,15 @@ class ElementsController extends BaseElementsController
         $response = [];
 
         if ($includeSites) {
-            if (count($siteIds) > 1) {
-                $response['siteIds'] = [];
+            $response['sites'] = [];
 
-                foreach ($siteIds as $siteId) {
-                    $site = Craft::$app->getSites()->getSiteById($siteId);
+            foreach ($siteIds as $siteId) {
+                $site = Craft::$app->getSites()->getSiteById($siteId);
 
-                    $response['sites'][] = [
-                        'id' => $siteId,
-                        'name' => Craft::t('site', $site->name),
-                    ];
-                }
-            } else {
-                $response['sites'] = null;
+                $response['sites'][] = [
+                    'id' => $siteId,
+                    'name' => Craft::t('site', $site->name),
+                ];
             }
         }
 

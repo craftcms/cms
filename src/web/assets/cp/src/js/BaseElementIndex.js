@@ -42,6 +42,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         searching: false,
         searchText: null,
         trashed: false,
+        drafts: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -585,7 +586,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0
+                trashed: this.trashed ? 1 : 0,
+                drafts: this.drafts ? 1 : 0,
             };
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
@@ -745,7 +747,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         afterAction: function(action, params) {
 
-            // There may be a new background task that needs to be run
+            // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
@@ -1324,11 +1326,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
+            this.trashed = false;
+            this.drafts = false;
+            this.status = null;
+
             if (Garnish.hasAttr($option, 'data-trashed')) {
                 this.trashed = true;
-                this.status = null;
+            } else if (Garnish.hasAttr($option, 'data-drafts')) {
+                this.drafts = true;
             } else {
-                this.trashed = false;
                 this.status = $option.data('status');
             }
 
@@ -1437,7 +1443,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            if (this.trashed || this.searching) {
+            if (this.trashed || this.drafts || this.searching) {
                 $option.addClass('disabled');
                 if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
@@ -1749,39 +1755,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 'class': 'export-form'
             });
 
-            var $fmtContainer = $('<div/>', {
-                'class': 'btngroup'
-            })
-            var formats = ['csv', 'xls', 'xlsx', 'ods'];
-            var format = 'csv';
-            for (var i = 0; i < formats.length; i++) {
-                $('<div/>', {
-                    'class': 'btn' + (i === 0 ? ' active' : ''),
-                    role: 'button',
-                    pressed: (i === 0) ? 'true' : 'false',
-                    text: formats[i].toUpperCase(),
-                    'data-format': formats[i]
-                })
-                    .appendTo($fmtContainer)
-                    .on('click', function() {
-                        $fmtContainer.children()
-                            .removeClass('active')
-                            .attr('pressed', 'false');
-                        format = $(this)
-                            .addClass('active')
-                            .attr('pressed', 'true')
-                            .data('format');
-                    });
-            }
-            var $fmtField = Craft.ui.createField($fmtContainer, {
-                label: Craft.t('app', 'Format')
-            }).appendTo($form);
-
             var $limitField = Craft.ui.createTextField({
                 label: Craft.t('app', 'Limit'),
                 placeholder: Craft.t('app', 'No limit'),
                 type: 'number',
-                min: 0
+                min: 1
             }).appendTo($form);
 
             $('<input/>', {
@@ -1812,20 +1790,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
-                params.criteria.limit = $limitField.find('input').val();
-                if (!params.criteria.limit) {
-                    delete params.criteria.limit;
+                delete params.criteria.limit;
+
+                var limit = parseInt($limitField.find('input').val());
+                if (limit && !isNaN(limit)) {
+                    params.criteria.limit = limit;
                 }
-                params.format = format;
 
                 Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
                     submitting = false;
                     $spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        var url = Craft.getCpUrl('', {
-                            token: response.token
-                        });
+                        var params = {};
+                        params[Craft.tokenParam] = response.token;
+                        var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));

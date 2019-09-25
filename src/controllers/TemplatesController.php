@@ -83,7 +83,13 @@ class TemplatesController extends Controller
     public function actionRender(string $template, array $variables = []): Response
     {
         // Does that template exist?
-        if (!$this->getView()->doesTemplateExist($template)) {
+        if (
+            (
+                Craft::$app->getConfig()->getGeneral()->headlessMode &&
+                Craft::$app->getRequest()->getIsSiteRequest()
+            ) ||
+            !$this->getView()->doesTemplateExist($template)
+        ) {
             throw new NotFoundHttpException('Template not found: ' . $template);
         }
 
@@ -137,9 +143,9 @@ class TemplatesController extends Controller
      *
      * @return Response
      */
-    public function actionIncompatibleConfigAlert(): Response
+    public function actionIncompatibleConfigAlert(array $issues = []): Response
     {
-        return $this->renderTemplate('_special/incompatibleconfigs');
+        return $this->renderTemplate('_special/incompatibleconfigs', ['issues' => $issues]);
     }
 
     /**

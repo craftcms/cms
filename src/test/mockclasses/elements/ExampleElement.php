@@ -26,6 +26,8 @@ class ExampleElement extends Element
      */
     public $uriFormat;
 
+    public $someField;
+
     // Public Methods
     // =========================================================================
 

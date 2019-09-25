@@ -3,12 +3,14 @@
 
 {% import "_includes/forms" as forms %}
 
+{% set headlessMode = craft.app.config.general.headlessMode %}
+
 
 {% block content %}
-    <input type="hidden" name="action" value="sections/save-section">
+    {{ actionInput('sections/save-section') }}
     {{ redirectInput('settings/sections') }}
 
-    {% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
+    {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
 
     {{ forms.textField({
         first: true,
@@ -44,7 +46,8 @@
 
     {{ forms.selectField({
         label: "Section Type"|t('app'),
-        instructions: "What type of section is this?"|t('app') ~ (section.id ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t('app')~'</span>' : ''),
+        instructions: "What type of section is this?"|t('app'),
+        warning: section.id and section.type != 'single' ? 'Changing this may result in data loss.'|t('app'),
         id: 'type',
         name: 'type',
         options: typeOptions,
@@ -75,20 +78,23 @@
                     value: site.id,
                     small: true
                 }),
-                singleUri: {
-                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
-                    hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                singleHomepage: not headlessMode ? {
+                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
                 },
-                uriFormat: {
+                singleUri: not headlessMode ? {
+                   value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
+                   hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                },
+                uriFormat: not headlessMode ? {
                     value: siteSettings ? siteSettings.uriFormat,
                     hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                template: {
+                template: not headlessMode ? {
                     value: siteSettings ? siteSettings.template,
                     hasErrors: siteSettings ? siteSettings.hasErrors('template'),
                 },
                 enabledByDefault: siteSettings ? siteSettings.enabledByDefault : true,
-            }
+            }|filter
         }) %}
     {% endfor %}
 
@@ -101,29 +107,37 @@
             heading: {
                 type: 'heading',
                 heading: "Site"|t('app'),
-                class: 'thin'
+                thin: true
             },
             enabled: {
                 type: 'heading',
-                class: 'thin'~(not craft.app.getIsMultiSite() ? ' hidden')
+                thin: true,
+                class: not craft.app.getIsMultiSite() ? 'hidden'
             },
-            singleUri: {
+            singleHomepage: not headlessMode ? {
+                type: 'checkbox',
+                headingHtml: tag('div', {
+                    data: {icon: 'home'},
+                    title: 'Homepage'|t('app')
+                }),
+                thin: true,
+                class: ['single-homepage', 'type-single', section.type != 'single' ? 'hidden']|filter
+            },
+            singleUri: not headlessMode ? {
                 type: 'singleline',
                 heading: "URI"|t('app'),
-                info: "What the entry URI should be for the site. Leave blank if this is the homepage."|t('app'),
-                placeholder: "Leave blank if this is the homepage"|t('app'),
+                info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
                 code: true,
-                class: 'type-single'~(section.type != 'single' ? ' hidden')
+                class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            uriFormat: {
+            uriFormat: not headlessMode ? {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
-                placeholder: "Leave blank if entries don’t have URLs"|t('app'),
                 code: true,
-                class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
+                class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             },
-            template: {
+            template: not headlessMode ? {
                 type: 'template',
                 heading: "Template"|t('app'),
                 info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
@@ -132,10 +146,12 @@
             enabledByDefault: {
                 type: 'lightswitch',
                 heading: "Default Status"|t('app'),
-                class: 'thin type-channel type-structure'~(section.type == 'single' ? ' hidden')
+                thin: true,
+                class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             }
-        },
+        }|filter,
         rows: siteRows,
+        fullWidth: not headlessMode,
         staticRows: true,
         errors: siteErrors|unique
     }) }}
@@ -145,6 +161,7 @@
             {{ forms.selectField({
                 label: 'Propagation Method'|t('app'),
                 instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
+                warning: section.id and section.propagationMethod != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
                 id: 'propagationMethod',
                 name: 'propagationMethod',
                 options: [
@@ -173,7 +190,9 @@
     {% if CraftEdition == CraftPro %}
         {{ forms.editableTableField({
             label: 'Preview Targets'|t('app'),
-            instructions: 'Additional locations that should be available for previewing entries in this section.',
+            instructions: headlessMode
+                ? 'Locations that should be available for previewing entries in this section.'|t('app')
+                : 'Additional locations that should be available for previewing entries in this section.'|t('app'),
             id: 'previewTargets',
             name: 'previewTargets',
             cols: {
@@ -194,28 +213,8 @@
     {% endif %}
 {% endblock %}
 
-
-{% js %}
-    var $siteRows = $('#sites').children('tbody').children(),
-        $lightswitches = $siteRows.children('th:nth-child(2)').children('.lightswitch');
-
-    function updateSites() {
-        $lightswitches.each(function() {
-            if ($(this).data('lightswitch').on) {
-                $(this).parent().nextAll('td').removeClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '0');
-            } else {
-                $(this).parent().nextAll('td').addClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '-1');
-            }
-        });
-    }
-
-    $lightswitches.on('change', updateSites);
-
-    Garnish.$doc.ready(function() {
-        updateSites();
-    });
-
-    {% if brandNewSection %}
+{% if brandNewSection %}
+    {% js %}
         new Craft.HandleGenerator('#name', '#handle');
 
         {% for site in craft.app.sites.getAllSites() %}
@@ -223,5 +222,5 @@
             new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
             new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_entry' });
         {% endfor %}
-    {% endif %}
-{% endjs %}
+    {% endjs %}
+{% endif %}

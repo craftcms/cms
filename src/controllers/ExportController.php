@@ -54,7 +54,7 @@ class ExportController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $format): Response
+    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $format = 'csv'): Response
     {
         $this->requireToken();
 
@@ -79,45 +79,26 @@ class ExportController extends Controller
             Craft::configure($query, $criteria);
         }
 
+        // Get the results and add a header row to the beginning
         /** @var array $results */
         $results = $query->asArray()->all();
-        $columns = array_keys(reset($results));
+        $header = !empty($results) ? array_keys(reset($results)) : [];
+        array_unshift($results, $header);
 
-        foreach ($results as &$result) {
-            $result = array_values($result);
-        }
-        unset($result);
-
-        // Populate the spreadsheet
-        $spreadsheet = new Spreadsheet();
-        if (!empty($results)) {
-            $worksheet = $spreadsheet->setActiveSheetIndex(0);
-            $worksheet->fromArray($columns, null, 'A1');
-            $worksheet->fromArray($results, null, 'A2');
-        }
-
-        // Could use the writer factory with a $format <-> phpspreadsheet string map, but this is more simple for now.
         switch ($format) {
             case 'csv':
-                $writer = new Csv($spreadsheet);
-                break;
-            case 'xls':
-                $writer = new Xls($spreadsheet);
-                break;
-            case 'xlsx':
-                $writer = new Xlsx($spreadsheet);
-                break;
-            case 'ods':
-                $writer = new Ods($spreadsheet);
+                $file = tempnam(sys_get_temp_dir(), 'export');
+                $fp = fopen($file, 'wb');
+                foreach ($results as $result) {
+                    fputcsv($fp, $result, ',');
+                }
+                fclose($fp);
+                $contents = file_get_contents($file);
+                unlink($file);
                 break;
             default:
                 throw new BadRequestHttpException('Invalid export format: ' . $format);
         }
-
-        $file = tempnam(sys_get_temp_dir(), 'export');
-        $writer->save($file);
-        $contents = file_get_contents($file);
-        unlink($file);
 
         $filename = mb_strtolower($elementType::pluralDisplayName()) . '.' . $format;
         $mimeType = FileHelper::getMimeTypeByExtension($filename);

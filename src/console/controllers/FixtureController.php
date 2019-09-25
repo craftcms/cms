@@ -7,9 +7,6 @@
 
 namespace craft\console\controllers;
 
-use craft\events\DeleteElementEvent;
-use craft\services\Elements;
-use yii\base\Event;
 use yii\console\controllers\FixtureController as BaseFixtureController;
 
 /**
@@ -22,19 +19,5 @@ use yii\console\controllers\FixtureController as BaseFixtureController;
  */
 class FixtureController extends BaseFixtureController
 {
-    // Public functions
-    // =========================================================================
 
-    /**
-     * @inheritDoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Force a hard delete.
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function(DeleteElementEvent $event) {
-            $event->hardDelete = true;
-        });
-    }
 }

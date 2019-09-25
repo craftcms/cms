@@ -43,6 +43,10 @@
                         {% if context == 'index' %}
                             {% if showStatusMenu %}<hr class="padded">{% endif %}
                             <ul class="padded">
+                                {% set draftsExist = elementInstance.find().draftOf(false).anyStatus().exists() %}
+                                {% if draftsExist %}
+                                    <li><a data-drafts><span class="icon" data-icon="draft"></span>{{ 'Drafts'|t('app') }}</a></li>
+                                {% endif %}
                                 <li><a data-trashed><span class="icon" data-icon="trash"></span>{{ "Trashed"|t('app') }}</a></li>
                             </ul>
                       {% endif %}

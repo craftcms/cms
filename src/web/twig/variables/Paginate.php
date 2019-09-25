@@ -117,30 +117,31 @@ class Paginate extends BaseObject
             return null;
         }
 
+        $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
+        $useQueryParam = strpos($pageTrigger, '?') === 0;
+
         $path = $this->getBasePath();
-        $params = null;
 
-        if ($page != 1) {
-            $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
-
-            // Is this query string-based pagination?
-            if (strpos($pageTrigger, '?') === 0) {
-                $params = [trim($pageTrigger, '?=') => $page];
-            } else {
-                if ($path) {
-                    $path .= '/';
-                }
-
-                $path .= $pageTrigger . $page;
+        // If not using a query param, append the page to the path
+        if (!$useQueryParam && $page != 1) {
+            if ($path) {
+                $path .= '/';
             }
+
+            $path .= $pageTrigger . $page;
         }
 
         // Build the URL with the same query string as the current request
         $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
 
-        // Then add the page param if there is one
-        if ($params !== null) {
-            $url = UrlHelper::urlWithParams($url, $params);
+        // If using a query param, append or remove it
+        if ($useQueryParam) {
+            $param = trim($pageTrigger, '?=');
+            if ($page != 1) {
+                $url = UrlHelper::urlWithParams($url, [$param => $page]);
+            } else {
+                $url = UrlHelper::removeParam($url, $param);
+            }
         }
 
         return $url;

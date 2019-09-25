@@ -178,6 +178,7 @@ class UserGroups extends Component
                 'g.id',
                 'g.name',
                 'g.handle',
+                'g.uid'
             ])
             ->from(['{{%usergroups}} g'])
             ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')

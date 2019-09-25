@@ -1,7 +1,7 @@
 # Fixtures
 Fixtures are used to setup data in a test suite that is predictable and the same 
 for each test run (so assertions can be conducted based on this data).
-They can be defined in the `fixturesMethod` [defined](config-options.md) in the `codeception.yml` file. 
+They can be defined in the `fixturesMethod` [defined](../framework/config-options.md) in the `codeception.yml` file. 
 In the [Yii2 docs](https://www.yiiframework.com/doc/guide/2.0/en/test-fixtures#defining-a-fixture)
 you can read about fixture classes and fixture data as well as how these can be setup/used for testing.
 
@@ -165,10 +165,10 @@ The primary keys are: `siteId`, `username` and `email`.
 
 ### Element fixture field layout and content. 
 
-If you pass a `fieldLayoutType` into any class that extends the base `ElementFixture` class Craft 
-will automatically try to find that the field layout associated with the type you passed in and link this field 
-layout to the new Element you are creating. 
-
+If you pass a `fieldLayoutType` into any class that extends the base `ElementFixture` class, Craft 
+will automatically try to find the associated field layout and link it to the new Element you are 
+ creating. 
+ 
 If you want to set custom field values you can simply include those into your fixture data file (the examples as shown above). 
 Here's an example of a fixture data file that is creating an entry with a title and some custom fields: 
 
@@ -220,7 +220,7 @@ of
 All of which are linked together, and would be very difficult to manage in a 
 test environment with ordinary fixtures. For this reason Craft provides a special 
 `craft\test\fixtures\FieldLayoutFixture` class that provides all the required support 
-to setup field layouts, the tabs and the underlying fields, including creating the fields in the `content` table.
+to setup field layouts, the tabs and the underlying fields, including creating the fields in the `{{%content}}` table.
 
 All you have to do is create an ordinary fixture class and extend `craft\test\fixtures\FieldLayoutFixture`. 
 
@@ -301,7 +301,7 @@ return [
 ```
 
 ::: tip
-The value of the key-value pairs can be set to whatever is required
+The value part of the key-value pairs can be set to whatever is required
 for your project. What is crucial 
 is that the array keys are set with __any__ string value. You can add your own parameters to 
 the array value of the `field` key - as long as they correspond to `public` properties in 

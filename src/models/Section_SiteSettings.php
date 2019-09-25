@@ -154,7 +154,7 @@ class Section_SiteSettings extends Model
             $rules[] = ['uriFormat', UriFormatValidator::class];
         }
 
-        if ($this->hasUrls || $this->getSection()->type == Section::TYPE_SINGLE) {
+        if ($this->hasUrls) {
             $rules[] = [['uriFormat'], 'required'];
         }
 

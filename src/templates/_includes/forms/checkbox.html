@@ -11,7 +11,7 @@
 {% set label = (label is defined ? label) %}
 
 {% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif %}
 
 <input type="checkbox" value="{{ value }}" class="{{ class }}"

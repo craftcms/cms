@@ -16,6 +16,7 @@ use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -273,12 +274,12 @@ class ElementIndexesController extends BaseElementsController
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
                 'criteria' => $request->getBodyParam('criteria', []),
-                'format' => $request->getRequiredBodyParam('format'),
+                'format' => $request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+            throw new ServerErrorHttpException('Could not create an export token.');
         }
 
         return $this->asJson(compact('token'));
@@ -357,6 +358,10 @@ class ElementIndexesController extends BaseElementsController
         if ($criteria = $request->getBodyParam('criteria')) {
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = (bool)$criteria['trashed'];
+            }
+            if (ArrayHelper::remove($criteria, 'drafts')) {
+                $criteria['drafts'] = true;
+                $criteria['draftOf'] = false;
             }
             Craft::configure($query, $criteria);
         }

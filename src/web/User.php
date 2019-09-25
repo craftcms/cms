@@ -150,7 +150,7 @@ class User extends \yii\web\User
      * ```twig{5}
      * <form method="post" action="" accept-charset="UTF-8">
      *     {{ csrfInput() }}
-     *     <input type="hidden" name="action" value="users/login">
+     *     {{ actionInput('users/login') }}
      *
      *     {% set username = craft.app.user.rememberedUsername %}
      *     <input type="text" name="loginName" value="{{ username }}">
@@ -599,7 +599,6 @@ class User extends \yii\web\User
     /**
      * @param string $authError
      * @param UserElement $user
-     * @return null
      */
     private function _handleLoginFailure(string $authError = null, UserElement $user = null)
     {

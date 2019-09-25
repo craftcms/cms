@@ -215,7 +215,7 @@ $assets = \craft\elements\Asset::find()
 | `'*.jpg'` | ファイル名が `.jpg` で終わる。
 | `'*foo*'` | ファイル名に `foo` を含む。
 | `'not *foo*'` | ファイル名に `foo` を含まない。
-| `['*foo*', '*bar*'` | ファイル名に `foo` または `bar` を含む。
+| `['*foo*', '*bar*']` | ファイル名に `foo` または `bar` を含む。
 | `['not', '*foo*', '*bar*']` | ファイル名に `foo` または `bar` を含まない。
 
 ::: code
@@ -683,7 +683,7 @@ $assets = \craft\elements\Asset::find()
 | `'*Foo'` | タイトルが `Foo` で終わる。
 | `'*Foo*'` | タイトルが `Foo` を含む。
 | `'not *Foo*'` | タイトルが `Foo` を含まない。
-| `['*Foo*', '*Bar*'` | タイトルが `Foo` または `Bar` を含む。
+| `['*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含む。
 | `['not', '*Foo*', '*Bar*']` | タイトルが `Foo` または `Bar` を含まない。
 
 ::: code

@@ -27,6 +27,29 @@ class ElementHelper
     // =========================================================================
 
     /**
+     * Generates a new temporary slug.
+     *
+     * @return string
+     * @since 3.2.2
+     */
+    public static function tempSlug(): string
+    {
+        return '__temp_' . StringHelper::randomString();
+    }
+
+    /**
+     * Returns whether the given slug is temporary.
+     *
+     * @param string $slug
+     * @return bool
+     * @since 3.2.2
+     */
+    public static function isTempSlug(string $slug): bool
+    {
+        return strpos($slug, '__temp_') === 0;
+    }
+
+    /**
      * Creates a slug based on a given string.
      *
      * @param string $str
@@ -42,12 +65,20 @@ class ElementHelper
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
 
-        // Convert to kebab case
-        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $lower = !Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
-        $str = StringHelper::toKebabCase($str, $glue, $lower, false);
+        // Remove inner-word punctuation
+        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $str);
 
-        return $str;
+        // Make it lowercase
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->allowUppercaseInSlug) {
+            $str = mb_strtolower($str);
+        }
+
+        // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
+        // Reference: http://www.regular-expressions.info/unicode.html
+        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
+
+        return implode($generalConfig->slugWordSeparator, $words);
     }
 
     /**
@@ -59,7 +90,7 @@ class ElementHelper
     public static function setUniqueUri(ElementInterface $element)
     {
         /** @var Element $element */
-        $uriFormat = $element->getUriFormat();
+        $uriFormat = Craft::$app->getConfig()->getGeneral()->headlessMode ? null : $element->getUriFormat();
 
         // No URL format, no URI.
         if ($uriFormat === null) {
@@ -315,6 +346,29 @@ class ElementHelper
         /** @var Element $root */
         $root = ElementHelper::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
+    }
+
+    /**
+     * Returns the element, or if it’s a draft/revision, the source element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     * @since 3.2.11
+     */
+    public static function sourceElement(ElementInterface $element): ElementInterface
+    {
+        /** @var Element $element */
+        $sourceId = $element->getSourceId();
+        if ($sourceId === $element->id) {
+            return $element;
+        }
+
+        return $element::find()
+            ->id($sourceId)
+            ->siteId($element->siteId)
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->one();
     }
 
     /**

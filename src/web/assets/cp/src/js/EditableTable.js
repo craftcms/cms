@@ -151,7 +151,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             if (focus !== false) {
-                $tr.find('input,textarea,select').first().trigger('focus');
+                $tr.find('input:visible,textarea:visible,select:visible').first().trigger('focus');
             }
 
             this.rowCount++;
@@ -238,7 +238,7 @@ Craft.EditableTable = Garnish.Base.extend(
         },
     },
     {
-        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time'],
+        textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -339,6 +339,16 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createTimeInput({
                                 name: name,
                                 value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'email':
+                        case 'url':
+                            Craft.ui.createTextInput({
+                                name: name,
+                                value: value,
+                                type: col.type,
+                                placeholder: col.placeholder || null,
                             }).appendTo($cell);
                             break;
 

@@ -67,6 +67,19 @@ class UrlHelper
     }
 
     /**
+     * Returns a query string based on the given params.
+     *
+     * @param array $params
+     * @return string
+     * @since 3.2.11
+     */
+    public static function buildQuery(array $params): string
+    {
+        // Decode and convert `[x]`s to `[]`
+        return preg_replace('/\[[0-9]+\]/u', '[]', urldecode(http_build_query($params)));
+    }
+
+    /**
      * Returns a URL with additional query string parameters.
      *
      * @param string $url
@@ -87,7 +100,33 @@ class UrlHelper
 
         // Append to the base URL and return
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . static::buildQuery($params);
+        }
+        if ($fragment !== null) {
+            $url .= '#' . $fragment;
+        }
+        return $url;
+    }
+
+    /**
+     * Removes a query string param from a URL.
+     *
+     * @param string $url
+     * @param string $param
+     * @return string
+     * @since 3.2.2
+     */
+    public static function removeParam(string $url, string $param): string
+    {
+        // Extract any params/fragment from the base URL
+        list($url, $params, $fragment) = self::_extractParams($url);
+
+        // Remove the param
+        unset($params[$param]);
+
+        // Rebuild
+        if (!empty($params)) {
+            $url .= '?' . static::buildQuery($params);
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -612,7 +651,7 @@ class UrlHelper
         }
 
         if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . static::buildQuery($params);
         }
 
         if ($fragment !== null) {
@@ -636,20 +675,20 @@ class UrlHelper
             return [$params, $fragment];
         }
 
-        $arr = [];
         $fragment = null;
 
         if (is_string($params)) {
+            $params = ltrim($params, '?&');
+
             if (($fragmentPos = strpos($params, '#')) !== false) {
                 $fragment = substr($params, $fragmentPos + 1);
                 $params = substr($params, 0, $fragmentPos);
             }
 
-            $chunks = array_filter(explode('&', trim($params, '&?')));
-            foreach ($chunks as $chunk) {
-                $kv = explode('=', $chunk, 2);
-                $arr[$kv[0]] = $kv[1] ?? '';
-            }
+            parse_str($params, $arr);
+            $arr = ArrayHelper::filterEmptyStringsFromArray($arr);
+        } else {
+            $arr = [];
         }
 
         return [$arr, $fragment];

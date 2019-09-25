@@ -5,7 +5,7 @@
 ```twig
 <form method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="users/login">
+    {{ actionInput('users/login') }}
 
     <h3><label for="loginName">Username or email</label></h3>
     <input id="loginName" type="text" name="loginName"

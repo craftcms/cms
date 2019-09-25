@@ -133,8 +133,12 @@ class AppController extends Controller
 
         // Get the handles in need of an update
         $handles = $updatesService->getPendingMigrationHandles(true);
+        $runMigrations = !empty($handles);
 
-        if (empty($handles)) {
+        $projectConfigService = Craft::$app->getProjectConfig();
+        $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+
+        if (!$runMigrations && !$applyProjectConfigChanges) {
             // That was easy
             return Craft::$app->getResponse();
         }
@@ -148,8 +152,7 @@ class AppController extends Controller
         Craft::$app->enableMaintenanceMode();
 
         // Backup the DB?
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $backup = $generalConfig->getBackupOnUpdate();
+        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
@@ -162,12 +165,14 @@ class AppController extends Controller
         $transaction = $db->beginTransaction();
 
         try {
-            // Run the migrations
-            $updatesService->runMigrations($handles);
+            // Run the migrations?
+            if ($runMigrations) {
+                $updatesService->runMigrations($handles);
+            }
 
             // Sync project.yaml?
-            if ($generalConfig->useProjectConfigFile) {
-                Craft::$app->getProjectConfig()->applyYamlChanges();
+            if ($applyProjectConfigChanges) {
+                $projectConfigService->applyYamlChanges();
             }
 
             $transaction->commit();
