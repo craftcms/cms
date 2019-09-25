@@ -18,6 +18,7 @@
 
 ### Fixed
 - Fixed a bug where checkbox inputs were positioned incorrectly for RTL languages.
+- Fixed a bug where the updater and `project.yaml` sync pages weren’t always handling error responses correctly. ([#4988](https://github.com/craftcms/cms/issues/4988))
 - Fixed an error that could occur if a project config value changed from scalar to an array. ([#4932](https://github.com/craftcms/cms/issues/4932))
 - Fixed a bug where Craft would not recognize certain block types when using the GraphQL API. ([#4961](https://github.com/craftcms/cms/issues/4961))
 - Fixed a bug where `craft\helpers\Html::renderTagAttributes()` was double-encoding preexisting attributes. ([#4984](https://github.com/craftcms/cms/issues/4984))
