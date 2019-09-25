@@ -13,12 +13,14 @@
 - The `_includes/pagination.html` template can now be passed `itemLabel` and `itemsLabel` variables.
 - Any migrations applied during testing are now recorded as content migrations.
 - Added the option to automatically apply all content migrations when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
+- `craft\helpers\Html::parseTagAttributes()` now has a `$decode` argument.
 - `craft\test\fixtures\elements\GlobalSetFixture` now has the option to load the active record instance. ([#4947](https://github.com/craftcms/cms/pull/4947))
 
 ### Fixed
 - Fixed a bug where checkbox inputs were positioned incorrectly for RTL languages.
 - Fixed an error that could occur if a project config value changed from scalar to an array. ([#4932](https://github.com/craftcms/cms/issues/4932))
 - Fixed a bug where Craft would not recognize certain block types when using the GraphQL API. ([#4961](https://github.com/craftcms/cms/issues/4961))
+- Fixed a bug where `craft\helpers\Html::renderTagAttributes()` was double-encoding preexisting attributes. ([#4984](https://github.com/craftcms/cms/issues/4984))
 
 ## 3.3.4.1 - 2019-09-17
 
