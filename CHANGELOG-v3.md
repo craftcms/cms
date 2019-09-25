@@ -3,20 +3,20 @@
 ## Unreleased
 
 ### Added
-- Added the option to automatically apply all migrations in the `CRAFT_MIGRATIONS_PATH` when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
 - The Control Panel is now translated into Persian. ([#4969)(https://github.com/craftcms/cms/pull/4969))
-- Added an option to `craft\test\fixtures\elements\GlobalSetFixture` to specify whether it should load the Active Record instance. ([#4947](https://github.com/craftcms/cms/pull/4947))
-- Added the `craft\test\fixtures\elements\ElementFixture::$unload` option to specify whether fixture data should be unloaded. 
+- Added `craft\test\fixtures\elements\ElementFixture::$unload`.
 
 ### Changed
 - All users with permission to register users can now choose to not have an activation email sent immediately, when registering a new user. ([#4981](https://github.com/craftcms/cms/pull/4981))
-- Any migrations applied during testing will now be stored in the database as content migrations. 
 - Live Preview requests now have an `x-craft-live-preview` query string param, rather than `x-craft-preview`. ([#4950](https://github.com/craftcms/cms/issues/4950))
 - The `_includes/pagination.html` template can now be passed `itemLabel` and `itemsLabel` variables.
+- Any migrations applied during testing are now recorded as content migrations.
+- Added the option to automatically apply all content migrations when setting up the test environment. ([#4904](https://github.com/craftcms/cms/issues/4904))
+- `craft\test\fixtures\elements\GlobalSetFixture` now has the option to load the active record instance. ([#4947](https://github.com/craftcms/cms/pull/4947))
 
 ### Fixed
-- Fixed a bug where changing a project config value from scalar to an array could cause an error. ([#4932](https://github.com/craftcms/cms/issues/4932))
 - Fixed a bug where checkbox inputs were positioned incorrectly for RTL languages.
+- Fixed an error that could occur if a project config value changed from scalar to an array. ([#4932](https://github.com/craftcms/cms/issues/4932))
 - Fixed a bug where Craft would not recognize certain block types when using the GraphQL API. ([#4961](https://github.com/craftcms/cms/issues/4961))
 
 ## 3.3.4.1 - 2019-09-17
