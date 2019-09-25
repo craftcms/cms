@@ -16,7 +16,7 @@
 - `craft\helpers\Html::parseTagAttributes()` now has a `$decode` argument.
 - `craft\test\fixtures\elements\GlobalSetFixture` now has the option to load the active record instance. ([#4947](https://github.com/craftcms/cms/pull/4947))
 
-### Fixed
+### Fixed
 - Fixed a bug where checkbox inputs were positioned incorrectly for RTL languages.
 - Fixed a bug where the updater and `project.yaml` sync pages weren’t always handling error responses correctly. ([#4988](https://github.com/craftcms/cms/issues/4988))
 - Fixed an error that could occur when syncing the project config, if a volume was being deleted that didn’t exist in the database to begin with. ([#4990](https://github.com/craftcms/cms/pull/4990))
