@@ -16,6 +16,7 @@
 ### Fixed
 - Fixed a bug where changing a project config value from scalar to an array could cause an error. ([#4932](https://github.com/craftcms/cms/issues/4932))
 - Fixed a bug where checkbox inputs were positioned incorrectly for RTL languages.
+- Fixed a bug where Craft would not recognize certain block types when using the GraphQL API. ([#4961](https://github.com/craftcms/cms/issues/4961))
 
 ## 3.3.4.1 - 2019-09-17
 
