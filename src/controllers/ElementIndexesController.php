@@ -432,7 +432,7 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $count = $this->elementQuery->count();
+        $count = (int)$this->elementQuery->count();
 
         $responseData = [
             'count' => $count,
