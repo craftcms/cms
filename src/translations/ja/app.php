@@ -1445,7 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'ユーザーアカウント、ユーザーグループ、ユーザー権限、パブリックユーザー登録が含まれます',
     'Save as my new credit card' => '新しいクレジットカードとして保存',
     '{first}-{last} of {total}' => '{first}-{last}/{total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'プレビュー',
     'Text that should be shown before the input.' => '入力値の前に表示される文字。',
     'Next Page' => '次のページ',
@@ -1496,8 +1496,8 @@ return [
     'Define the schema’s scope' => 'スキーマの範囲を定義',
     'Edit the Public GraphQL Schema' => '公開GraphQLスキーマを編集',
     'Schema name' => 'スキーマ名',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'カテゴリグループを表示 - {categoryGroup}',
+    'Delete them' => 'これらを削除',
+    'Keep them' => 'これらを保持',
+    'View tag group - {tagGroup}' => 'タググループを表示 - {tagGroup}'
 ];
