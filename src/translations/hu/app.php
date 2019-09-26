@@ -1210,7 +1210,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => 'A(z) {attribute} elem legfeljebb {max, number} {max, plural, one{elemet} other{elemet}} tartalmazhat.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'A(z) {attribute} elemnek legalább {max, number} {max, plural, one{kijelölést} other{kijelölést}} kell tartalmaznia.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'A(z) {attribute} elemnek tartalmaznia kell a(z) {count, number} {count, plural, one{elemet} other{elemet}}.',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {} =1{{item}} other{{items}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{ctrl}C to copy.' => '{ctrl}C a másoláshoz',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => 'A(z) {name} hozzá lett adva, de a telepítésekor hiba történt.',
