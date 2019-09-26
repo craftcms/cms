@@ -200,11 +200,10 @@ class UsersTest extends TestCase
         $this->assertSame(32, strlen($verificationCode));
         $this->assertNotNull($user['verificationCode']);
 
-        // Check the date with a delta of 1.5 seconds.
-        $this->assertEqualsWithDelta(
+        $this->tester->assertEqualDates(
+            $this,
             $dateTime->format('Y-m-d H:i:s'),
-            $user['verificationCodeIssuedDate'],
-            1.5
+            $user['verificationCodeIssuedDate']
         );
     }
 
