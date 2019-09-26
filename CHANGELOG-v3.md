@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementInterface::getIsHomepage()`. ([#4993](https://github.com/craftcms/cms/issues/4993))
+- Added `craft\base\Element::HOMEPAGE_URI`.
+
 ### Fixed
 - Fixed a bug where `craft\helper\UrlHelper` wasn’t encoding `+` and `&` characters in query param values.
 
