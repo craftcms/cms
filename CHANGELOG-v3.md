@@ -7,6 +7,7 @@
 - Added `craft\base\Element::HOMEPAGE_URI`.
 
 ### Fixed
+- Fixed a bug where some HTML in the Control Panel was getting improperly encoded. ([#5002](https://github.com/craftcms/cms/issues/5002))
 - Fixed a bug where `craft\helper\UrlHelper` wasn’t encoding `+` and `&` characters in query param values.
 - Fixed an error where GraphQL would sometimes not return a proper error message. ([#4999](https://github.com/craftcms/cms/issues/4999))
 
