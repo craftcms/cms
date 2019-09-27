@@ -6,10 +6,15 @@
 - Added `craft\base\ElementInterface::getIsHomepage()`. ([#4993](https://github.com/craftcms/cms/issues/4993))
 - Added `craft\base\Element::HOMEPAGE_URI`.
 
+### Changed
+- Updated Garnish to 0.1.31.
+
 ### Fixed
 - Fixed a bug where some HTML in the Control Panel was getting improperly encoded. ([#5002](https://github.com/craftcms/cms/issues/5002))
 - Fixed a bug where `craft\helper\UrlHelper` wasn’t encoding `+` and `&` characters in query param values.
 - Fixed an error where GraphQL would sometimes not return a proper error message. ([#4999](https://github.com/craftcms/cms/issues/4999))
+- Fixed a bug where HUDs could be positioned incorrectly when first opened. ([#5004](https://github.com/craftcms/cms/issues/5004))
+- Fixed a bug where HUD tip images could be pointing the wrong way for RTL languages.
 
 ## 3.3.5 - 2019-09-25
 
