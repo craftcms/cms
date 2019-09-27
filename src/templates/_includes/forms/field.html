@@ -1,11 +1,11 @@
 {%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
-{%- set label %}{% filter raw %}{% block label %}{{ label is defined and label != '__blank__' ? label }}{% endblock %}{% endfilter %}{% endset %}
+{%- set label %}{% block label %}{{ label is defined and label != '__blank__' ? label|raw }}{% endblock %}{% endset %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
-{%- set instructions %}{% filter raw %}{% block instructions %}{{ instructions ?? '' }}{% endblock %}{% endfilter %}{% endset %}
+{%- set instructions %}{% block instructions %}{{ instructions is defined ? instructions|raw : '' }}{% endblock %}{% endset %}
 {%- set tip = tip ?? block('tip') ?? null %}
-{%- set warning %}{% filter raw %}{% block warning %}{{ warning ?? '' }}{% endblock %}{% endfilter %}{% endset %}
+{%- set warning %}{% block warning %}{{ warning is defined ? warning : '' }}{% endblock %}{% endset %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
