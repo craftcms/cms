@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where `craft\helper\UrlHelper` wasn’t encoding `+` and `&` characters in query param values.
+- Fixed an error where GraphQL would sometimes not return a proper error message. ([#4999](https://github.com/craftcms/cms/issues/4999))
 
 ## 3.3.5 - 2019-09-25
 
