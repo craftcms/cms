@@ -307,7 +307,7 @@ class Elements extends Component
         }
 
         if ($uri === '') {
-            $uri = '__home__';
+            $uri = Element::HOMEPAGE_URI;
         }
 
         if ($siteId === null) {

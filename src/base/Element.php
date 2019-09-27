@@ -103,6 +103,8 @@ abstract class Element extends Component implements ElementInterface
     // Constants
     // =========================================================================
 
+    const HOMEPAGE_URI = '__home__';
+
     // Statuses
     // -------------------------------------------------------------------------
 
@@ -1372,13 +1374,21 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsHomepage(): bool
+    {
+        return $this->uri === self::HOMEPAGE_URI;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getUrl()
     {
         if ($this->uri === null) {
             return null;
         }
 
-        $path = ($this->uri === '__home__') ? '' : $this->uri;
+        $path = $this->getIsHomepage() ? '' : $this->uri;
         return UrlHelper::siteUrl($path, null, null, $this->siteId);
     }
 
@@ -1439,7 +1449,7 @@ abstract class Element extends Component implements ElementInterface
                 'label' => Craft::t('app', 'Primary {type} page', [
                     'type' => StringHelper::toLowerCase(static::displayName()),
                 ]),
-                'url' => $this->uri === '__home__' ? '' : $this->uri
+                'url' => $this->getIsHomepage() ? '' : $this->uri
             ];
         }
 
@@ -2391,9 +2401,7 @@ abstract class Element extends Component implements ElementInterface
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    $value = $this->uri;
-
-                    if ($value === '__home__') {
+                    if ($this->getIsHomepage()) {
                         $value = Html::tag('span', '', [
                             'data-icon' => 'home',
                             'title' => Craft::t('app', 'Homepage'),
@@ -2410,7 +2418,7 @@ abstract class Element extends Component implements ElementInterface
                             $replace[] = $wordSeparator . '<wbr>';
                         }
 
-                        $value = str_replace($find, $replace, $value);
+                        $value = str_replace($find, $replace, $this->uri);
                     }
 
                     return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
