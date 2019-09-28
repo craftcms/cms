@@ -1445,7 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => '사용자 계정, 사용자 그룹, 사용자 권한, 공용 사용자 등록 포함',
     'Save as my new credit card' => '새 신용카드로 저장',
     '{first}-{last} of {total}' => '{first}-{last} / {total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => '미리보기',
     'Text that should be shown before the input.' => '입력값의 앞에 표시되는 문자',
     'Next Page' => '다음 페이지',
@@ -1496,8 +1496,8 @@ return [
     'Define the schema’s scope' => '스키마 범위 정의',
     'Edit the Public GraphQL Schema' => '공개 GraphQL 스키마 수정',
     'Schema name' => '스키마 이름',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => '카테고리 그룹 보기 - {categoryGroup}',
+    'Delete them' => '해당 항목 삭제',
+    'Keep them' => '해당 항목 유지',
+    'View tag group - {tagGroup}' => '태그 그룹 보기 - {tagGroup}'
 ];
