@@ -1496,8 +1496,8 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'Define the schema’s scope' => 'Definieer het toepassingsbereik van het schema',
     'Edit the Public GraphQL Schema' => 'Bewerk het publieke GraphQL-schema',
     'Schema name' => 'Schemanaam',
-    'View category group - {categoryGroup}' => 'Bekijk categorie groep - {categoryGroup}',
-    'Delete them' => 'Verwijder ze',
-    'Keep them' => 'Bewaar ze',
-    'View tag group - {tagGroup}' => 'Bekijk tag groep - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Categoriegroep weergeven - {categoryGroup}',
+    'Delete them' => 'Verwijderen',
+    'Keep them' => 'Behouden',
+    'View tag group - {tagGroup}' => 'Taggroep weergeven - {tagGroup}'
 ];
