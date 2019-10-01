@@ -566,46 +566,18 @@ class UsersController extends Controller
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
-                if ($userId == 'current') {
-                    if ($user) {
-                        /** @var User $user */
-                        // Make sure it's actually the current user
-                        if (!$user->getIsCurrent()) {
-                            throw new BadRequestHttpException('Not the current user');
-                        }
-                    } else {
-                        // Get the current user
-                        $user = $userSession->getIdentity();
-                    }
-                } else {
-                    if ($user) {
-                        // Make sure they have the right ID
-                        /** @var User $user */
-                        if ($user->id != $userId) {
-                            throw new BadRequestHttpException('Not the right user ID');
-                        }
-                    } else {
-                        // Get the user by its ID
-                        /** @var User|null $user */
-                        $user = User::find()
-                            ->id($userId)
-                            ->anyStatus()
-                            ->addSelect('users.passwordResetRequired')
-                            ->one();
+                $user = User::find()
+                    ->addSelect(['users.password', 'users.passwordResetRequired'])
+                    ->id($userId === 'current' ? $userSession->getId() : $userId)
+                    ->anyStatus()
+                    ->one();
+            } else if ($edition === Craft::Pro) {
+                // Registering a new user
+                $user = new User();
+            }
 
-                        if (!$user) {
-                            throw new NotFoundHttpException('User not found');
-                        }
-                    }
-                }
-            } else {
-                if ($edition === Craft::Pro) {
-                    // Registering a new user
-                    $user = new User();
-                } else {
-                    // Nada.
-                    throw new NotFoundHttpException('User not found');
-                }
+            if (!$user) {
+                throw new NotFoundHttpException('User not found');
             }
         }
 

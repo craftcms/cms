@@ -5,6 +5,9 @@
 ### Changed
 - `craft\web\View::renderString()` and `renderObjectTemplate()` now have `$templateMode` arguments. ([#5020](https://github.com/craftcms/cms/issues/5020))
 
+### Fixed
+- Fixed a bug where the Edit User page would list a “Copy activation URL” action for publicly-registered users who already had a password set.
+
 ## 3.3.6 - 2019-09-27
 
 ### Added
