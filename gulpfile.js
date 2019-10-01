@@ -1,10 +1,10 @@
 // TODO: following deps are still manual:
 // - datepicker-i18n
+// - fabricjs
 // - jquery-touch-events
 // - jquery-ui
-// - qunit
 // - prismjs (custom css added)
-// - fabricjs
+// - qunit
 
 var es = require('event-stream');
 var gulp = require('gulp');
