@@ -1,5 +1,4 @@
 // TODO: following deps are still manual:
-// - colorpicker
 // - datepicker-i18n
 // - jquery-touch-events
 // - jquery-ui
