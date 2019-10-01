@@ -27,6 +27,7 @@ use craft\web\Response as WebResponse;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
+use PDO;
 use yii\base\InvalidArgumentException;
 use yii\caching\FileCache;
 use yii\helpers\Inflector;
@@ -420,6 +421,19 @@ class App
             ],
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,
+            'serverStatusCache' => false,
+            'enableSlaves' => true,
+            'slaveConfig' => [
+                'username' => $dbConfig->slaveUser,
+                'charset' => 'utf8',
+                'tablePrefix' => getenv('DB_TABLE_PREFIX'),
+                'password' => $dbConfig->slavePassword,
+                'attributes' => [
+                    PDO::ATTR_TIMEOUT => 10,
+                ]                
+            ],
+            // list of slave configurations
+            'slaves' => $dbConfig->slaves
         ];
     }
 

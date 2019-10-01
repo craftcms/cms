@@ -107,6 +107,18 @@ class DbConfig extends BaseObject
      * @var string The database username to connect with.
      */
     public $user = 'root';
+    /**
+     * @var string The slave database username to connect with.
+     */
+    public $slaveUser = '';
+    /**
+     * @var string The slave database password to connect with.
+     */
+    public $slavePassword = '';
+    /**
+     * @var array The slave DNS array to connect with.
+     */
+    public $slaves = [];
 
     // Public Methods
     // =========================================================================
@@ -151,6 +163,15 @@ class DbConfig extends BaseObject
                     case 'password': // PG only
                         $this->password = $paramValue;
                         break;
+                    case 'slaveUser': // If using db replica
+                        $this->slaveUser = $paramValue;
+                        break;
+                    case 'slavePassword': // If using db replica
+                        $this->slavePassword = $paramValue;
+                        break;
+                    case 'slaves': // If using db replica
+                        $this->slaves = $paramValue;
+                        break;
                 }
             }
         }
@@ -180,6 +201,15 @@ class DbConfig extends BaseObject
             }
             if (isset($url['path'])) {
                 $this->database = trim($url['path'], '/');
+            }
+            if (isset($url['slaveUser'])) {
+                $this->slaveUser = $url['slaveUser'];
+            }
+            if (isset($url['slavePassword'])) {
+                $this->slavePassword = $url['slavePassword'];
+            }
+            if (isset($url['slaves'])) {
+                $this->slaves = $url['slaves'];
             }
         }
 
