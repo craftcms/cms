@@ -936,7 +936,7 @@ class UsersController extends Controller
 
         $userId = $request->getBodyParam('userId');
         $isNewUser = !$userId;
-        $thisIsPublicRegistration = false;
+        $isPublicRegistration = false;
 
         // Are we editing an existing user?
         if ($userId) {
@@ -970,7 +970,7 @@ class UsersController extends Controller
                     throw new ForbiddenHttpException('Public registration is not allowed');
                 }
 
-                $thisIsPublicRegistration = true;
+                $isPublicRegistration = true;
             }
 
             $user = new User();
@@ -1015,7 +1015,7 @@ class UsersController extends Controller
         }
 
         // Are they allowed to set a new password?
-        if ($thisIsPublicRegistration) {
+        if ($isPublicRegistration) {
             if (!Craft::$app->getConfig()->getGeneral()->deferPublicRegistrationPassword) {
                 $user->newPassword = $request->getBodyParam('password', '');
             }
@@ -1084,7 +1084,7 @@ class UsersController extends Controller
         }
 
         // Don't validate required custom fields if it's public registration
-        if (!$thisIsPublicRegistration) {
+        if (!$isPublicRegistration) {
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
@@ -1095,7 +1095,7 @@ class UsersController extends Controller
         ) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
-            if ($thisIsPublicRegistration) {
+            if ($isPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->addErrors(['password' => $user->getErrors('newPassword')]);
                 $user->clearErrors('newPassword');
@@ -1159,7 +1159,7 @@ class UsersController extends Controller
         $this->_processUserPhoto($user);
 
         // If this is public registration, assign the user to the default user group
-        if ($thisIsPublicRegistration) {
+        if ($isPublicRegistration) {
             // Assign them to the default user group
             Craft::$app->getUsers()->assignUserToDefaultGroup($user);
         } else {
@@ -1191,7 +1191,7 @@ class UsersController extends Controller
         }
 
         // Is this public registration, and was the user going to be activated automatically?
-        $publicActivation = $thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE;
+        $publicActivation = $isPublicRegistration && $user->status == User::STATUS_ACTIVE;
 
         if ($publicActivation) {
             // Maybe automatically log them in
@@ -1205,7 +1205,7 @@ class UsersController extends Controller
             ]);
         }
 
-        if ($thisIsPublicRegistration) {
+        if ($isPublicRegistration) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
         } else {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
