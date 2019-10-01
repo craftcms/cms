@@ -494,7 +494,7 @@ class UsersController extends Controller
 
         /** @var User $user */
         list($user) = $info;
-        $userIsPending = $user->status == User::STATUS_PENDING;
+        $userIsPending = $user->getStatus() === User::STATUS_PENDING;
 
         if (!Craft::$app->getUsers()->verifyEmailForUser($user)) {
             return $this->renderTemplate('_special/emailtaken', [
@@ -1191,7 +1191,7 @@ class UsersController extends Controller
         }
 
         // Is this public registration, and was the user going to be activated automatically?
-        $publicActivation = $isPublicRegistration && $user->status == User::STATUS_ACTIVE;
+        $publicActivation = $isPublicRegistration && $user->getStatus() === User::STATUS_ACTIVE;
 
         if ($publicActivation) {
             // Maybe automatically log them in
