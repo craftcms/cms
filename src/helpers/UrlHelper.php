@@ -75,8 +75,23 @@ class UrlHelper
      */
     public static function buildQuery(array $params): string
     {
-        // Decode and convert `[x]`s to `[]`
-        return preg_replace('/\[[0-9]+\]/u', '[]', urldecode(http_build_query($params)));
+        if (empty($params)) {
+            return '';
+        }
+        // build the query string
+        $query = http_build_query($params);
+        if ($query === '') {
+            return '';
+        }
+        // Decode the param names and a few select chars in param values
+        $params = [];
+        foreach (explode('&', $query) as $param) {
+            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            $n = preg_replace('/\[[0-9]+\]/u', '[]', urldecode($n));
+            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $params[] = "$n=$v";
+        }
+        return implode('&', $params);
     }
 
     /**
@@ -99,8 +114,8 @@ class UrlHelper
         $fragment = $fragment ?? $baseFragment;
 
         // Append to the base URL and return
-        if (!empty($params)) {
-            $url .= '?' . static::buildQuery($params);
+        if (($query = static::buildQuery($params)) !== '') {
+            $url .= '?' . $query;
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -125,8 +140,8 @@ class UrlHelper
         unset($params[$param]);
 
         // Rebuild
-        if (!empty($params)) {
-            $url .= '?' . static::buildQuery($params);
+        if (($query = static::buildQuery($params)) !== '') {
+            $url .= '?' . $query;
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -650,8 +665,8 @@ class UrlHelper
             }
         }
 
-        if (!empty($params)) {
-            $url .= '?' . static::buildQuery($params);
+        if (($query = static::buildQuery($params)) !== '') {
+            $url .= '?' . $query;
         }
 
         if ($fragment !== null) {

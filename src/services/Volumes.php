@@ -593,7 +593,7 @@ class Volumes extends Component
         $uid = $event->tokenMatches[0];
         $volumeRecord = $this->_getVolumeRecord($uid);
 
-        if (!$volumeRecord) {
+        if ($volumeRecord->getIsNewRecord()) {
             return;
         }
 

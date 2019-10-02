@@ -38,7 +38,7 @@ class CategoryType implements GeneratorInterface
             $typeName = CategoryElement::gqlTypeNameByContext($categoryGroup);
             $requiredContexts = CategoryElement::gqlScopesByContext($categoryGroup);
 
-            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+            if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 

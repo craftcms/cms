@@ -126,7 +126,7 @@ class User extends Element
     {
         $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
 
-        if (Gql::isTokenAwareOf('volumes.' . $volumeUid)) {
+        if (Gql::isSchemaAwareOf('volumes.' . $volumeUid)) {
             return ['photo' => [
                 'name' => 'photo',
                 'type' => Asset::getType(),

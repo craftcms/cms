@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 return [
     '"{filename}" is not allowed in this field.' => '"{filename}" در این فیلد مجاز نیست.',
@@ -1126,6 +1126,7 @@ return [
     'Your account doesn’t have permission to access the Control Panel when the system is offline.' => 'حساب کاربری شما مجوز دسترسی به کنترل پنل وقتی که سیستم آفلاین است را ندارد.',
     'Your account doesn’t have permission to access the site when the system is offline.' => 'حساب کاربری شما مجوز دسترسی به سایت وقتی که سیستم آفلاین است را ندارد.',
     'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.' => 'فایل composer.json شما نمی تواند مکان یابی شود. در فایل index.php مقدار دهی ثابت CRAFT_COMPOSER_PATH به مکانش روی سرور را امتحان نمایید.',
+    'Your connection is insecure' => 'Your connection is insecure',
     'Your connection is secure' => 'ارتباط شما امن است.',
     'Your email settings are invalid.' => 'تنظیمات پست الکترونیکی شما غیر معتبر است.',
     'Your license key is invalid.' => 'کلید لایسنس شما غیر معتبر است.',
@@ -1211,6 +1212,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{آیتم} other{آیتم}} باشد.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{انتخاب} other{انتخاب}} باشد.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} باید شامل {count, number} {count, plural, one{آیتم} other{آیتم}} باشد.',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {item}',
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',
@@ -1443,6 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'شامل حساب های کاربری، گروه های کاربری، مجوزهای کاربری، ثبت نام عمومی کاربر',
     'Save as my new credit card' => 'ذخیره به عنوان کارت اعتباری جدید من',
     '{first}-{last} of {total}' => '{first}-{last} از {total}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} از {total, number} {item}',
     'Preview' => 'پیش نمایش',
     'Text that should be shown before the input.' => 'متنی که باید قبل از ورودی نمایش داده شود.',
     'Next Page' => 'صفحه بعدی',

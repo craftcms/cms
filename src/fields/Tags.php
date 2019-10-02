@@ -143,7 +143,7 @@ class Tags extends BaseRelationField
      */
     public function getEagerLoadingGqlConditions()
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromToken();
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedTagGroupUids = $allowedEntities['taggroups'] ?? [];
 
         if (empty($allowedTagGroupUids)) {

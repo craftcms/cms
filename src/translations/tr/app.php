@@ -1139,11 +1139,11 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Craft {licensedEdition} lisansı ile Craft {edition} çalıştırıyorsunuz.',
     'account_activation_body' => 'Merhaba {{user.friendlyName}},
 
-{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için aşağıdaki bağlantıya tıklayın:
+{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:
 
 <{{link}}>
 
-Bu, beklediğiniz bir e-posta değilse, lütfen dikkate almayın.',
+Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
     'account_activation_heading' => 'Biri hesap oluşturduğunda:',
     'account_activation_subject' => 'Hesabını aktif hale getir',
     'by {author}' => 'Yazar: {author}',
@@ -1208,6 +1208,7 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} en fazla {max, number} {max, plural, one{öğe} other{öğe}} içerebilir.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} en fazla {max, number} {max, plural, one{seçim} other{seçim}} içerebilir.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} {count, number} {count, plural, one{öğe} other{öğe}} içermelidir.',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{ctrl}C to copy.' => 'Kopyalamak için {ctrl}C',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} eklendi ancak yüklenirken bir hata oluştu.',
@@ -1440,6 +1441,7 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'Includes User accounts, User groups, User permissions, Public user registration' => 'Kullanıcı hesapları, Kullanıcı grupları, Kullanıcı izinleri, Genel kullanıcı kaydı dahildir',
     'Save as my new credit card' => 'Yeni kredi kartım olarak kaydet',
     '{first}-{last} of {total}' => '{first}-{last} / {total}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'Önizle',
     'Text that should be shown before the input.' => 'Girişten önce gösterilmesi gereken metin.',
     'Next Page' => 'Sonraki Sayfa',

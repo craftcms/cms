@@ -2995,7 +2995,7 @@ ul.tree,
   }
 
   .tip-right {
-    @include right(-15px);
+    right: -15px;
     width: 15px;
     height: 30px;
     background-image: url(../images/hudtip_right.png);
@@ -3749,6 +3749,7 @@ div.checkbox:before {
   display: block;
   position: absolute;
   @include left(0);
+  top: 0;
   width: 12px !important;
   height: 12px;
   content: '.';

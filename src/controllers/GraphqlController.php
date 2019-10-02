@@ -144,7 +144,15 @@ class GraphqlController extends Controller
             $result = GraphQL::executeQuery($schemaDef, $query, null, null, $variables, $operationName)
                 ->toArray(true);
         } catch (\Throwable $e) {
-            throw new GqlException('Something went wrong when processing the GraphQL query.', 0, $e);
+            Craft::$app->getErrorHandler()->logException($e);
+
+            return $this->asJson([
+                'errors' => [
+                    [
+                        'message' => Craft::$app->getConfig()->getGeneral()->devMode ? $e->getMessage() : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
+                    ]
+                ],
+            ]);
         }
 
         return $this->asJson($result);
