@@ -13,36 +13,36 @@ use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
 /**
- * Class RequireLoginTokenParser
+ * Class RequireGuestTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.4.0
  */
 class RequireGuestTokenParser extends AbstractTokenParser
 {
-  // Public Methods
-  // =========================================================================
+    // Public Methods
+    // =========================================================================
 
-  /**
-   * @inheritdoc
-   */
-  public function parse(Token $token)
-  {
-    $lineno = $token->getLine();
-    /** @var Parser $parser */
-    $parser = $this->parser;
-    $stream = $parser->getStream();
+    /**
+     * @inheritdoc
+     */
+    public function parse(Token $token)
+    {
+        $lineno = $token->getLine();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
 
-    $stream->expect(Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
-    return new RequireGuestNode([], [], $lineno, $this->getTag());
-  }
+        return new RequireGuestNode([], [], $lineno, $this->getTag());
+    }
 
-  /**
-   * @inheritdoc
-   */
-  public function getTag()
-  {
-    return 'requireGuest';
-  }
+    /**
+     * @inheritdoc
+     */
+    public function getTag()
+    {
+        return 'requireGuest';
+    }
 }

@@ -194,6 +194,21 @@ class User extends \yii\web\User
     }
 
     /**
+     * Redirects the user browser away from a guest page.
+     *
+     * @return Response the redirection response
+     * @throws ForbiddenHttpException the "Access Denied" HTTP exception if redirect is acceptable
+     * not applicable.
+     */
+    public function guestRequired()
+    {
+        if ($this->returnUrl !== null && $this->checkRedirectAcceptable()) {
+            return Craft::$app->getResponse()->redirect($this->returnUrl);
+        }
+        throw new ForbiddenHttpException(Craft::t('Craft', 'Guest Required'));
+    }
+
+    /**
      * Returns how many seconds are left in the current user session.
      *
      * @return int The seconds left in the session, or -1 if their session will expire when their HTTP session ends.

@@ -269,9 +269,7 @@ abstract class Controller extends \yii\web\Controller
         $userSession = Craft::$app->getUser();
 
         if (!$userSession->getIsGuest()) {
-            return Craft::$app
-                ->getResponse()
-                ->redirect(Craft::$app->user->returnUrl);
+            $userSession->guestRequired();
             Craft::$app->end();
         }
     }

@@ -12,25 +12,25 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 /**
- * Class RequireLoginNode
+ * Class RequireGuestNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.4.0
  */
 class RequireGuestNode extends Node
 {
-  // Public Methods
-  // =========================================================================
+    // Public Methods
+    // =========================================================================
 
-  /**
-   * Compiles a RequireLoginNode into PHP.
-   *
-   * @param Compiler $compiler
-   */
-  public function compile(Compiler $compiler)
-  {
-    $compiler
-        ->addDebugInfo($this)
-        ->write(Craft::class . "::\$app->controller->requireGuest();\n");
-  }
+    /**
+     * Compiles a RequireGuestNode into PHP.
+     *
+     * @param Compiler $compiler
+     */
+    public function compile(Compiler $compiler)
+    {
+        $compiler
+            ->addDebugInfo($this)
+            ->write(Craft::class . "::\$app->controller->requireGuest();\n");
+    }
 }
