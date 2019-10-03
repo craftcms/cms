@@ -257,6 +257,9 @@ class Paginate extends BaseObject
     {
         $start = max(1, $this->currentPage - floor($max / 2));
         $end = min($this->totalPages, $start + $max - 1);
+        if ($end - $start < $max) {
+            $start = max(1, $end - $max + 1);
+        }
         return $this->getRangeUrls($start, $end);
     }
 }
