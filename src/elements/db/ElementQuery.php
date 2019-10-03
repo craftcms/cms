@@ -2293,9 +2293,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        if ($this->siblingOf) {
+        foreach (['siblingOf', 'prevSiblingOf', 'nextSiblingOf'] as $param) {
+            if (!$this->$param) {
+                continue;
+            }
+
             /** @var Element $siblingOf */
-            $siblingOf = $this->_normalizeStructureParamValue('siblingOf', $class);
+            $siblingOf = $this->_normalizeStructureParamValue($param, $class);
 
             $this->subQuery->andWhere([
                 'and',
@@ -2320,28 +2324,23 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['<', 'structureelements.rgt', $parent->rgt]
                 ]);
             }
-        }
 
-        if ($this->prevSiblingOf) {
-            /** @var Element $prevSiblingOf */
-            $prevSiblingOf = $this->_normalizeStructureParamValue('prevSiblingOf', $class);
-
-            $this->subQuery->andWhere([
-                'structureelements.level' => $prevSiblingOf->level,
-                'structureelements.rgt' => $prevSiblingOf->lft - 1,
-                'structureelements.root' => $prevSiblingOf->root
-            ]);
-        }
-
-        if ($this->nextSiblingOf) {
-            /** @var Element $nextSiblingOf */
-            $nextSiblingOf = $this->_normalizeStructureParamValue('nextSiblingOf', $class);
-
-            $this->subQuery->andWhere([
-                'structureelements.level' => $nextSiblingOf->level,
-                'structureelements.lft' => $nextSiblingOf->rgt + 1,
-                'structureelements.root' => $nextSiblingOf->root
-            ]);
+            switch ($param) {
+                case 'prevSiblingOf':
+                    $this->query->orderBy(['structureelements.lft' => SORT_DESC]);
+                    $this->subQuery
+                        ->andWhere(['<', 'structureelements.lft', $siblingOf->lft])
+                        ->orderBy(['structureelements.lft' => SORT_DESC])
+                        ->limit(1);
+                    break;
+                case 'nextSiblingOf':
+                    $this->query->orderBy(['structureelements.lft' => SORT_ASC]);
+                    $this->subQuery
+                        ->andWhere(['>', 'structureelements.lft', $siblingOf->lft])
+                        ->orderBy(['structureelements.lft' => SORT_ASC])
+                        ->limit(1);
+                    break;
+            }
         }
 
         if ($this->positionedBefore) {
@@ -2533,7 +2532,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyOrderByParams(Connection $db)
     {
-        if ($this->orderBy === null) {
+        if (
+            $this->orderBy === null ||
+            $this->orderBy === ['score' => SORT_ASC] ||
+            $this->orderBy === ['score' => SORT_DESC] ||
+            !empty($this->query->orderBy)
+        ) {
             return;
         }
 
@@ -2557,18 +2561,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->orderBy = ['num' => SORT_DESC];
             } else if ($this->_shouldJoinStructureData()) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
-            } else {
+            } else if (!empty($this->defaultOrderBy)) {
                 $this->orderBy = $this->defaultOrderBy;
+            } else {
+                return;
             }
-        }
-
-        if (
-            empty($this->orderBy) ||
-            $this->orderBy === ['score' => SORT_ASC] ||
-            $this->orderBy === ['score' => SORT_DESC] ||
-            !empty($this->query->orderBy)
-        ) {
-            return;
         }
 
         // Define the real column name mapping (e.g. `fieldHandle` => `field_fieldHandle`)

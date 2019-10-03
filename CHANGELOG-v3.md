@@ -9,6 +9,7 @@
 ### Fixed
 - Fixed a bug where the Edit User page would list a “Copy activation URL” action for publicly-registered users who already had a password set.
 - Fixed a bug where the list and structure icons were missing on element index pages for RTL languages. ([#5018](https://github.com/craftcms/cms/issues/5018))
+- Fixed a bug where `prevSiblingOf` and `nextSiblingOf` element query params weren’t working reliably. ([#4997](https://github.com/craftcms/cms/issues/4997))
 
 ## 3.3.6 - 2019-09-27
 
