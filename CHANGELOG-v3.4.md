@@ -2,6 +2,7 @@
 
 ### Added
 - Added the `verifyEmailPath` config setting.
+- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 
 ### Changed
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
