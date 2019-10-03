@@ -12,6 +12,7 @@
 - Fixed a bug where the `prevSiblingOf` and `nextSiblingOf` element query params weren’t working reliably. ([#4997](https://github.com/craftcms/cms/issues/4997))
 - Fixed a bug where the `descendantOf` element query param wasn’t working when previewing a draft or revision. ([#5021](https://github.com/craftcms/cms/issues/5021))
 - Fixed a PHP error that occurred when saving a Dropdown or Multi-select field with optgroups. ([#5014](https://github.com/craftcms/cms/issues/5014))
+- Fixed a bug where relational fields that were managing relations on a per-site basis would forget other sites’ relations when duplicated. ([#5038](https://github.com/craftcms/cms/issues/5038))
 
 ## 3.3.6 - 2019-09-27
 
