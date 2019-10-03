@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.7 - 2019-10-03
 
 ### Changed
 - When saving a user, email validation errors are now copied over to the `email` attribute from the `unverifiedEmail` attribute. ([#5019](https://github.com/craftcms/cms/issues/5019))
