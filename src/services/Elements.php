@@ -748,6 +748,7 @@ class Elements extends Component
                         continue;
                     }
 
+                    $siteElement->getFieldValues();
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->duplicateOf = $siteElement;

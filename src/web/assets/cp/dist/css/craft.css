@@ -59,9 +59,9 @@ body.rtl .text.ltr { text-align: right !important; direction: ltr !important; }
 
 [data-icon-after]:after { content: attr(data-icon-after); }
 
-body.rtl [data-icon=list]:before, body.rtl [data-icon-after=list]:after { content: attr(listrtl); }
+body.rtl [data-icon=list]:before, body.rtl [data-icon-after=list]:after { content: 'listrtl'; }
 
-body.rtl [data-icon=structure]:before, body.rtl [data-icon-after=structure]:after { content: attr(structurertl); }
+body.rtl [data-icon=structure]:before, body.rtl [data-icon-after=structure]:after { content: 'structurertl'; }
 
 .icon.secure:before { content: 'secure'; }
 

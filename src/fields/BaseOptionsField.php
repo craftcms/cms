@@ -118,7 +118,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         foreach ($this->options as &$option) {
             // Ignore optgroups
-            if (array_key_exists('optgrou', $option)) {
+            if (array_key_exists('optgroup', $option)) {
                 continue;
             }
 

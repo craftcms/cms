@@ -644,6 +644,7 @@ class User extends Element implements IdentityInterface
         $labels['lastName'] = Craft::t('app', 'Last Name');
         $labels['newPassword'] = Craft::t('app', 'New Password');
         $labels['password'] = Craft::t('app', 'Password');
+        $labels['unverifiedEmail'] = Craft::t('app', 'Email');
         $labels['username'] = Craft::t('app', 'Username');
         return $labels;
     }
@@ -1029,15 +1030,12 @@ class User extends Element implements IdentityInterface
      */
     public function getIsCurrent(): bool
     {
-        if ($this->id !== null) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
-
-            if ($currentUser) {
-                return ($this->id === $currentUser->id);
-            }
+        if (!$this->id) {
+            return false;
         }
 
-        return false;
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        return $currentUser && $currentUser->id == $this->id;
     }
 
     /**
