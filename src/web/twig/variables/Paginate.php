@@ -226,7 +226,7 @@ class Paginate extends BaseObject
      *
      * @param int $start
      * @param int $end
-     * @return array
+     * @return string[]
      */
     public function getRangeUrls(int $start, int $end): array
     {
@@ -246,58 +246,17 @@ class Paginate extends BaseObject
 
         return $urls;
     }
-    
+
     /**
-     * 
-     * Method to get Google like page URLs
-     * 
-     * @param int $plusMinus Amount of links above and below current page (if possible)
-     * @param bool $includeFirstLastPage If true, the first and the last page are also added to the returned Array of links
-     * @return array
+     * Returns a dynamic range of page URLs that surround (and include) the current page.
+     *
+     * @param int $max The maximum number of links to return
+     * @return string[]
      */
-    public function getDynamicRangeUrls($plusMinus = 4, $includeFirstLastPage = false)
+    public function getDynamicRangeUrls($max = 10)
     {
-        $total = $this->totalPages;
-        // not a single result, return empty array
-        if ($total == 0) {
-            return [];
-        }
-        $current = $this->currentPage;
-
-        // Calculate amount of links to return
-        $amount = 2 * $plusMinus + 1;
-        $amount = ($amount < $total) ? $total : $amount;
-
-        // Where to start / end with the Array of urls
-        $start = $current - $plusMinus;
-        $end = $current + $plusMinus;
-        if ($start < 1) { // if less than 1, add them to the upper end
-            $end += abs($start) + 1;
-            $startModified = true;
-        }
-        if ($end > $total) { // if more than total, add them to the lower end
-            if (!isset($startModified)) {
-                $start = $start - ($end - $total);
-            }
-            $end = $total;
-        }
-        // and finally check again if start goes below 1
-        $start = ($start < 1) ? 1 : $start;
-
-        // get the links
-        $links = $this->getRangeUrls($start, $end);
-
-        // if needed, add first/last page
-        if ($includeFirstLastPage) {
-            if (!isset($links[1])) {
-                $links[1] = $this->getFirstUrl();
-            }
-            if (!isset($links[$total])) {
-                $links[$total] = $this->getLastUrl();
-            }
-            // sort to get the first link at the beginning
-            ksort($links);
-        }
-        return $links;
+        $start = max(1, $this->currentPage - floor($max / 2));
+        $end = min($this->totalPages, $start + $max - 1);
+        return $this->getRangeUrls($start, $end);
     }
 }
