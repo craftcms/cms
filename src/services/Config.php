@@ -136,6 +136,24 @@ class Config extends Component
     }
 
     /**
+     * Add a config object, which can be retrieved through `getConfigSettings`
+     *
+     * @param string $category
+     * @param BaseObject $config
+     * @return BaseObject
+     * @throws InvalidArgumentException
+     */
+    public function appendConfig(string $category, BaseObject $config): BaseObject
+    {
+        if (isset($this->_configSettings[$category])) {
+            throw new InvalidArgumentException("Cannot override existing config `{$category}`");
+        }
+        $this->_configSettings[$category] = $config;
+
+        return $config;
+    }
+
+    /**
      * Returns the DB config settings.
      *
      * ---
