@@ -487,6 +487,14 @@ interface ElementInterface extends ComponentInterface
     public function getRoute();
 
     /**
+     * Returns whether this element represents the site homepage.
+     *
+     * @retern bool
+     * @since 3.3.6
+     */
+    public function getIsHomepage(): bool;
+
+    /**
      * Returns the element’s full URL.
      *
      * @return string|null

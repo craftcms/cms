@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.3.7 - 2019-10-03
+
+### Changed
+- When saving a user, email validation errors are now copied over to the `email` attribute from the `unverifiedEmail` attribute. ([#5019](https://github.com/craftcms/cms/issues/5019))
+- `craft\web\View::renderString()` and `renderObjectTemplate()` now have `$templateMode` arguments. ([#5020](https://github.com/craftcms/cms/issues/5020))
+
+### Fixed
+- Fixed a bug where the Edit User page would list a “Copy activation URL” action for publicly-registered users who already had a password set.
+- Fixed a bug where the list and structure icons were missing on element index pages for RTL languages. ([#5018](https://github.com/craftcms/cms/issues/5018))
+- Fixed a bug where the `prevSiblingOf` and `nextSiblingOf` element query params weren’t working reliably. ([#4997](https://github.com/craftcms/cms/issues/4997))
+- Fixed a bug where the `descendantOf` element query param wasn’t working when previewing a draft or revision. ([#5021](https://github.com/craftcms/cms/issues/5021))
+- Fixed a PHP error that occurred when saving a Dropdown or Multi-select field with optgroups. ([#5014](https://github.com/craftcms/cms/issues/5014))
+- Fixed a bug where relational fields that were managing relations on a per-site basis would forget other sites’ relations when duplicated. ([#5038](https://github.com/craftcms/cms/issues/5038))
+
+## 3.3.6 - 2019-09-27
+
+### Added
+- Added `craft\base\ElementInterface::getIsHomepage()`. ([#4993](https://github.com/craftcms/cms/issues/4993))
+- Added `craft\base\Element::HOMEPAGE_URI`.
+
+### Changed
+- Updated Garnish to 0.1.31.
+
+### Fixed
+- Fixed a bug where some HTML in the Control Panel was getting improperly encoded. ([#5002](https://github.com/craftcms/cms/issues/5002))
+- Fixed a bug where `craft\helper\UrlHelper` wasn’t encoding `+` and `&` characters in query param values.
+- Fixed an error where GraphQL would sometimes not return a proper error message. ([#4999](https://github.com/craftcms/cms/issues/4999))
+- Fixed a bug where HUDs could be positioned incorrectly when first opened. ([#5004](https://github.com/craftcms/cms/issues/5004))
+- Fixed a bug where HUD tip images could be pointing the wrong way for RTL languages.
+
 ## 3.3.5 - 2019-09-25
 
 ### Added

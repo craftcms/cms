@@ -307,7 +307,7 @@ class Elements extends Component
         }
 
         if ($uri === '') {
-            $uri = '__home__';
+            $uri = Element::HOMEPAGE_URI;
         }
 
         if ($siteId === null) {
@@ -748,6 +748,7 @@ class Elements extends Component
                         continue;
                     }
 
+                    $siteElement->getFieldValues();
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->duplicateOf = $siteElement;

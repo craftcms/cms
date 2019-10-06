@@ -59,9 +59,9 @@ body.rtl .text.ltr { text-align: right !important; direction: ltr !important; }
 
 [data-icon-after]:after { content: attr(data-icon-after); }
 
-body.rtl [data-icon=list]:before, body.rtl [data-icon-after=list]:after { content: attr(listrtl); }
+body.rtl [data-icon=list]:before, body.rtl [data-icon-after=list]:after { content: 'listrtl'; }
 
-body.rtl [data-icon=structure]:before, body.rtl [data-icon-after=structure]:after { content: attr(structurertl); }
+body.rtl [data-icon=structure]:before, body.rtl [data-icon-after=structure]:after { content: 'structurertl'; }
 
 .icon.secure:before { content: 'secure'; }
 
@@ -1098,9 +1098,7 @@ body.rtl .modal .resizehandle { background-image: url(../images/resizehandle_rtl
 .hud .tip { position: absolute; z-index: 101; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
-.hud .tip-right { width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
-body.ltr .hud .tip-right { right: -15px; }
-body.rtl .hud .tip-right { left: -15px; }
+.hud .tip-right { right: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 
 .hud .hud-header, .hud .hud-footer { padding: 7px 24px; }

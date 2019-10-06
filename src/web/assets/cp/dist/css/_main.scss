@@ -107,12 +107,12 @@ a.fieldtoggle:before,
 
 body.rtl [data-icon=list]:before,
 body.rtl [data-icon-after=list]:after {
-  content: attr(listrtl);
+  content: 'listrtl';
 }
 
 body.rtl [data-icon=structure]:before,
 body.rtl [data-icon-after=structure]:after {
-  content: attr(structurertl);
+  content: 'structurertl';
 }
 
 .icon.secure:before {
@@ -2995,7 +2995,7 @@ ul.tree,
   }
 
   .tip-right {
-    @include right(-15px);
+    right: -15px;
     width: 15px;
     height: 30px;
     background-image: url(../images/hudtip_right.png);

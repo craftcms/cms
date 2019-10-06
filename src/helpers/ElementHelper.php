@@ -58,7 +58,7 @@ class ElementHelper
     public static function createSlug(string $str): string
     {
         // Special case for the homepage
-        if ($str === '__home__') {
+        if ($str === Element::HOMEPAGE_URI) {
             return $str;
         }
 
