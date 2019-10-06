@@ -1500,5 +1500,7 @@ return [
     'Delete them' => 'حذفشان کن',
     'Your connection is insecure' => 'ارتباط شما ناامن است',
     'Keep them' => 'نگهشان دار',
-    'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}'
+    'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}',
+    'Single'=> 'مجزا',
+    'Channel'=> 'کانال'
 ];
