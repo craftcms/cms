@@ -263,6 +263,8 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * Redirects the user to the account template if they are logged in.
+     *
+     * @since 3.4.0
      */
     public function requireGuest()
     {
