@@ -197,15 +197,15 @@ class User extends \yii\web\User
      * Redirects the user browser away from a guest page.
      *
      * @return Response the redirection response
-     * @throws ForbiddenHttpException the "Access Denied" HTTP exception if redirect is acceptable
-     * not applicable.
+     * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
+     * @since 3.4.0
      */
     public function guestRequired()
     {
-        if ($this->returnUrl !== null && $this->checkRedirectAcceptable()) {
-            return Craft::$app->getResponse()->redirect($this->returnUrl);
+        if (!$this->checkRedirectAcceptable()) {
+            throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
         }
-        throw new ForbiddenHttpException(Craft::t('Craft', 'Guest Required'));
+        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
     }
 
     /**
