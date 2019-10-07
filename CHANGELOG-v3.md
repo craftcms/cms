@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\web\Request::getNormalizedContentType()`.
+
 ### Changed
 - Eliminated a `SHOW TABLES` SQL query that was getting executed on every request.
+- Craft no longer routes requests based on `action` params in the request body, if the request’s content type is `application/json`.
 - Updated Twig to 2.12.
 
 ## 3.3.7 - 2019-10-03
