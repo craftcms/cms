@@ -4,6 +4,7 @@
 
 ### Changed
 - Eliminated a `SHOW TABLES` SQL query that was getting executed on every request.
+- Updated Twig to 2.12.
 
 ## 3.3.7 - 2019-10-03
 
