@@ -991,10 +991,10 @@ class Request extends \yii\web\Request
     /**
      * Returns the normalized content type.
      *
-     * @return string
+     * @return string|null
      * @since 3.3.8
      */
-    public function getNormalizedContentType(): string
+    public function getNormalizedContentType()
     {
         $rawContentType = $this->getContentType();
         if (($pos = strpos($rawContentType, ';')) !== false) {
