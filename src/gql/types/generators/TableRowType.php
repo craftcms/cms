@@ -11,6 +11,7 @@ use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\TableRow;
 use GraphQL\Type\Definition\Type;
@@ -38,6 +39,8 @@ class TableRowType implements GeneratorInterface
             $contentFields[$columnKey] = $cellType;
             $contentFields[$columnDefinition['handle']] = $cellType;
         }
+
+        $contentFields = TypeManager::prepareFieldDefinitions($contentFields, $typeName);
 
         // Generate a type for each entry type
         $tableRowType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([

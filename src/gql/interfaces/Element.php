@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
 use GraphQL\Type\Definition\Type;
@@ -62,7 +63,7 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
@@ -118,7 +119,7 @@ class Element extends InterfaceType
                 'type' => DateTime::getType(),
                 'description' => 'The date the element was last updated.'
             ],
-        ]);
+        ]), self::getName());
     }
 
     /**

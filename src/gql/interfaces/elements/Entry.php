@@ -13,6 +13,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
@@ -72,7 +73,7 @@ class Entry extends Structure
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
@@ -114,7 +115,7 @@ class Entry extends Structure
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.'
             ]
-        ]);
+        ]), self::getName());
     }
 
     /**

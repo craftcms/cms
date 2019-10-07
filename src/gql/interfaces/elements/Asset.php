@@ -12,6 +12,7 @@ use craft\gql\arguments\Transform;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use GraphQL\Type\Definition\InterfaceType;
@@ -71,7 +72,7 @@ class Asset extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
@@ -149,6 +150,6 @@ class Asset extends Element
                 'description' => 'The date the asset file was last modified.'
             ],
 
-        ]);
+        ]), self::getName());
     }
 }

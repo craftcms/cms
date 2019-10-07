@@ -146,13 +146,13 @@ class GraphqlController extends Controller
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
-            return $this->asJson([
+            $result = [
                 'errors' => [
                     [
                         'message' => Craft::$app->getConfig()->getGeneral()->devMode ? $e->getMessage() : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
                     ]
                 ],
-            ]);
+            ];
         }
 
         return $this->asJson($result);

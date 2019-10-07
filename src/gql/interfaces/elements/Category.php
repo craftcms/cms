@@ -13,6 +13,7 @@ use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -70,7 +71,7 @@ class Category extends Structure
      * @inheritdoc
      */
     public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
@@ -92,6 +93,6 @@ class Category extends Structure
                 'type' => CategoryInterface::getType(),
                 'description' => 'The category’s parent.'
             ],
-        ]);
+        ]), self::getName());
     }
 }
