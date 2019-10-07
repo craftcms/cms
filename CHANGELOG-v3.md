@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Eliminated a `SHOW TABLES` SQL query that was getting executed on every request.
+
 ## 3.3.7 - 2019-10-03
 
 ### Changed
