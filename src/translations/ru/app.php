@@ -1499,5 +1499,7 @@ return [
     'View category group - {categoryGroup}' => 'Просмотреть группу категорий - {categoryGroup}',
     'Delete them' => 'Удалить',
     'Keep them' => 'Сохранить',
-    'View tag group - {tagGroup}' => 'Просмотреть группу тегов - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Просмотреть группу тегов - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
