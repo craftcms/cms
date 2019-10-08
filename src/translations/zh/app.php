@@ -1499,5 +1499,7 @@ return [
     'View category group - {categoryGroup}' => '查看类别组 - {categoryGroup}',
     'Delete them' => '删除',
     'Keep them' => '保留',
-    'View tag group - {tagGroup}' => '查看标签组 - {tagGroup}'
+    'View tag group - {tagGroup}' => '查看标签组 - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
