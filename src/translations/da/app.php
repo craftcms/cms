@@ -1496,5 +1496,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'View category group - {categoryGroup}' => 'Vis kategorigruppe - {categoryGroup}',
     'Delete them' => 'Slet dem',
     'Keep them' => 'Behold dem',
-    'View tag group - {tagGroup}' => 'Vis tag-gruppe - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Vis tag-gruppe - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
