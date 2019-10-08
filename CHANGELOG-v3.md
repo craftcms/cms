@@ -8,6 +8,7 @@
 ### Changed
 - Eliminated a `SHOW TABLES` SQL query that was getting executed on every request.
 - Craft no longer routes requests based on `action` params in the request body, if the request’s content type is `application/json`.
+- Added support for the `text/vtt` MIME type. ([#5052](https://github.com/craftcms/cms/issues/5052))
 - Updated Twig to 2.12.
 
 ### Fixed
