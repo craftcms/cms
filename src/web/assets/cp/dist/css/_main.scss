@@ -3374,15 +3374,10 @@ ul.tree,
     display: inline-block;
     margin-top: -1px;
     width: 10px;
+    @include margin-right(10px);
     text-align: center;
     font-size: 14px;
     color: $lightTextColor;
-    body.ltr & {
-      margin-right: 10px;
-    }
-    body.rtl & {
-      margin-left: 10px;
-    }
   }
 }
 

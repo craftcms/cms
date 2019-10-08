@@ -1206,7 +1206,9 @@ body.ltr .menu ul li a .shortcut { margin-left: 14px; }
 body.rtl .menu ul li a .shortcut { margin-right: 14px; }
 .menu hr { margin: 5px -14px; }
 
-.menubtn span.icon, .menu span.icon { display: inline-block; margin-top: -1px; width: 10px; margin-right: 10px; text-align: center; font-size: 14px; color: #b9bfc6; }
+.menubtn span.icon, .menu span.icon { display: inline-block; margin-top: -1px; width: 10px; text-align: center; font-size: 14px; color: #b9bfc6; }
+body.ltr .menubtn span.icon, body.ltr .menu span.icon { margin-right: 10px; }
+body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
 .menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):hover .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { color: #29323d; background-color: #d5d8dd; }
 
