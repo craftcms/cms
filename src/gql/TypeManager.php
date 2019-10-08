@@ -33,7 +33,7 @@ class TypeManager extends Component
      *
      * Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, function(DefineGqlTypeFields $e) {
      *     // Remove all ids, to enforce use of uids
-     *     unset ($event->fields['uid'], $event->fields['id']);
+     *     unset ($event->fields['id']);
      *
      *     // Add author email to all entries
      *     if ($event->typeName == 'EntryInterface') {
