@@ -1495,5 +1495,7 @@ Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'View category group - {categoryGroup}' => 'Wyświetl grupę kategorii — {categoryGroup}',
     'Delete them' => 'Usuń je',
     'Keep them' => 'Zachowaj je',
-    'View tag group - {tagGroup}' => 'Wyświetl grupę tagów — {tagGroup}'
+    'View tag group - {tagGroup}' => 'Wyświetl grupę tagów — {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
