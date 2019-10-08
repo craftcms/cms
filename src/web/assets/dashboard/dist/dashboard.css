@@ -50,7 +50,7 @@ body.rtl .widget > .front > .pane > .icon.settings { margin-right: 7px; }
 .widget > .back > .pane > .errors { margin-top: 24px; }
 
 /* Recent Entries widget */
-.recententries .body { overflow: hidden; }
+.craft\\widgets\\recententries .body .table { table-layout: fixed; }
 
 /* New Users Widget */
 .craft\\widgets\\newusers .chart { height: 200px; margin: 0; }

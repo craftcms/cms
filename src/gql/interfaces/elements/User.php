@@ -47,7 +47,7 @@ class User extends Element
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all users.',
             'resolveType' => function (UserElement $value) {
-                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+                return $value->getGqlTypeName();
             }
         ]));
 
