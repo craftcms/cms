@@ -3374,7 +3374,7 @@ ul.tree,
     display: inline-block;
     margin-top: -1px;
     width: 10px;
-    margin-right: 10px;
+    @include margin-right(10px);
     text-align: center;
     font-size: 14px;
     color: $lightTextColor;
