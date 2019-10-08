@@ -1499,5 +1499,7 @@ Se você não solicitou este e-mail, simplesmente ignore.',
     'View category group - {categoryGroup}' => 'Ver grupo de categoria - {categoryGroup}',
     'Delete them' => 'Apagar',
     'Keep them' => 'Manter',
-    'View tag group - {tagGroup}' => 'Ver grupo de tag - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Ver grupo de tag - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
