@@ -1499,5 +1499,7 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'View category group - {categoryGroup}' => 'Categoriegroep weergeven - {categoryGroup}',
     'Delete them' => 'Verwijderen',
     'Keep them' => 'Behouden',
-    'View tag group - {tagGroup}' => 'Taggroep weergeven - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Taggroep weergeven - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
