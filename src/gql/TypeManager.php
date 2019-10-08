@@ -8,7 +8,7 @@
 namespace craft\gql;
 
 use craft\base\Component;
-use craft\events\DefineGqlTypeFields;
+use craft\events\DefineGqlTypeFieldsEvent;
 
 /**
  * Class TypeManager
@@ -91,7 +91,7 @@ class TypeManager extends Component
     private function _triggerEvent(array $fields, string $typeName)
     {
         if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_TYPE_FIELDS)) {
-            $event = new DefineGqlTypeFields([
+            $event = new DefineGqlTypeFieldsEvent([
                'fields' => $fields,
                'typeName' => $typeName,
             ]);

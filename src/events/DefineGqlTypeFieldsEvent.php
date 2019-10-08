@@ -15,7 +15,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4
  */
-class DefineGqlTypeFields extends Event
+class DefineGqlTypeFieldsEvent extends Event
 {
     // Properties
     // =========================================================================
