@@ -1499,5 +1499,7 @@ Si no estabas esperando este correo electrónico, ignóralo.',
     'View category group - {categoryGroup}' => 'Ver grupo de categorías - {categoryGroup}',
     'Delete them' => 'Eliminarlos',
     'Keep them' => 'Conservarlos',
-    'View tag group - {tagGroup}' => 'Ver grupo de etiquetas - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Ver grupo de etiquetas - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
