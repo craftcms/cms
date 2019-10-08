@@ -1495,5 +1495,7 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'View category group - {categoryGroup}' => 'Kategori grubunu göster - {categoryGroup}',
     'Delete them' => 'Öğeleri sil',
     'Keep them' => 'Öğeleri tut',
-    'View tag group - {tagGroup}' => 'Etiket grubunu göster - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Etiket grubunu göster - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
