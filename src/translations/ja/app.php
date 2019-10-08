@@ -1499,5 +1499,7 @@ return [
     'View category group - {categoryGroup}' => 'カテゴリグループを表示 - {categoryGroup}',
     'Delete them' => 'これらを削除',
     'Keep them' => 'これらを保持',
-    'View tag group - {tagGroup}' => 'タググループを表示 - {tagGroup}'
+    'View tag group - {tagGroup}' => 'タググループを表示 - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
