@@ -1499,5 +1499,7 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'View category group - {categoryGroup}' => 'Afficher le groupe de catégories « {categoryGroup} »',
     'Delete them' => 'Supprimer',
     'Keep them' => 'Conserver',
-    'View tag group - {tagGroup}' => 'Afficher le groupe d’étiquettes « {tagGroup} »'
+    'View tag group - {tagGroup}' => 'Afficher le groupe d’étiquettes « {tagGroup} »',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
