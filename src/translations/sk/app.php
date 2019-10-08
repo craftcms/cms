@@ -1499,5 +1499,7 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'View category group - {categoryGroup}' => 'Zobraziť skupinu kategórií – {categoryGroup}',
     'Delete them' => 'Odstrániť ich',
     'Keep them' => 'Ponechať ich',
-    'View tag group - {tagGroup}' => 'Zobraziť skupinu značiek – {tagGroup}'
+    'View tag group - {tagGroup}' => 'Zobraziť skupinu značiek – {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
