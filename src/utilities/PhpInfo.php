@@ -62,9 +62,26 @@ class PhpInfo extends Utility
      */
     private static function _phpInfo(): array
     {
+        // Remove any arrays from $_SERVER to get around an "Array to string conversion" error
+        $serverVals = [];
+
+        if (isset($_SERVER)) {
+            foreach ($_SERVER as $key => $value) {
+                if (is_array($value)) {
+                    $serverVals[$key] = $value;
+                    $_SERVER[$key] = 'Array';
+                }
+            }
+        }
+
         ob_start();
         phpinfo(INFO_ALL);
         $phpInfoStr = ob_get_clean();
+
+        // Put the original $_SERVER values back
+        foreach ($serverVals as $key => $value) {
+            $_SERVER[$key] = $value;
+        }
 
         $replacePairs = [
             '#^.*<body>(.*)</body>.*$#ms' => '$1',
