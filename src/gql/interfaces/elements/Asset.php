@@ -48,7 +48,7 @@ class Asset extends Element
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all assets.',
             'resolveType' => function (AssetElement $value) {
-                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+                return $value->getGqlTypeName();
             }
         ]));
 

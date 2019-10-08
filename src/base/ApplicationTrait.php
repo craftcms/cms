@@ -48,6 +48,7 @@ use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\caching\Cache;
+use yii\db\Exception as DbException;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -247,15 +248,19 @@ trait ApplicationTrait
      */
     public function getIsInstalled(): bool
     {
-        /** @var WebApplication|ConsoleApplication $this */
         if ($this->_isInstalled !== null) {
             return $this->_isInstalled;
         }
 
-        return $this->_isInstalled = (
-            $this->getIsDbConnectionValid() &&
-            $this->getDb()->tableExists(Table::INFO, false)
-        );
+        try {
+            $this->getInfo(true);
+        } catch (DbException $e) {
+            if ($e->getCode() === 42) {
+                return $this->_isInstalled = false;
+            }
+            throw $e;
+        }
+        return $this->_isInstalled = true;
     }
 
     /**
@@ -544,23 +549,28 @@ trait ApplicationTrait
     /**
      * Returns the info model, or just a particular attribute.
      *
+     * @param $throwException Whether an exception should be thrown if the `info` table doesn't exist
      * @return Info
+     * @throws DbException if the `info` table doesn’t exist yet and `$throwException` is `true`
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo(): Info
+    public function getInfo($throwException = false): Info
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_info !== null) {
             return $this->_info;
         }
 
-        if (!$this->getIsInstalled()) {
-            return new Info();
+        try {
+            $row = (new Query())
+                ->from([Table::INFO])
+                ->one();
+        } catch (DbException $e) {
+            if ($throwException) {
+                throw $e;
+            }
+            return $this->_info = new Info();
         }
-
-        $row = (new Query())
-            ->from([Table::INFO])
-            ->one();
 
         if (!$row) {
             $tableName = $this->getDb()->getSchema()->getRawTableName(Table::INFO);

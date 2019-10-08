@@ -176,17 +176,6 @@ class Gql extends Component
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
-            // For some reason, matrix types need to be explicitly defined, too,
-            // otherwise it will complain on querying matrix blocks
-            $typeGeneratorClass = MatrixBlockInterface::getTypeGenerator();
-
-            foreach ($typeGeneratorClass::generateTypes() as $type) {
-                $schemaConfig['types'][] = $type;
-            }
-
-            // TODO fire an event to allow modifying the $schemConfig.
-            // At least one use-case being adding workaround like for Matrix above.
-
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {

@@ -154,7 +154,8 @@ class EntryRevisionsController extends BaseEntriesController
         // Are we creating a new entry too?
         if (!$draftId && !$entryId) {
             $entry = new Entry();
-            $entry->sectionId = $request->getBodyParam('entryId');
+            $entry->siteId = $siteId;
+            $entry->sectionId = $request->getBodyParam('sectionId');
             $this->_setDraftAttributesFromPost($entry);
             $this->enforceEditEntryPermissions($entry);
             $entry->setFieldValuesFromRequest($fieldsLocation);

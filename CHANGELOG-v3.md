@@ -2,11 +2,32 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\web\Request::getNormalizedContentType()`.
+
 ### Changed
+- Eliminated a `SHOW TABLES` SQL query that was getting executed on every request.
+- Craft no longer routes requests based on `action` params in the request body, if the request’s content type is `application/json`.
+- Updated Twig to 2.12.
+
+### Fixed
+- Fixed a SQL error that could occur when deleting an entry or category with three or more nested levels of elements. ([#3456](https://github.com/craftcms/cms/issues/3456))
+- Fixed a bug where deleting an entry or category with nested elements could leave the structure in a jumbled state.
+- Fixed a bug where the `resave/matrix-blocks` command would wittingly resave Matrix blocks even if they hadn’t been loaded with their content, resulting in lost content. ([#5030](https://github.com/craftcms/cms/issues/5030))
+
+## 3.3.7 - 2019-10-03
+
+### Changed
+- When saving a user, email validation errors are now copied over to the `email` attribute from the `unverifiedEmail` attribute. ([#5019](https://github.com/craftcms/cms/issues/5019))
 - `craft\web\View::renderString()` and `renderObjectTemplate()` now have `$templateMode` arguments. ([#5020](https://github.com/craftcms/cms/issues/5020))
 
 ### Fixed
 - Fixed a bug where the Edit User page would list a “Copy activation URL” action for publicly-registered users who already had a password set.
+- Fixed a bug where the list and structure icons were missing on element index pages for RTL languages. ([#5018](https://github.com/craftcms/cms/issues/5018))
+- Fixed a bug where the `prevSiblingOf` and `nextSiblingOf` element query params weren’t working reliably. ([#4997](https://github.com/craftcms/cms/issues/4997))
+- Fixed a bug where the `descendantOf` element query param wasn’t working when previewing a draft or revision. ([#5021](https://github.com/craftcms/cms/issues/5021))
+- Fixed a PHP error that occurred when saving a Dropdown or Multi-select field with optgroups. ([#5014](https://github.com/craftcms/cms/issues/5014))
+- Fixed a bug where relational fields that were managing relations on a per-site basis would forget other sites’ relations when duplicated. ([#5038](https://github.com/craftcms/cms/issues/5038))
 
 ## 3.3.6 - 2019-09-27
 

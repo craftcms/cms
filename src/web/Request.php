@@ -1007,6 +1007,22 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the normalized content type.
+     *
+     * @return string|null
+     * @since 3.3.8
+     */
+    public function getNormalizedContentType()
+    {
+        $rawContentType = $this->getContentType();
+        if (($pos = strpos($rawContentType, ';')) !== false) {
+            // e.g. text/html; charset=UTF-8
+            return substr($rawContentType, 0, $pos);
+        }
+        return $rawContentType;
+    }
+
+    /**
      * @inheritdoc
      * @internal Based on \yii\web\Request::resolve(), but we don't modify $_GET/$this->_queryParams in the process.
      */
@@ -1266,7 +1282,12 @@ class Request extends \yii\web\Request
             }
 
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
-            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
+            if ($this->getNormalizedContentType() !== 'application/json') {
+                $actionParam = $this->getParam('action');
+            } else {
+                $actionParam = $this->getQueryParam('action');
+            }
+            $hasActionParam = $actionParam !== null;
             $hasSpecialPath = in_array($this->_path, [
                 $loginPath,
                 $logoutPath,

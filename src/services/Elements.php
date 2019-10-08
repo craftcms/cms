@@ -527,18 +527,24 @@ class Elements extends Component
                 }
 
                 $e = null;
+                try {
+                    // Make sure the element was queried with its content
+                    if ($element::hasContent() && $element->contentId === null) {
+                        throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it wasn’t loaded with its content.");
+                    }
 
-                // Make sure this isn't a revision
-                if ($skipRevisions) {
-                    try {
-                        $root = ElementHelper::rootElement($element);
-                    } catch (\Throwable $rootException) {
-                        $root = null;
-                        $e = new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
+                    // Make sure this isn't a revision
+                    if ($skipRevisions) {
+                        try {
+                            $root = ElementHelper::rootElement($element);
+                        } catch (\Throwable $rootException) {
+                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
+                        }
+                        if ($root->getIsRevision()) {
+                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                        }
                     }
-                    if ($root && $root->getIsRevision()) {
-                        $e = new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
-                    }
+                } catch (InvalidElementException $e) {
                 }
 
                 if ($e === null) {
@@ -748,6 +754,7 @@ class Elements extends Component
                         continue;
                     }
 
+                    $siteElement->getFieldValues();
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->duplicateOf = $siteElement;
@@ -1151,20 +1158,13 @@ class Elements extends Component
         $transaction = $db->beginTransaction();
         try {
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
-            /** @var StructureElementRecord[] $records */
-            $records = StructureElementRecord::findAll([
-                'elementId' => $element->id
-            ]);
-
-            foreach ($records as $record) {
+            while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
                 // If this element still has any children, move them up before the one getting deleted.
-                /** @var StructureElementRecord[] $children */
-                $children = $record->children()->all();
-
-                foreach ($children as $child) {
+                while (($child = $record->children(1)->one()) !== null) {
                     $child->insertBefore($record);
+                    // Re-fetch the record since its lft and rgt attributes just changed
+                    $record = StructureElementRecord::findOne($record->id);
                 }
-
                 // Delete this element's node
                 $record->deleteWithChildren();
             }

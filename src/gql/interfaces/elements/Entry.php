@@ -50,7 +50,7 @@ class Entry extends Structure
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
             'resolveType' => function (EntryElement $value) {
-                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+                return $value->getGqlTypeName();
             }
         ]));
 
