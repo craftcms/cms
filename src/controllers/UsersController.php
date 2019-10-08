@@ -28,6 +28,7 @@ use craft\helpers\User as UserHelper;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
+use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
@@ -297,7 +298,7 @@ class UsersController extends Controller
 
         // Redirect to the login page if this is a CP request
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->redirect('login');
+            return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
         return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
@@ -420,7 +421,7 @@ class UsersController extends Controller
             Craft::$app->getUser()->sendUsernameCookie($user);
 
             // Send them to the set password template.
-            return $this->_renderSetPasswordTemplate($user, [
+            return $this->_renderSetPasswordTemplate([
                 'code' => $code,
                 'id' => $uid,
                 'newUser' => $user->password ? false : true,
@@ -459,7 +460,7 @@ class UsersController extends Controller
             // Can they access the CP?
             if ($user->can('accessCp')) {
                 // Send them to the CP login page
-                $url = UrlHelper::cpUrl('login');
+                $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
             } else {
                 // Send them to the 'setPasswordSuccessPath'.
                 $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
@@ -473,7 +474,7 @@ class UsersController extends Controller
 
         $errors = $user->getErrors('newPassword');
 
-        return $this->_renderSetPasswordTemplate($user, [
+        return $this->_renderSetPasswordTemplate([
             'errors' => $errors,
             'code' => $code,
             'id' => $uid,
@@ -494,7 +495,7 @@ class UsersController extends Controller
 
         /** @var User $user */
         list($user) = $info;
-        $userIsPending = $user->status == User::STATUS_PENDING;
+        $userIsPending = $user->getStatus() === User::STATUS_PENDING;
 
         if (!Craft::$app->getUsers()->verifyEmailForUser($user)) {
             return $this->renderTemplate('_special/emailtaken', [
@@ -566,46 +567,18 @@ class UsersController extends Controller
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
-                if ($userId == 'current') {
-                    if ($user) {
-                        /** @var User $user */
-                        // Make sure it's actually the current user
-                        if (!$user->getIsCurrent()) {
-                            throw new BadRequestHttpException('Not the current user');
-                        }
-                    } else {
-                        // Get the current user
-                        $user = $userSession->getIdentity();
-                    }
-                } else {
-                    if ($user) {
-                        // Make sure they have the right ID
-                        /** @var User $user */
-                        if ($user->id != $userId) {
-                            throw new BadRequestHttpException('Not the right user ID');
-                        }
-                    } else {
-                        // Get the user by its ID
-                        /** @var User|null $user */
-                        $user = User::find()
-                            ->id($userId)
-                            ->anyStatus()
-                            ->addSelect('users.passwordResetRequired')
-                            ->one();
+                $user = User::find()
+                    ->addSelect(['users.password', 'users.passwordResetRequired'])
+                    ->id($userId === 'current' ? $userSession->getId() : $userId)
+                    ->anyStatus()
+                    ->one();
+            } else if ($edition === Craft::Pro) {
+                // Registering a new user
+                $user = new User();
+            }
 
-                        if (!$user) {
-                            throw new NotFoundHttpException('User not found');
-                        }
-                    }
-                }
-            } else {
-                if ($edition === Craft::Pro) {
-                    // Registering a new user
-                    $user = new User();
-                } else {
-                    // Nada.
-                    throw new NotFoundHttpException('User not found');
-                }
+            if (!$user) {
+                throw new NotFoundHttpException('User not found');
             }
         }
 
@@ -936,7 +909,7 @@ class UsersController extends Controller
 
         $userId = $request->getBodyParam('userId');
         $isNewUser = !$userId;
-        $thisIsPublicRegistration = false;
+        $isPublicRegistration = false;
 
         // Are we editing an existing user?
         if ($userId) {
@@ -970,7 +943,7 @@ class UsersController extends Controller
                     throw new ForbiddenHttpException('Public registration is not allowed');
                 }
 
-                $thisIsPublicRegistration = true;
+                $isPublicRegistration = true;
             }
 
             $user = new User();
@@ -1015,7 +988,7 @@ class UsersController extends Controller
         }
 
         // Are they allowed to set a new password?
-        if ($thisIsPublicRegistration) {
+        if ($isPublicRegistration) {
             if (!Craft::$app->getConfig()->getGeneral()->deferPublicRegistrationPassword) {
                 $user->newPassword = $request->getBodyParam('password', '');
             }
@@ -1084,7 +1057,7 @@ class UsersController extends Controller
         }
 
         // Don't validate required custom fields if it's public registration
-        if (!$thisIsPublicRegistration) {
+        if (!$isPublicRegistration) {
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
@@ -1095,7 +1068,7 @@ class UsersController extends Controller
         ) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
-            if ($thisIsPublicRegistration) {
+            if ($isPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->addErrors(['password' => $user->getErrors('newPassword')]);
                 $user->clearErrors('newPassword');
@@ -1159,7 +1132,7 @@ class UsersController extends Controller
         $this->_processUserPhoto($user);
 
         // If this is public registration, assign the user to the default user group
-        if ($thisIsPublicRegistration) {
+        if ($isPublicRegistration) {
             // Assign them to the default user group
             Craft::$app->getUsers()->assignUserToDefaultGroup($user);
         } else {
@@ -1191,7 +1164,7 @@ class UsersController extends Controller
         }
 
         // Is this public registration, and was the user going to be activated automatically?
-        $publicActivation = $thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE;
+        $publicActivation = $isPublicRegistration && $user->getStatus() === User::STATUS_ACTIVE;
 
         if ($publicActivation) {
             // Maybe automatically log them in
@@ -1205,7 +1178,7 @@ class UsersController extends Controller
             ]);
         }
 
-        if ($thisIsPublicRegistration) {
+        if ($isPublicRegistration) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
         } else {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
@@ -1681,19 +1654,16 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
      * @param array $variables
      * @return Response
      */
-    private function _renderSetPasswordTemplate(User $user, array $variables): Response
+    private function _renderSetPasswordTemplate(array $variables): Response
     {
         $view = $this->getView();
 
-        // If the user doesn't have CP access, see if a custom Set Password template exists
-        if (!$user->can('accessCp')) {
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+        // If this is a site request, see if a custom Set Password template exists
+        if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $templatePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
-
             if ($view->doesTemplateExist($templatePath)) {
                 return $this->renderTemplate($templatePath, $variables);
             }

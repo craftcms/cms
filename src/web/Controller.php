@@ -262,6 +262,21 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Redirects the user to the account template if they are logged in.
+     *
+     * @since 3.4.0
+     */
+    public function requireGuest()
+    {
+        $userSession = Craft::$app->getUser();
+
+        if (!$userSession->getIsGuest()) {
+            $userSession->guestRequired();
+            Craft::$app->end();
+        }
+    }
+
+    /**
      * Throws a 403 error if the current user is not an admin.
      *
      * @param bool $requireAdminChanges Whether the [[\craft\config\GeneralConfig::$allowAdminChanges|`allowAdminChanges`]]

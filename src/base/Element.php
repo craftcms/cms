@@ -1442,20 +1442,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPreviewTargets(): array
     {
-        $previewTargets = [];
-
-        if ($this->uri) {
-            $previewTargets[] = [
-                'label' => Craft::t('app', 'Primary {type} page', [
-                    'type' => StringHelper::toLowerCase(static::displayName()),
-                ]),
-                'url' => $this->getIsHomepage() ? '' : $this->uri
-            ];
-        }
-
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $previewTargets = array_merge($previewTargets, $this->previewTargets());
-
+            $previewTargets = $this->previewTargets();
             // Give plugins a chance to modify them
             if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
                 $event = new RegisterPreviewTargetsEvent([
@@ -1464,20 +1452,35 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
                 $previewTargets = $event->previewTargets;
             }
+        } else if ($url = $this->getUrl()) {
+            $previewTargets = [
+                [
+                    'label' => Craft::t('app', 'Primary {type} page', [
+                        'type' => StringHelper::toLowerCase(static::displayName()),
+                    ]),
+                    'url' => $url,
+                ],
+            ];
         }
 
-        // Normalize the URLs
+        // Normalize the targets
+        $normalized = [];
         $view = Craft::$app->getView();
-        foreach ($previewTargets as &$previewTarget) {
-            // urlFormat => url
+
+        foreach ($previewTargets as $previewTarget) {
             if (isset($previewTarget['urlFormat'])) {
-                $previewTarget['url'] = $view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this);
-                unset($previewTarget['urlFormat']);
+                $url = trim($view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this));
+                if ($url !== '') {
+                    $previewTarget['url'] = $url;
+                    unset($previewTarget['urlFormat']);
+                }
             }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, null, $this->siteId);
+            if (isset($previewTarget['url'])) {
+                $normalized[] = $previewTarget;
+            }
         }
 
-        return $previewTargets;
+        return $normalized;
     }
 
     /**
