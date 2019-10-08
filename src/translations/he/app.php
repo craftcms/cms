@@ -1499,5 +1499,7 @@ return [
     'View category group - {categoryGroup}' => 'הצג קבוצת קטגוריות - {categoryGroup}',
     'Delete them' => 'מחק אותם',
     'Keep them' => 'שמור אותם',
-    'View tag group - {tagGroup}' => 'הצג קבוצת תגיות - {tagGroup}'
+    'View tag group - {tagGroup}' => 'הצג קבוצת תגיות - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
