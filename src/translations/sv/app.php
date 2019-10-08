@@ -1499,5 +1499,7 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'View category group - {categoryGroup}' => 'Visa kategorigrupp - {categoryGroup}',
     'Delete them' => 'Radera dem',
     'Keep them' => 'Behåll dem',
-    'View tag group - {tagGroup}' => 'Visa taggrupp - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Visa taggrupp - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
