@@ -45,7 +45,7 @@ class GlobalSet extends Element
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all global sets.',
             'resolveType' => function (GlobalSetElement $value) {
-                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+                return $value->getGqlTypeName();
             }
         ]));
 

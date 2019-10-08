@@ -45,7 +45,7 @@ class Tag extends Element
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all tags.',
             'resolveType' => function (TagElement $value) {
-                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
+                return $value->getGqlTypeName();
             }
         ]));
 
