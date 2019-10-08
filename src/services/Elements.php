@@ -527,18 +527,24 @@ class Elements extends Component
                 }
 
                 $e = null;
+                try {
+                    // Make sure the element was queried with its content
+                    if ($element::hasContent() && $element->contentId === null) {
+                        throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it wasn’t loaded with its content.");
+                    }
 
-                // Make sure this isn't a revision
-                if ($skipRevisions) {
-                    try {
-                        $root = ElementHelper::rootElement($element);
-                    } catch (\Throwable $rootException) {
-                        $root = null;
-                        $e = new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
+                    // Make sure this isn't a revision
+                    if ($skipRevisions) {
+                        try {
+                            $root = ElementHelper::rootElement($element);
+                        } catch (\Throwable $rootException) {
+                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
+                        }
+                        if ($root->getIsRevision()) {
+                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                        }
                     }
-                    if ($root && $root->getIsRevision()) {
-                        $e = new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
-                    }
+                } catch (InvalidElementException $e) {
                 }
 
                 if ($e === null) {

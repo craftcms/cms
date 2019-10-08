@@ -10,6 +10,9 @@
 - Craft no longer routes requests based on `action` params in the request body, if the request’s content type is `application/json`.
 - Updated Twig to 2.12.
 
+### Fixed
+- Fixed a bug where the `resave/matrix-blocks` command would wittingly resave Matrix blocks even if they hadn’t been loaded with their content, resulting in lost content. ([#5030](https://github.com/craftcms/cms/issues/5030))
+
 ## 3.3.7 - 2019-10-03
 
 ### Changed
