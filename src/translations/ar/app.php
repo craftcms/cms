@@ -1499,5 +1499,7 @@ return [
     'View category group - {categoryGroup}' => 'عرض مجموعات الفئات - {categoryGroup}',
     'Delete them' => 'حذفهم',
     'Keep them' => 'حفظهم',
-    'View tag group - {tagGroup}' => 'عرض مجموعات العلامات - {tagGroup}'
+    'View tag group - {tagGroup}' => 'عرض مجموعات العلامات - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
