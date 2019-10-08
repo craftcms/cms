@@ -3,6 +3,8 @@
 ### Added
 - Added the `verifyEmailPath` config setting.
 - Added the `{% requireGuest %}` tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
+- Added `craft\events\DefineGqlTypeFields`.
+- Added `craft\gql\TypeManager`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\User::guestRequired()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.
@@ -14,3 +16,4 @@
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
+- Plugins can now modify the GraphQL schema by listening for the `defineGqlTypeFields` event.
