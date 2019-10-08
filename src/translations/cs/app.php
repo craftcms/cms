@@ -1495,5 +1495,7 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'View category group - {categoryGroup}' => 'Zobrazit skupinu kategorií - {categoryGroup}',
     'Delete them' => 'Odstranit je',
     'Keep them' => 'Ponechat je',
-    'View tag group - {tagGroup}' => 'Zobrazit skupinu štítků - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Zobrazit skupinu štítků - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
