@@ -1497,5 +1497,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'View category group - {categoryGroup}' => 'Kategóriacsoport megtekintése - {categoryGroup}',
     'Delete them' => 'Törlésük',
     'Keep them' => 'Megtartásuk',
-    'View tag group - {tagGroup}' => 'Címkecsoport megtekintése - {tagGroup}'
+    'View tag group - {tagGroup}' => 'Címkecsoport megtekintése - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
