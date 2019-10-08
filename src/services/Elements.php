@@ -1158,20 +1158,13 @@ class Elements extends Component
         $transaction = $db->beginTransaction();
         try {
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
-            /** @var StructureElementRecord[] $records */
-            $records = StructureElementRecord::findAll([
-                'elementId' => $element->id
-            ]);
-
-            foreach ($records as $record) {
+            while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
                 // If this element still has any children, move them up before the one getting deleted.
-                /** @var StructureElementRecord[] $children */
-                $children = $record->children()->all();
-
-                foreach ($children as $child) {
+                while (($child = $record->children(1)->one()) !== null) {
                     $child->insertBefore($record);
+                    // Re-fetch the record since its lft and rgt attributes just changed
+                    $record = StructureElementRecord::findOne($record->id);
                 }
-
                 // Delete this element's node
                 $record->deleteWithChildren();
             }
