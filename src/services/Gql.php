@@ -12,6 +12,7 @@ use craft\db\Table;
 use craft\db\Query as DbQuery;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
+use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\base\Directive;
@@ -126,6 +127,11 @@ class Gql extends Component
      * ```
      */
     const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
+
+    /**
+     * @event RegisterGqlPermissionsEvent The event that is triggered when registering user permissions.
+     */
+    const EVENT_REGISTER_GQL_PERMISSIONS = 'registerGqlPermissions';
 
     /**
      * Currently loaded schema definition
@@ -340,8 +346,15 @@ class Gql extends Component
         // ---------------------------------------------------------------------
         $permissions = array_merge($permissions, $this->_getTagPermissions());
 
-        return $permissions;
+        // Let plugins customize them and add new ones
+        // ---------------------------------------------------------------------
 
+        $event = new RegisterGqlPermissionsEvent([
+            'permissions' => $permissions
+        ]);
+        $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $event);
+
+        return $event->permissions;
     }
 
     /**
