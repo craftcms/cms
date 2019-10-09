@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where updating a draft might delete content on other sites in a multisite setup on certain PHP versions. ([#5048](https://github.com/craftcms/cms/issues/5048))
+
 ## 3.3.8 - 2019-10-09
 
 ### Added
