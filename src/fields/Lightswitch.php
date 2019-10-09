@@ -12,7 +12,9 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -128,11 +130,10 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             return null;
         }
 
-        if ($value === 'not 1' || $value === ':empty:') {
-            $value = false;
-        }
-
-        return parent::modifyElementsQuery($query, $value ? ':notempty:' : ':empty:');
+        $column = 'content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle;
+        /** @var ElementQuery $query */
+        $query->subQuery->andWhere(Db::parseParam($column, $value, '=', false, Schema::TYPE_BOOLEAN));
+        return null;
     }
 
     /**
