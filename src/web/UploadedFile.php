@@ -72,7 +72,7 @@ class UploadedFile extends \yii\web\UploadedFile
         }
 
         if ($ensureTempFilesExist) {
-            array_filter($instances, function(UploadedFile $instance): bool {
+            $instances = array_filter($instances, function(UploadedFile $instance): bool {
                 return is_uploaded_file($instance->tempName);
             });
 
