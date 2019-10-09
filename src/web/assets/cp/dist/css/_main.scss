@@ -51,24 +51,17 @@ body, input, select, textarea {
   margin-bottom: 0 !important;
 }
 
-body.rtl .ltr {
-  text-align: left;
-  direction: rtl;
-}
+.text,
+table.editable textarea {
+  body.rtl .ltr & {
+    text-align: left !important;
+    direction: ltr !important;
+  }
 
-body.rtl .input.ltr {
-  text-align: left;
-  direction: ltr;
-}
-
-body.ltr .input.rtl {
-  text-align: right;
-  direction: rtl;
-}
-
-body.rtl .text.ltr {
-  text-align: right !important;
-  direction: ltr !important;
+  body.ltr .rtl & {
+    text-align: right !important;
+    direction: rtl !important;
+  }
 }
 
 /* icons */
@@ -3381,7 +3374,7 @@ ul.tree,
     display: inline-block;
     margin-top: -1px;
     width: 10px;
-    margin-right: 10px;
+    @include margin-right(10px);
     text-align: center;
     font-size: 14px;
     color: $lightTextColor;

@@ -42,13 +42,8 @@ body, input, select, textarea { font-family: system-ui, BlinkMacSystemFont, -app
 
 .last, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, blockquote:last-child, .pane:last-child, .grid:last-child, .field:last-child, .toolbar:last-child, .buttons:last-child { margin-bottom: 0 !important; }
 
-body.rtl .ltr { text-align: left; direction: rtl; }
-
-body.rtl .input.ltr { text-align: left; direction: ltr; }
-
-body.ltr .input.rtl { text-align: right; direction: rtl; }
-
-body.rtl .text.ltr { text-align: right !important; direction: ltr !important; }
+body.rtl .ltr .text, body.rtl .ltr table.editable textarea { text-align: left !important; direction: ltr !important; }
+body.ltr .rtl .text, body.ltr .rtl table.editable textarea { text-align: right !important; direction: rtl !important; }
 
 /* icons */
 .icon:before, .menu ul.padded li a.sel:before, .texticon:before, .element:before, #help:before, .secure:before, .insecure:before, .go:after, .menubtn:after, .required:after, #preview-btn:before, #share-btn:before, .toggle:before, a.fieldtoggle:before, [data-icon]:before, [data-icon-after]:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
@@ -1211,7 +1206,9 @@ body.ltr .menu ul li a .shortcut { margin-left: 14px; }
 body.rtl .menu ul li a .shortcut { margin-right: 14px; }
 .menu hr { margin: 5px -14px; }
 
-.menubtn span.icon, .menu span.icon { display: inline-block; margin-top: -1px; width: 10px; margin-right: 10px; text-align: center; font-size: 14px; color: #b9bfc6; }
+.menubtn span.icon, .menu span.icon { display: inline-block; margin-top: -1px; width: 10px; text-align: center; font-size: 14px; color: #b9bfc6; }
+body.ltr .menubtn span.icon, body.ltr .menu span.icon { margin-right: 10px; }
+body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
 .menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):hover .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { color: #29323d; background-color: #d5d8dd; }
 
