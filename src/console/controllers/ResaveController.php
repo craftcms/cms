@@ -71,6 +71,11 @@ class ResaveController extends Controller
     public $propagate = true;
 
     /**
+     * @var bool Whether to update the search indexes for the resaved elements.
+     */
+    public $updateSearchIndex = false;
+
+    /**
      * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
      */
     public $group;
@@ -108,6 +113,7 @@ class ResaveController extends Controller
         $options[] = 'offset';
         $options[] = 'limit';
         $options[] = 'propagate';
+        $options[] = 'updateSearchIndex';
 
         switch ($actionID) {
             case 'assets':
@@ -311,7 +317,7 @@ class ResaveController extends Controller
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $elementsService->resaveElements($query, true);
+        $elementsService->resaveElements($query, true, true, $this->updateSearchIndex);
 
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);

@@ -19,6 +19,9 @@
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
+- `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - Plugins can now modify the GraphQL schema by listening for the `defineGqlTypeFields` event.
 - Plugins can now modify the GraphQL permissions by listening for the `registerGqlPermissions` event.
 - Full GraphQL schema is now always generated when `devMode` is set to `true`.
+- `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
