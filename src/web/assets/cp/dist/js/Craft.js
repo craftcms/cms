@@ -1,4 +1,4 @@
-/*!   - 2019-09-25 */
+/*!   - 2019-10-08 */
 (function($){
 
 /** global: Craft */
@@ -4952,10 +4952,10 @@ Craft.AdminTable = Garnish.Base.extend(
                 this.updateUI();
                 this.onDeleteItem(id);
 
-                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: Craft.escapeHtml(name)}));
+                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: name}));
             }
             else {
-                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: Craft.escapeHtml(name)}));
+                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: name}));
             }
         },
 
@@ -4972,7 +4972,7 @@ Craft.AdminTable = Garnish.Base.extend(
         },
 
         getItemName: function($row) {
-            return $row.attr(this.settings.nameAttribute);
+            return Craft.escapeHtml($row.attr(this.settings.nameAttribute));
         },
 
         updateUI: function() {
