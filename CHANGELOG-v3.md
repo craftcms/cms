@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.8 - 2019-10-09
 
 ### Added
 - Added `craft\web\Request::getNormalizedContentType()`.
