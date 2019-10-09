@@ -170,26 +170,28 @@ class Craft extends Yii2
             return;
         }
 
-        // Re-apply project config
-        if ($projectConfig = TestSetup::useProjectConfig()) {
-            // Tests just beginning. . Reset the project config to its original state.
-            TestSetup::setupProjectConfig($projectConfig['file']);
+        if (!$this->_getConfig('projectConfigOptOut')) {
+            // Re-apply project config
+            if ($projectConfig = TestSetup::useProjectConfig()) {
+                // Tests just beginning. . Reset the project config to its original state.
+                TestSetup::setupProjectConfig($projectConfig['file']);
 
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
-                Yaml::parse(file_get_contents($projectConfig['file']))
-            );
-
-            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
-        } else {
-            \Craft::$app->getProjectConfig()->rebuild();
-
-
-            $edition = $this->_getConfig('edition');
-            // We also manually set the edition if desired by the current config
-            if (is_int($edition)) {
-                \Craft::$app->setEdition(
-                    $edition
+                \Craft::$app->getProjectConfig()->applyConfigChanges(
+                    Yaml::parse(file_get_contents($projectConfig['file']))
                 );
+
+                \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+            } else {
+                \Craft::$app->getProjectConfig()->rebuild();
+
+
+                $edition = $this->_getConfig('edition');
+                // We also manually set the edition if desired by the current config
+                if (is_int($edition)) {
+                    \Craft::$app->setEdition(
+                        $edition
+                    );
+                }
             }
         }
 
