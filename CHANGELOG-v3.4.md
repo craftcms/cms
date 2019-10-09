@@ -19,3 +19,4 @@
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
 - Plugins can now modify the GraphQL schema by listening for the `defineGqlTypeFields` event.
 - Plugins can now modify the GraphQL permissions by listening for the `registerGqlPermissions` event.
+- Full GraphQL schema is now always generated when `devMode` is set to `true`.
