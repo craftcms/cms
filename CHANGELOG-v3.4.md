@@ -4,8 +4,10 @@
 - Added the `verifyEmailPath` config setting.
 - Added the `{% requireGuest %}` tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
+- Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\gql\TypeManager`.
+- Added `craft\services\Gql::getValidationRules()`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\User::guestRequired()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.

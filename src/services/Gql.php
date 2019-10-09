@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\db\Query as DbQuery;
 use craft\errors\GqlException;
+use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
@@ -45,6 +46,14 @@ use craft\models\GqlSchema;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
+use GraphQL\Validator\DocumentValidator;
+use GraphQL\Validator\Rules\FieldsOnCorrectType;
+use GraphQL\Validator\Rules\KnownArgumentNames;
+use GraphQL\Validator\Rules\NoUnusedFragments;
+use GraphQL\Validator\Rules\NoUnusedVariables;
+use GraphQL\Validator\Rules\PossibleFragmentSpreads;
+use GraphQL\Validator\Rules\ScalarLeafs;
+use GraphQL\Validator\Rules\VariablesDefaultValueAllowed;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -134,6 +143,27 @@ class Gql extends Component
     const EVENT_REGISTER_GQL_PERMISSIONS = 'registerGqlPermissions';
 
     /**
+     * @event DefineGqlValidationRulesEvent The event that is triggered when defining validation rules to be used.
+     *
+     * Plugins get a chance to alter the GraphQL validation rule list.
+     *
+     * ---
+     * ```php
+     * use craft\events\DefineGqlValidationRulesEvent;
+     * use craft\services\GraphQl;
+     * use yii\base\Event;
+     * use GraphQL\Type\Definition\Type;
+     * use GraphQL\Validator\Rules\DisableIntrospection;
+     *
+     * Event::on(Gql::class, Gql::::EVENT_DEFINE_GQL_VALIDATION_RULES, function (DefineGqlValidationRulesEvent $event) {
+     *     // Disable introspection permanently.
+     *     $event->validationRules[DisableIntrospection::class] = new DisableIntrospection();
+     * });
+     * ```
+     */
+    const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
+
+    /**
      * Currently loaded schema definition
      *
      * @var Schema
@@ -218,6 +248,37 @@ class Gql extends Component
         }
 
         return $this->_schemaDef;
+    }
+
+    /**
+     * Return a set of validation rules to use.
+     *
+     * @param bool $debug Whether debugging validation rules should be allowed.
+     * @return array
+     */
+    public function getValidationRules($debug = false) {
+        $validationRules = DocumentValidator::defaultRules();
+
+        if (!$debug) {
+            unset(
+                $validationRules[ScalarLeafs::class],
+                $validationRules[FieldsOnCorrectType::class],
+                $validationRules[NoUnusedFragments::class],
+                $validationRules[PossibleFragmentSpreads::class],
+                $validationRules[NoUnusedVariables::class],
+                $validationRules[KnownArgumentNames::class],
+                $validationRules[VariablesDefaultValueAllowed::class]
+            );
+        }
+
+        $event = new DefineGqlValidationRulesEvent([
+            'validationRules' => $validationRules,
+            'debug' => $debug
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
+
+        return array_values($event->validationRules);
     }
 
     /**
