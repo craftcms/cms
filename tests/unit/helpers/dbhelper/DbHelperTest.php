@@ -89,10 +89,11 @@ class DbHelperTest extends Unit
      * @param $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
+     * @param string|null $columnType
      */
-    public function testParseParam($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
+    public function testParseParam($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false, $columnType = null)
     {
-        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
+        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive, $columnType));
     }
 
     /**
@@ -353,6 +354,46 @@ class DbHelperTest extends Unit
             [
                 ['not', ['foo' => ['field_1', 'field_2']]],
                 'foo', ['not', 'field_1', 'field_2'],
+            ],
+            [
+                ['foo' => true],
+                'foo', true, '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['foo' => true],
+                'foo', 1, '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['foo' => true],
+                'foo', '1', '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['foo' => true],
+                'foo', 'not 0', '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['foo' => true],
+                'foo', 'not :empty:', '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['not', ['foo' => true]],
+                'foo', false, '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['not', ['foo' => true]],
+                'foo', 0, '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['not', ['foo' => true]],
+                'foo', '0', '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['not', ['foo' => true]],
+                'foo', 'not 1', '=', false, Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['not', ['foo' => true]],
+                'foo', ':empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
         ];
     }

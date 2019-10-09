@@ -1499,5 +1499,7 @@ If you were not expecting this email, just ignore it.',
     'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
     'Delete them' => 'Delete them',
     'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
