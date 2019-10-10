@@ -1866,7 +1866,7 @@ class UsersController extends Controller
         $user = User::find()
             ->uid($uid)
             ->anyStatus()
-            ->addSelect(['users.password', 'users.unverifiedEmail'])
+            ->addSelect(['users.password'])
             ->one();
 
         if (!$user) {
