@@ -36,7 +36,7 @@ class ProjectConfigController extends Controller
     {
         if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
             $this->stdout('Craft is not configured to use project.yaml. Please enable the \'useProjectConfigFile\' config setting in config/general.php.' . PHP_EOL, Console::FG_YELLOW);
-            return ExitCode::OK;
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $updatesService = Craft::$app->getUpdates();
@@ -62,7 +62,7 @@ class ProjectConfigController extends Controller
             }
 
             $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
-            return ExitCode::OK;
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         // Do we need to create a new config file?
