@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where updating a draft might delete content on other sites in a multisite setup on certain PHP versions. ([#5048](https://github.com/craftcms/cms/issues/5048))
+- Fixed an error that occurred when running console commands before Craft was installed. ([#5083](https://github.com/craftcms/cms/issues/5083))
 
 ## 3.3.8 - 2019-10-09
 
