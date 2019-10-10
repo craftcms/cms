@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.9 - 2019-10-10
 
 ### Changed
 - The `project-config/sync` command now correctly returns an error code on failure. ([#4153](https://github.com/craftcms/cms/issues/4153))
