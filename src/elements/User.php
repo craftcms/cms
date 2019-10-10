@@ -377,7 +377,7 @@ class User extends Element implements IdentityInterface
     public static function findIdentity($id)
     {
         $user = static::find()
-            ->addSelect(['users.password'])
+            ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->id($id)
             ->anyStatus()
             ->one();

@@ -4,6 +4,7 @@
 
 ### Changed
 - The `project-config/sync` command now correctly returns an error code on failure. ([#4153](https://github.com/craftcms/cms/issues/4153))
+- Craft now preloads the current user’s `unverifiedEmail`. ([#5019](https://github.com/craftcms/cms/issues/5019))
 
 ### Fixed
 - Fixed a bug where updating a draft might delete content on other sites in a multisite setup on certain PHP versions. ([#5048](https://github.com/craftcms/cms/issues/5048))
