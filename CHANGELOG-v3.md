@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+### Added
+- Added the ability to specify whether to reset project config before individual tests are run. ([#5072](https://github.com/craftcms/cms/pull/5072))
+- Added `craft\test\Craft::resetProjectConfig()`
+
 ## 3.3.8 - 2019-10-09
 
 ### Added
