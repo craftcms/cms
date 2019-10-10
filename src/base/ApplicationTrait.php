@@ -252,6 +252,10 @@ trait ApplicationTrait
             return $this->_isInstalled;
         }
 
+        if (!$this->getIsDbConnectionValid()) {
+            return $this->_isInstalled = false;
+        }
+
         try {
             $this->getInfo(true);
         } catch (DbException $e) {
@@ -260,6 +264,7 @@ trait ApplicationTrait
             }
             throw $e;
         }
+
         return $this->_isInstalled = true;
     }
 
@@ -566,6 +571,11 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->one();
         } catch (DbException $e) {
+            if ($throwException) {
+                throw $e;
+            }
+            return $this->_info = new Info();
+        } catch (DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
