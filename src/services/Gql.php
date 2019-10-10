@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Table;
 use craft\db\Query as DbQuery;
+use craft\db\Table;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -18,26 +18,26 @@ use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\InterfaceType;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\base\InterfaceType;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
-use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
+use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Ping as PingQuery;
-use craft\gql\queries\User as UserQuery;
 use craft\gql\queries\Tag as TagQuery;
+use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
@@ -48,12 +48,7 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
-use GraphQL\Validator\Rules\KnownArgumentNames;
-use GraphQL\Validator\Rules\NoUnusedFragments;
-use GraphQL\Validator\Rules\NoUnusedVariables;
-use GraphQL\Validator\Rules\PossibleFragmentSpreads;
-use GraphQL\Validator\Rules\ScalarLeafs;
-use GraphQL\Validator\Rules\VariablesDefaultValueAllowed;
+use GraphQL\Validator\Rules\KnownTypeNames;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -260,14 +255,10 @@ class Gql extends Component
         $validationRules = DocumentValidator::defaultRules();
 
         if (!$debug) {
+            // Remove the rules which would generate a full schema just for a nice message, to avoid performance hit.
             unset(
-                $validationRules[ScalarLeafs::class],
+                $validationRules[KnownTypeNames::class],
                 $validationRules[FieldsOnCorrectType::class],
-                $validationRules[NoUnusedFragments::class],
-                $validationRules[PossibleFragmentSpreads::class],
-                $validationRules[NoUnusedVariables::class],
-                $validationRules[KnownArgumentNames::class],
-                $validationRules[VariablesDefaultValueAllowed::class]
             );
         }
 
