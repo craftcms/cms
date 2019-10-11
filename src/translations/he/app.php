@@ -1212,7 +1212,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{פריט} other{פריטים}} לכל היותר.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{בחירה} other{בחירות}} לכל היותר.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {count, number} {count, plural, one{פריט} other{פריטים}}.',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => 'array[\'{total, number} {total, plural, =1{{item}} other{{items}}}\']',
     '{ctrl}C to copy.' => 'C{ctrl} כדי להעתיק.',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} נוסף, אך אירעה שגיאה בעת התקנתו.',
@@ -1445,7 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'כולל חשבונות משתמשים, קבוצות משתמשים, הרשאות משתמשים ורישום משתמשים ציבורי',
     'Save as my new credit card' => 'שמור ככרטיס האשראי החדש שלי',
     '{first}-{last} of {total}' => '{first}-{last} מ-{total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} מ-{total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => 'array[\'{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}\']',
     'Preview' => 'תצוגה מקדימה',
     'Text that should be shown before the input.' => 'הטקסט שצריך להופיע לפני הקלט.',
     'Next Page' => 'עמוד הבא',
@@ -1496,8 +1496,10 @@ return [
     'Define the schema’s scope' => 'הגדר את טווח הסכימה',
     'Edit the Public GraphQL Schema' => 'ערוך את סכימת ה-GraphQL הציבורית',
     'Schema name' => 'שם הסכימה',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'הצג קבוצת קטגוריות - {categoryGroup}',
+    'Delete them' => 'מחק אותם',
+    'Keep them' => 'שמור אותם',
+    'View tag group - {tagGroup}' => 'הצג קבוצת תגיות - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
