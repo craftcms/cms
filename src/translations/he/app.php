@@ -1212,7 +1212,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{פריט} other{פריטים}} לכל היותר.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{בחירה} other{בחירות}} לכל היותר.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {count, number} {count, plural, one{פריט} other{פריטים}}.',
-    '{total, number} {total, plural, =1{{item}} other{{items}}}' => 'array[\'{total, number} {total, plural, =1{{item}} other{{items}}}\']',
+    '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, one {} two {{items}} many {{items}} =1{{item}} other{{items}}}',
     '{ctrl}C to copy.' => 'C{ctrl} כדי להעתיק.',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} נוסף, אך אירעה שגיאה בעת התקנתו.',
