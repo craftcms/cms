@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the ability to specify whether to reset project config before individual tests are run. ([#5072](https://github.com/craftcms/cms/pull/5072))
+- Added `craft\test\Craft::resetProjectConfig()`
+
 ### Fixed
 - Fixed a bug where mime type was not being set correctly when uploading files. ([#5052](https://github.com/craftcms/cms/issues/5052))
 - Fixed a bug where the image thumbnail would not be refreshed after using the image editor directly inside an Assets field. ([#4212](https://github.com/craftcms/cms/issues/4212))
