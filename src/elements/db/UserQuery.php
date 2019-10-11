@@ -562,6 +562,7 @@ class UserQuery extends ElementQuery
             'users.firstName',
             'users.lastName',
             'users.email',
+            'users.unverifiedEmail',
             'users.admin',
             'users.locked',
             'users.pending',

@@ -1526,7 +1526,9 @@ class Asset extends Element
             }
 
             // Upload the file to the new location
-            $newVolume->createFileByStream($newPath, $stream, []);
+            $newVolume->createFileByStream($newPath, $stream, [
+                'mimetype' => FileHelper::getMimeType($tempPath)
+            ]);
 
             // Rackspace will disconnect the stream automatically
             if (is_resource($stream)) {

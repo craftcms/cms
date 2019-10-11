@@ -920,7 +920,7 @@ class Matrix extends Component
                     }
 
                     // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-                    if (isset($handledSiteIds[$otherSource->siteId])) {
+                    if (in_array($otherSource->siteId, $handledSiteIds, false)) {
                         continue;
                     }
 
@@ -928,7 +928,7 @@ class Matrix extends Component
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
                     $sourceSupportedSiteIds = $this->getSupportedSiteIdsForField($field, $otherSource);
-                    $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                    $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
                 }
             }
         }

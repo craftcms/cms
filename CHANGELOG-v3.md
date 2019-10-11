@@ -1,9 +1,24 @@
 # Release Notes for Craft CMS 3.x
 
 ## Unreleased
+
 ### Added
 - Added the ability to specify whether to reset project config before individual tests are run. ([#5072](https://github.com/craftcms/cms/pull/5072))
 - Added `craft\test\Craft::resetProjectConfig()`
+
+### Fixed
+- Fixed a bug where mime type was not being set correctly when uploading files. ([#5052](https://github.com/craftcms/cms/issues/5052))
+- Fixed a bug where the image thumbnail would not be refreshed after using the image editor directly inside an Assets field. ([#4212](https://github.com/craftcms/cms/issues/4212))
+
+## 3.3.9 - 2019-10-10
+
+### Changed
+- The `project-config/sync` command now correctly returns an error code on failure. ([#4153](https://github.com/craftcms/cms/issues/4153))
+- User queries now include the `unverifiedEmail` value by default. ([#5019](https://github.com/craftcms/cms/issues/5019))
+
+### Fixed
+- Fixed a bug where updating a draft might delete content on other sites in a multisite setup on certain PHP versions. ([#5048](https://github.com/craftcms/cms/issues/5048))
+- Fixed an error that occurred when running console commands before Craft was installed. ([#5083](https://github.com/craftcms/cms/issues/5083))
 
 ## 3.3.8 - 2019-10-09
 
