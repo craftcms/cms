@@ -1445,7 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'ユーザーアカウント、ユーザーグループ、ユーザー権限、パブリックユーザー登録が含まれます',
     'Save as my new credit card' => '新しいクレジットカードとして保存',
     '{first}-{last} of {total}' => '{first}-{last}/{total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number}/{total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'プレビュー',
     'Text that should be shown before the input.' => '入力値の前に表示される文字。',
     'Next Page' => '次のページ',
