@@ -1492,8 +1492,10 @@ Se non aspettavi questa email, ignorala semplicemente.',
     'Define the schema’s scope' => 'Definisce l\'ambito dello schema',
     'Edit the Public GraphQL Schema' => 'Modifica lo schema GraphQL pubblico',
     'Schema name' => 'Nome schema',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Visualizza gruppo di categorie - {categoryGroup}',
+    'Delete them' => 'Rimuovili',
+    'Keep them' => 'Conservali',
+    'View tag group - {tagGroup}' => 'Visualizza gruppo di tag - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
