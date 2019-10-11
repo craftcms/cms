@@ -1445,7 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'Включает Пользовательские аккаунты, Пользовательские группы, Пользовательские разрешения, открытую регистрацию пользователя',
     'Save as my new credit card' => 'Сохранить как мою новую кредитную карту',
     '{first}-{last} of {total}' => '{first}-{last} из {total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} из {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'Предпросмотр',
     'Text that should be shown before the input.' => 'Текст, который должен отображаться перед вводом.',
     'Next Page' => 'Следующая страница',
