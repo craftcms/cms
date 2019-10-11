@@ -1445,7 +1445,7 @@ return [
     'Includes User accounts, User groups, User permissions, Public user registration' => 'כולל חשבונות משתמשים, קבוצות משתמשים, הרשאות משתמשים ורישום משתמשים ציבורי',
     'Save as my new credit card' => 'שמור ככרטיס האשראי החדש שלי',
     '{first}-{last} of {total}' => '{first}-{last} מ-{total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} מ-{total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'תצוגה מקדימה',
     'Text that should be shown before the input.' => 'הטקסט שצריך להופיע לפני הקלט.',
     'Next Page' => 'עמוד הבא',
