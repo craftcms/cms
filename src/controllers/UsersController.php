@@ -973,6 +973,7 @@ class UsersController extends Controller
                 // Does that email need to be verified?
                 if ($requireEmailVerification && (
                     !$currentUser ||
+                    (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
                     $request->getBodyParam('sendVerificationEmail', true)
                 )) {
                     // Save it as an unverified email for now
