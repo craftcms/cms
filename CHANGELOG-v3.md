@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where updating a draft might delete content on other sites in a multisite setup on certain PHP versions. ([#5048](https://github.com/craftcms/cms/issues/5048))
+- Fixed a bug where mime type was not being set correctly when uploading files. ([#5052](https://github.com/craftcms/cms/issues/5052))
 
 ## 3.3.8 - 2019-10-09
 
