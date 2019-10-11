@@ -1443,7 +1443,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Includes User accounts, User groups, User permissions, Public user registration' => 'Benne felhasználói fiókok, felhasználói csoportok, felhasználói jogosultságok, nyilvános felhasználóregisztrálás',
     'Save as my new credit card' => 'Mentés új hitelkártyaként',
     '{first}-{last} of {total}' => '{first}-{last} / {total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, one {} =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     'Preview' => 'Előnézet',
     'Text that should be shown before the input.' => 'Szöveg, amely a bevitel előtt jelenik meg.',
     'Next Page' => 'Következő oldal',
