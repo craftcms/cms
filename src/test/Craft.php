@@ -72,7 +72,7 @@ class Craft extends Yii2
      * A static version of the testing config.
      *
      * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`.
-     * This variable is equivelant to calling $this->_getConfig(); but is available for public access.
+     * This variable is equivalant to calling $this->_getConfig(); but is available for public access.
      *
      * @var array
      */
