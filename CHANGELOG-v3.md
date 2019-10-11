@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where mime type was not being set correctly when uploading files. ([#5052](https://github.com/craftcms/cms/issues/5052))
+- Fixed a bug where the image thumbnail would not be refreshed after using the image editor directly inside an Assets field. ([#4212](https://github.com/craftcms/cms/issues/4212))
 
 ## 3.3.9 - 2019-10-10
 
