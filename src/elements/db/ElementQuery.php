@@ -1406,10 +1406,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
-            if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
-                throw new QueryAbortedException();
-            }
-
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
@@ -2641,13 +2637,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
+                'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
-
-            // Only include the URI if this isn't headless mode
-            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
-                $select['elements_sites.uri'] = 'elements_sites.uri';
-            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
