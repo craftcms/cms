@@ -258,7 +258,7 @@ class Gql extends Component
             // Remove the rules which would generate a full schema just for a nice message, to avoid performance hit.
             unset(
                 $validationRules[KnownTypeNames::class],
-                $validationRules[FieldsOnCorrectType::class],
+                $validationRules[FieldsOnCorrectType::class]
             );
         }
 
