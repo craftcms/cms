@@ -4,15 +4,15 @@
 
 ### Added
 - Added the `allowOwnerDrafts` and `allowOwnerRevisions` Matrix block query params.
-- Added the ability to specify whether to reset project config before individual tests are run. ([#5072](https://github.com/craftcms/cms/pull/5072))
+- Added the ability to skip refreshing the project config before running individual tests. ([#5072](https://github.com/craftcms/cms/pull/5072))
 - Added `craft\test\Craft::resetProjectConfig()`
 
 ### Fixed
-- Fixed a bug where mime type was not being set correctly when uploading files. ([#5052](https://github.com/craftcms/cms/issues/5052))
-- Fixed a bug where the image thumbnail would not be refreshed after using the image editor directly inside an Assets field. ([#4212](https://github.com/craftcms/cms/issues/4212))
+- Fixed a bug where Craft wasn’t passing assets’ MIME types to cloud storage services when saving them. ([#5052](https://github.com/craftcms/cms/issues/5052))
+- Fixed a bug where Assets fields’ image thumbnails weren’t getting refreshed after images were edited. ([#4212](https://github.com/craftcms/cms/issues/4212))
 - Fixed a bug where the `index-assets` command would bail as soon as it came across a file with a disallowed file extension. ([#5086](https://github.com/craftcms/cms/issues/5086))
 - Fixed a bug where user email changes were going through email verification even if someone with permission to administrate users was making the change. ([#5088](https://github.com/craftcms/cms/issues/5088))
-- Fixed a bug where it wasn’t possible to eager-load Matrix blocks on a draft. ([#5031](https://github.com/craftcms/cms/issues/5031))
+- Fixed a bug where it wasn’t possible to eager-load Matrix blocks that belong to a draft or revision. ([#5031](https://github.com/craftcms/cms/issues/5031))
 
 ## 3.3.9 - 2019-10-10
 
