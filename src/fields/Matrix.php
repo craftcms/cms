@@ -763,7 +763,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         return [
             'elementType' => MatrixBlock::class,
             'map' => $map,
-            'criteria' => ['fieldId' => $this->id]
+            'criteria' => [
+                'fieldId' => $this->id,
+                'allowOwnerDrafts' => true,
+                'allowOwnerRevisions' => true,
+            ]
         ];
     }
 
