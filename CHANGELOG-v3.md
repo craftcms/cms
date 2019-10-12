@@ -13,6 +13,7 @@
 - Fixed a bug where the `index-assets` command would bail as soon as it came across a file with a disallowed file extension. ([#5086](https://github.com/craftcms/cms/issues/5086))
 - Fixed a bug where user email changes were going through email verification even if someone with permission to administrate users was making the change. ([#5088](https://github.com/craftcms/cms/issues/5088))
 - Fixed a bug where it wasn’t possible to eager-load Matrix blocks that belong to a draft or revision. ([#5031](https://github.com/craftcms/cms/issues/5031))
+- Fixed a bug where the `setup` command would think that Craft was installed when it wasn’t. ([#5093](https://github.com/craftcms/cms/issues/5093))
 
 ## 3.3.9 - 2019-10-10
 
