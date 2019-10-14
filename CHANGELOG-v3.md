@@ -16,6 +16,7 @@
 - Fixed a bug where the `setup` command would think that Craft was installed when it wasn’t. ([#5093](https://github.com/craftcms/cms/issues/5093))
 - Fixed an error that could occur when syncing the project config, that could occur if a Matrix block had been changed to something else. ([#4015](https://github.com/craftcms/cms/issues/4015))
 - Fixed a bug where Assets fields’ sometimes wouldn't show the “Edit” button for images. ([#4618](https://github.com/craftcms/cms/issues/4618))
+- Fixed a bug where `craft\services\Elements::duplicateElement()` wasn’t ensuring that the duplicate had a valid slug on all sites. ([#5097](https://github.com/craftcms/cms/issues/5097))
 
 ## 3.3.9 - 2019-10-10
 
