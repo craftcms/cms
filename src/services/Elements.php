@@ -302,10 +302,6 @@ class Elements extends Component
      */
     public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false)
     {
-        if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
-            return null;
-        }
-
         if ($uri === '') {
             $uri = Element::HOMEPAGE_URI;
         }
