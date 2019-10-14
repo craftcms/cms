@@ -76,7 +76,7 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * Runs all jobs in the queue
+     * Runs all jobs in the queue.
      *
      * @return int
      */
