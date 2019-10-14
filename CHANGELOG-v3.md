@@ -15,6 +15,7 @@
 - Fixed a bug where it wasn’t possible to eager-load Matrix blocks that belong to a draft or revision. ([#5031](https://github.com/craftcms/cms/issues/5031))
 - Fixed a bug where the `setup` command would think that Craft was installed when it wasn’t. ([#5093](https://github.com/craftcms/cms/issues/5093))
 - Fixed an error that could occur when syncing the project config, that could occur if a Matrix block had been changed to something else. ([#4015](https://github.com/craftcms/cms/issues/4015))
+- Fixed a bug where Assets fields’ sometimes wouldn't show the “Edit” button for images. ([#4618](https://github.com/craftcms/cms/issues/4618))
 
 ## 3.3.9 - 2019-10-10
 

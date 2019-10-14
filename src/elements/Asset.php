@@ -1150,8 +1150,7 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
+                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
