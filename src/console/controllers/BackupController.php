@@ -27,7 +27,7 @@ class BackupController extends Controller
     public $defaultAction = 'db';
 
     /**
-     * Creates a new database backup
+     * Creates a new database backup.
      *
      * @param string|null The path the database backup should be created at.
      * Can be any of the following:
