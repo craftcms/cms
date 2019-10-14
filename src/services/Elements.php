@@ -783,7 +783,7 @@ class Elements extends Component
                     }
 
                     if (!$this->_saveElementInternal($siteClone, false, false)) {
-                        throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);
+                        throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . implode(', ', $siteClone->getFirstErrors()));
                     }
                 }
             }
