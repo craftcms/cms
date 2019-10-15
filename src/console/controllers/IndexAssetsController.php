@@ -12,6 +12,7 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\MissingAssetException;
 use craft\errors\VolumeObjectNotFoundException;
 use yii\console\ExitCode;
@@ -145,6 +146,9 @@ class IndexAssetsController extends Controller
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     $missingRecordsByFilename[$e->filename][] = $e;
+                    continue;
+                } catch (AssetDisallowedExtensionException $e) {
+                    $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 } catch (\Throwable $e) {
                     $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);

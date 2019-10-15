@@ -1496,8 +1496,10 @@ Si no estabas esperando este correo electrónico, ignóralo.',
     'Define the schema’s scope' => 'Definir el alcance del esquema',
     'Edit the Public GraphQL Schema' => 'Editar el esquema público GraphQL',
     'Schema name' => 'Nombre de esquema',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Ver grupo de categorías - {categoryGroup}',
+    'Delete them' => 'Eliminarlos',
+    'Keep them' => 'Conservarlos',
+    'View tag group - {tagGroup}' => 'Ver grupo de etiquetas - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];

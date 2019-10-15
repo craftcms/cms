@@ -1496,8 +1496,10 @@ return [
     'Define the schema’s scope' => 'حدد نطاق المخطط',
     'Edit the Public GraphQL Schema' => 'تعديل مخطط GraphQL العام',
     'Schema name' => 'اسم المخطط',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'عرض مجموعات الفئات - {categoryGroup}',
+    'Delete them' => 'حذفهم',
+    'Keep them' => 'حفظهم',
+    'View tag group - {tagGroup}' => 'عرض مجموعات العلامات - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];

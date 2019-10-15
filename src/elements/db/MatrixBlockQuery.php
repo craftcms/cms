@@ -68,6 +68,20 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerSiteId;
 
     /**
+     * @var bool|null Whether the owner elements can be drafts.
+     * @used-by allowOwnerDrafts()
+     * @since 3.3.10
+     */
+    public $allowOwnerDrafts;
+
+    /**
+     * @var bool|null Whether the owner elements can be revisions.
+     * @used-by allowOwnerRevisions()
+     * @since 3.3.10
+     */
+    public $allowOwnerRevisions;
+
+    /**
      * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
      * ---
      * ```php
@@ -248,6 +262,48 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on whether the Matrix blocks’ owners are drafts.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `true` | which can belong to a draft.
+     * | `false` | which cannot belong to a draft.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 3.3.10
+     */
+    public function allowOwnerDrafts($value = true)
+    {
+        $this->allowOwnerDrafts = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the Matrix blocks’ owners are revisions.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `true` | which can belong to a revision.
+     * | `false` | which cannot belong to a revision.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 3.3.10
+     */
+    public function allowOwnerRevisions($value = true)
+    {
+        $this->allowOwnerRevisions = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the Matrix blocks’ block types.
      *
      * Possible values include:
@@ -393,14 +449,20 @@ class MatrixBlockQuery extends ElementQuery
         }
 
         // Ignore revision/draft blocks by default
-        if (!$this->id && !$this->ownerId) {
+        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->ownerId);
+        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->ownerId);
+
+        if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Matrix blocks can be nested.
-            $this->subQuery
-                ->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]')
-                ->andWhere([
-                    'owners.draftId' => null,
-                    'owners.revisionId' => null,
-                ]);
+            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]');
+
+            if (!$allowOwnerDrafts) {
+                $this->subQuery->andWhere(['owners.draftId' => null]);
+            }
+
+            if (!$allowOwnerRevisions) {
+                $this->subQuery->andWhere(['owners.revisionId' => null]);
+            }
         }
 
         return parent::beforePrepare();

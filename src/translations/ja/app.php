@@ -167,7 +167,7 @@ return [
     'Checkbox' => 'チェックボックス',
     'Checkbox Options' => 'チェックボックスのオプション',
     'Checkboxes' => 'チェックボックス',
-    'Checking for updates…' => 'アップテードを確認中…',
+    'Checking for updates…' => 'アップデートを確認中…',
     'Checking server requirements…' => 'サーバー要件を確認中…',
     'Checking…' => '確認中…',
     'Choose' => '選択',
@@ -1496,8 +1496,10 @@ return [
     'Define the schema’s scope' => 'スキーマの範囲を定義',
     'Edit the Public GraphQL Schema' => '公開GraphQLスキーマを編集',
     'Schema name' => 'スキーマ名',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'カテゴリグループを表示 - {categoryGroup}',
+    'Delete them' => 'これらを削除',
+    'Keep them' => 'これらを保持',
+    'View tag group - {tagGroup}' => 'タググループを表示 - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];

@@ -1150,8 +1150,7 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
+                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
@@ -1526,7 +1525,9 @@ class Asset extends Element
             }
 
             // Upload the file to the new location
-            $newVolume->createFileByStream($newPath, $stream, []);
+            $newVolume->createFileByStream($newPath, $stream, [
+                'mimetype' => FileHelper::getMimeType($tempPath)
+            ]);
 
             // Rackspace will disconnect the stream automatically
             if (is_resource($stream)) {

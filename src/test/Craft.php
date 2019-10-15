@@ -69,11 +69,11 @@ class Craft extends Yii2
     // =========================================================================
 
     /**
-     * A static version of the testing config. 
+     * A static version of the testing config.
      *
-     * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`. 
-     * This variable is equivelant to calling $this->_getConfig(); but is available for public access. 
-     * 
+     * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`.
+     * This variable is equivalant to calling $this->_getConfig(); but is available for public access.
+     *
      * @var array
      */
     public static $testConfig;
@@ -170,28 +170,7 @@ class Craft extends Yii2
             return;
         }
 
-        // Re-apply project config
-        if ($projectConfig = TestSetup::useProjectConfig()) {
-            // Tests just beginning. . Reset the project config to its original state.
-            TestSetup::setupProjectConfig($projectConfig['file']);
-
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
-                Yaml::parse(file_get_contents($projectConfig['file']))
-            );
-
-            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
-        } else {
-            \Craft::$app->getProjectConfig()->rebuild();
-
-
-            $edition = $this->_getConfig('edition');
-            // We also manually set the edition if desired by the current config
-            if (is_int($edition)) {
-                \Craft::$app->setEdition(
-                    $edition
-                );
-            }
-        }
+        $this->resetProjectConfig();
 
         $db = \Craft::createObject(
             App::dbConfig(self::createDbConfig())
@@ -201,12 +180,53 @@ class Craft extends Yii2
     }
 
     /**
+     * Reset's the project config.
+     *
+     * @param bool $force Whether to force the reset. If set to true the `reset` key of the projectConfig configuration will
+     * be ignored and the project config will be reset regardless.
+     *
+     * @return bool
+     */
+    public function resetProjectConfig(bool $force = false) : bool
+    {
+        $projectConfig = $this->_getConfig('projectConfig');
+
+        // If reset is disabled and we dont have to $force we can abandon....
+        if (isset($projectConfig['reset']) && $projectConfig['reset'] === false && $force === false) {
+            return true;
+        }
+
+        // Re-apply project config
+        if ($projectConfig = TestSetup::useProjectConfig()) {
+            // Tests just beginning. Reset the project config to its original state.
+            TestSetup::setupProjectConfig();
+
+            \Craft::$app->getProjectConfig()->applyConfigChanges(
+                TestSetup::getSeedProjectConfigData(false)
+            );
+
+            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+        } else {
+            \Craft::$app->getProjectConfig()->rebuild();
+
+            // We also manually set the edition if desired by the current config
+            $edition = $this->_getConfig('edition');
+            if (is_int($edition)) {
+                \Craft::$app->setEdition(
+                    $edition
+                );
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @throws Throwable
      */
     public function setupDb()
     {
         ob_start();
-
         try {
             // Create a Craft::$app object
             TestSetup::warmCraft();
@@ -226,16 +246,9 @@ class Craft extends Yii2
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
-
             // Setup the project config from the passed file.
             if ($projectConfig = TestSetup::useProjectConfig()) {
-                // Fail hard if someone has specified a project config file but doesn't have project config enabled.
-                // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
-                if (!\Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-                    throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
-                }
-
-                TestSetup::setupProjectConfig($projectConfig['file']);
+                TestSetup::setupProjectConfig();
             }
 
             // Get rid of everything.
@@ -271,7 +284,6 @@ class Craft extends Yii2
 
             // Trigger the end of a 'request'. This lets project config do its stuff.
             // TODO: Probably Craft::$app->getProjectConfig->saveModifiedConfigData() but i feel the below is more solid.
-
             \Craft::$app->state = Application::STATE_END;
             \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
         } catch (Throwable $exception) {

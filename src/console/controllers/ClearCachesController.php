@@ -56,7 +56,7 @@ class ClearCachesController extends Controller
     }
 
     /**
-     * Clear all caches
+     * Clear all caches.
      *
      * @return int
      * @throws InvalidRouteException

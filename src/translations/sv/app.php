@@ -1496,8 +1496,10 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'Define the schema’s scope' => 'Definiera schemats omfattning',
     'Edit the Public GraphQL Schema' => 'Redigera offentligt GraphQL-schema',
     'Schema name' => 'Namn på schema',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Visa kategorigrupp - {categoryGroup}',
+    'Delete them' => 'Radera dem',
+    'Keep them' => 'Behåll dem',
+    'View tag group - {tagGroup}' => 'Visa taggrupp - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];

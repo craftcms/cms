@@ -1496,8 +1496,10 @@ Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',
     'Define the schema’s scope' => 'Définir la portée du schéma',
     'Edit the Public GraphQL Schema' => 'Modifier le schéma GraphQL public',
     'Schema name' => 'Nom du schéma',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Voir le groupe de catégories - {categoryGroup}',
+    'Delete them' => 'Les supprimer',
+    'Keep them' => 'Les garder',
+    'View tag group - {tagGroup}' => 'Voir le groupe d\'étiquettes - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
