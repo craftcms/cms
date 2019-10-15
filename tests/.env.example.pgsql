@@ -2,7 +2,7 @@
 
 DB_DRIVER="pgsql"
 DB_SERVER="localhost"
-DB_USER="craftcms"
+DB_USER="craft"
 DB_PASSWORD="secret"
 DB_DATABASE="craft-test"
 DB_SCHEMA="public"

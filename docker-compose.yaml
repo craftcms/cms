@@ -9,7 +9,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: SuperPassword1!
       MYSQL_DATABASE: craft-test
-      MYSQL_USER: craftcms
+      MYSQL_USER: craft
       MYSQL_PASSWORD: secret
   postgres:
     image: postgres:9.5-alpine
@@ -18,7 +18,7 @@ services:
     environment:
       POSTGRES_ROOT_PASSWORD: SuperPassword123456!
       POSTGRES_DB: craft-test
-      POSTGRES_USER: craftcms
+      POSTGRES_USER: craft
       POSTGRES_PASSWORD: secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
