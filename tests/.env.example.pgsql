@@ -2,8 +2,8 @@
 
 DB_DRIVER="pgsql"
 DB_SERVER="localhost"
-DB_USER="craft"
-DB_PASSWORD="secret"
+DB_USER="postgres"
+DB_PASSWORD=""
 DB_DATABASE="craft-test"
 DB_SCHEMA="public"
 DB_TABLE_PREFIX=""
