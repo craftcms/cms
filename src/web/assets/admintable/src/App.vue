@@ -16,6 +16,7 @@
                         :action="action.action"
                         :actions="action.actions"
                         :ids="checks"
+                        v-on:reload="reload"
                     >
                     </admin-table-action-button>
                 </div>
@@ -149,6 +150,7 @@
             },
 
             reload() {
+                this.deselectAll();
                 this.$refs.vuetable.reload();
             }
         },
