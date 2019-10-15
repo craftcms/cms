@@ -23,7 +23,7 @@
 
             </div>
         </div>
-        <div class="tableview">
+        <div class="tableview" :class="{ loading: isLoading }">
             <vuetable
                     ref="vuetable"
                     :per-page="resultsPerPage"
@@ -90,6 +90,7 @@
                 checks: [],
                 tableClass: 'data fullwidth',
                 showToolbar: false,
+                isLoading: true,
                 isSelectAll: false,
                 sortable: null
             }
@@ -103,6 +104,8 @@
                         onSort: this.updateSortOrder
                     })
                 }
+
+                this.isLoading = false;
             },
 
             updateSortOrder(ev) {
@@ -150,6 +153,7 @@
             },
 
             reload() {
+                this.isLoading = true;
                 this.deselectAll();
                 this.$refs.vuetable.reload();
             }
@@ -243,6 +247,7 @@
 
         watch: {
             currentPage() {
+                this.isLoading = true;
                 this.deselectAll();
             }
         },
@@ -265,7 +270,7 @@
         top: calc(50% - 6px);
     }
 
-    .tableview .loading {
+    .tableview.loading {
         opacity: .3;
     }
 
