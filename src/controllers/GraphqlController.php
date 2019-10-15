@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\GqlException;
+use craft\events\GraphqlAfterExecuteEvent;
 use craft\events\GraphqlBeforeExecuteEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
@@ -31,6 +32,11 @@ use yii\web\Response;
  */
 class GraphqlController extends Controller
 {
+    /**
+     * @event GraphqlAfterExecuteEvent The event that is triggered after the GraphQL request is executed.
+     */
+    const EVENT_AFTER_GRAPHQL_EXECUTE = 'afterGraphqlExecute';
+
     /**
      * @event GraphqlBeforeExecuteEvent The event that is triggered before the GraphQL request is executed.
      */
@@ -148,16 +154,21 @@ class GraphqlController extends Controller
         try {
             $schemaDef = $gqlService->getSchemaDef($schema, StringHelper::contains($query, '__schema'));
 
-            $beforeEvent = new GraphqlBeforeExecuteEvent();
-            $beforeEvent->schema = $schema;
-            $beforeEvent->query = $query;
-            $beforeEvent->variables = $variables;
-            $beforeEvent->operationName = $operationName;
+            $before = new GraphqlBeforeExecuteEvent();
+            $before->schema = $schema;
+            $before->query = $query;
+            $before->variables = $variables;
+            $before->operationName = $operationName;
 
-            $this->trigger(self::EVENT_BEFORE_GRAPHQL_EXECUTE, $beforeEvent);
+            $this->trigger(self::EVENT_BEFORE_GRAPHQL_EXECUTE, $before);
 
             $result = GraphQL::executeQuery($schemaDef, $query, null, null, $variables, $operationName)
                 ->toArray(true);
+
+            $after = new GraphqlAfterExecuteEvent;
+            $after->result = $result;
+
+            $this->trigger(self::EVENT_AFTER_GRAPHQL_EXECUTE, $after);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
