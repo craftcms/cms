@@ -376,23 +376,23 @@ class DbHelperTest extends Unit
                 'foo', 'not :empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['not', ['foo' => true]],
+                ['or', ['not', ['foo' => true]], ['foo' => null]],
                 'foo', false, '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['not', ['foo' => true]],
+                ['or', ['not', ['foo' => true]], ['foo' => null]],
                 'foo', 0, '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['not', ['foo' => true]],
+                ['or', ['not', ['foo' => true]], ['foo' => null]],
                 'foo', '0', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['not', ['foo' => true]],
+                ['or', ['not', ['foo' => true]], ['foo' => null]],
                 'foo', 'not 1', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['not', ['foo' => true]],
+                ['or', ['not', ['foo' => true]], ['foo' => null]],
                 'foo', ':empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
         ];

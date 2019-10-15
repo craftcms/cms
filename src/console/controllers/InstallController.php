@@ -84,7 +84,7 @@ class InstallController extends Controller
     }
 
     /**
-     * Runs the install migration
+     * Runs the install migration.
      *
      * @return int
      */
@@ -179,7 +179,7 @@ class InstallController extends Controller
     }
 
     /**
-     * Installs a plugin
+     * Installs a plugin.
      *
      * @param string $handle
      * @return int

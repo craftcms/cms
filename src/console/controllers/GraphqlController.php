@@ -55,7 +55,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Print out a given GraphQL schema
+     * Print out a given GraphQL schema.
      *
      * @return int
      */
@@ -73,7 +73,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Dump out a given GraphQL schema to a file
+     * Dump out a given GraphQL schema to a file.
      *
      * @return int
      */

@@ -1496,8 +1496,10 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Define the schema’s scope' => 'Definovanie rozsahu schémy',
     'Edit the Public GraphQL Schema' => 'Upraviť verejnú schému GraphQL',
     'Schema name' => 'Názov schémy',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Zobraziť skupinu kategórií – {categoryGroup}',
+    'Delete them' => 'Odstrániť ich',
+    'Keep them' => 'Ponechať ich',
+    'View tag group - {tagGroup}' => 'Zobraziť skupinu značiek – {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];

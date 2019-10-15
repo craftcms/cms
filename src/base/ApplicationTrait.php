@@ -257,7 +257,7 @@ trait ApplicationTrait
         }
 
         try {
-            $this->getInfo(true);
+            $info = $this->getInfo(true);
         } catch (DbException $e) {
             if ($e->getCode() === 42) {
                 return $this->_isInstalled = false;
@@ -265,7 +265,7 @@ trait ApplicationTrait
             throw $e;
         }
 
-        return $this->_isInstalled = true;
+        return $this->_isInstalled = !empty($info->id);
     }
 
     /**

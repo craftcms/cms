@@ -1496,8 +1496,10 @@ return [
     'Define the schema’s scope' => '스키마 범위 정의',
     'Edit the Public GraphQL Schema' => '공개 GraphQL 스키마 수정',
     'Schema name' => '스키마 이름',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => '카테고리 그룹 보기 - {categoryGroup}',
+    'Delete them' => '해당 항목 삭제',
+    'Keep them' => '해당 항목 유지',
+    'View tag group - {tagGroup}' => '태그 그룹 보기 - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];

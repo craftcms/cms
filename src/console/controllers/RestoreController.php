@@ -13,7 +13,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**
- * Creates a new database backup
+ * Restores a database from backup.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.29

@@ -1496,8 +1496,10 @@ return [
     'Define the schema’s scope' => 'הגדר את טווח הסכימה',
     'Edit the Public GraphQL Schema' => 'ערוך את סכימת ה-GraphQL הציבורית',
     'Schema name' => 'שם הסכימה',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'הצג קבוצת קטגוריות - {categoryGroup}',
+    'Delete them' => 'מחק אותם',
+    'Keep them' => 'שמור אותם',
+    'View tag group - {tagGroup}' => 'הצג קבוצת תגיות - {tagGroup}',
+    'Single'=> 'Single',
+    'Channel'=> 'Channel'
 ];
