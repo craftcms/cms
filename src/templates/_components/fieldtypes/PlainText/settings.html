@@ -10,15 +10,34 @@
     errors: field.getErrors('placeholder')
 }) }}
 
-{{ forms.textField({
-    label: "Character Limit"|t('app'),
-    instructions: "The maximum number of characters the field is allowed to have."|t('app'),
-    id: 'char-limit',
-    name: 'charLimit',
-    value: field.charLimit,
-    size: 3,
-    errors: field.getErrors('charLimit')
-}) }}
+{% embed '_includes/forms/field' with {
+    label: 'Field Limit'|t('app'),
+    instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
+    id: 'fieldLimit',
+    errors: field.getErrors(field.byteLimit ? 'byteLimit' : 'charLimit')
+} %}
+    {% import "_includes/forms" as forms %}
+    {% block input %}
+        <div class="flex">
+            {{ forms.textField({
+                id: 'fieldLimit',
+                name: 'fieldLimit',
+                value: field.charLimit ?? field.byteLimit,
+                size: 3,
+            }) }}
+            {{ forms.select({
+                id: 'limitUnit',
+                name: 'limitUnit',
+                options: [
+                    { value: 'chars', label: 'Characters'|t('app') },
+                    { value: 'bytes', label: 'Bytes'|t('app') },
+                ],
+                value: field.byteLimit ? 'bytes' : 'chars'
+            }) }}
+        </div>
+    {% endblock %}
+{% endembed %}
+
 
 {{ forms.checkboxField({
     label: "Use a monospaced font"|t('app'),
@@ -55,11 +74,12 @@
             name: 'columnType',
             instructions: "The type of column this field should get in the database."|t('app'),
             options: [
+                { value: 'auto', label: 'Automatic'|t('app') },
                 { value: 'string', label: 'varchar (255B)' },
                 { value: 'text', label: 'text (~64KB)' },
                 { value: 'mediumtext', label: 'mediumtext (~16MB)' },
             ],
-            value: field.columnType,
+            value: field.columnType ?? 'auto',
             warning: (field.id ? "Changing this may result in data loss."|t('app')),
         }) }}
     </div>
