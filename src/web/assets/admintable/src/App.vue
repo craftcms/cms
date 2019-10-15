@@ -30,6 +30,7 @@
                     :fields="fields"
                     :api-url="apiUrl"
                     @vuetable:pagination-data="onPaginationData"
+                    @vuetable:loaded="init"
             >
                 <template slot="checkbox" slot-scope="props">
                     <admin-table-checkbox
@@ -39,6 +40,9 @@
                         v-on:addCheck="addCheck"
                         v-on:removeCheck="removeCheck"
                     ></admin-table-checkbox>
+                </template>
+                <template slot="reorder" slot-scope="props">
+                    <i class="move icon" :data-id="props.rowData.id"></i>
                 </template>
                 <template slot="delete" slot-scope="props">
                     <admin-table-delete-button
@@ -59,6 +63,7 @@
     import AdminTableDeleteButton from './js/components/AdminTableDeleteButton';
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
+    import Sortable from 'sortablejs'
 
     export default {
         components: {
@@ -75,7 +80,8 @@
             'deleteActionUrl',
             'endpoint',
             'perPage',
-            'reorder'
+            'reorder',
+            'reorderActionUrl'
         ],
 
         data() {
@@ -83,11 +89,43 @@
                 checks: [],
                 tableClass: 'data fullwidth',
                 showToolbar: false,
-                isSelectAll: false
+                isSelectAll: false,
+                sortable: null
             }
         },
 
         methods: {
+            init() {
+                if (this.showReorder) {
+                    this.sortable = Sortable.create(document.querySelector('.vuetable-body'), {
+                        handle: '.move.icon',
+                        onSort: this.updateSortOrder
+                    })
+                }
+            },
+
+            updateSortOrder(ev) {
+                let newIndex = ev.newIndex + (this.currentPage > 1 ? (this.currentPage-1) * this.resultsPerPage : 0);
+                // Make the order non-zero based
+                newIndex = newIndex + 1;
+                let moveHandle = ev.item.querySelector('.move.icon');
+
+                if (moveHandle) {
+                    let data = {
+                        id: moveHandle.dataset.id,
+                        position: newIndex
+                    };
+
+                    Craft.postActionRequest(this.reorderActionUrl, data, response => {
+                        if (response && response.success) {
+                            Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
+                        }
+                    });
+                } else {
+                    Craft.cp.displayError(Craft.t('app', 'Unable to save order.'));
+                }
+            },
+
             addCheck(id) {
                 if (this.checks.indexOf(id) === -1) {
                     this.checks.push(id);
@@ -149,9 +187,10 @@
 
                 if (this.showReorder) {
                     columns.push({
-                        name: '__handle',
+                        name: '__slot:reorder',
+                        title: '',
                         titleClass: 'thin'
-                    })
+                    });
                 }
 
                 if (this.deleteActionUrl) {
@@ -173,7 +212,7 @@
             },
 
             showReorder() {
-                return this.reorder !== undefined ? JSON.parse(this.reorder) : false;
+                return this.reorder !== undefined && this.reorderActionUrl ? JSON.parse(this.reorder) : false;
             },
 
             resultsPerPage() {
@@ -226,5 +265,9 @@
 
     .tableview .loading {
         opacity: .3;
+    }
+
+    .tableview .cell-bold {
+        font-weight: bold;
     }
 </style>
