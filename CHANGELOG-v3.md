@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.10 - 2019-10-15
 
 ### Added
 - Added the `allowOwnerDrafts` and `allowOwnerRevisions` Matrix block query params.
