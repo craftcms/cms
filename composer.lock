@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "888be7534245926c07296fc3edb2af33",
+    "content-hash": "313439ec245b47f034a1d392e6017d1b",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -3306,6 +3306,55 @@
                 "graphql"
             ],
             "time": "2018-09-02T14:59:54+00:00"
+        },
+        {
+            "name": "yii2tech/ar-position",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yii2tech/ar-position.git",
+                "reference": "52acf94d1fa80fa0ffbcc29fc73e57ecc1a1a325"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yii2tech/ar-position/zipball/52acf94d1fa80fa0ffbcc29fc73e57ecc1a1a325",
+                "reference": "52acf94d1fa80fa0ffbcc29fc73e57ecc1a1a325",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "*"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "yii2tech\\ar\\position\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Paul Klimov",
+                    "email": "klimov.paul@gmail.com"
+                }
+            ],
+            "description": "Provides support for ActiveRecord custom sort in Yii2",
+            "keywords": [
+                "active",
+                "order",
+                "position",
+                "record",
+                "sort",
+                "yii2"
+            ],
+            "time": "2017-11-01T10:56:01+00:00"
         },
         {
             "name": "yii2tech/ar-softdelete",
