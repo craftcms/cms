@@ -1,8 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.11 - 2019-10-16
 
-### Added
+### Added
 - Added `craft\events\ExecuteGqlQueryEvent`.
 - Added `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY`.
 - Added `craft\services\Gql::EVENT_AFTER_EXECUTE_GQL_QUERY`.
