@@ -12,6 +12,7 @@ use craft\db\Query as DbQuery;
 use craft\db\Table;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
+use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
@@ -159,6 +160,49 @@ class Gql extends Component
     const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
 
     /**
+     * @event ExecuteGqlQueryEvent The event that is triggered before executing the GraphQL query.
+     *
+     * Plugins get a chance to modify the query or return a cached response.
+     *
+     * ---
+     * ```php
+     * use craft\events\ExecuteGqlQueryEvent;
+     * use craft\services\GraphQl;
+     * use yii\base\Event;
+     *
+     * Event::on(Gql::class,
+     *     Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY,
+     *     function(ExecuteGqlQueryEvent $event) {
+     *         // Set the result from cache
+     *         $event->result = ...;
+     *     }
+     * );
+     * ```
+     */
+    const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
+
+    /**
+     * @event ExecuteGqlQueryEvent The event that is triggered after executing the GraphQL query.
+     *
+     * Plugins get a chance to do sometheing after a performed GraphQL query.
+     *
+     * ---
+     * ```php
+     * use craft\events\ExecuteGqlQueryEvent;
+     * use craft\services\GraphQl;
+     * use yii\base\Event;
+     *
+     * Event::on(Gql::class,
+     *     Gql::EVENT_AFTER_EXECUTE_GQL_QUERY,
+     *     function(ExecuteGqlQueryEvent $event) {
+     *         // Cache the results from $event->result or just tweak them
+     *     }
+     * );
+     * ```
+     */
+    const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
+
+    /**
      * Currently loaded schema definition
      *
      * @var Schema
@@ -270,6 +314,36 @@ class Gql extends Component
         $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
 
         return array_values($event->validationRules);
+    }
+
+    /**
+     * Execute a GraphQL query for a given schema definition.
+     *
+     * @param Schema $schema The schema definition to use.
+     * @param string $query The query string to execute.
+     * @param array|null $variables The variables to use.
+     * @param string|null $operationName The operation name.
+     * @param bool $debugMode Whether debug mode validations rules should be used for GraphQL.
+     * @return array
+     */
+    public function executeQuery(Schema $schemaDef, string $query, $variables, $operationName, $debugMode = false): array
+    {
+        $event = new ExecuteGqlQueryEvent([
+            'schemaDef' => $schemaDef,
+            'query' => $query,
+            'variables' => $variables,
+            'operationName' => $operationName,
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
+
+        if ($event->result === null) {
+            $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $variables, $operationName, null, $this->getValidationRules($debugMode))->toArray(true);
+        }
+
+        $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
+
+        return $event->result;
     }
 
     /**
