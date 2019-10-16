@@ -143,8 +143,7 @@ class GraphqlController extends Controller
 
         try {
             $schemaDef = $gqlService->getSchemaDef($schema, $devMode || StringHelper::contains($query, '__schema'));
-            $result = GraphQL::executeQuery($schemaDef, $query, null, null, $variables, $operationName, null, $gqlService->getValidationRules($devMode))
-                ->toArray(true);
+            $result = $gqlService->executeQuery($schemaDef, $query, $variables, $operationName);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
