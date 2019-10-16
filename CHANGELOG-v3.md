@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed a bug where user email changes were going through email verification even if someone with permission to administrate users was making the change. ([#5088](https://github.com/craftcms/cms/issues/5088))
+- Fixed an error that could occur when duplicating entries with Matrix blocks. ([#5097](https://github.com/craftcms/cms/issues/5097))
 
 ## 3.3.10 - 2019-10-15
 
