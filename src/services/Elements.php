@@ -776,17 +776,19 @@ class Elements extends Component
                     $siteClone->setAttributes($newAttributes, false);
                     $siteClone->siteId = $siteInfo['siteId'];
 
-                    // Make sure it has a valid slug
-                    (new SlugValidator())->validateAttribute($siteClone, 'slug');
-                    if ($siteClone->hasErrors('slug')) {
-                        throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . $siteClone->getFirstError('slug'));
-                    }
+                    if ($element::hasUris()) {
+                        // Make sure it has a valid slug
+                        (new SlugValidator())->validateAttribute($siteClone, 'slug');
+                        if ($siteClone->hasErrors('slug')) {
+                            throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . $siteClone->getFirstError('slug'));
+                        }
 
-                    // Set a unique URI on the site clone
-                    try {
-                        ElementHelper::setUniqueUri($siteClone);
-                    } catch (OperationAbortedException $e) {
-                        // Oh well, not worth bailing over
+                        // Set a unique URI on the site clone
+                        try {
+                            ElementHelper::setUniqueUri($siteClone);
+                        } catch (OperationAbortedException $e) {
+                            // Oh well, not worth bailing over
+                        }
                     }
 
                     if (!$this->_saveElementInternal($siteClone, false, false)) {

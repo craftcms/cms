@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.3.11 - 2019-10-16
+
+### Added
+- Added `craft\events\ExecuteGqlQueryEvent`.
+- Added `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY`.
+- Added `craft\services\Gql::EVENT_AFTER_EXECUTE_GQL_QUERY`.
+- Added `craft\services\Gql::executeQuery()`.
+
+### Changed
+- Dropdown and Multi-select fields can now have duplicate option labels, as long as they are in different optgroups. ([#5105](https://github.com/craftcms/cms/issues/5105))
+
+### Fixed
+- Fixed a bug where user email changes were going through email verification even if someone with permission to administrate users was making the change. ([#5088](https://github.com/craftcms/cms/issues/5088))
+- Fixed an error that could occur when duplicating entries with Matrix blocks. ([#5097](https://github.com/craftcms/cms/issues/5097))
+
 ## 3.3.10 - 2019-10-15
 
 ### Added
@@ -11,7 +26,6 @@
 - Fixed a bug where Craft wasn’t passing assets’ MIME types to cloud storage services when saving them. ([#5052](https://github.com/craftcms/cms/issues/5052))
 - Fixed a bug where Assets fields’ image thumbnails weren’t getting refreshed after images were edited. ([#4212](https://github.com/craftcms/cms/issues/4212))
 - Fixed a bug where the `index-assets` command would bail as soon as it came across a file with a disallowed file extension. ([#5086](https://github.com/craftcms/cms/issues/5086))
-- Fixed a bug where user email changes were going through email verification even if someone with permission to administrate users was making the change. ([#5088](https://github.com/craftcms/cms/issues/5088))
 - Fixed a bug where it wasn’t possible to eager-load Matrix blocks that belong to a draft or revision. ([#5031](https://github.com/craftcms/cms/issues/5031))
 - Fixed a bug where the `setup` command would think that Craft was installed when it wasn’t. ([#5093](https://github.com/craftcms/cms/issues/5093))
 - Fixed an error that could occur when syncing the project config if a Matrix field had been changed to something else. ([#4015](https://github.com/craftcms/cms/issues/4015))
@@ -2319,7 +2333,7 @@
 - `craft\helpers\StringHelper::toKebabCase()`, `toCamelCase()`, `toPascalCase()`, and `toSnakeCase()` now treat camelCase’d and PascalCale’d strings as multiple words. ([#3090](https://github.com/craftcms/cms/issues/3090))
 
 ### Fixed
-- Fixed a bug where `craft\i18n\I18N::getPrimarySiteLocale()` and `getPrimarySiteLocaleId()` were returning locale info for the _first_ site, rather than the primary one. ([#3063](https://github.com/craftcms/cms/issues/3063))
+- Fixed a bug where `craft\i18n\I18N::getPrimarySiteLocale()` and `getPrimarySiteLocaleId()` were returning locale info for the _first_ site, rather than the primary one. ([#3063](https://github.com/craftcms/cms/issues/3063))
 - Fixed a bug where element index pages were loading all elements in the view, rather than waiting for the user to scroll to the bottom of the page before loading the next batch. ([#3068](https://github.com/craftcms/cms/issues/3068))
 - Fixed a bug where sites listed in the Control Panel weren’t always in the correct sort order. ([#3065](https://github.com/craftcms/cms/issues/3065))
 - Fixed an error that occurred when users attempted to create new entries within entry selector modals, for a section they didn’t have permission to publish peer entries in. ([#3069](https://github.com/craftcms/cms/issues/3069))
