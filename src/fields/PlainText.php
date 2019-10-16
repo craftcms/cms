@@ -98,6 +98,14 @@ class PlainText extends Field implements PreviewableFieldInterface
             unset($config['limitUnit'], $config['fieldLimit']);
         }
 
+        if (isset($config['charLimit']) && empty($config['charLimit'])) {
+            unset($config['charLimit']);
+        }
+
+        if (isset($config['byteLimit']) && empty($config['byteLimit'])) {
+            unset($config['byteLimit']);
+        }
+
         if (isset($config['columnType']) && $config['columnType'] === 'auto') {
             unset($config['columnType']);
         }
