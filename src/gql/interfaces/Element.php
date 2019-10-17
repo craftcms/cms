@@ -51,9 +51,7 @@ class Element extends InterfaceType
             }
         ]));
 
-        foreach (ElementType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        ElementType::generateTypes();
 
         return $type;
     }

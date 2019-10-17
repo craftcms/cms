@@ -29,9 +29,11 @@ use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
+use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Matrix;
+use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
@@ -259,10 +261,7 @@ trait ApplicationTrait
         try {
             $info = $this->getInfo(true);
         } catch (DbException $e) {
-            if ($e->getCode() === 42) {
-                return $this->_isInstalled = false;
-            }
-            throw $e;
+            return $this->_isInstalled = false;
         }
 
         return $this->_isInstalled = !empty($info->id);
@@ -1350,6 +1349,9 @@ trait ApplicationTrait
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
+        // Register all the listeners for invalidating GraphQL Cache.
+        $this->_registerGraphQlListeners();
+
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
@@ -1440,6 +1442,20 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    /**
+     * Register listeners for GraphQL
+     */
+    private function _registerGraphQlListeners() {
+        $invalidate = [$this->getGql(), 'invalidateResultCaches'];
+
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_ADD_ITEM, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_REMOVE_ITEM, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_UPDATE_ITEM, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
+        $this->getElements(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
     }
 
     /**

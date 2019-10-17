@@ -50,9 +50,7 @@ class Tag extends Element
             }
         ]));
 
-        foreach (TagType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        TagType::generateTypes();
 
         return $type;
     }

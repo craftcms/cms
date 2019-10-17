@@ -29,6 +29,11 @@ class Transform extends Arguments
                 'type' => Type::string(),
                 'description' => 'The handle of the named transform to use.'
             ],
+            'transform' => [
+                'name' => 'transform',
+                'type' => Type::string(),
+                'description' => 'The handle of the named transform to use.'
+            ],
             'width' => [
                 'name' => 'width',
                 'type' => Type::int(),

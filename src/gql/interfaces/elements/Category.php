@@ -52,9 +52,7 @@ class Category extends Structure
             }
         ]));
 
-        foreach (CategoryType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        CategoryType::generateTypes();
 
         return $type;
     }

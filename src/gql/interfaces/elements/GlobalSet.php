@@ -50,9 +50,7 @@ class GlobalSet extends Element
             }
         ]));
 
-        foreach (GlobalSetType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        GlobalSetType::generateTypes();
 
         return $type;
     }

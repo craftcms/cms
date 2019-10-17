@@ -22,9 +22,9 @@ class ExecuteGqlQueryEvent extends Event
     // =========================================================================
 
     /**
-     * @var Schema The GraphQL schema used for this query.
+     * @var string The access token used for this request.
      */
-    public $schemaDef;
+    public $accessToken;
 
     /**
      * @var string The GraphQL query being executed
