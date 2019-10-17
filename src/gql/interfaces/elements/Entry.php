@@ -53,9 +53,7 @@ class Entry extends Structure
             }
         ]));
 
-        foreach (EntryType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        EntryType::generateTypes();
 
         return $type;
     }

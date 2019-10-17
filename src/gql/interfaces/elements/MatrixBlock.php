@@ -49,9 +49,7 @@ class MatrixBlock extends Element
             }
         ]));
 
-        foreach (MatrixBlockType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        MatrixBlockType::generateTypes();
 
         return $type;
     }

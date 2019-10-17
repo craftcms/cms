@@ -10,6 +10,7 @@
 ### Changed
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))
 - The `craft\services\Gql::executeQuery()` method now expects an active schema object, instead of a GraphQL Schema object.
+- It is no longer required to register GraphQL type loaders when creating types.
 
 ## 3.3.11 - 2019-10-16
 

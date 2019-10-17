@@ -47,8 +47,6 @@ class TableRowType implements GeneratorInterface
             }
         ]));
 
-        TypeLoader::registerType($typeName, function () use ($tableRowType) { return $tableRowType ;});
-
         return [$tableRowType];
     }
 

@@ -51,9 +51,7 @@ class Asset extends Element
             }
         ]));
 
-        foreach (AssetType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        AssetType::generateTypes();
 
         return $type;
     }
