@@ -174,10 +174,6 @@ const actions = {
                 })
         })
     },
-
-    updateCraftId({commit}, craftId) {
-        commit('updateCraftId', craftId)
-    },
 }
 
 /**
@@ -201,7 +197,7 @@ const mutations = {
         state.CraftSolo = response.data.CraftSolo
     },
 
-    updateCraftId(state, {craftId}) {
+    updateCraftId(state, craftId) {
         state.craftId = craftId
     },
 
