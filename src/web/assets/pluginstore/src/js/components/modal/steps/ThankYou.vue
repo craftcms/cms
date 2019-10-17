@@ -16,7 +16,6 @@
 <script>
     /* global Craft */
 
-    import {mapState} from 'vuex'
     import Step from '../Step'
 
     export default {
@@ -25,10 +24,6 @@
         },
 
         computed: {
-            ...mapState({
-                craftLogo: state => state.craft.craftLogo,
-            }),
-
             managePluginsUrl() {
                 return Craft.getCpUrl('settings/plugins')
             }

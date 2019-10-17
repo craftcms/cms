@@ -14,11 +14,9 @@
         },
 
         computed: {
-
             ...mapState({
                 editions: state => state.craft.editions,
             }),
-
         },
     }
 </script>

@@ -22,8 +22,8 @@
         data() {
             return {
                 loading: false,
-                sectionLoaded: false,
                 pluginsLoaded: false,
+                sectionLoaded: false,
             }
         },
 

@@ -18,17 +18,6 @@ export default {
     },
 
     /**
-     * Try edition.
-     */
-    tryEdition(edition) {
-        return axios.post(Craft.getActionUrl('app/try-edition'), 'edition=' + edition, {
-            headers: {
-                'X-CSRF-Token': Craft.csrfTokenValue,
-            }
-        })
-    },
-
-    /**
      * Switch plugin edition.
      */
     switchPluginEdition(pluginHandle, edition) {
@@ -39,5 +28,16 @@ export default {
                 'X-CSRF-Token': Craft.csrfTokenValue,
             },
         })
-    }
+    },
+
+    /**
+     * Try edition.
+     */
+    tryEdition(edition) {
+        return axios.post(Craft.getActionUrl('app/try-edition'), 'edition=' + edition, {
+            headers: {
+                'X-CSRF-Token': Craft.csrfTokenValue,
+            }
+        })
+    },
 }

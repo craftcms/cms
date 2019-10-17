@@ -27,13 +27,11 @@
         },
 
         computed: {
-
             menuLabel() {
                 if (this.attributes) {
                     return this.attributes[this.value.attribute]
                 }
             }
-
         },
 
         methods: {

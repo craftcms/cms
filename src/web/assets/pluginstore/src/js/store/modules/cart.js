@@ -10,62 +10,18 @@ Vue.use(Vuex)
  */
 const state = {
     activeTrialPlugins: [],
-    checkoutStatus: null,
     cart: null,
     cartPlugins: [],
-    stripePublicKey: null,
+    checkoutStatus: null,
     identityMode: 'craftid',
     selectedExpiryDates: {},
+    stripePublicKey: null,
 }
 
 /**
  * Getters
  */
 const getters = {
-    isInCart(state) {
-        return (plugin, edition) => {
-            if (!state.cart) {
-                return false
-            }
-
-            return state.cart.lineItems.find(lineItem => {
-                if (lineItem.purchasable.pluginId !== plugin.id) {
-                    return false
-                }
-
-                if (edition && lineItem.purchasable.handle !== edition.handle) {
-                    return false
-                }
-
-                return true
-            })
-        }
-    },
-
-    isCmsEditionInCart(state) {
-        return cmsEdition => {
-            if (!state.cart) {
-                return false
-            }
-
-            return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
-        }
-    },
-
-    getActiveTrialPluginEdition(state, getters, rootState, rootGetters) {
-        return plugin => {
-            const pluginHandle = plugin.handle
-            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](pluginHandle)
-            const pluginEdition = plugin.editions.find(edition => edition.handle === pluginLicenseInfo.edition)
-
-            if (!pluginEdition) {
-                return null
-            }
-
-            return pluginEdition
-        }
-    },
-
     cartItems(state) {
         let cartItems = []
 
@@ -90,36 +46,57 @@ const getters = {
 
     cartItemsData(state) {
         return utils.getCartItemsData(state.cart)
-    }
+    },
+
+    isCmsEditionInCart(state) {
+        return cmsEdition => {
+            if (!state.cart) {
+                return false
+            }
+
+            return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
+        }
+    },
+
+    isInCart(state) {
+        return (plugin, edition) => {
+            if (!state.cart) {
+                return false
+            }
+
+            return state.cart.lineItems.find(lineItem => {
+                if (lineItem.purchasable.pluginId !== plugin.id) {
+                    return false
+                }
+
+                if (edition && lineItem.purchasable.handle !== edition.handle) {
+                    return false
+                }
+
+                return true
+            })
+        }
+    },
+
+    getActiveTrialPluginEdition(state, getters, rootState, rootGetters) {
+        return plugin => {
+            const pluginHandle = plugin.handle
+            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](pluginHandle)
+            const pluginEdition = plugin.editions.find(edition => edition.handle === pluginLicenseInfo.edition)
+
+            if (!pluginEdition) {
+                return null
+            }
+
+            return pluginEdition
+        }
+    },
 }
 
 /**
  * Actions
  */
 const actions = {
-    updateItem({commit, state}, {itemKey, item}) {
-        return new Promise((resolve, reject) => {
-            const cart = state.cart
-
-            let items = utils.getCartItemsData(cart)
-
-            items[itemKey] = item
-
-            let data = {
-                items,
-            }
-
-            api.updateCart(cart.number, data)
-                .then(response => {
-                    commit('updateCart', {response})
-                    resolve(response)
-                })
-                .catch(error => {
-                    reject(error.response)
-                })
-        })
-    },
-
     addToCart({commit, state, rootGetters}, newItems) {
         return new Promise((resolve, reject) => {
             const cart = JSON.parse(JSON.stringify(state.cart))
@@ -197,28 +174,6 @@ const actions = {
         })
     },
 
-    removeFromCart({commit, state}, lineItemKey) {
-        return new Promise((resolve, reject) => {
-            const cart = state.cart
-
-            let items = utils.getCartItemsData(cart)
-            items.splice(lineItemKey, 1)
-
-            let data = {
-                items,
-            }
-
-            api.updateCart(cart.number, data)
-                .then(response => {
-                    commit('updateCart', {response})
-                    resolve(response)
-                })
-                .catch(error => {
-                    reject(error.response)
-                })
-        })
-    },
-
     // eslint-disable-next-line
     checkout({}, data) {
         return new Promise((resolve, reject) => {
@@ -229,6 +184,66 @@ const actions = {
                 .catch(error => {
                     reject(error.response)
                 })
+        })
+    },
+
+    getActiveTrialPlugins({commit, rootState, rootGetters}) {
+        return new Promise((resolve, reject) => {
+            // get plugin license info and find active trial plugin ids
+            const pluginHandles = []
+            const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
+
+            for (let pluginHandle in pluginLicenseInfo) {
+                if (pluginLicenseInfo.hasOwnProperty(pluginHandle)) {
+                    pluginHandles.push(pluginHandle)
+                }
+            }
+
+            // request plugins by plugin id
+            pluginStoreApi.getPluginsByHandles(pluginHandles)
+                .then((response) => {
+                    const data = response.data
+                    const plugins = []
+
+                    for (let i = 0; i < data.length; i++) {
+                        const plugin = data[i]
+
+                        if (!plugin) {
+                            continue
+                        }
+
+                        const info = pluginLicenseInfo[plugin.handle]
+
+                        if (!info) {
+                            continue
+                        }
+
+                        if (info.licenseKey && info.edition === info.licensedEdition) {
+                            continue
+                        }
+
+                        if (info.edition) {
+                            const pluginEdition = plugin.editions.find(edition => edition.handle === info.edition)
+
+                            if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
+                                continue
+                            }
+                        }
+
+                        if (!rootGetters['craft/isPluginInstalled'](plugin.handle)) {
+                            continue
+                        }
+
+                        plugins.push(plugin)
+                    }
+
+                    commit('updateActiveTrialPlugins', plugins)
+                    resolve(response)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+
         })
     },
 
@@ -306,18 +321,36 @@ const actions = {
         })
     },
 
-    saveCart({commit, state}, data) {
+    getOrderNumber({state}) {
+        return new Promise((resolve, reject) => {
+            if (state.cart && state.cart.number) {
+                const orderNumber = state.cart.number
+                resolve(orderNumber)
+            } else {
+                api.getOrderNumber(orderNumber => {
+                    resolve(orderNumber)
+                }, response => {
+                    reject(response)
+                })
+            }
+        })
+    },
+
+    removeFromCart({commit, state}, lineItemKey) {
         return new Promise((resolve, reject) => {
             const cart = state.cart
 
+            let items = utils.getCartItemsData(cart)
+            items.splice(lineItemKey, 1)
+
+            let data = {
+                items,
+            }
+
             api.updateCart(cart.number, data)
                 .then(response => {
-                    if (!response.data.errors) {
-                        commit('updateCart', {response})
-                        resolve(response)
-                    } else {
-                        reject(response)
-                    }
+                    commit('updateCart', {response})
+                    resolve(response)
                 })
                 .catch(error => {
                     reject(error.response)
@@ -339,23 +372,27 @@ const actions = {
         })
     },
 
-    getOrderNumber({state}) {
-        return new Promise((resolve, reject) => {
-            if (state.cart && state.cart.number) {
-                const orderNumber = state.cart.number
-                resolve(orderNumber)
-            } else {
-                api.getOrderNumber(orderNumber => {
-                    resolve(orderNumber)
-                }, response => {
-                    reject(response)
-                })
-            }
-        })
-    },
-
     resetOrderNumber() {
         api.resetOrderNumber()
+    },
+
+    saveCart({commit, state}, data) {
+        return new Promise((resolve, reject) => {
+            const cart = state.cart
+
+            api.updateCart(cart.number, data)
+                .then(response => {
+                    if (!response.data.errors) {
+                        commit('updateCart', {response})
+                        resolve(response)
+                    } else {
+                        reject(response)
+                    }
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
+        })
     },
 
     // eslint-disable-next-line
@@ -392,63 +429,26 @@ const actions = {
         })
     },
 
-    getActiveTrialPlugins({commit, rootState, rootGetters}) {
+    updateItem({commit, state}, {itemKey, item}) {
         return new Promise((resolve, reject) => {
-            // get plugin license info and find active trial plugin ids
-            const pluginHandles = []
-            const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
+            const cart = state.cart
 
-            for (let pluginHandle in pluginLicenseInfo) {
-                if (pluginLicenseInfo.hasOwnProperty(pluginHandle)) {
-                    pluginHandles.push(pluginHandle)
-                }
+            let items = utils.getCartItemsData(cart)
+
+            items[itemKey] = item
+
+            let data = {
+                items,
             }
 
-            // request plugins by plugin id
-            pluginStoreApi.getPluginsByHandles(pluginHandles)
-                .then((response) => {
-                    const data = response.data
-                    const plugins = []
-
-                    for (let i = 0; i < data.length; i++) {
-                        const plugin = data[i]
-
-                        if (!plugin) {
-                            continue
-                        }
-
-                        const info = pluginLicenseInfo[plugin.handle]
-
-                        if (!info) {
-                            continue
-                        }
-
-                        if (info.licenseKey && info.edition === info.licensedEdition) {
-                            continue
-                        }
-
-                        if (info.edition) {
-                            const pluginEdition = plugin.editions.find(edition => edition.handle === info.edition)
-
-                            if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
-                                continue
-                            }
-                        }
-
-                        if (!rootGetters['craft/isPluginInstalled'](plugin.handle)) {
-                            continue
-                        }
-
-                        plugins.push(plugin)
-                    }
-
-                    commit('updateActiveTrialPlugins', plugins)
+            api.updateCart(cart.number, data)
+                .then(response => {
+                    commit('updateCart', {response})
                     resolve(response)
                 })
-                .catch((error) => {
-                    reject(error)
+                .catch(error => {
+                    reject(error.response)
                 })
-
         })
     },
 }
@@ -457,6 +457,14 @@ const actions = {
  * Mutations
  */
 const mutations = {
+    changeIdentityMode(state, mode) {
+        state.identityMode = mode
+    },
+
+    resetCart(state) {
+        state.cart = null
+    },
+
     updateActiveTrialPlugins(state, plugins) {
         state.activeTrialPlugins = plugins
     },
@@ -475,14 +483,6 @@ const mutations = {
 
     updateCartPlugins(state, plugins) {
         state.cartPlugins = plugins
-    },
-
-    resetCart(state) {
-        state.cart = null
-    },
-
-    changeIdentityMode(state, mode) {
-        state.identityMode = mode
     },
 
     updateSelectedExpiryDates(state, selectedExpiryDates) {

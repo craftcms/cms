@@ -46,9 +46,9 @@
 
         data() {
             return {
-                loading: false,
                 guestEmail: '',
                 guestEmailError: false,
+                loading: false,
             }
         },
 

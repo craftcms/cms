@@ -2,6 +2,15 @@ import axios from 'axios'
 
 export default {
     /**
+     * Get plugin store data.
+     *
+     * @returns {AxiosPromise<any>}
+     */
+    getCoreData() {
+        return axios.get(process.env.VUE_APP_CRAFT_API_ENDPOINT + '/plugin-store/core-data')
+    },
+
+    /**
      * Get developer.
      *
      * @param developerId
@@ -9,15 +18,6 @@ export default {
      */
     getDeveloper(developerId) {
         return axios.get(process.env.VUE_APP_CRAFT_API_ENDPOINT + '/developer/' + developerId)
-    },
-
-    /**
-     * Get plugin store data.
-     *
-     * @returns {AxiosPromise<any>}
-     */
-    getCoreData() {
-        return axios.get(process.env.VUE_APP_CRAFT_API_ENDPOINT + '/plugin-store/core-data')
     },
 
     /**
@@ -37,6 +37,16 @@ export default {
      */
     getFeaturedSections() {
         return axios.get(process.env.VUE_APP_CRAFT_API_ENDPOINT + '/plugin-store/featured-sections')
+    },
+
+    /**
+     * Get plugin changelog.
+     *
+     * @param pluginId
+     * @returns {AxiosPromise<any>}
+     */
+    getPluginChangelog(pluginId) {
+        return axios.get(process.env.VUE_APP_CRAFT_API_ENDPOINT + '/plugin/' + pluginId + '/changelog')
     },
 
     /**
@@ -60,17 +70,7 @@ export default {
     },
 
     /**
-     * Get plugin changelog.
-     *
-     * @param pluginId
-     * @returns {AxiosPromise<any>}
-     */
-    getPluginChangelog(pluginId) {
-        return axios.get(process.env.VUE_APP_CRAFT_API_ENDPOINT + '/plugin/' + pluginId + '/changelog')
-    },
-
-    /**
-     * Get plugjins by category.
+     * Get plugins by category.
      *
      * @param categoryId
      * @param pluginIndexParams
@@ -87,6 +87,7 @@ export default {
 
     /**
      * Get plugins by developer ID.
+     *
      * @param developerId
      * @param pluginIndexParams
      * @returns {AxiosPromise<any>}

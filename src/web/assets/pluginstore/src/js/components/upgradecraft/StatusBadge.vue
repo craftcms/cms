@@ -28,8 +28,8 @@
 
         computed: {
             ...mapState({
-                licensedEdition: state => state.craft.licensedEdition,
                 CraftEdition: state => state.craft.CraftEdition,
+                licensedEdition: state => state.craft.licensedEdition,
             }),
         }
     }

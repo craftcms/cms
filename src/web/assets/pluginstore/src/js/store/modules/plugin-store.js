@@ -6,13 +6,13 @@ import api from '../../api/pluginstore'
 const state = {
     categories: [],
     developer: null,
+    expiryDateOptions: [],
     featuredPlugins: [],
-    featuredSections: [],
     featuredSection: null,
+    featuredSections: [],
     plugin: null,
     pluginChangelog: null,
     plugins: [],
-    expiryDateOptions: [],
 }
 
 /**
@@ -64,6 +64,19 @@ const getters = {
  * Actions
  */
 const actions = {
+    getCoreData({commit}) {
+        return new Promise((resolve, reject) => {
+            api.getCoreData()
+                .then(response => {
+                    commit('updateCoreData', {response})
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
+        })
+    },
+
     getDeveloper({commit}, developerId) {
         return api.getDeveloper(developerId)
             .then(response => {
@@ -85,11 +98,11 @@ const actions = {
             })
     },
 
-    getCoreData({commit}) {
+    getPluginChangelog({commit}, pluginId) {
         return new Promise((resolve, reject) => {
-            api.getCoreData()
+            api.getPluginChangelog(pluginId)
                 .then(response => {
-                    commit('updateCoreData', {response})
+                    commit('updatePluginChangelog', response.data)
                     resolve(response)
                 })
                 .catch(error => {
@@ -116,19 +129,6 @@ const actions = {
             .then(response => {
                 commit('updatePluginDetails', response.data)
             })
-    },
-
-    getPluginChangelog({commit}, pluginId) {
-        return new Promise((resolve, reject) => {
-            api.getPluginChangelog(pluginId)
-                .then(response => {
-                    commit('updatePluginChangelog', response.data)
-                    resolve(response)
-                })
-                .catch(error => {
-                    reject(error.response)
-                })
-        })
     },
 
     getPluginsByCategory({commit, getters}, context) {
@@ -216,6 +216,10 @@ const actions = {
  * Mutations
  */
 const mutations = {
+    appendPlugins(state, plugins) {
+        state.plugins = [...state.plugins, ...plugins]
+    },
+
     updateCoreData(state, {response}) {
         state.categories = response.data.categories
         state.expiryDateOptions = response.data.expiryDateOptions
@@ -233,20 +237,16 @@ const mutations = {
         state.featuredSections = featuredSections
     },
 
-    updatePluginDetails(state, pluginDetails) {
-        state.plugin = pluginDetails
-    },
-
     updatePluginChangelog(state, changelog) {
         state.pluginChangelog = changelog
     },
 
-    updatePlugins(state, plugins) {
-        state.plugins = plugins
+    updatePluginDetails(state, pluginDetails) {
+        state.plugin = pluginDetails
     },
 
-    appendPlugins(state, plugins) {
-        state.plugins = [...state.plugins, ...plugins]
+    updatePlugins(state, plugins) {
+        state.plugins = plugins
     },
 }
 

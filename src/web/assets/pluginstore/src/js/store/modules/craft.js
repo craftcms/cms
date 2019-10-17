@@ -4,57 +4,27 @@ import api from '../../api/craft'
  * State
  */
 const state = {
-    CraftEdition: null,
-    CraftPro: null,
-    CraftSolo: null,
     canTestEditions: null,
     countries: null,
     craftId: null,
     craftLogo: null,
     currentUser: null,
+    defaultPluginSvg: null,
     editions: null,
     licensedEdition: null,
-    poweredByStripe: null,
-    defaultPluginSvg: null,
     pluginLicenseInfo: {},
+    poweredByStripe: null,
+
+    // Craft editions
+    CraftEdition: null,
+    CraftPro: null,
+    CraftSolo: null,
 }
 
 /**
  * Getters
  */
 const getters = {
-    isPluginInstalled(state) {
-        return pluginHandle => {
-            if (!state.pluginLicenseInfo) {
-                return false
-            }
-
-            if (!state.pluginLicenseInfo[pluginHandle]) {
-                return false
-            }
-
-            if (!state.pluginLicenseInfo[pluginHandle].isInstalled) {
-                return false
-            }
-
-            return true
-        }
-    },
-
-    getPluginLicenseInfo(state) {
-        return pluginHandle => {
-            if (!state.pluginLicenseInfo) {
-                return null
-            }
-
-            if (!state.pluginLicenseInfo[pluginHandle]) {
-                return null
-            }
-
-            return state.pluginLicenseInfo[pluginHandle]
-        }
-    },
-
     getCmsEditionFeatures() {
         return editionHandle => {
             const features = {
@@ -110,7 +80,39 @@ const getters = {
 
             return features[editionHandle]
         }
-    }
+    },
+
+    getPluginLicenseInfo(state) {
+        return pluginHandle => {
+            if (!state.pluginLicenseInfo) {
+                return null
+            }
+
+            if (!state.pluginLicenseInfo[pluginHandle]) {
+                return null
+            }
+
+            return state.pluginLicenseInfo[pluginHandle]
+        }
+    },
+
+    isPluginInstalled(state) {
+        return pluginHandle => {
+            if (!state.pluginLicenseInfo) {
+                return false
+            }
+
+            if (!state.pluginLicenseInfo[pluginHandle]) {
+                return false
+            }
+
+            if (!state.pluginLicenseInfo[pluginHandle].isInstalled) {
+                return false
+            }
+
+            return true
+        }
+    },
 }
 
 /**
@@ -143,23 +145,6 @@ const actions = {
         })
     },
 
-    updateCraftId({commit}, craftId) {
-        commit('updateCraftId', craftId)
-    },
-
-    // eslint-disable-next-line
-    tryEdition({}, edition) {
-        return new Promise((resolve, reject) => {
-            api.tryEdition(edition)
-                .then(response => {
-                    resolve(response)
-                })
-                .catch(response => {
-                    reject(response)
-                })
-        })
-    },
-
     switchPluginEdition({dispatch}, {pluginHandle, edition}) {
         return new Promise((resolve, reject) => {
             api.switchPluginEdition(pluginHandle, edition)
@@ -175,7 +160,24 @@ const actions = {
                 })
                 .catch(response => reject(response))
         })
-    }
+    },
+
+    // eslint-disable-next-line
+    tryEdition({}, edition) {
+        return new Promise((resolve, reject) => {
+            api.tryEdition(edition)
+                .then(response => {
+                    resolve(response)
+                })
+                .catch(response => {
+                    reject(response)
+                })
+        })
+    },
+
+    updateCraftId({commit}, craftId) {
+        commit('updateCraftId', craftId)
+    },
 }
 
 /**
@@ -183,26 +185,28 @@ const actions = {
  */
 const mutations = {
     updateCraftData(state, {response}) {
-        state.CraftEdition = response.data.CraftEdition
-        state.CraftPro = response.data.CraftPro
-        state.CraftSolo = response.data.CraftSolo
         state.canTestEditions = response.data.canTestEditions
         state.countries = response.data.countries
         state.craftId = response.data.craftId
         state.craftLogo = response.data.craftLogo
         state.currentUser = response.data.currentUser
+        state.defaultPluginSvg = response.data.defaultPluginSvg
         state.editions = response.data.editions
         state.licensedEdition = response.data.licensedEdition
         state.poweredByStripe = response.data.poweredByStripe
-        state.defaultPluginSvg = response.data.defaultPluginSvg
-    },
 
-    updatePluginLicenseInfo(state, {response}) {
-        state.pluginLicenseInfo = response.data
+        // Craft editions
+        state.CraftEdition = response.data.CraftEdition
+        state.CraftPro = response.data.CraftPro
+        state.CraftSolo = response.data.CraftSolo
     },
 
     updateCraftId(state, {craftId}) {
         state.craftId = craftId
+    },
+
+    updatePluginLicenseInfo(state, {response}) {
+        state.pluginLicenseInfo = response.data
     },
 }
 

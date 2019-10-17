@@ -34,8 +34,8 @@
     export default {
         data() {
             return {
-                loading: false,
                 developerLoaded: false,
+                loading: false,
                 pluginsLoaded: false,
             }
         },

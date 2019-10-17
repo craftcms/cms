@@ -160,16 +160,16 @@
 
         components: {
             ActiveTrialsTableRow,
-            Step,
             EditionBadge,
+            Step,
         },
 
         computed: {
             ...mapState({
                 activeTrialPlugins: state => state.cart.activeTrialPlugins,
                 cart: state => state.cart.cart,
-                craftLogo: state => state.craft.craftLogo,
                 craftId: state => state.craft.craftId,
+                craftLogo: state => state.craft.craftLogo,
                 expiryDateOptions: state => state.pluginStore.expiryDateOptions,
                 pluginLicenseInfo: state => state.craft.pluginLicenseInfo,
             }),
@@ -179,15 +179,6 @@
                 cartItemsData: 'cart/cartItemsData',
                 getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
             }),
-
-            selectedExpiryDates: {
-                get() {
-                    return JSON.parse(JSON.stringify(this.$store.state.cart.selectedExpiryDates))
-                },
-                set(newValue) {
-                    this.$store.commit('cart/updateSelectedExpiryDates', newValue)
-                }
-            },
 
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
@@ -202,26 +193,21 @@
                     }
                 })
             },
+
+            selectedExpiryDates: {
+                get() {
+                    return JSON.parse(JSON.stringify(this.$store.state.cart.selectedExpiryDates))
+                },
+                set(newValue) {
+                    this.$store.commit('cart/updateSelectedExpiryDates', newValue)
+                }
+            },
         },
 
         methods: {
             ...mapActions({
                 removeFromCart: 'cart/removeFromCart'
             }),
-
-            removeFromCart(itemKey) {
-                this.$set(this.loadingRemoveFromCart, itemKey, true)
-
-                this.$store.dispatch('cart/removeFromCart', itemKey)
-                    .then(() => {
-                        this.$delete(this.loadingRemoveFromCart, itemKey)
-                    })
-                    .catch(response => {
-                        this.$delete(this.loadingRemoveFromCart, itemKey)
-                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t remove item from cart.';
-                        this.$root.displayError(errorMessage)
-                    })
-            },
 
             addAllToCart() {
                 let $store = this.$store
@@ -243,14 +229,6 @@
                     .catch(() => {
                         this.$root.displayError(this.$options.filters.t('Couldn’t add all items to the cart.', 'app'))
                     })
-            },
-
-            payment() {
-                if (this.craftId) {
-                    this.$root.openModal('payment')
-                } else {
-                    this.$root.openModal('identity')
-                }
             },
 
             itemExpiryDateOptions(itemKey) {
@@ -293,6 +271,14 @@
                 return options
             },
 
+            itemLoading(itemKey) {
+                if (!this.loadingItems[itemKey]) {
+                    return false
+                }
+
+                return true
+            },
+
             onSelectedExpiryDateChange(itemKey) {
                 this.$set(this.loadingItems, itemKey, true)
                 let item = this.cartItemsData[itemKey]
@@ -303,12 +289,26 @@
                     })
             },
 
-            itemLoading(itemKey) {
-                if (!this.loadingItems[itemKey]) {
-                    return false
+            payment() {
+                if (this.craftId) {
+                    this.$root.openModal('payment')
+                } else {
+                    this.$root.openModal('identity')
                 }
+            },
 
-                return true
+            removeFromCart(itemKey) {
+                this.$set(this.loadingRemoveFromCart, itemKey, true)
+
+                this.$store.dispatch('cart/removeFromCart', itemKey)
+                    .then(() => {
+                        this.$delete(this.loadingRemoveFromCart, itemKey)
+                    })
+                    .catch(response => {
+                        this.$delete(this.loadingRemoveFromCart, itemKey)
+                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t remove item from cart.';
+                        this.$root.displayError(errorMessage)
+                    })
             },
 
             removeFromCartLoading(itemKey) {
@@ -317,10 +317,6 @@
                 }
 
                 return true
-            },
-
-            updatesUntil(date) {
-                return this.$options.filters.t("Updates until {date}", 'app', {date})
             },
         },
 

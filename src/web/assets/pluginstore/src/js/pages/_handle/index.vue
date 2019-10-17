@@ -119,17 +119,17 @@
     /* global Craft */
 
     import {mapState, mapGetters, mapActions} from 'vuex'
-    import PluginScreenshots from '../../components/PluginScreenshots'
-    import PluginEditions from '../../components/PluginEditions'
-    import PluginChangelog from '../../components/PluginChangelog'
     import CopyPackage from '../../components/CopyPackage'
+    import PluginChangelog from '../../components/PluginChangelog'
+    import PluginEditions from '../../components/PluginEditions'
+    import PluginScreenshots from '../../components/PluginScreenshots'
 
     export default {
         components: {
-            PluginScreenshots,
-            PluginEditions,
-            PluginChangelog,
             CopyPackage,
+            PluginChangelog,
+            PluginEditions,
+            PluginScreenshots,
         },
 
         data() {
@@ -142,14 +142,14 @@
         computed: {
             ...mapState({
                 categories: state => state.pluginStore.categories,
-                plugin: state => state.pluginStore.plugin,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
+                plugin: state => state.pluginStore.plugin,
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
 
             ...mapGetters({
-                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
                 getPluginEdition: 'pluginStore/getPluginEdition',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
             longDescription() {
@@ -205,16 +205,6 @@
                 addToCart: 'cart/addToCart'
             }),
 
-            viewDeveloper(plugin) {
-                this.$root.closeModal()
-                this.$router.push({path: '/developer/' + plugin.developerId})
-            },
-
-            viewCategory(category) {
-                this.$root.closeModal()
-                this.$router.push({path: '/categories/' + category.id})
-            },
-
             licenseIssue(errorCode) {
                 switch (errorCode) {
                     case 'wrong_edition': {
@@ -235,6 +225,16 @@
                         return this.$options.filters.t('Your license key is invalid.', 'app')
                     }
                 }
+            },
+
+            viewCategory(category) {
+                this.$root.closeModal()
+                this.$router.push({path: '/categories/' + category.id})
+            },
+
+            viewDeveloper(plugin) {
+                this.$root.closeModal()
+                this.$router.push({path: '/developer/' + plugin.developerId})
             },
         },
 

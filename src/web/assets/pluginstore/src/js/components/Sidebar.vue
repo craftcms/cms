@@ -35,9 +35,9 @@
         computed: {
             ...mapState({
                 categories: state => state.pluginStore.categories,
-                licensedEdition: state => state.craft.licensedEdition,
                 CraftEdition: state => state.craft.CraftEdition,
                 CraftPro: state => state.craft.CraftPro,
+                licensedEdition: state => state.craft.licensedEdition,
             }),
         },
     }
