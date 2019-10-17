@@ -880,6 +880,15 @@ class GeneralConfig extends BaseObject
      */
     public $useProjectConfigFile = false;
     /**
+     * @var bool Whether Craft should attempt to cache GraphQL query results.
+     * If set to `true`, Craft will cache the results for the unique GraphQL requests per access token. This cache is wiped
+     * entirely on any element save, site structure update or GraphQL schema modification.
+     *
+     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide
+     * its own caching logic and setting the `result` property.
+     */
+    public $useGraphQlCache = false;
+    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
