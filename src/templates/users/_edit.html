@@ -283,6 +283,8 @@
                         {% endblock %}
                     {% endembed %}
                 {% endif %}
+
+                {% hook 'cp.users.edit.prefs' %}
             </div>
         {% endif %}
 
