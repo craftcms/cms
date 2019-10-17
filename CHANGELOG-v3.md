@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `useGraphQlCache` config setting which controls Craft's GraphQL caching behavior.
+- Added the “GraphQL result caches” option for the Clear Caches utility.
 
 ### Changed
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))
