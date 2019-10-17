@@ -6,6 +6,7 @@
 - Added the `enableGraphQlCaching` config setting which controls Craft's GraphQL caching behavior.
 - Added the “GraphQL result caches” option for the Clear Caches utility.
 - Added the `transform` parameter when querying for an Asset's URL with GraphQL that is interchangeable with the `handle` parameter.
+- Added the `url` field to the `EntryInterface` GraphQL type. ([#5113](https://github.com/craftcms/cms/issues/5113))
 
 ### Changed
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))

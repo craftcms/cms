@@ -111,6 +111,11 @@ class Entry extends Structure
                 'name' => 'parent',
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.'
+            ],
+            'url' => [
+                'name' => 'url',
+                'type' => Type::string(),
+                'description' => 'The element’s full URL',
             ]
         ]);
     }
