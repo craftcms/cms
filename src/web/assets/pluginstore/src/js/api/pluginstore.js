@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export default {
     /**
-     * API Endpoint.
+     * Craftnet API Endpoint.
      */
     apiEndpoint: process.env.VUE_APP_CRAFT_API_ENDPOINT,
 
