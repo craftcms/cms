@@ -74,7 +74,6 @@ class DbConfig extends BaseObject
      */
     public $schema = 'public';
     /**
-    /**
      * @var string If you're sharing Craft installs in a single database (MySQL) or a single
      * database and using a shared schema (PostgreSQL), then you can set a table
      * prefix here to avoid table naming conflicts per install. This can be no more than 5
