@@ -603,7 +603,7 @@ class Gql extends Component
         }
 
         try {
-            $cacheKey .= 'gql.results.' . sha1($schema->accessToken . $query . serialize($rootValue) . serialize($context) . serialize($variables) . serialize($operationName));
+            $cacheKey = 'gql.results.' . sha1($schema->accessToken . $query . serialize($rootValue) . serialize($context) . serialize($variables) . serialize($operationName));
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;
