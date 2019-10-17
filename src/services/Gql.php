@@ -330,7 +330,7 @@ class Gql extends Component
      * @param bool $debugMode Whether debug mode validations rules should be used for GraphQL.
      * @return array
      */
-    public function executeQuery(GqlSchema $schema, string $query, $variables, $operationName): array
+    public function executeQuery(GqlSchema $schema, string $query, $variables, $operationName, $debugMode): array
     {
         $event = new ExecuteGqlQueryEvent([
             'accessToken' => $schema->accessToken,
@@ -347,8 +347,8 @@ class Gql extends Component
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey))) {
                 $event->result = $cachedResult;
             } else {
-                $schemaDef = $this->getSchemaDef($schema, StringHelper::contains($query, '__schema'));
-            $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $variables, $operationName, null, $this->getValidationRules($debugMode))->toArray(true);
+                $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
+                $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $variables, $operationName, null, $this->getValidationRules($debugMode))->toArray(true);
 
                 if (empty($event->result['errors']) && $cacheKey) {
                     $this->setCachedResult($cacheKey, $event->result);

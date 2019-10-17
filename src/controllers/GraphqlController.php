@@ -140,7 +140,7 @@ class GraphqlController extends Controller
         }
 
         try {
-            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName);
+            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, Craft::$app->getConfig()->getGeneral()->devMode);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
