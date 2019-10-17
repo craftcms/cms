@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\config\DbConfig;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SiteNotFoundException;
@@ -377,7 +377,7 @@ SQL;
             $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
 
-        if ($driver === DbConfig::DRIVER_PGSQL) {
+        if ($driver === Connection::DRIVER_PGSQL) {
             $maxSize = $this->maxPostgresKeywordLength;
         } else {
             $maxSize = Db::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
@@ -389,7 +389,7 @@ SQL;
 
         $columns['keywords'] = $cleanKeywords;
 
-        if ($driver === DbConfig::DRIVER_PGSQL) {
+        if ($driver === Connection::DRIVER_PGSQL) {
             $columns['keywords_vector'] = $cleanKeywords;
         }
 

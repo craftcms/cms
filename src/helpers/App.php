@@ -394,7 +394,9 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+
+        if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];
@@ -407,17 +409,17 @@ class App
 
         return [
             'class' => Connection::class,
-            'driverName' => $dbConfig->driver,
+            'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
             'schemaMap' => [
-                $dbConfig->driver => $schemaConfig,
+                $driver => $schemaConfig,
             ],
             'commandMap' => [
-                $dbConfig->driver => Command::class,
+                $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,

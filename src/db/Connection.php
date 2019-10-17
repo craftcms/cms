@@ -19,6 +19,7 @@ use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
@@ -43,6 +44,9 @@ class Connection extends \yii\db\Connection
 {
     // Constants
     // =========================================================================
+
+    const DRIVER_MYSQL = 'mysql';
+    const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @event BackupEvent The event that is triggered before the backup is created.
@@ -111,7 +115,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsMysql(): bool
     {
-        return $this->getDriverName() === DbConfig::DRIVER_MYSQL;
+        return $this->getDriverName() === Connection::DRIVER_MYSQL;
     }
 
     /**
@@ -121,7 +125,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsPgsql(): bool
     {
-        return $this->getDriverName() === DbConfig::DRIVER_PGSQL;
+        return $this->getDriverName() === Connection::DRIVER_PGSQL;
     }
 
     /**
@@ -553,15 +557,17 @@ class Connection extends \yii\db\Connection
      */
     private function _parseCommandTokens(string $command, $file): string
     {
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        $parsed = Db::parseDsn($this->dsn);
+        $username = $this->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->username;
+        $password = $this->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->password;
         $tokens = [
             '{file}' => $file,
-            '{port}' => $dbConfig->port,
-            '{server}' => $dbConfig->server,
-            '{user}' => $dbConfig->user,
-            '{password}' => addslashes(str_replace('$', '\\$', $dbConfig->password)),
-            '{database}' => $dbConfig->database,
-            '{schema}' => $dbConfig->schema,
+            '{port}' => $parsed['port'] ?? '',
+            '{server}' => $parsed['host'] ?? '',
+            '{user}' => $username,
+            '{password}' => addslashes(str_replace('$', '\\$', $password)),
+            '{database}' => $parsed['dbname'] ?? '',
+            '{schema}' => $this->getSchema()->defaultSchema ?? '',
         ];
 
         return str_replace(array_keys($tokens), $tokens, $command);
