@@ -291,7 +291,7 @@ class Gql extends Component
                 $schemaDef = $this->getSchemaDef($schema, StringHelper::contains($query, '__schema'));
                 $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $event->variables, $event->operationName)->toArray(true);
 
-                if ($cacheKey) {
+                if (empty($event->result['errors']) && $cacheKey) {
                     $this->setCachedResult($cacheKey, $event->result);
                 }
             }
