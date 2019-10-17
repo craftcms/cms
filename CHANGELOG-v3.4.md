@@ -7,6 +7,8 @@
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\gql\TypeManager`.
+- Added `craft\helpers\Db::parseDsn()`.
+- Added `craft\helpers\Db::url2config()`.
 - Added `craft\services\Gql::getValidationRules()`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\User::guestRequired()`.
@@ -25,5 +27,10 @@
 - Plugins can now modify the GraphQL schema by listening for the `defineGqlTypeFields` event.
 - Plugins can now modify the GraphQL permissions by listening for the `registerGqlPermissions` event.
 - Full GraphQL schema is now always generated when `devMode` is set to `true`.
+- The installer now requires `config/db.php` to be setting the `dsn` database config setting with a `DB_DSN` environment variable, if a connection can’t already be established. 
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+
+### Deprecated
+- Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
+- Deprecated `craft\config\DbConfig::updateDsn()`.

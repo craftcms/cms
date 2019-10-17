@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\Install;
@@ -127,17 +128,17 @@ class InstallController extends Controller
 
         $dbConfig = new DbConfig();
         $this->_populateDbConfig($dbConfig);
-
+        $parsed = Db::parseDsn($dbConfig->dsn);
         $errors = [];
 
         // Catch any low hanging fruit first
-        if (!$dbConfig->port) {
+        if (empty($parsed['port'])) {
             // Only possible if it was not numeric
             $errors['port'][] = Craft::t('yii', '{attribute} must be an integer.', [
                 'attribute' => Craft::t('app', 'Port')
             ]);
         }
-        if (!$dbConfig->database) {
+        if (empty($parsed['dbname'])) {
             $errors['database'][] = Craft::t('yii', '{attribute} cannot be blank.', [
                 'attribute' => Craft::t('app', 'Database Name')
             ]);
@@ -148,7 +149,6 @@ class InstallController extends Controller
 
         if (empty($errors)) {
             // Test the connection
-            $dbConfig->updateDsn();
             /** @var Connection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
@@ -246,14 +246,11 @@ class InstallController extends Controller
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
 
-            $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
-            $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
+            $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
             $configService->setDotEnvVar('DB_USER', $dbConfig->user);
             $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
             $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
             $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
-            $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
 
             // Update the db component based on new values
             /** @var Connection $db */
@@ -330,14 +327,9 @@ class InstallController extends Controller
 
         // Map the DB settings we definitely care about to their environment variable names
         $vars = [
-            'driver' => 'DB_DRIVER',
-            'server' => 'DB_SERVER',
+            'dsn' => 'DB_DSN',
             'user' => 'DB_USER',
             'password' => 'DB_PASSWORD',
-            'database' => 'DB_DATABASE',
-            //'DB_SCHEMA',
-            //'DB_TABLE_PREFIX',
-            //'DB_PORT',
         ];
 
         // Save the current environment variable values, and set temporary ones
@@ -382,17 +374,18 @@ class InstallController extends Controller
     {
         $request = Craft::$app->getRequest();
 
-        $dbConfig->dsn = null;
-        $dbConfig->url = null;
-        $dbConfig->driver = $request->getRequiredBodyParam($prefix . 'driver');
-        $dbConfig->server = $request->getBodyParam($prefix . 'server') ?: 'localhost';
-        $dbConfig->port = $request->getBodyParam($prefix . 'port');
-        $dbConfig->user = $request->getBodyParam($prefix . 'user') ?: 'root';
-        $dbConfig->password = $request->getBodyParam($prefix . 'password');
-        $dbConfig->database = $request->getBodyParam($prefix . 'database');
-        $dbConfig->schema = $request->getBodyParam($prefix . 'schema') ?: 'public';
-        $dbConfig->tablePrefix = $request->getBodyParam($prefix . 'tablePrefix');
+        $driver = $request->getRequiredBodyParam("{$prefix}driver");
+        $server = $request->getBodyParam("{$prefix}server") ?: 'localhost';
+        $database = $request->getBodyParam("{$prefix}database");
+        $port = $request->getBodyParam("{$prefix}port");
+        if ($port === null || $port === '') {
+            $port = $driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
+        }
 
-        $dbConfig->init();
+        $dbConfig->dsn = "{$driver}:host={$server};port={$port};dbname={$database}";
+        $dbConfig->user = $request->getBodyParam("{$prefix}user") ?: 'root';
+        $dbConfig->password = $request->getBodyParam("{$prefix}password");
+        $dbConfig->schema = $request->getBodyParam("{$prefix}schema") ?: 'public';
+        $dbConfig->tablePrefix = $request->getBodyParam("{$prefix}tablePrefix");
     }
 }
