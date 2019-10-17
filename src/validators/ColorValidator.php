@@ -15,7 +15,7 @@ use yii\validators\RegularExpressionValidator;
  * Color hex validator
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ColorValidator extends RegularExpressionValidator
 {

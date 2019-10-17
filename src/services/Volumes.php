@@ -34,7 +34,7 @@ use yii\base\Component;
  * @license http://craftcms.com/license Craft License Agreement
  * @see http://craftcms.com
  * @package craft.app.services
- * @since 3.0
+ * @since 3.0.0
  */
 class Volumes extends Component
 {
@@ -80,6 +80,7 @@ class Volumes extends Component
 
     /**
      * @event VolumeEvent The event that is triggered before a volume delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
 

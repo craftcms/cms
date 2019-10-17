@@ -30,7 +30,7 @@ use yii\base\ErrorException;
  * Raster class is used for raster image manipulations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Raster extends Image
 {

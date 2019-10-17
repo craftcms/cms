@@ -19,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $accessToken Access Token
  * @property \DateTime $expiryDate Expiration Date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftIdToken extends ActiveRecord
 {

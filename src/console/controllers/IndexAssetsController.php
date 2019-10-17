@@ -76,6 +76,7 @@ class IndexAssetsController extends Controller
      * @param string $handle The handle of the volume to index
      * @param int $startAt
      * @return int
+     * @since 3.1.4
      */
     public function actionOne($handle, $startAt = 0): int
     {

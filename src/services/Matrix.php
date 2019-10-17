@@ -40,7 +40,7 @@ use yii\base\Exception;
  * An instance of the Matrix service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMatrix()|`Craft::$app->matrix`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Matrix extends Component
 {
@@ -851,6 +851,7 @@ class Matrix extends Component
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
      * @throws \Throwable if reasons
+     * @since 3.2.0
      */
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
     {
@@ -945,6 +946,7 @@ class Matrix extends Component
      * @param MatrixField $field
      * @param ElementInterface $owner
      * @return int[]
+     * @since 3.2.0
      */
     public function getSupportedSiteIdsForField(MatrixField $field, ElementInterface $owner): array
     {

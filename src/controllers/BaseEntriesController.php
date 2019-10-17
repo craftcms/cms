@@ -21,7 +21,7 @@ use yii\web\ForbiddenHttpException;
  * It extends [[Controller]], overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseEntriesController extends Controller
 {

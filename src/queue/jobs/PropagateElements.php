@@ -19,7 +19,7 @@ use craft\services\Elements;
  * PropagateElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.13
  */
 class PropagateElements extends BaseJob
 {

@@ -17,7 +17,7 @@ use yii\base\Component;
  * An instance of the System Settings service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemSettings()|`Craft::$app->systemSettings`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @deprecated in 3.1. Use [[\craft\services\ProjectConfig]] instead.
  */
 class SystemSettings extends Component

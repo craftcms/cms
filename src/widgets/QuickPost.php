@@ -18,7 +18,7 @@ use craft\web\assets\quickpost\QuickPostAsset;
  * QuickPost represents a Quick Post dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QuickPost extends Widget
 {

@@ -14,7 +14,7 @@ use craft\helpers\StringHelper;
  * Class StringValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StringValidator extends \yii\validators\StringValidator
 {
@@ -34,6 +34,7 @@ class StringValidator extends \yii\validators\StringValidator
 
     /**
      * @var bool whether the string should be trimmed of whitespace
+     * @since 3.0.18
      * @deprecated in 3.0.32. Use Yii’s `'trim'` validator instead.
      */
     public $trim = false;

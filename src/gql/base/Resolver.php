@@ -27,9 +27,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 abstract class Resolver
 {
     /**
-     * Cache fields by context.
-     *
-     * @var array
+     * @var array Cache fields by context.
      */
     protected static $eagerLoadableFieldsByContext;
 

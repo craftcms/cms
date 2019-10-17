@@ -14,7 +14,7 @@ use Craft;
  * and the creators did not want to expose as public.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Stringy extends \Stringy\Stringy
 {
@@ -26,6 +26,7 @@ class Stringy extends \Stringy\Stringy
      *
      * @param string $language Language of the source string
      * @return array An array of replacements
+     * @since 3.0.10
      */
     public static function getLangSpecificCharsArray(string $language = 'en'): array
     {

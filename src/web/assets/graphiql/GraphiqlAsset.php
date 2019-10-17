@@ -14,7 +14,7 @@ use craft\web\assets\cp\CpAsset;
  * GraphiQL asset bundle.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.30
+ * @since 3.3.0
  */
 class GraphiqlAsset extends AssetBundle
 {

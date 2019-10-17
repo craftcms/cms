@@ -15,7 +15,7 @@ use yii\console\Controller;
  * Console helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Console extends \yii\helpers\Console
 {
@@ -50,6 +50,7 @@ class Console extends \yii\helpers\Console
      * Returns whether color is enabled.
      *
      * @return bool
+     * @since 3.0.38
      */
     public static function isColorEnabled(): bool
     {
@@ -62,6 +63,7 @@ class Console extends \yii\helpers\Console
      *
      * @param string $command The command to output
      * @param bool $withScriptName Whether the current script name (e.g. `craft`) should be prepended to the command.
+     * @since 3.0.38
      */
     public static function outputCommand(string $command, bool $withScriptName = true)
     {
@@ -85,6 +87,7 @@ class Console extends \yii\helpers\Console
      * Outputs a warning.
      *
      * @param string $text
+     * @since 3.0.38
      */
     public static function outputWarning(string $text)
     {

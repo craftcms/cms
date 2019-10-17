@@ -18,7 +18,7 @@ use yii\web\ServerErrorHttpException;
  * Class LivePreviewController
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  * @deprecated in 3.2
  */
 class LivePreviewController extends Controller

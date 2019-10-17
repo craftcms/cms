@@ -13,7 +13,7 @@ use yii\base\Event;
  * RegisterCpAlertsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterCpAlertsEvent extends Event
 {

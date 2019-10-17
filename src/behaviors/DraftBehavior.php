@@ -21,7 +21,7 @@ use yii\base\Behavior;
  * @property-read ElementInterface|Element $source
  * @property-read User $creator
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DraftBehavior extends Behavior
 {

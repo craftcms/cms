@@ -29,7 +29,7 @@ use yii\db\Connection;
  * @method Entry|array|null one($db = null)
  * @method Entry|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-structure-params
  * @supports-site-params
  * @supports-enabledforsite-param

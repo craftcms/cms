@@ -28,7 +28,7 @@ use yii\base\InvalidConfigException;
  * @property DbConfig $db the DB config settings
  * @property GeneralConfig $general the general config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Config extends Component
 {
