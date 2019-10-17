@@ -356,7 +356,7 @@ class Gql extends Component
 
         if ($schema) {
             $schema->lastUsed = DateTimeHelper::currentUTCDateTime();
-            $this->saveSchema($schema);
+            $this->saveSchema($schema, true, false);
         }
     }
 
@@ -526,10 +526,11 @@ class Gql extends Component
      *
      * @param GqlSchema $schema the schema to save
      * @param bool $runValidation Whether the schema should be validated
+     * @param bool $invalidateCachedResults Whether the cached results should be invalidated
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      */
-    public function saveSchema(GqlSchema $schema, $runValidation = true): bool
+    public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCachedResults = true): bool
     {
         $isNewSchema = !$schema->id;
 
@@ -557,7 +558,9 @@ class Gql extends Component
         $schemaRecord->save();
         $schema->id = $schemaRecord->id;
 
-        $this->invalidateResultCaches();
+        if ($invalidateCachedResults) {
+            $this->invalidateResultCaches();
+        }
 
         return true;
     }
