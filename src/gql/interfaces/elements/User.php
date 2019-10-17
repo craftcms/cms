@@ -52,9 +52,7 @@ class User extends Element
             }
         ]));
 
-        foreach (UserType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        UserType::generateTypes();
 
         return $type;
     }

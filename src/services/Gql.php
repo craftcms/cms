@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query as DbQuery;
 use craft\db\Table;
+use craft\db\Query as DbQuery;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
@@ -43,6 +43,7 @@ use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use GraphQL\GraphQL;
@@ -53,6 +54,7 @@ use GraphQL\Validator\Rules\KnownTypeNames;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\caching\TagDependency;
 
 /**
  * The Gql service provides GraphQL functionality.
@@ -202,6 +204,8 @@ class Gql extends Component
      */
     const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
+    const CACHE_TAG = 'graphql';
+
     /**
      * Currently loaded schema definition
      *
@@ -317,7 +321,7 @@ class Gql extends Component
     }
 
     /**
-     * Execute a GraphQL query for a given schema definition.
+     * Execute a GraphQL query for a given schema.
      *
      * @param Schema $schema The schema definition to use.
      * @param string $query The query string to execute.
@@ -326,10 +330,10 @@ class Gql extends Component
      * @param bool $debugMode Whether debug mode validations rules should be used for GraphQL.
      * @return array
      */
-    public function executeQuery(Schema $schemaDef, string $query, $variables, $operationName, $debugMode = false): array
+    public function executeQuery(GqlSchema $schema, string $query, $variables, $operationName): array
     {
         $event = new ExecuteGqlQueryEvent([
-            'schemaDef' => $schemaDef,
+            'accessToken' => $schema->accessToken,
             'query' => $query,
             'variables' => $variables,
             'operationName' => $operationName,
@@ -338,12 +342,50 @@ class Gql extends Component
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
 
         if ($event->result === null) {
+            $cacheKey = $this->_getCacheKey($schema, $query, $event->rootValue, $event->context, $variables, $operationName);
+
+            if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey))) {
+                $event->result = $cachedResult;
+            } else {
+                $schemaDef = $this->getSchemaDef($schema, StringHelper::contains($query, '__schema'));
             $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $variables, $operationName, null, $this->getValidationRules($debugMode))->toArray(true);
+
+                if (empty($event->result['errors']) && $cacheKey) {
+                    $this->setCachedResult($cacheKey, $event->result);
+                }
+            }
         }
 
         $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
 
-        return $event->result;
+        return $event->result ?? [];
+    }
+
+    /**
+     * Invalidate all GraphQL result caches.
+     */
+    public function invalidateResultCaches() {
+        TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
+    }
+
+    /**
+     * Get the cached result for a key.
+     *
+     * @param $cacheKey
+     * @return mixed
+     */
+    public function getCachedResult($cacheKey) {
+        return Craft::$app->getCache()->get($cacheKey);
+    }
+
+    /**
+     * Cache a result for the key and tag it.
+     *
+     * @param $cacheKey
+     * @param $result
+     */
+    public function setCachedResult($cacheKey, $result) {
+        Craft::$app->getCache()->set($cacheKey, $result, null, new TagDependency(['tags' => self::CACHE_TAG]));
     }
 
     /**
@@ -373,7 +415,7 @@ class Gql extends Component
 
         if ($schema) {
             $schema->lastUsed = DateTimeHelper::currentUTCDateTime();
-            $this->saveSchema($schema);
+            $this->saveSchema($schema, true, false);
         }
     }
 
@@ -483,6 +525,7 @@ class Gql extends Component
         $this->_schemaDef = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
+        $this->invalidateResultCaches();
     }
 
     /**
@@ -549,10 +592,11 @@ class Gql extends Component
      *
      * @param GqlSchema $schema the schema to save
      * @param bool $runValidation Whether the schema should be validated
+     * @param bool $invalidateCachedResults Whether the cached results should be invalidated
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      */
-    public function saveSchema(GqlSchema $schema, $runValidation = true): bool
+    public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCachedResults = true): bool
     {
         $isNewSchema = !$schema->id;
 
@@ -580,6 +624,10 @@ class Gql extends Component
         $schemaRecord->save();
         $schema->id = $schemaRecord->id;
 
+        if ($invalidateCachedResults) {
+            $this->invalidateResultCaches();
+        }
+
         return true;
     }
 
@@ -602,6 +650,33 @@ class Gql extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Generate a cache key for the GraphQL operation. Returns null if caching is disabled or unable to generate one.
+     *
+     * @param GqlSchema $schema
+     * @param string $query
+     * @param $rootValue
+     * @param $context
+     * @param $variables
+     * @param $operationName
+     *
+     * @return string|null
+     */
+    private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName) {
+        if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
+            return null;
+        }
+
+        try {
+            $cacheKey = 'gql.results.' . sha1($schema->accessToken . $query . serialize($rootValue) . serialize($context) . serialize($variables) . serialize($operationName));
+        } catch (\Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            $cacheKey = null;
+        }
+
+        return $cacheKey;
+    }
 
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL

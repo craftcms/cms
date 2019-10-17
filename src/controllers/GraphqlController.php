@@ -139,11 +139,8 @@ class GraphqlController extends Controller
             throw new BadRequestHttpException('No GraphQL query was supplied.');
         }
 
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-
         try {
-            $schemaDef = $gqlService->getSchemaDef($schema, $devMode || StringHelper::contains($query, '__schema'));
-            $result = $gqlService->executeQuery($schemaDef, $query, $variables, $operationName, $devMode);
+            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 

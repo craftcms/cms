@@ -191,8 +191,6 @@ class Gql
             'resolveType' => $resolveFunction,
         ]));
 
-        TypeLoader::registerType($typeName, function () use ($unionType) { return $unionType ;});
-
         return $unionType;
     }
 }

@@ -303,6 +303,15 @@ class GeneralConfig extends BaseObject
      */
     public $enableCsrfProtection = true;
     /**
+     * @var bool Whether Craft should cache GraphQL query results.
+     * If set to `true`, Craft will cache the results for the unique GraphQL requests per access token. This cache is wiped
+     * entirely on any element save, site structure update or GraphQL schema modification.
+     *
+     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide
+     * its own caching logic and setting the `result` property.
+     */
+    public $enableGraphQlCaching = true;
+    /**
      * @var bool Whether to enable Craft's template `{% cache %}` tag on a global basis.
      * @see http://craftcms.com/docs/templating/cache
      */

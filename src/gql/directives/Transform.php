@@ -79,6 +79,8 @@ class Transform extends Directive
 
         if (!empty($arguments['handle'])) {
             $transform = $arguments['handle'];
+        } else if (!empty($arguments['transform'])) {
+            $transform = $arguments['transform'];
         } else {
             $transform = $arguments;
         }

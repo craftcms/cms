@@ -54,9 +54,7 @@ class Entry extends Structure
             }
         ]));
 
-        foreach (EntryType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        EntryType::generateTypes();
 
         return $type;
     }
@@ -114,6 +112,11 @@ class Entry extends Structure
                 'name' => 'parent',
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.'
+            ],
+            'url' => [
+                'name' => 'url',
+                'type' => Type::string(),
+                'description' => 'The element’s full URL',
             ]
         ]), self::getName());
     }
