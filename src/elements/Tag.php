@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  *
  * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tag extends Element
 {

@@ -17,7 +17,7 @@ use yii\base\BaseObject;
  *
  * @property string $basePath
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Paginate extends BaseObject
 {
@@ -29,6 +29,7 @@ class Paginate extends BaseObject
      *
      * @param Paginator $paginator
      * @return static
+     * @since 3.1.19
      */
     public static function create(Paginator $paginator): self
     {
@@ -99,6 +100,7 @@ class Paginate extends BaseObject
      * Sets the base path that should be used for pagination URLs.
      *
      * @param string $basePath
+     * @since 3.1.28
      */
     public function setBasePath(string $basePath)
     {

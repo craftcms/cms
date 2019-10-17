@@ -15,7 +15,7 @@ use craft\helpers\Json;
  * ReplaceFile represents a Replace File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ReplaceFile extends ElementAction
 {

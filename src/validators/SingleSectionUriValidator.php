@@ -17,7 +17,7 @@ use yii\base\InvalidConfigException;
  * Will validate that the given attribute is a valid URI for a single section.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SingleSectionUriValidator extends UriFormatValidator
 {

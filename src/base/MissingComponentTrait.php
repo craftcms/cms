@@ -16,7 +16,7 @@ use yii\base\Arrayable;
  * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait MissingComponentTrait
 {
@@ -64,6 +64,7 @@ trait MissingComponentTrait
      * Displays an error message (and possibly a plugin install button) in place of the normal component UI.
      *
      * @return string
+     * @since 3.0.6
      */
     public function getPlaceholderHtml(): string
     {

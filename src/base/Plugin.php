@@ -27,7 +27,7 @@ use yii\base\Module;
  * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Plugin extends Module implements PluginInterface
 {
@@ -43,11 +43,14 @@ class Plugin extends Module implements PluginInterface
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
      *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the plugin’s settings from saving.
+     *
+     * @since 3.0.16
      */
     const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
      * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved
+     * @since 3.0.16
      */
     const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
@@ -277,6 +280,7 @@ class Plugin extends Module implements PluginInterface
      * @return bool
      * @throws InvalidArgumentException if `$edition` is an unsupported edition,
      * or if `$operator` is an invalid operator.
+     * @since 3.1.0
      */
     public function is(string $edition, string $operator = '='): bool
     {

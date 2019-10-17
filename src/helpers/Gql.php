@@ -22,9 +22,7 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * Cached permission pairs for schemas by id.
-     *
-     * @var array
+     * @var array Cached permission pairs for schemas by id.
      */
     private static $cachedPairs = [];
 

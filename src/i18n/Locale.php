@@ -23,7 +23,7 @@ use yii\helpers\FormatConverter;
  *
  * @property string $displayName The locale’s display name.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Locale extends BaseObject
 {

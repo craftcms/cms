@@ -11,7 +11,7 @@ namespace craft\models;
  * Class EntryVersion model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @deprecated in 3.2
  */
 class EntryVersion extends BaseEntryRevisionModel

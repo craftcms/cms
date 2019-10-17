@@ -15,7 +15,7 @@ use craft\helpers\Json;
  * RenameFile represents a Rename File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RenameFile extends ElementAction
 {

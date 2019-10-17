@@ -17,7 +17,7 @@ use yii\db\Connection as YiiConnection;
  * Class Query
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Query extends \yii\db\Query
 {

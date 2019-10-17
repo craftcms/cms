@@ -16,7 +16,7 @@ use yii\base\InvalidConfigException;
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
@@ -25,6 +25,9 @@ class StringHelper extends \yii\helpers\StringHelper
 
     const UTF8 = 'UTF-8';
 
+    /**
+     * @since 3.0.37
+     */
     const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     // Public Methods
@@ -1228,6 +1231,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $str The string
      * @param string|callable $replace The replacement string, or callback function.
      * @return string The string with converted 4-byte UTF-8 characters
+     * @since 3.1.13
      */
     public static function replaceMb4(string $str, $replace): string
     {
@@ -1747,6 +1751,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param bool $lower Whether the returned words should be lowercased
      * @param bool $removePunctuation Whether punctuation should be removed from the returned words
      * @return string[] The prepped words in the string
+     * @since 3.1.0
      */
     public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
     {

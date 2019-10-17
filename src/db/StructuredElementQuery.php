@@ -14,7 +14,7 @@ use yii\db\ActiveQuery;
  * @inheritdoc
  * @mixin NestedSetsQueryBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StructuredElementQuery extends ActiveQuery
 {

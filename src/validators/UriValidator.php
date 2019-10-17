@@ -14,7 +14,7 @@ use yii\validators\Validator;
  * Will validate that the given attribute is a valid URI.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UriValidator extends Validator
 {

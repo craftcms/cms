@@ -19,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $maxLevels Max levels
  * @property StructureElement[] $elements Elements
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Structure extends ActiveRecord
 {

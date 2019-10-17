@@ -13,7 +13,7 @@ use craft\elements\db\ElementQueryInterface;
  * ElementAction is the base class for classes representing element actions in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class ElementAction extends SavableComponent implements ElementActionInterface
 {
@@ -33,6 +33,8 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
 
     /**
      * @var string|ElementInterface
+     *
+     * @since 3.0.30
      */
     protected $elementType;
 

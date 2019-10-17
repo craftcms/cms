@@ -18,7 +18,7 @@ use DateTimeZone;
  * Class DateTimeHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DateTimeHelper
 {
@@ -26,41 +26,31 @@ class DateTimeHelper
     // =========================================================================
 
     /**
-     * Number of seconds in a minute.
-     *
-     * @var int
+     * @var int Number of seconds in a minute.
      */
     const SECONDS_MINUTE = 60;
 
     /**
-     * Number of seconds in an hour.
-     *
-     * @var int
+     * @var int Number of seconds in an hour.
      */
     const SECONDS_HOUR = 3600;
 
     /**
-     * Number of seconds in a day.
-     *
-     * @var int
+     * @var int Number of seconds in a day.
      */
     const SECONDS_DAY = 86400;
 
     /**
-     * The number of seconds in a month.
+     * @var int The number of seconds in a month.
      *
      * Based on a 30.4368 day month, with the product rounded.
-     *
-     * @var int
      */
     const SECONDS_MONTH = 2629740;
 
     /**
-     * The number of seconds in a year.
+     * @var int The number of seconds in a year.
      *
      * Based on a 365.2416 day year, with the product rounded.
-     *
-     * @var int
      */
     const SECONDS_YEAR = 31556874;
 

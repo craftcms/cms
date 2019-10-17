@@ -13,7 +13,7 @@ use craft\base\RequestTrait;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Request extends \yii\console\Request
 {
@@ -129,6 +129,7 @@ class Request extends \yii\console\Request
      * Returns the token submitted with the request, if there is one.
      *
      * @return string|null The token, or `null` if there isn’t one.
+     * @since 3.2.0
      */
     public function getToken()
     {
