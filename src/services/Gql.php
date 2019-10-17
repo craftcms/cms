@@ -598,14 +598,12 @@ class Gql extends Component
      * @return string|null
      */
     private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName) {
-        if (!Craft::$app->getConfig()->general->useGraphQlCache) {
+        if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
             return null;
         }
 
-        $cacheKey = 'gql.results.' . sha1($schema->accessToken . $query);
-
         try {
-            $cacheKey .= sha1(serialize($rootValue) . serialize($context) . serialize($variables) . serialize($operationName));
+            $cacheKey .= 'gql.results.' . sha1($schema->accessToken . $query . serialize($rootValue) . serialize($context) . serialize($variables) . serialize($operationName));
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;

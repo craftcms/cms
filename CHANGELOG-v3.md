@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added the `useGraphQlCache` config setting which controls Craft's GraphQL caching behavior.
+- Added the `enableGraphQlCaching` config setting which controls Craft's GraphQL caching behavior.
 - Added the “GraphQL result caches” option for the Clear Caches utility.
 - Added the `transform` parameter when querying for an Asset's URL with GraphQL that is interchangeable with the `handle` parameter.
 
