@@ -127,7 +127,7 @@ use yii\web\ServerErrorHttpException;
  * @method Security getSecurity() Returns the security component.
  * @method View getView() Returns the view component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait ApplicationTrait
 {
@@ -283,6 +283,7 @@ trait ApplicationTrait
      * Returns the installed schema version.
      *
      * @return string
+     * @since 3.2.0
      */
     public function getInstalledSchemaVersion(): string
     {
@@ -293,6 +294,7 @@ trait ApplicationTrait
      * Returns whether Craft has been fully initialized.
      *
      * @return bool
+     * @since 3.0.13
      */
     public function getIsInitialized(): bool
     {
@@ -489,6 +491,7 @@ trait ApplicationTrait
      * Returns whether the system is currently live.
      *
      * @return bool
+     * @since 3.1.0
      */
     public function getIsLive(): bool
     {
@@ -723,6 +726,7 @@ trait ApplicationTrait
      * Returns the system name.
      *
      * @return string
+     * @since 3.1.4
      */
     public function getSystemName(): string
     {
@@ -898,7 +902,7 @@ trait ApplicationTrait
      * Returns the drafts service.
      *
      * @return \craft\services\Drafts The drafts service
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getDrafts()
     {
@@ -1009,6 +1013,7 @@ trait ApplicationTrait
      * Returns the GraphQL service.
      *
      * @return \craft\services\Gql The GraphQL service
+     * @since 3.3.0
      */
     public function getGql()
     {
@@ -1141,7 +1146,7 @@ trait ApplicationTrait
      * Returns the revisions service.
      *
      * @return \craft\services\Revisions The revisions service
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getRevisions()
     {

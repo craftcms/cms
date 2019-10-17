@@ -25,7 +25,7 @@ use yii\console\ExitCode;
  * Craft CMS setup installer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SetupController extends Controller
 {

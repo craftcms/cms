@@ -18,7 +18,7 @@ use Twig\Template;
  * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to [[TemplateHelper::attribute()]] rather than twig_get_attribute().
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GetAttrNode extends GetAttrExpression
 {

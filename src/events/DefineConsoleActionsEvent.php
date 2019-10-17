@@ -13,7 +13,7 @@ use yii\base\Event;
  * DefineConsoleActionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DefineConsoleActionsEvent extends Event
 {

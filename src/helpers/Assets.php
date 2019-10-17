@@ -23,7 +23,7 @@ use yii\base\Exception;
  * Class Assets
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets
 {
@@ -296,6 +296,7 @@ class Assets
      * Returns a list of file kinds that are allowed to be uploaded.
      *
      * @return array The allowed file kinds
+     * @since 3.1.16
      */
     public static function getAllowedFileKinds(): array
     {

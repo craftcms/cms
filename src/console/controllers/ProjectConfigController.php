@@ -18,7 +18,7 @@ use yii\console\ExitCode;
  * Manages the Project Config.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class ProjectConfigController extends Controller
 {
@@ -101,6 +101,7 @@ class ProjectConfigController extends Controller
      * Rebuilds the project config.
      *
      * @return int
+     * @since 3.1.20
      */
     public function actionRebuild(): int
     {

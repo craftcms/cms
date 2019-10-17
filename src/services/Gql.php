@@ -147,9 +147,11 @@ class Gql extends Component
      *     }
      * );
      * ```
+     *
+     * @since 3.3.11
      */
     const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
-    
+
     /**
      * @event ExecuteGqlQueryEvent The event that is triggered after executing the GraphQL query.
      *
@@ -168,20 +170,18 @@ class Gql extends Component
      *     }
      * );
      * ```
+     *
+     * @since 3.3.11
      */
     const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
     /**
-     * Currently loaded schema definition
-     *
-     * @var Schema
+     * @var Schema Currently loaded schema definition
      */
     private $_schemaDef;
 
     /**
-     * The active GraphQL schema
-     *
-     * @var GqlSchema
+     * @var GqlSchema The active GraphQL schema
      * @see setActiveSchema()
      */
     private $_schema;
@@ -266,6 +266,7 @@ class Gql extends Component
      * @param array|null $variables The variables to use.
      * @param string|null $operationName The operation name.
      * @return array
+     * @since 3.3.11
      */
     public function executeQuery(Schema $schemaDef, string $query, $variables, $operationName): array
     {

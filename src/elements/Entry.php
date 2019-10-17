@@ -41,7 +41,7 @@ use yii\base\InvalidConfigException;
  * @property Section $section the entry's section
  * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Entry extends Element
 {
@@ -1094,6 +1094,8 @@ EOD;
 
     /**
      * Updates the entry's title, if its entry type has a dynamic title format.
+     *
+     * @since 3.0.3
      */
     public function updateTitle()
     {

@@ -29,7 +29,7 @@ use yii\web\Response as YiiResponse;
  * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Controller extends \yii\web\Controller
 {
@@ -362,6 +362,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 400 error if the current request isn’t a Control Panel request.
      *
      * @throws BadRequestHttpException if the request is not a CP request
+     * @since 3.1.0
      */
     public function requireCpRequest()
     {
@@ -374,6 +375,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 400 error if the current request isn’t a site request.
      *
      * @throws BadRequestHttpException if the request is not a site request
+     * @since 3.1.0
      */
     public function requireSiteRequest()
     {

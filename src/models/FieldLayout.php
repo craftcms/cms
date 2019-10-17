@@ -16,7 +16,7 @@ use craft\base\Model;
  * FieldLayout model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayout extends Model
 {
@@ -83,6 +83,7 @@ class FieldLayout extends Model
      * Return the field layout config or null if no fields configured.
      *
      * @return array|null
+     * @since 3.1.0
      */
     public function getConfig()
     {
@@ -112,6 +113,7 @@ class FieldLayout extends Model
      *
      * @param array $config Config data to use.
      * @return self
+     * @since 3.1.0
      */
     public static function createFromConfig(array $config): self
     {

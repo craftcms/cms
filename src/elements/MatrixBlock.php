@@ -29,7 +29,7 @@ use yii\base\InvalidConfigException;
  * @property ElementInterface $owner the owner
  * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MatrixBlock extends Element implements BlockElementInterface
 {

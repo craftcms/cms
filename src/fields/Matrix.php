@@ -48,7 +48,7 @@ use yii\base\UnknownPropertyException;
  * Matrix represents a Matrix field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
@@ -57,6 +57,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
+     * @since 3.1.27
      */
     const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
 
@@ -124,7 +125,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * - `language` – Save blocks to other sites with the same language
      * - `all` – Save blocks to all sites supported by the owner element
      *
-     * @since 3.2
+     * @since 3.2.0
      */
     public $propagationMethod = self::PROPAGATION_METHOD_ALL;
 

@@ -44,7 +44,7 @@ use yii\db\ExpressionInterface;
  * @property string|Site $site The site or site handle that the elements should be returned in
  * @mixin ElementQueryBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -145,6 +145,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool Whether to ignore placeholder elements when populating the results.
      * @used-by ignorePlaceholders()
+     * @since 3.2.9
      */
     public $ignorePlaceholders = false;
 
@@ -153,42 +154,50 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var bool Whether draft elements should be returned.
+     * @since 3.2.0
      */
     public $drafts = false;
 
     /**
      * @var int|null The ID of the draft to return (from the `drafts` table)
+     * @since 3.2.0
      */
     public $draftId;
 
     /**
      * @var int|false|null The source element ID that drafts should be returned for.
      * Set to `false` to fetch unsaved drafts.
+     * @since 3.2.0
      */
     public $draftOf;
 
     /**
      * @var int|null The drafts’ creator ID
+     * @since 3.2.0
      */
     public $draftCreator;
 
     /**
      * @var bool Whether revision elements should be returned.
+     * @since 3.2.0
      */
     public $revisions = false;
 
     /**
      * @var int|null The ID of the revision to return (from the `revisions` table)
+     * @since 3.2.0
      */
     public $revisionId;
 
     /**
      * @var int|null The source element ID that revisions should be returned for
+     * @since 3.2.0
      */
     public $revisionOf;
 
     /**
      * @var int|null The revisions’ creator ID
+     * @since 3.2.0
      */
     public $revisionCreator;
 
@@ -229,6 +238,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether to return trashed (soft-deleted) elements.
      * If this is set to `null`, then both trashed and non-trashed elements will be returned.
      * @used-by trashed()
+     * @since 3.1.0
      */
     public $trashed = false;
 
@@ -255,14 +265,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool Whether only elements with unique IDs should be returned by the query.
      * @used-by unique()
-     * @since 3.2
+     * @since 3.2.0
      */
     public $unique = false;
 
     /**
      * @var array|null Determines which site should be selected when querying multi-site elements.
      * @used-by preferSites()
-     * @since 3.2
+     * @since 3.2.0
      */
     public $preferSites = false;
 
@@ -364,6 +374,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool|null Whether the resulting elements must have descendants.
      * @used-by hasDescendants()
+     * @since 3.0.4
      */
     public $hasDescendants;
 
@@ -997,7 +1008,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $unique
-     * @since 3.2
+     * @since 3.2.0
      */
     public function unique(bool $value = true)
     {
@@ -1008,7 +1019,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $preferSites
-     * @since 3.2
+     * @since 3.2.0
      */
     public function preferSites(array $value = null)
     {

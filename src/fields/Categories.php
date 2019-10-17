@@ -25,7 +25,7 @@ use GraphQL\Type\Definition\Type;
  * Categories represents a Categories field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Categories extends BaseRelationField
 {

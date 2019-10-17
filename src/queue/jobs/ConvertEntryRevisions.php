@@ -33,7 +33,7 @@ use yii\db\Expression;
  * ConvertEntryRevisions job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class ConvertEntryRevisions extends BaseJob
 {

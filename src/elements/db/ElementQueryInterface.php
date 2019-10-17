@@ -22,7 +22,7 @@ use yii\db\QueryInterface;
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, Countable, IteratorAggregate
 {
@@ -79,6 +79,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.2.9
      */
     public function ignorePlaceholders(bool $value = true);
 
@@ -105,6 +106,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.2.0
      */
     public function drafts(bool $value = true);
 
@@ -135,6 +137,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function draftId(int $value = null);
 
@@ -166,6 +169,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function draftOf($value);
 
@@ -197,6 +201,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function draftCreator($value);
 
@@ -223,6 +228,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisions(bool $value = true);
 
@@ -253,6 +259,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisionId(int $value = null);
 
@@ -284,6 +291,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisionOf($value);
 
@@ -315,6 +323,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisionCreator($value);
 
@@ -467,6 +476,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool|null $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.1.0
      */
     public function trashed($value = true);
 
@@ -637,7 +647,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.2
+     * @since 3.2.0
      */
     public function unique(bool $value = true);
 
@@ -672,7 +682,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param array|null $value The property value
      * @return static self reference
-     * @since 3.2
+     * @since 3.2.0
      */
     public function preferSites(array $value = null);
 
@@ -924,6 +934,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param string|array|null $value The property value to append
      * @return self The query object itself
+     * @since 3.0.9
      */
     public function andWith($value);
 
@@ -1000,6 +1011,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value
      * @return static self reference
+     * @since 3.0.4
      */
     public function hasDescendants(bool $value = true);
 
@@ -1330,6 +1342,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * ```
      *
      * @return static self reference
+     * @since 3.0.17
      */
     public function anyStatus();
 

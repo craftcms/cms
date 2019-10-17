@@ -21,7 +21,7 @@ use GraphQL\Type\Definition\Type;
  * Markdown GraphQL Directive
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0.1
+ * @since 3.3.1
  */
 class Markdown extends Directive
 {

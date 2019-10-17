@@ -24,7 +24,7 @@ use yii\db\Schema;
  * Date represents a Date/Time field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {

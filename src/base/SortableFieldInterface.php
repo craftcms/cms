@@ -12,7 +12,7 @@ namespace craft\base;
  * sort options on element indexes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 interface SortableFieldInterface
 {

@@ -16,7 +16,7 @@ use yii\console\ExitCode;
  * Allows you to manage garbage collection.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class GcController extends Controller
 {

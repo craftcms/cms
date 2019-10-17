@@ -13,7 +13,7 @@ use yii\base\Event;
  * DefineRulesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class DefineRulesEvent extends Event
 {

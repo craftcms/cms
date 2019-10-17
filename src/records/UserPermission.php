@@ -16,7 +16,7 @@ use craft\db\Table;
  * @property int $id ID
  * @property string $name Name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPermission extends ActiveRecord
 {

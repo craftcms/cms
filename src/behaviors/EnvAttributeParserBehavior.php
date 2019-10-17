@@ -32,7 +32,7 @@ use yii\validators\UrlValidator;
  * ```
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class EnvAttributeParserBehavior extends Behavior
 {

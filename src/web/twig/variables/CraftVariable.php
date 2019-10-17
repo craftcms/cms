@@ -49,7 +49,7 @@ use yii\di\ServiceLocator;
  * @property EmailMessages $emailMessages
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftVariable extends ServiceLocator
 {
@@ -258,6 +258,7 @@ class CraftVariable extends ServiceLocator
      *
      * @param array $criteria
      * @return GlobalSetQuery
+     * @since 3.0.4
      */
     public function globalSets(array $criteria = []): GlobalSetQuery
     {
@@ -283,6 +284,7 @@ class CraftVariable extends ServiceLocator
      * Returns a new generic query.
      *
      * @return Query
+     * @since 3.0.19
      */
     public function query(): Query
     {

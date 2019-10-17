@@ -27,7 +27,7 @@ use yii\validators\EmailValidator;
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Table extends Field
 {

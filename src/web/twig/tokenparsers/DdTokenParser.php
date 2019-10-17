@@ -16,7 +16,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class DdTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DdTokenParser extends AbstractTokenParser
 {

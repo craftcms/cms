@@ -23,7 +23,7 @@ use yii\base\BaseObject;
  * Parses a relatedTo param on an ElementQuery.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementRelationParamParser extends BaseObject
 {

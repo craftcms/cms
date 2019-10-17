@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
  * Class ProjectConfig
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class ProjectConfig
 {
@@ -128,9 +128,9 @@ class ProjectConfig
      * Traverse and clean a config array, removing empty values and sorting keys.
      *
      * @param array $config Config array to clean
-     *
      * @return array
      * @throws InvalidConfigException if config contains unexpected data.
+     * @since 3.1.14
      */
     public static function cleanupConfig(array $config): array
     {
