@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
+use craft\console\Controller;
 use craft\db\Connection;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
@@ -18,7 +19,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
@@ -192,14 +192,14 @@ EOD;
 
         // driver
         if ($this->driver) {
-            if (!in_array($this->driver, [DbConfig::DRIVER_MYSQL, DbConfig::DRIVER_PGSQL], true)) {
-                $this->stderr('--driver must be either "' . DbConfig::DRIVER_MYSQL . '" or "' . DbConfig::DRIVER_PGSQL . '".' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
+                $this->stderr('--driver must be either "' . Connection::DRIVER_MYSQL . '" or "' . Connection::DRIVER_PGSQL . '".' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else if ($this->interactive) {
             $this->driver = $this->select('Which database driver are you using?', [
-                DbConfig::DRIVER_MYSQL => 'MySQL',
-                DbConfig::DRIVER_PGSQL => 'PostgreSQL',
+                Connection::DRIVER_MYSQL => 'MySQL',
+                Connection::DRIVER_PGSQL => 'PostgreSQL',
             ]);
         }
 
@@ -212,7 +212,7 @@ EOD;
 
         // port
         if ($firstTime) {
-            $defaultPort = $this->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
+            $defaultPort = $this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432;
         } else {
             $defaultPort = $this->port;
         }
@@ -254,7 +254,7 @@ EOD;
         ]);
 
         // schema
-        if ($this->driver === DbConfig::DRIVER_PGSQL) {
+        if ($this->driver === Connection::DRIVER_PGSQL) {
             $this->schema = $this->prompt('Database schema:', [
                 'required' => true,
                 'default' => $this->schema ?: 'public',

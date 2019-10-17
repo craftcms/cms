@@ -45,6 +45,9 @@ class Connection extends \yii\db\Connection
     // Constants
     // =========================================================================
 
+    const DRIVER_MYSQL = 'mysql';
+    const DRIVER_PGSQL = 'pgsql';
+
     /**
      * @event BackupEvent The event that is triggered before the backup is created.
      */
@@ -112,7 +115,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsMysql(): bool
     {
-        return $this->getDriverName() === DbConfig::DRIVER_MYSQL;
+        return $this->getDriverName() === Connection::DRIVER_MYSQL;
     }
 
     /**
@@ -122,7 +125,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsPgsql(): bool
     {
-        return $this->getDriverName() === DbConfig::DRIVER_PGSQL;
+        return $this->getDriverName() === Connection::DRIVER_PGSQL;
     }
 
     /**

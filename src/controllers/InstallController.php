@@ -379,7 +379,7 @@ class InstallController extends Controller
         $database = $request->getBodyParam("{$prefix}database");
         $port = $request->getBodyParam("{$prefix}port");
         if ($port === null || $port === '') {
-            $port = $driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
+            $port = $driver === Connection::DRIVER_MYSQL ? 3306 : 5432;
         }
 
         $dbConfig->dsn = "{$driver}:host={$server};port={$port};dbname={$database}";

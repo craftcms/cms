@@ -3,6 +3,8 @@
 ### Added
 - Added the `verifyEmailPath` config setting.
 - Added the `{% requireGuest %}` tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
+- Added `craft\db\Connection::DRIVER_MYSQL`.
+- Added `craft\db\Connection::DRIVER_PGSQL`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
@@ -33,4 +35,6 @@
 
 ### Deprecated
 - Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
+- Deprecated `craft\config\DbConfig::DRIVER_MYSQL`.
+- Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.

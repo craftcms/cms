@@ -8,6 +8,7 @@
 namespace craft\config;
 
 use Craft;
+use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\base\BaseObject;
@@ -24,7 +25,9 @@ class DbConfig extends BaseObject
     // Constants
     // =========================================================================
 
+    /** @deprecated in 3.4.0 */
     const DRIVER_MYSQL = 'mysql';
+    /** @deprecated in 3.4.0 */
     const DRIVER_PGSQL = 'pgsql';
 
     // Properties
@@ -157,14 +160,14 @@ class DbConfig extends BaseObject
     public function updateDsn()
     {
         if (!$this->driver) {
-            $this->driver = self::DRIVER_MYSQL;
+            $this->driver = Connection::DRIVER_MYSQL;
         }
 
-        if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
+        if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
             throw new InvalidConfigException('Unsupported DB driver value: ' . $this->driver);
         }
 
-        if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
+        if ($this->driver === Connection::DRIVER_MYSQL && $this->unixSocket) {
             $this->unixSocket = strtolower($this->unixSocket);
             $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database}";
             return;
@@ -173,10 +176,10 @@ class DbConfig extends BaseObject
         $this->server = strtolower($this->server ?? '');
         if ($this->port === null || $this->port === '') {
             switch ($this->driver) {
-                case self::DRIVER_MYSQL:
+                case Connection::DRIVER_MYSQL:
                     $this->port = 3306;
                     break;
-                case self::DRIVER_PGSQL:
+                case Connection::DRIVER_PGSQL:
                     $this->port = 5432;
                     break;
             }

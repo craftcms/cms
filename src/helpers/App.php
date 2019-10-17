@@ -394,9 +394,9 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : DbConfig::DRIVER_MYSQL;
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
 
-        if ($driver === DbConfig::DRIVER_MYSQL) {
+        if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];

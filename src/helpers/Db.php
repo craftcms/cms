@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
-use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
@@ -819,9 +818,9 @@ class Db
 
         // URL scheme => driver
         if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
-            $driver = DbConfig::DRIVER_PGSQL;
+            $driver = Connection::DRIVER_PGSQL;
         } else {
-            $driver = DbConfig::DRIVER_MYSQL;
+            $driver = Connection::DRIVER_MYSQL;
         }
 
         // DSN params

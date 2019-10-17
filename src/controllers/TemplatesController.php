@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\config\DbConfig;
+use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Template;
@@ -160,7 +160,7 @@ class TemplatesController extends Controller
         $reqCheck = new \RequirementsChecker();
         $dbConfig = Craft::$app->getConfig()->getDb();
         $reqCheck->dsn = $dbConfig->dsn;
-        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : DbConfig::DRIVER_MYSQL;
+        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
         $reqCheck->dbUser = $dbConfig->user;
         $reqCheck->dbPassword = $dbConfig->password;
 
