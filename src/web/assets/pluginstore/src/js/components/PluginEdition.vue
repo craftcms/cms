@@ -79,7 +79,7 @@
                     return null
                 }
                 
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                return this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
             }
 
         },

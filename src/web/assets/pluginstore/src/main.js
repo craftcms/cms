@@ -159,7 +159,7 @@ Garnish.$doc.ready(function() {
             },
 
             loadPluginStoreData() {
-                this.$store.dispatch('pluginStore/getPluginStoreData')
+                this.$store.dispatch('pluginStore/getCoreData')
                     .then(() => {
                         this.pluginStoreDataLoaded = true
                         this.$emit('dataLoaded')

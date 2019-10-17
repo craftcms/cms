@@ -7,6 +7,8 @@ const state = {
     categories: [],
     developer: null,
     featuredPlugins: [],
+    featuredSections: [],
+    featuredSection: null,
     plugin: null,
     pluginChangelog: null,
     plugins: [],
@@ -17,48 +19,9 @@ const state = {
  * Getters
  */
 const getters = {
-    getFeaturedPlugin(state) {
-        return id => {
-            return state.featuredPlugins.find(g => g.id == id)
-        }
-    },
-
     getCategoryById(state) {
         return id => {
             return state.categories.find(c => c.id == id)
-        }
-    },
-
-    getPluginById(state) {
-        return id => {
-                return state.plugins.find(p => p.id == id)
-        }
-    },
-
-    getPluginsByIds(state) {
-        return ids => {
-            let plugins = [];
-
-            ids.forEach(function(id) {
-                const plugin = state.plugins.find(p => p.id === id)
-                plugins.push(plugin)
-            })
-
-            return plugins;
-        }
-    },
-
-    getPluginsByCategory(state) {
-        return categoryId => {
-            return state.plugins.filter(p => {
-                return p.categoryIds.find(c => c == categoryId)
-            })
-        }
-    },
-
-    getPluginsByDeveloperId(state) {
-        return developerId => {
-            return state.plugins.filter(p => p.developerId == developerId)
         }
     },
 
@@ -68,15 +31,25 @@ const getters = {
         }
     },
 
-    getPluginEdition(state, getters) {
-        return (pluginHandle, editionHandle) => {
-            const plugin = getters.getPluginByHandle(pluginHandle)
-
-            if (!plugin) {
-                return false
-            }
-
+    getPluginEdition() {
+        return (plugin, editionHandle) => {
             return plugin.editions.find(edition => edition.handle === editionHandle)
+        }
+    },
+
+    getPluginIndexParams(state) {
+        return context => {
+            const limit = context.limit ? context.limit : state.pluginIndexLimit
+            const offset = context.offset ? context.offset : 0
+            const orderBy = context.orderBy
+            const direction = context.direction
+
+            return {
+                limit,
+                offset,
+                orderBy,
+                direction,
+            }
         }
     },
 
@@ -92,23 +65,31 @@ const getters = {
  */
 const actions = {
     getDeveloper({commit}, developerId) {
-        return new Promise((resolve, reject) => {
-            api.getDeveloper(developerId)
-                .then(response => {
-                    commit('updateDeveloper', { developer: response.data })
-                    resolve(response)
-                })
-                .catch(error => {
-                    reject(error.response)
-                })
-        })
+        return api.getDeveloper(developerId)
+            .then(response => {
+                commit('updateDeveloper', response.data)
+            })
     },
 
-    getPluginStoreData({commit}) {
+    getFeaturedSectionByHandle({commit}, featuredSectionHandle) {
+        return api.getFeaturedSectionByHandle(featuredSectionHandle)
+            .then(response => {
+                commit('updateFeaturedSection', response.data)
+            })
+    },
+
+    getFeaturedSections({commit}) {
+        return api.getFeaturedSections()
+            .then(response => {
+                commit('updateFeaturedSections', response.data)
+            })
+    },
+
+    getCoreData({commit}) {
         return new Promise((resolve, reject) => {
-            api.getPluginStoreData()
+            api.getCoreData()
                 .then(response => {
-                    commit('updatePluginStoreData', {response})
+                    commit('updateCoreData', {response})
                     resolve(response)
                 })
                 .catch(error => {
@@ -130,6 +111,13 @@ const actions = {
         })
     },
 
+    getPluginDetailsByHandle({commit}, pluginHandle) {
+        return api.getPluginDetailsByHandle(pluginHandle)
+            .then(response => {
+                commit('updatePluginDetails', response.data)
+            })
+    },
+
     getPluginChangelog({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginChangelog(pluginId)
@@ -142,21 +130,107 @@ const actions = {
                 })
         })
     },
+
+    getPluginsByCategory({commit, getters}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+
+            api.getPluginsByCategory(context.categoryId, pluginIndexParams)
+                .then(response => {
+                    if (context.appendData && context.appendData === true) {
+                        commit('appendPlugins', response.data)
+                    } else {
+                        commit('updatePlugins', response.data)
+                    }
+
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    getPluginsByDeveloperId({commit, getters}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+
+            api.getPluginsByDeveloperId(context.developerId, pluginIndexParams)
+                .then(response => {
+                    if (context.appendData && context.appendData === true) {
+                        commit('appendPlugins', response.data)
+                    } else {
+                        commit('updatePlugins', response.data)
+                    }
+
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    getPluginsByFeaturedSectionHandle({commit, getters}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+            
+            return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
+                .then(response => {
+                    if (context.appendData && context.appendData === true) {
+                        commit('appendPlugins', response.data)
+                    } else {
+                        commit('updatePlugins', response.data)
+                    }
+
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    searchPlugins({commit, getters}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+
+
+            api.searchPlugins(context.searchQuery, pluginIndexParams)
+                .then(response => {
+                    if (context.appendData && context.appendData === true) {
+                        commit('appendPlugins', response.data)
+                    } else {
+                        commit('updatePlugins', response.data)
+                    }
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
 }
 
 /**
  * Mutations
  */
 const mutations = {
-    updateDeveloper(state, {developer}) {
+    updateCoreData(state, {response}) {
+        state.categories = response.data.categories
+        state.expiryDateOptions = response.data.expiryDateOptions
+    },
+
+    updateDeveloper(state, developer) {
         state.developer = developer
     },
 
-    updatePluginStoreData(state, {response}) {
-        state.categories = response.data.categories
-        state.featuredPlugins = response.data.featuredPlugins
-        state.plugins = response.data.plugins
-        state.expiryDateOptions = response.data.expiryDateOptions
+    updateFeaturedSection(state, featuredSection) {
+        state.featuredSection = featuredSection
+    },
+
+    updateFeaturedSections(state, featuredSections) {
+        state.featuredSections = featuredSections
     },
 
     updatePluginDetails(state, pluginDetails) {
@@ -165,6 +239,14 @@ const mutations = {
 
     updatePluginChangelog(state, changelog) {
         state.pluginChangelog = changelog
+    },
+
+    updatePlugins(state, plugins) {
+        state.plugins = plugins
+    },
+
+    appendPlugins(state, plugins) {
+        state.plugins = [...state.plugins, ...plugins]
     },
 }
 

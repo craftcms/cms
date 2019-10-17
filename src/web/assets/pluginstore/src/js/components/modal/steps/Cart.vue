@@ -5,132 +5,137 @@
         </template>
 
         <template slot="main">
-            <h2>{{ "Items in your cart"|t('app') }}</h2>
+            <template v-if="!activeTrialsLoading">
+                <h2>{{ "Items in your cart"|t('app') }}</h2>
 
-            <template v-if="cart">
-                <template v-if="cartItems.length">
-                    <table class="cart-data fullwidth">
-                        <thead>
-                        <tr>
-                            <th></th>
-                            <th>{{ "Item"|t('app') }}</th>
-                            <th>{{ "Updates"|t('app') }}</th>
-                            <th class="w-10"></th>
-                        </tr>
-                        </thead>
-                        <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
-                            <tr class="item-details">
-                                <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
-                                    <td class="thin">
-                                        <div class="plugin-icon">
-                                            <img :src="craftLogo" width="40" height="40" />
-                                        </div>
-                                    </td>
-                                    <td class="item-name">
-                                        <strong>Craft CMS</strong>
-                                        <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
-                                    </td>
-                                </template>
-
-                                <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
-                                    <td class="thin">
-                                        <div class="plugin-icon">
-                                            <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="item-name">
-                                            <strong>{{ item.plugin.name}}</strong>
+                <template v-if="cart">
+                    <template v-if="cartItems.length">
+                        <table class="cart-data fullwidth">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>{{ "Item"|t('app') }}</th>
+                                <th>{{ "Updates"|t('app') }}</th>
+                                <th class="w-10"></th>
+                            </tr>
+                            </thead>
+                            <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
+                                <tr class="item-details">
+                                    <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
+                                        <td class="thin">
+                                            <div class="plugin-icon">
+                                                <img :src="craftLogo" width="40" height="40" />
+                                            </div>
+                                        </td>
+                                        <td class="item-name">
+                                            <strong>Craft CMS</strong>
                                             <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
-                                        </div>
-                                    </td>
-                                </template>
-
-                                <td class="expiry-date">
-                                    <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
-                                        <dropdown v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                        </td>
                                     </template>
 
-                                    <spinner v-if="itemLoading(itemKey)"></spinner>
-                                </td>
-                                <td class="price">
-                                    <strong>{{ item.lineItem.price|currency }}</strong>
-                                </td>
-                            </tr>
+                                    <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
+                                        <td class="thin">
+                                            <div class="plugin-icon">
+                                                <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="item-name">
+                                                <strong>{{ item.plugin.name}}</strong>
+                                                <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
+                                            </div>
+                                        </td>
+                                    </template>
 
-                            <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
-                                <tr :key="itemKey + 'adjustment-' + adjustmentKey" class="sub-item">
-                                    <td class="blank-cell"></td>
-                                    <td class="blank-cell"></td>
-                                    <td>
-                                        <template v-if="adjustment.sourceSnapshot.type === 'extendedUpdates'">
-                                            {{"Updates until {date}"|t('app', {date: $options.filters.formatDate(adjustment.sourceSnapshot.expiryDate)})}}
+                                    <td class="expiry-date">
+                                        <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
+                                            <dropdown v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                         </template>
-                                        <template v-else>
-                                            {{adjustment.name}}
-                                        </template>
+
+                                        <spinner v-if="itemLoading(itemKey)"></spinner>
                                     </td>
                                     <td class="price">
-                                        {{adjustment.amount|currency}}
+                                        <strong>{{ item.lineItem.price|currency }}</strong>
                                     </td>
                                 </tr>
-                            </template>
 
-                            <tr class="sub-item">
-                                <td class="blank-cell"></td>
-                                <td class="blank-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="price">
-                                    <div class="w-16">
-                                        <template v-if="!removeFromCartLoading(itemKey)">
-                                            <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
-                                        </template>
-                                        <template v-else>
-                                            <spinner class="sm"></spinner>
-                                        </template>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                                <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
+                                    <tr :key="itemKey + 'adjustment-' + adjustmentKey" class="sub-item">
+                                        <td class="blank-cell"></td>
+                                        <td class="blank-cell"></td>
+                                        <td>
+                                            <template v-if="adjustment.sourceSnapshot.type === 'extendedUpdates'">
+                                                {{"Updates until {date}"|t('app', {date: $options.filters.formatDate(adjustment.sourceSnapshot.expiryDate)})}}
+                                            </template>
+                                            <template v-else>
+                                                {{adjustment.name}}
+                                            </template>
+                                        </td>
+                                        <td class="price">
+                                            {{adjustment.amount|currency}}
+                                        </td>
+                                    </tr>
+                                </template>
 
-                        <tbody>
-                            <tr>
-                                <th class="total-price" colspan="3"><strong>{{ "Total Price"|t('app') }}</strong></th>
-                                <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                <tr class="sub-item">
+                                    <td class="blank-cell"></td>
+                                    <td class="blank-cell"></td>
+                                    <td class="empty-cell"></td>
+                                    <td class="price">
+                                        <div class="w-16">
+                                            <template v-if="!removeFromCartLoading(itemKey)">
+                                                <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                            </template>
+                                            <template v-else>
+                                                <spinner class="sm"></spinner>
+                                            </template>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
 
-                    <div class="py-4">
-                        <btn kind="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
+                            <tbody>
+                                <tr>
+                                    <th class="total-price" colspan="3"><strong>{{ "Total Price"|t('app') }}</strong></th>
+                                    <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="py-4">
+                            <btn kind="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
+                        </div>
+                    </template>
+
+                    <div v-else>
+                        <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continue-shopping')">{{ "Continue shopping"|t('app') }}</a></p>
                     </div>
                 </template>
 
-                <div v-else>
-                    <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continue-shopping')">{{ "Continue shopping"|t('app') }}</a></p>
-                </div>
+                <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
+                    <hr />
+
+                    <div v-if="pendingActiveTrials.length > 1" class="right">
+                        <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
+                    </div>
+
+                    <h2>{{ "Active Trials"|t('app') }}</h2>
+
+                    <table class="cart-data">
+                        <thead>
+                        <tr>
+                            <th class="thin"></th>
+                            <th>{{ "Plugin Name"|t('app') }}</th>
+                        </tr>
+                        </thead>
+                        <tbody v-for="(plugin, key) in pendingActiveTrials" :key="key">
+                            <active-trials-table-row :plugin="plugin"></active-trials-table-row>
+                        </tbody>
+                    </table>
+                </template>
             </template>
-
-            <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
-                <hr />
-
-                <div v-if="pendingActiveTrials.length > 1" class="right">
-                    <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
-                </div>
-
-                <h2>{{ "Active Trials"|t('app') }}</h2>
-
-                <table class="cart-data">
-                    <thead>
-                    <tr>
-                        <th class="thin"></th>
-                        <th>{{ "Plugin Name"|t('app') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody v-for="(plugin, key) in pendingActiveTrials" :key="key">
-                        <active-trials-table-row :plugin="plugin"></active-trials-table-row>
-                    </tbody>
-                </table>
+            <template v-else>
+                <spinner></spinner>
             </template>
         </template>
     </step>
@@ -147,6 +152,7 @@
     export default {
         data() {
             return {
+                activeTrialsLoading: false,
                 loadingItems: {},
                 loadingRemoveFromCart: {},
             }
@@ -160,6 +166,7 @@
 
         computed: {
             ...mapState({
+                activeTrialPlugins: state => state.cart.activeTrialPlugins,
                 cart: state => state.cart.cart,
                 craftLogo: state => state.craft.craftLogo,
                 craftId: state => state.craft.craftId,
@@ -168,7 +175,6 @@
             }),
 
             ...mapGetters({
-                activeTrialPlugins: 'cart/activeTrialPlugins',
                 cartItems: 'cart/cartItems',
                 cartItemsData: 'cart/cartItemsData',
                 getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
@@ -222,7 +228,7 @@
                 let items = []
 
                 this.pendingActiveTrials.forEach(plugin => {
-                    const edition = this.getActiveTrialPluginEdition(plugin.handle)
+                    const edition = this.getActiveTrialPluginEdition(plugin)
 
                     const item = {
                         type: 'plugin-edition',
@@ -317,6 +323,18 @@
                 return this.$options.filters.t("Updates until {date}", 'app', {date})
             },
         },
+
+        mounted() {
+            this.activeTrialsLoading = true
+
+            this.$store.dispatch('cart/getActiveTrialPlugins')
+                .then(() => {
+                    this.activeTrialsLoading = false
+                })
+                .catch(() => {
+                    this.activeTrialsLoading = false
+                })
+        }
     }
 </script>
 

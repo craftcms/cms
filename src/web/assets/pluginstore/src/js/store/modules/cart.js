@@ -1,4 +1,5 @@
 import api from '../../api/cart'
+import pluginStoreApi from '../../api/pluginstore'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -8,8 +9,10 @@ Vue.use(Vuex)
  * State
  */
 const state = {
+    activeTrialPlugins: [],
     checkoutStatus: null,
     cart: null,
+    cartPlugins: [],
     stripePublicKey: null,
     identityMode: 'craftid',
     selectedExpiryDates: {},
@@ -49,61 +52,21 @@ const getters = {
         }
     },
 
-    activeTrialPlugins(state, getters, rootState, rootGetters) {
-        return rootState.pluginStore.plugins.filter(plugin => {
-            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](plugin.handle)
+    getActiveTrialPluginEdition(state, getters, rootState, rootGetters) {
+        return plugin => {
+            const pluginHandle = plugin.handle
+            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](pluginHandle)
+            const pluginEdition = plugin.editions.find(edition => edition.handle === pluginLicenseInfo.edition)
 
-            if (!pluginLicenseInfo) {
-                return false
-            }
-
-            if (pluginLicenseInfo.licenseKey && pluginLicenseInfo.edition === pluginLicenseInfo.licensedEdition) {
-                return false
-            }
-
-            if (pluginLicenseInfo.edition) {
-                const pluginEdition = rootGetters['pluginStore/getPluginEdition'](plugin.handle, pluginLicenseInfo.edition)
-
-                if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
-                    return false
-                }
-            }
-
-            if (!rootGetters['craft/isPluginInstalled'](plugin.handle)) {
-                return false
-            }
-
-            return true
-        })
-    },
-
-    activeTrialPluginEditions(state, getters, rootState, rootGetters) {
-        const plugins = getters.activeTrialPlugins
-
-        const pluginEditions = {}
-
-        plugins.forEach(plugin => {
-            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](plugin.handle)
-            const edition = rootGetters['pluginStore/getPluginEdition'](plugin.handle, pluginLicenseInfo.edition)
-            pluginEditions[plugin.handle] = edition
-        })
-
-        return pluginEditions
-    },
-
-    getActiveTrialPluginEdition(state, getters) {
-        return pluginHandle => {
-            const pluginEditions = getters.activeTrialPluginEditions
-
-            if (!pluginEditions[pluginHandle]) {
+            if (!pluginEdition) {
                 return null
             }
 
-            return pluginEditions[pluginHandle]
+            return pluginEdition
         }
     },
 
-    cartItems(state, getters, rootState) {
+    cartItems(state) {
         let cartItems = []
 
         if (state.cart) {
@@ -115,7 +78,7 @@ const getters = {
                 cartItem.lineItem = lineItem
 
                 if (lineItem.purchasable.type === 'plugin-edition') {
-                    cartItem.plugin = rootState.pluginStore.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
+                    cartItem.plugin = state.cartPlugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
                 }
 
                 cartItems.push(cartItem)
@@ -271,14 +234,34 @@ const actions = {
 
     getCart({dispatch, commit, rootState}) {
         return new Promise((resolve, reject) => {
+            // retrieve the order number
             dispatch('getOrderNumber')
                 .then(orderNumber => {
                     if (orderNumber) {
+                        // get cart by order number
                         api.getCart(orderNumber)
                             .then(response => {
                                 if (!response.data.error) {
                                     commit('updateCart', {response})
-                                    resolve(response)
+
+                                    const cartItemPluginIds = []
+
+                                    state.cart.lineItems.forEach((lineItem) => {
+                                        cartItemPluginIds.push(lineItem.purchasable.plugin.id)
+                                    })
+
+                                    if (cartItemPluginIds.length > 0) {
+                                        pluginStoreApi.getPluginsByIds(cartItemPluginIds)
+                                            .then((pluginsResponse) => {
+                                                commit('updateCartPlugins', pluginsResponse.data)
+                                                resolve(response)
+                                            })
+                                            .catch((error) => {
+                                                reject(error)
+                                            })
+                                    } else {
+                                        resolve(response)
+                                    }
                                 } else {
                                     // Couldn’t get cart for this order number? Try to create a new one.
                                     const data = {}
@@ -407,13 +390,77 @@ const actions = {
                     reject(error.response)
                 })
         })
-    }
+    },
+
+    getActiveTrialPlugins({commit, rootState, rootGetters}) {
+        return new Promise((resolve, reject) => {
+            // get plugin license info and find active trial plugin ids
+            const pluginHandles = []
+            const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
+
+            for (let pluginHandle in pluginLicenseInfo) {
+                if (pluginLicenseInfo.hasOwnProperty(pluginHandle)) {
+                    pluginHandles.push(pluginHandle)
+                }
+            }
+
+            // request plugins by plugin id
+            pluginStoreApi.getPluginsByHandles(pluginHandles)
+                .then((response) => {
+                    const data = response.data
+                    const plugins = []
+
+                    for (let i = 0; i < data.length; i++) {
+                        const plugin = data[i]
+
+                        if (!plugin) {
+                            continue
+                        }
+
+                        const info = pluginLicenseInfo[plugin.handle]
+
+                        if (!info) {
+                            continue
+                        }
+
+                        if (info.licenseKey && info.edition === info.licensedEdition) {
+                            continue
+                        }
+
+                        if (info.edition) {
+                            const pluginEdition = plugin.editions.find(edition => edition.handle === info.edition)
+
+                            if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
+                                continue
+                            }
+                        }
+
+                        if (!rootGetters['craft/isPluginInstalled'](plugin.handle)) {
+                            continue
+                        }
+
+                        plugins.push(plugin)
+                    }
+
+                    commit('updateActiveTrialPlugins', plugins)
+                    resolve(response)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+
+        })
+    },
 }
 
 /**
  * Mutations
  */
 const mutations = {
+    updateActiveTrialPlugins(state, plugins) {
+        state.activeTrialPlugins = plugins
+    },
+
     updateCart(state, {response}) {
         state.cart = response.data.cart
         state.stripePublicKey = response.data.stripePublicKey
@@ -426,6 +473,10 @@ const mutations = {
         state.selectedExpiryDates = selectedExpiryDates
     },
 
+    updateCartPlugins(state, plugins) {
+        state.cartPlugins = plugins
+    },
+
     resetCart(state) {
         state.cart = null
     },
@@ -436,7 +487,7 @@ const mutations = {
 
     updateSelectedExpiryDates(state, selectedExpiryDates) {
         state.selectedExpiryDates = selectedExpiryDates
-    }
+    },
 }
 
 /**

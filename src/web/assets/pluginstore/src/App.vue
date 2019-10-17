@@ -4,7 +4,7 @@
             <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
         </transition>
 
-        <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
+        <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError && $root.pluginLicenseInfoLoaded">
             <sidebar></sidebar>
 
             <div class="ps-main">

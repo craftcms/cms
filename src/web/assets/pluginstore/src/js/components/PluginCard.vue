@@ -62,7 +62,7 @@
             }),
 
             activeTrialPluginEdition() {
-                return this.getActiveTrialPluginEdition(this.plugin.handle)
+                return this.getActiveTrialPluginEdition(this.plugin)
             },
 
             priceRange() {

@@ -9,16 +9,15 @@
             <spinner class="mt-4"></spinner>
         </template>
         <template v-else>
-            <plugin-index :plugins="pluginsToRender"></plugin-index>
+            <plugin-index :plugins="plugins"></plugin-index>
         </template>
     </div>
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState, mapGetters,  mapActions} from 'vuex'
     import PluginIndex from '../../components/PluginIndex'
     import SortPlugins from '../../components/SortPlugins'
-    import PluginsHelper from '../../helpers/plugins'
 
     export default {
         components: {
@@ -29,8 +28,7 @@
         data() {
             return {
                 category: null,
-                loading: true,
-                plugins: [],
+                loading: false,
                 sortingOptions: {
                     attribute: 'activeInstalls',
                     direction: 'desc',
@@ -39,24 +37,34 @@
         },
 
         computed: {
-            ...mapGetters({
-                getCategoryById: 'pluginStore/getCategoryById',
-                getPluginsByCategory: 'pluginStore/getPluginsByCategory',
+            ...mapState({
+                plugins: state => state.pluginStore.plugins,
             }),
 
-            pluginsToRender() {
-                return PluginsHelper.sortPlugins(this.plugins, this.sortingOptions);
-            }
+            ...mapGetters({
+                getCategoryById: 'pluginStore/getCategoryById',
+            }),
         },
 
-        created() {
+        methods: {
+            ...mapActions({
+                getPluginsByCategory: 'pluginStore/getPluginsByCategory',
+            }),
+        },
+
+        mounted() {
             const categoryId = this.$route.params.id
             this.category = this.getCategoryById(categoryId)
 
-            setTimeout(function() {
-                this.plugins = this.getPluginsByCategory(categoryId)
-                this.loading = false
-            }.bind(this), 1)
+            this.loading = true
+
+            this.getPluginsByCategory({categoryId})
+                .then(() => {
+                    this.loading = false
+                })
+                .catch(() => {
+                    this.loading = false
+                })
         },
     }
 </script>
