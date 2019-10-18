@@ -62,6 +62,7 @@ class PluginStoreController extends Controller
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $allowUpdates = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges;
+        $apiHeaders = Craft::$app->getApi()->getHeaders();
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
@@ -71,6 +72,7 @@ class PluginStoreController extends Controller
         $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
         $view->registerJs('window.allowUpdates = ' . Json::encode($allowUpdates) . ';', View::POS_BEGIN);
         $view->registerJs('window.cmsLicenseKey = ' . Json::encode(App::licenseKey()) . ';', View::POS_BEGIN);
+        $view->registerJs('window.apiHeaders = ' . Json::encode($apiHeaders) . ';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 

@@ -1,18 +1,18 @@
 import axios from 'axios'
 
-export default {
-    /**
-     * Craftnet API Endpoint.
-     */
-    apiEndpoint: process.env.VUE_APP_CRAFT_API_ENDPOINT,
+const _axios = axios.create({
+    baseURL: process.env.VUE_APP_CRAFT_API_ENDPOINT,
+    headers: window.apiHeaders,
+})
 
+export default {
     /**
      * Get plugin store data.
      *
      * @returns {AxiosPromise<any>}
      */
     getCoreData() {
-        return axios.get(this.apiEndpoint + '/plugin-store/core-data')
+        return _axios.get('plugin-store/core-data')
     },
 
     /**
@@ -22,7 +22,7 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getDeveloper(developerId) {
-        return axios.get(this.apiEndpoint + '/developer/' + developerId)
+        return _axios.get('developer/' + developerId)
     },
 
     /**
@@ -32,7 +32,7 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getFeaturedSectionByHandle(featuredSectionHandle) {
-        return axios.get(this.apiEndpoint + '/plugin-store/featured-section/' + featuredSectionHandle)
+        return _axios.get('plugin-store/featured-section/' + featuredSectionHandle)
     },
 
     /**
@@ -41,7 +41,7 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getFeaturedSections() {
-        return axios.get(this.apiEndpoint + '/plugin-store/featured-sections')
+        return _axios.get('plugin-store/featured-sections')
     },
 
     /**
@@ -51,7 +51,7 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginChangelog(pluginId) {
-        return axios.get(this.apiEndpoint + '/plugin/' + pluginId + '/changelog')
+        return _axios.get('plugin/' + pluginId + '/changelog')
     },
 
     /**
@@ -61,7 +61,7 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginDetails(pluginId) {
-        return axios.get(this.apiEndpoint + '/plugin/' + pluginId)
+        return _axios.get('plugin/' + pluginId)
     },
 
     /**
@@ -71,7 +71,7 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginDetailsByHandle(pluginHandle) {
-        return axios.get(this.apiEndpoint + '/plugin-store/plugin/' + pluginHandle)
+        return _axios.get('plugin-store/plugin/' + pluginHandle)
     },
 
     /**
@@ -85,7 +85,7 @@ export default {
 
         const params = this._getPluginIndexParams(pluginIndexParams)
 
-        return axios.get(this.apiEndpoint + '/plugin-store/plugins-by-category/' + categoryId, {
+        return _axios.get('plugin-store/plugins-by-category/' + categoryId, {
             params
         })
     },
@@ -100,7 +100,7 @@ export default {
     getPluginsByDeveloperId(developerId, pluginIndexParams) {
         const params = this._getPluginIndexParams(pluginIndexParams)
 
-        return axios.get(this.apiEndpoint + '/plugin-store/plugins-by-developer/' + developerId, {
+        return _axios.get('plugin-store/plugins-by-developer/' + developerId, {
             params
         })
     },
@@ -115,7 +115,7 @@ export default {
     getPluginsByFeaturedSectionHandle(featuredSectionHandle, pluginIndexParams) {
         const params = this._getPluginIndexParams(pluginIndexParams)
 
-        return axios.get(this.apiEndpoint + '/plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
+        return _axios.get('plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
             params
         })
     },
@@ -135,7 +135,7 @@ export default {
             pluginHandlesString = pluginHandles
         }
 
-        return axios.get(this.apiEndpoint + '/plugin-store/plugins-by-handles', {
+        return _axios.get('plugin-store/plugins-by-handles', {
             params: {
                 pluginHandles: pluginHandlesString
             }
@@ -157,7 +157,7 @@ export default {
             pluginIdsString = pluginIds
         }
 
-        return axios.get(this.apiEndpoint + '/plugins', {
+        return _axios.get('plugins', {
             params: {
                 ids: pluginIdsString
             }
@@ -175,7 +175,7 @@ export default {
         const params = this._getPluginIndexParams(pluginIndexParams)
         params.searchQuery = searchQuery
 
-        return axios.get(this.apiEndpoint + '/plugin-store/search-plugins', {
+        return _axios.get('plugin-store/search-plugins', {
             params
         })
     },
