@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\Gql::getFullAccessSchema()`.
+- Added `craft\models\GqlSchema::$isTemporary`.
 - Added the `enableGraphQlCaching` config setting which controls Craft's GraphQL caching behavior.
 - Added the “GraphQL result caches” option for the Clear Caches utility.
 - Added the `transform` parameter when querying for an Asset's URL with GraphQL that is interchangeable with the `handle` parameter.
@@ -13,6 +15,9 @@
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))
 - The `craft\services\Gql::executeQuery()` method now expects an active schema object, instead of a GraphQL Schema object.
 - It is no longer required to register GraphQL type loaders when creating types.
+
+### Deprecated
+- Deprecated the `checkToken` argument for the `craft\gql\base\Query::getQueries()` method. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
 
 ## 3.3.11 - 2019-10-16
 

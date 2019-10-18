@@ -533,6 +533,10 @@ class Gql extends Component
      */
     public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCachedResults = true): bool
     {
+        if ($schema->isTemporary) {
+            return false;
+        }
+
         $isNewSchema = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {
