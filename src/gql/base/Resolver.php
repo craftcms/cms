@@ -68,6 +68,9 @@ abstract class Resolver
                 if (count($array) > 1) {
                     $value = $array;
                 }
+            } else if (is_array($value) && count($value) === 1 && isset($value[0]) && $value[0] === '*') {
+                // Normalize ['*'] to '*'
+                $value = '*';
             }
         }
 
