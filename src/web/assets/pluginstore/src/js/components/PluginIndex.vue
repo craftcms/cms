@@ -3,7 +3,9 @@
         <div class="border-b border-solid border-grey-light py-2 flex justify-between">
             <slot name="header"></slot>
 
-            <plugin-index-sort :loading="loading" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
+            <template v-if="!disableSorting">
+                <plugin-index-sort :loading="loading" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
+            </template>
         </div>
 
         <plugin-grid :plugins="plugins"></plugin-grid>
@@ -17,7 +19,7 @@
     import PluginIndexSort from './PluginIndexSort'
 
     export default {
-        props: ['plugins', 'action', 'requestData'],
+        props: ['plugins', 'action', 'requestData', 'disableSorting'],
 
         components: {
             PluginGrid,

@@ -5,6 +5,7 @@
                     action="pluginStore/getPluginsByFeaturedSectionHandle"
                     :requestData="requestData"
                     :plugins="plugins"
+                    :disableSorting="true"
             >
                 <template v-slot:header>
                     <h1>{{featuredSection.title}}</h1>
