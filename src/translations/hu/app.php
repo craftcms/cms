@@ -1498,6 +1498,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Delete them' => 'Törlésük',
     'Keep them' => 'Megtartásuk',
     'View tag group - {tagGroup}' => 'Címkecsoport megtekintése - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];
