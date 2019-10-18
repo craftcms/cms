@@ -1500,6 +1500,6 @@ Si no estabas esperando este correo electrónico, ignóralo.',
     'Delete them' => 'Eliminarlos',
     'Keep them' => 'Conservarlos',
     'View tag group - {tagGroup}' => 'Ver grupo de etiquetas - {tagGroup}',
-    'Single'=> 'Simple',
-    'Channel'=> 'Canal'
+    'Single' => 'Simple',
+    'Channel' => 'Canal'
 ];
