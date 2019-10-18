@@ -4,6 +4,7 @@
 
 ### Added
 - GraphQL query results are now cached.
+- The GraphQL → Explore page now lists a “Full Schema” option before the Public Schema and any custom-defined schemas.
 - Added the `enableGraphQlCaching` config setting.
 - Added the “GraphQL caches” option for the Clear Caches utility.
 - Added the `transform` GraphQL parameter for asset URLs (alias of `handle`).

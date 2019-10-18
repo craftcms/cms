@@ -203,6 +203,9 @@ class Gql
         $permissionGroups = Craft::$app->getGql()->getAllPermissions();
 
         $schema = new GqlSchema([
+            'uid' => '*',
+            'name' => Craft::t('app', 'Full Schema'),
+            'accessToken' => '*',
             'enabled' => true,
             'isTemporary' => true,
             'scope' => []

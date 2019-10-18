@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Gql;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiqlAsset;
@@ -92,10 +93,15 @@ class GraphqlController extends Controller
 
         if (preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches)) {
             $token = $matches[1];
-            try {
-                $schema = $gqlService->getSchemaByAccessToken($token);
-            } catch (InvalidArgumentException $e) {
-                throw new BadRequestHttpException('Invalid authorization token.');
+            if ($token === '*') {
+                $this->requireAdmin(false);
+                $schema = Gql::createFullAccessSchema();
+            } else {
+                try {
+                    $schema = $gqlService->getSchemaByAccessToken($token);
+                } catch (InvalidArgumentException $e) {
+                    throw new BadRequestHttpException('Invalid authorization token.');
+                }
             }
         }
 
@@ -168,7 +174,7 @@ class GraphqlController extends Controller
         $schemaUid = Craft::$app->getRequest()->getQueryParam('schemaUid');
         $gqlService = Craft::$app->getGql();
 
-        if ($schemaUid) {
+        if ($schemaUid && $schemaUid !== '*') {
             try {
                 $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
             } catch (InvalidArgumentException $e) {
@@ -176,10 +182,12 @@ class GraphqlController extends Controller
             }
             Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
         } else {
-            $selectedSchema = $gqlService->getPublicSchema();
+            $selectedSchema = Gql::createFullAccessSchema();
         }
 
-        $schemas = [];
+        $schemas = [
+            Craft::t('app', 'Full Schema') => '*',
+        ];
 
         foreach ($gqlService->getSchemas() as $schema) {
             $name = $schema->getIsPublic() ? Craft::t('app', 'Public Schema') : $schema->name;
