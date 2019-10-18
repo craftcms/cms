@@ -8,10 +8,10 @@
 namespace craft\gql\types\elements;
 
 use Craft;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\Element as ElementInterface;
-use craft\gql\base\ObjectType;
 use craft\elements\Asset as AssetElement;
+use craft\gql\base\ObjectType;
+use craft\gql\interfaces\Element as ElementInterface;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

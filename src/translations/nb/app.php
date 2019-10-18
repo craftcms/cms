@@ -1496,6 +1496,6 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'Delete them' => 'Slett disse',
     'Keep them' => 'Behold disse',
     'View tag group - {tagGroup}' => 'Vis stikkordsgruppe - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

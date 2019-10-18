@@ -10,12 +10,10 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
-use GraphQL\GraphQL;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -276,7 +274,7 @@ class GraphqlController extends Controller
         }
 
         $schema->name = $request->getBodyParam('name') ?? $schema->name;
-        $schema->accessToken =  $request->getBodyParam('accessToken') ?? $schema->accessToken;
+        $schema->accessToken = $request->getBodyParam('accessToken') ?? $schema->accessToken;
         $schema->enabled = (bool)$request->getRequiredBodyParam('enabled');
         $schema->scope = $request->getBodyParam('permissions');
 

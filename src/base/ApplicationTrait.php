@@ -1452,7 +1452,8 @@ trait ApplicationTrait
     /**
      * Register listeners for GraphQL
      */
-    private function _registerGraphQlListeners() {
+    private function _registerGraphQlListeners()
+    {
         $invalidate = [$this->getGql(), 'invalidateResultCaches'];
 
         $this->getProjectConfig()->on(ProjectConfig::EVENT_ADD_ITEM, $invalidate);

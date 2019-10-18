@@ -82,7 +82,7 @@ abstract class FieldLayoutFixture extends Fixture
                     }
 
                     // Create and add a field.
-                    /* @var Field $field*/
+                    /* @var Field $field */
                     $field = new $class($field);
                     if (!Craft::$app->getFields()->saveField($field)) {
                         $this->throwModelError($field);

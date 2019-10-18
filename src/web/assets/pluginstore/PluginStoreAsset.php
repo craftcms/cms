@@ -247,7 +247,7 @@ class PluginStoreAsset extends AssetBundle
     /**
      * Return the contents of a file from the passed in path
      *
-     * @param string   $path
+     * @param string $path
      * @param callable $callback
      *
      * @return null|mixed
@@ -262,7 +262,7 @@ class PluginStoreAsset extends AssetBundle
         $dependency = new TagDependency([
             'tags' => [
                 self::CACHE_TAG,
-                self::CACHE_TAG.$path,
+                self::CACHE_TAG . $path,
             ],
         ]);
         // Set the cache duration based on devMode
@@ -272,8 +272,8 @@ class PluginStoreAsset extends AssetBundle
         // Get the result from the cache, or parse the file
         $cache = Craft::$app->getCache();
         $file = $cache->getOrSet(
-            self::CACHE_KEY.$path,
-            function () use ($path, $callback) {
+            self::CACHE_KEY . $path,
+            function() use ($path, $callback) {
                 $result = null;
                 if (UrlHelper::isAbsoluteUrl($path)) {
                     /**
@@ -322,7 +322,7 @@ class PluginStoreAsset extends AssetBundle
     private static function combinePaths(string ...$paths): string
     {
         $last_key = \count($paths) - 1;
-        array_walk($paths, function (&$val, $key) use ($last_key) {
+        array_walk($paths, function(&$val, $key) use ($last_key) {
             switch ($key) {
                 case 0:
                     $val = rtrim($val, '/ ');
@@ -347,7 +347,7 @@ class PluginStoreAsset extends AssetBundle
 
     /**
      * @param string $error
-     * @param bool   $soft
+     * @param bool $soft
      *
      * @throws NotFoundHttpException
      */

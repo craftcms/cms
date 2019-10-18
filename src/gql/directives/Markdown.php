@@ -7,8 +7,6 @@
 
 namespace craft\gql\directives;
 
-use yii\helpers\Markdown as MarkdownHelper;
-
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\DirectiveLocation;
@@ -16,6 +14,7 @@ use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use yii\helpers\Markdown as MarkdownHelper;
 
 /**
  * Markdown GraphQL Directive

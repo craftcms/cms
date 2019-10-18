@@ -67,8 +67,10 @@ abstract class ElementResolver extends Resolver
         $arguments = parent::prepareArguments($arguments);
 
         if (isset($arguments['relatedToAll'])) {
-            $ids = (array) $arguments['relatedToAll'];
-            $ids = array_map(function ($value) { return ['element' => $value];}, $ids);
+            $ids = (array)$arguments['relatedToAll'];
+            $ids = array_map(function($value) {
+                return ['element' => $value];
+            }, $ids);
             $arguments['relatedTo'] = array_merge(['and'], $ids);
             unset($arguments['relatedToAll']);
         }

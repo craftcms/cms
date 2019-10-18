@@ -1500,6 +1500,6 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'Delete them' => 'Verwijderen',
     'Keep them' => 'Behouden',
     'View tag group - {tagGroup}' => 'Taggroep weergeven - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

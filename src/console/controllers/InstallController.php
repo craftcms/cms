@@ -8,13 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
-use craft\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 

@@ -12,8 +12,8 @@ use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\types\elements\MatrixBlock;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 

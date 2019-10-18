@@ -1500,6 +1500,6 @@ return [
     'Delete them' => 'حذف آنها',
     'Keep them' => 'نگهداشتن آنها',
     'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}',
-    'Single'=> 'مجزا',
-    'Channel'=> 'کانال'
+    'Single' => 'مجزا',
+    'Channel' => 'کانال'
 ];

@@ -26,7 +26,7 @@ abstract class Query
      *
      * @param bool $checkToken Whether the token should be checked for allowed queries. Defaults to `true`.
      * Note that passing a parameter to this method is now deprecated. Use [[\craft\helpers\Gql::getFullAccessSchema()]] instead.
-     * 
+     *
      * @return array
      */
     abstract public static function getQueries($checkToken = true): array;

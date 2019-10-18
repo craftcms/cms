@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Table;
 use craft\db\Query as DbQuery;
+use craft\db\Table;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -17,26 +17,26 @@ use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\InterfaceType;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\base\InterfaceType;
+use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
-use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
+use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Ping as PingQuery;
-use craft\gql\queries\User as UserQuery;
 use craft\gql\queries\Tag as TagQuery;
+use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
@@ -306,7 +306,8 @@ class Gql extends Component
     /**
      * Invalidate all GraphQL result caches.
      */
-    public function invalidateResultCaches() {
+    public function invalidateResultCaches()
+    {
         TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
     }
 
@@ -316,7 +317,8 @@ class Gql extends Component
      * @param $cacheKey
      * @return mixed
      */
-    public function getCachedResult($cacheKey) {
+    public function getCachedResult($cacheKey)
+    {
         return Craft::$app->getCache()->get($cacheKey);
     }
 
@@ -326,7 +328,8 @@ class Gql extends Component
      * @param $cacheKey
      * @param $result
      */
-    public function setCachedResult($cacheKey, $result) {
+    public function setCachedResult($cacheKey, $result)
+    {
         Craft::$app->getCache()->set($cacheKey, $result, null, new TagDependency(['tags' => self::CACHE_TAG]));
     }
 
@@ -446,7 +449,6 @@ class Gql extends Component
         $permissions = array_merge($permissions, $this->_getTagPermissions());
 
         return $permissions;
-
     }
 
     /**
@@ -551,7 +553,7 @@ class Gql extends Component
         }
 
         $schemaRecord->name = $schema->name;
-        $schemaRecord->enabled = (bool) $schema->enabled;
+        $schemaRecord->enabled = (bool)$schema->enabled;
         $schemaRecord->expiryDate = $schema->expiryDate;
         $schemaRecord->lastUsed = $schema->lastUsed;
         $schemaRecord->scope = $schema->scope;
@@ -602,7 +604,8 @@ class Gql extends Component
      *
      * @return string|null
      */
-    private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName) {
+    private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
+    {
         if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
             return null;
         }
@@ -676,7 +679,7 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        TypeLoader::registerType('Query', function () use ($event) {
+        TypeLoader::registerType('Query', function() use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
         });
     }
