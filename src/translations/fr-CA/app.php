@@ -1500,6 +1500,6 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'Delete them' => 'Supprimer',
     'Keep them' => 'Conserver',
     'View tag group - {tagGroup}' => 'Afficher le groupe d’étiquettes « {tagGroup} »',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];
