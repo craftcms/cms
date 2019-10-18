@@ -1500,6 +1500,6 @@ return [
     'Delete them' => 'これらを削除',
     'Keep them' => 'これらを保持',
     'View tag group - {tagGroup}' => 'タググループを表示 - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];
