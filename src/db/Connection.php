@@ -273,9 +273,9 @@ class Connection extends \yii\db\Connection
         if ($backupCommand === null) {
             $schema = $this->getSchema();
             $backupCommand = $schema->getDefaultBackupCommand();
-            $maxBackupNumber = Craft::$app->getConfig()->getGeneral()->maxBackupNumber;
+            $maxBackups = Craft::$app->getConfig()->getGeneral()->maxBackups;
 
-            if ($maxBackupNumber > 0) {
+            if ($maxBackups > 0) {
                 $backupPath = Craft::$app->getPath()->getDbBackupPath();
 
                 // Grab all .sql files in the backup folder.
@@ -286,8 +286,8 @@ class Connection extends \yii\db\Connection
                     return filemtime($a) < filemtime($b);
                 });
 
-                if (count($files) >= $maxBackupNumber) {
-                    $backupsToDelete = array_slice($files, $maxBackupNumber);
+                if (count($files) >= $maxBackups) {
+                    $backupsToDelete = array_slice($files, $maxBackups);
 
                     foreach ($backupsToDelete as $backupToDelete) {
                         FileHelper::unlink($backupToDelete);
