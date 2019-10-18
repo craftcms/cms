@@ -272,6 +272,27 @@ class Connection extends \yii\db\Connection
         if ($backupCommand === null) {
             $schema = $this->getSchema();
             $backupCommand = $schema->getDefaultBackupCommand();
+            $maxBackupNumber = Craft::$app->getConfig()->getGeneral()->maxBackupNumber;
+
+            if ($maxBackupNumber > 0) {
+                $backupPath = Craft::$app->getPath()->getDbBackupPath();
+
+                // Grab all .sql files in the backup folder.
+                $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
+
+                // Sort them by file modified time descending (newest first).
+                usort($files, static function($a, $b) {
+                    return filemtime($a) < filemtime($b);
+                });
+
+                if (count($files) >= $maxBackupNumber) {
+                    $backupsToDelete = array_slice($files, $maxBackupNumber);
+
+                    foreach ($backupsToDelete as $backupToDelete) {
+                        FileHelper::unlink($backupToDelete);
+                    }
+                }
+            }
         }
 
         if ($backupCommand === false) {

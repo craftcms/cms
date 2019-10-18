@@ -451,6 +451,11 @@ class GeneralConfig extends BaseObject
      */
     public $maxInvalidLogins = 5;
     /**
+     * @var int|false The number of backups that Craft should make before it starts deleting the oldest backups.
+     * If it is set to `false`, then Craft will not delete any backups.
+     */
+    public $maxBackupNumber = 20;
+    /**
      * @var int|null The maximum number of revisions that should be stored for each element.
      *
      * Set to `0` if you want to store an unlimited number of revisions.

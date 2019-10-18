@@ -2,6 +2,7 @@
 
 ### Added
 - Added the `verifyEmailPath` config setting.
+- Added the `maxBackupNumber` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `{% requireGuest %}` tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
