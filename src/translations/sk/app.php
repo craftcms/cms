@@ -1500,6 +1500,6 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Delete them' => 'Odstrániť ich',
     'Keep them' => 'Ponechať ich',
     'View tag group - {tagGroup}' => 'Zobraziť skupinu značiek – {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];
