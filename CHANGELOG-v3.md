@@ -5,8 +5,8 @@
 ### Added
 - GraphQL query results are now cached.
 - The GraphQL → Explore page now lists a “Full Schema” option before the Public Schema and any custom-defined schemas.
-- Added the `enableGraphQlCaching` config setting.
 - Added the “GraphQL caches” option for the Clear Caches utility.
+- Added the `enableGraphQlCaching` config setting.
 - Added the `transform` GraphQL parameter for asset URLs (alias of `handle`).
 - Added the `url` field to the `EntryInterface` GraphQL type. ([#5113](https://github.com/craftcms/cms/issues/5113))
 - Added the `relatedTo` and `relatedToAll` arguments for all GraphQL element queries. ([#5071](https://github.com/craftcms/cms/issues/5071))
