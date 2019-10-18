@@ -1500,6 +1500,6 @@ Se você não solicitou este e-mail, simplesmente ignore.',
     'Delete them' => 'Apagar',
     'Keep them' => 'Manter',
     'View tag group - {tagGroup}' => 'Ver grupo de tag - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

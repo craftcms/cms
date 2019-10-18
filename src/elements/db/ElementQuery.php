@@ -2687,10 +2687,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyUniqueParam(Connection $db)
     {
         if (!$this->unique || (
-            $this->siteId &&
-            $this->siteId !== '*' &&
-            (!is_array($this->siteId) || count($this->siteId) === 1)
-        )) {
+                $this->siteId &&
+                $this->siteId !== '*' &&
+                (!is_array($this->siteId) || count($this->siteId) === 1)
+            )) {
             return;
         }
 

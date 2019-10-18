@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
@@ -825,6 +826,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', 'getenv'),
+            new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
@@ -877,6 +879,21 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function expressionFunction($expression, $params = [], $config = []): Expression
     {
         return new Expression($expression, $params, $config);
+    }
+
+    /**
+     * Executes a GraphQL query against the full schema.
+     *
+     * @param string $query The GraphQL query
+     * @param array|null $variables Query variables
+     * @param string|null $operationName The operation name
+     * @return array The query result
+     * @since 3.3.12
+     */
+    public function gqlFunction(string $query, array $variables = null, string $operationName = null): array
+    {
+        $schema = Gql::createFullAccessSchema();
+        return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
     }
 
     /**

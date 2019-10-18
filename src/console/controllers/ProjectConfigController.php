@@ -8,10 +8,10 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\services\Plugins;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**

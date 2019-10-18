@@ -221,9 +221,11 @@ class ElementHelper
         }
 
         if (($sourceId = $element->getSourceId()) !== null) {
-            $query->andWhere(['not', [
-                'elements.id' => $sourceId,
-            ]]);
+            $query->andWhere([
+                'not', [
+                    'elements.id' => $sourceId,
+                ]
+            ]);
         }
 
         return (int)$query->count() === 0;

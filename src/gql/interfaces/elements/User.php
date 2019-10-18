@@ -9,9 +9,8 @@ namespace craft\gql\interfaces\elements;
 
 use Craft;
 use craft\elements\User as UserElement;
-use craft\gql\interfaces\Element;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
+use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;
 use craft\gql\types\generators\UserType;
 use craft\helpers\Gql;
@@ -47,7 +46,7 @@ class User extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all users.',
-            'resolveType' => function (UserElement $value) {
+            'resolveType' => function(UserElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
@@ -68,7 +67,8 @@ class User extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'friendlyName' => [
                 'name' => 'friendlyName',
@@ -126,11 +126,12 @@ class User extends Element
         $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
 
         if (Gql::isSchemaAwareOf('volumes.' . $volumeUid)) {
-            return ['photo' => [
-                'name' => 'photo',
-                'type' => Asset::getType(),
-                'description' => 'The user\'s photo.'
-            ]
+            return [
+                'photo' => [
+                    'name' => 'photo',
+                    'type' => Asset::getType(),
+                    'description' => 'The user\'s photo.'
+                ]
             ];
         }
 

@@ -17,7 +17,7 @@ use craft\helpers\Json;
  */
 class m190218_143000_element_index_settings_uid extends Migration
 {
-   /**
+    /**
      * @var array List of elements to search for.
      */
     private $_elements = [Entry::class => 'section', Asset::class => 'folder', User::class => 'group', Category::class => 'group'];
@@ -85,7 +85,6 @@ class m190218_143000_element_index_settings_uid extends Migration
                     ->execute();
             }
         }
-
     }
 
     /**

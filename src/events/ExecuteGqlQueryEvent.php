@@ -7,7 +7,6 @@
 
 namespace craft\events;
 
-use GraphQL\Type\Schema;
 use yii\base\Event;
 
 /**

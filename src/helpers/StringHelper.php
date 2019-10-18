@@ -472,7 +472,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * by setting $caseSensitive to false.
      *
      * @param string $str The string to check the end of.
-     * @param $substrings[] Substrings to look for.
+     * @param $substrings [] Substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $str ends with $substring.
      * @since 3.3.0
@@ -1326,8 +1326,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * is also converted to lowercase. The language of the source string can
      * also be supplied for language-specific transliteration.
      *
-     * @param string      $str The string to process
-     * @param string      $replacement The string used to replace whitespace.
+     * @param string $str The string to process
+     * @param string $replacement The string used to replace whitespace.
      * @param string|null $language The language of the source string.
      * @return string The string converted to a URL slug.
      * @since 3.3.0

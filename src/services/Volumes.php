@@ -441,8 +441,8 @@ class Volumes extends Component
      * Reorders asset volumes.
      *
      * @param array $volumeIds
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function reorderVolumes(array $volumeIds): bool
     {
@@ -545,8 +545,8 @@ class Volumes extends Component
      * Deletes an asset volume by its ID.
      *
      * @param int $volumeId
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function deleteVolumeById(int $volumeId): bool
     {
@@ -563,8 +563,8 @@ class Volumes extends Component
      * Deletes an asset volume.
      *
      * @param VolumeInterface $volume The volume to delete
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {

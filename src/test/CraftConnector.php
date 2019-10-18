@@ -47,6 +47,7 @@ class CraftConnector extends Yii2
 
     /**
      * We override to prevent a bug with the matching of user agent and session.
+     *
      * @param $user
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException

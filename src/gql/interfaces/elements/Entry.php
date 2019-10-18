@@ -9,10 +9,9 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\Entry as EntryArguments;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
-use craft\gql\TypeLoader;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
@@ -49,7 +48,7 @@ class Entry extends Structure
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
-            'resolveType' => function (EntryElement $value) {
+            'resolveType' => function(EntryElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
@@ -70,7 +69,8 @@ class Entry extends Structure
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'sectionId' => [
                 'name' => 'sectionId',

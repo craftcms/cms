@@ -8,9 +8,8 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
-use craft\gql\interfaces\Element;
-use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;
 use craft\gql\types\generators\MatrixBlockType;
 use GraphQL\Type\Definition\InterfaceType;
@@ -45,7 +44,7 @@ class MatrixBlock extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all matrix blocks.',
-            'resolveType' => function (MatrixBlockElement $value) {
+            'resolveType' => function(MatrixBlockElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
@@ -66,7 +65,8 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',

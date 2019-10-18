@@ -79,6 +79,7 @@ class GqlSchema extends Model
 
     /**
      * @var bool Whether this is a temporary schema
+     * @since 3.3.12
      */
     public $isTemporary = false;
 

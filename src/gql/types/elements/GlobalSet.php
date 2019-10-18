@@ -7,9 +7,9 @@
 
 namespace craft\gql\types\elements;
 
+use craft\gql\base\ObjectType;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
-use craft\gql\base\ObjectType;
 
 /**
  * Class GlobalSet

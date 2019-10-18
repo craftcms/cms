@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\UnionType;
 
@@ -41,7 +40,7 @@ class Gql
         }
 
         try {
-            $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
+            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
         } catch (GqlException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return false;
@@ -68,7 +67,7 @@ class Gql
 
         if (empty(self::$cachedPairs[$activeSchema->id])) {
             try {
-                $permissions = (array) $activeSchema->scope;
+                $permissions = (array)$activeSchema->scope;
                 $pairs = [];
 
                 foreach ($permissions as $permission) {
@@ -105,7 +104,7 @@ class Gql
     public static function canSchema($scope, $action = 'read'): bool
     {
         try {
-            $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
+            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
             return !empty(preg_grep('/^' . preg_quote($scope, '/') . '\:' . preg_quote($action, '/') . '$/i', $permissions));
         } catch (GqlException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
@@ -194,19 +193,26 @@ class Gql
     }
 
     /**
-     * Get a schema with full GraphQL API access.
+     * Creates a temporary schema with full access to the GraphQL API.
+     *
+     * @return GqlSchema
+     * @since 3.3.12
      */
-    public static function getFullAccessSchema()
+    public static function createFullAccessSchema(): GqlSchema
     {
         $permissionGroups = Craft::$app->getGql()->getAllPermissions();
 
         $schema = new GqlSchema([
+            'uid' => '*',
+            'name' => Craft::t('app', 'Full Schema'),
+            'accessToken' => '*',
             'enabled' => true,
             'isTemporary' => true,
-            'scope' => []]);
+            'scope' => []
+        ]);
 
-        // Feetch all nested permissions
-        $traverser = function ($permissions) use ($schema, &$traverser) {
+        // Fetch all nested permissions
+        $traverser = function($permissions) use ($schema, &$traverser) {
             foreach ($permissions as $permission => $config) {
                 $schema->scope[] = $permission;
                 if (isset($config['nested'])) {
@@ -221,5 +227,4 @@ class Gql
 
         return $schema;
     }
-
 }

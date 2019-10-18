@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Table;
 use craft\db\Query as DbQuery;
+use craft\db\Table;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
@@ -208,6 +208,9 @@ class Gql extends Component
      */
     const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
+    /**
+     * @since 3.3.12
+     */
     const CACHE_TAG = 'graphql';
 
     /**
@@ -299,7 +302,8 @@ class Gql extends Component
      * @param bool $debug Whether debugging validation rules should be allowed.
      * @return array
      */
-    public function getValidationRules($debug = false) {
+    public function getValidationRules($debug = false)
+    {
         $validationRules = DocumentValidator::defaultRules();
 
         if (!$debug) {
@@ -364,8 +368,11 @@ class Gql extends Component
 
     /**
      * Invalidate all GraphQL result caches.
+     *
+     * @since 3.3.12
      */
-    public function invalidateResultCaches() {
+    public function invalidateCaches()
+    {
         TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
     }
 
@@ -374,8 +381,10 @@ class Gql extends Component
      *
      * @param $cacheKey
      * @return mixed
+     * @since 3.3.12
      */
-    public function getCachedResult($cacheKey) {
+    public function getCachedResult($cacheKey)
+    {
         return Craft::$app->getCache()->get($cacheKey);
     }
 
@@ -384,8 +393,10 @@ class Gql extends Component
      *
      * @param $cacheKey
      * @param $result
+     * @since 3.3.12
      */
-    public function setCachedResult($cacheKey, $result) {
+    public function setCachedResult($cacheKey, $result)
+    {
         Craft::$app->getCache()->set($cacheKey, $result, null, new TagDependency(['tags' => self::CACHE_TAG]));
     }
 
@@ -526,7 +537,7 @@ class Gql extends Component
         $this->_schemaDef = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
-        $this->invalidateResultCaches();
+        $this->invalidateCaches();
     }
 
     /**
@@ -593,11 +604,11 @@ class Gql extends Component
      *
      * @param GqlSchema $schema the schema to save
      * @param bool $runValidation Whether the schema should be validated
-     * @param bool $invalidateCachedResults Whether the cached results should be invalidated
+     * @param bool $invalidateCaches Whether the cached results should be invalidated
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      */
-    public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCachedResults = true): bool
+    public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCaches = true): bool
     {
         if ($schema->isTemporary) {
             return false;
@@ -617,7 +628,7 @@ class Gql extends Component
         }
 
         $schemaRecord->name = $schema->name;
-        $schemaRecord->enabled = (bool) $schema->enabled;
+        $schemaRecord->enabled = (bool)$schema->enabled;
         $schemaRecord->expiryDate = $schema->expiryDate;
         $schemaRecord->lastUsed = $schema->lastUsed;
         $schemaRecord->scope = $schema->scope;
@@ -629,8 +640,8 @@ class Gql extends Component
         $schemaRecord->save();
         $schema->id = $schemaRecord->id;
 
-        if ($invalidateCachedResults) {
-            $this->invalidateResultCaches();
+        if ($invalidateCaches) {
+            $this->invalidateCaches();
         }
 
         return true;
@@ -668,7 +679,8 @@ class Gql extends Component
      *
      * @return string|null
      */
-    private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName) {
+    private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
+    {
         if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
             return null;
         }
@@ -742,7 +754,7 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        TypeLoader::registerType('Query', function () use ($event) {
+        TypeLoader::registerType('Query', function() use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
         });
     }

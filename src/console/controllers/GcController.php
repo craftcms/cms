@@ -8,8 +8,8 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\helpers\Console;
 use craft\console\Controller;
+use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**

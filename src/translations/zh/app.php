@@ -1500,6 +1500,6 @@ return [
     'Delete them' => '删除',
     'Keep them' => '保留',
     'View tag group - {tagGroup}' => '查看标签组 - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

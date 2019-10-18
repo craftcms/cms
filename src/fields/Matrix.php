@@ -24,7 +24,6 @@ use craft\elements\MatrixBlock;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\events\BlockTypesEvent;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
 use craft\helpers\ArrayHelper;
@@ -536,14 +535,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         if ($value === ':notempty:' || $value === ':empty:') {
             $ns = $this->handle . '_' . StringHelper::randomString(5);
-            $condition = ['exists', (new Query())
-                ->from(TableName::MATRIXBLOCKS . " matrixblocks_$ns")
-                ->innerJoin(TableName::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
-                ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
-                ->andWhere([
-                    "matrixblocks_$ns.fieldId" => $this->id,
-                    "elements_$ns.dateDeleted" => null,
-                ])
+            $condition = [
+                'exists', (new Query())
+                    ->from(TableName::MATRIXBLOCKS . " matrixblocks_$ns")
+                    ->innerJoin(TableName::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+                    ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
+                    ->andWhere([
+                        "matrixblocks_$ns.fieldId" => $this->id,
+                        "elements_$ns.dateDeleted" => null,
+                    ])
             ];
 
             if ($value === ':notempty:') {
@@ -780,7 +780,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_MatrixField';
-        $resolver = function (MatrixBlockElement $value) {
+        $resolver = function(MatrixBlockElement $value) {
             return $value->getGqlTypeName();
         };
 

@@ -975,10 +975,10 @@ class UsersController extends Controller
             if ($newEmail) {
                 // Does that email need to be verified?
                 if ($requireEmailVerification && (
-                    !$currentUser ||
-                    (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
-                    $request->getBodyParam('sendVerificationEmail')
-                )) {
+                        !$currentUser ||
+                        (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
+                        $request->getBodyParam('sendVerificationEmail')
+                    )) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;
@@ -1116,7 +1116,8 @@ class UsersController extends Controller
             $preferences = array_merge($preferences, [
                 'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
-                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView'))
+                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),
+                'profileTemplates' => (bool)$request->getBodyParam('profileTemplates', $user->getPreference('profileTemplates')),
             ]);
         }
 

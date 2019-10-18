@@ -9,10 +9,9 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\elements\Category as CategoryArguments;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\Structure;
-use craft\gql\TypeLoader;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
 use GraphQL\Type\Definition\InterfaceType;
@@ -47,7 +46,7 @@ class Category extends Structure
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all categories.',
-            'resolveType' => function (CategoryElement $value) {
+            'resolveType' => function(CategoryElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
@@ -68,7 +67,8 @@ class Category extends Structure
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
