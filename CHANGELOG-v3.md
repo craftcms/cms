@@ -7,6 +7,9 @@
 - Added the ability to skip refreshing the project config before running individual tests. ([#5072](https://github.com/craftcms/cms/pull/5072))
 - Added `craft\test\Craft::resetProjectConfig()`
 
+### Changed
+- Renamed `\craft\services\Api::headers()` to `getHeaders()` and made the method public.
+
 ### Fixed
 - Fixed a bug where Craft wasn’t passing assets’ MIME types to cloud storage services when saving them. ([#5052](https://github.com/craftcms/cms/issues/5052))
 - Fixed a bug where Assets fields’ image thumbnails weren’t getting refreshed after images were edited. ([#4212](https://github.com/craftcms/cms/issues/4212))
