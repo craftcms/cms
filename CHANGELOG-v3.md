@@ -24,6 +24,7 @@
 
 ### Fixed
 - Fixed an error that occurred when loading a relational field’s selection modal, if no sources were visible.
+- Fixed a bug where required relational fields would get a validation error if only elements from other sites were selected. ([#5116](https://github.com/craftcms/cms/issues/5116))
 
 ## 3.3.11 - 2019-10-16
 
