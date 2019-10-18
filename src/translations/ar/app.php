@@ -1500,6 +1500,6 @@ return [
     'Delete them' => 'حذفهم',
     'Keep them' => 'حفظهم',
     'View tag group - {tagGroup}' => 'عرض مجموعات العلامات - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];
