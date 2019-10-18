@@ -92,8 +92,8 @@ class TypeManager extends Component
     {
         if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_TYPE_FIELDS)) {
             $event = new DefineGqlTypeFieldsEvent([
-               'fields' => $fields,
-               'typeName' => $typeName,
+                'fields' => $fields,
+                'typeName' => $typeName,
             ]);
 
             $this->trigger(self::EVENT_DEFINE_GQL_TYPE_FIELDS, $event);
