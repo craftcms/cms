@@ -337,7 +337,7 @@ class Api extends Component
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
         $options = ArrayHelper::merge($options, [
-            'headers' => $this->headers(),
+            'headers' => $this->getHeaders(),
         ]);
 
         $e = null;
@@ -440,15 +440,13 @@ class Api extends Component
         return $response;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Returns the headers that should be sent with API requests.
      *
      * @return array
+     * @since 3.3.12
      */
-    protected function headers(): array
+    public function getHeaders(): array
     {
         $headers = [
             'Accept' => 'application/json',
@@ -503,6 +501,9 @@ class Api extends Component
 
         return $headers;
     }
+
+    // Protected Methods
+    // =========================================================================
 
     /**
      * Returns platform info.
