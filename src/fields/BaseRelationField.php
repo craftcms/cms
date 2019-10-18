@@ -342,7 +342,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         /** @var ElementQueryInterface|ElementInterface[] $value */
         if ($value instanceof ElementQueryInterface) {
-            return $this->_all($value)->count() === 0;
+            return !$this->_all($value)->exists();
         }
 
         return empty($value);
