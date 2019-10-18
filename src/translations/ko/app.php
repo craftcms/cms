@@ -1500,6 +1500,6 @@ return [
     'Delete them' => '해당 항목 삭제',
     'Keep them' => '해당 항목 유지',
     'View tag group - {tagGroup}' => '태그 그룹 보기 - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];
