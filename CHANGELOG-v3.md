@@ -26,6 +26,7 @@
 - Fixed an error that occurred when loading a relational field’s selection modal, if no sources were visible.
 - Fixed a bug where required relational fields would get a validation error if only elements from other sites were selected. ([#5116](https://github.com/craftcms/cms/issues/5116))
 - Fixed a bug where the “Profile Twig templates when Dev Mode is disabled” admin preference wasn’t saving. ([#5118](https://github.com/craftcms/cms/pull/5118))
+- Fixed a bug where failed queue jobs were losing their `dateReserved`, `timeUpdated`, `progress`, and `progressLabel` values.
 
 ## 3.3.11 - 2019-10-16
 
