@@ -3,24 +3,24 @@
 ## Unreleased
 
 ### Added
-- Added `craft\helpers\Gql::getFullAccessSchema()`.
-- Added `craft\models\GqlSchema::$isTemporary`.
-- Added the `enableGraphQlCaching` config setting which controls Craft's GraphQL caching behavior.
-- Added the “GraphQL result caches” option for the Clear Caches utility.
-- Added the `transform` parameter when querying for an Asset's URL with GraphQL that is interchangeable with the `handle` parameter.
+- GraphQL query results are now cached.
+- Added the `enableGraphQlCaching` config setting.
+- Added the “GraphQL caches” option for the Clear Caches utility.
+- Added the `transform` GraphQL parameter for asset URLs (alias of `handle`).
 - Added the `url` field to the `EntryInterface` GraphQL type. ([#5113](https://github.com/craftcms/cms/issues/5113))
 - Added the `relatedTo` and `relatedToAll` arguments for all GraphQL element queries. ([#5071](https://github.com/craftcms/cms/issues/5071))
+- Added support for multi-site GraphQL element queries. ([#5079](https://github.com/craftcms/cms/issues/5079))
+- Added `craft\helpers\Gql::createFullAccessSchema()`.
+- Added `craft\models\GqlSchema::$isTemporary`.
+- Added the `$invalidateCaches` argument to `craft\services\Gql::saveSchema()`.
 
 ### Changed
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))
+- It’s no longer necessary to register GraphQL type loaders when creating types.
 - The `craft\services\Gql::executeQuery()` method now expects an active schema object, instead of a GraphQL Schema object.
-- It is no longer required to register GraphQL type loaders when creating types.
 
 ### Deprecated
-- Deprecated the `checkToken` argument for the `craft\gql\base\Query::getQueries()` method. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
-
-### Fixed
-- Fixed a bug where it was impossible to `*` as a value for `site` arguments with GraphQL. ([#5079](https://github.com/craftcms/cms/issues/5079))
+- Deprecated the `$checkToken` argument for `craft\gql\base\Query::getQueries()`. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
 
 ## 3.3.11 - 2019-10-16
 

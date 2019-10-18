@@ -177,6 +177,9 @@ class Gql extends Component
      */
     const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
+    /**
+     * @since 3.3.12
+     */
     const CACHE_TAG = 'graphql';
 
     /**
@@ -305,8 +308,10 @@ class Gql extends Component
 
     /**
      * Invalidate all GraphQL result caches.
+     *
+     * @since 3.3.12
      */
-    public function invalidateResultCaches()
+    public function invalidateCaches()
     {
         TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
     }
@@ -316,6 +321,7 @@ class Gql extends Component
      *
      * @param $cacheKey
      * @return mixed
+     * @since 3.3.12
      */
     public function getCachedResult($cacheKey)
     {
@@ -327,6 +333,7 @@ class Gql extends Component
      *
      * @param $cacheKey
      * @param $result
+     * @since 3.3.12
      */
     public function setCachedResult($cacheKey, $result)
     {
@@ -462,7 +469,7 @@ class Gql extends Component
         $this->_schemaDef = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
-        $this->invalidateResultCaches();
+        $this->invalidateCaches();
     }
 
     /**
@@ -529,11 +536,11 @@ class Gql extends Component
      *
      * @param GqlSchema $schema the schema to save
      * @param bool $runValidation Whether the schema should be validated
-     * @param bool $invalidateCachedResults Whether the cached results should be invalidated
+     * @param bool $invalidateCaches Whether the cached results should be invalidated
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      */
-    public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCachedResults = true): bool
+    public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCaches = true): bool
     {
         if ($schema->isTemporary) {
             return false;
@@ -565,8 +572,8 @@ class Gql extends Component
         $schemaRecord->save();
         $schema->id = $schemaRecord->id;
 
-        if ($invalidateCachedResults) {
-            $this->invalidateResultCaches();
+        if ($invalidateCaches) {
+            $this->invalidateCaches();
         }
 
         return true;
