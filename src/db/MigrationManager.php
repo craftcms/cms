@@ -22,7 +22,7 @@ use yii\di\Instance;
  * MigrationManager manages a set of migrations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrationManager extends Component
 {
@@ -375,6 +375,8 @@ class MigrationManager extends Component
 
     /**
      * Truncates the migration history.
+     *
+     * @since 3.0.32
      */
     public function truncateHistory()
     {

@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Formatter extends \yii\i18n\Formatter
 {
@@ -309,8 +309,8 @@ class Formatter extends \yii\i18n\Formatter
      * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
      * @param string $format The format used to convert the value into a date string.
      * @param string $type 'date', 'time', or 'datetime'.
-     * @throws InvalidConfigException if the date format is invalid.
      * @return string the formatted result.
+     * @throws InvalidConfigException if the date format is invalid.
      */
     private function _formatDateTimeValue($value, string $format, string $type): string
     {

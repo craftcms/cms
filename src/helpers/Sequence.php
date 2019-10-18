@@ -26,6 +26,7 @@ class Sequence
      * @param string $name The sequence name.
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
      * @return integer|string
+     * @since 3.0.32
      */
     public static function current(string $name, int $length = null)
     {

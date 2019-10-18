@@ -13,7 +13,7 @@ use yii\base\InvalidArgumentException;
  * Class Json
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Json extends \yii\helpers\Json
 {

@@ -27,7 +27,7 @@ use yii\web\Response;
  * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class TemplateCaches extends Component
 {
@@ -36,11 +36,13 @@ class TemplateCaches extends Component
 
     /**
      * @event SectionEvent The event that is triggered before template caches are deleted.
+     * @since 3.0.2
      */
     const EVENT_BEFORE_DELETE_CACHES = 'beforeDeleteCaches';
 
     /**
      * @event SectionEvent The event that is triggered after template caches are deleted.
+     * @since 3.0.2
      */
     const EVENT_AFTER_DELETE_CACHES = 'afterDeleteCaches';
 
@@ -48,37 +50,27 @@ class TemplateCaches extends Component
     // =========================================================================
 
     /**
-     * The current request's path, as it will be stored in the templatecaches table.
-     *
-     * @var string|null
+     * @var string|null The current request's path, as it will be stored in the templatecaches table.
      */
     private $_path;
 
     /**
-     * A list of element queries that were executed within the existing caches.
-     *
-     * @var array|null
+     * @var array|null A list of element queries that were executed within the existing caches.
      */
     private $_cachedQueries;
 
     /**
-     * A list of element IDs that are active within the existing caches.
-     *
-     * @var array|null
+     * @var array|null A list of element IDs that are active within the existing caches.
      */
     private $_cacheElementIds;
 
     /**
-     * Whether all caches have been deleted in this request.
-     *
-     * @var bool
+     * @var bool Whether all caches have been deleted in this request.
      */
     private $_deletedAllCaches = false;
 
     /**
-     * Whether all caches have been deleted, on a per-element type basis, in this request.
-     *
-     * @var bool|null
+     * @var bool|null Whether all caches have been deleted, on a per-element type basis, in this request.
      */
     private $_deletedCachesByElementType;
 

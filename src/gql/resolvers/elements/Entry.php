@@ -29,7 +29,7 @@ class Entry extends ElementResolver
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
-        // If not, get the prepared element query
+            // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;
         }

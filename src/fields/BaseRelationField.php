@@ -32,7 +32,7 @@ use yii\base\NotSupportedException;
  * BaseRelationField is the base class for classes representing a relational field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseRelationField extends Field implements PreviewableFieldInterface, EagerLoadingFieldInterface
 {
@@ -787,6 +787,7 @@ JS;
      * Returns an array of variables that should be passed to the settings template.
      *
      * @return array
+     * @since 3.2.10
      */
     protected function settingsTemplateVariables(): array
     {

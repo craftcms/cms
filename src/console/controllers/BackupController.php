@@ -8,9 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
@@ -27,7 +27,7 @@ class BackupController extends Controller
     public $defaultAction = 'db';
 
     /**
-     * Creates a new database backup
+     * Creates a new database backup.
      *
      * @param string|null The path the database backup should be created at.
      * Can be any of the following:

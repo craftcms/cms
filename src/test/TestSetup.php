@@ -167,17 +167,17 @@ class TestSetup
 
     /**
      * @param string $class
-     * @param array  $params
-     * @param bool   $ignorePreviousMigrations
+     * @param array $params
+     * @param bool $ignorePreviousMigrations
      *
      * @return bool
      * @throws InvalidConfigException
      * @throws \craft\errors\MigrationException
      */
-    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false) : bool
+    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException('Migration class: '. $class .' does not exist');
+            throw new InvalidArgumentException('Migration class: ' . $class . ' does not exist');
         }
 
         $migration = new $class($params);
@@ -239,7 +239,7 @@ class TestSetup
         $config = ArrayHelper::merge(
             [
                 'components' => [
-                'config' => $configService
+                    'config' => $configService
                 ],
             ],
             require $srcPath . '/config/app.php',
@@ -352,7 +352,7 @@ class TestSetup
 
         // Prevent `headers already sent` error when running tests in PhpStorm
         // https://stackoverflow.com/questions/31175636/headers-already-sent-running-unit-tests-in-phpstorm
-        ob_start ();
+        ob_start();
 
         return true;
     }

@@ -18,29 +18,29 @@ $logs = $panel->data;
 ?>
 
 <?php if (empty($logs)): ?>
-    <p>No deprecation errors were logged on this request.</p>
+  <p>No deprecation errors were logged on this request.</p>
 <?php else: ?>
-    <div class="table-responsive">
-        <table class="table table-condensed table-bordered table-striped table-hover"
-               style="table-layout: fixed;">
-            <thead>
-            <tr>
-                <th style="nowrap"><?= Craft::t('app', 'Message') ?></th>
-                <th><?= Craft::t('app', 'Origin') ?></th>
-                <th><?= Craft::t('app', 'Stack Trace') ?></th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($logs as $log): ?>
-                <tr>
-                    <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
-                    <td><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')).($log->line ? ':'.$log->line : '') ?></td>
-                    <td><a href="<?= $panel->getUrl().'&trace='.$log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+  <div class="table-responsive">
+    <table class="table table-condensed table-bordered table-striped table-hover"
+           style="table-layout: fixed;">
+      <thead>
+      <tr>
+        <th style="nowrap"><?= Craft::t('app', 'Message') ?></th>
+        <th><?= Craft::t('app', 'Origin') ?></th>
+        <th><?= Craft::t('app', 'Stack Trace') ?></th>
+      </tr>
+      </thead>
+      <tbody>
+      <?php foreach ($logs as $log): ?>
+        <tr>
+          <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
+          <td><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')) . ($log->line ? ':' . $log->line : '') ?></td>
+          <td><a href="<?= $panel->getUrl() . '&trace=' . $log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a></td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
 <?php endif; ?>
 
 <p><a href="<?= UrlHelper::cpUrl('utilities/deprecation-errors') ?>"

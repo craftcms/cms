@@ -16,7 +16,7 @@ use craft\db\TableSchema;
  * Migration utility methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrationHelper
 {
@@ -29,6 +29,7 @@ class MigrationHelper
      * @param string $tableName
      * @param string|string[] $columns
      * @return string|null The foreign key name, or null if it doesn't exist
+     * @since 3.0.27
      */
     public static function findForeignKey(string $tableName, $columns)
     {

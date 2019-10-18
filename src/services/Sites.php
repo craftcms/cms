@@ -46,7 +46,7 @@ use yii\db\Exception as DbException;
  * @property int $totalSites the total number of sites
  * @property int $totalEditableSites the total number of sites that are editable by the current user
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Sites extends Component
 {
@@ -70,6 +70,7 @@ class Sites extends Component
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -112,6 +113,7 @@ class Sites extends Component
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
 
@@ -1109,6 +1111,7 @@ class Sites extends Component
      *
      * @param int $id The site’s ID
      * @return bool Whether the site was restored successfully
+     * @since 3.1.0
      */
     public function restoreSiteById(int $id): bool
     {

@@ -15,7 +15,7 @@ use craft\helpers\Json;
  * DownloadAssetFile represents a Download Asset element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DownloadAssetFile extends ElementAction
 {

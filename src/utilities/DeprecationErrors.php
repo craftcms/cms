@@ -15,7 +15,7 @@ use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeprecationErrors extends Utility
 {

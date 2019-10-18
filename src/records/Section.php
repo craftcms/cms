@@ -26,7 +26,7 @@ use yii\db\ActiveQueryInterface;
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Section extends ActiveRecord
 {

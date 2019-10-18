@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\types\elements\Entry;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
@@ -55,7 +55,7 @@ class EntryType implements GeneratorInterface
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Entry([
                 'name' => $typeName,
-                'fields' => function () use ($entryTypeFields) {
+                'fields' => function() use ($entryTypeFields) {
                     return $entryTypeFields;
                 }
             ]));

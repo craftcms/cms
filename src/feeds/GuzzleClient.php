@@ -17,7 +17,7 @@ use Zend\Feed\Reader\Http\ResponseInterface;
  * PSR-7 Guzzle client for the Feeds service.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GuzzleClient implements FeedReaderHttpClientInterface
 {

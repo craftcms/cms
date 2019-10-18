@@ -22,7 +22,7 @@ use yii\web\Application;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class CraftConnector extends Yii2
 {
@@ -47,6 +47,7 @@ class CraftConnector extends Yii2
 
     /**
      * We override to prevent a bug with the matching of user agent and session.
+     *
      * @param $user
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException

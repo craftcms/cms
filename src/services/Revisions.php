@@ -26,7 +26,7 @@ use yii\db\Exception;
  * An instance of the Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->revisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class Revisions extends Component
 {

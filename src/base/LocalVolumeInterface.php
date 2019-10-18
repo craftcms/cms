@@ -11,7 +11,7 @@ namespace craft\base;
  * LocalVolumeInterface defines the common interface to be implemented by volume classes that are on the local file system.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface LocalVolumeInterface
 {

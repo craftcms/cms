@@ -17,7 +17,7 @@ use craft\helpers\StringHelper;
  * Model base class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Model extends \yii\base\Model
 {
@@ -43,7 +43,8 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the model rules
-     * @see behaviors()
+     * @see rules()
+     * @since 3.1.0
      */
     const EVENT_DEFINE_RULES = 'defineRules';
 

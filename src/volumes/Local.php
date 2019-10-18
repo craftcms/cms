@@ -22,7 +22,7 @@ use League\Flysystem\FileNotFoundException;
  * @license http://craftcms.com/license Craft License Agreement
  * @see http://craftcms.com
  * @package craft.app.volumes
- * @since 3.0
+ * @since 3.0.0
  */
 class Local extends FlysystemVolume implements LocalVolumeInterface
 {
@@ -41,9 +41,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     // =========================================================================
 
     /**
-     * Path to the root of this sources local folder.
-     *
-     * @var string|null
+     * @var string|null Path to the root of this sources local folder.
      */
     public $path;
 

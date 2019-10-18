@@ -8,8 +8,8 @@
 namespace craft\gql\base;
 
 use Craft;
-use craft\base\Field;
 use craft\base\EagerLoadingFieldInterface;
+use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\helpers\StringHelper;
 use GraphQL\Language\AST\FieldNode;
@@ -27,9 +27,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 abstract class Resolver
 {
     /**
-     * Cache fields by context.
-     *
-     * @var array
+     * @var array Cache fields by context.
      */
     protected static $eagerLoadableFieldsByContext;
 
@@ -70,6 +68,9 @@ abstract class Resolver
                 if (count($array) > 1) {
                     $value = $array;
                 }
+            } else if (is_array($value) && count($value) === 1 && isset($value[0]) && $value[0] === '*') {
+                // Normalize ['*'] to '*'
+                $value = '*';
             }
         }
 
@@ -82,7 +83,8 @@ abstract class Resolver
      * @param Node $parentNode
      * @return array
      */
-    protected static function extractEagerLoadCondition(ResolveInfo $resolveInfo) {
+    protected static function extractEagerLoadCondition(ResolveInfo $resolveInfo)
+    {
         $startingNode = $resolveInfo->fieldNodes[0];
         $fragments = $resolveInfo->fragments;
 
@@ -103,8 +105,7 @@ abstract class Resolver
          * @param null $parentField the current parent field, that we are in.
          * @return array
          */
-        $traverseNodes = function (Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments)
-        {
+        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments) {
             $eagerLoadNodes = [];
             $subNodes = $parentNode->selectionSet->selections ?? [];
 
@@ -170,7 +171,7 @@ abstract class Resolver
                         }
 
                         // Add it all to the list
-                        $eagerLoadNodes[$prefix.$nodeName] = $arguments;
+                        $eagerLoadNodes[$prefix . $nodeName] = $arguments;
 
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {
@@ -179,7 +180,7 @@ abstract class Resolver
                             $eagerLoadNodes += $traverseNodes($subNode, $traversePrefix . '.', $traverseContext, $field);
                         }
                     }
-                // If not, see if it's an inline fragment
+                    // If not, see if it's an inline fragment
                 } else if ($subNode instanceof InlineFragmentNode) {
                     $nodeName = $subNode->typeCondition->name->value;
 
@@ -189,11 +190,11 @@ abstract class Resolver
                         // Build the prefix, load the context and proceed in a recursive manner
                         $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
                         $eagerLoadNodes += $traverseNodes($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField);
-                    // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
+                        // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                     } else {
                         $eagerLoadNodes += $traverseNodes($subNode, $prefix, $context, $parentField);
                     }
-                // Finally, if this is a named fragment, expand it and traverse it as if on the same level in the query tree
+                    // Finally, if this is a named fragment, expand it and traverse it as if on the same level in the query tree
                 } else if ($subNode instanceof FragmentSpreadNode) {
                     $fragmentDefinition = $fragments[$nodeName];
                     $eagerLoadNodes += $traverseNodes($fragmentDefinition, $prefix, $context, $parentField);

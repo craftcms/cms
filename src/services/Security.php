@@ -18,7 +18,7 @@ use yii\helpers\Inflector;
  * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|`Craft::$app->security`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Security extends \yii\base\Security
 {

@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
+use craft\console\Controller;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
@@ -18,7 +19,6 @@ use craft\models\Updates;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use yii\base\InvalidConfigException;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**

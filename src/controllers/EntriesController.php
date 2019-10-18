@@ -31,7 +31,7 @@ use yii\web\ServerErrorHttpException;
  * swapping between entry types, and deleting entries.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EntriesController extends BaseEntriesController
 {
@@ -253,9 +253,9 @@ class EntriesController extends BaseEntriesController
 
         // Can the user delete the entry?
         $variables['canDeleteSource'] = $section->type !== Section::TYPE_SINGLE && (
-            ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
-            ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
-        );
+                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
+                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
+            );
 
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);

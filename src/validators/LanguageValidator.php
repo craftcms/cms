@@ -17,7 +17,7 @@ use yii\validators\Validator;
  * Will validate that the given attribute is a valid site language.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class LanguageValidator extends Validator
 {

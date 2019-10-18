@@ -13,7 +13,7 @@ use Craft;
  * Settings functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @deprecated in 3.0
  */
 class SystemSettings

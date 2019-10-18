@@ -20,7 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property UserGroup $group Group
  * @property User $user User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserGroup_User extends ActiveRecord
 {

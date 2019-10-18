@@ -22,7 +22,7 @@ use yii\base\Behavior;
  * @property-read User $creator
  * @property-read string $revisionLabel
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class RevisionBehavior extends Behavior
 {

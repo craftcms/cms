@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
  * Class FileHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
@@ -278,6 +278,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $mimeType
      * @return bool
+     * @since 3.1.7
      */
     public static function canTrustMimeType(string $mimeType): bool
     {
@@ -319,6 +320,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
      * `finfo_open()` cannot determine it.
      * @return bool
+     * @since 3.0.9
      */
     public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
@@ -564,6 +566,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $basePath The base path to the first file (sans `.X`)
      * @param int $max The most files that can coexist before we should start deleting them
+     * @since 3.0.38
      */
     public static function cycle(string $basePath, int $max = 50)
     {

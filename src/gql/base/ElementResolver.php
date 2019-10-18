@@ -60,6 +60,25 @@ abstract class ElementResolver extends Resolver
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function prepareArguments(array $arguments): array
+    {
+        $arguments = parent::prepareArguments($arguments);
+
+        if (isset($arguments['relatedToAll'])) {
+            $ids = (array)$arguments['relatedToAll'];
+            $ids = array_map(function($value) {
+                return ['element' => $value];
+            }, $ids);
+            $arguments['relatedTo'] = array_merge(['and'], $ids);
+            unset($arguments['relatedToAll']);
+        }
+
+        return $arguments;
+    }
+
+    /**
      * Prepare an element Query based on the source, arguments and the field name on the source.
      *
      * @param mixed $source The source. Null if top-level field being resolved.
