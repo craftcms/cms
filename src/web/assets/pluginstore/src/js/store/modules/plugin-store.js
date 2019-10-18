@@ -25,12 +25,6 @@ const getters = {
         }
     },
 
-    getPluginByHandle(state) {
-        return handle => {
-            return state.plugins.find(plugin => plugin.handle === handle)
-        }
-    },
-
     getPluginEdition() {
         return (plugin, editionHandle) => {
             return plugin.editions.find(edition => edition.handle === editionHandle)
