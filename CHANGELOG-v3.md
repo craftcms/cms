@@ -19,6 +19,9 @@
 ### Deprecated
 - Deprecated the `checkToken` argument for the `craft\gql\base\Query::getQueries()` method. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
 
+### Fixed
+- Fixed a bug where it was impossible to `*` as a value for `site` arguments with GraphQL. ([#5079](https://github.com/craftcms/cms/issues/5079))
+
 ## 3.3.11 - 2019-10-16
 
 ### Added
