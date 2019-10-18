@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\UnionType;
 
 /**
@@ -22,9 +23,7 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * Cached permission pairs for schemas by id.
-     *
-     * @var array
+     * @var array Cached permission pairs for schemas by id.
      */
     private static $cachedPairs = [];
 
@@ -193,4 +192,34 @@ class Gql
 
         return $unionType;
     }
+
+    /**
+     * Get a schema with full GraphQL API access.
+     */
+    public static function getFullAccessSchema()
+    {
+        $permissionGroups = Craft::$app->getGql()->getAllPermissions();
+
+        $schema = new GqlSchema([
+            'enabled' => true,
+            'isTemporary' => true,
+            'scope' => []]);
+
+        // Feetch all nested permissions
+        $traverser = function ($permissions) use ($schema, &$traverser) {
+            foreach ($permissions as $permission => $config) {
+                $schema->scope[] = $permission;
+                if (isset($config['nested'])) {
+                    $traverser($config['nested']);
+                }
+            }
+        };
+
+        foreach ($permissionGroups as $permissionGroup) {
+            $traverser($permissionGroup);
+        }
+
+        return $schema;
+    }
+
 }

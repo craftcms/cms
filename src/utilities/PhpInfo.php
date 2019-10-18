@@ -14,7 +14,7 @@ use craft\base\Utility;
  * PhpInfo represents a PhpInfo dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PhpInfo extends Utility
 {

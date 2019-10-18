@@ -13,7 +13,7 @@ use Craft;
  * Class ArrayHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ArrayHelper extends \yii\helpers\ArrayHelper
 {
@@ -177,6 +177,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return mixed the value, or null if it can't be found
+     * @since 3.1.0
      */
     public static function firstWhere($array, $key, $value = true, bool $strict = false)
     {
@@ -253,6 +254,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array
      * @param string $key
      * @return array
+     * @since 3.0.9
      */
     public static function without(array $array, string $key): array
     {
@@ -277,6 +279,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Ensures an array is non-associative.
      *
      * @param array $array
+     * @since 3.1.17.1
      */
     public static function ensureNonAssociative(array &$array)
     {

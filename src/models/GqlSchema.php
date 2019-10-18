@@ -77,6 +77,11 @@ class GqlSchema extends Model
      */
     public $uid;
 
+    /**
+     * @var bool Whether this is a temporary schema
+     */
+    public $isTemporary = false;
+
     // Public Methods
     // =========================================================================
 
@@ -127,7 +132,7 @@ class GqlSchema extends Model
     }
 
     /**
-     * returns whether this is the public schema.
+     * Returns whether this is the public schema.
      *
      * @return bool
      */

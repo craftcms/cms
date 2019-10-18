@@ -17,7 +17,7 @@ use craft\validators\TemplateValidator;
  * MailSettings Model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MailSettings extends Model
 {

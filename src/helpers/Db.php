@@ -21,7 +21,7 @@ use yii\db\Schema;
  * Class Db
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Db
 {
@@ -653,6 +653,7 @@ class Db
      * @param Connection|null $db
      * @return int number of rows affected by the execution.
      * @throws \yii\db\Exception execution failed
+     * @since 3.0.12
      */
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
     {
@@ -680,6 +681,7 @@ class Db
      * @param string $table
      * @param string $uid
      * @return int|null
+     * @since 3.1.0
      */
     public static function idByUid(string $table, string $uid)
     {
@@ -698,6 +700,7 @@ class Db
      * @param string $table
      * @param string[] $uids
      * @return string[]
+     * @since 3.1.0
      */
     public static function idsByUids(string $table, array $uids): array
     {
@@ -714,6 +717,7 @@ class Db
      * @param string $table
      * @param int $id
      * @return string|null
+     * @since 3.1.0
      */
     public static function uidById(string $table, int $id)
     {
@@ -732,6 +736,7 @@ class Db
      * @param string $table
      * @param int[] $ids
      * @return string[]
+     * @since 3.1.0
      */
     public static function uidsByIds(string $table, array $ids): array
     {

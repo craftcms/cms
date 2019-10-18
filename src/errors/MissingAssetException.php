@@ -18,7 +18,7 @@ use yii\base\Exception;
  * MissingAssetException represents an exception caused by an asset record that doesn't exist.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class MissingAssetException extends Exception
 {

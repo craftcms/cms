@@ -16,7 +16,7 @@ use yii\db\ColumnSchemaBuilder;
  * @property Connection $db the DB connection that this command is associated with
  * @method Connection getDb() returns the connection the DB connection that this command is associated with
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Migration extends \yii\db\Migration
 {
@@ -25,11 +25,13 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * @event \yii\base\Event The event that is triggered after the migration is executed
+     * @since 3.0.6
      */
     const EVENT_AFTER_UP = 'afterUp';
 
     /**
      * @event \yii\base\Event The event that is triggered after the migration is reverted
+     * @since 3.0.6
      */
     const EVENT_AFTER_DOWN = 'afterDown';
 
@@ -396,6 +398,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string|array $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
+     * @since 3.1.0
      */
     public function softDelete(string $table, $condition = '', array $params = [])
     {
@@ -414,6 +417,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string|array $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
+     * @since 3.1.0
      */
     public function restore(string $table, $condition = '', array $params = [])
     {

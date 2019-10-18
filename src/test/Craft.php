@@ -61,7 +61,7 @@ use yii\base\ErrorException as YiiBaseErrorException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class Craft extends Yii2
 {
@@ -69,12 +69,10 @@ class Craft extends Yii2
     // =========================================================================
 
     /**
-     * A static version of the testing config.
+     * @var array A static version of the testing config.
      *
      * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`.
      * This variable is equivalant to calling $this->_getConfig(); but is available for public access.
-     *
-     * @var array
      */
     public static $testConfig;
 
@@ -84,9 +82,7 @@ class Craft extends Yii2
     public static $currentTest;
 
     /**
-     * Application config file must be set.
-     *
-     * @var array
+     * @var array Application config file must be set.
      */
     protected $addedConfig = [
         'migrations' => [],
@@ -98,16 +94,12 @@ class Craft extends Yii2
     ];
 
     /**
-     * For expecting events code
-     *
-     * @var array
+     * @var array For expecting events code
      */
     protected $triggeredEvents = [];
 
     /**
-     * For expecting events code
-     *
-     * @var array
+     * @var array For expecting events code
      */
     protected $requiredEvents = [];
 
@@ -184,8 +176,8 @@ class Craft extends Yii2
      *
      * @param bool $force Whether to force the reset. If set to true the `reset` key of the projectConfig configuration will
      * be ignored and the project config will be reset regardless.
-     *
      * @return bool
+     * @since 3.3.10
      */
     public function resetProjectConfig(bool $force = false) : bool
     {

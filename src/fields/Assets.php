@@ -35,7 +35,7 @@ use yii\base\InvalidConfigException;
  * Assets represents an Assets field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets extends BaseRelationField
 {

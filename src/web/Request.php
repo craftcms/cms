@@ -36,7 +36,7 @@ use yii\web\NotFoundHttpException;
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @property-read bool $isPreview Whether this is an element preview request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Request extends \yii\web\Request
 {
@@ -71,6 +71,7 @@ class Request extends \yii\web\Request
 
     /**
      * @param int The highest page number that Craft should accept.
+     * @since 3.1.14
      */
     public $maxPageNum = 100000;
 

@@ -20,7 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property UserPermission $permission Permission
  * @property UserGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPermission_UserGroup extends ActiveRecord
 {

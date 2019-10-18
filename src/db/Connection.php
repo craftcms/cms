@@ -38,7 +38,7 @@ use yii\db\Exception as DbException;
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Connection extends \yii\db\Connection
 {
@@ -202,6 +202,7 @@ class Connection extends \yii\db\Connection
      * Returns the path for a new backup file.
      *
      * @return string
+     * @since 3.0.38
      */
     public function getBackupFilePath(): string
     {

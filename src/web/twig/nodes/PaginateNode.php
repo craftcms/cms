@@ -14,7 +14,7 @@ use Twig\Node\Node;
  * Represents a paginate node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PaginateNode extends Node
 {

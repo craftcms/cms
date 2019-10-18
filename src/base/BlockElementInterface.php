@@ -13,7 +13,7 @@ namespace craft\base;
  * Block elements are elements that are owned by a parent element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 interface BlockElementInterface
 {

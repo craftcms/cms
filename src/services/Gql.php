@@ -180,6 +180,8 @@ class Gql extends Component
      *     }
      * );
      * ```
+     *
+     * @since 3.3.11
      */
     const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
 
@@ -201,22 +203,20 @@ class Gql extends Component
      *     }
      * );
      * ```
+     *
+     * @since 3.3.11
      */
     const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
     const CACHE_TAG = 'graphql';
 
     /**
-     * Currently loaded schema definition
-     *
-     * @var Schema
+     * @var Schema Currently loaded schema definition
      */
     private $_schemaDef;
 
     /**
-     * The active GraphQL schema
-     *
-     * @var GqlSchema
+     * @var GqlSchema The active GraphQL schema
      * @see setActiveSchema()
      */
     private $_schema;
@@ -329,6 +329,7 @@ class Gql extends Component
      * @param string|null $operationName The operation name.
      * @param bool $debugMode Whether debug mode validations rules should be used for GraphQL.
      * @return array
+     * @since 3.3.11
      */
     public function executeQuery(GqlSchema $schema, string $query, $variables, $operationName, $debugMode): array
     {
@@ -598,6 +599,10 @@ class Gql extends Component
      */
     public function saveSchema(GqlSchema $schema, $runValidation = true, $invalidateCachedResults = true): bool
     {
+        if ($schema->isTemporary) {
+            return false;
+        }
+
         $isNewSchema = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {

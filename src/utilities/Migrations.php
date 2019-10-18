@@ -14,7 +14,7 @@ use craft\base\Utility;
  * Migrations represents a Migrations utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Migrations extends Utility
 {

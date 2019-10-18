@@ -11,7 +11,7 @@ namespace craft\mail\transportadapters;
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Sendmail extends BaseTransportAdapter
 {

@@ -19,7 +19,7 @@ use yii\db\Schema;
  * PlainText represents a Plain Text field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PlainText extends Field implements PreviewableFieldInterface
 {

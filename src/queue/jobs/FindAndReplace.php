@@ -19,7 +19,7 @@ use yii\base\Exception;
  * FindAndReplace job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FindAndReplace extends BaseJob
 {

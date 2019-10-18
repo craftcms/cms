@@ -13,7 +13,7 @@ use craft\base\Serializable;
  * Class OptionData
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class OptionData implements Serializable
 {

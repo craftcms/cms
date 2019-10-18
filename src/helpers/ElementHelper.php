@@ -19,7 +19,7 @@ use yii\base\Exception;
  * Class ElementHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementHelper
 {
@@ -326,6 +326,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @return ElementInterface
+     * @since 3.2.0
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
@@ -340,6 +341,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @return bool
+     * @since 3.2.0
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {

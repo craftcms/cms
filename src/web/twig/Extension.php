@@ -65,7 +65,7 @@ use yii\helpers\Markdown;
  * Class Extension
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Extension extends AbstractExtension implements GlobalsInterface
 {
@@ -430,6 +430,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param mixed $arr
      * @param string $key
      * @return array
+     * @since 3.2.0
      */
     public function withoutKeyFilter($arr, string $key): array
     {
@@ -871,6 +872,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param mixed $params
      * @param mixed $config
      * @return Expression
+     * @since 3.1.0
      */
     public function expressionFunction($expression, $params = [], $config = []): Expression
     {
@@ -882,6 +884,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param string $handle The plugin handle
      * @return PluginInterface|null The plugin, or `null` if it's not installed
+     * @since 3.1.0
      */
     public function pluginFunction(string $handle)
     {
@@ -914,6 +917,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return integer|string
      * @throws \Throwable if reasons
      * @throws \yii\db\Exception
+     * @since 3.0.31
      */
     public function seqFunction(string $name, int $length = null, bool $next = true)
     {

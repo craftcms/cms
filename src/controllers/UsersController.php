@@ -50,7 +50,7 @@ use yii\web\Response;
  * authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UsersController extends Controller
 {
@@ -80,6 +80,8 @@ class UsersController extends Controller
      *     $e->contentSummary[] = 'A pair of sneakers';
      * });
      * ```
+     *
+     * @since 3.0.13
      */
     const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
@@ -1410,6 +1412,7 @@ class UsersController extends Controller
      * Returns a summary of the content that is owned by a given user ID(s).
      *
      * @return Response|null
+     * @since 3.0.13
      */
     public function actionUserContentSummary(): Response
     {

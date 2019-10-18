@@ -16,7 +16,7 @@ use craft\queue\BaseJob;
  * UpdateSearchIndex job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class UpdateSearchIndex extends BaseJob
 {

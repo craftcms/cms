@@ -13,7 +13,7 @@ use yii\base\Event;
  * RegisterElementSourcesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterElementSourcesEvent extends Event
 {

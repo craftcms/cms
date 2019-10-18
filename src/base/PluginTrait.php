@@ -11,7 +11,7 @@ namespace craft\base;
  * PluginTrait implements the common methods and properties for plugin classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait PluginTrait
 {
@@ -59,7 +59,7 @@ trait PluginTrait
     public $documentationUrl;
 
     /**
-     * The plugin’s changelog URL.
+     * @var string|null The plugin’s changelog URL.
      *
      * The URL should begin with `https://` and point to a plain text Markdown-formatted changelog.
      * Version headers must follow the general format:
@@ -84,8 +84,6 @@ trait PluginTrait
      * - Any content that does not follow a version header line will be ignored.
      * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
      * - Release notes can contain notes using the format `> {note} Some note`. `{warning}` and `{tip}` are also supported.
-     *
-     * @var string|null The plugin’s changelog URL
      */
     public $changelogUrl;
 

@@ -20,7 +20,7 @@ use yii\web\UrlRule as YiiUrlRule;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UrlManager extends \yii\web\UrlManager
 {
@@ -74,6 +74,7 @@ class UrlManager extends \yii\web\UrlManager
 
     /**
      * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
+     * @since 3.2.0
      */
     public $checkToken = true;
 

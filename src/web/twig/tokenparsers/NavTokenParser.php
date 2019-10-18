@@ -18,7 +18,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * Recursively outputs a hierarchical navigation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NavTokenParser extends AbstractTokenParser
 {

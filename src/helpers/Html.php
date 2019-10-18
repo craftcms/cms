@@ -16,7 +16,7 @@ use yii\base\InvalidConfigException;
  * Class Html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Html extends \yii\helpers\Html
 {
@@ -103,6 +103,7 @@ class Html extends \yii\helpers\Html
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public static function a($text, $url = null, $options = [])
     {
