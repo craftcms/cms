@@ -6,6 +6,7 @@
 - GraphQL query results are now cached.
 - The GraphQL → Explore page now lists a “Full Schema” option before the Public Schema and any custom-defined schemas.
 - Added the “GraphQL caches” option for the Clear Caches utility.
+- Added the `gql()` Twig function, which executes a GraphQL query and returns the result.
 - Added the `enableGraphQlCaching` config setting.
 - Added the `transform` GraphQL parameter for asset URLs (alias of `handle`).
 - Added the `url` field to the `EntryInterface` GraphQL type. ([#5113](https://github.com/craftcms/cms/issues/5113))
