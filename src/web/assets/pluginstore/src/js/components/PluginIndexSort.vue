@@ -1,5 +1,7 @@
 <template>
-    <div>
+    <div class="flex self-end">
+        <spinner v-if="loading" class="mt-2 mr-4"></spinner>
+
         <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="options"></sort-menu-btn>
     </div>
 </template>
@@ -8,7 +10,7 @@
     import SortMenuBtn from './SortMenuBtn'
 
     export default {
-        props: ['sortingOptions'],
+        props: ['loading', 'orderBy', 'direction'],
 
         components: {
             SortMenuBtn,
@@ -28,7 +30,9 @@
 
         watch: {
             options() {
-                this.$emit('update:sortingOptions', this.options)
+                this.$emit('update:orderBy', this.options.attribute)
+                this.$emit('update:direction', this.options.direction)
+                this.$emit('change')
             },
         },
 

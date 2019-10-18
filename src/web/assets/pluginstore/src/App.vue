@@ -7,7 +7,7 @@
         <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError && $root.pluginLicenseInfoLoaded">
             <sidebar></sidebar>
 
-            <div class="ps-main">
+            <div class="ps-main" @scroll.passive="onViewScroll">
                 <router-view :key="$route.fullPath"></router-view>
             </div>
         </template>
@@ -39,11 +39,15 @@
         },
 
         computed: {
-
             ...mapState({
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
+        },
 
+        methods: {
+            onViewScroll($event) {
+                this.$root.$emit('viewScroll', $event)
+            }
         }
     }
 </script>

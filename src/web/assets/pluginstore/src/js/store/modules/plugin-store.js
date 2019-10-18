@@ -12,6 +12,9 @@ const state = {
     featuredSections: [],
     plugin: null,
     pluginChangelog: null,
+
+    // plugin index
+    pluginIndexLimit: 96,
     plugins: [],
 }
 

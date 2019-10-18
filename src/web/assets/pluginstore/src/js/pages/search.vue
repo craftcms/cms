@@ -1,28 +1,24 @@
 <template>
     <div class="ps-container">
-        <div class="ps-header">
-            <h1>{{ "Showing results for “{searchQuery}”"|t('app', {searchQuery}) }}</h1>
-            <sort-plugins :sortingOptions.sync="sortingOptions"></sort-plugins>
-        </div>
-
-        <template v-if="loading">
-            <spinner></spinner>
-        </template>
-        <template v-else>
-            <plugin-grid :plugins="plugins"></plugin-grid>
-        </template>
+        <plugin-index
+                action="pluginStore/searchPlugins"
+                :requestData="requestData"
+                :plugins="plugins"
+        >
+            <template v-slot:header>
+                <h1>{{ "Showing results for “{searchQuery}”"|t('app', {searchQuery}) }}</h1>
+            </template>
+        </plugin-index>
     </div>
 </template>
 
 <script>
     import {mapState} from 'vuex'
-    import PluginGrid from '../components/PluginGrid'
-    import SortPlugins from '../components/SortPlugins'
+    import PluginIndex from '../components/PluginIndex'
 
     export default {
         components: {
-            PluginGrid,
-            SortPlugins,
+            PluginIndex,
         },
 
         data() {
@@ -46,6 +42,12 @@
                 plugins: state => state.pluginStore.plugins,
                 searchQuery: state => state.app.searchQuery,
             }),
+
+            requestData() {
+                return {
+                    searchQuery: this.searchQuery,
+                }
+            }
         },
 
         methods: {

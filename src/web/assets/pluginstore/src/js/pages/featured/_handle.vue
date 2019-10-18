@@ -1,8 +1,15 @@
 <template>
     <div class="ps-container">
         <template v-if="!loading && featuredSection">
-            <h1>{{featuredSection.title}}</h1>
-            <plugin-grid :plugins="plugins"></plugin-grid>
+            <plugin-index
+                    action="pluginStore/getPluginsByFeaturedSectionHandle"
+                    :requestData="requestData"
+                    :plugins="plugins"
+            >
+                <template v-slot:header>
+                    <h1>{{featuredSection.title}}</h1>
+                </template>
+            </plugin-index>
         </template>
         <template v-else>
             <spinner></spinner>
@@ -12,11 +19,11 @@
 
 <script>
     import {mapState} from 'vuex'
-    import PluginGrid from '../../components/PluginGrid'
+    import PluginIndex from '../../components/PluginIndex'
 
     export default {
         components: {
-            PluginGrid,
+            PluginIndex,
         },
 
         data() {
@@ -32,6 +39,12 @@
                 featuredSection: state => state.pluginStore.featuredSection,
                 plugins: state => state.pluginStore.plugins,
             }),
+
+            requestData() {
+                return {
+                    featuredSectionHandle: this.$route.params.handle
+                }
+            }
         },
 
         mounted() {
@@ -43,36 +56,11 @@
             // retrieve featured section
             this.$store.dispatch('pluginStore/getFeaturedSectionByHandle', featuredSectionHandle)
                 .then(() => {
-                    this.sectionLoaded = true
-                    this.$emit('dataLoaded')
+                    this.loading = false
                 })
                 .catch(() => {
-                    this.sectionLoaded = true
-                    this.$emit('dataLoaded')
+                    this.loading = false
                 })
-
-            // retrieve featured section’s plugins
-            this.pluginsLoaded = true
-            this.$store.dispatch('pluginStore/getPluginsByFeaturedSectionHandle', {
-                featuredSectionHandle
-            })
-                .then(() => {
-                    this.pluginsLoaded = true
-                    this.$emit('dataLoaded')
-                })
-                .catch(() => {
-                    this.pluginsLoaded = true
-                    this.$emit('dataLoaded')
-                })
-
-            // stop loading when all the loaded has finished loading
-            this.$on('dataLoaded', () => {
-                if (!this.sectionLoaded || !this.pluginsLoaded) {
-                    return null
-                }
-
-                this.loading = false
-            })
         }
     }
 </script>
