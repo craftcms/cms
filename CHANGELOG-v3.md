@@ -22,6 +22,9 @@
 ### Deprecated
 - Deprecated the `$checkToken` argument for `craft\gql\base\Query::getQueries()`. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
 
+### Fixed
+- Fixed an error that occurred when loading a relational field’s selection modal, if no sources were visible.
+
 ## 3.3.11 - 2019-10-16
 
 ### Added
