@@ -166,7 +166,25 @@ const actions = {
                     }
 
                     commit('updateCart', {response})
-                    return resolve(response)
+
+                    const cartItemPluginIds = []
+
+                    state.cart.lineItems.forEach((lineItem) => {
+                        cartItemPluginIds.push(lineItem.purchasable.plugin.id)
+                    })
+
+                    if (cartItemPluginIds.length > 0) {
+                        pluginStoreApi.getPluginsByIds(cartItemPluginIds)
+                            .then((pluginsResponse) => {
+                                commit('updateCartPlugins', pluginsResponse.data)
+                                resolve(response)
+                            })
+                            .catch((error) => {
+                                reject(error)
+                            })
+                    } else {
+                        resolve(response)
+                    }
                 })
                 .catch(error => {
                     return reject(error.response)
