@@ -268,6 +268,18 @@ class PluginStoreController extends Controller
     }
 
     /**
+     * Get API headers.
+     *
+     * @return Response
+     */
+    public function actionGetApiHeaders()
+    {
+        $apiHeaders = Craft::$app->getApi()->getHeaders();
+
+        return $this->asJson($apiHeaders);
+    }
+
+    /**
      * Returns the Plugin Store’s data.
      *
      * @return Response

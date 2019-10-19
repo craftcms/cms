@@ -40,4 +40,13 @@ export default {
             }
         })
     },
+
+    /**
+     * Get API headers.
+     *
+     * @returns {AxiosPromise<any>}
+     */
+    getApiHeaders() {
+        return axios.get(Craft.getActionUrl('plugin-store/get-api-headers'))
+    }
 }
