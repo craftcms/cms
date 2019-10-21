@@ -107,6 +107,66 @@
                     this.$root.$on('viewScroll', this.onViewScroll)
                 }
             },
+
+            requestPlugins(dontAppendData) {
+                if (this.loading) {
+                    return null
+                }
+
+                if (this.loadingMore) {
+                    return null
+                }
+
+                if (!this.hasMore) {
+                    return null
+                }
+
+                if (!dontAppendData && this.viewHasScrollbar()) {
+                    return null
+                }
+
+                this.loading = true
+
+                if (dontAppendData) {
+                    this.offset = 0
+                }
+
+                this.$store.dispatch(this.action, {
+                        ...this.requestActionData,
+                        appendData: !dontAppendData,
+                    })
+                    .then((response) => {
+                        this.loading = false
+
+                        if (response.data.length >= this.limit) {
+                            this.hasMore = true
+                            this.offset += this.limit
+
+                            if (!this.viewHasScrollbar()) {
+                                this.requestPlugins()
+                            }
+                        } else {
+                            this.hasMore = false
+                        }
+                    })
+                    .catch(() => {
+                        this.loading = false
+                    })
+            },
+
+            onWindowResize() {
+                this.requestPlugins()
+            },
+
+            viewHasScrollbar() {
+                const scrollableDiv = document.getElementById('content').getElementsByClassName('ps-container')[0]
+
+                if (scrollableDiv.clientHeight < scrollableDiv.scrollHeight) {
+                    return true
+                } else {
+                    return false
+                }
+            },
         },
 
         mounted() {
@@ -120,7 +180,13 @@
                     if (response.data.length >= this.limit) {
                         this.hasMore = true
                         this.offset = this.limit;
+
+                        if (!this.viewHasScrollbar()) {
+                            this.requestPlugins()
+                        }
+
                         this.$root.$on('viewScroll', this.onViewScroll)
+                        this.$root.$on('windowResize', this.onWindowResize)
                     } else {
                         this.hasMore = false
                     }
@@ -130,8 +196,11 @@
                 })
         },
 
-        destroyed() {
+        beforeDestroy() {
             this.$root.$off('viewScroll')
+            this.$root.$off('windowResize')
+
+            this.$store.dispatch('pluginStore/cancelRequests')
         }
     }
 </script>

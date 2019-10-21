@@ -61,6 +61,10 @@ const getters = {
  * Actions
  */
 const actions = {
+    cancelRequests() {
+        return api.cancelRequests()
+    },
+
     getCoreData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCoreData()

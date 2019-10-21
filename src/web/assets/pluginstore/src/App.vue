@@ -48,6 +48,12 @@
             onViewScroll($event) {
                 this.$root.$emit('viewScroll', $event)
             }
+        },
+
+        mounted() {
+            window.addEventListener('resize', function($event) {
+                this.$root.$emit('windowResize', $event)
+            }.bind(this))
         }
     }
 </script>

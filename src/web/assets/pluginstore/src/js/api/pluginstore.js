@@ -1,11 +1,32 @@
 import axios from 'axios'
 
+
+// create a cancel token for axios
+let CancelToken = axios.CancelToken
+let cancelTokenSource = CancelToken.source()
+
+// create an axios instance
 const _axios = axios.create({
     baseURL: process.env.VUE_APP_CRAFT_API_ENDPOINT,
     headers: window.apiHeaders,
+    cancelToken: cancelTokenSource.token,
 })
 
 export default {
+    /**
+     * Cancel requests.
+     */
+    cancelRequests() {
+        // cancel requests
+        cancelTokenSource.cancel()
+
+        // create a new cancel token
+        cancelTokenSource = CancelToken.source()
+
+        // update axios with the new cancel token
+        _axios.defaults.cancelToken = cancelTokenSource.token
+    },
+
     /**
      * Get plugin store data.
      *
