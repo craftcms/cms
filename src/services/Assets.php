@@ -1063,6 +1063,8 @@ class Assets extends Component
         switch($asset->kind) {
             case Asset::KIND_IMAGE:
                 return new ImagePreview($asset);
+            case Asset::KIND_PDF:
+                return new PdfPreview($asset);
             case Asset::KIND_HTML:
             case Asset::KIND_JSON:
             case Asset::KIND_JAVASCRIPT:
