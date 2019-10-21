@@ -97,7 +97,7 @@ const getters = {
  * Actions
  */
 const actions = {
-    addToCart({commit, state, rootGetters}, newItems) {
+    addToCart({state, dispatch, rootGetters}, newItems) {
         return new Promise((resolve, reject) => {
             const cart = JSON.parse(JSON.stringify(state.cart))
             let items = utils.getCartItemsData(cart)
@@ -159,32 +159,15 @@ const actions = {
                 items,
             }
 
-            api.updateCart(cart.number, data)
-                .then(response => {
+            const cartNumber = cart.number
+
+            dispatch('updateCart', {cartNumber, data})
+                .then((response) => {
                     if (typeof response.data.errors !== 'undefined') {
                         return reject(response)
                     }
 
-                    commit('updateCart', {response})
-
-                    const cartItemPluginIds = []
-
-                    state.cart.lineItems.forEach((lineItem) => {
-                        cartItemPluginIds.push(lineItem.purchasable.plugin.id)
-                    })
-
-                    if (cartItemPluginIds.length > 0) {
-                        pluginStoreApi.getPluginsByIds(cartItemPluginIds)
-                            .then((pluginsResponse) => {
-                                commit('updateCartPlugins', pluginsResponse.data)
-                                resolve(response)
-                            })
-                            .catch((error) => {
-                                reject(error)
-                            })
-                    } else {
-                        resolve(response)
-                    }
+                    resolve(response)
                 })
                 .catch(error => {
                     return reject(error.response)
@@ -265,6 +248,30 @@ const actions = {
         })
     },
 
+    updateCartPlugins({commit, state}) {
+        return new Promise((resolve, reject) => {
+            const cartItemPluginIds = []
+
+            state.cart.lineItems.forEach((lineItem) => {
+                cartItemPluginIds.push(lineItem.purchasable.plugin.id)
+            })
+
+            if (cartItemPluginIds.length > 0) {
+                pluginStoreApi.getPluginsByIds(cartItemPluginIds)
+                    .then((pluginsResponse) => {
+                        commit('updateCartPlugins', pluginsResponse.data)
+                        resolve()
+                    })
+                    .catch((error) => {
+                        reject(error)
+                    })
+            } else {
+                commit('updateCartPlugins', [])
+                resolve()
+            }
+        })
+    },
+
     getCart({dispatch, commit, rootState}) {
         return new Promise((resolve, reject) => {
             // retrieve the order number
@@ -277,24 +284,13 @@ const actions = {
                                 if (!response.data.error) {
                                     commit('updateCart', {response})
 
-                                    const cartItemPluginIds = []
-
-                                    state.cart.lineItems.forEach((lineItem) => {
-                                        cartItemPluginIds.push(lineItem.purchasable.plugin.id)
-                                    })
-
-                                    if (cartItemPluginIds.length > 0) {
-                                        pluginStoreApi.getPluginsByIds(cartItemPluginIds)
-                                            .then((pluginsResponse) => {
-                                                commit('updateCartPlugins', pluginsResponse.data)
-                                                resolve(response)
-                                            })
-                                            .catch((error) => {
-                                                reject(error)
-                                            })
-                                    } else {
-                                        resolve(response)
-                                    }
+                                    dispatch('updateCartPlugins')
+                                        .then(() => {
+                                            resolve(response)
+                                        })
+                                        .catch((error) => {
+                                            reject(error)
+                                        })
                                 } else {
                                     // Couldn’t get cart for this order number? Try to create a new one.
                                     const data = {}
@@ -306,8 +302,15 @@ const actions = {
                                     api.createCart(data)
                                         .then(createCartResponse => {
                                             commit('updateCart', {response: createCartResponse})
-                                            dispatch('saveOrderNumber', {orderNumber: createCartResponse.data.cart.number})
-                                            resolve(response)
+
+                                            dispatch('updateCartPlugins')
+                                                .then(() => {
+                                                    dispatch('saveOrderNumber', {orderNumber: createCartResponse.data.cart.number})
+                                                    resolve(response)
+                                                })
+                                                .catch((error) => {
+                                                    reject(error)
+                                                })
                                         })
                                         .catch(createCartError => {
                                             reject(createCartError.response)
@@ -328,8 +331,15 @@ const actions = {
                         api.createCart(data)
                             .then(createCartResponse => {
                                 commit('updateCart', {response: createCartResponse})
-                                dispatch('saveOrderNumber', {orderNumber: createCartResponse.data.cart.number})
-                                resolve(createCartResponse)
+
+                                dispatch('updateCartPlugins')
+                                    .then(() => {
+                                        dispatch('saveOrderNumber', {orderNumber: createCartResponse.data.cart.number})
+                                        resolve(createCartResponse)
+                                    })
+                                    .catch((error) => {
+                                        reject(error)
+                                    })
                             })
                             .catch(createCartError => {
                                 reject(createCartError.response)
@@ -354,7 +364,7 @@ const actions = {
         })
     },
 
-    removeFromCart({commit, state}, lineItemKey) {
+    removeFromCart({dispatch, state}, lineItemKey) {
         return new Promise((resolve, reject) => {
             const cart = state.cart
 
@@ -365,9 +375,10 @@ const actions = {
                 items,
             }
 
-            api.updateCart(cart.number, data)
-                .then(response => {
-                    commit('updateCart', {response})
+            const cartNumber = cart.number
+
+            dispatch('updateCart', {cartNumber, data})
+                .then((response) => {
                     resolve(response)
                 })
                 .catch(error => {
@@ -394,18 +405,14 @@ const actions = {
         api.resetOrderNumber()
     },
 
-    saveCart({commit, state}, data) {
+    saveCart({dispatch, state}, data) {
         return new Promise((resolve, reject) => {
             const cart = state.cart
+            const cartNumber = cart.number
 
-            api.updateCart(cart.number, data)
-                .then(response => {
-                    if (!response.data.errors) {
-                        commit('updateCart', {response})
-                        resolve(response)
-                    } else {
-                        reject(response)
-                    }
+            dispatch('updateCart', {cartNumber, data})
+                .then((response) => {
+                    resolve(response)
                 })
                 .catch(error => {
                     reject(error.response)
@@ -447,9 +454,32 @@ const actions = {
         })
     },
 
-    updateItem({commit, state}, {itemKey, item}) {
+    updateCart({commit, dispatch}, {cartNumber, data}) {
+        return new Promise((resolve, reject) => {
+            api.updateCart(cartNumber, data)
+                .then(response => {
+                    commit('updateCart', {response})
+
+                    dispatch('updateCartPlugins')
+                        .then(() => {
+                            resolve(response)
+                        })
+                        .catch((error) => {
+                            reject(error)
+                        })
+
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
+        })
+    },
+
+    updateItem({dispatch, state}, {itemKey, item}) {
         return new Promise((resolve, reject) => {
             const cart = state.cart
+            const cartNumber = cart.number
 
             let items = utils.getCartItemsData(cart)
 
@@ -459,13 +489,12 @@ const actions = {
                 items,
             }
 
-            api.updateCart(cart.number, data)
-                .then(response => {
-                    commit('updateCart', {response})
+            dispatch('updateCart', {cartNumber, data})
+                .then((response) => {
                     resolve(response)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
     },
