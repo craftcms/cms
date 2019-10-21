@@ -240,6 +240,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
             new TwigFilter('number', [$formatter, 'asDecimal']),
+            new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
@@ -439,6 +440,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $arr = (array)$arr;
         ArrayHelper::remove($arr, $key);
         return $arr;
+    }
+
+    /**
+     * Parses an HTML tag to find its attributes.
+     *
+     * @param string $tag The HTML tag to parse
+     * @return array The parsed HTML tag attributes
+     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @since 3.4.0
+     */
+    public function parseAttrFilter(string $tag): array
+    {
+        try {
+            return Html::parseTagAttributes($tag, 0, $start, $end, true);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return [];
+        }
     }
 
     /**
