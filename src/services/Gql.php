@@ -681,7 +681,13 @@ class Gql extends Component
      */
     private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
     {
+        // No cache key, if explicitly disabled
         if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
+            return null;
+        }
+
+        // No cache key if we have placeholder elements
+        if (!empty(Craft::$app->getElements()->getPlaceholderElements())) {
             return null;
         }
 
