@@ -16,7 +16,7 @@ use yii\base\Event;
  * Asset preview event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.4.0
  */
 class AssetPreviewEvent extends Event
 {
