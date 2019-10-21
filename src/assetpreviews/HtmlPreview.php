@@ -16,7 +16,7 @@ use craft\elements\Asset;
  * Provides functionality to preview text files as HTML
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.4.0
  */
 class HtmlPreview extends AssetPreview
 {
