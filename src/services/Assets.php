@@ -8,6 +8,12 @@
 namespace craft\services;
 
 use Craft;
+use craft\assetpreviews\HtmlPreview;
+use craft\assetpreviews\ImagePreview;
+use craft\assetpreviews\NoPreview;
+use craft\assetpreviews\PdfPreview;
+use craft\base\AssetPreview;
+use craft\base\AssetPreviewInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
@@ -22,6 +28,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
@@ -81,6 +88,11 @@ class Assets extends Component
      * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
      */
     const EVENT_GET_THUMB_PATH = 'getThumbPath';
+
+    /**
+     * @event AssetPreviewEvent The event that is triggered when an asset is previewed
+     */
+    const EVENT_GET_PREVIEW_TEMPLATE = 'getPreviewTemplate';
 
     // Properties
     // =========================================================================
@@ -1025,6 +1037,39 @@ class Assets extends Component
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
         return $folder;
+    }
+
+    /**
+     *
+     * @param Asset $asset
+     * @return AssetPreviewInterface
+     * @since 3.4.0
+     */
+    public function getAssetPreview(Asset $asset): AssetPreviewInterface
+    {
+        $event = new AssetPreviewEvent(['asset' => $asset]);
+
+        // Give plugins a chance to register their own preview handlers
+        if ($this->hasEventHandlers(self::EVENT_GET_PREVIEW_TEMPLATE)) {
+            $this->trigger(self::EVENT_GET_PREVIEW_TEMPLATE, $event);
+        }
+
+        $preview = $event->previewHandler;
+        if ($preview instanceof AssetPreview) {
+            return $preview;
+        }
+
+        // These are our default preview handlers if one is not supplied
+        switch($asset->kind) {
+            case Asset::KIND_IMAGE:
+                return new ImagePreview($asset);
+            case Asset::KIND_HTML:
+            case Asset::KIND_JSON:
+            case Asset::KIND_JAVASCRIPT:
+                return new HtmlPreview($asset);
+            default:
+                return new NoPreview($asset);
+        }
     }
 
     // Private Methods
