@@ -25,6 +25,7 @@
 - Deprecated the `$checkToken` argument for `craft\gql\base\Query::getQueries()`. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
 
 ### Fixed
+- Fixed a bug that could occur when using plugin specific config files while running functional tests. ([#5137](https://github.com/craftcms/cms/pull/5137))
 - Fixed an error that occurred when loading a relational field’s selection modal, if no sources were visible.
 - Fixed a bug where required relational fields would get a validation error if only elements from other sites were selected. ([#5116](https://github.com/craftcms/cms/issues/5116))
 - Fixed a bug where the “Profile Twig templates when Dev Mode is disabled” admin preference wasn’t saving. ([#5118](https://github.com/craftcms/cms/pull/5118))
