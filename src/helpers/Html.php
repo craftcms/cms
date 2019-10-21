@@ -243,7 +243,7 @@ class Html extends \yii\helpers\Html
      * @param int|null $start The start position of the first attribute in the given tag
      * @param int|null $end The end position of the last attribute in the given tag
      * @param bool $decode Whether the attributes should be HTML decoded in the process
-     * @return array The parsed HTML tags
+     * @return array The parsed HTML tag attributes
      * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */
