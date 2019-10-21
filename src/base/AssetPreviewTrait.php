@@ -12,8 +12,10 @@ namespace craft\base;
 use craft\elements\Asset;
 
 /**
- * Trait AssetPreviewTrait
- * @package craft\base
+ * An AssetPreview provides functionality to preview an arbitrary Asset element
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.4.0
  */
 trait AssetPreviewTrait
 {

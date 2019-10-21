@@ -15,7 +15,7 @@ use craft\base\AssetPreview;
  * Provides functionality to preview images
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.4.0
  */
 class ImagePreview extends AssetPreview
 {

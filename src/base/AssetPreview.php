@@ -15,7 +15,7 @@ use craft\elements\Asset;
  * An AssetPreview provides functionality to preview an arbitrary Asset element
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.4.0
  */
 abstract class AssetPreview extends Component implements AssetPreviewInterface
 {

@@ -12,7 +12,7 @@ namespace craft\base;
  * The AssetPreview interface dictates the requirements to register Asset Preview handlers with Craft
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.4.0
  */
 interface AssetPreviewInterface
 {
