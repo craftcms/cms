@@ -468,6 +468,10 @@ class UsersController extends Controller
                 $url = UrlHelper::siteUrl($setPasswordSuccessPath);
             }
 
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                return $this->asJson(['success' => true]);
+            }
+
             return $this->redirect($url);
         }
 
