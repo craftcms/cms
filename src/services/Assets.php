@@ -92,7 +92,7 @@ class Assets extends Component
     /**
      * @event AssetPreviewEvent The event that is triggered when an asset is previewed
      */
-    const EVENT_GET_PREVIEW_TEMPLATE = 'getPreviewTemplate';
+    const EVENT_GET_ASSET_PREVIEW = 'getAssetPreview';
 
     // Properties
     // =========================================================================
@@ -1050,8 +1050,8 @@ class Assets extends Component
         $event = new AssetPreviewEvent(['asset' => $asset]);
 
         // Give plugins a chance to register their own preview handlers
-        if ($this->hasEventHandlers(self::EVENT_GET_PREVIEW_TEMPLATE)) {
-            $this->trigger(self::EVENT_GET_PREVIEW_TEMPLATE, $event);
+        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_PREVIEW)) {
+            $this->trigger(self::EVENT_GET_ASSET_PREVIEW, $event);
         }
 
         $preview = $event->previewHandler;
