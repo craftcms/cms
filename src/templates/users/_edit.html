@@ -241,10 +241,9 @@
                 {% if user.admin %}
                     <hr>
 
-                    {% embed '_includes/forms/field' %}
-                        {% block label %}
-                            {{ 'Debug Toolbar'|t('app') }}
-                        {% endblock %}
+                    {% embed '_includes/forms/field' with {
+                        label: 'Debug Toolbar'|t('app'),
+                    } %}
                         {% block input %}
                             {% import '_includes/forms' as forms %}
                             {{ forms.checkboxField({
@@ -268,10 +267,9 @@
                         {% endblock %}
                     {% endembed %}
 
-                    {% embed '_includes/forms/field' %}
-                        {% block label %}
-                            {{ 'Exception Views'|t('app') }}
-                        {% endblock %}
+                    {% embed '_includes/forms/field' with {
+                        label: 'Exception Views'|t('app'),
+                    } %}
                         {% block input %}
                             {% import '_includes/forms' as forms %}
                             {{ forms.checkboxField({
