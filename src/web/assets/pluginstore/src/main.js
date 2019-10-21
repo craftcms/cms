@@ -157,6 +157,11 @@ Garnish.$doc.ready(function() {
 
                 // Disconnect form
                 this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
+
+                $('a').on('click', function(e) {
+                    this.$store.dispatch('craft/cancelRequests')
+                    this.$store.dispatch('pluginStore/cancelRequests')
+                }.bind(this))
             },
 
             loadPluginStoreData() {
@@ -166,8 +171,12 @@ Garnish.$doc.ready(function() {
                         this.$emit('dataLoaded')
                     })
                     .catch(() => {
-                        this.pluginStoreDataError = true
-                        this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
+                        if (axios.isCancel(error)) {
+                            // Request canceled
+                        } else {
+                            this.pluginStoreDataError = true
+                            this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
+                        }
                     })
             },
 
@@ -194,6 +203,13 @@ Garnish.$doc.ready(function() {
                     .then(() => {
                         this.pluginLicenseInfoLoaded = true
                         this.$emit('dataLoaded')
+                    })
+                    .catch((error) => {
+                        if (axios.isCancel(error)) {
+                            // Request canceled
+                        } else {
+                            throw error
+                        }
                     })
             },
         },

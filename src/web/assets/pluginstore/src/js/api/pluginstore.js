@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-
 // create a cancel token for axios
 let CancelToken = axios.CancelToken
 let cancelTokenSource = CancelToken.source()

@@ -119,6 +119,10 @@ const getters = {
  * Actions
  */
 const actions = {
+    cancelRequests() {
+        return api.cancelRequests()
+    },
+
     getCraftData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCraftData()
