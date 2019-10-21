@@ -32,6 +32,7 @@
 - Fixed a bug where the “Profile Twig templates when Dev Mode is disabled” admin preference wasn’t saving. ([#5118](https://github.com/craftcms/cms/pull/5118))
 - Fixed a bug where failed queue jobs were losing their `dateReserved`, `timeUpdated`, `progress`, and `progressLabel` values.
 - Fixed a PHP error occurred when viewing the PHP Info utility if `register_argc_argv` was set to `On` in `php.ini`. ([#4878](https://github.com/craftcms/cms/issues/4878))
+- Fixed a bug where the `craft\queue\jobs\UpdateSearchIndex` was ignorning the `siteId` property.
 
 ## 3.3.11 - 2019-10-16
 

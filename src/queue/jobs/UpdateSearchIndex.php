@@ -44,7 +44,7 @@ class UpdateSearchIndex extends BaseJob
         $class = $this->elementType;
         $elements = $class::find()
             ->id($this->elementId)
-            ->siteId('*')
+            ->siteId($this->siteId)
             ->anyStatus()
             ->all();
         $total = count($elements);
