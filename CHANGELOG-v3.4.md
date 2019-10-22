@@ -4,14 +4,23 @@
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `{% requireGuest %}` tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
+- Added `craft\assetpreviews\HtmlPreview`.
+- Added `craft\assetpreviews\ImagePreview`.
+- Added `craft\assetpreviews\NoPreview`.
+- Added `craft\assetpreviews\PdfPreview`.
+- Added `craft\base\AssetPreview`.
+- Added `craft\base\AssetPreviewInterface`.
+- Added `craft\base\AssetPreviewTrait`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
+- Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
+- Added `craft\services\Assets::getAssetPreview()`.
 - Added `craft\services\Gql::getValidationRules()`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\User::guestRequired()`.
@@ -34,9 +43,11 @@
 - The installer now requires `config/db.php` to be setting the `dsn` database config setting with a `DB_DSN` environment variable, if a connection can’t already be established. 
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- Asset previews are now extensible, allowing plugins to add new preview types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 
 ### Deprecated
 - Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
 - Deprecated `craft\config\DbConfig::DRIVER_MYSQL`.
 - Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.
+- Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
