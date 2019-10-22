@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.12 - 2019-10-22
 
 ### Added
 - GraphQL query results are now cached.
