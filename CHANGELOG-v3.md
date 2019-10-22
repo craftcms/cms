@@ -35,6 +35,7 @@
 - Fixed a bug where failed queue jobs were losing their `dateReserved`, `timeUpdated`, `progress`, and `progressLabel` values.
 - Fixed a PHP error occurred when viewing the PHP Info utility if `register_argc_argv` was set to `On` in `php.ini`. ([#4878](https://github.com/craftcms/cms/issues/4878))
 - Fixed a bug where the `craft\queue\jobs\UpdateSearchIndex` was ignorning the `siteId` property.
+- Fixed a bug where Craft could attempt to perform transforms on element URLs for elements that were not Assets when using GraphQL.
 
 ## 3.3.11 - 2019-10-16
 
