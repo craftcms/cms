@@ -864,6 +864,11 @@ abstract class Element extends Component implements ElementInterface
     protected $revisionNotes;
 
     /**
+     * @var bool
+     */
+    private $_initialized = false;
+
+    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -877,6 +882,12 @@ abstract class Element extends Component implements ElementInterface
      * @var array|null Record of the fields whose values have already been normalized
      */
     private $_normalizedFieldValues;
+
+    /**
+     * @var array Record of dirty fields.
+     * @see isFieldDirty()
+     */
+    private $_dirtyFields;
 
     /**
      * @var
@@ -1026,6 +1037,8 @@ abstract class Element extends Component implements ElementInterface
         if ($this->siteId === null && Craft::$app->getIsInstalled()) {
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
+
+        $this->_initialized = true;
     }
 
     /**
@@ -1945,6 +1958,27 @@ abstract class Element extends Component implements ElementInterface
 
         // Don't assume that $value has been normalized
         unset($this->_normalizedFieldValues[$fieldHandle]);
+
+        // If the element is fully initialized, mark the value as dirty
+        if ($this->_initialized) {
+            $this->_dirtyFields[$fieldHandle] = true;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldDirty(string $fieldHandle): bool
+    {
+        return isset($this->_dirtyFields[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearDirtyFields()
+    {
+        $this->_dirtyFields = null;
     }
 
     /**

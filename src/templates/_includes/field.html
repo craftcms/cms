@@ -8,6 +8,7 @@
 {% set instructions = (not static and field.instructions ? field.instructions|t('site') : null) %}
 {% set translatable = field.getIsTranslatable(element) %}
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
+{% set captureDeltas = captureDeltas ?? false %}
 
 {% if translatable %}
     {% switch field.translationMethod %}
@@ -42,4 +43,10 @@
             },
         },
     }, input) }}
+
+    {% if not static and captureDeltas %}
+        {% js %}
+            Craft.deltaNamespaces.push({{ field.handle|namespaceInputName|json_encode|raw }});
+        {% endjs %}
+    {% endif %}
 {% endif %}

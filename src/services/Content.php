@@ -176,7 +176,10 @@ class Content extends Component
         if ($fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                if ($field::hasContentColumn()) {
+                if (
+                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
+                    $field::hasContentColumn()
+                ) {
                     $column = $this->fieldColumnPrefix . $field->handle;
                     $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }

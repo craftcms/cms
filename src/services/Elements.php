@@ -2097,6 +2097,9 @@ class Elements extends Component
             ]));
         }
 
+        // Clear the element's record of dirty fields
+        $element->clearDirtyFields();
+
         return true;
     }
 
@@ -2147,8 +2150,11 @@ class Elements extends Component
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    // Does this field produce the same translation key as it did for the master element?
-                    if ($field->getTranslationKey($siteElement) === $field->getTranslationKey($element)) {
+                    // Has this field changed, and does it produce the same translation key as it did for the master element?
+                    if (
+                        $element->isFieldDirty($field->handle) &&
+                        $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                    ) {
                         // Copy the master element's value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }

@@ -442,6 +442,76 @@ $.extend(Craft,
         },
 
         /**
+         * Compares old and new post data, and removes any values that haven't
+         * changed within the given list of delta namespaces.
+         *
+         * @param {string} oldData
+         * @param {string} newData
+         * @param {object} deltaNamespaces
+         */
+        findDeltaData: function(oldData, newData, deltaNamespaces) {
+            // Sort the delta namespaces from most -> least specific
+            deltaNamespaces.sort(function(a, b) {
+                if (a.length === b.length) {
+                    return 0;
+                }
+                return a.length < b.length ? 1 : -1;
+            });
+
+            // Group all of the old & new params by namespace
+            var groupedOldParams = this._groupParamsByDeltaNamespaces(oldData.split('&'), deltaNamespaces, false);
+            var groupedNewParams = this._groupParamsByDeltaNamespaces(newData.split('&'), deltaNamespaces, true);
+
+            // Figure out which of the new params should actually be posted
+            var params = groupedNewParams.__root__;
+            for (var n = 0; n < deltaNamespaces.length; n++) {
+                if (
+                    typeof groupedNewParams[deltaNamespaces[n]] === 'object' &&
+                    (
+                        typeof groupedOldParams[deltaNamespaces[n]] !== 'object' ||
+                        JSON.stringify(groupedOldParams[deltaNamespaces[n]]) !== JSON.stringify(groupedNewParams[deltaNamespaces[n]])
+                    )
+                ) {
+                    params = params.concat(groupedNewParams[deltaNamespaces[n]]);
+                }
+            }
+
+            return params.join('&');
+        },
+
+        _groupParamsByDeltaNamespaces: function(params, deltaNamespaces, withRoot) {
+            var grouped = {};
+
+            if (withRoot) {
+                grouped.__root__ = [];
+            }
+
+            var n, paramName;
+
+            paramLoop: for (var p = 0; p < params.length; p++) {
+                for (n = 0; n < deltaNamespaces.length; n++) {
+                    paramName = decodeURIComponent(params[p]).substr(0, deltaNamespaces[n].length + 1);
+                    if (
+                        paramName === deltaNamespaces[n] + '=' ||
+                        paramName === deltaNamespaces[n] + '['
+                    ) {
+                        if (typeof grouped[deltaNamespaces[n]] === 'undefined') {
+                            grouped[deltaNamespaces[n]] = [];
+                        }
+                        grouped[deltaNamespaces[n]].push(params[p]);
+                        continue paramLoop;
+                    }
+                }
+
+                if (withRoot) {
+                    grouped.__root__.push(params[p]);
+                }
+            }
+
+            return grouped;
+        },
+
+        /**
          * Expands an array of POST array-style strings into an actual array.
          *
          * @param {object} arr

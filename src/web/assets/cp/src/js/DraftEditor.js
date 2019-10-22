@@ -69,6 +69,8 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return this.serializeForm(true)
             }.bind(this));
 
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+
             if (this.settings.draftId) {
                 this.initForDraft();
             } else {
@@ -109,7 +111,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             });
 
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
@@ -676,6 +677,8 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             });
             var data = this.prepareData(this.serializeForm(false));
+            // Filter out anything that hasn't changed
+            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNamespaces);
             var values = data.split('&');
             var chunks;
             for (var i = 0; i < values.length; i++) {
@@ -687,23 +690,25 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'action',
-                    value: this.settings.applyDraftAction
-                }).appendTo($form);
-            }
+            if (this.settings.draftId) {
+                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'action',
+                        value: this.settings.applyDraftAction
+                    }).appendTo($form);
+                }
 
-            if (
-                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
-                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
-            ) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'redirect',
-                    value: this.settings.hashedRedirectUrl
-                }).appendTo($form);
+                if (
+                    (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                    (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+                ) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'redirect',
+                        value: this.settings.hashedRedirectUrl
+                    }).appendTo($form);
+                }
             }
 
             $form.appendTo(Garnish.$bod);

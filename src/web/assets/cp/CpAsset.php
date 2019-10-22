@@ -260,6 +260,7 @@ JS;
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],
+            'deltaNamespaces' => [],
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'fileKinds' => Assets::getFileKinds(),

@@ -773,6 +773,22 @@ interface ElementInterface extends ComponentInterface
     public function setFieldValue(string $fieldHandle, $value);
 
     /**
+     * Returns whether a custom field value has changed since the element was first loaded.
+     *
+     * @param string $fieldHandle
+     * @return bool
+     * @since 3.4.0
+     */
+    public function isFieldDirty(string $fieldHandle): bool;
+
+    /**
+     * Resets the record of dirty fields.
+     *
+     * @since 3.4.0
+     */
+    public function clearDirtyFields();
+
+    /**
      * Sets the element’s custom field values, when the values have come from post data.
      *
      * @param string $paramNamespace The field param namespace
