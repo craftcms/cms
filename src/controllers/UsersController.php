@@ -445,43 +445,51 @@ class UsersController extends Controller
         $user->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
         $user->setScenario(User::SCENARIO_PASSWORD);
 
-        if (Craft::$app->getElements()->saveElement($user)) {
-            if ($user->getStatus() == User::STATUS_PENDING) {
-                // Activate them
-                Craft::$app->getUsers()->activateUser($user);
+        if (!Craft::$app->getElements()->saveElement($user)) {
+            $errors = $user->getErrors('newPassword');
 
-                // Treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                    return $response;
-                }
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                return $this->asErrorJson(implode(', ', $errors));
             }
 
-            // Maybe automatically log them in
-            $this->_maybeLoginUserAfterAccountActivation($user);
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
-            // Can they access the CP?
-            if ($user->can('accessCp')) {
-                // Send them to the CP login page
-                $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
-            } else {
-                // Send them to the 'setPasswordSuccessPath'.
-                $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
-                $url = UrlHelper::siteUrl($setPasswordSuccessPath);
-            }
-
-            return $this->redirect($url);
+            return $this->_renderSetPasswordTemplate([
+                'errors' => $errors,
+                'code' => $code,
+                'id' => $uid,
+                'newUser' => $user->password ? false : true,
+            ]);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
+        if ($user->getStatus() == User::STATUS_PENDING) {
+            // Activate them
+            Craft::$app->getUsers()->activateUser($user);
 
-        $errors = $user->getErrors('newPassword');
+            // Treat this as an activation request
+            if (($response = $this->_onAfterActivateUser($user)) !== null) {
+                return $response;
+            }
+        }
 
-        return $this->_renderSetPasswordTemplate([
-            'errors' => $errors,
-            'code' => $code,
-            'id' => $uid,
-            'newUser' => $user->password ? false : true,
-        ]);
+        // Maybe automatically log them in
+        $this->_maybeLoginUserAfterAccountActivation($user);
+
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        // Can they access the CP?
+        if ($user->can('accessCp')) {
+            // Send them to the CP login page
+            $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
+        } else {
+            // Send them to the 'setPasswordSuccessPath'.
+            $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
+            $url = UrlHelper::siteUrl($setPasswordSuccessPath);
+        }
+
+        return $this->redirect($url);
     }
 
     /**
