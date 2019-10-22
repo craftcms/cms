@@ -8,9 +8,8 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\Tag as TagElement;
-use craft\gql\interfaces\Element;
-use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\Element;
 use craft\gql\types\generators\TagType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -44,14 +43,12 @@ class Tag extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all tags.',
-            'resolveType' => function (TagElement $value) {
+            'resolveType' => function(TagElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (TagType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        TagType::generateTypes();
 
         return $type;
     }
@@ -67,7 +64,8 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',

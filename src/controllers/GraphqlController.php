@@ -10,12 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\StringHelper;
+use craft\helpers\Gql;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
-use GraphQL\GraphQL;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -94,10 +93,15 @@ class GraphqlController extends Controller
 
         if (preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches)) {
             $token = $matches[1];
-            try {
-                $schema = $gqlService->getSchemaByAccessToken($token);
-            } catch (InvalidArgumentException $e) {
-                throw new BadRequestHttpException('Invalid authorization token.');
+            if ($token === '*') {
+                $this->requireAdmin(false);
+                $schema = Gql::createFullAccessSchema();
+            } else {
+                try {
+                    $schema = $gqlService->getSchemaByAccessToken($token);
+                } catch (InvalidArgumentException $e) {
+                    throw new BadRequestHttpException('Invalid authorization token.');
+                }
             }
         }
 
@@ -140,8 +144,7 @@ class GraphqlController extends Controller
         }
 
         try {
-            $schemaDef = $gqlService->getSchemaDef($schema, StringHelper::contains($query, '__schema'));
-            $result = $gqlService->executeQuery($schemaDef, $query, $variables, $operationName);
+            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
@@ -171,7 +174,7 @@ class GraphqlController extends Controller
         $schemaUid = Craft::$app->getRequest()->getQueryParam('schemaUid');
         $gqlService = Craft::$app->getGql();
 
-        if ($schemaUid) {
+        if ($schemaUid && $schemaUid !== '*') {
             try {
                 $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
             } catch (InvalidArgumentException $e) {
@@ -179,10 +182,12 @@ class GraphqlController extends Controller
             }
             Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
         } else {
-            $selectedSchema = $gqlService->getPublicSchema();
+            $selectedSchema = Gql::createFullAccessSchema();
         }
 
-        $schemas = [];
+        $schemas = [
+            Craft::t('app', 'Full Schema') => '*',
+        ];
 
         foreach ($gqlService->getSchemas() as $schema) {
             $name = $schema->getIsPublic() ? Craft::t('app', 'Public Schema') : $schema->name;
@@ -277,7 +282,7 @@ class GraphqlController extends Controller
         }
 
         $schema->name = $request->getBodyParam('name') ?? $schema->name;
-        $schema->accessToken =  $request->getBodyParam('accessToken') ?? $schema->accessToken;
+        $schema->accessToken = $request->getBodyParam('accessToken') ?? $schema->accessToken;
         $schema->enabled = (bool)$request->getRequiredBodyParam('enabled');
         $schema->scope = $request->getBodyParam('permissions');
 

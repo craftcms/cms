@@ -9,9 +9,8 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\Transform;
-use craft\gql\interfaces\Element;
-use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\Element;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use GraphQL\Type\Definition\InterfaceType;
@@ -46,14 +45,12 @@ class Asset extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all assets.',
-            'resolveType' => function (AssetElement $value) {
+            'resolveType' => function(AssetElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (AssetType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        AssetType::generateTypes();
 
         return $type;
     }

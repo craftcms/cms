@@ -10,8 +10,8 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
-use craft\events\BatchElementActionEvent;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\BatchElementActionEvent;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 

@@ -679,9 +679,9 @@ class Assets extends BaseRelationField
      * @param string $subpath
      * @param ElementInterface|null $element
      * @param bool $createDynamicFolders whether missing folders should be created in the process
-     * @throws InvalidVolumeException if the volume root folder doesn’t exist
-     * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
+     * @throws InvalidSubpathException if the subpath cannot be parsed in full
+     * @throws InvalidVolumeException if the volume root folder doesn’t exist
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {

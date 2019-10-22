@@ -170,6 +170,11 @@ class ClearCaches extends Utility
                 'label' => Craft::t('app', 'Template caches'),
                 'action' => [Craft::$app->getTemplateCaches(), 'deleteAllCaches']
             ],
+            [
+                'key' => 'graphql-caches',
+                'label' => Craft::t('app', 'GraphQL caches'),
+                'action' => [Craft::$app->getGql(), 'invalidateCaches']
+            ],
         ];
 
         $event = new RegisterCacheOptionsEvent([

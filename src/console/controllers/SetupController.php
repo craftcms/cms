@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
+use craft\console\Controller;
 use craft\db\Connection;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
@@ -18,7 +19,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**

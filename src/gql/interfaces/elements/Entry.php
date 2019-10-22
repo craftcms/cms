@@ -9,10 +9,9 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\Entry as EntryArguments;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
-use craft\gql\TypeLoader;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
@@ -48,14 +47,12 @@ class Entry extends Structure
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
-            'resolveType' => function (EntryElement $value) {
+            'resolveType' => function(EntryElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (EntryType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        EntryType::generateTypes();
 
         return $type;
     }
@@ -71,7 +68,8 @@ class Entry extends Structure
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'sectionId' => [
                 'name' => 'sectionId',
@@ -113,6 +111,11 @@ class Entry extends Structure
                 'name' => 'parent',
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.'
+            ],
+            'url' => [
+                'name' => 'url',
+                'type' => Type::string(),
+                'description' => 'The element’s full URL',
             ]
         ]);
     }

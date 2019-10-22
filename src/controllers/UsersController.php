@@ -444,43 +444,51 @@ class UsersController extends Controller
         $user->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
         $user->setScenario(User::SCENARIO_PASSWORD);
 
-        if (Craft::$app->getElements()->saveElement($user)) {
-            if ($user->getStatus() == User::STATUS_PENDING) {
-                // Activate them
-                Craft::$app->getUsers()->activateUser($user);
+        if (!Craft::$app->getElements()->saveElement($user)) {
+            $errors = $user->getErrors('newPassword');
 
-                // Treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                    return $response;
-                }
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                return $this->asErrorJson(implode(', ', $errors));
             }
 
-            // Maybe automatically log them in
-            $this->_maybeLoginUserAfterAccountActivation($user);
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
-            // Can they access the CP?
-            if ($user->can('accessCp')) {
-                // Send them to the CP login page
-                $url = UrlHelper::cpUrl('login');
-            } else {
-                // Send them to the 'setPasswordSuccessPath'.
-                $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
-                $url = UrlHelper::siteUrl($setPasswordSuccessPath);
-            }
-
-            return $this->redirect($url);
+            return $this->_renderSetPasswordTemplate($user, [
+                'errors' => $errors,
+                'code' => $code,
+                'id' => $uid,
+                'newUser' => $user->password ? false : true,
+            ]);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
+        if ($user->getStatus() == User::STATUS_PENDING) {
+            // Activate them
+            Craft::$app->getUsers()->activateUser($user);
 
-        $errors = $user->getErrors('newPassword');
+            // Treat this as an activation request
+            if (($response = $this->_onAfterActivateUser($user)) !== null) {
+                return $response;
+            }
+        }
 
-        return $this->_renderSetPasswordTemplate($user, [
-            'errors' => $errors,
-            'code' => $code,
-            'id' => $uid,
-            'newUser' => $user->password ? false : true,
-        ]);
+        // Maybe automatically log them in
+        $this->_maybeLoginUserAfterAccountActivation($user);
+
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        // Can they access the CP?
+        if ($user->can('accessCp')) {
+            // Send them to the CP login page
+            $url = UrlHelper::cpUrl('login');
+        } else {
+            // Send them to the 'setPasswordSuccessPath'.
+            $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
+            $url = UrlHelper::siteUrl($setPasswordSuccessPath);
+        }
+
+        return $this->redirect($url);
     }
 
     /**
@@ -974,10 +982,10 @@ class UsersController extends Controller
             if ($newEmail) {
                 // Does that email need to be verified?
                 if ($requireEmailVerification && (
-                    !$currentUser ||
-                    (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
-                    $request->getBodyParam('sendVerificationEmail')
-                )) {
+                        !$currentUser ||
+                        (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
+                        $request->getBodyParam('sendVerificationEmail')
+                    )) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;
@@ -1081,7 +1089,9 @@ class UsersController extends Controller
 
             // Copy any 'unverifiedEmail' errors to 'email'
             // todo: clear out the 'unverifiedEmail' errors in Craft 4
-            $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+            if (!$user->hasErrors('email')) {
+                $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+            }
 
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -1115,7 +1125,8 @@ class UsersController extends Controller
             $preferences = array_merge($preferences, [
                 'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
-                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView'))
+                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),
+                'profileTemplates' => (bool)$request->getBodyParam('profileTemplates', $user->getPreference('profileTemplates')),
             ]);
         }
 

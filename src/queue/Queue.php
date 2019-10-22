@@ -536,7 +536,7 @@ EOD;
                         'progress' => 0,
                         'progressLabel' => null,
                     ],
-                    '[[timeUpdated]] < :time - [[ttr]]',
+                    ['and', ['fail' => false], '[[timeUpdated]] < :time - [[ttr]]'],
                     [':time' => $this->_reserveTime],
                     false
                 )

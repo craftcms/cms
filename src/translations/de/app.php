@@ -1496,6 +1496,6 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Delete them' => 'Lösche sie',
     'Keep them' => 'Behalte sie',
     'View tag group - {tagGroup}' => 'Schlagwörter-Gruppen ansehen - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

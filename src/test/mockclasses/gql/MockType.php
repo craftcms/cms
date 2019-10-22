@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\test\mockclasses\gql;
 
 use craft\gql\base\ObjectType;

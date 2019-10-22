@@ -8,10 +8,10 @@
 namespace craft\console\controllers\utils;
 
 use Craft;
+use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
-use craft\console\Controller;
 use craft\helpers\StringHelper;
 use yii\console\ExitCode;
 
@@ -34,11 +34,12 @@ class FixElementUidsController extends Controller
         $query = (new Query())
             ->select(['id', 'uid'])
             ->from([Table::ELEMENTS])
-            ->where(['in', 'uid', (new Query())
-                ->select(['uid'])
-                ->from([Table::ELEMENTS])
-                ->groupBy(['uid'])
-                ->having('count([[uid]]) > 1')
+            ->where([
+                'in', 'uid', (new Query())
+                    ->select(['uid'])
+                    ->from([Table::ELEMENTS])
+                    ->groupBy(['uid'])
+                    ->having('count([[uid]]) > 1')
             ])
             ->orderBy(['id' => SORT_ASC]);
 

@@ -1441,7 +1441,7 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'Includes User accounts, User groups, User permissions, Public user registration' => 'Inkluderer brukerkontoer, brukergrupper, brukertillatelser, offentlig brukerregistrering',
     'Save as my new credit card' => 'Lagre som mitt nye kredittkort',
     '{first}-{last} of {total}' => '{first}-{last} av {total}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} av {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} av {total, number} {total, plural, one {} =1{{item}} other{{items}}}',
     'Preview' => 'Forhåndsvis',
     'Text that should be shown before the input.' => 'Teksten som skal vises før elementet.',
     'Next Page' => 'Neste side',
@@ -1496,6 +1496,6 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'Delete them' => 'Slett disse',
     'Keep them' => 'Behold disse',
     'View tag group - {tagGroup}' => 'Vis stikkordsgruppe - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

@@ -1496,6 +1496,6 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'Delete them' => 'Odstranit je',
     'Keep them' => 'Ponechat je',
     'View tag group - {tagGroup}' => 'Zobrazit skupinu štítků - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

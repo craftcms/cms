@@ -124,8 +124,8 @@ interface VolumeInterface extends SavableComponentInterface
      * Gets a stream ready for reading by a file's URI.
      *
      * @param string $uriPath
-     * @throws AssetException if a stream cannot be created
      * @return resource
+     * @throws AssetException if a stream cannot be created
      */
     public function getFileStream(string $uriPath);
 

@@ -8,9 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**

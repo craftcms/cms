@@ -35,6 +35,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
 
     /**
      * Prepares record values for DB storage.
+     *
      * @since 3.1.0
      */
     protected function prepareForDb()

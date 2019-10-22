@@ -408,7 +408,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             foreach ($this->options as $option) {
                 if (isset($option['optgroup'])) {
                     $translatedOptions[] = [
-                        'optgroup' => Craft::t('site',$option['optgroup']),
+                        'optgroup' => Craft::t('site', $option['optgroup']),
                     ];
                 } else {
                     $translatedOptions[] = [

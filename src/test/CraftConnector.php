@@ -47,6 +47,7 @@ class CraftConnector extends Yii2
 
     /**
      * We override to prevent a bug with the matching of user agent and session.
+     *
      * @param $user
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
@@ -97,7 +98,14 @@ class CraftConnector extends Yii2
             $moduleId = $module->id;
 
             if ($module instanceof Plugin) {
-                $module = Craft::$app->getPlugins()->createPlugin($moduleId);
+                $plugins = Craft::$app->getPlugins();
+
+                // Follow the same error handling as Craft does natively.
+                if (($info = $plugins->getStoredPluginInfo($moduleId)) === null) {
+                    throw new InvalidPluginException($moduleId);
+                }
+
+                $module = $plugins->createPlugin($moduleId, $info);
             } else {
                 $module = new $moduleClass($moduleId, Craft::$app);
             }

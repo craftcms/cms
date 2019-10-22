@@ -177,7 +177,7 @@ abstract class ElementFixture extends ActiveFixture
      * @param array $data
      * @return ElementQuery
      */
-    public function generateElementQuery(array $data) : ElementQuery
+    public function generateElementQuery(array $data): ElementQuery
     {
         $modelClass = $this->modelClass;
         $query = $modelClass::find()->anyStatus()->trashed(null);
