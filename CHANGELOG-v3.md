@@ -21,6 +21,7 @@
 - It’s no longer necessary to register GraphQL type loaders when creating types.
 - The `craft\services\Gql::executeQuery()` method now expects an active schema object, instead of a GraphQL Schema object.
 - The `users/save-user` action no longer copies `unverifiedEmail` validation errors over to the `email` attribute if the `email` attribute already has its own errors.
+- `users/set-password` requests now respond with JSON if the request accepts a JSON response. ([#5138](https://github.com/craftcms/cms/pull/5138))
 
 ### Deprecated
 - Deprecated the `$checkToken` argument for `craft\gql\base\Query::getQueries()`. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
