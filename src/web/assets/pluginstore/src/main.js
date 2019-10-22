@@ -159,7 +159,7 @@ Garnish.$doc.ready(function() {
                 this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
 
                 // Cancel ajax requests when an outbound link gets clicked
-                $('a[href]').on('click', function(e) {
+                $('a[href]').on('click', function() {
                     this.$store.dispatch('craft/cancelRequests')
                     this.$store.dispatch('pluginStore/cancelRequests')
                 }.bind(this))
