@@ -131,7 +131,7 @@ const actions = {
                     resolve(response)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
     },
@@ -144,7 +144,7 @@ const actions = {
                     resolve(response)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
     },

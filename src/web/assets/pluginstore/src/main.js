@@ -3,6 +3,7 @@
 /* global $ */
 
 import Vue from 'vue'
+import axios from 'axios'
 import {currency} from './js/filters/currency'
 import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft'
 import router from './js/router'
@@ -171,7 +172,7 @@ Garnish.$doc.ready(function() {
                         this.pluginStoreDataLoaded = true
                         this.$emit('dataLoaded')
                     })
-                    .catch(() => {
+                    .catch((error) => {
                         if (axios.isCancel(error)) {
                             // Request canceled
                         } else {
