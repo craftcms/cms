@@ -19,10 +19,10 @@
 ### Changed
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))
 - It’s no longer necessary to register GraphQL type loaders when creating types.
+- Improved the performance of downloading remote assets. ([#5134](https://github.com/craftcms/cms/pull/5134))
 - The `craft\services\Gql::executeQuery()` method now expects an active schema object, instead of a GraphQL Schema object.
 - The `users/save-user` action no longer copies `unverifiedEmail` validation errors over to the `email` attribute if the `email` attribute already has its own errors.
 - `users/set-password` requests now respond with JSON if the request accepts a JSON response. ([#5138](https://github.com/craftcms/cms/pull/5138))
-- Asset files are no longer stored on the server before being sent to the browser when downloading assets. ([#5134](https://github.com/craftcms/cms/pull/5134))
 
 ### Deprecated
 - Deprecated the `$checkToken` argument for `craft\gql\base\Query::getQueries()`. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
