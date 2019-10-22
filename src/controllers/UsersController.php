@@ -470,6 +470,10 @@ class UsersController extends Controller
         // Maybe automatically log them in
         $this->_maybeLoginUserAfterAccountActivation($user);
 
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
         // Can they access the CP?
         if ($user->can('accessCp')) {
             // Send them to the CP login page
@@ -478,10 +482,6 @@ class UsersController extends Controller
             // Send them to the 'setPasswordSuccessPath'.
             $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
             $url = UrlHelper::siteUrl($setPasswordSuccessPath);
-        }
-
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->asJson(['success' => true]);
         }
 
         return $this->redirect($url);
