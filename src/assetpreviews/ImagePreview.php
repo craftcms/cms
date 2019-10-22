@@ -26,9 +26,11 @@ class ImagePreview extends AssetPreview
     /**
      * @inheritDoc
      */
-    public function getModalHtml(): string {
+    public function getModalHtml(): string
+    {
 
         $volume = $this->asset->getVolume();
+
         if ($volume->hasUrls) {
             $assetUrl = $this->asset->getUrl();
         } else {

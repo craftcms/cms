@@ -27,7 +27,8 @@ class NoPreview extends AssetPreview
     /**
      * @inheritDoc
      */
-    public function getModalHtml(): string {
+    public function getModalHtml(): string
+    {
         $view = Craft::$app->getView();
         return $view->renderTemplate('assets/_previews/no_preview');
     }

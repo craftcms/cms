@@ -1055,6 +1055,7 @@ class Assets extends Component
         }
 
         $preview = $event->previewHandler;
+
         if ($preview instanceof AssetPreview) {
             return $preview;
         }

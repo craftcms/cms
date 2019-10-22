@@ -49,7 +49,8 @@ class HtmlPreview extends AssetPreview
     /**
      * @inheritDoc
      */
-    public function getModalHtml(): string {
+    public function getModalHtml(): string
+    {
         return $this->template;
     }
 
