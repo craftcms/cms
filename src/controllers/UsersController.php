@@ -445,9 +445,13 @@ class UsersController extends Controller
         $user->setScenario(User::SCENARIO_PASSWORD);
 
         if (!Craft::$app->getElements()->saveElement($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
-
             $errors = $user->getErrors('newPassword');
+
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                return $this->asErrorJson(implode(', ', $errors));
+            }
+
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
             return $this->_renderSetPasswordTemplate($user, [
                 'errors' => $errors,
