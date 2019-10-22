@@ -158,7 +158,7 @@ Garnish.$doc.ready(function() {
                 // Disconnect form
                 this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
 
-                $('a').on('click', function(e) {
+                $('a[href]').on('click', function(e) {
                     this.$store.dispatch('craft/cancelRequests')
                     this.$store.dispatch('pluginStore/cancelRequests')
                 }.bind(this))
