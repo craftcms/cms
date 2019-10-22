@@ -8,7 +8,7 @@
             {% include "_includes/fields" with {
                 fields:  tab.getFields(),
                 element: entry,
-                static:  (static is defined ? static : false)
+                static:  (static is defined ? static : false),
             } only %}
         </div>
     {% endfor %}

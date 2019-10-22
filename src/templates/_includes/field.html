@@ -1,7 +1,7 @@
 {% from '_includes/forms' import field %}
 
-{% set static = static is defined ? static : false %}
-{% set element = element is defined ? element : null %}
+{% set static = static ?? false %}
+{% set element = element ?? null %}
 
 {% set value = (element ? element.getFieldValue(field.handle) : field.normalizeValue(null)) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
