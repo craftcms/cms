@@ -49,7 +49,7 @@ $.extend(Craft,
          * @return string D3 format
          */
         formatNumber: function(number, format) {
-            if(typeof format == 'undefined') {
+            if (typeof format == 'undefined') {
                 format = ',.0f';
             }
 
@@ -129,8 +129,7 @@ $.extend(Craft,
                 // Select the whole value
                 var length = val.length * 2;
                 $input[0].setSelectionRange(0, length);
-            }
-            else {
+            } else {
                 // Refresh the value to get the cursor positioned at the end
                 $input.val(val);
             }
@@ -172,8 +171,7 @@ $.extend(Craft,
 
                     if (name === '#') {
                         anchor = value;
-                    }
-                    else if (value !== null && value !== '') {
+                    } else if (value !== null && value !== '') {
                         aParams.push(name + '=' + value);
                     }
                 }
@@ -183,8 +181,7 @@ $.extend(Craft,
 
             if (Garnish.isArray(params)) {
                 params = params.join('&');
-            }
-            else {
+            } else {
                 params = Craft.trim(params, '&?');
             }
 
@@ -216,8 +213,7 @@ $.extend(Craft,
                         path = '';
                     }
                 }
-            }
-            else {
+            } else {
                 url = Craft.baseUrl;
             }
 
@@ -234,8 +230,7 @@ $.extend(Craft,
                     if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
                     }
-                }
-                else {
+                } else {
                     // Move the path into the query string params
 
                     // Is the path param already set?
@@ -246,8 +241,7 @@ $.extend(Craft,
                         if (endPath !== -1) {
                             basePath = params.substring(2, endPath);
                             params = params.substr(endPath + 1);
-                        }
-                        else {
+                        } else {
                             basePath = params.substr(2);
                             params = null;
                         }
@@ -325,8 +319,7 @@ $.extend(Craft,
         getCsrfInput: function() {
             if (Craft.csrfTokenName) {
                 return '<input type="hidden" name="' + Craft.csrfTokenName + '" value="' + Craft.csrfTokenValue + '"/>';
-            }
-            else {
+            } else {
                 return '';
             }
         },
@@ -424,8 +417,7 @@ $.extend(Craft,
 
                 if (Craft._ajaxQueue.length) {
                     Craft._postNextActionRequestInQueue();
-                }
-                else {
+                } else {
                     Craft._waitingOnAjax = false;
                 }
             }, args[3]);
@@ -476,8 +468,7 @@ $.extend(Craft,
                     for (i = 0; i < keys.length; i++) {
                         keys[i] = keys[i].substring(1, keys[i].length - 1);
                     }
-                }
-                else {
+                } else {
                     keys = [];
                 }
 
@@ -491,15 +482,13 @@ $.extend(Craft,
                             // Figure out what this will be by looking at the next key
                             if (!keys[i + 1] || parseInt(keys[i + 1]) == keys[i + 1]) {
                                 parentElem[keys[i]] = [];
-                            }
-                            else {
+                            } else {
                                 parentElem[keys[i]] = {};
                             }
                         }
 
                         parentElem = parentElem[keys[i]];
-                    }
-                    else {
+                    } else {
                         // Last one. Set the value
                         if (!keys[i]) {
                             keys[i] = parentElem.length;
@@ -545,8 +534,7 @@ $.extend(Craft,
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
-                    }
-                    else {
+                    } else {
                         if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2))) {
                             return false;
                         }
@@ -566,8 +554,7 @@ $.extend(Craft,
 
                 // All clear
                 return true;
-            }
-            else {
+            } else {
                 return (obj1 === obj2);
             }
         },
@@ -689,8 +676,7 @@ $.extend(Craft,
 
                 if (typeof callback === 'function') {
                     include = callback(arr[i], i);
-                }
-                else {
+                } else {
                     include = arr[i];
                 }
 
@@ -725,8 +711,7 @@ $.extend(Craft,
             if (index !== -1) {
                 arr.splice(index, 1);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -820,8 +805,7 @@ $.extend(Craft,
             if (showSeconds) {
                 minutes = Math.floor(seconds / secondsInMinute);
                 seconds = seconds % secondsInMinute;
-            }
-            else {
+            } else {
                 minutes = Math.round(seconds / secondsInMinute);
                 seconds = 0;
             }
@@ -1044,8 +1028,7 @@ $.extend(Craft,
 
             if (typeof this._elementIndexClasses[elementType] !== 'undefined') {
                 func = this._elementIndexClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementIndex;
             }
 
@@ -1063,8 +1046,7 @@ $.extend(Craft,
 
             if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
                 func = this._elementSelectorModalClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementSelectorModal;
             }
 
@@ -1083,8 +1065,7 @@ $.extend(Craft,
 
             if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementEditor;
             }
 
@@ -1102,8 +1083,7 @@ $.extend(Craft,
 
             if (typeof localStorage !== 'undefined' && typeof localStorage[key] !== 'undefined') {
                 return JSON.parse(localStorage[key]);
-            }
-            else {
+            } else {
                 return defaultValue;
             }
         },
@@ -1123,8 +1103,7 @@ $.extend(Craft,
                 // but has a max size of 0 bytes.
                 try {
                     localStorage[key] = JSON.stringify(value);
-                }
-                catch (e) {
+                } catch (e) {
                 }
             }
         },
@@ -1203,8 +1182,7 @@ $.extend($.fn,
         animateLeft: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({left: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({right: pos}, duration, easing, complete);
             }
         },
@@ -1212,8 +1190,7 @@ $.extend($.fn,
         animateRight: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({right: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({left: pos}, duration, easing, complete);
             }
         },
@@ -1317,8 +1294,7 @@ $.extend($.fn,
                 if (typeof settingName === 'string') {
                     settings = {};
                     settings[settingName] = settingValue;
-                }
-                else {
+                } else {
                     settings = settingName;
                 }
 
@@ -1328,8 +1304,7 @@ $.extend($.fn,
                         obj.setSettings(settings);
                     }
                 });
-            }
-            else {
+            } else {
                 if (!$.isPlainObject(settings)) {
                     settings = {};
                 }
@@ -1376,7 +1351,7 @@ $.extend($.fn,
                 }
 
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
+                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
