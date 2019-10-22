@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where translation message parameters weren’t getting parsed correctly if the installed ICU library was less than version 4.8. ([#4995](https://github.com/craftcms/cms/issues/4995))
+
+## 3.3.12 - 2019-10-22
+
 ### Added
 - GraphQL query results are now cached.
 - The GraphQL → Explore page now lists a “Full Schema” option before the Public Schema and any custom-defined schemas.
@@ -19,8 +24,10 @@
 ### Changed
 - Matrix blocks now maintain the same `display` style when expanded as they had before they were initially collapsed. ([#5075](https://github.com/craftcms/cms/issues/5075))
 - It’s no longer necessary to register GraphQL type loaders when creating types.
+- Improved the performance of downloading remote assets. ([#5134](https://github.com/craftcms/cms/pull/5134))
 - The `craft\services\Gql::executeQuery()` method now expects an active schema object, instead of a GraphQL Schema object.
 - The `users/save-user` action no longer copies `unverifiedEmail` validation errors over to the `email` attribute if the `email` attribute already has its own errors.
+- `users/set-password` requests now respond with JSON if the request accepts a JSON response. ([#5138](https://github.com/craftcms/cms/pull/5138))
 
 ### Deprecated
 - Deprecated the `$checkToken` argument for `craft\gql\base\Query::getQueries()`. `craft\helpers\Gql::getFullAccessSchema()` should be used instead to ensure all queries are returned.
@@ -33,6 +40,7 @@
 - Fixed a bug where failed queue jobs were losing their `dateReserved`, `timeUpdated`, `progress`, and `progressLabel` values.
 - Fixed a PHP error occurred when viewing the PHP Info utility if `register_argc_argv` was set to `On` in `php.ini`. ([#4878](https://github.com/craftcms/cms/issues/4878))
 - Fixed a bug where the `craft\queue\jobs\UpdateSearchIndex` was ignorning the `siteId` property.
+- Fixed a bug where Craft could attempt to perform transforms on element URLs for elements that were not Assets when using GraphQL.
 
 ### Fixed
 - Fixed a bug where it was impossible to `*` as a value for `site` arguments with GraphQL. ([#5079](https://github.com/craftcms/cms/issues/5079))
