@@ -14,10 +14,8 @@ use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
-use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
@@ -800,13 +798,8 @@ class AssetsController extends Controller
 
         $this->_requirePermissionByAsset('viewVolume', $asset);
 
-        // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
-        App::maxPowerCaptain();
-        $localPath = $asset->getCopyOfFile();
-
         $response = Craft::$app->getResponse()
-            ->sendFile($localPath, $asset->filename);
-        FileHelper::unlink($localPath);
+            ->sendStreamAsFile($asset->stream, $asset->filename);
 
         return $response;
     }
