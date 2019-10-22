@@ -167,6 +167,9 @@ return [
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,
+            'messageFormatter' => [
+                'class' => craft\i18n\MessageFormatter::class,
+            ],
             'translations' => [
                 'yii' => [
                     'class' => craft\i18n\PhpMessageSource::class,
