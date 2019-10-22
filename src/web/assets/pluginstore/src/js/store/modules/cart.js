@@ -248,30 +248,6 @@ const actions = {
         })
     },
 
-    updateCartPlugins({commit, state}) {
-        return new Promise((resolve, reject) => {
-            const cartItemPluginIds = []
-
-            state.cart.lineItems.forEach((lineItem) => {
-                cartItemPluginIds.push(lineItem.purchasable.plugin.id)
-            })
-
-            if (cartItemPluginIds.length > 0) {
-                pluginStoreApi.getPluginsByIds(cartItemPluginIds)
-                    .then((pluginsResponse) => {
-                        commit('updateCartPlugins', pluginsResponse.data)
-                        resolve()
-                    })
-                    .catch((error) => {
-                        reject(error)
-                    })
-            } else {
-                commit('updateCartPlugins', [])
-                resolve()
-            }
-        })
-    },
-
     getCart({dispatch, commit, rootState}) {
         return new Promise((resolve, reject) => {
             // retrieve the order number
@@ -280,13 +256,13 @@ const actions = {
                     if (orderNumber) {
                         // get cart by order number
                         api.getCart(orderNumber)
-                            .then(response => {
-                                if (!response.data.error) {
-                                    commit('updateCart', {response})
-
-                                    dispatch('updateCartPlugins')
-                                        .then(() => {
-                                            resolve(response)
+                            .then(cartResponse => {
+                                if (!cartResponse.data.error) {
+                                    dispatch('updateCartPlugins', {cartResponse})
+                                        .then((pluginsResponse) => {
+                                            commit('updateCart', {cartResponse})
+                                            commit('updateCartPlugins', {pluginsResponse})
+                                            resolve(cartResponse)
                                         })
                                         .catch((error) => {
                                             reject(error)
@@ -303,10 +279,12 @@ const actions = {
                                         .then(createCartResponse => {
                                             commit('updateCart', {response: createCartResponse})
 
-                                            dispatch('updateCartPlugins')
-                                                .then(() => {
+                                            dispatch('updateCartPlugins', {cartResponse})
+                                                .then((pluginsResponse) => {
+                                                    commit('updateCart', {cartResponse})
+                                                    commit('updateCartPlugins', {pluginsResponse})
                                                     dispatch('saveOrderNumber', {orderNumber: createCartResponse.data.cart.number})
-                                                    resolve(response)
+                                                    resolve(cartResponse)
                                                 })
                                                 .catch((error) => {
                                                     reject(error)
@@ -329,20 +307,20 @@ const actions = {
                         }
 
                         api.createCart(data)
-                            .then(createCartResponse => {
-                                commit('updateCart', {response: createCartResponse})
-
-                                dispatch('updateCartPlugins')
-                                    .then(() => {
-                                        dispatch('saveOrderNumber', {orderNumber: createCartResponse.data.cart.number})
-                                        resolve(createCartResponse)
+                            .then(cartResponse => {
+                                dispatch('updateCartPlugins', {cartResponse})
+                                    .then((pluginsResponse) => {
+                                        commit('updateCart', {cartResponse})
+                                        commit('updateCartPlugins', {pluginsResponse})
+                                        dispatch('saveOrderNumber', {orderNumber: cartResponse.data.cart.number})
+                                        resolve(cartResponse)
                                     })
                                     .catch((error) => {
                                         reject(error)
                                     })
                             })
-                            .catch(createCartError => {
-                                reject(createCartError.response)
+                            .catch(cartError => {
+                                reject(cartError.response)
                             })
                     }
                 })
@@ -457,22 +435,45 @@ const actions = {
     updateCart({commit, dispatch}, {cartNumber, data}) {
         return new Promise((resolve, reject) => {
             api.updateCart(cartNumber, data)
-                .then(response => {
-                    commit('updateCart', {response})
+                .then(cartResponse => {
+                    dispatch('updateCartPlugins', {cartResponse})
+                        .then((pluginsResponse) => {
+                            commit('updateCart', {cartResponse})
+                            commit('updateCartPlugins', {pluginsResponse})
 
-                    dispatch('updateCartPlugins')
-                        .then(() => {
-                            resolve(response)
+                            resolve(cartResponse)
                         })
                         .catch((error) => {
                             reject(error)
                         })
-
-                    resolve(response)
                 })
                 .catch(error => {
                     reject(error.response)
                 })
+        })
+    },
+
+    updateCartPlugins(context, {cartResponse}) {
+        return new Promise((resolve, reject) => {
+            const cart = cartResponse.data.cart
+
+            const cartItemPluginIds = []
+
+            cart.lineItems.forEach((lineItem) => {
+                cartItemPluginIds.push(lineItem.purchasable.plugin.id)
+            })
+
+            if (cartItemPluginIds.length > 0) {
+                pluginStoreApi.getPluginsByIds(cartItemPluginIds)
+                    .then((pluginsResponse) => {
+                        resolve(pluginsResponse)
+                    })
+                    .catch((error) => {
+                        reject(error)
+                    })
+            } else {
+                resolve({data: []})
+            }
         })
     },
 
@@ -516,9 +517,9 @@ const mutations = {
         state.activeTrialPlugins = plugins
     },
 
-    updateCart(state, {response}) {
-        state.cart = response.data.cart
-        state.stripePublicKey = response.data.stripePublicKey
+    updateCart(state, {cartResponse}) {
+        state.cart = cartResponse.data.cart
+        state.stripePublicKey = cartResponse.data.stripePublicKey
 
         const selectedExpiryDates = {}
         state.cart.lineItems.forEach((lineItem, key) => {
@@ -528,8 +529,8 @@ const mutations = {
         state.selectedExpiryDates = selectedExpiryDates
     },
 
-    updateCartPlugins(state, plugins) {
-        state.cartPlugins = plugins
+    updateCartPlugins(state, {pluginsResponse}) {
+        state.cartPlugins = pluginsResponse.data
     },
 
     updateSelectedExpiryDates(state, selectedExpiryDates) {
