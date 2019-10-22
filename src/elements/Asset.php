@@ -1017,9 +1017,12 @@ class Asset extends Element
      * Returns whether this asset can be previewed.
      *
      * @return bool
+     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreview]] instead.
      */
     public function getSupportsPreview(): bool
     {
+        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', self::class . '::getSupportsPreview() has been deprecated. Use \craft\services\Assets::getAssetPreview() instead.');
+
         return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
