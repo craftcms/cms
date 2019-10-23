@@ -212,7 +212,7 @@ class Gql extends Component
 
         if (!$this->_schemaDef || $prebuildSchema) {
             // Either cached version was not found or we need a pre-built schema.
-            $this->_registerGqlTypes();
+            $registeredTypes = $this->_registerGqlTypes();
             $this->_registerGqlQueries();
 
             $schemaConfig = [
@@ -225,32 +225,20 @@ class Gql extends Component
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
-
                 return $this->_schemaDef;
             }
 
-            // Create a pre-built schema if that's what they want.
-            $interfaces = [
-                EntryInterface::class,
-                MatrixBlockInterface::class,
-                AssetInterface::class,
-                UserInterface::class,
-                GlobalSetInterface::class,
-                ElementInterface::class,
-                CategoryInterface::class,
-                TagInterface::class,
-            ];
+            foreach ($registeredTypes as $registeredType) {
+                if (method_exists($registeredType, 'getTypeGenerator')) {
+                    /** @var GeneratorInterface $typeGeneratorClass */
+                    $typeGeneratorClass = $registeredType::getTypeGenerator();
 
-            foreach ($interfaces as $interfaceClass) {
-                if (!is_subclass_of($interfaceClass, InterfaceType::class)) {
-                    throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
-                }
-
-                /** @var GeneratorInterface $typeGeneratorClass */
-                $typeGeneratorClass = $interfaceClass::getTypeGenerator();
-
-                foreach ($typeGeneratorClass::generateTypes() as $type) {
-                    $schemaConfig['types'][] = $type;
+                    // Make sure it's the method we're looking for.
+                    if ($typeGeneratorClass instanceof GeneratorInterface) {
+                        foreach ($typeGeneratorClass::generateTypes() as $type) {
+                            $schemaConfig['types'][] = $type;
+                        }
+                    }
                 }
             }
 
@@ -635,10 +623,10 @@ class Gql extends Component
 
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL
-     *
-     * @return void
+     * 
+     * @return array the list of registered types.
      */
-    private function _registerGqlTypes()
+    private function _registerGqlTypes(): array
     {
         $typeList = [
             // Scalars
@@ -660,11 +648,8 @@ class Gql extends Component
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
-
-        foreach ($event->types as $type) {
-            /** @var InterfaceType $type */
-            TypeLoader::registerType($type::getName(), $type . '::getType');
-        }
+        
+        return $event->types;
     }
 
     /**
