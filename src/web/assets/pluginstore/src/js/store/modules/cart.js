@@ -276,8 +276,6 @@ const actions = {
 
                                     api.createCart(data)
                                         .then(createCartResponse => {
-                                            commit('updateCart', {response: createCartResponse})
-
                                             dispatch('updateCartPlugins', {cartResponse})
                                                 .then((pluginsResponse) => {
                                                     commit('updateCart', {cartResponse})
