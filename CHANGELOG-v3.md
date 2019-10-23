@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- It’s now possible to pass arrow functions to the `|group` filter. ([#5156](https://github.com/craftcms/cms/issues/5156))
+
 ### Changed
 - Underscores are now stripped from search keywords before being saved to the database.
 
@@ -9,6 +12,7 @@
 - Fixed a bug where translation message parameters weren’t getting parsed correctly if the installed ICU library was less than version 4.8. ([#4995](https://github.com/craftcms/cms/issues/4995))
 - Fixed a bug where GraphQL caches were not being invalidated on element save. ([#5148](https://github.com/craftcms/cms/issues/5148))
 - Fixed a bug where GraphQL type generators provided by interfaces added by plugins would not get invoked when building introspection schema. ([#5149](https://github.com/craftcms/cms/issues/5149))
+- Fixed an error that occurred when using the `|json_encode` Twig filter on console requests. ([#5150](https://github.com/craftcms/cms/issues/5150))
 
 ## 3.3.12 - 2019-10-22
 
