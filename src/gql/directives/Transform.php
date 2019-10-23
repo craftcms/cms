@@ -8,6 +8,7 @@
 namespace craft\gql\directives;
 
 use Craft;
+use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
@@ -15,7 +16,6 @@ use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class Transform
@@ -70,7 +70,7 @@ class Transform extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
-        if ($resolveInfo->fieldName !== 'url') {
+        if (!$source instanceof Asset || $resolveInfo->fieldName !== 'url') {
             return $value;
         }
 
@@ -79,6 +79,8 @@ class Transform extends Directive
 
         if (!empty($arguments['handle'])) {
             $transform = $arguments['handle'];
+        } else if (!empty($arguments['transform'])) {
+            $transform = $arguments['transform'];
         } else {
             $transform = $arguments;
         }

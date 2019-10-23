@@ -82,6 +82,7 @@ class ResaveController extends Controller
 
     /**
      * @var string|null The type handle(s) of the elements to resave.
+     * @since 3.1.16
      */
     public $type;
 
@@ -182,7 +183,7 @@ class ResaveController extends Controller
      * Note that you must supply the --field or --element-id argument for this to work properly.
      *
      * @return int
-     * @since 3.2
+     * @since 3.2.0
      */
     public function actionMatrixBlocks(): int
     {
@@ -236,6 +237,7 @@ class ResaveController extends Controller
     /**
      * @param ElementQueryInterface $query
      * @return int
+     * @since 3.2.0
      */
     public function saveElements(ElementQueryInterface $query): int
     {

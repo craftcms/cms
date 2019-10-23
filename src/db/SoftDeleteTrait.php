@@ -68,7 +68,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * ```
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  *
  * @property ActiveRecord $this
  * @property string|null $dateDeleted Date deleted

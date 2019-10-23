@@ -24,7 +24,7 @@ use yii\base\InvalidConfigException;
  * CP functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Cp extends Component
 {
@@ -38,6 +38,7 @@ class Cp extends Component
 
     /**
      * @event RegisterCpSettingsEvent The event that is triggered when registering Control Panel nav items.
+     * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
@@ -384,6 +385,7 @@ class Cp extends Component
      * @param bool $includeAliases Whether aliases should be included in the list
      * (only enable this if the setting defines a URL or file path)
      * @return string[]
+     * @since 3.1.0
      */
     public function getEnvSuggestions(bool $includeAliases = false): array
     {
@@ -435,6 +437,7 @@ class Cp extends Component
      *
      * @param string $language
      * @return array|null
+     * @since 3.1.9
      */
     public function getAsciiCharMap(string $language)
     {
@@ -449,6 +452,7 @@ class Cp extends Component
      * Returns the available template path suggestions for template inputs.
      *
      * @return string[]
+     * @since 3.1.0
      */
     public function getTemplateSuggestions(): array
     {

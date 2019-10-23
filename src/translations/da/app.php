@@ -1497,6 +1497,6 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'Delete them' => 'Slet dem',
     'Keep them' => 'Behold dem',
     'View tag group - {tagGroup}' => 'Vis tag-gruppe - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

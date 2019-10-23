@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.3.9',
+    'version' => '3.3.12',
     'schemaVersion' => '3.3.3',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -167,6 +167,9 @@ return [
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,
+            'messageFormatter' => [
+                'class' => craft\i18n\MessageFormatter::class,
+            ],
             'translations' => [
                 'yii' => [
                     'class' => craft\i18n\PhpMessageSource::class,

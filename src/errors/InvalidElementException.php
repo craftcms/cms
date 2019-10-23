@@ -15,7 +15,7 @@ use yii\base\Exception;
  * InvalidElementException represents an exception caused by setting an invalid element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class InvalidElementException extends Exception
 {

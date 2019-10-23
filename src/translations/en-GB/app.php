@@ -1500,6 +1500,6 @@ If you weren’t expecting this email, just ignore it.',
     'Delete them' => 'Delete them',
     'Keep them' => 'Keep them',
     'View tag group - {tagGroup}' => 'View tag group - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

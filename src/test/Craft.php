@@ -27,20 +27,19 @@ use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
+use DateTime;
 use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
-use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use Yii;
 use yii\base\Application;
+use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
+use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
-use DateTime;
-use yii\base\Exception as YiiBaseException;
-use yii\base\ErrorException as YiiBaseErrorException;
 
 /**
  * Craft module for codeception
@@ -61,7 +60,7 @@ use yii\base\ErrorException as YiiBaseErrorException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class Craft extends Yii2
 {
@@ -69,12 +68,10 @@ class Craft extends Yii2
     // =========================================================================
 
     /**
-     * A static version of the testing config.
+     * @var array A static version of the testing config.
      *
      * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`.
      * This variable is equivalant to calling $this->_getConfig(); but is available for public access.
-     *
-     * @var array
      */
     public static $testConfig;
 
@@ -84,9 +81,7 @@ class Craft extends Yii2
     public static $currentTest;
 
     /**
-     * Application config file must be set.
-     *
-     * @var array
+     * @var array Application config file must be set.
      */
     protected $addedConfig = [
         'migrations' => [],
@@ -98,16 +93,12 @@ class Craft extends Yii2
     ];
 
     /**
-     * For expecting events code
-     *
-     * @var array
+     * @var array For expecting events code
      */
     protected $triggeredEvents = [];
 
     /**
-     * For expecting events code
-     *
-     * @var array
+     * @var array For expecting events code
      */
     protected $requiredEvents = [];
 
@@ -184,10 +175,10 @@ class Craft extends Yii2
      *
      * @param bool $force Whether to force the reset. If set to true the `reset` key of the projectConfig configuration will
      * be ignored and the project config will be reset regardless.
-     *
      * @return bool
+     * @since 3.3.10
      */
-    public function resetProjectConfig(bool $force = false) : bool
+    public function resetProjectConfig(bool $force = false): bool
     {
         $projectConfig = $this->_getConfig('projectConfig');
 
@@ -395,7 +386,7 @@ class Craft extends Yii2
      * @throws Throwable
      * @throws YiiBaseException
      */
-    public function saveElement(Element $element, bool $failHard = true) : bool
+    public function saveElement(Element $element, bool $failHard = true): bool
     {
         if (!\Craft::$app->getElements()->saveElement($element)) {
             if ($failHard) {
@@ -417,7 +408,7 @@ class Craft extends Yii2
      * @param bool $searchAll - Wether anyStatus() and trashed(null) should be applied
      * @return array
      */
-    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false) : array
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
         /* @var ElementQuery $elementQuery */
         $elementQuery = $elementType::find();

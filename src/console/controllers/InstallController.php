@@ -8,13 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
-use craft\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
@@ -22,7 +22,7 @@ use yii\helpers\Console;
  * Craft CMS CLI installer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class InstallController extends Controller
 {

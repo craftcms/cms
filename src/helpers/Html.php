@@ -16,7 +16,7 @@ use yii\base\InvalidConfigException;
  * Class Html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Html extends \yii\helpers\Html
 {
@@ -103,6 +103,7 @@ class Html extends \yii\helpers\Html
 
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
     public static function a($text, $url = null, $options = [])
     {
@@ -242,7 +243,7 @@ class Html extends \yii\helpers\Html
      * @param int|null $start The start position of the first attribute in the given tag
      * @param int|null $end The end position of the last attribute in the given tag
      * @param bool $decode Whether the attributes should be HTML decoded in the process
-     * @return array The parsed HTML tags
+     * @return array The parsed HTML tag attributes
      * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */

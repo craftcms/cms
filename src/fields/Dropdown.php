@@ -16,7 +16,7 @@ use craft\fields\data\SingleOptionFieldData;
  * Dropdown represents a Dropdown field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Dropdown extends BaseOptionsField implements SortableFieldInterface
 {

@@ -17,7 +17,7 @@ use yii\base\BaseObject;
  *
  * @property bool $isTransparent Whether the image is transparent
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Image extends BaseObject
 {

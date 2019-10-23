@@ -1496,6 +1496,6 @@ Se non aspettavi questa email, ignorala semplicemente.',
     'Delete them' => 'Rimuovili',
     'Keep them' => 'Conservali',
     'View tag group - {tagGroup}' => 'Visualizza gruppo di tag - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

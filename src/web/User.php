@@ -30,7 +30,7 @@ use yii\web\Cookie;
  * @property UserElement|null $identity The logged-in user.
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends \yii\web\User
 {
@@ -445,6 +445,7 @@ class User extends \yii\web\User
      * Generates a new user session token.
      *
      * @param int $userId
+     * @since 3.1.1
      */
     public function generateToken(int $userId)
     {

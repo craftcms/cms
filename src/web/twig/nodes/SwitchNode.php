@@ -15,7 +15,7 @@ use Twig\Node\Node;
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SwitchNode extends Node
 {

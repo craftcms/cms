@@ -15,7 +15,7 @@ use yii\base\Exception;
  * Class Url
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UrlHelper
 {
@@ -197,6 +197,7 @@ class UrlHelper
      *
      * @param string $url
      * @return string
+     * @since 3.1.11
      */
     public static function rootRelativeUrl(string $url): string
     {

@@ -10,7 +10,6 @@ namespace craft\gql\types\generators;
 use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\TableRow;
 use GraphQL\Type\Definition\Type;
@@ -42,12 +41,10 @@ class TableRowType implements GeneratorInterface
         // Generate a type for each entry type
         $tableRowType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
             'name' => $typeName,
-            'fields' => function () use ($contentFields) {
+            'fields' => function() use ($contentFields) {
                 return $contentFields;
             }
         ]));
-
-        TypeLoader::registerType($typeName, function () use ($tableRowType) { return $tableRowType ;});
 
         return [$tableRowType];
     }

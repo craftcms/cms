@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
  * @property bool $isNew Whether this is a new block type
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 {

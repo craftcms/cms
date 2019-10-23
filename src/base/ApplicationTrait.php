@@ -29,9 +29,11 @@ use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
+use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Matrix;
+use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
@@ -127,7 +129,7 @@ use yii\web\ServerErrorHttpException;
  * @method Security getSecurity() Returns the security component.
  * @method View getView() Returns the view component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait ApplicationTrait
 {
@@ -259,10 +261,7 @@ trait ApplicationTrait
         try {
             $info = $this->getInfo(true);
         } catch (DbException $e) {
-            if ($e->getCode() === 42) {
-                return $this->_isInstalled = false;
-            }
-            throw $e;
+            return $this->_isInstalled = false;
         }
 
         return $this->_isInstalled = !empty($info->id);
@@ -283,6 +282,7 @@ trait ApplicationTrait
      * Returns the installed schema version.
      *
      * @return string
+     * @since 3.2.0
      */
     public function getInstalledSchemaVersion(): string
     {
@@ -293,6 +293,7 @@ trait ApplicationTrait
      * Returns whether Craft has been fully initialized.
      *
      * @return bool
+     * @since 3.0.13
      */
     public function getIsInitialized(): bool
     {
@@ -489,6 +490,7 @@ trait ApplicationTrait
      * Returns whether the system is currently live.
      *
      * @return bool
+     * @since 3.1.0
      */
     public function getIsLive(): bool
     {
@@ -723,6 +725,7 @@ trait ApplicationTrait
      * Returns the system name.
      *
      * @return string
+     * @since 3.1.4
      */
     public function getSystemName(): string
     {
@@ -898,7 +901,7 @@ trait ApplicationTrait
      * Returns the drafts service.
      *
      * @return \craft\services\Drafts The drafts service
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getDrafts()
     {
@@ -1009,6 +1012,7 @@ trait ApplicationTrait
      * Returns the GraphQL service.
      *
      * @return \craft\services\Gql The GraphQL service
+     * @since 3.3.0
      */
     public function getGql()
     {
@@ -1141,7 +1145,7 @@ trait ApplicationTrait
      * Returns the revisions service.
      *
      * @return \craft\services\Revisions The revisions service
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getRevisions()
     {
@@ -1350,6 +1354,9 @@ trait ApplicationTrait
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
+        // Register all the listeners for invalidating GraphQL Cache.
+        $this->_registerGraphQlListeners();
+
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
@@ -1440,6 +1447,21 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    /**
+     * Register listeners for GraphQL
+     */
+    private function _registerGraphQlListeners()
+    {
+        $invalidate = [$this->getGql(), 'invalidateCaches'];
+
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_ADD_ITEM, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_REMOVE_ITEM, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_UPDATE_ITEM, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
+        $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
+        $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
     }
 
     /**

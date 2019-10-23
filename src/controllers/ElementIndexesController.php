@@ -29,7 +29,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementIndexesController extends BaseElementsController
 {
@@ -91,7 +91,7 @@ class ElementIndexesController extends BaseElementsController
         $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
-        $this->sourceKey = $request->getParam('source');
+        $this->sourceKey = $request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
         $this->paginated = (bool)$request->getParam('paginated');
@@ -468,18 +468,22 @@ class ElementIndexesController extends BaseElementsController
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
 
-        $responseData['html'] = $elementType::indexHtml(
-            $this->elementQuery,
-            $disabledElementIds,
-            $this->viewState,
-            $this->sourceKey,
-            $this->context,
-            $includeContainer,
-            $showCheckboxes
-        );
+        if ($this->sourceKey) {
+            $responseData['html'] = $elementType::indexHtml(
+                $this->elementQuery,
+                $disabledElementIds,
+                $this->viewState,
+                $this->sourceKey,
+                $this->context,
+                $includeContainer,
+                $showCheckboxes
+            );
 
-        $responseData['headHtml'] = $view->getHeadHtml();
-        $responseData['footHtml'] = $view->getBodyHtml();
+            $responseData['headHtml'] = $view->getHeadHtml();
+            $responseData['footHtml'] = $view->getBodyHtml();
+        } else {
+            $responseData['html'] = '';
+        }
 
         return $responseData;
     }

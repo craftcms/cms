@@ -16,7 +16,7 @@ use Twig\Node\Node;
  * Cache twig node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CacheNode extends Node
 {

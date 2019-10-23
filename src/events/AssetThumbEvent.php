@@ -14,7 +14,7 @@ use yii\base\Event;
  * Asset Thumbnail event
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetThumbEvent extends Event
 {

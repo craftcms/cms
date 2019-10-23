@@ -63,7 +63,7 @@
                         <ul class="padded">
                             {% for siteId in groupSiteIds %}
                                 {% set site = craft.app.sites.getSiteById(siteId) %}
-                                {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+                                {% set status = element.enabled and siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
                                 <li>
                                     {% if siteId == element.siteId %}
                                         <a class="site-option sel">

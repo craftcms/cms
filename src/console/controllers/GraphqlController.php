@@ -8,16 +8,14 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\errors\GqlException;
 use craft\helpers\Console;
-use craft\console\Controller;
-
-use yii\helpers\Inflector;
+use GraphQL\Utils\SchemaPrinter;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
+use yii\helpers\Inflector;
 use yii\web\BadRequestHttpException;
-
-use GraphQL\Utils\SchemaPrinter;
 
 /**
  * Allows you to manage GraphQL schemas.
@@ -84,11 +82,11 @@ class GraphqlController extends Controller
         if ($schema !== null) {
             $schemaDef = $gqlService->getSchemaDef($schema, true);
             // Output the schema
-            $filename = Inflector::slug($schema->name, '_').self::GQL_SCHEMA_EXTENSION;
+            $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
             $schemaDump = SchemaPrinter::doPrint($schemaDef);
             $result = file_put_contents($filename, $schemaDump);
             $this->stdout('Dumping GraphQL schema to file: ', Console::FG_YELLOW);
-            $this->stdout($filename.PHP_EOL);
+            $this->stdout($filename . PHP_EOL);
         }
 
         return ExitCode::OK;
@@ -112,7 +110,7 @@ class GraphqlController extends Controller
                 $schema = $gqlService->getSchemaByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
                 $this->stdout('Invalid authorization token: ', Console::FG_RED);
-                $this->stdout($this->token.PHP_EOL, Console::FG_YELLOW);
+                $this->stdout($this->token . PHP_EOL, Console::FG_YELLOW);
                 return null;
             }
         }

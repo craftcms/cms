@@ -9,9 +9,8 @@ namespace craft\gql\interfaces\elements;
 
 use Craft;
 use craft\elements\User as UserElement;
-use craft\gql\interfaces\Element;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
+use craft\gql\interfaces\Element;
 use craft\gql\types\generators\UserType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
@@ -46,14 +45,12 @@ class User extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all users.',
-            'resolveType' => function (UserElement $value) {
+            'resolveType' => function(UserElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (UserType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        UserType::generateTypes();
 
         return $type;
     }
@@ -69,7 +66,8 @@ class User extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
+    public static function getFieldDefinitions(): array
+    {
         return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'friendlyName' => [
                 'name' => 'friendlyName',
@@ -127,11 +125,12 @@ class User extends Element
         $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
 
         if (Gql::isSchemaAwareOf('volumes.' . $volumeUid)) {
-            return ['photo' => [
-                'name' => 'photo',
-                'type' => Asset::getType(),
-                'description' => 'The user\'s photo.'
-            ]
+            return [
+                'photo' => [
+                    'name' => 'photo',
+                    'type' => Asset::getType(),
+                    'description' => 'The user\'s photo.'
+                ]
             ];
         }
 

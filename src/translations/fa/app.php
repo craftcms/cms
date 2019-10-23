@@ -1499,7 +1499,7 @@ return [
     'View category group - {categoryGroup}' => 'مشاهده گروه دسته بندی - {categoryGroup}',
     'Delete them' => 'حذف آنها',
     'Keep them' => 'نگهداشتن آنها',
-    'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}',
-    'Single'=> 'مجزا',
-    'Channel'=> 'کانال'
+    'View tag group - {tagGroup}' => 'نمایش گروه برچسب - {tagGroup}',
+    'Single' => 'مجزا',
+    'Channel' => 'کانال'
 ];

@@ -16,7 +16,7 @@ use craft\fields\data\SingleOptionFieldData;
  * RadioButtons represents a Radio Buttons field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {

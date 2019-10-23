@@ -14,7 +14,7 @@ use craft\base\Utility;
  * PhpInfo represents a PhpInfo dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PhpInfo extends Utility
 {
@@ -62,8 +62,18 @@ class PhpInfo extends Utility
      */
     private static function _phpInfo(): array
     {
-        // Remove any arrays from $_SERVER to get around an "Array to string conversion" error
+        // Remove any arrays from $_ENV and $_SERVER to get around an "Array to string conversion" error
+        $envVals = [];
         $serverVals = [];
+
+        if (isset($_ENV)) {
+            foreach ($_ENV as $key => $value) {
+                if (is_array($value)) {
+                    $envVals[$key] = $value;
+                    $_ENV[$key] = 'Array';
+                }
+            }
+        }
 
         if (isset($_SERVER)) {
             foreach ($_SERVER as $key => $value) {
@@ -78,7 +88,10 @@ class PhpInfo extends Utility
         phpinfo(INFO_ALL);
         $phpInfoStr = ob_get_clean();
 
-        // Put the original $_SERVER values back
+        // Put the original $_ENV and $_SERVER values back
+        foreach ($envVals as $key => $value) {
+            $_ENV[$key] = $value;
+        }
         foreach ($serverVals as $key => $value) {
             $_SERVER[$key] = $value;
         }

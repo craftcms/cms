@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\test\mockclasses\gql;
 
 use craft\gql\base\Directive;
@@ -38,7 +39,7 @@ class MockDirective extends Directive
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         $prefix = $arguments['prefix'] ?? 'mock';
-        return $prefix.$value;
+        return $prefix . $value;
     }
 
 

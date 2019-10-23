@@ -78,6 +78,16 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::string(),
                 'description' => 'Narrows the query results to only elements that match a search query.'
             ],
+            'relatedTo' => [
+                'name' => 'relatedTo',
+                'type' => Type::listOf(Type::int()),
+                'description' => 'Narrows the query results to elements that relate to *any* of the provided element IDs. This argument is ignored, if `relatedToAll` is also used.'
+            ],
+            'relatedToAll' => [
+                'name' => 'relatedToAll',
+                'type' => Type::listOf(Type::int()),
+                'description' => 'Narrows the query results to elements that relate to *all* of the provided element IDs. Using this argument will cause `relatedTo` argument to be ignored.'
+            ],
             'ref' => [
                 'name' => 'ref',
                 'type' => Type::listOf(Type::string()),

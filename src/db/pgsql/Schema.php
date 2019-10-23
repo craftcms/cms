@@ -16,7 +16,7 @@ use yii\db\Exception;
  * @inheritdoc
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Schema extends \yii\db\pgsql\Schema
 {

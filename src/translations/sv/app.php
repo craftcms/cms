@@ -1500,6 +1500,6 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'Delete them' => 'Radera dem',
     'Keep them' => 'Behåll dem',
     'View tag group - {tagGroup}' => 'Visa taggrupp - {tagGroup}',
-    'Single'=> 'Single',
-    'Channel'=> 'Channel'
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

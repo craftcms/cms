@@ -26,7 +26,7 @@ use GraphQL\Type\Definition\Type;
  * Tags represents a Tags field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tags extends BaseRelationField
 {

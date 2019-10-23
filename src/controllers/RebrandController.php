@@ -23,14 +23,12 @@ Craft::$app->requireEdition(Craft::Pro);
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RebrandController extends Controller
 {
     /**
-     * Allowed types of site images.
-     *
-     * @var array
+     * @var array Allowed types of site images.
      */
     private $_allowedTypes = ['logo', 'icon'];
 

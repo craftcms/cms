@@ -27,7 +27,7 @@ use yii\base\Exception;
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  * @property array $supportedImageFormats A list of all supported image formats
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Images extends Component
 {
@@ -42,23 +42,17 @@ class Images extends Component
     // =========================================================================
 
     /**
-     * Image formats that can be manipulated.
-     *
-     * @var array
+     * @var array Image formats that can be manipulated.
      */
     public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
-     * Image driver.
-     *
-     * @var string
+     * @var string Image driver.
      */
     private $_driver = '';
 
     /**
-     * Imagick version being used, if any.
-     *
-     * @var string|null
+     * @var string|null Imagick version being used, if any.
      */
     private $_imagickVersion;
 

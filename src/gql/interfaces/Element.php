@@ -10,11 +10,10 @@ namespace craft\gql\interfaces;
 use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
-use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class Element
@@ -45,14 +44,12 @@ class Element extends InterfaceType
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all elements.',
-            'resolveType' => function (ElementInterface $value) {
+            'resolveType' => function(ElementInterface $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (ElementType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        ElementType::generateTypes();
 
         return $type;
     }

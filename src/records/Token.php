@@ -21,7 +21,7 @@ use craft\validators\DateTimeValidator;
  * @property int $usageCount Usage count
  * @property \DateTime $expiryDate Expiry date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Token extends ActiveRecord
 {

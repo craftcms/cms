@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
@@ -64,7 +65,7 @@ use yii\helpers\Markdown;
  * Class Extension
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Extension extends AbstractExtension implements GlobalsInterface
 {
@@ -428,6 +429,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param mixed $arr
      * @param string $key
      * @return array
+     * @since 3.2.0
      */
     public function withoutKeyFilter($arr, string $key): array
     {
@@ -822,6 +824,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', 'getenv'),
+            new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
@@ -869,6 +872,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param mixed $params
      * @param mixed $config
      * @return Expression
+     * @since 3.1.0
      */
     public function expressionFunction($expression, $params = [], $config = []): Expression
     {
@@ -876,10 +880,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Executes a GraphQL query against the full schema.
+     *
+     * @param string $query The GraphQL query
+     * @param array|null $variables Query variables
+     * @param string|null $operationName The operation name
+     * @return array The query result
+     * @since 3.3.12
+     */
+    public function gqlFunction(string $query, array $variables = null, string $operationName = null): array
+    {
+        $schema = Gql::createFullAccessSchema();
+        return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
+    }
+
+    /**
      * Returns a plugin instance by its handle.
      *
      * @param string $handle The plugin handle
      * @return PluginInterface|null The plugin, or `null` if it's not installed
+     * @since 3.1.0
      */
     public function pluginFunction(string $handle)
     {
@@ -912,6 +932,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return integer|string
      * @throws \Throwable if reasons
      * @throws \yii\db\Exception
+     * @since 3.0.31
      */
     public function seqFunction(string $name, int $length = null, bool $next = true)
     {
