@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- It’s now possible to pass arrow functions to the `|group` filter. ([#5156](https://github.com/craftcms/cms/issues/5156))
+
 ### Changed
 - Underscores are now stripped from search keywords before being saved to the database.
 
