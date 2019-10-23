@@ -391,7 +391,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
     {
         if ($options === null) {
-            if (in_array(Craft::$app->getResponse()->getContentType(), ['text/html', 'application/xhtml+xml'], true)) {
+            if (
+                !Craft::$app->getRequest()->getIsConsoleRequest() &&
+                in_array(Craft::$app->getResponse()->getContentType(), ['text/html', 'application/xhtml+xml'], true)
+            ) {
                 $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
             } else {
                 $options = 0;
