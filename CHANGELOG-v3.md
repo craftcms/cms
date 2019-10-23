@@ -13,6 +13,7 @@
 - Fixed a bug where GraphQL caches were not being invalidated on element save. ([#5148](https://github.com/craftcms/cms/issues/5148))
 - Fixed a bug where GraphQL type generators provided by interfaces added by plugins would not get invoked when building introspection schema. ([#5149](https://github.com/craftcms/cms/issues/5149))
 - Fixed an error that occurred when using the `|json_encode` Twig filter on console requests. ([#5150](https://github.com/craftcms/cms/issues/5150))
+- Fixed a bug where editable table rows could get taller than they should. ([#5159](https://github.com/craftcms/cms/issues/5159))
 
 ## 3.3.12 - 2019-10-22
 

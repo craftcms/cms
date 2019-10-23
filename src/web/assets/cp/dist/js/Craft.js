@@ -1,4 +1,4 @@
-/*!   - 2019-10-11 */
+/*!   - 2019-10-23 */
 (function($){
 
 /** global: Craft */
@@ -4791,6 +4791,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
+            if (!this.$target.is(':visible')) {
+                return;
+            }
+
             var sourceVal = this.$source.val();
 
             if (typeof sourceVal === 'undefined') {
