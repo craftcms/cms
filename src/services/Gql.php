@@ -648,6 +648,11 @@ class Gql extends Component
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
+
+        foreach ($event->types as $type) {
+            /** @var InterfaceType $type */
+            TypeLoader::registerType($type::getName(), $type . '::getType');
+        }
         
         return $event->types;
     }
