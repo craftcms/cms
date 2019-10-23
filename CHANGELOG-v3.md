@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.13 - 2019-10-23
 
 ### Added
 - It’s now possible to pass arrow functions to the `|group` filter. ([#5156](https://github.com/craftcms/cms/issues/5156))
