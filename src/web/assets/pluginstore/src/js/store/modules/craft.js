@@ -166,8 +166,7 @@ const actions = {
         })
     },
 
-    // eslint-disable-next-line
-    tryEdition({}, edition) {
+    tryEdition(context, edition) {
         return new Promise((resolve, reject) => {
             api.tryEdition(edition)
                 .then(response => {

@@ -175,8 +175,7 @@ const actions = {
         })
     },
 
-    // eslint-disable-next-line
-    checkout({}, data) {
+    checkout(context, data) {
         return new Promise((resolve, reject) => {
             api.checkout(data)
                 .then(response => {
@@ -398,8 +397,7 @@ const actions = {
         })
     },
 
-    // eslint-disable-next-line
-    saveOrderNumber({}, {orderNumber}) {
+    saveOrderNumber(context, {orderNumber}) {
         api.saveOrderNumber(orderNumber)
     },
 
