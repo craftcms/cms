@@ -233,10 +233,12 @@ class Gql extends Component
                     /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
 
-                    // Make sure it's the method we're looking for.
-                    if ($typeGeneratorClass instanceof GeneratorInterface) {
-                        foreach ($typeGeneratorClass::generateTypes() as $type) {
-                            $schemaConfig['types'][] = $type;
+                    foreach (class_implements($typeGeneratorClass) as $interface) {
+                        if ($interface === GeneratorInterface::class) {
+                            foreach ($typeGeneratorClass::generateTypes() as $type) {
+                                $schemaConfig['types'][] = $type;
+                            }
+                            break;
                         }
                     }
                 }
@@ -602,7 +604,9 @@ class Gql extends Component
     private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
     {
         // No cache key, if explicitly disabled
-        if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (!$generalConfig->enableGraphQlCaching) {
             return null;
         }
 
@@ -653,7 +657,7 @@ class Gql extends Component
             /** @var InterfaceType $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
-        
+
         return $event->types;
     }
 
