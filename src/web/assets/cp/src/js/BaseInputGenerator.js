@@ -85,6 +85,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
+            if (!this.$target.is(':visible')) {
+                return;
+            }
+
             var sourceVal = this.$source.val();
 
             if (typeof sourceVal === 'undefined') {
