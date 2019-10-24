@@ -1,4 +1,4 @@
-/*!   - 2019-10-11 */
+/*!   - 2019-10-24 */
 (function($){
 
 /** global: Craft */
@@ -4791,6 +4791,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
+            if (!this.$target.is(':visible')) {
+                return;
+            }
+
             var sourceVal = this.$source.val();
 
             if (typeof sourceVal === 'undefined') {
@@ -12969,7 +12973,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Store the initial form value
             this.lastSerializedValue = this.serializeForm(true);
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
 
             // Override the serializer to use our own
             Craft.cp.$primaryForm.data('serializer', function() {
