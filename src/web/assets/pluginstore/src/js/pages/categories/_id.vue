@@ -53,16 +53,6 @@
         mounted() {
             const categoryId = this.$route.params.id
             this.category = this.getCategoryById(categoryId)
-
-            this.loading = true
-
-            this.getPluginsByCategory({categoryId})
-                .then(() => {
-                    this.loading = false
-                })
-                .catch(() => {
-                    this.loading = false
-                })
         },
     }
 </script>
