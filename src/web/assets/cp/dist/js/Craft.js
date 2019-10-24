@@ -450,11 +450,11 @@ $.extend(Craft,
          *
          * @param {string} oldData
          * @param {string} newData
-         * @param {object} deltaNamespaces
+         * @param {object} deltaNames
          */
-        findDeltaData: function(oldData, newData, deltaNamespaces) {
+        findDeltaData: function(oldData, newData, deltaNames) {
             // Sort the delta namespaces from most -> least specific
-            deltaNamespaces.sort(function(a, b) {
+            deltaNames.sort(function(a, b) {
                 if (a.length === b.length) {
                     return 0;
                 }
@@ -462,27 +462,27 @@ $.extend(Craft,
             });
 
             // Group all of the old & new params by namespace
-            var groupedOldParams = this._groupParamsByDeltaNamespaces(oldData.split('&'), deltaNamespaces, false);
-            var groupedNewParams = this._groupParamsByDeltaNamespaces(newData.split('&'), deltaNamespaces, true);
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false);
+            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true);
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
-            for (var n = 0; n < deltaNamespaces.length; n++) {
+            for (var n = 0; n < deltaNames.length; n++) {
                 if (
-                    typeof groupedNewParams[deltaNamespaces[n]] === 'object' &&
+                    typeof groupedNewParams[deltaNames[n]] === 'object' &&
                     (
-                        typeof groupedOldParams[deltaNamespaces[n]] !== 'object' ||
-                        JSON.stringify(groupedOldParams[deltaNamespaces[n]]) !== JSON.stringify(groupedNewParams[deltaNamespaces[n]])
+                        typeof groupedOldParams[deltaNames[n]] !== 'object' ||
+                        JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
                     )
                 ) {
-                    params = params.concat(groupedNewParams[deltaNamespaces[n]]);
+                    params = params.concat(groupedNewParams[deltaNames[n]]);
                 }
             }
 
             return params.join('&');
         },
 
-        _groupParamsByDeltaNamespaces: function(params, deltaNamespaces, withRoot) {
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot) {
             var grouped = {};
 
             if (withRoot) {
@@ -492,16 +492,16 @@ $.extend(Craft,
             var n, paramName;
 
             paramLoop: for (var p = 0; p < params.length; p++) {
-                for (n = 0; n < deltaNamespaces.length; n++) {
-                    paramName = decodeURIComponent(params[p]).substr(0, deltaNamespaces[n].length + 1);
+                for (n = 0; n < deltaNames.length; n++) {
+                    paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
                     if (
-                        paramName === deltaNamespaces[n] + '=' ||
-                        paramName === deltaNamespaces[n] + '['
+                        paramName === deltaNames[n] + '=' ||
+                        paramName === deltaNames[n] + '['
                     ) {
-                        if (typeof grouped[deltaNamespaces[n]] === 'undefined') {
-                            grouped[deltaNamespaces[n]] = [];
+                        if (typeof grouped[deltaNames[n]] === 'undefined') {
+                            grouped[deltaNames[n]] = [];
                         }
-                        grouped[deltaNamespaces[n]].push(params[p]);
+                        grouped[deltaNames[n]].push(params[p]);
                         continue paramLoop;
                     }
                 }
@@ -13633,7 +13633,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             });
             var data = this.prepareData(this.serializeForm(false));
             // Filter out anything that hasn't changed
-            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNamespaces);
+            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
             var values = data.split('&');
             var chunks;
             for (var i = 0; i < values.length; i++) {

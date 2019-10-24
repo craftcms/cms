@@ -677,7 +677,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             });
             var data = this.prepareData(this.serializeForm(false));
             // Filter out anything that hasn't changed
-            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNamespaces);
+            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
             var values = data.split('&');
             var chunks;
             for (var i = 0; i < values.length; i++) {
