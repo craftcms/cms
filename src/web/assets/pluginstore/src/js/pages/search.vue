@@ -54,6 +54,7 @@
             search() {
                 this.loading = true
 
+                this.$store.commit('pluginStore/updatePlugins', [])
                 this.$store.dispatch('pluginStore/searchPlugins', {
                         searchQuery: this.searchQuery,
                     })
