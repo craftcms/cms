@@ -40,6 +40,7 @@ use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
+use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -632,6 +633,7 @@ class Gql extends Component
         $typeList = [
             // Scalars
             DateTime::class,
+            QueryArgument::class,
 
             // Interfaces
             ElementInterface::class,
