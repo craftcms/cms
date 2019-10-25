@@ -56,6 +56,13 @@
                 .then(() => {
                     this.loading = false
                 })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // Request canceled
+                    } else {
+                        throw error
+                    }
+                })
         },
 
         destroyed() {
