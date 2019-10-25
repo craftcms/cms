@@ -4,6 +4,7 @@
                 action="pluginStore/searchPlugins"
                 :requestData="requestData"
                 :plugins="plugins"
+                :force-loading="loading"
         >
             <template v-slot:header>
                 <h1>{{ "Showing results for “{searchQuery}”"|t('app', {searchQuery}) }}</h1>
