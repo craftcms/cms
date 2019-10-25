@@ -4,7 +4,7 @@
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
-                <plugin-index-sort :loading="(loading || forceLoading)" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
+                <plugin-index-sort :loading="(loading || forceLoading)" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
             </template>
         </div>
 
