@@ -17,7 +17,7 @@ use GraphQL\Type\Definition\ScalarType;
  * Class QueryArgument
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4
+ * @since 3.3.14
  */
 class QueryArgument extends ScalarType
 {
