@@ -22,6 +22,7 @@
 </template>
 
 <script>
+    import axios from 'axios'
     import {mapState} from 'vuex'
 
     import ChangelogRelease from './ChangelogRelease'
