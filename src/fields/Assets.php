@@ -423,23 +423,21 @@ class Assets extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        // Everything has been handled for propagating fields already.
+        // Figure out what we're working with and set up some initial variables.
+        $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+        $query = $element->getFieldValue($this->handle);
+        $assetsService = Craft::$app->getAssets();
+
+        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+            static $targetFolderId;
+            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+        };
+
+        // Folder creation and file uploads have been handles for propagating elements already.
         /** @var Element $element */
         if (!$element->propagating) {
-            $assetsService = Craft::$app->getAssets();
-
-            // Figure out what we're working with
-            $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
-
-            $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
-                static $targetFolderId;
-                return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
-            };
-
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
-
-            $query = $element->getFieldValue($this->handle);
 
             if (!empty($uploadedFiles)) {
                 $targetFolderId = $getTargetFolderId();
@@ -482,34 +480,35 @@ class Assets extends BaseRelationField
                 $this->_uploadedDataFiles = null;
             }
 
-            // Are there any related assets?
-            /** @var AssetQuery $query */
-            /** @var Asset[] $assets */
-            $assets = $query->all();
+        }
 
-            if (!empty($assets)) {
-                // Only enforce the single upload folder setting if this isn't a draft or revision
-                if ($this->useSingleFolder && !$isDraftOrRevision) {
-                    $targetFolderId = $getTargetFolderId();
-                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
-                        return $asset->folderId != $targetFolderId;
-                    });
-                } else {
-                    // Find the files with temp sources and just move those.
-                    $assetsToMove = Asset::find()
-                        ->id(ArrayHelper::getColumn($assets, 'id'))
-                        ->volumeId(':empty:')
-                        ->all();
-                }
+        // Are there any related assets?
+        /** @var AssetQuery $query */
+        /** @var Asset[] $assets */
+        $assets = $query->all();
 
-                if (!empty($assetsToMove)) {
-                    $folder = $assetsService->getFolderById($getTargetFolderId());
+        if (!empty($assets)) {
+            // Only enforce the single upload folder setting if this isn't a draft or revision
+            if ($this->useSingleFolder && !$isDraftOrRevision) {
+                $targetFolderId = $getTargetFolderId();
+                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                    return $asset->folderId != $targetFolderId;
+                });
+            } else {
+                // Find the files with temp sources and just move those.
+                $assetsToMove = Asset::find()
+                    ->id(ArrayHelper::getColumn($assets, 'id'))
+                    ->volumeId(':empty:')
+                    ->all();
+            }
 
-                    // Resolve all conflicts by keeping both
-                    foreach ($assetsToMove as $asset) {
-                        $asset->avoidFilenameConflicts = true;
-                        $assetsService->moveAsset($asset, $folder);
-                    }
+            if (!empty($assetsToMove)) {
+                $folder = $assetsService->getFolderById($getTargetFolderId());
+
+                // Resolve all conflicts by keeping both
+                foreach ($assetsToMove as $asset) {
+                    $asset->avoidFilenameConflicts = true;
+                    $assetsService->moveAsset($asset, $folder);
                 }
             }
         }
