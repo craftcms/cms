@@ -2188,13 +2188,13 @@ abstract class Element extends Component implements ElementInterface
                 $fieldHtml = $view->renderTemplate('_includes/field', [
                     'element' => $this,
                     'field' => $field,
-                    'required' => $field->required
+                    'required' => $field->required,
                 ]);
 
                 $html .= $view->namespaceInputs($fieldHtml, 'fields');
             }
 
-            Craft::$app->getView()->setNamespace($originalNamespace);
+            $view->setNamespace($originalNamespace);
 
             $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
         }
