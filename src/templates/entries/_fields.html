@@ -2,6 +2,8 @@
     {% include "entries/_titlefield" %}
 {% endif %}
 
+{% do view.setIsDeltaRegistrationActive(true) %}
+
 <div>
     {% for tab in entryType.getFieldLayout().getTabs() %}
         <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
@@ -14,3 +16,5 @@
         </div>
     {% endfor %}
 </div>
+
+{% do view.setIsDeltaRegistrationActive(false) %}

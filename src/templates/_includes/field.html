@@ -22,7 +22,8 @@
 
 {% if not static %}
     {% set isDeltaRegistrationActive = view.getIsDeltaRegistrationActive() %}
-    {% do view.setIsDeltaRegistrationActive(registerDeltas ?? false) %}
+    {% set registerDeltas = isDeltaRegistrationActive and (registerDeltas ?? false) %}
+    {% do view.setIsDeltaRegistrationActive(registerDeltas) %}
     {% do view.registerDeltaName(field.handle) %}
     {% set input = field.getInputHtml(value, element) %}
     {% do view.setIsDeltaRegistrationActive(isDeltaRegistrationActive) %}
