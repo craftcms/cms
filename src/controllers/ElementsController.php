@@ -416,6 +416,7 @@ class ElementsController extends BaseElementsController
 
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
+        $response['deltaNames'] = $view->getDeltaNames();
 
         return $this->asJson($response);
     }

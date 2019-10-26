@@ -2183,18 +2183,21 @@ abstract class Element extends Component implements ElementInterface
             $originalNamespace = $view->getNamespace();
             $namespace = $view->namespaceInputName('fields', $originalNamespace);
             $view->setNamespace($namespace);
+            $view->setIsDeltaRegistrationActive(true);
 
             foreach ($fieldLayout->getFields() as $field) {
                 $fieldHtml = $view->renderTemplate('_includes/field', [
                     'element' => $this,
                     'field' => $field,
                     'required' => $field->required,
+                    'registerDeltas' => true,
                 ]);
 
                 $html .= $view->namespaceInputs($fieldHtml, 'fields');
             }
 
             $view->setNamespace($originalNamespace);
+            $view->setIsDeltaRegistrationActive(false);
 
             $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
         }
