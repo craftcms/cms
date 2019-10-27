@@ -666,28 +666,10 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Duplicate the form with normalized data
-            var $form = $('<form/>', {
-                attr: {
-                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
-                    'action': Craft.cp.$primaryForm.attr('action'),
-                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
-                    'method': Craft.cp.$primaryForm.attr('method'),
-                    'target': Craft.cp.$primaryForm.attr('target'),
-                }
-            });
             var data = this.prepareData(this.serializeForm(false));
             // Filter out anything that hasn't changed
             data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
-            var values = data.split('&');
-            var chunks;
-            for (var i = 0; i < values.length; i++) {
-                chunks = values[i].split('=', 2);
-                $('<input/>', {
-                    type: 'hidden',
-                    name: decodeURIComponent(chunks[0]),
-                    value: decodeURIComponent(chunks[1] || '')
-                }).appendTo($form);
-            }
+            var $form = Craft.createForm(data);
 
             if (this.settings.draftId) {
                 if (!ev.customTrigger || !ev.customTrigger.data('action')) {

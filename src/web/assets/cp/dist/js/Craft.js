@@ -1,4 +1,4 @@
-/*!   - 2019-10-26 */
+/*!   - 2019-10-27 */
 (function($){
 
 /** global: Craft */
@@ -573,6 +573,37 @@ $.extend(Craft,
             }
 
             return expanded;
+        },
+
+        /**
+         * Creates a form element populated with hidden inputs based on a string of serialized form data.
+         *
+         * @param {string} data
+         * @returns {jQuery|HTMLElement}
+         */
+        createForm: function(data) {
+            var $form = $('<form/>', {
+                attr: {
+                    method: 'post',
+                    action: '',
+                    'accept-charset': 'UTF-8',
+                },
+            });
+
+            if (typeof data === 'string') {
+                var values = data.split('&');
+                var chunks;
+                for (var i = 0; i < values.length; i++) {
+                    chunks = values[i].split('=', 2);
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: decodeURIComponent(chunks[0]),
+                        value: decodeURIComponent(chunks[1] || '')
+                    }).appendTo($form);
+                }
+            }
+
+            return $form;
         },
 
         /**
@@ -13628,28 +13659,10 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Duplicate the form with normalized data
-            var $form = $('<form/>', {
-                attr: {
-                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
-                    'action': Craft.cp.$primaryForm.attr('action'),
-                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
-                    'method': Craft.cp.$primaryForm.attr('method'),
-                    'target': Craft.cp.$primaryForm.attr('target'),
-                }
-            });
             var data = this.prepareData(this.serializeForm(false));
             // Filter out anything that hasn't changed
             data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
-            var values = data.split('&');
-            var chunks;
-            for (var i = 0; i < values.length; i++) {
-                chunks = values[i].split('=', 2);
-                $('<input/>', {
-                    type: 'hidden',
-                    name: decodeURIComponent(chunks[0]),
-                    value: decodeURIComponent(chunks[1] || '')
-                }).appendTo($form);
-            }
+            var $form = Craft.createForm(data);
 
             if (this.settings.draftId) {
                 if (!ev.customTrigger || !ev.customTrigger.data('action')) {

@@ -573,6 +573,37 @@ $.extend(Craft,
         },
 
         /**
+         * Creates a form element populated with hidden inputs based on a string of serialized form data.
+         *
+         * @param {string} data
+         * @returns {jQuery|HTMLElement}
+         */
+        createForm: function(data) {
+            var $form = $('<form/>', {
+                attr: {
+                    method: 'post',
+                    action: '',
+                    'accept-charset': 'UTF-8',
+                },
+            });
+
+            if (typeof data === 'string') {
+                var values = data.split('&');
+                var chunks;
+                for (var i = 0; i < values.length; i++) {
+                    chunks = values[i].split('=', 2);
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: decodeURIComponent(chunks[0]),
+                        value: decodeURIComponent(chunks[1] || '')
+                    }).appendTo($form);
+                }
+            }
+
+            return $form;
+        },
+
+        /**
          * Compares two variables and returns whether they are equal in value.
          * Recursively compares array and object values.
          *
