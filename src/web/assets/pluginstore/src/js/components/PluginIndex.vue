@@ -10,7 +10,7 @@
 
         <plugin-grid :plugins="plugins"></plugin-grid>
 
-        <spinner v-if="loadingMore"></spinner>
+        <spinner v-if="loadingMore" class="my-4"></spinner>
     </div>
 </template>
 
