@@ -2,8 +2,23 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\gql\types\QueryArgument` GraphQL type which can be either an integer or a string.
+- Added the `authorGroupId` argument for the GraphQL `entries` query. 
+
+### Changed
+- It is now possible to provide multiple values for the `height`, `width`, and `size` arguments when querying or filtering Assets using GraphQL.
+- It is now possible to provide multiple values for the `expiryDate` and `postDate` arguments when querying or filtering Entries using GraphQL.
+- It is now possible to provide multiple values for the `expiryDate` and `postDate` arguments in every GraphQL element query.
+- It is now possible to use the `not` keyword in the `folderId` and `volumeId` arguments when querying or filtering Assets using GraphQL.
+- It is now possible to use the `not` keyword in the `groupId` argument when querying or filtering Tags or Categories using GraphQL.
+- It is now possible to use the `not` keyword in the `sectionId`, `typeId`, and `authorId` arguments when querying or filtering Entries using GraphQL.
+- It is now possible to use the `not` keyword in the `fieldId`, `ownerId`, and `typeId` when filtering Matrix fields usings GraphQL.
+- It is now possible to use the `not` keyword in the `id` argument for every GraphQL query.
+
 ### Fixed
 - Fixed a bug where Edit Entry pages would often warn authors when leaving the page even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load. ([craftcms/redactor#161](https://github.com/craftcms/redactor/issues/161))
+- Fixed a bug where sometimes Assets would not be moved to the correct folders when using the `Restrict uploads to a single folder` setting in a multi-site setup. ([#5139](https://github.com/craftcms/cms/issues/5139)
 
 ## 3.3.13 - 2019-10-23
 

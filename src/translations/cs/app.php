@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Určitě si přejete smazat tuto skupinu a s ní i všechna pole?',
     'Are you sure you want to delete this group?' => 'Opravdu chcete tuto skupinu odstranit?',
     'Are you sure you want to delete this image?' => 'Opravdu chcete tento obrázek odstranit?',
-    'Are you sure you want to delete this photo?' => 'Opravdu si přejete smazat tuto fotku?',
     'Are you sure you want to delete this route?' => 'Opravdu chcete tuto trasu vymazat?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Určitě si přejete smazat "{name}" a s tím i všechny záznamy, které to používají?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Určitě si přejete smazat "{name}" a všechny související kategorie?',
