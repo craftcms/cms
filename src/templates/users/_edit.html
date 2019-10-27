@@ -9,6 +9,7 @@
 {% import "_includes/forms" as forms %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+{% do view.setIsDeltaRegistrationActive(true) %}
 
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
 
@@ -58,6 +59,7 @@
             'saveshortcut': true,
             'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
             'confirm-unload': true,
+            'delta': true,
         },
     } %}
     <form {{ attr(formAttributes) }}>
@@ -141,7 +143,8 @@
             <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
                 {% include "_includes/fields" with {
                     fields:  tab.getFields(),
-                    element: user
+                    element: user,
+                    registerDeltas: true,
                 } only %}
             </div>
         {% endfor %}
@@ -152,6 +155,7 @@
                 {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
                     <h2>{{ "User Groups"|t('app') }}</h2>
 
+                    {% do view.registerDeltaName('groups') %}
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
                     {% embed '_includes/forms/field.html' with {
@@ -195,6 +199,7 @@
                         }) }}
                     {% endif %}
 
+                    {% do view.registerDeltaName('permissions') %}
                     {{ hiddenInput('permissions', '') }}
 
                     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
