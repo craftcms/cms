@@ -50,7 +50,17 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
+    {% set formAttributes = {
+        'id': 'userform',
+        'method': 'post',
+        'accept-charset': 'UTF-8',
+        'data': {
+            'saveshortcut': true,
+            'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'confirm-unload': true,
+        },
+    } %}
+    <form {{ attr(formAttributes) }}>
         {{ actionInput('users/save-user') }}
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
