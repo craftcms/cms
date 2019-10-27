@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Вы уверены, что хотите удалить эту группу и все ее поля?',
     'Are you sure you want to delete this group?' => 'Вы действительно хотите удалить эту группу?',
     'Are you sure you want to delete this image?' => 'Вы уверены, что хотите удалить данное изображение?',
-    'Are you sure you want to delete this photo?' => 'Вы уверены, что хотите удалить эту фотографию?',
     'Are you sure you want to delete this route?' => 'Вы уверены, что хотите удалить этот маршрут?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Вы уверены, что хотите удалить «{name}» и все записи, которые используют его?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Вы уверены, что хотите удалить «{name}» и все его категории?',

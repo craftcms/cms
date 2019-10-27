@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => '确定要删除该组及其所有字段吗？',
     'Are you sure you want to delete this group?' => '确定要删除该组吗？',
     'Are you sure you want to delete this image?' => '确定要删除此图片吗？',
-    'Are you sure you want to delete this photo?' => '确定要删除这张照片吗？',
     'Are you sure you want to delete this route?' => '确定要删除该路由么？',
     'Are you sure you want to delete “{name}” and all entries that use it?' => '确定要删除“{name}”及所有使用它的条目吗？',
     'Are you sure you want to delete “{name}” and all its categories?' => '确定要删除“{name}”及其所有子分类吗？',
