@@ -89,6 +89,7 @@
         'saveshortcut': true,
         'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
         'confirm-unload': true,
+        'delta': view.getIsDeltaRegistrationActive(),
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
