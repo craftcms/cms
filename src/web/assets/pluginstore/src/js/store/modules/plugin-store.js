@@ -14,7 +14,6 @@ const state = {
     pluginChangelog: null,
 
     // plugin index
-    pluginIndexLimit: 96,
     plugins: [],
 }
 
@@ -36,14 +35,14 @@ const getters = {
 
     getPluginIndexParams(state) {
         return context => {
-            const limit = context.limit ? context.limit : state.pluginIndexLimit
-            const offset = context.offset ? context.offset : 0
+            const perPage = context.perPage ? context.perPage : null
+            const page = context.page ? context.page : 1
             const orderBy = context.orderBy
             const direction = context.direction
 
             return {
-                limit,
-                offset,
+                perPage,
+                page,
                 orderBy,
                 direction,
             }
@@ -132,18 +131,13 @@ const actions = {
             })
     },
 
-    getPluginsByCategory({commit, getters}, context) {
+    getPluginsByCategory({getters, dispatch}, context) {
         return new Promise((resolve, reject) => {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
             api.getPluginsByCategory(context.categoryId, pluginIndexParams)
                 .then(response => {
-                    if (context.appendData && context.appendData === true) {
-                        commit('appendPlugins', response.data)
-                    } else {
-                        commit('updatePlugins', response.data)
-                    }
-
+                    dispatch('updatePluginIndex', {context, response})
                     resolve(response)
                 })
                 .catch(error => {
@@ -152,18 +146,13 @@ const actions = {
         })
     },
 
-    getPluginsByDeveloperId({commit, getters}, context) {
+    getPluginsByDeveloperId({getters, dispatch}, context) {
         return new Promise((resolve, reject) => {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
             api.getPluginsByDeveloperId(context.developerId, pluginIndexParams)
                 .then(response => {
-                    if (context.appendData && context.appendData === true) {
-                        commit('appendPlugins', response.data)
-                    } else {
-                        commit('updatePlugins', response.data)
-                    }
-
+                    dispatch('updatePluginIndex', {context, response})
                     resolve(response)
                 })
                 .catch(error => {
@@ -172,18 +161,13 @@ const actions = {
         })
     },
 
-    getPluginsByFeaturedSectionHandle({commit, getters}, context) {
+    getPluginsByFeaturedSectionHandle({getters, dispatch}, context) {
         return new Promise((resolve, reject) => {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
             
             return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
                 .then(response => {
-                    if (context.appendData && context.appendData === true) {
-                        commit('appendPlugins', response.data)
-                    } else {
-                        commit('updatePlugins', response.data)
-                    }
-
+                    dispatch('updatePluginIndex', {context, response})
                     resolve(response)
                 })
                 .catch(error => {
@@ -192,24 +176,28 @@ const actions = {
         })
     },
 
-    searchPlugins({commit, getters}, context) {
+    searchPlugins({getters, dispatch}, context) {
         return new Promise((resolve, reject) => {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
 
             api.searchPlugins(context.searchQuery, pluginIndexParams)
                 .then(response => {
-                    if (context.appendData && context.appendData === true) {
-                        commit('appendPlugins', response.data)
-                    } else {
-                        commit('updatePlugins', response.data)
-                    }
+                    dispatch('updatePluginIndex', {context, response})
                     resolve(response)
                 })
                 .catch(error => {
                     reject(error)
                 })
         })
+    },
+
+    updatePluginIndex({commit}, {context, response}) {
+        if (context.appendData && context.appendData === true) {
+            commit('appendPlugins', response.data.plugins)
+        } else {
+            commit('updatePlugins', response.data.plugins)
+        }
     },
 }
 

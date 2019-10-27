@@ -35,6 +35,7 @@
                 loadingMore: false,
                 hasMore: false,
                 offset: 0,
+                page: 1,
             }
         },
 
@@ -42,29 +43,24 @@
             requestActionData() {
                 return {
                     ...this.requestData,
-                    limit: this.limit,
-                    offset: this.offset,
+                    page: this.page,
                     orderBy: this.orderBy,
                     direction: this.direction,
                 }
             },
-
-            limit() {
-                return this.$store.state.pluginStore.pluginIndexLimit
-            }
         },
 
         methods: {
             onOrderByChange() {
                 this.loading = true
-                this.offset = 0
+                this.page = 1
 
                 this.$store.dispatch(this.action, this.requestActionData)
                     .then((response) => {
                         this.loading = false
-                        if (response.data.length >= this.limit) {
+                        if (response.data.currentPage < response.data.total) {
                             this.hasMore = true
-                            this.offset = this.limit;
+                            this.page++
                             this.$root.$on('viewScroll', this.onViewScroll)
                         } else {
                             this.hasMore = false
@@ -96,8 +92,9 @@
                         .then(response => {
                             this.loadingMore = false
 
-                            if (response.data.length === this.limit) {
-                                this.offset += this.limit;
+                            if (response.data.currentPage < response.data.total) {
+                                this.hasMore = true
+                                this.page++
                                 this.$root.$on('viewScroll', this.onViewScroll)
                             } else {
                                 this.hasMore = false
@@ -128,7 +125,7 @@
                 this.loading = true
 
                 if (dontAppendData) {
-                    this.offset = 0
+                    this.page = 1
                 }
 
                 this.$store.dispatch(this.action, {
@@ -138,9 +135,9 @@
                     .then((response) => {
                         this.loading = false
 
-                        if (response.data.length >= this.limit) {
+                        if (response.data.currentPage < response.data.total) {
                             this.hasMore = true
-                            this.offset += this.limit
+                            this.page++
 
                             if (!this.viewHasScrollbar()) {
                                 this.requestPlugins()
@@ -172,14 +169,14 @@
         mounted() {
             this.$store.commit('pluginStore/updatePlugins', [])
             this.loading = true
-            this.offset = 0
+            this.page = 1
 
             this.$store.dispatch(this.action, this.requestActionData)
                 .then((response) => {
                     this.loading = false
-                    if (response.data.length >= this.limit) {
+                    if (response.data.currentPage < response.data.total) {
                         this.hasMore = true
-                        this.offset = this.limit;
+                        this.page++
 
                         if (!this.viewHasScrollbar()) {
                             this.requestPlugins()

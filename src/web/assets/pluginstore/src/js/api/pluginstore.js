@@ -210,18 +210,18 @@ export default {
      * @returns {{offset: *, limit: *, orderBy: *, direction: *}}
      * @private
      */
-    _getPluginIndexParams({limit, offset, orderBy, direction}) {
-        if (!limit) {
-            limit = 48
+    _getPluginIndexParams({perPage, page, orderBy, direction}) {
+        if (!perPage) {
+            perPage = 96
         }
 
-        if (!offset) {
-            offset = 0
+        if (!page) {
+            page = 1
         }
 
         return {
-            limit,
-            offset,
+            perPage,
+            page,
             orderBy,
             direction
         }
