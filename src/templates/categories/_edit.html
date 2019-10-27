@@ -3,6 +3,7 @@
 
 {% set fullPageForm = true %}
 {% set saveShortcutRedirect = continueEditingUrl %}
+{% do view.setIsDeltaRegistrationActive(true) %}
 
 {% set groupHandle = group.handle %}
 {% set isNewCategory = category.id ? false : true %}
@@ -96,7 +97,8 @@
                 <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
                     {% include "_includes/fields" with {
                         fields:  tab.getFields(),
-                        element: category
+                        element: category,
+                        registerDeltas: true,
                     } only %}
                 </div>
             {% endfor %}
