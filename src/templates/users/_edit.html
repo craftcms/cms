@@ -8,10 +8,6 @@
 
 {% import "_includes/forms" as forms %}
 
-{% do view.registerTranslations('app', [
-    "Are you sure you want to delete this photo?",
-]) %}
-
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}

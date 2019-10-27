@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -27,7 +28,7 @@ abstract class Arguments
         return [
             'id' => [
                 'name' => 'id',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the elements’ IDs.'
             ],
             'uid' => [

@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Biztosan törlöd a csoportot és annak minden mezőjét?',
     'Are you sure you want to delete this group?' => 'Biztosan törölni szeretnéd ezt a csoportot?',
     'Are you sure you want to delete this image?' => 'Biztosan törölni szeretné a képet?',
-    'Are you sure you want to delete this photo?' => 'Biztosan törlöd ezt a képet?',
     'Are you sure you want to delete this route?' => 'Biztosan törölni szeretné ezt az útvonalat?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Biztosan törlöd és minden további bejegyzést, mely használja “{name}”?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Biztos “{name}” törlésében minden kategóriájával együtt?',

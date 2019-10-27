@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'از پاک کردن این گروه و تمامی فیلدهایش مطمئن هستید؟',
     'Are you sure you want to delete this group?' => 'از پاک کردن این گروه مطمئن هستید؟',
     'Are you sure you want to delete this image?' => 'از پاک کردن این تصویر مطمئن هستید؟',
-    'Are you sure you want to delete this photo?' => 'از پاک کردن این عکس مطمئن هستید؟',
     'Are you sure you want to delete this route?' => 'از پاک کردن این مسیر مطمئن هستید؟',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'از پاک کردن "{name}" و تمامی محتواهایی که از آن استفاده می کند مطمئن هستید؟',
     'Are you sure you want to delete “{name}” and all its categories?' => 'از پاک کردن "{name}" و تمامی دسته بندی هایش مطمئن هستید؟',

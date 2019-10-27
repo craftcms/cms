@@ -8,6 +8,7 @@
 namespace craft\gql\arguments\elements;
 
 use craft\gql\base\ElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -31,7 +32,7 @@ class Tag extends ElementArguments
             ],
             'groupId' => [
                 'name' => 'groupId',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.'
             ],
         ]);

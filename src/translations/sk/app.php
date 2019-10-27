@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Určite zmazať túto skupinu a všetky jej polia?',
     'Are you sure you want to delete this group?' => 'Naozaj chcete odstrániť túto skupinu?',
     'Are you sure you want to delete this image?' => 'Naozaj chcete tento obrázok odstrániť?',
-    'Are you sure you want to delete this photo?' => 'Určite zmazať túto fotografiu?',
     'Are you sure you want to delete this route?' => 'Určite chcete túto trasu vymazať?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Určite zmazať „{name}“ a všetky záznamy, ktoré ho používajú?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Určite zmazať „{name}“ a všetky jeho kategórie?',
