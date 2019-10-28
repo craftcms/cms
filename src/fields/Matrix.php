@@ -1178,7 +1178,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 continue;
             }
 
-
             $block->setOwner($element);
 
             // Set the content post location on the block if we can
