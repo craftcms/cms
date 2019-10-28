@@ -450,12 +450,12 @@ $.extend(Craft,
          * @param {object} deltaNames
          */
         findDeltaData: function(oldData, newData, deltaNames) {
-            // Sort the delta namespaces from most -> least specific
+            // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
                 if (a.length === b.length) {
                     return 0;
                 }
-                return a.length < b.length ? 1 : -1;
+                return a.length > b.length ? 1 : -1;
             });
 
             // Group all of the old & new params by namespace
@@ -489,7 +489,8 @@ $.extend(Craft,
             var n, paramName;
 
             paramLoop: for (var p = 0; p < params.length; p++) {
-                for (n = 0; n < deltaNames.length; n++) {
+                // loop through the delta names from most -> least specific
+                for (n = deltaNames.length - 1; n >= 0; n--) {
                     paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
                     if (
                         paramName === deltaNames[n] + '=' ||
