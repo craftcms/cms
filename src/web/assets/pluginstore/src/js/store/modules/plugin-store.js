@@ -33,7 +33,7 @@ const getters = {
         }
     },
 
-    getPluginIndexParams(state) {
+    getPluginIndexParams() {
         return context => {
             const perPage = context.perPage ? context.perPage : null
             const page = context.page ? context.page : 1
