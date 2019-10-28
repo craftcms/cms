@@ -58,6 +58,7 @@
                 this.$store.commit('pluginStore/updatePlugins', [])
                 this.$store.dispatch('pluginStore/searchPlugins', {
                         searchQuery: this.searchQuery,
+                        dontAppendData: true,
                     })
                     .then(() => {
                         this.loading = false
