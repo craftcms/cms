@@ -223,7 +223,7 @@
                 this.$spinner = $row.find('.spinner');
                 this.handle = this.$row.data('handle');
                 this.addListener(this.$keyInput, 'focus', 'onKeyFocus')
-                this.addListener(this.$keyInput, 'textchange', 'onKeyChange');
+                this.addListener(this.$keyInput, 'input', 'onKeyChange');
             },
 
             getKey: function() {
@@ -242,9 +242,7 @@
                 if (key.length === 0 || key.length === 24 || (key.length > 1 && key[0] === '$')) {
                     // normalize
                     var userKey = Craft.PluginManager.normalizeUserKey(key);
-                    this.$keyInput
-                        .val(userKey)
-                        .data('garnish-textchange-value', userKey);
+                    this.$keyInput.val(userKey);
                     this.updateTimeout = setTimeout($.proxy(this, 'updateLicenseStatus'), 100);
                 }
             },

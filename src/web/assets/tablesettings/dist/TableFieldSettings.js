@@ -65,7 +65,7 @@
 
             initColumnSettingInputs: function($container) {
                 var $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea');
-                this.addListener($textareas, 'textchange', 'reconstructDefaultsTable');
+                this.addListener($textareas, 'input', 'reconstructDefaultsTable');
             },
 
             reconstructDefaultsTable: function() {
