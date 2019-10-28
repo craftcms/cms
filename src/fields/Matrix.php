@@ -1087,7 +1087,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * Creates an array of blocks based on the given serialized data.
      *
      * @param array $value The raw field value
-     * @param ElementInterface $element The element the field is associated with, if there is one
+     * @param ElementInterface $element The element the field is associated with
      * @return MatrixBlock[]
      */
     private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
