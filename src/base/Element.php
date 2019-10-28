@@ -1978,7 +1978,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getDirtyFields(): array
     {
-        return $this->_dirtyFields ?? [];
+        if ($this->_dirtyFields) {
+            return array_keys($this->_dirtyFields);
+        }
+        return [];
     }
 
     /**
