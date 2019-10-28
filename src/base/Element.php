@@ -1976,6 +1976,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getDirtyFields(): array
+    {
+        return $this->_dirtyFields ?? [];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function clearDirtyFields()
     {
         $this->_dirtyFields = null;

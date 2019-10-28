@@ -782,6 +782,14 @@ interface ElementInterface extends ComponentInterface
     public function isFieldDirty(string $fieldHandle): bool;
 
     /**
+     * Returns a list of custom field handles that have changed since the element was first loaded.
+     *
+     * @return string[]
+     * @since 3.4.0
+     */
+    public function getDirtyFields(): array;
+
+    /**
      * Resets the record of dirty fields.
      *
      * @since 3.4.0
