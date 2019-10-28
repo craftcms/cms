@@ -1,5 +1,5 @@
 <template>
-  <div v-show="tablePagination" class="flex pagination">
+  <div v-if="tablePagination" class="flex pagination">
     <div
             @click="loadPage('prev')"
             class="page-link" data-icon="leftangle"
