@@ -514,8 +514,8 @@
                 }
 
                 this.addListener(this.$item, 'click', 'select');
-                this.addListener(this.$nameInput, 'textchange', 'updateNameLabel');
-                this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
+                this.addListener(this.$nameInput, 'input', 'updateNameLabel');
+                this.addListener(this.$handleInput, 'input', 'updateHandleLabel');
                 this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
                 this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
                 this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
