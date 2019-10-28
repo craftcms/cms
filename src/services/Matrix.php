@@ -762,13 +762,24 @@ class Matrix extends Component
         }
         $blockIds = [];
         $collapsedBlockIds = [];
+        $sortOrder = 0;
+        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
+                $sortOrder++;
                 if ($saveAll || !$block->id || $block->dirty) {
                     $block->ownerId = $owner->id;
+                    $block->sortOrder = $sortOrder;
                     $elementsService->saveElement($block, false);
+                } else if ((int)$block->sortOrder !== $sortOrder) {
+                    // Just update its sortOrder
+                    $block->sortOrder = $sortOrder;
+                    $db->createCommand()->update(Table::MATRIXBLOCKS,
+                        ['sortOrder' => $sortOrder],
+                        ['id' => $block->id], [], false)
+                        ->execute();
                 }
 
                 $blockIds[] = $block->id;

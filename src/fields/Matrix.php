@@ -1118,7 +1118,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             );
 
         $blocks = [];
-        $sortOrder = 0;
         $prevBlock = null;
 
         $fieldNamespace = $element->getFieldParamNamespace();
@@ -1188,9 +1187,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             if (isset($blockData['fields'])) {
                 $block->setFieldValues($blockData['fields']);
             }
-
-            $sortOrder++;
-            $block->sortOrder = $sortOrder;
 
             // Set the prev/next blocks
             if ($prevBlock) {
