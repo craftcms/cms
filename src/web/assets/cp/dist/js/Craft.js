@@ -1,4 +1,4 @@
-/*!   - 2019-10-27 */
+/*!   - 2019-10-28 */
 (function($){
 
 /** global: Craft */
@@ -2060,7 +2060,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Automatically update the elements after new search text has been sitting for a 1/2 second
-            this.addListener(this.$search, 'textchange', $.proxy(function() {
+            this.addListener(this.$search, 'input', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
                 } else if (this.searching && !this.$search.val()) {
@@ -4830,8 +4830,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = true;
 
-            this.addListener(this.$source, 'textchange', 'onSourceTextChange');
-            this.addListener(this.$target, 'textchange', 'onTargetTextChange');
+            this.addListener(this.$source, 'input', 'onSourceTextChange');
+            this.addListener(this.$target, 'input', 'onTargetTextChange');
             this.addListener(this.$form, 'submit', 'onFormSubmit');
         },
 
@@ -9883,7 +9883,7 @@ Craft.AuthManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($form, 'submit', 'login');
             }
 
@@ -11107,7 +11107,7 @@ Craft.ColorInput = Garnish.Base.extend({
         this.createColorInput();
         this.handleTextChange();
 
-        this.addListener(this.$input, 'textchange', 'handleTextChange');
+        this.addListener(this.$input, 'input', 'handleTextChange');
     },
 
     createColorInput: function() {
@@ -11133,7 +11133,6 @@ Craft.ColorInput = Garnish.Base.extend({
 
     updateColor: function() {
         this.$input.val(this.$colorInput.val());
-        this.$input.data('garnish-textchange-value', this.$colorInput.val());
         this.handleTextChange();
     },
 
@@ -11150,7 +11149,6 @@ Craft.ColorInput = Garnish.Base.extend({
         if (val[0] !== '#') {
             val = '#'+val;
             this.$input.val(val);
-            this.$input.data('garnish-textchange-value', val);
         }
 
         this.$colorPreview.css('background-color', val);
@@ -12747,7 +12745,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
             this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
 
-            this.addListener(this.$labelInput, 'textchange', 'handleLabelInputChange');
+            this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
             this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
 
             return $([
@@ -13580,8 +13578,8 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.addListener(this.$notesTextInput, 'keydown', 'onNotesKeydown');
 
-            this.addListener(this.$nameTextInput, 'textchange', 'checkMetaValues');
-            this.addListener(this.$notesTextInput, 'textchange', 'checkMetaValues');
+            this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
+            this.addListener(this.$notesTextInput, 'input', 'checkMetaValues');
 
             this.metaHud.on('show', this.onMetaHudShow.bind(this));
             this.metaHud.on('hide', this.onMetaHudHide.bind(this));
@@ -14198,8 +14196,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }));
 
                     this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
-                    this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
-                    $textarea.trigger('textchange');
+                    this.addListener($textarea, 'input', {type: col.type}, 'validateValue');
+                    $textarea.trigger('input');
 
                     textareasByColId[colId] = $textarea;
                 } else if (col.type === 'checkbox') {
@@ -14722,7 +14720,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($passwordModal, 'submit', 'submitPassword');
             }
             else {
@@ -20076,7 +20074,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$addTagInput = this.$container.children('.add').children('.text');
             this.$spinner = this.$addTagInput.next();
 
-            this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
+            this.addListener(this.$addTagInput, 'input', $.proxy(function() {
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }
