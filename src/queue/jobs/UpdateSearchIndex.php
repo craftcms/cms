@@ -37,6 +37,7 @@ class UpdateSearchIndex extends BaseJob
 
     /**
      * @var string[]|null The field handles that should be indexed
+     * @since 3.4.0
      */
     public $fieldHandles;
 

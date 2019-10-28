@@ -158,7 +158,7 @@
                     {% do view.registerDeltaName('groups') %}
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                    {% embed '_includes/forms/field.html' with {
+                    {% embed '_includes/forms/field' with {
                         fieldId: 'user-groups',
                     } %}
                         {% block input %}
