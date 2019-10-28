@@ -1153,6 +1153,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // Existing block?
             if (isset($oldBlocksById[$blockId])) {
                 $block = $oldBlocksById[$blockId];
+                $block->dirty = !empty($blockData);
             } else {
                 // Make sure it's a valid block type
                 if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']])) {

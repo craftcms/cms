@@ -753,9 +753,12 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
         /** @var MatrixBlock[] $blocks */
-        if (($blocks = $query->getCachedResult()) === null) {
+        if (($blocks = $query->getCachedResult()) !== null) {
+            $saveAll = false;
+        } else {
             $blocksQuery = clone $query;
             $blocks = $blocksQuery->anyStatus()->all();
+            $saveAll = true;
         }
         $blockIds = [];
         $collapsedBlockIds = [];
@@ -763,8 +766,11 @@ class Matrix extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
-                $block->ownerId = $owner->id;
-                $elementsService->saveElement($block, false);
+                if ($saveAll || !$block->id || $block->dirty) {
+                    $block->ownerId = $owner->id;
+                    $elementsService->saveElement($block, false);
+                }
+
                 $blockIds[] = $block->id;
 
                 // Tell the browser to collapse this block?

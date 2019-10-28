@@ -170,6 +170,13 @@ class MatrixBlock extends Element implements BlockElementInterface
     public $sortOrder;
 
     /**
+     * @var bool Whether the block has changed.
+     * @internal
+     * @since 3.4.0
+     */
+    public $dirty = false;
+
+    /**
      * @var bool Collapsed
      */
     public $collapsed = false;
