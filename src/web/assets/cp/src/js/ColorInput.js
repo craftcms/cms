@@ -45,7 +45,6 @@ Craft.ColorInput = Garnish.Base.extend({
 
     updateColor: function() {
         this.$input.val(this.$colorInput.val());
-        this.$input.trigger('input');
         this.handleTextChange();
     },
 
@@ -62,7 +61,6 @@ Craft.ColorInput = Garnish.Base.extend({
         if (val[0] !== '#') {
             val = '#'+val;
             this.$input.val(val);
-            this.$input.trigger('input');
         }
 
         this.$colorPreview.css('background-color', val);

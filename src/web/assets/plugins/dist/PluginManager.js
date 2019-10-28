@@ -243,7 +243,6 @@
                     // normalize
                     var userKey = Craft.PluginManager.normalizeUserKey(key);
                     this.$keyInput.val(userKey);
-                    this.$keyInput.trigger('input');
                     this.updateTimeout = setTimeout($.proxy(this, 'updateLicenseStatus'), 100);
                 }
             },
