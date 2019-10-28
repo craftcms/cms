@@ -75,6 +75,24 @@
     {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ 'no-header' -%}
 {% endif %}
 
+{% set mainAttributes = {
+    id: 'main',
+    role: 'main',
+}|merge(mainAttributes ?? []) %}
+
+{% set mainFormAttributes = {
+    'id': 'main-form',
+    'method': 'post',
+    'accept-charset': 'UTF-8',
+    'novalidate': true,
+    'data': {
+        'saveshortcut': true,
+        'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
+        'confirm-unload': true,
+        'delta': view.getIsDeltaRegistrationActive(),
+    },
+}|merge(mainFormAttributes ?? [], recursive=true) %}
+
 {% block body %}
     <div id="global-container">
         <header id="global-sidebar" class="sidebar">
@@ -221,10 +239,10 @@
             </div>
 
             {# main #}
-            <main id="main" role="main">
+            <main {{ attr(mainAttributes) }}>
 
                 {% if fullPageForm -%}
-                    <form {% block mainFormAttributes %}id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate{% endblock %}>
+                    <form {% block mainFormAttributes %}{{ attr(mainFormAttributes) }}{% endblock %}>
                         {{- csrfInput() }}
                 {%- endif %}
 

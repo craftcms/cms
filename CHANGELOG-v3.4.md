@@ -1,6 +1,8 @@
 # Running Release Notes for Craft 3.4
 
 ### Added
+- Added support for delta element updates. ([#4064](https://github.com/craftcms/cms/issues/4064))
+- Elements now track which field values have changed since the element was first loaded. ([#4149](https://github.com/craftcms/cms/issues/4149))
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `{% requireGuest %}` tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
@@ -11,8 +13,12 @@
 - Added `craft\base\AssetPreview`.
 - Added `craft\base\AssetPreviewInterface`.
 - Added `craft\base\AssetPreviewTrait`.
+- Added `craft\base\ElementInterface::clearDirtyFields()`.
+- Added `craft\base\ElementInterface::getDirtyFields()`.
+- Added `craft\base\ElementInterface::isFieldDirty()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
+- Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
@@ -20,12 +26,18 @@
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
+- Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\services\Assets::getAssetPreview()`.
 - Added `craft\services\Gql::getValidationRules()`.
+- Added `craft\services\Search::indexFields()`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
 - Added `craft\web\User::guestRequired()`.
+- Added `craft\web\View::getDeltaNames()`.
+- Added `craft\web\View::getIsDeltaRegistrationActive()`.
+- Added `craft\web\View::registerDeltaName()`.
+- Added `craft\web\View::setIsDeltaRegistrationActive()`.
 - Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 
@@ -43,6 +55,10 @@
 - The installer now requires `config/db.php` to be setting the `dsn` database config setting with a `DB_DSN` environment variable, if a connection can’t already be established. 
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\Search::indexElementAttributes()` now has a `$withFields` argument.
+- The `_includes/forms/field.html` template now supports `fieldAttributes`, `labelAttributes`, and `inputAttributes` variables.
+- The `_includes/field.html` template now supports a `registerDeltas` variable.
+- The `_layouts/cp.html` template now supports `mainAttributes` and `mainFormAttributes` variables.
 - Asset previews are now extensible, allowing plugins to add new preview types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 - Updated Yii to 2.0.29.
 
@@ -52,3 +68,4 @@
 - Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
+- Deprecated `craft\services\Search::indexElementFields()`.

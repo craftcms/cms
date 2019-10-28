@@ -1749,6 +1749,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['trashed'] = $row['dateDeleted'] !== null;
         }
 
+        // Set the custom field values
+        if (isset($fieldValues)) {
+            $row['fieldValues'] = $fieldValues;
+        }
+
         $behaviors = [];
 
         if ($this->drafts) {
@@ -1772,12 +1777,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var Element $element */
         $element = new $class($row);
         $element->attachBehaviors($behaviors);
-
-        // Set the custom field values
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (isset($fieldValues)) {
-            $element->setFieldValues($fieldValues);
-        }
 
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {

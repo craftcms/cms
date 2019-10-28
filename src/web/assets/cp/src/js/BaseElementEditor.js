@@ -8,6 +8,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -194,6 +196,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
         updateForm: function(response) {
             this.siteId = response.siteId;
+            this.deltaNames = response.deltaNames;
 
             this.$fieldsContainer.html(response.html);
 
@@ -214,6 +217,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+                this.initialData = this.hud.$body.serialize();
             }, this));
         },
 
@@ -231,6 +235,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 

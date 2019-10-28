@@ -233,12 +233,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('literal', [$this, 'literalFilter']),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs']),
             new TwigFilter('ns', [$this->view, 'namespaceInputs']),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
             new TwigFilter('number', [$formatter, 'asDecimal']),
+            new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
@@ -441,6 +443,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $arr = (array)$arr;
         ArrayHelper::remove($arr, $key);
         return $arr;
+    }
+
+    /**
+     * Parses an HTML tag to find its attributes.
+     *
+     * @param string $tag The HTML tag to parse
+     * @return array The parsed HTML tag attributes
+     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @since 3.4.0
+     */
+    public function parseAttrFilter(string $tag): array
+    {
+        try {
+            return Html::parseTagAttributes($tag, 0, $start, $end, true);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return [];
+        }
     }
 
     /**
@@ -792,6 +812,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return Markdown::process((string)$markdown, $flavor);
+    }
+
+    /**
+     * Merges an array with another one.
+     *
+     * @param array|\Traversable $arr1 An array
+     * @param array|\Traversable $arr2 An array
+     * @param bool $recursive Whether the arrays should be merged recursively using [[\yii\helpers\BaseArrayHelper::merge()]]
+     * @return array The merged array
+     * @since 3.4.0
+     */
+    public function mergeFilter($arr1, $arr2, bool $recursive = false): array
+    {
+        if ($recursive) {
+            return ArrayHelper::merge($arr1, $arr2);
+        }
+
+        return twig_array_merge($arr1, $arr2);
     }
 
     /**

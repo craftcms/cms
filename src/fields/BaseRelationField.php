@@ -641,9 +641,12 @@ JS;
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        // Skip if the element is just propagating, and we're not localizing relations
+        // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         /** @var Element $element */
-        if (!$element->propagating || $this->localizeRelations) {
+        if (
+            $element->isFieldDirty($this->handle) &&
+            (!$element->propagating || $this->localizeRelations)
+        ) {
             /** @var ElementQuery $value */
             $value = $element->getFieldValue($this->handle);
 

@@ -102,17 +102,15 @@ class Search extends Component
      * Indexes the attributes of a given element defined by its element type.
      *
      * @param ElementInterface $element
+     * @param bool $withFields Whether the element’s custom fields should be indexed too
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element): bool
+    public function indexElementAttributes(ElementInterface $element, $withFields = true): bool
     {
         /** @var Element $element */
-        // Does it have any searchable attributes?
         $searchableAttributes = $element::searchableAttributes();
-
         $searchableAttributes[] = 'slug';
-
         if ($element::hasTitles()) {
             $searchableAttributes[] = 'title';
         }
@@ -123,23 +121,49 @@ class Search extends Component
         }
 
         // Custom fields too?
-        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
-            $keywords = [];
-
-            foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
-                if ($field->searchable) {
-                    // Set the keywords for the content's site
-                    $fieldValue = $element->getFieldValue($field->handle);
-                    $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                    $keywords[$field->id] = $fieldSearchKeywords;
-                }
-            }
-
-            $this->indexElementFields($element->id, $element->siteId, $keywords);
+        if ($withFields) {
+            $this->indexElementFields($element);
         }
 
         return true;
+    }
+
+    /**
+     * Indexes the attributes of a given element defined by its element type.
+     *
+     * @param ElementInterface $element
+     * @param string[]|null $fieldHandles The field handles that should be indexed
+     * @since 3.4.0
+     */
+    public function indexFields(ElementInterface $element, array $fieldHandles = null)
+    {
+        if ($fieldHandles !== null) {
+            if (empty($fieldHandles)) {
+                return;
+            }
+            $fieldHandles = array_flip($fieldHandles);
+        }
+
+        if (!$element::hasContent() || ($fieldLayout = $element->getFieldLayout()) === null) {
+            return;
+        }
+
+        foreach ($fieldLayout->getFields() as $field) {
+            /** @var Field $field */
+            // Skip fields that aren't set to be searhable
+            if (!$field->searchable) {
+                continue;
+            }
+
+            // Skip fields that weren't listed
+            if ($fieldHandles !== null && !isset($fieldHandles[$field->handle])) {
+                continue;
+            }
+
+            $fieldValue = $element->getFieldValue($field->handle);
+            $keywords = $field->getSearchKeywords($fieldValue, $element);
+            $this->_indexElementKeywords($element->id, 'field', (string)$field->id, $element->siteId, $keywords);
+        }
     }
 
     /**
@@ -150,6 +174,7 @@ class Search extends Component
      * @param array $fields The field values, indexed by field ID.
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
+     * @deprecated in 3.4.0. Use [[indexFields()]] instead.
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {

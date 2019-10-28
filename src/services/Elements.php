@@ -2074,12 +2074,15 @@ class Elements extends Component
             // Update search index
             if ($updateSearchIndex) {
                 if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    Craft::$app->getSearch()->indexElementAttributes($element);
+                    $searchService = Craft::$app->getSearch();
+                    $searchService->indexElementAttributes($element, false);
+                    $searchService->indexFields($element, $element->getDirtyFields());
                 } else {
                     Craft::$app->getQueue()->push(new UpdateSearchIndex([
                         'elementType' => get_class($element),
                         'elementId' => $element->id,
                         'siteId' => $propagate ? '*' : $element->siteId,
+                        'fieldHandles' => $element->getDirtyFields(),
                     ]));
                 }
             }
@@ -2096,6 +2099,9 @@ class Elements extends Component
                 'isNew' => $isNewElement,
             ]));
         }
+
+        // Clear the element's record of dirty fields
+        $element->clearDirtyFields();
 
         return true;
     }
@@ -2147,8 +2153,11 @@ class Elements extends Component
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    // Does this field produce the same translation key as it did for the master element?
-                    if ($field->getTranslationKey($siteElement) === $field->getTranslationKey($element)) {
+                    // Has this field changed, and does it produce the same translation key as it did for the master element?
+                    if (
+                        $element->isFieldDirty($field->handle) &&
+                        $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                    ) {
                         // Copy the master element's value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }

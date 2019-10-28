@@ -41,7 +41,6 @@ use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 
 /**
  * Matrix represents a Matrix field.
@@ -478,10 +477,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             return $value;
         }
 
-        /** @var Element|null $element */
         $query = MatrixBlock::find();
 
         // Existing element?
+        /** @var Element|null $element */
         if ($element && $element->id) {
             $query->ownerId($element->id);
         } else {
@@ -494,7 +493,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if (is_array($value) || $value === '') {
+        if ($value === '') {
+            $query->setCachedResult([]);
+        } else if ($element && is_array($value)) {
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -906,7 +907,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         /** @var Element $element */
         if ($element->duplicateOf !== null) {
             $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
-        } else {
+        } else if ($element->isFieldDirty($this->handle)) {
             $matrixService->saveField($this, $element);
         }
 
@@ -1033,7 +1034,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName($this->handle . '[__BLOCK__][fields]', $originalNamespace);
+        $namespace = Craft::$app->getView()->namespaceInputName($this->handle . '[blocks][__BLOCK__][fields]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach ($blockTypes as $blockType) {
@@ -1085,52 +1086,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * Creates an array of blocks based on the given serialized data.
      *
-     * @param array|string $value The raw field value
-     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @param array $value The raw field value
+     * @param ElementInterface $element The element the field is associated with
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData($value, ElementInterface $element = null): array
+    private function _createBlocksFromSerializedData(array $value, ElementInterface $element): array
     {
-        if (!is_array($value)) {
-            return [];
-        }
-
         /** @var Element $element */
         // Get the possible block types for this field
         /** @var MatrixBlockType[] $blockTypes */
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id), 'handle');
 
-        $oldBlocksById = [];
-
-        // Get the old blocks that are still around
-        if ($element && $element->id) {
-            $ownerId = $element->id;
-
-            $ids = [];
-
-            foreach (array_keys($value) as $blockId) {
-                if (is_numeric($blockId) && $blockId != 0) {
-                    $ids[] = $blockId;
-
-                    // If that block was duplicated earlier in this request, check for that as well.
-                    if (isset(Elements::$duplicatedElementIds[$blockId])) {
-                        $ids[] = Elements::$duplicatedElementIds[$blockId];
-                    }
-                }
-            }
-
-            if (!empty($ids)) {
-                $oldBlocksQuery = MatrixBlock::find();
-                $oldBlocksQuery->fieldId($this->id);
-                $oldBlocksQuery->ownerId($ownerId);
-                $oldBlocksQuery->id($ids);
-                $oldBlocksQuery->anyStatus();
-                $oldBlocksQuery->siteId($element->siteId);
-                $oldBlocksQuery->indexBy('id');
-                $oldBlocksById = $oldBlocksQuery->all();
-            }
+        // Get the old blocks
+        if ($element->id) {
+            $oldBlocksById = MatrixBlock::find()
+                ->fieldId($this->id)
+                ->ownerId($element->id)
+                ->siteId($element->siteId)
+                ->anyStatus()
+                ->indexBy('id')
+                ->all();
         } else {
-            $ownerId = null;
+            $oldBlocksById = [];
         }
 
         // Should we ignore disabled blocks?
@@ -1141,68 +1118,75 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             );
 
         $blocks = [];
-        $sortOrder = 0;
         $prevBlock = null;
 
-        foreach ($value as $blockId => $blockData) {
-            if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']])) {
-                continue;
-            }
+        $fieldNamespace = $element->getFieldParamNamespace();
+        $baseBlockFieldNamespace = $fieldNamespace ? "{$fieldNamespace}.{$this->handle}" : null;
 
-            // Skip disabled blocks on Live Preview requests
-            if ($hideDisabledBlocks && empty($blockData['enabled'])) {
-                continue;
+        // Was the value posted in the new (delta) format?
+        if (isset($value['blocks']) || isset($value['sortOrder'])) {
+            $newBlockData = $value['blocks'] ?? [];
+            $newSortOrder = $value['sortOrder'] ?? array_keys($oldBlocksById);
+            if ($baseBlockFieldNamespace) {
+                $baseBlockFieldNamespace .= '.blocks';
             }
+        } else {
+            $newBlockData = $value;
+            $newSortOrder = array_keys($value);
+        }
 
-            $blockType = $blockTypes[$blockData['type']];
+        foreach ($newSortOrder as $blockId) {
+            $blockData = $newBlockData[$blockId] ?? [];
 
             // If this is a preexisting block but we don't have a record of it,
             // check to see if it was recently duplicated.
             if (
                 strpos($blockId, 'new') !== 0 &&
                 !isset($oldBlocksById[$blockId]) &&
-                isset(Elements::$duplicatedElementIds[$blockId])
+                isset(Elements::$duplicatedElementIds[$blockId]) &&
+                isset($oldBlocksById[Elements::$duplicatedElementIds[$blockId]])
             ) {
                 $blockId = Elements::$duplicatedElementIds[$blockId];
             }
 
-            // Is this new? (Or has it been deleted?)
-            if (strpos($blockId, 'new') === 0 || !isset($oldBlocksById[$blockId])) {
+            // Existing block?
+            if (isset($oldBlocksById[$blockId])) {
+                $block = $oldBlocksById[$blockId];
+                $block->dirty = !empty($blockData);
+            } else {
+                // Make sure it's a valid block type
+                if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']])) {
+                    continue;
+                }
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
-                $block->typeId = $blockType->id;
-                $block->ownerId = $ownerId;
+                $block->typeId = $blockTypes[$blockData['type']]->id;
+                $block->ownerId = $element->id;
                 $block->siteId = $element->siteId;
 
                 // Preserve the collapsed state, which the browser can't remember on its own for new blocks
                 $block->collapsed = !empty($blockData['collapsed']);
-            } else {
-                $block = $oldBlocksById[$blockId];
+            }
+
+            if (isset($blockData['enabled'])) {
+                $block->enabled = (bool)$blockData['enabled'];
+            }
+
+            // Skip disabled blocks on Live Preview requests
+            if ($hideDisabledBlocks && !$block->enabled) {
+                continue;
             }
 
             $block->setOwner($element);
-            $block->enabled = (isset($blockData['enabled']) ? (bool)$blockData['enabled'] : true);
 
             // Set the content post location on the block if we can
-            $fieldNamespace = $element->getFieldParamNamespace();
-
-            if ($fieldNamespace !== null) {
-                $blockFieldNamespace = ($fieldNamespace ? $fieldNamespace . '.' : '') . $this->handle . '.' . $blockId . '.fields';
-                $block->setFieldParamNamespace($blockFieldNamespace);
+            if ($baseBlockFieldNamespace) {
+                $block->setFieldParamNamespace("{$baseBlockFieldNamespace}.{$blockId}.fields");
             }
 
             if (isset($blockData['fields'])) {
-                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        $block->setFieldValue($fieldHandle, $fieldValue);
-                    } catch (UnknownPropertyException $e) {
-                        // the field was probably deleted
-                    }
-                }
+                $block->setFieldValues($blockData['fields']);
             }
-
-            $sortOrder++;
-            $block->sortOrder = $sortOrder;
 
             // Set the prev/next blocks
             if ($prevBlock) {

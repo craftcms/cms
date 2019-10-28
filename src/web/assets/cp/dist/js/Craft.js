@@ -1,4 +1,4 @@
-/*!   - 2019-10-24 */
+/*!   - 2019-10-27 */
 (function($){
 
 /** global: Craft */
@@ -52,7 +52,7 @@ $.extend(Craft,
          * @return string D3 format
          */
         formatNumber: function(number, format) {
-            if(typeof format == 'undefined') {
+            if (typeof format == 'undefined') {
                 format = ',.0f';
             }
 
@@ -132,8 +132,7 @@ $.extend(Craft,
                 // Select the whole value
                 var length = val.length * 2;
                 $input[0].setSelectionRange(0, length);
-            }
-            else {
+            } else {
                 // Refresh the value to get the cursor positioned at the end
                 $input.val(val);
             }
@@ -175,8 +174,7 @@ $.extend(Craft,
 
                     if (name === '#') {
                         anchor = value;
-                    }
-                    else if (value !== null && value !== '') {
+                    } else if (value !== null && value !== '') {
                         aParams.push(name + '=' + value);
                     }
                 }
@@ -186,8 +184,7 @@ $.extend(Craft,
 
             if (Garnish.isArray(params)) {
                 params = params.join('&');
-            }
-            else {
+            } else {
                 params = Craft.trim(params, '&?');
             }
 
@@ -219,8 +216,7 @@ $.extend(Craft,
                         path = '';
                     }
                 }
-            }
-            else {
+            } else {
                 url = Craft.baseUrl;
             }
 
@@ -237,8 +233,7 @@ $.extend(Craft,
                     if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
                     }
-                }
-                else {
+                } else {
                     // Move the path into the query string params
 
                     // Is the path param already set?
@@ -249,8 +244,7 @@ $.extend(Craft,
                         if (endPath !== -1) {
                             basePath = params.substring(2, endPath);
                             params = params.substr(endPath + 1);
-                        }
-                        else {
+                        } else {
                             basePath = params.substr(2);
                             params = null;
                         }
@@ -328,8 +322,7 @@ $.extend(Craft,
         getCsrfInput: function() {
             if (Craft.csrfTokenName) {
                 return '<input type="hidden" name="' + Craft.csrfTokenName + '" value="' + Craft.csrfTokenValue + '"/>';
-            }
-            else {
+            } else {
                 return '';
             }
         },
@@ -427,8 +420,7 @@ $.extend(Craft,
 
                 if (Craft._ajaxQueue.length) {
                     Craft._postNextActionRequestInQueue();
-                }
-                else {
+                } else {
                     Craft._waitingOnAjax = false;
                 }
             }, args[3]);
@@ -450,6 +442,77 @@ $.extend(Craft,
                 arr[i] = $.trim(arr[i]);
             }
             return arr;
+        },
+
+        /**
+         * Compares old and new post data, and removes any values that haven't
+         * changed within the given list of delta namespaces.
+         *
+         * @param {string} oldData
+         * @param {string} newData
+         * @param {object} deltaNames
+         */
+        findDeltaData: function(oldData, newData, deltaNames) {
+            // Sort the delta namespaces from least -> most specific
+            deltaNames.sort(function(a, b) {
+                if (a.length === b.length) {
+                    return 0;
+                }
+                return a.length > b.length ? 1 : -1;
+            });
+
+            // Group all of the old & new params by namespace
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false);
+            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true);
+
+            // Figure out which of the new params should actually be posted
+            var params = groupedNewParams.__root__;
+            for (var n = 0; n < deltaNames.length; n++) {
+                if (
+                    typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                    (
+                        typeof groupedOldParams[deltaNames[n]] !== 'object' ||
+                        JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                    )
+                ) {
+                    params = params.concat(groupedNewParams[deltaNames[n]]);
+                }
+            }
+
+            return params.join('&');
+        },
+
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot) {
+            var grouped = {};
+
+            if (withRoot) {
+                grouped.__root__ = [];
+            }
+
+            var n, paramName;
+
+            paramLoop: for (var p = 0; p < params.length; p++) {
+                // loop through the delta names from most -> least specific
+                for (n = deltaNames.length - 1; n >= 0; n--) {
+                    paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
+                    if (
+                        paramName === deltaNames[n] + '=' ||
+                        paramName === deltaNames[n] + '['
+                    ) {
+                        if (typeof grouped[deltaNames[n]] === 'undefined') {
+                            grouped[deltaNames[n]] = [];
+                        }
+                        grouped[deltaNames[n]].push(params[p]);
+                        continue paramLoop;
+                    }
+                }
+
+                if (withRoot) {
+                    grouped.__root__.push(params[p]);
+                }
+            }
+
+            return grouped;
         },
 
         /**
@@ -479,8 +542,7 @@ $.extend(Craft,
                     for (i = 0; i < keys.length; i++) {
                         keys[i] = keys[i].substring(1, keys[i].length - 1);
                     }
-                }
-                else {
+                } else {
                     keys = [];
                 }
 
@@ -494,15 +556,13 @@ $.extend(Craft,
                             // Figure out what this will be by looking at the next key
                             if (!keys[i + 1] || parseInt(keys[i + 1]) == keys[i + 1]) {
                                 parentElem[keys[i]] = [];
-                            }
-                            else {
+                            } else {
                                 parentElem[keys[i]] = {};
                             }
                         }
 
                         parentElem = parentElem[keys[i]];
-                    }
-                    else {
+                    } else {
                         // Last one. Set the value
                         if (!keys[i]) {
                             keys[i] = parentElem.length;
@@ -514,6 +574,37 @@ $.extend(Craft,
             }
 
             return expanded;
+        },
+
+        /**
+         * Creates a form element populated with hidden inputs based on a string of serialized form data.
+         *
+         * @param {string} data
+         * @returns {jQuery|HTMLElement}
+         */
+        createForm: function(data) {
+            var $form = $('<form/>', {
+                attr: {
+                    method: 'post',
+                    action: '',
+                    'accept-charset': 'UTF-8',
+                },
+            });
+
+            if (typeof data === 'string') {
+                var values = data.split('&');
+                var chunks;
+                for (var i = 0; i < values.length; i++) {
+                    chunks = values[i].split('=', 2);
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: decodeURIComponent(chunks[0]),
+                        value: decodeURIComponent(chunks[1] || '')
+                    }).appendTo($form);
+                }
+            }
+
+            return $form;
         },
 
         /**
@@ -548,8 +639,7 @@ $.extend(Craft,
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
-                    }
-                    else {
+                    } else {
                         if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2))) {
                             return false;
                         }
@@ -569,8 +659,7 @@ $.extend(Craft,
 
                 // All clear
                 return true;
-            }
-            else {
+            } else {
                 return (obj1 === obj2);
             }
         },
@@ -692,8 +781,7 @@ $.extend(Craft,
 
                 if (typeof callback === 'function') {
                     include = callback(arr[i], i);
-                }
-                else {
+                } else {
                     include = arr[i];
                 }
 
@@ -728,8 +816,7 @@ $.extend(Craft,
             if (index !== -1) {
                 arr.splice(index, 1);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -823,8 +910,7 @@ $.extend(Craft,
             if (showSeconds) {
                 minutes = Math.floor(seconds / secondsInMinute);
                 seconds = seconds % secondsInMinute;
-            }
-            else {
+            } else {
                 minutes = Math.round(seconds / secondsInMinute);
                 seconds = 0;
             }
@@ -1047,8 +1133,7 @@ $.extend(Craft,
 
             if (typeof this._elementIndexClasses[elementType] !== 'undefined') {
                 func = this._elementIndexClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementIndex;
             }
 
@@ -1066,8 +1151,7 @@ $.extend(Craft,
 
             if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
                 func = this._elementSelectorModalClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementSelectorModal;
             }
 
@@ -1086,8 +1170,7 @@ $.extend(Craft,
 
             if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementEditor;
             }
 
@@ -1105,8 +1188,7 @@ $.extend(Craft,
 
             if (typeof localStorage !== 'undefined' && typeof localStorage[key] !== 'undefined') {
                 return JSON.parse(localStorage[key]);
-            }
-            else {
+            } else {
                 return defaultValue;
             }
         },
@@ -1126,8 +1208,7 @@ $.extend(Craft,
                 // but has a max size of 0 bytes.
                 try {
                     localStorage[key] = JSON.stringify(value);
-                }
-                catch (e) {
+                } catch (e) {
                 }
             }
         },
@@ -1206,8 +1287,7 @@ $.extend($.fn,
         animateLeft: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({left: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({right: pos}, duration, easing, complete);
             }
         },
@@ -1215,8 +1295,7 @@ $.extend($.fn,
         animateRight: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({right: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({left: pos}, duration, easing, complete);
             }
         },
@@ -1320,8 +1399,7 @@ $.extend($.fn,
                 if (typeof settingName === 'string') {
                     settings = {};
                     settings[settingName] = settingValue;
-                }
-                else {
+                } else {
                     settings = settingName;
                 }
 
@@ -1331,8 +1409,7 @@ $.extend($.fn,
                         obj.setSettings(settings);
                     }
                 });
-            }
-            else {
+            } else {
                 if (!$.isPlainObject(settings)) {
                     settings = {};
                 }
@@ -1379,7 +1456,7 @@ $.extend($.fn,
                 }
 
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
+                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
@@ -1441,6 +1518,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -1627,6 +1706,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
         updateForm: function(response) {
             this.siteId = response.siteId;
+            this.deltaNames = response.deltaNames;
 
             this.$fieldsContainer.html(response.html);
 
@@ -1647,6 +1727,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+                this.initialData = this.hud.$body.serialize();
             }, this));
         },
 
@@ -1664,6 +1745,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
@@ -11114,6 +11197,8 @@ Craft.CP = Garnish.Base.extend(
         $contentContainer: null,
         $edition: null,
 
+        $confirmUnloadForms: null,
+        $deltaForms: null,
         $collapsibleTables: null,
 
         fixedHeader: false,
@@ -11170,7 +11255,7 @@ Craft.CP = Garnish.Base.extend(
 
                 // Wait a frame before initializing any confirm-unload forms,
                 // so other JS that runs on ready() has a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
+                Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
             }, this));
 
             // Alerts
@@ -11221,18 +11306,20 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        initConfirmUnloadForms: function() {
+        initSpecialForms: function() {
             // Look for forms that we should watch for changes on
             this.$confirmUnloadForms = $('form[data-confirm-unload]');
+            this.$deltaForms = $('form[data-delta]');
 
             if (!this.$confirmUnloadForms.length) {
                 return;
             }
 
+            var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
             var $form, serialized;
 
-            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                $form = this.$confirmUnloadForms.eq(i);
+            for (var i = 0; i < $forms.length; i++) {
+                $form = $forms.eq(i);
                 if (!$form.data('initialSerializedValue')) {
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
@@ -11241,8 +11328,23 @@ Craft.CP = Garnish.Base.extend(
                     }
                     $form.data('initialSerializedValue', serialized);
                 }
-                this.addListener($form, 'submit', function() {
-                    this.removeListener(Garnish.$win, 'beforeunload');
+                this.addListener($form, 'submit', function(ev) {
+                    if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+                        this.removeListener(Garnish.$win, 'beforeunload');
+                    }
+                    if (Garnish.hasAttr($form, 'data-delta')) {
+                        ev.preventDefault();
+                        var serialized;
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                        Craft.createForm(data)
+                            .appendTo(Garnish.$bod)
+                            .submit();
+                    }
                 });
             }
 
@@ -12979,6 +13081,8 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return this.serializeForm(true)
             }.bind(this));
 
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+
             if (this.settings.draftId) {
                 this.initForDraft();
             } else {
@@ -13019,7 +13123,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             });
 
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
@@ -13576,44 +13679,30 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Duplicate the form with normalized data
-            var $form = $('<form/>', {
-                attr: {
-                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
-                    'action': Craft.cp.$primaryForm.attr('action'),
-                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
-                    'method': Craft.cp.$primaryForm.attr('method'),
-                    'target': Craft.cp.$primaryForm.attr('target'),
-                }
-            });
             var data = this.prepareData(this.serializeForm(false));
-            var values = data.split('&');
-            var chunks;
-            for (var i = 0; i < values.length; i++) {
-                chunks = values[i].split('=', 2);
-                $('<input/>', {
-                    type: 'hidden',
-                    name: decodeURIComponent(chunks[0]),
-                    value: decodeURIComponent(chunks[1] || '')
-                }).appendTo($form);
-            }
+            // Filter out anything that hasn't changed
+            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
+            var $form = Craft.createForm(data);
 
-            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'action',
-                    value: this.settings.applyDraftAction
-                }).appendTo($form);
-            }
+            if (this.settings.draftId) {
+                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'action',
+                        value: this.settings.applyDraftAction
+                    }).appendTo($form);
+                }
 
-            if (
-                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
-                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
-            ) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'redirect',
-                    value: this.settings.hashedRedirectUrl
-                }).appendTo($form);
+                if (
+                    (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                    (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+                ) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'redirect',
+                        value: this.settings.hashedRedirectUrl
+                    }).appendTo($form);
+                }
             }
 
             $form.appendTo(Garnish.$bod);
@@ -14515,6 +14604,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             // Ignore if we're in the middle of getting the elevated session timeout
             if (Craft.elevatedSessionManager.fetchingTimeout) {
                 ev.preventDefault();
+                ev.stopImmediatePropagation();
                 return;
             }
 
@@ -14545,6 +14635,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
             // Prevent the form from submitting until the user has an elevated session
             ev.preventDefault();
+            ev.stopImmediatePropagation();
             Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'submitForm'));
         },
 
@@ -17879,24 +17970,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
-
-                        var $highlight = this.$container.find('.highlight');
-
-                        if ($highlight.length && $highlight.hasClass('json')) {
-                            var $target = $highlight.find('code');
-                            $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
-                        }
-
-                        if ($highlight.length) {
-                            Prism.highlightElement($highlight.find('code').get(0));
-                        } else {
-                            this.$container.find('img').css({
-                                width: containerWidth,
-                                height: containerHeight
-                            });
-                        }
-
-                        this.updateSizeAndPosition();
+                        Craft.appendHeadHtml(response.headHtml);
+                        Craft.appendFootHtml(response.footHtml);
                     } else {
                         alert(response.error);
 
@@ -17904,62 +17979,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     }
                 }
             }.bind(this));
-        },
-
-        /**
-         * Override default logic with some extra shenanigans
-         */
-        updateSizeAndPosition: function() {
-            if (!this.loaded) {
-                return;
-            }
-
-            var $img = this.$container.find('img');
-
-            if (this.loaded && $img.length) {
-                // Make sure we maintain the ratio
-
-                var maxWidth = $img.data('maxwidth'),
-                    maxHeight = $img.data('maxheight'),
-                    imageRatio = maxWidth / maxHeight,
-                    desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
-                    desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
-                    width = Math.min(desiredWidth, maxWidth),
-                    height = Math.round(Math.min(maxHeight, width / imageRatio));
-
-                width = Math.round(height * imageRatio);
-
-                $img.css({'width': width, 'height': height});
-                this._resizeContainer(width, height);
-
-                this.desiredWidth = width;
-                this.desiredHeight = height;
-
-            }
-
-            this.base();
-
-            if (this.loaded && $img.length) {
-                // Correct anomalities
-                var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), Garnish.$win.width() - (this.settings.minGutter * 2))),
-                    containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), Garnish.$win.height() - (this.settings.minGutter * 2)));
-                    containerWidth = Math.round(containerHeight * imageRatio);
-
-                // This might actually have put width over the viewport limits, so doublecheck that
-                if (containerWidth > Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2)) {
-                    containerWidth =  Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2);
-                    containerHeight = containerWidth / imageRatio;
-                }
-
-                this._resizeContainer(containerWidth, containerHeight);
-
-                $img.css({'width': containerWidth, 'height': containerHeight});
-            } else if (this.loaded) {
-                this.$container.find('.highlight')
-                    .height(this.$container.height())
-                    .width(this.$container.width())
-                    .css({'overflow': 'auto'});
-            }
         },
 
         /**
