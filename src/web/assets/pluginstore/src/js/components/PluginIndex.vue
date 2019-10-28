@@ -4,7 +4,7 @@
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
-                <plugin-index-sort :loading="(loading || forceLoading)" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
+                <plugin-index-sort :loading="loading" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
             </template>
         </div>
 
@@ -19,7 +19,7 @@
     import PluginIndexSort from './PluginIndexSort'
 
     export default {
-        props: ['plugins', 'action', 'requestData', 'disableSorting', 'forceLoading'],
+        props: ['plugins', 'action', 'requestData', 'disableSorting'],
 
         components: {
             PluginGrid,
@@ -164,40 +164,55 @@
                     return false
                 }
             },
+
+            mountPluginIndex() {
+                this.$store.commit('pluginStore/updatePlugins', [])
+                this.loading = true
+                this.page = 1
+
+                this.$store.dispatch(this.action, this.requestActionData)
+                    .then((response) => {
+                        this.loading = false
+                        if (response.data.currentPage < response.data.total) {
+                            this.hasMore = true
+                            this.page++
+
+                            if (!this.viewHasScrollbar()) {
+                                this.requestPlugins()
+                            }
+
+                            this.$root.$on('viewScroll', this.onViewScroll)
+                            this.$root.$on('windowResize', this.onWindowResize)
+                        } else {
+                            this.hasMore = false
+                        }
+                    })
+                    .catch(() => {
+                        this.loading = false
+                    })
+            },
+
+            destroyPluginIndex() {
+                this.$root.$off('viewScroll')
+                this.$root.$off('windowResize')
+
+                this.$store.dispatch('pluginStore/cancelRequests')
+            },
+
+            refreshPluginIndex() {
+                this.$nextTick(() => {
+                    this.destroyPluginIndex()
+                    this.mountPluginIndex()
+                })
+            }
         },
 
         mounted() {
-            this.$store.commit('pluginStore/updatePlugins', [])
-            this.loading = true
-            this.page = 1
-
-            this.$store.dispatch(this.action, this.requestActionData)
-                .then((response) => {
-                    this.loading = false
-                    if (response.data.currentPage < response.data.total) {
-                        this.hasMore = true
-                        this.page++
-
-                        if (!this.viewHasScrollbar()) {
-                            this.requestPlugins()
-                        }
-
-                        this.$root.$on('viewScroll', this.onViewScroll)
-                        this.$root.$on('windowResize', this.onWindowResize)
-                    } else {
-                        this.hasMore = false
-                    }
-                })
-                .catch(() => {
-                    this.loading = false
-                })
+            this.mountPluginIndex()
         },
 
         beforeDestroy() {
-            this.$root.$off('viewScroll')
-            this.$root.$off('windowResize')
-
-            this.$store.dispatch('pluginStore/cancelRequests')
+            this.destroyPluginIndex()
         }
     }
 </script>

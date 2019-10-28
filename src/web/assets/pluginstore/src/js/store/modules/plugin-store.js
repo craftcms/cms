@@ -180,7 +180,6 @@ const actions = {
         return new Promise((resolve, reject) => {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
-
             api.searchPlugins(context.searchQuery, pluginIndexParams)
                 .then(response => {
                     dispatch('updatePluginIndex', {context, response})

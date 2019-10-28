@@ -1,10 +1,10 @@
 <template>
     <div class="ps-container">
         <plugin-index
+                ref="pluginIndex"
                 action="pluginStore/searchPlugins"
                 :requestData="requestData"
                 :plugins="plugins"
-                :force-loading="loading"
         >
             <template v-slot:header>
                 <h1>{{ "Showing results for “{searchQuery}”"|t('app', {searchQuery}) }}</h1>
@@ -24,7 +24,6 @@
 
         data() {
             return {
-                loading: false,
                 sortingOptions: {
                     attribute: 'activeInstalls',
                     sort: 'desc',
@@ -53,19 +52,7 @@
 
         methods: {
             search() {
-                this.loading = true
-
-                this.$store.commit('pluginStore/updatePlugins', [])
-                this.$store.dispatch('pluginStore/searchPlugins', {
-                        searchQuery: this.searchQuery,
-                        dontAppendData: true,
-                    })
-                    .then(() => {
-                        this.loading = false
-                    })
-                    .catch(() => {
-                        this.loading = false
-                    })
+                this.$refs.pluginIndex.refreshPluginIndex()
             }
         },
 
@@ -74,8 +61,6 @@
                 this.$router.push({path: '/'})
                 return null
             }
-
-            this.search()
         }
     }
 </script>
