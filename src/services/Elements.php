@@ -2074,12 +2074,15 @@ class Elements extends Component
             // Update search index
             if ($updateSearchIndex) {
                 if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    Craft::$app->getSearch()->indexElementAttributes($element);
+                    $searchService = Craft::$app->getSearch();
+                    $searchService->indexElementAttributes($element, false);
+                    $searchService->indexFields($element, $element->getDirtyFields());
                 } else {
                     Craft::$app->getQueue()->push(new UpdateSearchIndex([
                         'elementType' => get_class($element),
                         'elementId' => $element->id,
                         'siteId' => $propagate ? '*' : $element->siteId,
+                        'fieldHandles' => $element->getDirtyFields(),
                     ]));
                 }
             }

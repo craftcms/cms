@@ -31,9 +31,14 @@ class UpdateSearchIndex extends BaseJob
     public $elementId;
 
     /**
-     * @var int|string|null The site ID of the elements to update, or `'*'` to update all sites.
+     * @var int|string|null The site ID of the elements to update, or `'*'` to update all sites
      */
     public $siteId = '*';
+
+    /**
+     * @var string[]|null The field handles that should be indexed
+     */
+    public $fieldHandles;
 
     /**
      * @inheritdoc
@@ -52,7 +57,8 @@ class UpdateSearchIndex extends BaseJob
 
         foreach ($elements as $i => $element) {
             $this->setProgress($queue, $i + 1 / $total);
-            $searchService->indexElementAttributes($element);
+            $searchService->indexElementAttributes($element, false);
+            $searchService->indexFields($element, $this->fieldHandles);
         }
     }
 
