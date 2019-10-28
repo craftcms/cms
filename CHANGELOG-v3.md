@@ -19,6 +19,7 @@
 ### Fixed
 - Fixed a bug where Edit Entry pages would often warn authors when leaving the page even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load. ([craftcms/redactor#161](https://github.com/craftcms/redactor/issues/161))
 - Fixed a bug where sometimes Assets would not be moved to the correct folders when using the `Restrict uploads to a single folder` setting in a multi-site setup. ([#5139](https://github.com/craftcms/cms/issues/5139)
+- Fixed a bug where updating from the command line could run sometimes hit a memory limit error.
 
 ## 3.3.13 - 2019-10-23
 
