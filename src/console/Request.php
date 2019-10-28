@@ -35,7 +35,7 @@ class Request extends \yii\console\Request
         // Set the @webroot and @web aliases, in case they are needed
         if (Craft::getRootAlias('@webroot') === false) {
             // see if it's any of the usual suspects
-            $dir = dirname($this->getScriptFile());
+            $dir = realpath(CRAFT_BASE_PATH);
             foreach (['web', 'public', 'public_html', 'html'] as $folder) {
                 if (is_dir($dir . DIRECTORY_SEPARATOR . $folder)) {
                     $dir .= DIRECTORY_SEPARATOR . $folder;
