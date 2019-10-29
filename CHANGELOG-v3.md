@@ -22,6 +22,7 @@
 - Fixed a bug where updating from the command line could run sometimes hit a memory limit error.
 - Fixed a bug where saving a new GraphQL schema would not populate the UID property.
 - Fixed a bug where Craft wasn’t clearing search keywords for custom fields that weren’t searchable anymore. ([#5168](https://github.com/craftcms/cms/issues/5168))
+- Fixed a bug where `relatedTo` element query params weren’t returning elements that were related to the source element when previewing a draft or revision.
 
 ## 3.3.13 - 2019-10-23
 
