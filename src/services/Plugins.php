@@ -105,6 +105,12 @@ class Plugins extends Component
     // =========================================================================
 
     /**
+     * @var array[] Custom plugin configurations.
+     * @since 3.4.0
+     */
+    public $pluginConfigs;
+
+    /**
      * @var bool Whether plugins have been loaded yet for this request
      */
     private $_pluginsLoaded = false;
@@ -889,6 +895,11 @@ class Plugins extends Component
 
             if ($settings !== []) {
                 $config['settings'] = $settings;
+            }
+
+            // Merge in the custom config, if there is one
+            if (isset($this->pluginConfigs[$handle])) {
+                $config = ArrayHelper::merge($config, $this->pluginConfigs[$handle]);
             }
         }
 

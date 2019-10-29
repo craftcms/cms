@@ -29,6 +29,7 @@
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\services\Assets::getAssetPreview()`.
 - Added `craft\services\Gql::getValidationRules()`.
+- Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
