@@ -117,15 +117,15 @@ class Search extends Component
             ->execute();
 
         // Does it have any searchable attributes?
-        $searchableAttributes = $element::searchableAttributes();
+        $searchableAttributes = array_flip($element::searchableAttributes());
 
-        $searchableAttributes[] = 'slug';
+        $searchableAttributes['slug'] = true;
 
         if ($element::hasTitles()) {
-            $searchableAttributes[] = 'title';
+            $searchableAttributes['title'] = true;
         }
 
-        foreach ($searchableAttributes as $attribute) {
+        foreach (array_keys($searchableAttributes) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
