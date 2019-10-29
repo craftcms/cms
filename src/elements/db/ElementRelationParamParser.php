@@ -216,7 +216,7 @@ class ElementRelationParamParser extends BaseObject
         }
 
         // Going both ways?
-        if (isset($relCriteria['element'])) {
+        if ($elementParam === 'element') {
             array_unshift($relElementIds, $glue);
 
             return $this->parse([
@@ -233,7 +233,7 @@ class ElementRelationParamParser extends BaseObject
         }
 
         // Figure out which direction we’re going
-        if (isset($relCriteria['sourceElement'])) {
+        if ($elementParam === 'sourceElement') {
             $dir = self::DIR_FORWARD;
         } else {
             $dir = self::DIR_REVERSE;
