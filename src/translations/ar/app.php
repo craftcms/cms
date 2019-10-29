@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'هل تريد بالتأكيد حذف هذا الحساب وجميع الحقول المرتبطة به؟',
     'Are you sure you want to delete this group?' => 'هل تريد بالتأكيد حذف هذه المجموعة؟',
     'Are you sure you want to delete this image?' => 'هل تريد بالتأكيد حذف هذه الصورة؟',
-    'Are you sure you want to delete this photo?' => 'هل تريد بالتأكيد حذف هذه الصورة؟',
     'Are you sure you want to delete this route?' => 'هل أنت متأكد أنك تريد حذف هذا الطريق؟',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'هل تريد بالتأكيد حذف ”{name}“ وكل الإدخالات التي يستخدمها؟',
     'Are you sure you want to delete “{name}” and all its categories?' => 'هل تريد بالتأكيد حذف ”{name}“ وكل الفئات المرتبطة به؟',

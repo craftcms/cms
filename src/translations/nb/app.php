@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Er du sikker på at du vil slette denne gruppen og alle dens felter?',
     'Are you sure you want to delete this group?' => 'Er du sikker på at du vil slette denne gruppen?',
     'Are you sure you want to delete this image?' => 'Er du sikker på at du vil slette dette bildet?',
-    'Are you sure you want to delete this photo?' => 'Er du sikker på at du vil slette dette bildet?',
     'Are you sure you want to delete this route?' => 'Er du sikker på at du vil slette denne ruteplanen?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Er du sikker på at du vil slette «{name}» og alle artikler som bruker den?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Er du sikker på at du vil slette «{name}» og alle dens kategorier?',

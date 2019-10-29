@@ -40,6 +40,7 @@ use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
+use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -233,8 +234,7 @@ class Gql extends Component
                     /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
 
-                    // Make sure it's the method we're looking for.
-                    if ($typeGeneratorClass instanceof GeneratorInterface) {
+                    if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
                         foreach ($typeGeneratorClass::generateTypes() as $type) {
                             $schemaConfig['types'][] = $type;
                         }
@@ -602,7 +602,9 @@ class Gql extends Component
     private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
     {
         // No cache key, if explicitly disabled
-        if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (!$generalConfig->enableGraphQlCaching) {
             return null;
         }
 
@@ -631,6 +633,7 @@ class Gql extends Component
         $typeList = [
             // Scalars
             DateTime::class,
+            QueryArgument::class,
 
             // Interfaces
             ElementInterface::class,
@@ -648,7 +651,12 @@ class Gql extends Component
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
-        
+
+        foreach ($event->types as $type) {
+            /** @var InterfaceType $type */
+            TypeLoader::registerType($type::getName(), $type . '::getType');
+        }
+
         return $event->types;
     }
 

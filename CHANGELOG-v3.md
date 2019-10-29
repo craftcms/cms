@@ -2,13 +2,39 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\gql\types\QueryArgument` GraphQL type which can be either an integer or a string.
+- Added the `authorGroupId` argument for the GraphQL `entries` query. 
+
+### Changed
+- It is now possible to provide multiple values for the `height`, `width`, and `size` arguments when querying or filtering Assets using GraphQL.
+- It is now possible to provide multiple values for the `expiryDate` and `postDate` arguments when querying or filtering Entries using GraphQL.
+- It is now possible to provide multiple values for the `expiryDate` and `postDate` arguments in every GraphQL element query.
+- It is now possible to use the `not` keyword in the `folderId` and `volumeId` arguments when querying or filtering Assets using GraphQL.
+- It is now possible to use the `not` keyword in the `groupId` argument when querying or filtering Tags or Categories using GraphQL.
+- It is now possible to use the `not` keyword in the `sectionId`, `typeId`, and `authorId` arguments when querying or filtering Entries using GraphQL.
+- It is now possible to use the `not` keyword in the `fieldId`, `ownerId`, and `typeId` when filtering Matrix fields usings GraphQL.
+- It is now possible to use the `not` keyword in the `id` argument for every GraphQL query.
+
+### Fixed
+- Fixed a bug where Edit Entry pages would often warn authors when leaving the page even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load. ([craftcms/redactor#161](https://github.com/craftcms/redactor/issues/161))
+- Fixed a bug where sometimes Assets would not be moved to the correct folders when using the `Restrict uploads to a single folder` setting in a multi-site setup. ([#5139](https://github.com/craftcms/cms/issues/5139)
+- Fixed a bug where updating from the command line could run sometimes hit a memory limit error.
+
+## 3.3.13 - 2019-10-23
+
+### Added
+- It’s now possible to pass arrow functions to the `|group` filter. ([#5156](https://github.com/craftcms/cms/issues/5156))
+
 ### Changed
 - Underscores are now stripped from search keywords before being saved to the database.
 
 ### Fixed
 - Fixed a bug where translation message parameters weren’t getting parsed correctly if the installed ICU library was less than version 4.8. ([#4995](https://github.com/craftcms/cms/issues/4995))
 - Fixed a bug where GraphQL caches were not being invalidated on element save. ([#5148](https://github.com/craftcms/cms/issues/5148))
-- Fixed a bug where GraphQL type generators provided by interfaces added by plugins would not get invoked when building introspection schema. ([#5149](https://github.com/craftcms/cms/issues/5149))
+- Fixed a bug where GraphQL type generators provided by plugins were not getting invoked when building introspection schemas. ([#5149](https://github.com/craftcms/cms/issues/5149))
+- Fixed an error that occurred when using the `|json_encode` Twig filter on console requests. ([#5150](https://github.com/craftcms/cms/issues/5150))
+- Fixed a bug where editable table rows could get taller than they should. ([#5159](https://github.com/craftcms/cms/issues/5159))
 
 ## 3.3.12 - 2019-10-22
 

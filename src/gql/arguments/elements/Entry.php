@@ -8,6 +8,7 @@
 namespace craft\gql\arguments\elements;
 
 use craft\gql\base\StructureElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -36,7 +37,7 @@ class Entry extends StructureElementArguments
             ],
             'sectionId' => [
                 'name' => 'sectionId',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.'
             ],
             'type' => [
@@ -46,12 +47,12 @@ class Entry extends StructureElementArguments
             ],
             'typeId' => [
                 'name' => 'typeId',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the entries’ entry types, per the types’ IDs.'
             ],
             'authorId' => [
                 'name' => 'authorId',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the entries’ authors.'
             ],
             'authorGroup' => [
@@ -59,9 +60,14 @@ class Entry extends StructureElementArguments
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the user group the entries’ authors belong to.'
             ],
+            'authorGroupId' => [
+                'name' => 'authorGroupId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the user group the entries’ authors belong to, per the groups’ IDs.'
+            ],
             'postDate' => [
                 'name' => 'postDate',
-                'type' => Type::string(),
+                'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the entries’ post dates.'
             ],
             'before' => [
@@ -76,7 +82,7 @@ class Entry extends StructureElementArguments
             ],
             'expiryDate' => [
                 'name' => 'expiryDate',
-                'type' => Type::string(),
+                'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the entries’ expiry dates.'
             ],
         ]);

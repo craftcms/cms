@@ -193,7 +193,7 @@
                 this.addListener(this.$supportForm, 'submit', 'handleSupportFormSubmit');
 
                 this.bodyStartHeight = this.$body.height();
-                this.addListener(this.$body, 'textchange', 'handleBodyTextChange');
+                this.addListener(this.$body, 'input', 'handleBodyTextChange');
                 this.addListener(this.$body, 'keydown', 'handleBodyKeydown');
                 this.prepForSearch(false);
             },
