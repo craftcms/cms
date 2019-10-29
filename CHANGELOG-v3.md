@@ -21,6 +21,7 @@
 - Fixed a bug where sometimes Assets would not be moved to the correct folders when using the `Restrict uploads to a single folder` setting in a multi-site setup. ([#5139](https://github.com/craftcms/cms/issues/5139)
 - Fixed a bug where updating from the command line could run sometimes hit a memory limit error.
 - Fixed a bug where saving a new GraphQL schema would not populate the UID property.
+- Fixed a bug where Craft wasn’t clearing search keywords for custom fields that weren’t searchable anymore. ([#5168](https://github.com/craftcms/cms/issues/5168))
 
 ## 3.3.13 - 2019-10-23
 

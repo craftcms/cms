@@ -108,6 +108,14 @@ class Search extends Component
     public function indexElementAttributes(ElementInterface $element): bool
     {
         /** @var Element $element */
+        // Clear the element's current search keywords
+        Craft::$app->getDb()->createCommand()
+            ->delete(Table::SEARCHINDEX, [
+                'elementId' => $element->id,
+                'siteId' => $element->siteId,
+            ])
+            ->execute();
+
         // Does it have any searchable attributes?
         $searchableAttributes = $element::searchableAttributes();
 
@@ -348,17 +356,6 @@ SQL;
             return;
         }
 
-        // Drop all current rows for this element/attribute/site ID
-        $db = Craft::$app->getDb();
-        $db->createCommand()
-            ->delete(Table::SEARCHINDEX, [
-                'elementId' => $elementId,
-                'attribute' => $attribute,
-                'fieldId' => $fieldId,
-                'siteId' => $siteId,
-            ])
-            ->execute();
-
         /** @var Site $site */
         $site = Craft::$app->getSites()->getSiteById($siteId);
 
@@ -378,6 +375,7 @@ SQL;
             $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
 
+        $db = Craft::$app->getDb();
         if ($isPgsql = $db->getIsPgsql()) {
             $maxSize = $this->maxPostgresKeywordLength;
         } else {
