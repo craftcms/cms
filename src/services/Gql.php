@@ -627,6 +627,7 @@ class Gql extends Component
 
         $schemaRecord->save();
         $schema->id = $schemaRecord->id;
+        $schema->uid = $schemaRecord->uid;
 
         if ($invalidateCaches) {
             $this->invalidateCaches();
