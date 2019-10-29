@@ -34,7 +34,6 @@
                 loading: false,
                 loadingMore: false,
                 hasMore: false,
-                offset: 0,
                 page: 1,
             }
         },
