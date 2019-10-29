@@ -29,7 +29,6 @@
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\services\Assets::getAssetPreview()`.
 - Added `craft\services\Gql::getValidationRules()`.
-- Added `craft\services\Search::indexFields()`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
@@ -55,7 +54,7 @@
 - The installer now requires `config/db.php` to be setting the `dsn` database config setting with a `DB_DSN` environment variable, if a connection can’t already be established. 
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
-- `craft\services\Search::indexElementAttributes()` now has a `$withFields` argument.
+- `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - The `_includes/forms/field.html` template now supports `fieldAttributes`, `labelAttributes`, and `inputAttributes` variables.
 - The `_includes/field.html` template now supports a `registerDeltas` variable.
 - The `_layouts/cp.html` template now supports `mainAttributes` and `mainFormAttributes` variables.

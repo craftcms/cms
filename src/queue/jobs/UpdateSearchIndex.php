@@ -58,8 +58,7 @@ class UpdateSearchIndex extends BaseJob
 
         foreach ($elements as $i => $element) {
             $this->setProgress($queue, $i + 1 / $total);
-            $searchService->indexElementAttributes($element, false);
-            $searchService->indexFields($element, $this->fieldHandles);
+            $searchService->indexElementAttributes($element, $this->fieldHandles);
         }
     }
 

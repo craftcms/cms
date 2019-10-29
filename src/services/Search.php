@@ -101,76 +101,68 @@ class Search extends Component
      * Indexes the attributes of a given element defined by its element type.
      *
      * @param ElementInterface $element
-     * @param bool $withFields Whether the element’s custom fields should be indexed too
+     * @param string[]|null $fieldHandles The field handles that should be indexed,
+     * or `null` if all fields should be indexed.
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element, $withFields = true): bool
+    public function indexElementAttributes(ElementInterface $element, array $fieldHandles = null): bool
     {
+        // Figure out which fields to update, and which to ignore
+        /** @var Field[] $updateFields */
+        $updateFields = [];
+        /** @var string[] $ignoreFieldIds */
+        $ignoreFieldIds = [];
+        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+            if ($fieldHandles !== null) {
+                $fieldHandles = array_flip($fieldHandles);
+            }
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field->searchable) {
+                    // Are we updating this field's keywords?
+                    if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
+                        $updateFields[] = $field;
+                    } else {
+                        // Leave its existing keywords alone
+                        $ignoreFieldIds[] = (string)$field->id;
+                    }
+                }
+            }
+        }
+
         /** @var Element $element */
         // Clear the element's current search keywords
+        $deleteCondition = [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+        ];
+        if (!empty($ignoreFieldIds)) {
+            $deleteCondition = ['and', $deleteCondition, ['not', ['fieldId' => $ignoreFieldIds]]];
+        }
         Craft::$app->getDb()->createCommand()
-            ->delete(Table::SEARCHINDEX, [
-                'elementId' => $element->id,
-                'siteId' => $element->siteId,
-            ])
+            ->delete(Table::SEARCHINDEX, $deleteCondition)
             ->execute();
 
+        // Update the element attributes' keywords
         $searchableAttributes = $element::searchableAttributes();
         $searchableAttributes[] = 'slug';
         if ($element::hasTitles()) {
             $searchableAttributes[] = 'title';
         }
-
         foreach ($searchableAttributes as $attribute) {
             $value = $element->getSearchKeywords($attribute);
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
-        // Custom fields too?
-        if ($withFields) {
-            $this->indexElementFields($element);
-        }
-
-        return true;
-    }
-
-    /**
-     * Indexes the attributes of a given element defined by its element type.
-     *
-     * @param ElementInterface $element
-     * @param string[]|null $fieldHandles The field handles that should be indexed
-     * @since 3.4.0
-     */
-    public function indexFields(ElementInterface $element, array $fieldHandles = null)
-    {
-        if ($fieldHandles !== null) {
-            if (empty($fieldHandles)) {
-                return;
-            }
-            $fieldHandles = array_flip($fieldHandles);
-        }
-
-        if (!$element::hasContent() || ($fieldLayout = $element->getFieldLayout()) === null) {
-            return;
-        }
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            // Skip fields that aren't set to be searhable
-            if (!$field->searchable) {
-                continue;
-            }
-
-            // Skip fields that weren't listed
-            if ($fieldHandles !== null && !isset($fieldHandles[$field->handle])) {
-                continue;
-            }
-
+        // Update the custom fields' keywords
+        foreach ($updateFields as $field) {
             $fieldValue = $element->getFieldValue($field->handle);
             $keywords = $field->getSearchKeywords($fieldValue, $element);
             $this->_indexElementKeywords($element->id, 'field', (string)$field->id, $element->siteId, $keywords);
         }
+
+        return true;
     }
 
     /**
