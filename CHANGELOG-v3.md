@@ -24,6 +24,7 @@
 - Fixed a bug where saving a new GraphQL schema would not populate the UID property.
 - Fixed a bug where Craft wasn’t clearing search keywords for custom fields that weren’t searchable anymore. ([#5168](https://github.com/craftcms/cms/issues/5168))
 - Fixed a bug where `relatedTo` element query params weren’t returning elements that were related to the source element when previewing a draft or revision.
+- Fixed a bug where importing project config changes would break if they contained a changed global set and orphaned Matrix block types. ([#4789](https://github.com/craftcms/cms/issues/4789)
 
 ## 3.3.13 - 2019-10-23
 
