@@ -8,6 +8,7 @@
 namespace craft\gql\arguments\elements;
 
 use craft\gql\base\ElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -26,15 +27,15 @@ class MatrixBlock extends ElementArguments
         return array_merge(parent::getArguments(), [
             'fieldId' => [
                 'name' => 'fieldId',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the field the Matrix blocks belong to, per the fields’ IDs.'
             ],
             'ownerId' => [
                 'name' => 'ownerId',
-                'type' => Type::listOf(Type::string()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => ' Narrows the query results based on the owner element of the Matrix blocks, per the owners’ IDs.'
             ],
-            'typeId' => Type::listOf(Type::int()),
+            'typeId' => Type::listOf(QueryArgument::getType()),
             'type' => [
                 'name' => 'type',
                 'type' => Type::listOf(Type::string()),

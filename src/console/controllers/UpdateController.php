@@ -423,7 +423,6 @@ class UpdateController extends Controller
         $io = new BufferIO();
 
         $composerService = Craft::$app->getComposer();
-        $composerService->disablePackagist = false;
 
         try {
             $composerService->install($requirements, $io);

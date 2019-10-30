@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.3.13",
+  "version": "3.3.14",
   "keywords": [
     "cms",
     "craftcms",
@@ -32,7 +32,6 @@
     "craftcms/plugin-installer": "~1.5.3",
     "craftcms/server-check": "~1.1.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
-    "voku/stringy": "~5.1.0",
     "elvanto/litemoji": "^1.3.1",
     "enshrined/svg-sanitize": "~0.9.0",
     "guzzlehttp/guzzle": "^6.3.0",
@@ -44,12 +43,13 @@
     "symfony/yaml": "^3.2|^4.0",
     "true/punycode": "^2.1.0",
     "twig/twig": "~2.12.0",
+    "voku/stringy": "~5.1.0",
     "webonyx/graphql-php": "^0.12.0",
     "yii2tech/ar-softdelete": "^1.0.2",
     "yiisoft/yii2": "~2.0.21.0",
-    "yiisoft/yii2-debug": "^2.0.10",
-    "yiisoft/yii2-swiftmailer": "^2.1.0",
+    "yiisoft/yii2-debug": "^2.1.0",
     "yiisoft/yii2-queue": "2.1.0",
+    "yiisoft/yii2-swiftmailer": "^2.1.0",
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
@@ -63,9 +63,8 @@
     "fzaninotto/faker": "^1.8"
   },
   "provide": {
-    "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",
-    "bower-asset/jquery": "3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
     "bower-asset/inputmask": "~3.2.2 | ~3.3.5",
+    "bower-asset/jquery": "3.4.*@stable | 3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
     "bower-asset/punycode": "1.3.*",
     "bower-asset/yii2-pjax": "~2.0.1"
   },
@@ -82,5 +81,8 @@
       "craft\\": "src/",
       "crafttests\\fixtures\\": "tests/fixtures/"
     }
+  },
+  "config": {
+    "sort-packages": true
   }
 }

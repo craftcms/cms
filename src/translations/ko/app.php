@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => '이 그룹과 이 그룹의 모든 필드를 삭제하시겠습니까?',
     'Are you sure you want to delete this group?' => '이 그룹을 삭제하시겠습니까?',
     'Are you sure you want to delete this image?' => '이 이미지를 삭제하시겠습니까?',
-    'Are you sure you want to delete this photo?' => '이 사진을 삭제하시겠습니까?',
     'Are you sure you want to delete this route?' => '이 경로를 삭제하시겠습니까?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => '“{name}”와(과) 해당 이름을 사용하는 모든 항목을 삭제하시겠습니까?',
     'Are you sure you want to delete “{name}” and all its categories?' => '“{name}”와(과) 모든 해당 카테고리를 삭제하시겠습니까?',
