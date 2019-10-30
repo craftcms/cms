@@ -17,6 +17,7 @@
 - It is now possible to use the `not` keyword in the `id` argument for every GraphQL query.
 - Craft no longer bundles Bootstrap, as the Debug Extension now provides its own copy.
 - Updated the bundled locale data based on ICU 64.1.
+- Formatted dates now include two-digit months and days if that’s what’s called for by the ICU date formats. ([#5186](https://github.com/craftcms/cms/issues/5186))
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would often warn authors when leaving the page even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load. ([craftcms/redactor#161](https://github.com/craftcms/redactor/issues/161))

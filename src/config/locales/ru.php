@@ -3,9 +3,9 @@
 return [
     'dateTimeFormats' => [
         'short' => [
-            'date' => 'd.M.y',
+            'date' => 'dd.MM.y',
             'time' => 'HH:mm',
-            'datetime' => 'd.M.y, HH:mm',
+            'datetime' => 'dd.MM.y, HH:mm',
         ],
         'medium' => [
             'date' => 'd MMM y \'г\'.',
