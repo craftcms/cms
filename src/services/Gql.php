@@ -138,6 +138,7 @@ class Gql extends Component
 
     /**
      * @event RegisterGqlPermissionsEvent The event that is triggered when registering user permissions.
+     * @since 3.4.0
      */
     const EVENT_REGISTER_GQL_PERMISSIONS = 'registerGqlPermissions';
 
@@ -694,7 +695,7 @@ class Gql extends Component
 
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL
-     * 
+     *
      * @return array the list of registered types.
      */
     private function _registerGqlTypes(): array

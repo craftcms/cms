@@ -14,7 +14,7 @@ use craft\events\DefineGqlTypeFieldsEvent;
  * Class TypeManager
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4
+ * @since 3.4.0
  */
 class TypeManager extends Component
 {
@@ -26,6 +26,7 @@ class TypeManager extends Component
      *
      * Plugins can use this event to add, remove or modify fields on a given GraphQL type.
      *
+     * ---
      * ```php
      * use craft\events\DefineGqlTypeFields;
      * use craft\gql\TypeManager;

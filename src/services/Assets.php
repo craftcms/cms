@@ -91,6 +91,7 @@ class Assets extends Component
 
     /**
      * @event AssetPreviewEvent The event that is triggered when an asset is previewed
+     * @since 3.4.0
      */
     const EVENT_GET_ASSET_PREVIEW = 'getAssetPreview';
 

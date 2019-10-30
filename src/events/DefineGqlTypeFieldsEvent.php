@@ -13,7 +13,7 @@ use yii\base\Event;
  * DefineGqlTypeFields class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4
+ * @since 3.4.0
  */
 class DefineGqlTypeFieldsEvent extends Event
 {
