@@ -954,15 +954,10 @@ class Locale extends BaseObject
             $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
             $pattern = $formatter->getPattern();
 
-            // Use 4-digit year, and no leading zeroes on days/months
+            // Use 4-digit years
             return strtr($pattern, [
                 'yyyy' => 'yyyy',
                 'yy' => 'yyyy',
-                'MMMMM' => 'MMMMM',
-                'MMMM' => 'MMMM',
-                'MMM' => 'MMM',
-                'MM' => 'M',
-                'dd' => 'd',
             ]);
         }
 

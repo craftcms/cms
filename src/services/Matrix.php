@@ -338,13 +338,13 @@ class Matrix extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
-        try {
-            // Store the current contexts.
-            $originalContentTable = $contentService->contentTable;
-            $originalFieldContext = $contentService->fieldContext;
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-            $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+        // Store the current contexts.
+        $originalContentTable = $contentService->contentTable;
+        $originalFieldContext = $contentService->fieldContext;
+        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+        $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
 
+        try {
             // Get the block type record
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
@@ -384,11 +384,6 @@ class Matrix extends Component
                 // Refresh the schema cache
                 Craft::$app->getDb()->getSchema()->refresh();
 
-                $contentService->fieldContext = $originalFieldContext;
-                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-                $contentService->contentTable = $originalContentTable;
-                $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
-
                 if (!empty($data['fieldLayouts'])) {
                     // Save the field layout
                     $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
@@ -412,6 +407,12 @@ class Matrix extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Restore the previous contexts.
+        $contentService->fieldContext = $originalFieldContext;
+        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+        $contentService->contentTable = $originalContentTable;
+        $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
         // Clear caches
         unset(
