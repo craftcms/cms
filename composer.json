@@ -38,6 +38,8 @@
     "league/flysystem": "^1.0.35",
     "league/oauth2-client": "^2.2.1",
     "mikehaertl/php-shellcommand": "^1.2.5",
+    "mrclay/jsmin-php": "^2.4",
+    "mrclay/minify": "^3.0",
     "pixelandtonic/imagine": "~1.2.2.1",
     "seld/cli-prompt": "^1.0.3",
     "symfony/yaml": "^3.2|^4.0",

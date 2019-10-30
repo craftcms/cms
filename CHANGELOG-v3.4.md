@@ -35,11 +35,14 @@
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
 - Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added `craft\web\User::guestRequired()`.
+- Added `craft\web\View::$minifyCss`.
+- Added `craft\web\View::$minifyJs`.
 - Added `craft\web\View::getDeltaNames()`.
 - Added `craft\web\View::getIsDeltaRegistrationActive()`.
 - Added `craft\web\View::registerDeltaName()`.
 - Added `craft\web\View::setIsDeltaRegistrationActive()`.
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
+- Added the Minify PHP package.
 
 ### Changed
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
@@ -48,6 +51,8 @@
 - Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Plain Text fields’ Column Type settings now have an “Automatic” option, which is selected by default for new fields. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
+- CSS registered with `craft\web\View::registerCss()` or the `{% css %}` tag is now minified by default. ([#5183}https://github.com/craftcms/cms/issues/5183])
+- JavaScript code registered with `craft\web\registerJs()` or the `{% js %}` tag is now minified per the `useCompressedJs` config setting. ([#5183}https://github.com/craftcms/cms/issues/5183])
 - `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - Plugins can now modify the GraphQL schema by listening for the `defineGqlTypeFields` event.
 - Plugins can now modify the GraphQL permissions by listening for the `registerGqlPermissions` event.
