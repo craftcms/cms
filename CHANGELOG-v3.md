@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.14 - 2019-10-30
 
 ### Added
 - GraphQL entry queries now support an `authorGroupId` argument.
