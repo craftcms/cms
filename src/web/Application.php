@@ -332,7 +332,6 @@ class Application extends \yii\web\Application
 
         // Override where Yii should find its asset deps
         $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/bootstrap/dist', $libPath . '/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
         Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
         Craft::setAlias('@bower/punycode', $libPath . '/punycode');

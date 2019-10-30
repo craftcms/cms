@@ -145,12 +145,12 @@ class Search extends Component
             ->execute();
 
         // Update the element attributes' keywords
-        $searchableAttributes = $element::searchableAttributes();
-        $searchableAttributes[] = 'slug';
+        $searchableAttributes = array_flip($element::searchableAttributes());
+        $searchableAttributes['slug'] = true;
         if ($element::hasTitles()) {
-            $searchableAttributes[] = 'title';
+            $searchableAttributes['title'] = true;
         }
-        foreach ($searchableAttributes as $attribute) {
+        foreach (array_keys($searchableAttributes) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }

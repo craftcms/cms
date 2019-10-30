@@ -15,6 +15,7 @@
 - It is now possible to use the `not` keyword in the `sectionId`, `typeId`, and `authorId` arguments when querying or filtering Entries using GraphQL.
 - It is now possible to use the `not` keyword in the `fieldId`, `ownerId`, and `typeId` when filtering Matrix fields usings GraphQL.
 - It is now possible to use the `not` keyword in the `id` argument for every GraphQL query.
+- Craft no longer bundles Bootstrap, as the Debug Extension now provides its own copy.
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would often warn authors when leaving the page even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load. ([craftcms/redactor#161](https://github.com/craftcms/redactor/issues/161))
@@ -22,6 +23,7 @@
 - Fixed a bug where updating from the command line could run sometimes hit a memory limit error.
 - Fixed a bug where saving a new GraphQL schema would not populate the UID property.
 - Fixed a bug where Craft wasn’t clearing search keywords for custom fields that weren’t searchable anymore. ([#5168](https://github.com/craftcms/cms/issues/5168))
+- Fixed a bug where `relatedTo` element query params weren’t returning elements that were related to the source element when previewing a draft or revision.
 
 ## 3.3.13 - 2019-10-23
 
