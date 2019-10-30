@@ -37,6 +37,7 @@ use yii\base\Exception;
 use yii\base\Model;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
+use yii\web\Response as WebResponse;
 
 /**
  * @inheritdoc
@@ -270,11 +271,15 @@ class View extends \yii\web\View
         if ($this->minifyCss === null || $this->minifyJs === null) {
             $response = Craft::$app->getResponse();
             if ($this->minifyCss === null) {
-                $this->minifyCss = $response->format === Response::FORMAT_HTML;
+                $this->minifyCss = (
+                    $response instanceof WebResponse &&
+                    $response->format === WebResponse::FORMAT_HTML
+                );
             }
             if ($this->minifyJs === null) {
                 $this->minifyJs = (
-                    $response->format === Response::FORMAT_HTML &&
+                    $response instanceof WebResponse &&
+                    $response->format === WebResponse::FORMAT_HTML &&
                     Craft::$app->getConfig()->getGeneral()->useCompressedJs
                 );
             }
