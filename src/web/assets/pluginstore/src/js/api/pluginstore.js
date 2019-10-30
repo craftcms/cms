@@ -32,7 +32,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getCoreData() {
-        return _axios.get('plugin-store/core-data')
+        return new Promise((resolve, reject) => {
+            _axios.get('plugin-store/core-data')
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -42,7 +54,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getDeveloper(developerId) {
-        return _axios.get('developer/' + developerId)
+        return new Promise((resolve, reject) => {
+            _axios.get('developer/' + developerId)
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -52,7 +76,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getFeaturedSectionByHandle(featuredSectionHandle) {
-        return _axios.get('plugin-store/featured-section/' + featuredSectionHandle)
+        return new Promise((resolve, reject) => {
+            _axios.get('plugin-store/featured-section/' + featuredSectionHandle)
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -61,7 +97,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getFeaturedSections() {
-        return _axios.get('plugin-store/featured-sections')
+        return new Promise((resolve, reject) => {
+            _axios.get('plugin-store/featured-sections')
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -71,7 +119,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginChangelog(pluginId) {
-        return _axios.get('plugin/' + pluginId + '/changelog')
+        return new Promise((resolve, reject) => {
+            _axios.get('plugin/' + pluginId + '/changelog')
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -81,7 +141,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginDetails(pluginId) {
-        return _axios.get('plugin/' + pluginId)
+        return new Promise((resolve, reject) => {
+            _axios.get('plugin/' + pluginId)
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -91,7 +163,19 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginDetailsByHandle(pluginHandle) {
-        return _axios.get('plugin-store/plugin/' + pluginHandle)
+        return new Promise((resolve, reject) => {
+            _axios.get('plugin-store/plugin/' + pluginHandle)
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
@@ -102,11 +186,22 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginsByCategory(categoryId, pluginIndexParams) {
+        return new Promise((resolve, reject) => {
+            const params = this._getPluginIndexParams(pluginIndexParams)
 
-        const params = this._getPluginIndexParams(pluginIndexParams)
-
-        return _axios.get('plugin-store/plugins-by-category/' + categoryId, {
-            params
+            _axios.get('plugin-store/plugins-by-category/' + categoryId, {
+                    params
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
@@ -118,10 +213,22 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginsByDeveloperId(developerId, pluginIndexParams) {
-        const params = this._getPluginIndexParams(pluginIndexParams)
+        return new Promise((resolve, reject) => {
+            const params = this._getPluginIndexParams(pluginIndexParams)
 
-        return _axios.get('plugin-store/plugins-by-developer/' + developerId, {
-            params
+            _axios.get('plugin-store/plugins-by-developer/' + developerId, {
+                    params
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
@@ -133,10 +240,22 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginsByFeaturedSectionHandle(featuredSectionHandle, pluginIndexParams) {
-        const params = this._getPluginIndexParams(pluginIndexParams)
+        return new Promise((resolve, reject) => {
+            const params = this._getPluginIndexParams(pluginIndexParams)
 
-        return _axios.get('plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
-            params
+            _axios.get('plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
+                    params
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
@@ -147,18 +266,30 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginsByHandles(pluginHandles) {
-        let pluginHandlesString
+        return new Promise((resolve, reject) => {
+            let pluginHandlesString
 
-        if (Array.isArray(pluginHandles)) {
-            pluginHandlesString = pluginHandles.join(',')
-        } else {
-            pluginHandlesString = pluginHandles
-        }
-
-        return _axios.get('plugin-store/plugins-by-handles', {
-            params: {
-                pluginHandles: pluginHandlesString
+            if (Array.isArray(pluginHandles)) {
+                pluginHandlesString = pluginHandles.join(',')
+            } else {
+                pluginHandlesString = pluginHandles
             }
+
+            _axios.get('plugin-store/plugins-by-handles', {
+                params: {
+                    pluginHandles: pluginHandlesString
+                }
+            })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
@@ -169,18 +300,30 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getPluginsByIds(pluginIds) {
-        let pluginIdsString
+        return new Promise((resolve, reject) => {
+            let pluginIdsString
 
-        if (Array.isArray(pluginIds)) {
-            pluginIdsString = pluginIds.join(',')
-        } else {
-            pluginIdsString = pluginIds
-        }
-
-        return _axios.get('plugins', {
-            params: {
-                ids: pluginIdsString
+            if (Array.isArray(pluginIds)) {
+                pluginIdsString = pluginIds.join(',')
+            } else {
+                pluginIdsString = pluginIds
             }
+
+            _axios.get('plugins', {
+                params: {
+                    ids: pluginIdsString
+                }
+            })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
@@ -192,11 +335,23 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     searchPlugins(searchQuery, pluginIndexParams) {
-        const params = this._getPluginIndexParams(pluginIndexParams)
-        params.searchQuery = searchQuery
+        return new Promise((resolve, reject) => {
+            const params = this._getPluginIndexParams(pluginIndexParams)
+            params.searchQuery = searchQuery
 
-        return _axios.get('plugin-store/search-plugins', {
-            params
+            _axios.get('plugin-store/search-plugins', {
+                params
+            })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 

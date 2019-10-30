@@ -252,6 +252,10 @@
                 })
         },
 
+        beforeDestroy() {
+            this.$store.dispatch('pluginStore/cancelRequests')
+        },
+
         beforeRouteLeave(to, from, next) {
             if (this.showingScreenshotModal) {
                 this.$store.commit('app/updateShowingScreenshotModal', false)

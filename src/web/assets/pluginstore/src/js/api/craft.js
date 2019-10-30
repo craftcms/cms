@@ -30,26 +30,62 @@ export default {
      * Get Craft data.
      */
     getCraftData() {
-        return _axios.get(Craft.getActionUrl('plugin-store/craft-data'))
+        return new Promise((resolve, reject) => {
+            _axios.get(Craft.getActionUrl('plugin-store/craft-data'))
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
      * Get Plugin License Info.
      */
     getPluginLicenseInfo() {
-        return _axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
+        return new Promise((resolve, reject) => {
+            _axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
     },
 
     /**
      * Switch plugin edition.
      */
     switchPluginEdition(pluginHandle, edition) {
-        const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition
+        return new Promise((resolve, reject) => {
+            const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition
 
-        return _axios.post(Craft.getActionUrl('plugins/switch-edition'), data, {
-            headers: {
-                'X-CSRF-Token': Craft.csrfTokenValue,
-            },
+            _axios.post(Craft.getActionUrl('plugins/switch-edition'), data, {
+                    headers: {
+                        'X-CSRF-Token': Craft.csrfTokenValue,
+                    },
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
@@ -57,10 +93,22 @@ export default {
      * Try edition.
      */
     tryEdition(edition) {
-        return _axios.post(Craft.getActionUrl('app/try-edition'), 'edition=' + edition, {
-            headers: {
-                'X-CSRF-Token': Craft.csrfTokenValue,
-            }
+        return new Promise((resolve, reject) => {
+            _axios.post(Craft.getActionUrl('app/try-edition'), 'edition=' + edition, {
+                    headers: {
+                        'X-CSRF-Token': Craft.csrfTokenValue,
+                    }
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
         })
     },
 
