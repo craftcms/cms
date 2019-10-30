@@ -4,13 +4,13 @@
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
-                <plugin-index-sort :loading="loading" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
+                <plugin-index-sort :loading="loading && plugins.length > 0" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
             </template>
         </div>
 
         <plugin-grid :plugins="plugins"></plugin-grid>
 
-        <spinner v-if="loadingMore" class="my-4"></spinner>
+        <spinner v-if="loadingMore || (loading && plugins.length === 0)" class="my-4"></spinner>
     </div>
 </template>
 
