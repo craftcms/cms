@@ -105,12 +105,12 @@ abstract class ElementArguments extends Arguments
             ],
             'dateCreated' => [
                 'name' => 'dateCreated',
-                'type' => Type::string(),
+                'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the elements’ creation dates.'
             ],
             'dateUpdated' => [
                 'name' => 'dateUpdated',
-                'type' => Type::string(),
+                'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the elements’ last-updated dates.'
             ],
             'offset' => [

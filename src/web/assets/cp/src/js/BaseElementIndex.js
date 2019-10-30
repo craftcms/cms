@@ -208,7 +208,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Automatically update the elements after new search text has been sitting for a 1/2 second
-            this.addListener(this.$search, 'textchange', $.proxy(function() {
+            this.addListener(this.$search, 'input', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
                 } else if (this.searching && !this.$search.val()) {

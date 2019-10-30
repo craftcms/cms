@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Are you sure you want to delete this group and all its fields?',
     'Are you sure you want to delete this group?' => 'Are you sure you want to delete this group?',
     'Are you sure you want to delete this image?' => 'Are you sure you want to delete this image?',
-    'Are you sure you want to delete this photo?' => 'Are you sure you want to delete this photo?',
     'Are you sure you want to delete this route?' => 'Are you sure you want to delete this route?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Are you sure you want to delete “{name}” and all entries that use it?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Are you sure you want to delete “{name}” and all its categories?',

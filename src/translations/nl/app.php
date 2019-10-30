@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Weet je zeker dat je deze groep en bijbehorende velden wilt verwijderen?',
     'Are you sure you want to delete this group?' => 'Weet u zeker dat u deze groep wilt verwijderen?',
     'Are you sure you want to delete this image?' => 'Weet u zeker dat u deze afbeelding wilt verwijderen?',
-    'Are you sure you want to delete this photo?' => 'Weet je zeker dat je deze foto wilt verwijderen?',
     'Are you sure you want to delete this route?' => 'Weet u zeker dat u deze route wilt verwijderen?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Weet u zeker dat u “{name}” en all zijn inhoud wilt verwijderen?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Weet u zeker dat u “{name}” en al haar categorieën wilt verwijderen?',
@@ -1500,6 +1499,6 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'Delete them' => 'Verwijderen',
     'Keep them' => 'Behouden',
     'View tag group - {tagGroup}' => 'Taggroep weergeven - {tagGroup}',
-    'Single' => 'Single',
-    'Channel' => 'Channel'
+    'Single' => 'Eenmalig',
+    'Channel' => 'Kanaal'
 ];

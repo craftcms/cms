@@ -8,6 +8,7 @@
 namespace craft\gql\arguments\elements;
 
 use craft\gql\base\StructureElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -36,7 +37,7 @@ class Category extends StructureElementArguments
             ],
             'groupId' => [
                 'name' => 'groupId',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the category groups the categories belong to, per the groups’ IDs.'
             ],
         ]);

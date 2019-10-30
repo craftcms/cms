@@ -62,7 +62,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Store the initial form value
             this.lastSerializedValue = this.serializeForm(true);
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
 
             // Override the serializer to use our own
             Craft.cp.$primaryForm.data('serializer', function() {
@@ -567,8 +566,8 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.addListener(this.$notesTextInput, 'keydown', 'onNotesKeydown');
 
-            this.addListener(this.$nameTextInput, 'textchange', 'checkMetaValues');
-            this.addListener(this.$notesTextInput, 'textchange', 'checkMetaValues');
+            this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
+            this.addListener(this.$notesTextInput, 'input', 'checkMetaValues');
 
             this.metaHud.on('show', this.onMetaHudShow.bind(this));
             this.metaHud.on('hide', this.onMetaHudHide.bind(this));

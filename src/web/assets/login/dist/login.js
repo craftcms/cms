@@ -33,14 +33,14 @@
 
                 new Craft.PasswordInput(this.$passwordInput, {
                     onToggleInput: $.proxy(function($newPasswordInput) {
-                        this.removeListener(this.$passwordInput, 'textchange');
+                        this.removeListener(this.$passwordInput, 'input');
                         this.$passwordInput = $newPasswordInput;
-                        this.addListener(this.$passwordInput, 'textchange', 'validate');
+                        this.addListener(this.$passwordInput, 'input', 'validate');
                     }, this)
                 });
 
-                this.addListener(this.$loginNameInput, 'textchange', 'validate');
-                this.addListener(this.$passwordInput, 'textchange', 'validate');
+                this.addListener(this.$loginNameInput, 'input', 'validate');
+                this.addListener(this.$passwordInput, 'input', 'validate');
                 this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
                 this.addListener(this.$form, 'submit', 'onSubmit');
 

@@ -40,6 +40,7 @@ use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
+use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -212,7 +213,7 @@ class Gql extends Component
 
         if (!$this->_schemaDef || $prebuildSchema) {
             // Either cached version was not found or we need a pre-built schema.
-            $this->_registerGqlTypes();
+            $registeredTypes = $this->_registerGqlTypes();
             $this->_registerGqlQueries();
 
             $schemaConfig = [
@@ -225,32 +226,19 @@ class Gql extends Component
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
-
                 return $this->_schemaDef;
             }
 
-            // Create a pre-built schema if that's what they want.
-            $interfaces = [
-                EntryInterface::class,
-                MatrixBlockInterface::class,
-                AssetInterface::class,
-                UserInterface::class,
-                GlobalSetInterface::class,
-                ElementInterface::class,
-                CategoryInterface::class,
-                TagInterface::class,
-            ];
+            foreach ($registeredTypes as $registeredType) {
+                if (method_exists($registeredType, 'getTypeGenerator')) {
+                    /** @var GeneratorInterface $typeGeneratorClass */
+                    $typeGeneratorClass = $registeredType::getTypeGenerator();
 
-            foreach ($interfaces as $interfaceClass) {
-                if (!is_subclass_of($interfaceClass, InterfaceType::class)) {
-                    throw new GqlException('Incorrectly defined interface ' . $interfaceClass);
-                }
-
-                /** @var GeneratorInterface $typeGeneratorClass */
-                $typeGeneratorClass = $interfaceClass::getTypeGenerator();
-
-                foreach ($typeGeneratorClass::generateTypes() as $type) {
-                    $schemaConfig['types'][] = $type;
+                    if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
+                        foreach ($typeGeneratorClass::generateTypes() as $type) {
+                            $schemaConfig['types'][] = $type;
+                        }
+                    }
                 }
             }
 
@@ -571,6 +559,7 @@ class Gql extends Component
 
         $schemaRecord->save();
         $schema->id = $schemaRecord->id;
+        $schema->uid = $schemaRecord->uid;
 
         if ($invalidateCaches) {
             $this->invalidateCaches();
@@ -614,7 +603,9 @@ class Gql extends Component
     private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
     {
         // No cache key, if explicitly disabled
-        if (!Craft::$app->getConfig()->general->enableGraphQlCaching) {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (!$generalConfig->enableGraphQlCaching) {
             return null;
         }
 
@@ -635,14 +626,15 @@ class Gql extends Component
 
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL
-     *
-     * @return void
+     * 
+     * @return array the list of registered types.
      */
-    private function _registerGqlTypes()
+    private function _registerGqlTypes(): array
     {
         $typeList = [
             // Scalars
             DateTime::class,
+            QueryArgument::class,
 
             // Interfaces
             ElementInterface::class,
@@ -665,6 +657,8 @@ class Gql extends Component
             /** @var InterfaceType $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
+
+        return $event->types;
     }
 
     /**
