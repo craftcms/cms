@@ -7,6 +7,7 @@
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
+- Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.

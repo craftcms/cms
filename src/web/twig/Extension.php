@@ -18,6 +18,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -245,6 +246,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -494,6 +496,35 @@ class Extension extends AbstractExtension implements GlobalsInterface
             Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
+    }
+
+    /**
+     * Purifies the given HTML using HTML Purifier.
+     *
+     * @param string $html The HTML to be purified
+     * @param string|array|null $config The HTML Purifier config. This can either be the name of a JSON file within
+     * `config/htmlpurifier/` (sans `.json` extension) or a config array.
+     * @return string The purified HTML
+     * @since 3.4.0
+     */
+    public function purifyFilter(string $html, $config = null): string
+    {
+        if (is_string($config)) {
+            $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier' .
+                DIRECTORY_SEPARATOR . $config . '.json';
+            $config = null;
+            if (!is_file($path)) {
+                Craft::warning("No HTML Purifier config found at {$path}.");
+            } else {
+                try {
+                    $config = Json::decode(file_get_contents($path));
+                } catch (InvalidArgumentException $e) {
+                    Craft::warning("Invalid HTML Purifier config at {$path}.");
+                }
+            }
+        }
+
+        return HtmlPurifier::process($html, $config);
     }
 
     /**
