@@ -41,7 +41,6 @@
                 activeInstalls: this.$options.filters.t("Popularity", 'app'),
                 lastUpdate: this.$options.filters.t("Last Update", 'app'),
                 name: this.$options.filters.t("Name", 'app'),
-                price: this.$options.filters.t("Price", 'app'),
             }
         }
     }
