@@ -1,4 +1,4 @@
-<p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
+<p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="412" height="100" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
 <p align="center">
 <a href="https://travis-ci.com/craftcms/cms"><img src="https://img.shields.io/travis/com/craftcms/cms/develop.svg?label=build" alt="Build Status"></a>
