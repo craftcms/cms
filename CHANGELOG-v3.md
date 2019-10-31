@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where it was impossible to apply project config changes that removed a Matrix block type which contained a nested SuperTable field if the `allowAdminChanges` was set to `true`. ([#5078](https://github.com/craftcms/cms/issues/5078))
 - Fixed a bug where the nag alert that was shown when the wrong Craft edition was installed was including a “Resolve” link even if the user didn’t have access to the Plugin Store. ([#5190](https://github.com/craftcms/cms/issues/5190))
+- Fixed a PHP error that could occur when saving an element, if it had a Dropdown field that had been programmatically saved with integer option values. ([#5172](https://github.com/craftcms/cms/issues/5172))
 
 ## 3.3.14 - 2019-10-30
 
