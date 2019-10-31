@@ -12,7 +12,6 @@ import {mapState} from 'vuex'
 import Modal from './js/components/modal/Modal'
 import StatusMessage from './js/components/StatusMessage'
 import App from './App'
-import './js/plugins/shave'
 import './js/plugins/craftui'
 import './js/plugins/vue-awesome-swiper'
 
