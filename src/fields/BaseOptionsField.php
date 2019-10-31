@@ -318,7 +318,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->options) {
             foreach ($this->options as $option) {
                 if (!isset($option['optgroup'])) {
-                    $range[] = $option['value'];
+                    // Cast the option value to a string in case it is an integer
+                    $range[] = (string)$option['value'];
                 }
             }
         }
