@@ -126,7 +126,7 @@ class Cp
                         ]);
                     }
                     $message .= ' ';
-                    if (Craft::$app->getUser()->getIsAdmin()) {
+                    if ($user->admin) {
                         if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
                             $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
                         } else {
