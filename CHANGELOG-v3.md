@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where it was impossible to apply project config changes that removed a Matrix block type which contained a nested SuperTable field if the `allowAdminChanges` was set to `true`. ([#5078](https://github.com/craftcms/cms/issues/5078))
+
 ## 3.3.14 - 2019-10-30
 
 ### Added
