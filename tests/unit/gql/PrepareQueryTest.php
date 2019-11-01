@@ -28,7 +28,7 @@ use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
 
-class ArgumentPreparationTest extends Unit
+class PrepareQueryTest extends Unit
 {
     /**
      * @var \UnitTester
