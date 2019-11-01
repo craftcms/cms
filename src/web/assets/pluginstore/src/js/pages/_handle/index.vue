@@ -50,12 +50,12 @@
                     <div class="lg:pl-8 lg:ml-4">
                         <ul>
                             <li v-if="plugin.documentationUrl" class="py-1">
-                                <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
+                                <a :href="plugin.documentationUrl" rel="noopener noreferrer" target="_blank">
                                     <icon icon="book"></icon> {{ "Documentation"|t('app') }}
                                 </a>
                             </li>
 
-                            <li><a :href="plugin.repository"><icon icon="link" /> Repository</a></li>
+                            <li><a :href="plugin.repository" rel="noopener noreferrer" target="_blank"><icon icon="link" /> Repository</a></li>
                         </ul>
 
                     </div>
