@@ -15,6 +15,7 @@ class m181112_203955_sequences_table extends Migration
      */
     public function safeUp()
     {
+        $this->dropTableIfExists(Table::SEQUENCES);
         $this->createTable(Table::SEQUENCES, [
             'name' => $this->string()->notNull(),
             'next' => $this->integer()->unsigned()->notNull()->defaultValue(1),
