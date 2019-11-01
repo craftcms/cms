@@ -50,7 +50,7 @@
         @apply .hidden;
     }
 
-    @media only screen and (min-width: $minHorizontalUiWidth) {
+    @media only screen and (min-width: 975px) {
         ul.categories {
             @apply .block;
         }

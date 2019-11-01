@@ -137,7 +137,7 @@
         }
     }
 
-    @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+    @media only screen and (max-width: 974px) {
         .category-selector-btn {
             @apply .block;
         }

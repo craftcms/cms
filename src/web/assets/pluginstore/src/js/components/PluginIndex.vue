@@ -4,13 +4,13 @@
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
-                <plugin-index-sort :loading="loading && plugins.length > 0" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
+                <plugin-index-sort :loading="loading" :orderBy.sync="orderBy" :direction.sync="direction" @change="onOrderByChange"></plugin-index-sort>
             </template>
         </div>
 
         <plugin-grid :plugins="plugins"></plugin-grid>
 
-        <spinner v-if="loadingMore || (loading && plugins.length === 0)" class="my-4"></spinner>
+        <spinner v-if="loadingBottom" class="my-4"></spinner>
     </div>
 </template>
 
@@ -32,7 +32,7 @@
                 direction: 'desc',
 
                 loading: false,
-                loadingMore: false,
+                loadingBottom: false,
                 hasMore: false,
                 page: 1,
             }
@@ -60,7 +60,8 @@
                         if (response.data.currentPage < response.data.total) {
                             this.hasMore = true
                             this.page++
-                            this.$root.$on('viewScroll', this.onViewScroll)
+                            this.$root.$on('viewScroll', this.onScroll)
+                            this.$root.$on('windowScroll', this.onScroll)
                         } else {
                             this.hasMore = false
                         }
@@ -70,38 +71,62 @@
                     })
             },
 
-            onViewScroll($event) {
+            onScroll() {
                 this.$root.$off('viewScroll')
+                this.$root.$off('windowScroll')
 
-                if (this.loadingMore === true && this.hasMore === true) {
+                if (this.loadingBottom === true && this.hasMore === true) {
                     return null
                 }
 
-                const scrollTop = $event.target.scrollTop
-                const scrollHeight = $event.target.scrollHeight
-                const offsetHeight = $event.target.offsetHeight
-                const distFromBottom = scrollHeight - Math.max((scrollTop + offsetHeight), 0)
-
-                if (distFromBottom < 300) {
-                    this.loadingMore = true
+                if (this.scrollDistFromBottom() < 300) {
+                    this.loadingBottom = true
                     this.$store.dispatch(this.action, {
                             ...this.requestActionData,
                             appendData: true,
                         })
                         .then(response => {
-                            this.loadingMore = false
+                            this.loadingBottom = false
 
                             if (response.data.currentPage < response.data.total) {
                                 this.hasMore = true
                                 this.page++
-                                this.$root.$on('viewScroll', this.onViewScroll)
+                                this.$root.$on('viewScroll', this.onScroll)
+                                this.$root.$on('windowScroll', this.onScroll)
                             } else {
                                 this.hasMore = false
                             }
                         })
                 } else {
-                    this.$root.$on('viewScroll', this.onViewScroll)
+                    this.$root.$on('viewScroll', this.onScroll)
+                    this.$root.$on('windowScroll', this.onScroll)
                 }
+            },
+
+            scrollContainer() {
+                return this.scrollMode() === 'view' ? document.getElementById('content').getElementsByClassName('ps-container')[0] : document.documentElement
+            },
+
+            scrollDistFromBottom() {
+                const $container = this.scrollContainer()
+                const scrollTop = $container.scrollTop
+                const scrollHeight = $container.scrollHeight
+
+                let offsetHeight = window.outerHeight
+
+                if (this.scrollMode() === 'view') {
+                    offsetHeight = $container.offsetHeight
+                }
+
+                return scrollHeight - Math.max((scrollTop + offsetHeight), 0)
+            },
+
+            scrollMode() {
+                if (window.innerWidth >= 975) {
+                    return 'view'
+                }
+
+                return 'window'
             },
 
             requestPlugins(dontAppendData) {
@@ -109,7 +134,7 @@
                     return null
                 }
 
-                if (this.loadingMore) {
+                if (this.loadingBottom) {
                     return null
                 }
 
@@ -121,10 +146,11 @@
                     return null
                 }
 
-                this.loading = true
-
                 if (dontAppendData) {
                     this.page = 1
+                    this.loading = true
+                } else {
+                    this.loadingBottom = true
                 }
 
                 this.$store.dispatch(this.action, {
@@ -133,6 +159,7 @@
                     })
                     .then((response) => {
                         this.loading = false
+                        this.loadingBottom = false
 
                         if (response.data.currentPage < response.data.total) {
                             this.hasMore = true
@@ -147,21 +174,30 @@
                     })
                     .catch(() => {
                         this.loading = false
+                        this.loadingBottom = false
                     })
             },
 
             onWindowResize() {
+                if (!this.hasMore) {
+                    return null
+                }
+
+                if (this.viewHasScrollbar()) {
+                    return null
+                }
+
                 this.requestPlugins()
             },
 
             viewHasScrollbar() {
-                const scrollableDiv = document.getElementById('content').getElementsByClassName('ps-container')[0]
+                const $container = this.scrollContainer()
 
-                if (scrollableDiv.clientHeight < scrollableDiv.scrollHeight) {
+                if ($container.clientHeight < $container.scrollHeight) {
                     return true
-                } else {
-                    return false
                 }
+
+                return false
             },
 
             mountPluginIndex() {
@@ -180,7 +216,8 @@
                                 this.requestPlugins()
                             }
 
-                            this.$root.$on('viewScroll', this.onViewScroll)
+                            this.$root.$on('viewScroll', this.onScroll)
+                            this.$root.$on('windowScroll', this.onScroll)
                             this.$root.$on('windowResize', this.onWindowResize)
                         } else {
                             this.hasMore = false
@@ -193,6 +230,7 @@
 
             destroyPluginIndex() {
                 this.$root.$off('viewScroll')
+                this.$root.$off('windowScroll')
                 this.$root.$off('windowResize')
 
                 this.$store.dispatch('pluginStore/cancelRequests')

@@ -54,6 +54,10 @@
             window.addEventListener('resize', function($event) {
                 this.$root.$emit('windowResize', $event)
             }.bind(this))
+
+            window.addEventListener('scroll', function($event) {
+                this.$root.$emit('windowScroll', $event)
+            }.bind(this))
         }
     }
 </script>
