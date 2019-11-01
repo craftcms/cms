@@ -72,8 +72,8 @@
             },
 
             onScroll() {
-                this.$root.$off('viewScroll')
-                this.$root.$off('windowScroll')
+                this.$root.$off('viewScroll', this.onScroll)
+                this.$root.$off('windowScroll', this.onScroll)
 
                 if (this.loadingBottom === true && this.hasMore === true) {
                     return null
@@ -104,7 +104,7 @@
             },
 
             scrollContainer() {
-                return this.scrollMode() === 'view' ? document.getElementById('content').getElementsByClassName('ps-container')[0] : document.documentElement
+                return this.scrollMode() === 'view' ? document.getElementById('content').getElementsByClassName('ps-main')[0] : document.documentElement
             },
 
             scrollDistFromBottom() {
@@ -229,9 +229,9 @@
             },
 
             destroyPluginIndex() {
-                this.$root.$off('viewScroll')
-                this.$root.$off('windowScroll')
-                this.$root.$off('windowResize')
+                this.$root.$off('viewScroll', this.onScroll)
+                this.$root.$off('windowScroll', this.onScroll)
+                this.$root.$off('windowResize', this.onWindowResize)
 
                 this.$store.dispatch('pluginStore/cancelRequests')
             },
