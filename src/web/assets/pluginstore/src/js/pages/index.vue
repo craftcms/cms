@@ -7,7 +7,7 @@
                     <router-link class="right" :to="'/featured/'+featuredSection.slug">{{ "See all"|t('app') }}</router-link>
                 </div>
 
-                <plugin-grid :plugins="featuredSection.plugins"></plugin-grid>
+                <plugin-grid :plugins="featuredSection.plugins" :auto-limit="true"></plugin-grid>
             </div>
 
             <template v-if="activeTrialPlugins.length > 0">
