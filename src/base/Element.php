@@ -2451,8 +2451,35 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
+     * This method can be used to completely customize what actually shows up within the table’s body for a given
+     * attribute, rather than simply showing the attribute’s raw value.
+     *
+     * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
+     * getTableAttributesHtml() method could do this:
+     *
+     * ```php
+     * switch ($attribute) {
+     *     case 'email':
+     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
+     *     // ...
+     * }
+     * return parent::tableAttributeHtml($attribute);
+     * ```
+     *
+     * ::: warning
+     * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
+     * :::
+     *
+     * By default the following will be returned:
+     *
+     * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
+     * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
+     * - If the attribute value is a [[DateTime]] object, the date will be formatted with a localized date format.
+     * - For anything else, it will output the attribute value as a string.
+     *
      * @param string $attribute The attribute name.
      * @return string The HTML that should be shown for a given attribute in Table View.
+     * @throws InvalidConfigException
      * @see getTableAttributeHtml()
      */
     protected function tableAttributeHtml(string $attribute): string
