@@ -11,24 +11,32 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\base\Element as BaseElement;
 use craft\elements\Asset as AssetElement;
+use craft\elements\Category as CategoryElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
+use craft\elements\Tag as TagElement;
 use craft\elements\User as UserElement;
+use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
+use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
+use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
+use craft\models\MatrixBlockType;
 use craft\models\Section;
+use craft\models\TagGroup;
 use craft\volumes\Local;
 use GraphQL\Type\Definition\ObjectType;
 
@@ -41,7 +49,7 @@ class InterfaceAndGeneratorTest extends Unit
 
     protected function _before()
     {
-        // Mock the GQL token for the volumes below
+        // Mock the GQL token
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
@@ -50,6 +58,8 @@ class InterfaceAndGeneratorTest extends Unit
                     'volumes.volume-uid-1:read',
                     'volumes.volume-uid-2:read',
                     'sections.section-uid-1:read',
+                    'categorygroups.categoyGroup-uid-1:read',
+                    'taggroups.tagGroup-uid-1:read',
                     'entrytypes.entrytype-uid-1:read',
                     'entrytypes.entrytype-uid-2:read',
                     'globalsets.globalset-uid-1:read',
@@ -76,6 +86,24 @@ class InterfaceAndGeneratorTest extends Unit
             Craft::$app,
             'globals',
             ['getAllSets' => function () { return $this->mockGlobalSets();}]
+        );
+
+        $this->tester->mockMethods(
+            Craft::$app,
+            'categories',
+            ['getAllGroups' => function () { return $this->mockCategoryGroups();}]
+        );
+
+        $this->tester->mockMethods(
+            Craft::$app,
+            'tags',
+            ['getAllTagGroups' => function () { return $this->mockTagGroups();}]
+        );
+
+        $this->tester->mockMethods(
+            Craft::$app,
+            'matrix',
+            ['getAllBlockTypes' => function () { return $this->mockMatrixBlocks();}]
         );
 
     }
@@ -161,7 +189,9 @@ class InterfaceAndGeneratorTest extends Unit
             [ElementInterface::class, function () {return ['Element'];}, [BaseElement::class, 'gqlTypeNameByContext']],
             [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'gqlTypeNameByContext']],
             [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
-            [MatrixBlockInterface::class, function () { return Craft::$app->getMatrix()->getAllBlockTypes();}, [MatrixBlockElement::class, 'gqlTypeNameByContext']],
+            [CategoryInterface::class, [$this, 'mockCategoryGroups'], [CategoryElement::class, 'gqlTypeNameByContext']],
+            [TagInterface::class, [$this, 'mockTagGroups'], [TagElement::class, 'gqlTypeNameByContext']],
+            [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeNameByContext']],
             [UserInterface::class, function () {return ['User'];}, [UserElement::class, 'gqlTypeNameByContext']],
         ];
     }
@@ -235,6 +265,64 @@ class InterfaceAndGeneratorTest extends Unit
                 '__call' => function ($name, $params) {
                     return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
+            ]),
+        ];
+    }
+
+    /**
+     * Mock a category group for tests.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function mockCategoryGroups(): array
+    {
+        return [
+            $this->make(CategoryGroup::class, [
+                'uid' => 'categoyGroup-uid-1',
+                'handle' => 'mockCategoryGroup',
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                },
+            ]),
+        ];
+    }
+
+    /**
+     * Mock a tag group for tests.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function mockTagGroups(): array
+    {
+        return [
+            $this->make(TagGroup::class, [
+                'uid' => 'tagGroup-uid-1',
+                'handle' => 'mockTagGroup',
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                },
+            ]),
+        ];
+    }
+
+    /**
+     * Mock matrix blocks.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function mockMatrixBlocks(): array
+    {
+        return [
+            $this->make(MatrixBlockType::class, [
+                'uid' => 'matrixBlock-uid-1',
+                'handle' => 'mockMatrixBlock',
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                },
+                'getField' => $this->makeEmpty(MatrixField::class, ['handle' => 'matrixField']),
             ]),
         ];
     }
