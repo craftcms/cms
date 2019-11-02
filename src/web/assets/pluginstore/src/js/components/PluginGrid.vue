@@ -26,17 +26,19 @@
 
         computed: {
             limit() {
-                if (!this.plugins) {
-                    return null
+                let totalPlugins = this.plugins.length
+
+                if (this.winWidth < 1400) {
+                    totalPlugins = 4
                 }
 
-                const remains = this.plugins.length % (this.oddNumberOfColumns ? 3 : 2)
+                const remains = totalPlugins % (this.oddNumberOfColumns ? 3 : 2)
 
-                return this.plugins.length - remains
+                return totalPlugins - remains
             },
 
             oddNumberOfColumns() {
-                if (this.winWidth >= 1824) {
+                if (this.winWidth < 1400 || this.winWidth >= 1824) {
                     return false
                 }
 
