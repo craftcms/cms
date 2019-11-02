@@ -80,7 +80,6 @@
     import LicenseStatus from './LicenseStatus'
 
     export default {
-
         props: ['plugin', 'edition'],
 
         components: {
@@ -95,7 +94,6 @@
         },
 
         computed: {
-
             ...mapGetters({
                 getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
                 isInCart: 'cart/isInCart',
@@ -158,11 +156,9 @@
             csrfTokenValue() {
                 return Craft.csrfTokenValue
             },
-
         },
 
         methods: {
-
             addEditionToCart(editionHandle) {
                 this.addToCartloading = true
 
@@ -204,9 +200,7 @@
 
                 // Install (don’t prevent form submit)
             },
-
         }
-
     }
 </script>
 

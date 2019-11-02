@@ -32,7 +32,6 @@
     import {mapState} from 'vuex'
 
     export default {
-
         data() {
             return {
                 showCategorySelector: false,
@@ -40,16 +39,13 @@
         },
 
         computed: {
-
             ...mapState({
                 categories: state => state.pluginStore.categories,
                 CraftEdition: state => state.craft.CraftEdition,
                 CraftPro: state => state.craft.CraftPro,
                 licensedEdition: state => state.craft.licensedEdition,
             }),
-
         },
-
     }
 </script>
 

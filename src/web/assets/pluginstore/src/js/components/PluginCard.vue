@@ -45,7 +45,6 @@
     import EditionBadge from './EditionBadge'
 
     export default {
-
         props: ['plugin', 'trialMode'],
 
         components: {
@@ -53,7 +52,6 @@
         },
 
         computed: {
-
             ...mapState({
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
             }),
@@ -104,9 +102,7 @@
                     max
                 }
             }
-
         },
-
     }
 </script>
 
