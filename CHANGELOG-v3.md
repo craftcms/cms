@@ -8,6 +8,7 @@
 - Fixed a PHP error that could occur when saving an element, if it had a Dropdown field that had been programmatically saved with integer option values. ([#5172](https://github.com/craftcms/cms/issues/5172))
 - Fixed a bug where “Updating search indexes” jobs could fail. ([#5191](https://github.com/craftcms/cms/issues/5191))
 - Fixed an error that could occur if an invalid PHP interval string was passed to `craft\helpers\DateTimeHelper::isValidIntervalString()`. ([#5193](https://github.com/craftcms/cms/issues/5193))
+- Fixed a bug where accessing group id was not possible on Category and Tag GraphQL types. ([#5199](https://github.com/craftcms/cms/issues/5199))
 
 ## 3.3.14 - 2019-10-30
 
