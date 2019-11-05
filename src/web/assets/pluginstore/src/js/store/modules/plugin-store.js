@@ -211,6 +211,7 @@ const mutations = {
     updateCoreData(state, {response}) {
         state.categories = response.data.categories
         state.expiryDateOptions = response.data.expiryDateOptions
+        state.sortOptions = response.data.sortOptions
     },
 
     updateDeveloper(state, developer) {

@@ -15,6 +15,7 @@
 
 <script>
     /* global Craft */
+    import {mapState} from 'vuex'
 
     export default {
         props: ['attributes', 'value'],
@@ -27,6 +28,10 @@
         },
 
         computed: {
+            ...mapState({
+                sortOptions: state => state.pluginStore.sortOptions,
+            }),
+
             menuLabel() {
                 if (this.attributes) {
                     return this.attributes[this.value.attribute]
@@ -36,7 +41,9 @@
 
         methods: {
             selectAttribute(attribute) {
-                this.$emit('update:value', {attribute: attribute, direction: this.value.direction})
+                const direction = this.sortOptions[attribute] ? this.sortOptions[attribute] : this.value.direction
+
+                this.$emit('update:value', {attribute, direction})
             },
 
             selectDirection(direction) {
