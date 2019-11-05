@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.3.14",
+  "version": "3.3.15",
   "keywords": [
     "cms",
     "craftcms",
@@ -53,7 +53,7 @@
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "^3.1",
+    "codeception/codeception": "3.1.0",
     "codeception/mockery-module": "^0.3",
     "codeception/phpunit-wrapper": "^7.7",
     "codeception/specify": "^0.4",
@@ -83,6 +83,9 @@
     }
   },
   "config": {
-    "sort-packages": true
+    "sort-packages": true,
+    "platform": {
+      "php":  "7.1.30"
+    }
   }
 }
