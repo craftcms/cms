@@ -493,10 +493,14 @@ class User extends \yii\web\User
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function  beforeLogout($identity)
+    protected function beforeLogout($identity)
     {
+        if (!parent::beforeLogout($identity)) {
+            return false;
+        }
+
         $session = Craft::$app->getSession();
 
         // Delete the session token in the database
@@ -511,7 +515,7 @@ class User extends \yii\web\User
                 ->execute();
         }
 
-        return parent::beforeLogout($identity);
+        return true;
     }
 
     /**
