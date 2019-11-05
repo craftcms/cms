@@ -10,6 +10,9 @@
 - Fixed an error that could occur if an invalid PHP interval string was passed to `craft\helpers\DateTimeHelper::isValidIntervalString()`. ([#5193](https://github.com/craftcms/cms/issues/5193))
 - Fixed a bug where accessing group id was not possible on Category and Tag GraphQL types. ([#5199](https://github.com/craftcms/cms/issues/5199))
 
+### Security
+- Fixed a bug where rows in the `sessions` table in the database were not getting removed properly when a user session ended.
+
 ## 3.3.14 - 2019-10-30
 
 ### Added
