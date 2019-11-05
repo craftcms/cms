@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a SQL error that could occur when using PostgreSQL.
+
 ## 3.3.15 - 2019-11-05
 
 ### Fixed
