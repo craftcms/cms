@@ -24,7 +24,6 @@
         data() {
             return {
                 category: null,
-                loading: false,
             }
         },
 

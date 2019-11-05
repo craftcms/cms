@@ -1,6 +1,6 @@
 <template>
     <div class="ps-container">
-        <template v-if="!loading && featuredSection">
+        <template v-if="!loading">
             <plugin-index
                     action="pluginStore/getPluginsByFeaturedSectionHandle"
                     :requestData="requestData"
@@ -8,7 +8,9 @@
                     :disableSorting="true"
             >
                 <template v-slot:header>
-                    <h1>{{featuredSection.title}}</h1>
+                    <template v-if="featuredSection">
+                        <h1>{{featuredSection.title}}</h1>
+                    </template>
                 </template>
             </plugin-index>
         </template>
@@ -29,7 +31,7 @@
 
         data() {
             return {
-                loading: false,
+                loading: true,
                 pluginsLoaded: false,
                 sectionLoaded: false,
             }
@@ -50,7 +52,6 @@
 
         mounted() {
             this.$store.commit('pluginStore/updatePlugins', [])
-            this.loading = true
 
             const featuredSectionHandle = this.$route.params.handle
 

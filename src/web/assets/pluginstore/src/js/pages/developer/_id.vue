@@ -1,16 +1,13 @@
 <template>
     <div class="ps-container">
-        <template v-if="loading || !developer">
-            <spinner class="mt-8"></spinner>
-        </template>
-        <template v-else>
+        <template v-if="!loading">
             <plugin-index
                     action="pluginStore/getPluginsByDeveloperId"
                     :requestData="requestData"
                     :plugins="plugins"
             >
                 <template v-slot:header>
-                    <div class="developer-card tw-flex border-b border-solid border-grey-light pb-6 items-center">
+                    <div v-if="developer" class="developer-card tw-flex border-b border-solid border-grey-light pb-6 items-center">
                         <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
                             <img :src="developer.photoUrl" width="120" height="120" />
                         </div>
@@ -30,6 +27,9 @@
                 </template>
             </plugin-index>
         </template>
+        <template v-else>
+            <spinner class="mt-8"></spinner>
+        </template>
     </div>
 </template>
 
@@ -40,9 +40,7 @@
     export default {
         data() {
             return {
-                developerLoaded: false,
-                loading: false,
-                pluginsLoaded: false,
+                loading: true,
             }
         },
 
@@ -65,9 +63,6 @@
 
         mounted() {
             const developerId = this.$route.params.id
-
-            // start loading
-            this.loading = true
 
             // load developer details
             this.$store.dispatch('pluginStore/getDeveloper', developerId)

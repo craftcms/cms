@@ -10,7 +10,9 @@
 
         <plugin-grid :plugins="plugins"></plugin-grid>
 
-        <spinner v-if="loadingBottom" class="my-4"></spinner>
+        <div v-if="error" class="my-4 text-red">{{error}}</div>
+
+        <spinner v-if="loadingBottom || (disableSorting && loading)" class="my-4"></spinner>
     </div>
 </template>
 
@@ -35,6 +37,8 @@
                 loadingBottom: false,
                 hasMore: false,
                 page: 1,
+
+                error: null,
             }
         },
 
@@ -51,6 +55,7 @@
 
         methods: {
             onOrderByChange() {
+                this.error = null
                 this.loading = true
                 this.page = 1
 
@@ -207,6 +212,10 @@
 
                 this.$store.dispatch(this.action, this.requestActionData)
                     .then((response) => {
+                        if (response.data && response.data.error) {
+                            throw response.data.error
+                        }
+
                         this.loading = false
                         if (response.data.currentPage < response.data.total) {
                             this.hasMore = true
@@ -223,7 +232,16 @@
                             this.hasMore = false
                         }
                     })
-                    .catch(() => {
+                    .catch((thrown) => {
+                        let errorMsg
+
+                        if (typeof thrown === 'string') {
+                            errorMsg = thrown
+                        } else {
+                            errorMsg = thrown.response.data.message
+                        }
+
+                        this.error = errorMsg
                         this.loading = false
                     })
             },
