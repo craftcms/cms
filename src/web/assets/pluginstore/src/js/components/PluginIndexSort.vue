@@ -39,7 +39,7 @@
         mounted() {
             this.sortMenuBtnAttributes = {
                 activeInstalls: this.$options.filters.t("Popularity", 'app'),
-                lastUpdate: this.$options.filters.t("Last Update", 'app'),
+                dateUpdated: this.$options.filters.t("Last Update", 'app'),
                 name: this.$options.filters.t("Name", 'app'),
             }
         }
