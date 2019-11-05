@@ -188,8 +188,9 @@ export default {
     getPluginsByCategory(categoryId, pluginIndexParams) {
         return new Promise((resolve, reject) => {
             const params = this._getPluginIndexParams(pluginIndexParams)
+            params.categoryId = categoryId
 
-            _axios.get('plugin-store/plugins-by-category/' + categoryId, {
+            _axios.get('plugin-store/plugins', {
                     params
                 })
                 .then((response) => {
@@ -215,8 +216,9 @@ export default {
     getPluginsByDeveloperId(developerId, pluginIndexParams) {
         return new Promise((resolve, reject) => {
             const params = this._getPluginIndexParams(pluginIndexParams)
+            params.developerId = developerId
 
-            _axios.get('plugin-store/plugins-by-developer/' + developerId, {
+            _axios.get('plugin-store/plugins', {
                     params
                 })
                 .then((response) => {
@@ -339,7 +341,7 @@ export default {
             const params = this._getPluginIndexParams(pluginIndexParams)
             params.searchQuery = searchQuery
 
-            _axios.get('plugin-store/search-plugins', {
+            _axios.get('plugin-store/plugins', {
                 params
             })
                 .then((response) => {
