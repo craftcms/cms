@@ -237,6 +237,8 @@
 
                         if (typeof thrown === 'string') {
                             errorMsg = thrown
+                        } else if(thrown.response.data.error) {
+                            errorMsg = thrown.response.data.error
                         } else {
                             errorMsg = thrown.response.data.message
                         }
@@ -247,6 +249,7 @@
             },
 
             destroyPluginIndex() {
+                this.error = null
                 this.$root.$off('viewScroll', this.onScroll)
                 this.$root.$off('windowScroll', this.onScroll)
                 this.$root.$off('windowResize', this.onWindowResize)
