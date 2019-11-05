@@ -13,6 +13,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use yii\base\ErrorException;
 
 /**
  * Class DateTimeHelper
@@ -510,7 +511,11 @@ class DateTimeHelper
      */
     public static function isValidIntervalString(string $intervalString): bool
     {
-        $interval = DateInterval::createFromDateString($intervalString);
+        try {
+            $interval = DateInterval::createFromDateString($intervalString);
+        } catch (ErrorException $e) {
+            return false;
+        }
 
         return $interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0;
     }
