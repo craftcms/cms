@@ -24,7 +24,6 @@
             <!-- body -->
             <div class="plugin-details-body">
                 <template v-if="!loading">
-
                     <template v-if="pluginLicenseInfo && pluginLicenseInfo.licenseIssues.length > 0">
                         <ul>
                             <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error" :key="'license-issue' + key">
