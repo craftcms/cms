@@ -150,12 +150,12 @@
                 if (this.viewHasScrollbar()) {
                     return null
                 }
-                
+
                 this.loadingBottom = true
 
                 this.$store.dispatch(this.action, {
                         ...this.requestActionData,
-                        appendData: !dontAppendData,
+                        appendData: true,
                     })
                     .then((response) => {
                         this.loading = false
