@@ -37,13 +37,13 @@
 
                 <!-- Install (Free) -->
                 <template v-if="isPluginEditionFree">
-                    <btn kind="primary" type="submit" :loading="loading" block large>{{ "Install"|t('app') }}</btn>
+                    <btn kind="primary" type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion" block large>{{ "Install"|t('app') }}</btn>
                 </template>
 
                 <template v-else>
                     <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
-                        <btn type="submit" :loading="loading" block large>{{ "Install"|t('app') }}</btn>
+                        <btn type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion" block large>{{ "Install"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
@@ -70,6 +70,10 @@
                     <btn icon="check" :disabled="true" block large> {{ "Installed"|t('app') }}</btn>
                 </template>
         </template>
+
+        <div v-if="!plugin.latestCompatibleVersion" class="text-grey mt-4 px-8">
+            <p>Only up to {{plugin.latestCompatibleVersion}} is compatible with your version of Craft.</p>
+        </div>
     </div>
 </template>
 
