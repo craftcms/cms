@@ -134,7 +134,7 @@
                 return 'window'
             },
 
-            requestPlugins(dontAppendData) {
+            requestPlugins() {
                 if (this.loading) {
                     return null
                 }
@@ -147,16 +147,11 @@
                     return null
                 }
 
-                if (!dontAppendData && this.viewHasScrollbar()) {
+                if (this.viewHasScrollbar()) {
                     return null
                 }
-
-                if (dontAppendData) {
-                    this.page = 1
-                    this.loading = true
-                } else {
-                    this.loadingBottom = true
-                }
+                
+                this.loadingBottom = true
 
                 this.$store.dispatch(this.action, {
                         ...this.requestActionData,
@@ -207,7 +202,7 @@
 
             mountPluginIndex() {
                 this.$store.commit('pluginStore/updatePlugins', [])
-                this.loading = true
+                this.loadingBottom = true
                 this.page = 1
 
                 this.$store.dispatch(this.action, this.requestActionData)
@@ -216,7 +211,8 @@
                             throw response.data.error
                         }
 
-                        this.loading = false
+                        this.loadingBottom = false
+
                         if (response.data.currentPage < response.data.total) {
                             this.hasMore = true
                             this.page++
@@ -244,7 +240,7 @@
                         }
 
                         this.error = errorMsg
-                        this.loading = false
+                        this.loadingBottom = false
                     })
             },
 
