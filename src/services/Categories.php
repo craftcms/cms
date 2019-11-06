@@ -29,6 +29,7 @@ use craft\models\FieldLayout;
 use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
+use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -571,14 +572,12 @@ class Categories extends Component
     {
         $categoryGroupSiteSettings = $group->getSiteSettings();
 
-        if (isset($categoryGroupSiteSettings[$siteId]) && $categoryGroupSiteSettings[$siteId]->hasUrls) {
-            $view = Craft::$app->getView();
-            $template = (string)$categoryGroupSiteSettings[$siteId]->template;
-
-            return $view->doesTemplateExist($template, $view::TEMPLATE_MODE_SITE);
+        if (!isset($categoryGroupSiteSettings[$siteId]) || !$categoryGroupSiteSettings[$siteId]->hasUrls) {
+            return false;
         }
 
-        return false;
+        $template = (string)$categoryGroupSiteSettings[$siteId]->template;
+        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
     }
 
     /**

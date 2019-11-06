@@ -30,6 +30,7 @@ class TemplateEvent extends CancelableEvent
 
     /**
      * @var string The template mode to be used
+     * @since 3.4.0
      */
     public $templateMode;
 

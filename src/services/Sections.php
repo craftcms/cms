@@ -35,6 +35,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -970,14 +971,12 @@ class Sections extends Component
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
-        if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
-            $view = Craft::$app->getView();
-            $template = (string)$sectionSiteSettings[$siteId]->template;
-
-            return $view->doesTemplateExist($template, $view::TEMPLATE_MODE_SITE);
+        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+            return false;
         }
 
-        return false;
+        $template = (string)$sectionSiteSettings[$siteId]->template;
+        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
     }
 
     // Entry Types
