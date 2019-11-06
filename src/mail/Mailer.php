@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
+use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MessageInterface;
@@ -98,11 +99,6 @@ class Mailer extends \yii\swiftmailer\Mailer
             $subjectTemplate = $systemMessage->subject;
             $textBodyTemplate = $systemMessage->body;
 
-            // Use the site template mode
-            $view = Craft::$app->getView();
-            $templateMode = $view->getTemplateMode();
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-
             // Use the message language
             $language = Craft::$app->language;
             Craft::$app->language = $message->language;
@@ -115,23 +111,25 @@ class Mailer extends \yii\swiftmailer\Mailer
                 ];
 
             // Render the subject and textBody
-            $message->setSubject($view->renderString($subjectTemplate, $variables));
-            $textBody = $view->renderString($textBodyTemplate, $variables);
+            $view = Craft::$app->getView();
+            $message->setSubject($view->renderString($subjectTemplate, $variables, View::TEMPLATE_MODE_SITE));
+            $textBody = $view->renderString($textBodyTemplate, $variables, View::TEMPLATE_MODE_SITE);
             $message->setTextBody($textBody);
 
             // Is there a custom HTML template set?
             if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
                 $template = $this->template;
+                $templateMode = View::TEMPLATE_MODE_SITE;
             } else {
                 // Default to the _special/email.html template
-                $view->setTemplateMode($view::TEMPLATE_MODE_CP);
                 $template = '_special/email';
+                $templateMode = View::TEMPLATE_MODE_CP;
             }
 
             try {
                 $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($textBody)),
-                ])));
+                ]), $templateMode));
             } catch (\Throwable $e) {
                 // Just log it and don't worry about the HTML body
                 Craft::warning('Error rendering email template: ' . $e->getMessage(), __METHOD__);
@@ -140,7 +138,6 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Set things back to normal
             Craft::$app->language = $language;
-            $view->setTemplateMode($templateMode);
         }
 
         // Set the default sender if there isn't one already
