@@ -1244,11 +1244,10 @@ class User extends Element implements IdentityInterface
     {
         switch ($attribute) {
             case 'email':
-                return $this->email ? Html::encodeParams('<a href="mailto:{email}">{email}</a>', ['email' => $this->email]) : '';
+                return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
-
                 return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
         }
 

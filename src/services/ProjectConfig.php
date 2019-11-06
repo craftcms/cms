@@ -352,6 +352,11 @@ class ProjectConfig extends Component
 
         if ($value !== $this->get($path)) {
             if ($this->readOnly) {
+                // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
+                if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
+                    return;
+                }
+
                 throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
             }
 

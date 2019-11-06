@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\config\DbConfig;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SiteNotFoundException;
@@ -107,17 +106,34 @@ class Search extends Component
      */
     public function indexElementAttributes(ElementInterface $element): bool
     {
+        // Acquire a lock for this element/site ID
+        $mutex = Craft::$app->getMutex();
         /** @var Element $element */
-        // Does it have any searchable attributes?
-        $searchableAttributes = $element::searchableAttributes();
+        $lockKey = "searchindex:{$element->id}:{$element->siteId}";
 
-        $searchableAttributes[] = 'slug';
-
-        if ($element::hasTitles()) {
-            $searchableAttributes[] = 'title';
+        if (!$mutex->acquire($lockKey)) {
+            // Not worth waiting around; for all we know the other process has newer search attributes anyway
+            return true;
         }
 
-        foreach ($searchableAttributes as $attribute) {
+        // Clear the element's current search keywords
+        Craft::$app->getDb()->createCommand()
+            ->delete(Table::SEARCHINDEX, [
+                'elementId' => $element->id,
+                'siteId' => $element->siteId,
+            ])
+            ->execute();
+
+        // Does it have any searchable attributes?
+        $searchableAttributes = array_flip($element::searchableAttributes());
+
+        $searchableAttributes['slug'] = true;
+
+        if ($element::hasTitles()) {
+            $searchableAttributes['title'] = true;
+        }
+
+        foreach (array_keys($searchableAttributes) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
@@ -138,6 +154,9 @@ class Search extends Component
 
             $this->indexElementFields($element->id, $element->siteId, $keywords);
         }
+
+        // Release the lock
+        $mutex->release($lockKey);
 
         return true;
     }
@@ -212,30 +231,32 @@ class Search extends Component
             return [];
         }
 
+        $db = Craft::$app->getDb();
+
         if ($siteId !== null) {
             if (is_array($siteId)) {
                 $where .= sprintf(' AND %s IN (%s)',
-                    Craft::$app->getDb()->quoteColumnName('siteId'),
+                    $db->quoteColumnName('siteId'),
                     implode(',', $siteId)
                 );
             } else {
-                $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('siteId'), Craft::$app->getDb()->quoteValue($siteId));
+                $where .= sprintf(' AND %s = %s', $db->quoteColumnName('siteId'), $db->quoteValue($siteId));
             }
         }
 
         // Begin creating SQL
-        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName(Table::SEARCHINDEX), $where);
+        $sql = sprintf('SELECT * FROM %s WHERE %s', $db->quoteTableName(Table::SEARCHINDEX), $where);
 
         // Append elementIds to QSL
         if (!empty($elementIds)) {
             $sql .= sprintf(' AND %s IN (%s)',
-                Craft::$app->getDb()->quoteColumnName('elementId'),
+                $db->quoteColumnName('elementId'),
                 implode(',', $elementIds)
             );
         }
 
         // Execute the sql
-        $results = Craft::$app->getDb()->createCommand($sql)->queryAll();
+        $results = $db->createCommand($sql)->queryAll();
 
         // Are we scoring the results?
         if ($scoreResults) {
@@ -337,27 +358,6 @@ SQL;
     {
         $attribute = strtolower($attribute);
 
-        // Acquire a lock for this element/attribute/field ID/site ID
-        $mutex = Craft::$app->getMutex();
-        $lockKey = "searchindex:{$elementId}:{$attribute}:{$fieldId}:{$siteId}";
-
-        if (!$mutex->acquire($lockKey)) {
-            // Not worth waiting around; for all we know the other process has newer search attributes anyway
-            return;
-        }
-
-        // Drop all current rows for this element/attribute/site ID
-        $db = Craft::$app->getDb();
-        $db->createCommand()
-            ->delete(Table::SEARCHINDEX, [
-                'elementId' => $elementId,
-                'attribute' => $attribute,
-                'fieldId' => $fieldId,
-                'siteId' => $siteId,
-            ])
-            ->execute();
-
-        $driver = $db->getDriverName();
         /** @var Site $site */
         $site = Craft::$app->getSites()->getSiteById($siteId);
 
@@ -377,7 +377,8 @@ SQL;
             $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
 
-        if ($driver === DbConfig::DRIVER_PGSQL) {
+        $db = Craft::$app->getDb();
+        if ($isPgsql = $db->getIsPgsql()) {
             $maxSize = $this->maxPostgresKeywordLength;
         } else {
             $maxSize = Db::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
@@ -389,7 +390,7 @@ SQL;
 
         $columns['keywords'] = $cleanKeywords;
 
-        if ($driver === DbConfig::DRIVER_PGSQL) {
+        if ($isPgsql) {
             $columns['keywords_vector'] = $cleanKeywords;
         }
 
@@ -397,9 +398,6 @@ SQL;
         $db->createCommand()
             ->insert(Table::SEARCHINDEX, $columns, false)
             ->execute();
-
-        // Release the lock
-        $mutex->release($lockKey);
     }
 
     /**
@@ -537,6 +535,8 @@ SQL;
         $where = [];
         $words = [];
 
+        $db = Craft::$app->getDb();
+
         foreach ($tokens as $obj) {
             // Get SQL and/or keywords
             list($sql, $keywords) = $this->_getSqlFromTerm($obj, $siteId);
@@ -550,7 +550,7 @@ SQL;
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
             else if ($keywords !== null && $keywords !== '') {
-                if ($inclusive && Craft::$app->getDb()->getIsMysql()) {
+                if ($inclusive && $db->getIsMysql()) {
                     $keywords = '+' . $keywords;
                 }
 
@@ -757,8 +757,10 @@ SQL;
      */
     private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
     {
-        if (Craft::$app->getDb()->getIsMysql()) {
-            return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
+        $db = Craft::$app->getDb();
+
+        if ($db->getIsMysql()) {
+            return sprintf("MATCH(%s) AGAINST('%s'%s)", $db->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
         }
 
         if ($glue === ' AND ') {
@@ -783,7 +785,7 @@ SQL;
             }
         }
 
-        return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));
+        return sprintf("%s @@ '%s'::tsquery", $db->quoteColumnName('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));
     }
 
     /**
@@ -836,10 +838,11 @@ SQL;
     {
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);
-
         $likeVal = !$exact ? '%' . $val . '%' : $val;
 
-        return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", Craft::$app->getDb()->quoteColumnName('keywords_vector'), $ftVal, Craft::$app->getDb()->quoteColumnName('keywords'), $likeVal);
+        $db = Craft::$app->getDb();
+
+        return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $likeVal);
     }
 
     /**

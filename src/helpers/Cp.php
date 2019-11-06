@@ -41,6 +41,7 @@ class Cp
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if (!$user) {
             return $alerts;
@@ -61,11 +62,21 @@ class Cp
                 if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
                     $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
                 } else if (Craft::$app->getHasWrongEdition()) {
-                    $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
-                            'edition' => Craft::$app->getEditionName(),
-                            'licensedEdition' => Craft::$app->getLicensedEditionName()
-                        ]) .
-                        ' <a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
+                    $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
+                        'edition' => Craft::$app->getEditionName(),
+                        'licensedEdition' => Craft::$app->getLicensedEditionName()
+                    ]) . ' ';
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
+                            $message .= '<a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
+                        } else {
+                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                        }
+                    } else {
+                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
+                    }
+
+                    $alerts[] = $message;
                 }
             }
 
@@ -126,8 +137,8 @@ class Cp
                         ]);
                     }
                     $message .= ' ';
-                    if (Craft::$app->getUser()->getIsAdmin()) {
-                        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
                             $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
                         } else {
                             $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
