@@ -124,6 +124,7 @@ abstract class Resolver
 
                         // Any arguments?
                         $argumentNodes = $subNode->arguments ?? [];
+
                         foreach ($argumentNodes as $argumentNode) {
                             if (isset($argumentNode->value->values)) {
                                 $values = [];
@@ -145,7 +146,7 @@ abstract class Resolver
                             // Load additional requirements enforced by schema
                             if ($additionalArguments === false) {
                                 // If `false` was returned, make sure nothing is returned.
-                                $arguments['id'] = 0;
+                                $arguments = ['id' => 0];
                             } else {
                                 foreach ($additionalArguments as $argumentName => $argumentValue) {
                                     if (isset($arguments[$argumentName])) {
@@ -159,7 +160,9 @@ abstract class Resolver
 
                                         // If that cleared out all that they wanted, make it an impossible condition
                                         if (empty($allowed)) {
-                                            $arguments['id'] = 0;
+                                            $arguments = ['id' => 0];
+
+                                            break;
                                         } else {
                                             $arguments[$argumentName] = $allowed;
                                         }
