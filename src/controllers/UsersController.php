@@ -1692,9 +1692,7 @@ class UsersController extends Controller
         }
 
         // Otherwise go with the CP's template
-        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-
-        return $this->renderTemplate('setpassword', $variables);
+        return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -2050,12 +2048,11 @@ class UsersController extends Controller
         $view = $this->getView();
         $templateMode = $view->getTemplateMode();
         if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
-            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            $templateMode = View::TEMPLATE_MODE_CP;
         }
-        $html = $view->renderTemplate('users/_photo', [
+
+        return $view->renderTemplate('users/_photo', [
             'user' => $user
-        ]);
-        $view->setTemplateMode($templateMode);
-        return $html;
+        ], $templateMode);
     }
 }

@@ -25,6 +25,7 @@
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
+- Added `craft\events\TemplateEvent::$templateMode`.
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
@@ -68,6 +69,8 @@
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
+- `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
+- `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Updated Yii to 2.0.29.
 
 ### Deprecated
