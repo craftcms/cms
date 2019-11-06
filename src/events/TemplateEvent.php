@@ -24,12 +24,12 @@ class TemplateEvent extends CancelableEvent
     public $template;
 
     /**
-     * @var array The variables that were passed to [[\craft\web\View::renderTemplate()]].
+     * @var array The variables to be passed to the template
      */
     public $variables;
 
     /**
-     * @var string|null The template mode that was passed to [[\craft\web\View::renderTemplate()]].
+     * @var string The template mode to be used
      */
     public $templateMode;
 
