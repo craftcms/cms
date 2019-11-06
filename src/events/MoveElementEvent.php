@@ -7,13 +7,11 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
-
 /**
  * Move element event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MoveElementEvent extends ElementEvent
 {

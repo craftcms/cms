@@ -15,7 +15,7 @@ use yii\base\Exception;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class I18N extends \yii\i18n\I18N
 {

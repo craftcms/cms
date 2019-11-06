@@ -27,20 +27,19 @@ use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
+use DateTime;
 use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
-use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use Yii;
 use yii\base\Application;
+use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
+use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
-use DateTime;
-use yii\base\Exception as YiiBaseException;
-use yii\base\ErrorException as YiiBaseErrorException;
 
 /**
  * Craft module for codeception
@@ -61,7 +60,7 @@ use yii\base\ErrorException as YiiBaseErrorException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class Craft extends Yii2
 {
@@ -69,9 +68,10 @@ class Craft extends Yii2
     // =========================================================================
 
     /**
-     * A static version of the config for use on the tests/_craft/config/test.php file
+     * @var array A static version of the testing config.
      *
-     * @var array
+     * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`.
+     * This variable is equivalant to calling $this->_getConfig(); but is available for public access.
      */
     public static $testConfig;
 
@@ -81,11 +81,10 @@ class Craft extends Yii2
     public static $currentTest;
 
     /**
-     * Application config file must be set.
-     *
-     * @var array
+     * @var array Application config file must be set.
      */
     protected $addedConfig = [
+        'migrations' => [],
         'plugins' => [],
         'setupDb' => null,
         'projectConfig' => null,
@@ -94,16 +93,12 @@ class Craft extends Yii2
     ];
 
     /**
-     * For expecting events code
-     *
-     * @var array
+     * @var array For expecting events code
      */
     protected $triggeredEvents = [];
 
     /**
-     * For expecting events code
-     *
-     * @var array
+     * @var array For expecting events code
      */
     protected $requiredEvents = [];
 
@@ -166,28 +161,7 @@ class Craft extends Yii2
             return;
         }
 
-        // Re-apply project config
-        if ($projectConfig = $this->_getConfig('projectConfig')) {
-            // Tests just beginning. . Reset the project config to its original state.
-            TestSetup::setupProjectConfig($projectConfig['file']);
-
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
-                Yaml::parse(file_get_contents($projectConfig['file']))
-            );
-
-            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
-        } else {
-            \Craft::$app->getProjectConfig()->rebuild();
-
-
-            $edition = $this->_getConfig('edition');
-            // We also manually set the edition if desired by the current config
-            if (is_int($edition)) {
-                \Craft::$app->setEdition(
-                    $edition
-                );
-            }
-        }
+        $this->resetProjectConfig();
 
         $db = \Craft::createObject(
             App::dbConfig(self::createDbConfig())
@@ -197,12 +171,53 @@ class Craft extends Yii2
     }
 
     /**
+     * Reset's the project config.
+     *
+     * @param bool $force Whether to force the reset. If set to true the `reset` key of the projectConfig configuration will
+     * be ignored and the project config will be reset regardless.
+     * @return bool
+     * @since 3.3.10
+     */
+    public function resetProjectConfig(bool $force = false): bool
+    {
+        $projectConfig = $this->_getConfig('projectConfig');
+
+        // If reset is disabled and we dont have to $force we can abandon....
+        if (isset($projectConfig['reset']) && $projectConfig['reset'] === false && $force === false) {
+            return true;
+        }
+
+        // Re-apply project config
+        if ($projectConfig = TestSetup::useProjectConfig()) {
+            // Tests just beginning. Reset the project config to its original state.
+            TestSetup::setupProjectConfig();
+
+            \Craft::$app->getProjectConfig()->applyConfigChanges(
+                TestSetup::getSeedProjectConfigData(false)
+            );
+
+            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+        } else {
+            \Craft::$app->getProjectConfig()->rebuild();
+
+            // We also manually set the edition if desired by the current config
+            $edition = $this->_getConfig('edition');
+            if (is_int($edition)) {
+                \Craft::$app->setEdition(
+                    $edition
+                );
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @throws Throwable
      */
     public function setupDb()
     {
         ob_start();
-
         try {
             // Create a Craft::$app object
             TestSetup::warmCraft();
@@ -222,41 +237,44 @@ class Craft extends Yii2
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
+            // Setup the project config from the passed file.
+            if ($projectConfig = TestSetup::useProjectConfig()) {
+                TestSetup::setupProjectConfig();
+            }
+
             // Get rid of everything.
             if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
                 TestSetup::cleanseDb($dbConnection);
             }
 
-            // Setup the project config from the passed file.
-            $projectConfig = $this->_getConfig('projectConfig');
-            if ($projectConfig && isset($projectConfig['file'])) {
-                // Just set it up.
-                TestSetup::setupProjectConfig($projectConfig['file']);
-            }
-
             // Install the db from install.php
             if (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] === true) {
-                TestSetup::setupCraftDb($dbConnection, $this);
+                TestSetup::setupCraftDb($dbConnection);
             }
 
             // Ready to rock.
             \Craft::$app->setIsInstalled();
 
+            if (isset($dbSetupConfig['applyMigrations']) && $dbSetupConfig['applyMigrations'] === true) {
+                \Craft::$app->getContentMigrator()->up();
+            }
+
             // Apply migrations
             if ($migrations = $this->_getConfig('migrations')) {
                 foreach ($migrations as $migration) {
-                    TestSetup::validateAndApplyMigration($migration['class'], $migration['params']);
+                    TestSetup::validateAndApplyMigration($migration['class'], $migration['params'], true);
                 }
             }
 
             // Add any plugins
-            foreach ($this->_getConfig('plugins') as $plugin) {
-                $this->installPlugin($plugin);
+            if ($plugins = $this->_getConfig('plugins')) {
+                foreach ($plugins as $plugin) {
+                    $this->installPlugin($plugin);
+                }
             }
 
             // Trigger the end of a 'request'. This lets project config do its stuff.
             // TODO: Probably Craft::$app->getProjectConfig->saveModifiedConfigData() but i feel the below is more solid.
-
             \Craft::$app->state = Application::STATE_END;
             \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
         } catch (Throwable $exception) {
@@ -298,6 +316,23 @@ class Craft extends Yii2
     public static function normalizePathSeparators($path)
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
+    }
+
+
+    /**
+     * Creates a DB config according to the loaded .env variables.
+     *
+     * @return DbConfig
+     */
+    public static function createDbConfig(): DbConfig
+    {
+        return new DbConfig([
+            'dsn' => getenv('DB_DSN'),
+            'user' => getenv('DB_USER'),
+            'password' => getenv('DB_PASSWORD'),
+            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
+            'schema' => getenv('DB_SCHEMA'),
+        ]);
     }
 
     // Helpers for test methods
@@ -348,7 +383,7 @@ class Craft extends Yii2
      * @throws Throwable
      * @throws YiiBaseException
      */
-    public function saveElement(Element $element, bool $failHard = true) : bool
+    public function saveElement(Element $element, bool $failHard = true): bool
     {
         if (!\Craft::$app->getElements()->saveElement($element)) {
             if ($failHard) {
@@ -370,7 +405,7 @@ class Craft extends Yii2
      * @param bool $searchAll - Wether anyStatus() and trashed(null) should be applied
      * @return array
      */
-    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false) : array
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
         /* @var ElementQuery $elementQuery */
         $elementQuery = $elementType::find();
@@ -528,25 +563,6 @@ class Craft extends Yii2
         }
 
         return $items;
-    }
-
-    /**
-     * Creates a DB config according to the loaded .env variables.
-     *
-     * @return DbConfig
-     */
-    public static function createDbConfig(): DbConfig
-    {
-        return new DbConfig([
-            'password' => getenv('DB_PASSWORD'),
-            'user' => getenv('DB_USER'),
-            'database' => getenv('DB_DATABASE'),
-            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-            'driver' => getenv('DB_DRIVER'),
-            'port' => getenv('DB_PORT'),
-            'schema' => getenv('DB_SCHEMA'),
-            'server' => getenv('DB_SERVER'),
-        ]);
     }
 
     // Protected Methods

@@ -71,6 +71,11 @@ class ResaveController extends Controller
     public $propagate = true;
 
     /**
+     * @var bool Whether to update the search indexes for the resaved elements.
+     */
+    public $updateSearchIndex = false;
+
+    /**
      * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
      */
     public $group;
@@ -82,6 +87,7 @@ class ResaveController extends Controller
 
     /**
      * @var string|null The type handle(s) of the elements to resave.
+     * @since 3.1.16
      */
     public $type;
 
@@ -108,11 +114,14 @@ class ResaveController extends Controller
         $options[] = 'offset';
         $options[] = 'limit';
         $options[] = 'propagate';
+        $options[] = 'updateSearchIndex';
 
         switch ($actionID) {
             case 'assets':
                 $options[] = 'volume';
                 break;
+            case 'tags':
+            case 'users':
             case 'categories':
                 $options[] = 'group';
                 break;
@@ -123,12 +132,6 @@ class ResaveController extends Controller
             case 'matrix-blocks':
                 $options[] = 'field';
                 $options[] = 'type';
-                break;
-            case 'tags':
-                $options[] = 'group';
-                break;
-            case 'users':
-                $options[] = 'group';
                 break;
         }
 
@@ -183,8 +186,10 @@ class ResaveController extends Controller
     /**
      * Re-saves Matrix blocks.
      *
+     * Note that you must supply the --field or --element-id argument for this to work properly.
+     *
      * @return int
-     * @since 3.2
+     * @since 3.2.0
      */
     public function actionMatrixBlocks(): int
     {
@@ -238,6 +243,7 @@ class ResaveController extends Controller
     /**
      * @param ElementQueryInterface $query
      * @return int
+     * @since 3.2.0
      */
     public function saveElements(ElementQueryInterface $query): int
     {
@@ -313,7 +319,7 @@ class ResaveController extends Controller
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $elementsService->resaveElements($query, true);
+        $elementsService->resaveElements($query, true, true, $this->updateSearchIndex);
 
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);

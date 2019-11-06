@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
  * ClearCaches represents a ClearCaches dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ClearCaches extends Utility
 {
@@ -169,6 +169,11 @@ class ClearCaches extends Utility
                 'key' => 'template-caches',
                 'label' => Craft::t('app', 'Template caches'),
                 'action' => [Craft::$app->getTemplateCaches(), 'deleteAllCaches']
+            ],
+            [
+                'key' => 'graphql-caches',
+                'label' => Craft::t('app', 'GraphQL caches'),
+                'action' => [Craft::$app->getGql(), 'invalidateCaches']
             ],
         ];
 

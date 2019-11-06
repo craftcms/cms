@@ -55,7 +55,7 @@ use yii\web\Response;
  * @method UrlManager getUrlManager()   Returns the URL manager for this application.
  * @method User getUser()         Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Application extends \yii\web\Application
 {
@@ -220,8 +220,9 @@ class Application extends \yii\web\Application
         $projectConfig = $this->getProjectConfig();
 
         // Make sure schema required by config files aligns with what we have.
-        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
-            return $this->_handleIncompatibleConfig($request);
+        $issues = [];
+        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+            return $this->_handleIncompatibleConfig($request, $issues);
         }
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
@@ -331,7 +332,6 @@ class Application extends \yii\web\Application
 
         // Override where Yii should find its asset deps
         $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/bootstrap/dist', $libPath . '/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
         Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
         Craft::setAlias('@bower/punycode', $libPath . '/punycode');
@@ -521,7 +521,7 @@ class Application extends \yii\web\Application
         }
 
         // Is this an installer action request?
-        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== Request::CP_PATH_LOGIN)) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);
@@ -699,12 +699,13 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
+     * @param array $issues An array of schema incompatibility issues
      * @return Response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _handleIncompatibleConfig(Request $request): Response
+    private function _handleIncompatibleConfig(Request $request, array $issues): Response
     {
         $this->_unregisterDebugModule();
 
@@ -714,7 +715,7 @@ class Application extends \yii\web\Application
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
             // Show the manual update notification template
-            return $this->runAction('templates/incompatible-config-alert');
+            return $this->runAction('templates/incompatible-config-alert', ['issues' => $issues]);
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

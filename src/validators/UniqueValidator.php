@@ -17,7 +17,7 @@ use yii\validators\UniqueValidator as YiiUniqueValidator;
  * Class UniqueValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UniqueValidator extends YiiUniqueValidator
 {

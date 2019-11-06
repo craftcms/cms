@@ -17,7 +17,7 @@ use craft\web\assets\assetindexes\AssetIndexesAsset;
  * AssetIndexes represents a AssetIndexes dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexes extends Utility
 {

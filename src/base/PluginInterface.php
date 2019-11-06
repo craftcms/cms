@@ -15,7 +15,7 @@ use craft\web\twig\variables\Cp;
  * A class implementing this interface should also use [[PluginTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface PluginInterface
 {
@@ -26,6 +26,7 @@ interface PluginInterface
      * Returns supported plugin editions (lowest to highest).
      *
      * @return string[]
+     * @since 3.1.0
      */
     public static function editions(): array;
 
@@ -140,11 +141,14 @@ interface PluginInterface
      * Performs actions before the plugin’s settings are saved.
      *
      * @return bool Whether the plugin’s settings should be saved.
+     * @since 3.0.16
      */
     public function beforeSaveSettings(): bool;
 
     /**
      * Performs actions after the plugin’s settings are saved.
+     *
+     * @since 3.0.16
      */
     public function afterSaveSettings();
 }

@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
  * Site model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Site extends Model
 {
@@ -88,6 +88,16 @@ class Site extends Model
      */
     public $uid;
 
+    /**
+     * @var \DateTime Date created
+     */
+    public $dateCreated;
+
+    /**
+     * @var \DateTime Date updated
+     */
+    public $dateUpdated;
+
     // Public Methods
     // =========================================================================
 
@@ -95,6 +105,7 @@ class Site extends Model
      * Returns the site’s base URL.
      *
      * @return string|null
+     * @since 3.1.0
      */
     public function getBaseUrl()
     {

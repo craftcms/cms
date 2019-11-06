@@ -27,7 +27,7 @@ use yii\base\Exception;
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  * @property array $supportedImageFormats A list of all supported image formats
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Images extends Component
 {
@@ -42,23 +42,17 @@ class Images extends Component
     // =========================================================================
 
     /**
-     * Image formats that can be manipulated.
-     *
-     * @var array
+     * @var array Image formats that can be manipulated.
      */
     public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
-     * Image driver.
-     *
-     * @var string
+     * @var string Image driver.
      */
     private $_driver = '';
 
     /**
-     * Imagick version being used, if any.
-     *
-     * @var string|null
+     * @var string|null Imagick version being used, if any.
      */
     private $_imagickVersion;
 
@@ -147,7 +141,7 @@ class Images extends Component
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
         /** @noinspection PhpStaticAsDynamicMethodCallInspection */
-        $versionString = (new \Imagick)::getVersion()['versionString'];
+        $versionString = \Imagick::getVersion()['versionString'];
         list($this->_imagickVersion) = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
         return $this->_imagickVersion;
@@ -386,6 +380,7 @@ class Images extends Component
 
         $image = new \Imagick($filePath);
         $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+        ImageHelper::cleanExifDataFromImagickImage($image);
         $image->writeImages($filePath, true);
 
         return true;

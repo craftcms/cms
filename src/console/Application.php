@@ -29,7 +29,7 @@ use yii\console\Response;
  * @method Request getRequest()      Returns the request component.
  * @method Response getResponse()     Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Application extends \yii\console\Application
 {

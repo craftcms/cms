@@ -52,16 +52,13 @@ Garnish.$doc.ready(function() {
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
             }),
-
         },
 
         watch: {
-
             cart(cart) {
                 let totalQty = 0
 
@@ -85,11 +82,9 @@ Garnish.$doc.ready(function() {
                     this.$craftIdDisconnectForm.addClass('hidden')
                 }
             }
-
         },
 
         methods: {
-
             displayNotice(message) {
                 Craft.cp.displayNotice(message)
             },
@@ -120,21 +115,97 @@ Garnish.$doc.ready(function() {
                 this.$emit('craftIdUpdated')
             },
 
+            /**
+             * Initializes components that live outside of the Vue app.
+             */
+            initializeOuterComponents() {
+                // Header Title
+                this.$headerTitle = $('#header h1');
+                this.$headerTitle.on('click', function() {
+                    this.$router.push({path: '/'})
+                }.bind(this))
+
+                // Cart button
+                this.$cartButton = $('#cart-button')
+
+                this.$cartButton.on('click', function(e) {
+                    e.preventDefault()
+                    this.openModal('cart')
+                }.bind(this))
+
+                this.$cartButton.keydown(function(e) {
+                    switch (e.which) {
+                        case 13: // Enter
+                        case 32: // Space
+                            e.preventDefault()
+                            this.openModal('cart')
+                            break
+
+                    }
+                }.bind(this))
+
+                // Plugin Store actions
+                this.$pluginStoreActions = $('#pluginstore-actions')
+                this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
+
+                // Craft ID account
+                this.$craftId = $('#craftid-account')
+
+                // Connect form
+                this.$craftIdConnectForm = $('#craftid-connect-form')
+
+                // Disconnect form
+                this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
+            },
+
+            loadPluginStoreData() {
+                this.$store.dispatch('pluginStore/getPluginStoreData')
+                    .then(() => {
+                        this.pluginStoreDataLoaded = true
+                        this.$emit('dataLoaded')
+                    })
+                    .catch(() => {
+                        this.pluginStoreDataError = true
+                        this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
+                    })
+            },
+
+            loadCraftData() {
+                this.$store.dispatch('craft/getCraftData')
+                    .then(() => {
+                        this.craftIdDataLoaded = true
+                        this.$emit('dataLoaded')
+
+                        // Load cart
+                        this.$store.dispatch('cart/getCart')
+                            .then(() => {
+                                this.cartDataLoaded = true
+                                this.$emit('dataLoaded')
+                            })
+                    })
+                    .catch(() => {
+                        this.craftIdDataLoaded = true
+                    })
+            },
+
+            loadPluginLicenseInfo() {
+                this.$store.dispatch('craft/getPluginLicenseInfo')
+                    .then(() => {
+                        this.pluginLicenseInfoLoaded = true
+                        this.$emit('dataLoaded')
+                    })
+            },
         },
 
         created() {
-            // Plugin Store actions
-            this.$pluginStoreActions = $('#pluginstore-actions')
-            this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
+            // Page Title
+            this.pageTitle = this.$options.filters.t("Plugin Store", 'app')
 
-            // Craft ID account
-            this.$craftId = $('#craftid-account')
+            // Status message
+            this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app')
 
-            // Connect form
-            this.$craftIdConnectForm = $('#craftid-connect-form')
-
-            // Disconnect form
-            this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
+            // Initialize outer components
+            this.initializeOuterComponents()
 
             // On data loaded
             this.$on('dataLoaded', function() {
@@ -150,75 +221,10 @@ Garnish.$doc.ready(function() {
                 }
             }.bind(this))
 
-            // Load Plugin Store data
-            this.$store.dispatch('pluginStore/getPluginStoreData')
-                .then(() => {
-                    this.pluginStoreDataLoaded = true
-                    this.$emit('dataLoaded')
-                })
-                .catch(() => {
-                    this.pluginStoreDataError = true
-                    this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
-                })
-
-            // Load Craft data
-            this.$store.dispatch('craft/getCraftData')
-                .then(() => {
-                    this.craftIdDataLoaded = true
-                    this.$emit('dataLoaded')
-
-                    // Load cart
-                    this.$store.dispatch('cart/getCart')
-                        .then(() => {
-                            this.cartDataLoaded = true
-                            this.$emit('dataLoaded')
-                        })
-                })
-                .catch(() => {
-                    this.craftIdDataLoaded = true
-                })
-
-            // Load plugin license info
-            this.$store.dispatch('craft/getPluginLicenseInfo')
-                .then(() => {
-                    this.pluginLicenseInfoLoaded = true
-                    this.$emit('dataLoaded')
-                })
-
+            // Load data
+            this.loadPluginStoreData()
+            this.loadCraftData()
+            this.loadPluginLicenseInfo()
         },
-
-        mounted() {
-            this.pageTitle = this.$options.filters.t("Plugin Store", 'app')
-            this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app')
-
-            let $this = this
-
-            // Header Title
-            this.$headerTitle = $('#header h1');
-            this.$headerTitle.on('click', function() {
-                $this.$router.push({path: '/'})
-            })
-
-            // Cart button
-
-            this.$cartButton = $('#cart-button')
-
-            this.$cartButton.on('click', (e) => {
-                e.preventDefault()
-                $this.openModal('cart')
-            })
-
-            this.$cartButton.keydown(e => {
-                switch (e.which) {
-                    case 13: // Enter
-                    case 32: // Space
-                        e.preventDefault()
-                        $this.openModal('cart')
-                        break
-
-                }
-            })
-        },
-
     }).$mount('#app')
 })

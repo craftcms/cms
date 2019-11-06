@@ -1,4 +1,4 @@
-/*!   - 2019-07-14 */
+/*!   - 2019-10-28 */
 (function($){
 
 /** global: Craft */
@@ -52,7 +52,7 @@ $.extend(Craft,
          * @return string D3 format
          */
         formatNumber: function(number, format) {
-            if(typeof format == 'undefined') {
+            if (typeof format == 'undefined') {
                 format = ',.0f';
             }
 
@@ -132,8 +132,7 @@ $.extend(Craft,
                 // Select the whole value
                 var length = val.length * 2;
                 $input[0].setSelectionRange(0, length);
-            }
-            else {
+            } else {
                 // Refresh the value to get the cursor positioned at the end
                 $input.val(val);
             }
@@ -175,8 +174,7 @@ $.extend(Craft,
 
                     if (name === '#') {
                         anchor = value;
-                    }
-                    else if (value !== null && value !== '') {
+                    } else if (value !== null && value !== '') {
                         aParams.push(name + '=' + value);
                     }
                 }
@@ -186,8 +184,7 @@ $.extend(Craft,
 
             if (Garnish.isArray(params)) {
                 params = params.join('&');
-            }
-            else {
+            } else {
                 params = Craft.trim(params, '&?');
             }
 
@@ -215,12 +212,11 @@ $.extend(Craft,
                     // Does baseUrl already contain a path?
                     var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
-                        url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
+                        url = url.replace(pathMatch[0], Craft.rtrim(pathMatch[0], '/') + '/' + path);
                         path = '';
                     }
                 }
-            }
-            else {
+            } else {
                 url = Craft.baseUrl;
             }
 
@@ -237,8 +233,7 @@ $.extend(Craft,
                     if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
                     }
-                }
-                else {
+                } else {
                     // Move the path into the query string params
 
                     // Is the path param already set?
@@ -249,8 +244,7 @@ $.extend(Craft,
                         if (endPath !== -1) {
                             basePath = params.substring(2, endPath);
                             params = params.substr(endPath + 1);
-                        }
-                        else {
+                        } else {
                             basePath = params.substr(2);
                             params = null;
                         }
@@ -328,8 +322,7 @@ $.extend(Craft,
         getCsrfInput: function() {
             if (Craft.csrfTokenName) {
                 return '<input type="hidden" name="' + Craft.csrfTokenName + '" value="' + Craft.csrfTokenValue + '"/>';
-            }
-            else {
+            } else {
                 return '';
             }
         },
@@ -367,19 +360,21 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus) {
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Ignore incomplete requests, likely due to navigating away from the page
+                    // h/t https://stackoverflow.com/a/22107079/1688568
+                    if (jqXHR.readyState !== 4) {
+                        return;
+                    }
+
+                    if (typeof Craft.cp !== 'undefined') {
+                        Craft.cp.displayError();
+                    } else {
+                        alert(Craft.t('app', 'An unknown error occurred.'));
+                    }
+
                     if (callback) {
                         callback(null, textStatus, jqXHR);
-                    }
-                },
-                complete: function(jqXHR, textStatus) {
-                    if (textStatus !== 'success') {
-                        if (typeof Craft.cp !== 'undefined') {
-                            Craft.cp.displayError();
-                        }
-                        else {
-                            alert(Craft.t('app', 'An unknown error occurred.'));
-                        }
                     }
                 }
             }, options));
@@ -425,8 +420,7 @@ $.extend(Craft,
 
                 if (Craft._ajaxQueue.length) {
                     Craft._postNextActionRequestInQueue();
-                }
-                else {
+                } else {
                     Craft._waitingOnAjax = false;
                 }
             }, args[3]);
@@ -448,6 +442,77 @@ $.extend(Craft,
                 arr[i] = $.trim(arr[i]);
             }
             return arr;
+        },
+
+        /**
+         * Compares old and new post data, and removes any values that haven't
+         * changed within the given list of delta namespaces.
+         *
+         * @param {string} oldData
+         * @param {string} newData
+         * @param {object} deltaNames
+         */
+        findDeltaData: function(oldData, newData, deltaNames) {
+            // Sort the delta namespaces from least -> most specific
+            deltaNames.sort(function(a, b) {
+                if (a.length === b.length) {
+                    return 0;
+                }
+                return a.length > b.length ? 1 : -1;
+            });
+
+            // Group all of the old & new params by namespace
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false);
+            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true);
+
+            // Figure out which of the new params should actually be posted
+            var params = groupedNewParams.__root__;
+            for (var n = 0; n < deltaNames.length; n++) {
+                if (
+                    typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                    (
+                        typeof groupedOldParams[deltaNames[n]] !== 'object' ||
+                        JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                    )
+                ) {
+                    params = params.concat(groupedNewParams[deltaNames[n]]);
+                }
+            }
+
+            return params.join('&');
+        },
+
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot) {
+            var grouped = {};
+
+            if (withRoot) {
+                grouped.__root__ = [];
+            }
+
+            var n, paramName;
+
+            paramLoop: for (var p = 0; p < params.length; p++) {
+                // loop through the delta names from most -> least specific
+                for (n = deltaNames.length - 1; n >= 0; n--) {
+                    paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
+                    if (
+                        paramName === deltaNames[n] + '=' ||
+                        paramName === deltaNames[n] + '['
+                    ) {
+                        if (typeof grouped[deltaNames[n]] === 'undefined') {
+                            grouped[deltaNames[n]] = [];
+                        }
+                        grouped[deltaNames[n]].push(params[p]);
+                        continue paramLoop;
+                    }
+                }
+
+                if (withRoot) {
+                    grouped.__root__.push(params[p]);
+                }
+            }
+
+            return grouped;
         },
 
         /**
@@ -477,8 +542,7 @@ $.extend(Craft,
                     for (i = 0; i < keys.length; i++) {
                         keys[i] = keys[i].substring(1, keys[i].length - 1);
                     }
-                }
-                else {
+                } else {
                     keys = [];
                 }
 
@@ -492,15 +556,13 @@ $.extend(Craft,
                             // Figure out what this will be by looking at the next key
                             if (!keys[i + 1] || parseInt(keys[i + 1]) == keys[i + 1]) {
                                 parentElem[keys[i]] = [];
-                            }
-                            else {
+                            } else {
                                 parentElem[keys[i]] = {};
                             }
                         }
 
                         parentElem = parentElem[keys[i]];
-                    }
-                    else {
+                    } else {
                         // Last one. Set the value
                         if (!keys[i]) {
                             keys[i] = parentElem.length;
@@ -512,6 +574,37 @@ $.extend(Craft,
             }
 
             return expanded;
+        },
+
+        /**
+         * Creates a form element populated with hidden inputs based on a string of serialized form data.
+         *
+         * @param {string} data
+         * @returns {jQuery|HTMLElement}
+         */
+        createForm: function(data) {
+            var $form = $('<form/>', {
+                attr: {
+                    method: 'post',
+                    action: '',
+                    'accept-charset': 'UTF-8',
+                },
+            });
+
+            if (typeof data === 'string') {
+                var values = data.split('&');
+                var chunks;
+                for (var i = 0; i < values.length; i++) {
+                    chunks = values[i].split('=', 2);
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: decodeURIComponent(chunks[0]),
+                        value: decodeURIComponent(chunks[1] || '')
+                    }).appendTo($form);
+                }
+            }
+
+            return $form;
         },
 
         /**
@@ -546,8 +639,7 @@ $.extend(Craft,
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
-                    }
-                    else {
+                    } else {
                         if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2))) {
                             return false;
                         }
@@ -567,8 +659,7 @@ $.extend(Craft,
 
                 // All clear
                 return true;
-            }
-            else {
+            } else {
                 return (obj1 === obj2);
             }
         },
@@ -665,6 +756,17 @@ $.extend(Craft,
         },
 
         /**
+         * Returns whether a string starts with another string.
+         *
+         * @param {string} str
+         * @param {string} substr
+         * @return boolean
+         */
+        startsWith: function(str, substr) {
+            return str.substr(0, substr.length) === substr;
+        },
+
+        /**
          * Filters an array.
          *
          * @param {object} arr
@@ -679,8 +781,7 @@ $.extend(Craft,
 
                 if (typeof callback === 'function') {
                     include = callback(arr[i], i);
-                }
-                else {
+                } else {
                     include = arr[i];
                 }
 
@@ -715,8 +816,7 @@ $.extend(Craft,
             if (index !== -1) {
                 arr.splice(index, 1);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -810,8 +910,7 @@ $.extend(Craft,
             if (showSeconds) {
                 minutes = Math.floor(seconds / secondsInMinute);
                 seconds = seconds % secondsInMinute;
-            }
-            else {
+            } else {
                 minutes = Math.round(seconds / secondsInMinute);
                 seconds = 0;
             }
@@ -918,10 +1017,11 @@ $.extend(Craft,
 
             if ($existingCss.length) {
                 var existingCss = [];
+                var href;
 
                 for (var i = 0; i < $existingCss.length; i++) {
-                    var href = $existingCss.eq(i).attr('href');
-                    existingCss.push(href.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+                    href = $existingCss.eq(i).attr('href').replace(/&/g, '&amp;');
+                    existingCss.push(Craft.escapeRegex(href));
                 }
 
                 var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
@@ -942,10 +1042,11 @@ $.extend(Craft,
 
             if ($existingJs.length) {
                 var existingJs = [];
+                var src;
 
                 for (var i = 0; i < $existingJs.length; i++) {
-                    var src = $existingJs.eq(i).attr('src');
-                    existingJs.push(src.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+                    src = $existingJs.eq(i).attr('src').replace(/&/g, '&amp;');
+                    existingJs.push(Craft.escapeRegex(src));
                 }
 
                 var regexp = new RegExp('<script\\s[^>]*src="(?:' + existingJs.join('|') + ')".*?></script>', 'g');
@@ -1032,8 +1133,7 @@ $.extend(Craft,
 
             if (typeof this._elementIndexClasses[elementType] !== 'undefined') {
                 func = this._elementIndexClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementIndex;
             }
 
@@ -1051,8 +1151,7 @@ $.extend(Craft,
 
             if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
                 func = this._elementSelectorModalClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementSelectorModal;
             }
 
@@ -1071,8 +1170,7 @@ $.extend(Craft,
 
             if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementEditor;
             }
 
@@ -1090,8 +1188,7 @@ $.extend(Craft,
 
             if (typeof localStorage !== 'undefined' && typeof localStorage[key] !== 'undefined') {
                 return JSON.parse(localStorage[key]);
-            }
-            else {
+            } else {
                 return defaultValue;
             }
         },
@@ -1111,8 +1208,7 @@ $.extend(Craft,
                 // but has a max size of 0 bytes.
                 try {
                     localStorage[key] = JSON.stringify(value);
-                }
-                catch (e) {
+                } catch (e) {
                 }
             }
         },
@@ -1191,8 +1287,7 @@ $.extend($.fn,
         animateLeft: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({left: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({right: pos}, duration, easing, complete);
             }
         },
@@ -1200,8 +1295,7 @@ $.extend($.fn,
         animateRight: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({right: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({left: pos}, duration, easing, complete);
             }
         },
@@ -1305,8 +1399,7 @@ $.extend($.fn,
                 if (typeof settingName === 'string') {
                     settings = {};
                     settings[settingName] = settingValue;
-                }
-                else {
+                } else {
                     settings = settingName;
                 }
 
@@ -1316,8 +1409,7 @@ $.extend($.fn,
                         obj.setSettings(settings);
                     }
                 });
-            }
-            else {
+            } else {
                 if (!$.isPlainObject(settings)) {
                     settings = {};
                 }
@@ -1364,32 +1456,32 @@ $.extend($.fn,
                 }
 
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
+                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
 
-                if ($btn.attr('data-action')) {
+                if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
-                        .val($btn.attr('data-action'))
+                        .val($btn.data('action'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-redirect')) {
+                if ($btn.data('redirect')) {
                     $('<input type="hidden" name="redirect"/>')
-                        .val($btn.attr('data-redirect'))
+                        .val($btn.data('redirect'))
                         .appendTo($form);
                 }
 
-                if ($btn.attr('data-param')) {
+                if ($btn.data('param')) {
                     $('<input type="hidden"/>')
                         .attr({
-                            name: $btn.attr('data-param'),
-                            value: $btn.attr('data-value')
+                            name: $btn.data('param'),
+                            value: $btn.data('value')
                         })
                         .appendTo($form);
                 }
 
                 $form.trigger({
                     type: 'submit',
-                    customTrigger: true,
+                    customTrigger: $btn,
                 });
             });
         },
@@ -1426,6 +1518,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -1500,7 +1594,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         loadHud: function() {
             this.onBeginLoading();
             var data = this.getBaseData();
-            data.includeSites = this.settings.showSiteSwitcher;
+            data.includeSites = Craft.isMultiSite && this.settings.showSiteSwitcher;
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
         },
 
@@ -1511,18 +1605,23 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 var $hudContents = $();
 
                 if (response.sites) {
-                    var $header = $('<div class="hud-header"/>'),
-                        $siteSelectContainer = $('<div class="select"/>').appendTo($header);
+                    var $header = $('<div class="hud-header"/>');
 
-                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
-                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+                    if (response.sites.length === 1) {
+                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);;
+                    } else {
+                        var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-                    for (var i = 0; i < response.sites.length; i++) {
-                        var siteInfo = response.sites[i];
-                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+                        this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+
+                        for (var i = 0; i < response.sites.length; i++) {
+                            var siteInfo = response.sites[i];
+                            $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        }
+
+                        this.addListener(this.$siteSelect, 'change', 'switchSite');
                     }
-
-                    this.addListener(this.$siteSelect, 'change', 'switchSite');
 
                     $hudContents = $hudContents.add($header);
                 }
@@ -1607,6 +1706,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
         updateForm: function(response) {
             this.siteId = response.siteId;
+            this.deltaNames = response.deltaNames;
 
             this.$fieldsContainer.html(response.html);
 
@@ -1627,6 +1727,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+                this.initialData = this.hud.$body.serialize();
             }, this));
         },
 
@@ -1644,6 +1745,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
@@ -1715,6 +1818,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.trigger('saveElement', {
                 response: response
             });
+
+            // There may be a new background job that needs to be run
+            Craft.cp.runQueue();
         },
 
         onCreateForm: function($form) {
@@ -1788,6 +1894,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         searching: false,
         searchText: null,
         trashed: false,
+        drafts: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -1953,7 +2060,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Automatically update the elements after new search text has been sitting for a 1/2 second
-            this.addListener(this.$search, 'textchange', $.proxy(function() {
+            this.addListener(this.$search, 'input', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
                 } else if (this.searching && !this.$search.val()) {
@@ -2331,7 +2438,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0
+                trashed: this.trashed ? 1 : 0,
+                drafts: this.drafts ? 1 : 0,
             };
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
@@ -2346,7 +2454,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: $.extend({}, this.getSelectedSourceState())
+                viewState: $.extend({}, this.getSelectedSourceState()),
+                paginated: this._isViewPaginated() ? 1 : 0,
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -2491,7 +2600,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         afterAction: function(action, params) {
 
-            // There may be a new background task that needs to be run
+            // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
@@ -3070,11 +3179,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
+            this.trashed = false;
+            this.drafts = false;
+            this.status = null;
+
             if (Garnish.hasAttr($option, 'data-trashed')) {
                 this.trashed = true;
-                this.status = null;
+            } else if (Garnish.hasAttr($option, 'data-drafts')) {
+                this.drafts = true;
             } else {
-                this.trashed = false;
                 this.status = $option.data('status');
             }
 
@@ -3183,7 +3296,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            if (this.trashed || this.searching) {
+            if (this.trashed || this.drafts || this.searching) {
                 $option.addClass('disabled');
                 if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
@@ -3262,6 +3375,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // View
         // -------------------------------------------------------------------------
 
+        _isViewPaginated: function() {
+            return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
+        },
+
         _updateView: function(params, response) {
             // Cleanup
             // -------------------------------------------------------------
@@ -3281,10 +3398,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.$countContainer.html('');
-            var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
 
-            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
-                this.$countContainer.text(response.count + ' ' + elementTypeName);
+            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.countLabel);
             } else {
                 var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
                 var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
@@ -3300,14 +3416,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     title: Craft.t('app', 'Next Page')
                 }).appendTo($paginationContainer);
 
-                var first = Math.min((this.settings.batchSize * (this.page - 1)) + 1, response.count);
                 $('<div/>', {
                     'class': 'page-info',
-                    text: Craft.t('app', '{first}-{last} of {total}', {
-                        first: Craft.formatNumber(first),
-                        last: Craft.formatNumber(Math.min(first + (this.settings.batchSize - 1), response.count)),
-                        total: Craft.formatNumber(response.count)
-                    }) + ' ' + elementTypeName
+                    text: response.countLabel
                 }).appendTo($paginationContainer);
 
                 if (this.page > 1) {
@@ -3530,6 +3641,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+                delete params.criteria.limit;
 
                 var limit = parseInt($limitField.find('input').val());
                 if (limit && !isNaN(limit)) {
@@ -3541,9 +3653,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     $spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        var url = Craft.getCpUrl('', {
-                            token: response.token
-                        });
+                        var params = {};
+                        params[Craft.tokenParam] = response.token;
+                        var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
@@ -3591,9 +3703,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
             toolbarFixed: null,
-
-            elementTypeName: Craft.t('app', 'Element'),
-            elementTypePluralName: Craft.t('app', 'Elements'),
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
@@ -4412,6 +4521,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         onSelectElements: function(elements) {
             this.trigger('selectElements', {elements: elements});
             this.settings.onSelectElements(elements);
+
+            if (window.draftEditor) {
+                window.draftEditor.checkForm();
+            }
         },
 
         onRemoveElements: function() {
@@ -4717,8 +4830,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = true;
 
-            this.addListener(this.$source, 'textchange', 'onSourceTextChange');
-            this.addListener(this.$target, 'textchange', 'onTargetTextChange');
+            this.addListener(this.$source, 'input', 'onSourceTextChange');
+            this.addListener(this.$target, 'input', 'onTargetTextChange');
             this.addListener(this.$form, 'submit', 'onFormSubmit');
         },
 
@@ -4761,6 +4874,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
+            if (!this.$target.is(':visible')) {
+                return;
+            }
+
             var sourceVal = this.$source.val();
 
             if (typeof sourceVal === 'undefined') {
@@ -4922,10 +5039,10 @@ Craft.AdminTable = Garnish.Base.extend(
                 this.updateUI();
                 this.onDeleteItem(id);
 
-                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: Craft.escapeHtml(name)}));
+                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: name}));
             }
             else {
-                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: Craft.escapeHtml(name)}));
+                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: name}));
             }
         },
 
@@ -4942,7 +5059,7 @@ Craft.AdminTable = Garnish.Base.extend(
         },
 
         getItemName: function($row) {
-            return $row.attr(this.settings.nameAttribute);
+            return Craft.escapeHtml($row.attr(this.settings.nameAttribute));
         },
 
         updateUI: function() {
@@ -5046,6 +5163,8 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
         onHideHud: function () {
             if (this.reloadIndex && this.settings.elementIndex) {
                 this.settings.elementIndex.updateElements();
+            } else if (this.reloadIndex && this.settings.input) {
+                this.settings.input.refreshThumbnail(this.$element.data('id'));
             }
 
             this.base();
@@ -9069,7 +9188,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             return this.base($element, {
                 params: {
                     defaultFieldLayoutId: this.settings.defaultFieldLayoutId
-                }
+                },
+                input: this
             });
         },
 
@@ -9106,6 +9226,24 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
 
             this.uploader = new Craft.Uploader(this.$container, options);
+        },
+
+        refreshThumbnail: function(elementId) {
+            var parameters = {
+                elementId: elementId,
+                siteId: this.settings.criteria.siteId,
+                size: this.settings.viewMode
+            };
+
+            Craft.postActionRequest('elements/get-element-html', parameters, function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
+                    $existing.find('.elementthumb').replaceWith($(data.html).find('.elementthumb'));
+                    this.thumbLoader.load($existing);
+                }
+            }.bind(this));
         },
 
         /**
@@ -9745,7 +9883,7 @@ Craft.AuthManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($form, 'submit', 'login');
             }
 
@@ -10969,7 +11107,7 @@ Craft.ColorInput = Garnish.Base.extend({
         this.createColorInput();
         this.handleTextChange();
 
-        this.addListener(this.$input, 'textchange', 'handleTextChange');
+        this.addListener(this.$input, 'input', 'handleTextChange');
     },
 
     createColorInput: function() {
@@ -10995,7 +11133,6 @@ Craft.ColorInput = Garnish.Base.extend({
 
     updateColor: function() {
         this.$input.val(this.$colorInput.val());
-        this.$input.data('garnish-textchange-value', this.$colorInput.val());
         this.handleTextChange();
     },
 
@@ -11012,7 +11149,6 @@ Craft.ColorInput = Garnish.Base.extend({
         if (val[0] !== '#') {
             val = '#'+val;
             this.$input.val(val);
-            this.$input.data('garnish-textchange-value', val);
         }
 
         this.$colorPreview.css('background-color', val);
@@ -11059,6 +11195,8 @@ Craft.CP = Garnish.Base.extend(
         $contentContainer: null,
         $edition: null,
 
+        $confirmUnloadForms: null,
+        $deltaForms: null,
         $collapsibleTables: null,
 
         fixedHeader: false,
@@ -11115,7 +11253,7 @@ Craft.CP = Garnish.Base.extend(
 
                 // Wait a frame before initializing any confirm-unload forms,
                 // so other JS that runs on ready() has a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
+                Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
             }, this));
 
             // Alerts
@@ -11166,21 +11304,45 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        initConfirmUnloadForms: function() {
+        initSpecialForms: function() {
             // Look for forms that we should watch for changes on
             this.$confirmUnloadForms = $('form[data-confirm-unload]');
+            this.$deltaForms = $('form[data-delta]');
 
             if (!this.$confirmUnloadForms.length) {
                 return;
             }
 
-            var $form;
+            var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
+            var $form, serialized;
 
-            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                $form = this.$confirmUnloadForms.eq(i);
-                $form.data('initialSerializedValue', $form.serialize());
-                this.addListener($form, 'submit', function() {
-                    this.removeListener(Garnish.$win, 'beforeunload');
+            for (var i = 0; i < $forms.length; i++) {
+                $form = $forms.eq(i);
+                if (!$form.data('initialSerializedValue')) {
+                    if (typeof $form.data('serializer') === 'function') {
+                        serialized = $form.data('serializer')();
+                    } else {
+                        serialized = $form.serialize();
+                    }
+                    $form.data('initialSerializedValue', serialized);
+                }
+                this.addListener($form, 'submit', function(ev) {
+                    if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+                        this.removeListener(Garnish.$win, 'beforeunload');
+                    }
+                    if (Garnish.hasAttr($form, 'data-delta')) {
+                        ev.preventDefault();
+                        var serialized;
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                        Craft.createForm(data)
+                            .appendTo(Garnish.$bod)
+                            .submit();
+                    }
                 });
             }
 
@@ -11235,7 +11397,10 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.trigger('submit');
+            this.$primaryForm.trigger({
+                type: 'submit',
+                saveShortcut: true,
+            });
         },
 
         updateSidebarMenuLabel: function() {
@@ -12580,7 +12745,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
             this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
 
-            this.addListener(this.$labelInput, 'textchange', 'handleLabelInputChange');
+            this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
             this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
 
             return $([
@@ -12865,10 +13030,11 @@ Craft.DraftEditor = Garnish.Base.extend(
         lastSerializedValue: null,
         timeout: null,
         saving: false,
+        saveXhr: null,
         checkFormAfterUpdate: false,
+        submittingForm: false,
 
         duplicatedElements: null,
-        applying: false,
         errors: null,
 
         preview: null,
@@ -12883,10 +13049,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.$revisionLabel = $('#revision-label');
             this.$spinner = $('#revision-spinner');
             this.$statusIcon = $('#revision-status');
-
-            if (this.settings.draftId) {
-                this.createEditMetaBtn();
-            }
 
             if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
@@ -12904,17 +13066,47 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             }
 
-            // If this is a revision, then we're done here
+            // If this is a revision, we're done here
             if (this.settings.revisionId) {
                 return;
             }
 
             // Store the initial form value
-            this.lastSerializedValue = this.serializeForm();
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
+            this.lastSerializedValue = this.serializeForm(true);
 
             // Override the serializer to use our own
-            Craft.cp.$primaryForm.data('serializer', $.proxy(this, 'serializeForm'));
+            Craft.cp.$primaryForm.data('serializer', function() {
+                return this.serializeForm(true)
+            }.bind(this));
+
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+
+            if (this.settings.draftId) {
+                this.initForDraft();
+            } else {
+                // If the "Save as a Draft" button is a secondary button, then add special handling for it
+                this.addListener($('#save-draft-btn'), 'click', function(ev) {
+                    ev.preventDefault();
+                    this.createDraft();
+                    this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
+                }.bind(this));
+
+                // If they're not allowed to update the source element, override the save shortcut to create a draft too
+                if (!this.settings.canUpdateSource) {
+                    this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', function(ev) {
+                        if (ev.saveShortcut) {
+                            ev.preventDefault();
+                            this.createDraft();
+                            this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
+                        }
+                    }.bind(this));
+                }
+            }
+        },
+
+        initForDraft: function() {
+            // Create the edit draft button
+            this.createEditMetaBtn();
 
             this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
@@ -12923,13 +13115,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 clearTimeout(this.timeout);
                 // If they are typing, wait half a second before checking the form
                 if (Craft.inArray(ev.type, ['keypress', 'keyup', 'change'])) {
-                    this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+                    this.timeout = setTimeout(this.checkForm.bind(this), 500);
                 } else {
                     this.checkForm();
                 }
             });
 
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
@@ -12992,15 +13183,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 $li = $('<li/>').appendTo($ul);
                 $a = $('<a/>', {
                     text: this.settings.previewTargets[i].label,
-                    data: {
-                        url: this.settings.previewTargets[i].url,
-                    }
                 }).appendTo($li);
                 this.addListener($a, 'click', {
-                    url: this.settings.previewTargets[i].url,
+                    target: i,
                 }, function(ev) {
-                    this.openShareLink(ev.data.url);
-                });
+                    this.openShareLink(this.settings.previewTargets[ev.data.target].url);
+                }.bind(this));
             }
         },
 
@@ -13028,13 +13216,13 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this));
         },
 
-        getTokenizedPreviewUrl: function(url, forceRandomParam) {
+        getTokenizedPreviewUrl: function(url, randoParam) {
             return new Promise(function(resolve, reject) {
                 var params = {};
 
-                if (forceRandomParam || !this.settings.isLive) {
+                if (randoParam || !this.settings.isLive) {
                     // Randomize the URL so CDNs don't return cached pages
-                    params['x-craft-preview'] = Craft.randomString(10);
+                    params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
                 }
 
                 // No need for a token if we're looking at a live element
@@ -13064,10 +13252,29 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         openPreview: function() {
-            this.getPreview().open();
+            return new Promise(function(resolve, reject) {
+                this.ensureIsDraftOrRevision()
+                    .then(function() {
+                        this.getPreview().open();
+                        resolve();
+                    }.bind(this))
+                    .catch(reject);
+            }.bind(this))
         },
 
-        serializeForm: function() {
+        ensureIsDraftOrRevision: function() {
+            return new Promise(function(resolve, reject) {
+                if (!this.settings.draftId && !this.settings.revisionid) {
+                    this.createDraft()
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    resolve();
+                }
+            }.bind(this));
+        },
+
+        serializeForm: function(removeActionParams) {
             var data = Craft.cp.$primaryForm.serialize();
 
             if (this.isPreviewActive()) {
@@ -13075,17 +13282,27 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
 
+            if (removeActionParams && !this.settings.isUnsavedDraft) {
+                // Remove action and redirect params
+                data = data.replace(/&action=[^&]*/, '');
+                data = data.replace(/&redirect=[^&]*/, '');
+            }
+
             return data;
         },
 
         checkForm: function(force) {
+            // If this isn't a draft, then there's nothing to check
+            if (!this.settings.draftId) {
+                return;
+            }
+
             clearTimeout(this.timeout);
             this.timeout = null;
 
             // Has anything changed?
-            var data = this.serializeForm();
+            var data = this.serializeForm(true);
             if (force || (data !== this.lastSerializedValue)) {
-                this.lastSerializedValue = data;
                 this.saveDraft(data);
             }
         },
@@ -13094,128 +13311,174 @@ Craft.DraftEditor = Garnish.Base.extend(
             return this.preview && this.preview.isActive;
         },
 
+        createDraft: function() {
+            return new Promise(function(resolve, reject) {
+                this.saveDraft(this.serializeForm(true))
+                    .then(resolve)
+                    .catch(reject);
+            }.bind(this));
+        },
+
         saveDraft: function(data) {
-            if (this.applying) {
-                return;
-            }
-
-            if (this.saving) {
-                this.checkFormAfterUpdate = true;
-                return;
-            }
-
-            this.saving = true;
-            var $spinners = this.spinners().removeClass('hidden');
-            var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
-            if (this.$saveMetaBtn) {
-                this.$saveMetaBtn.addClass('active');
-            }
-            this.errors = null;
-
-            var url = Craft.getActionUrl(this.settings.saveDraftAction);
-            var i;
-
-            Craft.postActionRequest(url, this.prepareData(data), $.proxy(function(response, textStatus) {
-                $spinners.addClass('hidden');
-                if (this.$saveMetaBtn) {
-                    this.$saveMetaBtn.removeClass('active');
-                }
-                this.saving = false;
-
-                if (textStatus !== 'success' || response.errors) {
-                    this.errors = response.errors || [];
-                    $statusIcons
-                        .removeClass('hidden checkmark-icon')
-                        .addClass('alert-icon')
-                        .attr('title', Craft.t('app', 'The draft could not be saved.'));
+            return new Promise(function(resolve, reject) {
+                // Ignore if we're already submitting the main form
+                if (this.submittingForm) {
+                    reject();
                     return;
                 }
 
-                if (response.title) {
-                    $('#header h1').text(response.title);
+                this.lastSerializedValue = data;
+
+                if (this.saving) {
+                    this.checkFormAfterUpdate = true;
+                    return;
                 }
 
-                if (response.docTitle) {
-                    document.title = response.docTitle;
+                this.saving = true;
+                var $spinners = this.spinners().removeClass('hidden');
+                var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
+                if (this.$saveMetaBtn) {
+                    this.$saveMetaBtn.addClass('active');
                 }
+                this.errors = null;
 
-                this.$revisionLabel.text(response.draftName);
+                var url = Craft.getActionUrl(this.settings.saveDraftAction);
+                var i;
 
-                this.settings.draftName = response.draftName;
-                this.settings.draftNotes = response.draftNotes;
-
-                var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
-
-                // Did we just create a draft?
-                var draftCreated = !this.settings.draftId;
-                if (draftCreated) {
-                    var newHref;
-                    var anchorPos = document.location.href.search('#');
-                    if (anchorPos !== -1) {
-                        newHref = document.location.href.substr(0, anchorPos);
-                    } else {
-                        newHref = document.location.href;
+                this.saveXhr = Craft.postActionRequest(url, this.prepareData(data), function(response, textStatus) {
+                    $spinners.addClass('hidden');
+                    if (this.$saveMetaBtn) {
+                        this.$saveMetaBtn.removeClass('active');
                     }
-                    newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
-                    if (anchorPos !== -1) {
-                        newHref += document.location.href.substr(anchorPos);
-                    }
-                    history.replaceState({}, '', newHref);
-                    this.settings.draftId = response.draftId;
-                    this.settings.isLive = false;
-                    this.settings.canDeleteDraft = true;
-                    this.previewToken = null;
-                    this.createEditMetaBtn();
-                    $('#apply-btn').removeClass('disabled');
+                    this.saving = false;
 
-                    // Add it to the revision menu
+                    if (textStatus === 'abort') {
+                        return;
+                    }
+
+                    if (textStatus !== 'success' || response.errors) {
+                        this.errors = (response ? response.errors : null) || [];
+                        $statusIcons
+                            .removeClass('hidden checkmark-icon')
+                            .addClass('alert-icon')
+                            .attr('title', Craft.t('app', 'The draft could not be saved.'));
+                        reject();
+                        return;
+                    }
+
+                    if (response.title) {
+                        $('#header h1').text(response.title);
+                    }
+
+                    if (response.docTitle) {
+                        document.title = response.docTitle;
+                    }
+
+                    this.$revisionLabel.text(response.draftName);
+
+                    this.settings.draftName = response.draftName;
+                    this.settings.draftNotes = response.draftNotes;
+
+                    var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
+
+                    // Did we just create a draft?
+                    var draftCreated = !this.settings.draftId;
+                    if (draftCreated) {
+                        // Update the document location HREF
+                        var newHref;
+                        var anchorPos = document.location.href.search('#');
+                        if (anchorPos !== -1) {
+                            newHref = document.location.href.substr(0, anchorPos);
+                        } else {
+                            newHref = document.location.href;
+                        }
+                        newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
+                        if (anchorPos !== -1) {
+                            newHref += document.location.href.substr(anchorPos);
+                        }
+                        history.replaceState({}, '', newHref);
+
+                        // Replace the Save button with an Update button, if there is one.
+                        // Otherwise, the user must not have permission to update the source element
+                        var $saveBtnContainer = $('#save-btn-container');
+                        if ($saveBtnContainer.length) {
+                            $saveBtnContainer.replaceWith($('<input/>', {
+                                type: 'submit',
+                                'class': 'btn submit',
+                                value: Craft.t('app', 'Update {type}', {type: this.settings.elementTypeDisplayName})
+                            }));
+                        }
+
+                        // Remove the "Save as a Draft" button
+                        var $saveDraftBtn = $('#save-draft-btn-container');
+                        $saveDraftBtn.add($saveDraftBtn.prev('.spacer')).remove();
+
+                        // Update the editor settings
+                        this.settings.draftId = response.draftId;
+                        this.settings.isLive = false;
+                        this.settings.canDeleteDraft = true;
+                        this.previewToken = null;
+                        this.initForDraft();
+
+                        // Add the draft to the revision menu
+                        if (revisionMenu) {
+                            revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
+                            var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
+                            if (!$draftsUl.length) {
+                                var $draftHeading = $('<h6/>', {
+                                    text: Craft.t('app', 'Drafts'),
+                                }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
+                                $draftsUl = $('<ul/>', {
+                                    'class': 'padded revision-group-drafts',
+                                }).insertAfter($draftHeading);
+                            }
+                            var $draftLi = $('<li/>').appendTo($draftsUl);
+                            var $draftA = $('<a/>', {
+                                'class': 'sel',
+                                html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
+                            }).appendTo($draftLi);
+                            revisionMenu.addOptions($draftA);
+                            revisionMenu.selectOption($draftA);
+
+                            // Update the site URLs
+                            var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
+                            for (var i = 0; i < $siteOptions.length; i++) {
+                                var $siteOption = $siteOptions.eq(i);
+                                $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
+                            }
+                        }
+                    }
+
                     if (revisionMenu) {
-                        revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
-                        var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
-                        if (!$draftsUl.length) {
-                            var $draftHeading = $('<h6/>', {
-                                text: Craft.t('app', 'Drafts'),
-                            }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
-                            $draftsUl = $('<ul/>', {
-                                'class': 'padded revision-group-drafts',
-                            }).insertAfter($draftHeading);
-                        }
-                        var $draftLi = $('<li/>').appendTo($draftsUl);
-                        var $draftA = $('<a/>', {
-                            'class': 'sel',
-                            html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
-                        }).appendTo($draftLi);
-                        revisionMenu.addOptions($draftA);
-                        revisionMenu.selectOption($draftA);
-
-                        // Update the site URLs
-                        var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
-                        for (var i = 0; i < $siteOptions.length; i++) {
-                            var $siteOption = $siteOptions.eq(i);
-                            $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
-                        }
+                        revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
+                        revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
+                            creator: response.creator
+                        }));
                     }
-                }
 
-                if (revisionMenu) {
-                    revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                    revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
-                        creator: response.creator
-                    }));
-                }
+                    // Did the controller send us updated preview targets?
+                    if (
+                        response.previewTargets &&
+                        JSON.stringify(response.previewTargets) !== JSON.stringify(this.settings.previewTargets)
+                    ) {
+                        this.updatePreviewTargets(response.previewTargets);
+                    }
 
-                this.afterUpdate(data);
+                    this.afterUpdate(data);
 
-                if (draftCreated) {
-                    this.trigger('createDraft');
-                }
+                    if (draftCreated) {
+                        this.trigger('createDraft');
+                    }
 
-                if (this.$nameTextInput) {
-                    this.checkMetaValues();
-                }
+                    if (this.$nameTextInput) {
+                        this.checkMetaValues();
+                    }
 
-                $.extend(this.duplicatedElements, response.duplicatedElements);
-            }, this));
+                    $.extend(this.duplicatedElements, response.duplicatedElements);
+
+                    resolve();
+                }.bind(this));
+            }.bind(this));
         },
 
         prepareData: function(data) {
@@ -13232,13 +13495,22 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data += '&draftId=' + this.settings.draftId
                     + '&draftName=' + encodeURIComponent(this.settings.draftName)
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
-
-                if (this.settings.propagateAll) {
-                    data += '&propagateAll=1';
-                }
             }
 
             return data;
+        },
+
+        updatePreviewTargets: function(previewTargets) {
+            // index the current preview targets by label
+            var currentTargets = {};
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
+                currentTargets[this.settings.previewTargets[i].label] = this.settings.previewTargets[i];
+            }
+            for (i = 0; i < previewTargets.length; i++) {
+                if (currentTargets[previewTargets[i].label]) {
+                    currentTargets[previewTargets[i].label].url = previewTargets[i].url;
+                }
+            }
         },
 
         afterUpdate: function(data) {
@@ -13299,19 +13571,19 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.$saveMetaBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Save') + '"/>').appendTo($footer);
 
             this.metaHud = new Garnish.HUD(this.$editMetaBtn, $hudBody, {
-                onSubmit: $.proxy(this, 'saveMeta')
+                onSubmit: this.saveMeta.bind(this)
             });
 
             new Garnish.NiceText(this.$notesTextInput);
 
             this.addListener(this.$notesTextInput, 'keydown', 'onNotesKeydown');
 
-            this.addListener(this.$nameTextInput, 'textchange', 'checkMetaValues');
-            this.addListener(this.$notesTextInput, 'textchange', 'checkMetaValues');
+            this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
+            this.addListener(this.$notesTextInput, 'input', 'checkMetaValues');
 
-            this.metaHud.on('show', $.proxy(this, 'onMetaHudShow'));
-            this.metaHud.on('hide', $.proxy(this, 'onMetaHudHide'));
-            this.metaHud.on('escape', $.proxy(this, 'onMetaHudEscape'));
+            this.metaHud.on('show', this.onMetaHudShow.bind(this));
+            this.metaHud.on('hide', this.onMetaHudHide.bind(this));
+            this.metaHud.on('escape', this.onMetaHudEscape.bind(this));
 
             if ($deleteLink) {
                 this.addListener($deleteLink, 'click', 'deleteDraft');
@@ -13375,63 +13647,65 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, function(response, textStatus) {
                 if (textStatus === 'success') {
                     window.location.href = this.settings.cpEditUrl;
                 }
-            }, this))
+            }.bind(this))
         },
 
         handleFormSubmit: function(ev) {
             ev.preventDefault();
 
-            // Don't allow a form submit under any circumstances if we’re currently applying a draft
-            if (this.applying) {
+            // Prevent double form submits
+            if (this.submittingForm) {
                 return;
             }
 
-            if (!ev.customTrigger) {
-                // return;
-                if (!this.settings.draftId) {
-                    return;
-                }
-                $('#apply-btn').addClass('disabled');
+            // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
+            // then ignore the submission
+            if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
+                return;
             }
 
-            this.applying = true;
+            // Prevent the normal unload confirmation dialog
+            Craft.cp.$confirmUnloadForms = Craft.cp.$confirmUnloadForms.not(Craft.cp.$primaryForm);
+
+            // Abort the current save request if there is one
+            if (this.saving) {
+                this.saveXhr.abort();
+            }
 
             // Duplicate the form with normalized data
-            var $form = $('<form/>', {
-                attr: {
-                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
-                    'action': Craft.cp.$primaryForm.attr('action'),
-                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
-                    'method': Craft.cp.$primaryForm.attr('method'),
-                    'target': Craft.cp.$primaryForm.attr('target'),
-                }
-            });
-            var data = this.prepareData(this.serializeForm());
-            var values = data.split('&');
-            var chunks;
-            for (var i = 0; i < values.length; i++) {
-                chunks = values[i].split('=', 2);
-                $('<input/>', {
-                    type: 'hidden',
-                    name: decodeURIComponent(chunks[0]),
-                    value: decodeURIComponent(chunks[1] || '')
-                }).appendTo($form);
-            }
+            var data = this.prepareData(this.serializeForm(false));
+            // Filter out anything that hasn't changed
+            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
+            var $form = Craft.createForm(data);
 
-            if (!ev.customTrigger) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'action',
-                    value: this.settings.applyDraftAction
-                }).appendTo($form);
+            if (this.settings.draftId) {
+                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'action',
+                        value: this.settings.applyDraftAction
+                    }).appendTo($form);
+                }
+
+                if (
+                    (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                    (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+                ) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'redirect',
+                        value: this.settings.hashedRedirectUrl
+                    }).appendTo($form);
+                }
             }
 
             $form.appendTo(Garnish.$bod);
             $form.submit();
+            this.submittingForm = true;
         },
     },
     {
@@ -13445,7 +13719,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             revisionId: null,
             draftName: null,
             draftNotes: null,
-            propagateAll: false,
             canDeleteDraft: false,
             canUpdateSource: false,
             saveDraftAction: null,
@@ -13629,7 +13902,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             if (focus !== false) {
-                $tr.find('input,textarea,select').first().trigger('focus');
+                $tr.find('input:visible,textarea:visible,select:visible').first().trigger('focus');
             }
 
             this.rowCount++;
@@ -13716,7 +13989,7 @@ Craft.EditableTable = Garnish.Base.extend(
         },
     },
     {
-        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time'],
+        textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -13820,6 +14093,16 @@ Craft.EditableTable = Garnish.Base.extend(
                             }).appendTo($cell);
                             break;
 
+                        case 'email':
+                        case 'url':
+                            Craft.ui.createTextInput({
+                                name: name,
+                                value: value,
+                                type: col.type,
+                                placeholder: col.placeholder || null,
+                            }).appendTo($cell);
+                            break;
+
                         default:
                             $('<textarea/>', {
                                 'name': name,
@@ -13913,8 +14196,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }));
 
                     this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
-                    this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
-                    $textarea.trigger('textchange');
+                    this.addListener($textarea, 'input', {type: col.type}, 'validateValue');
+                    $textarea.trigger('input');
 
                     textareasByColId[colId] = $textarea;
                 } else if (col.type === 'checkbox') {
@@ -14319,6 +14602,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             // Ignore if we're in the middle of getting the elevated session timeout
             if (Craft.elevatedSessionManager.fetchingTimeout) {
                 ev.preventDefault();
+                ev.stopImmediatePropagation();
                 return;
             }
 
@@ -14349,6 +14633,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
             // Prevent the form from submitting until the user has an elevated session
             ev.preventDefault();
+            ev.stopImmediatePropagation();
             Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'submitForm'));
         },
 
@@ -14435,7 +14720,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($passwordModal, 'submit', 'submitPassword');
             }
             else {
@@ -17454,7 +17739,7 @@ Craft.Preview = Garnish.Base.extend(
 
             var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
 
-            this.draftEditor.getTokenizedPreviewUrl(url, true).then(function(url) {
+            this.draftEditor.getTokenizedPreviewUrl(url, 'x-craft-live-preview').then(function(url) {
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {
@@ -17683,24 +17968,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
-
-                        var $highlight = this.$container.find('.highlight');
-
-                        if ($highlight.length && $highlight.hasClass('json')) {
-                            var $target = $highlight.find('code');
-                            $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
-                        }
-
-                        if ($highlight.length) {
-                            Prism.highlightElement($highlight.find('code').get(0));
-                        } else {
-                            this.$container.find('img').css({
-                                width: containerWidth,
-                                height: containerHeight
-                            });
-                        }
-
-                        this.updateSizeAndPosition();
+                        Craft.appendHeadHtml(response.headHtml);
+                        Craft.appendFootHtml(response.footHtml);
                     } else {
                         alert(response.error);
 
@@ -17708,62 +17977,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     }
                 }
             }.bind(this));
-        },
-
-        /**
-         * Override default logic with some extra shenanigans
-         */
-        updateSizeAndPosition: function() {
-            if (!this.loaded) {
-                return;
-            }
-
-            var $img = this.$container.find('img');
-
-            if (this.loaded && $img.length) {
-                // Make sure we maintain the ratio
-
-                var maxWidth = $img.data('maxwidth'),
-                    maxHeight = $img.data('maxheight'),
-                    imageRatio = maxWidth / maxHeight,
-                    desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
-                    desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
-                    width = Math.min(desiredWidth, maxWidth),
-                    height = Math.round(Math.min(maxHeight, width / imageRatio));
-
-                width = Math.round(height * imageRatio);
-
-                $img.css({'width': width, 'height': height});
-                this._resizeContainer(width, height);
-
-                this.desiredWidth = width;
-                this.desiredHeight = height;
-
-            }
-
-            this.base();
-
-            if (this.loaded && $img.length) {
-                // Correct anomalities
-                var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), Garnish.$win.width() - (this.settings.minGutter * 2))),
-                    containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), Garnish.$win.height() - (this.settings.minGutter * 2)));
-                    containerWidth = Math.round(containerHeight * imageRatio);
-
-                // This might actually have put width over the viewport limits, so doublecheck that
-                if (containerWidth > Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2)) {
-                    containerWidth =  Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2);
-                    containerHeight = containerWidth / imageRatio;
-                }
-
-                this._resizeContainer(containerWidth, containerHeight);
-
-                $img.css({'width': containerWidth, 'height': containerHeight});
-            } else if (this.loaded) {
-                this.$container.find('.highlight')
-                    .height(this.$container.height())
-                    .width(this.$container.width())
-                    .css({'overflow': 'auto'});
-            }
         },
 
         /**
@@ -19861,7 +20074,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$addTagInput = this.$container.children('.add').children('.text');
             this.$spinner = this.$addTagInput.next();
 
-            this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
+            this.addListener(this.$addTagInput, 'input', $.proxy(function() {
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }

@@ -99,7 +99,7 @@ class ExtensionTest extends Unit
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
         $this->extensionRenderTest(
-            '{{ CraftEdition }} | {{ CraftSolo }} | {{ CraftPro }}',
+            Craft::$app->getEdition().' | 0 | 1',
             ''.Craft::$app->getEdition().' | '. Craft::Solo . ' | '. Craft::Pro
         );
     }
@@ -156,9 +156,6 @@ class ExtensionTest extends Unit
      */
     public function testCsrfInput()
     {
-        Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = false;
-        $this->extensionRenderTest('{{ csrfInput() }}', '');
-
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
         $this->extensionRenderTest(
             '{{ csrfInput() }}',
@@ -187,8 +184,8 @@ class ExtensionTest extends Unit
         );
 
         $this->extensionRenderTest(
-            '{{ redirectInput("A URL WITH CHARS !@#$%^&*()😋") }}',
-            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^&*()😋').'">'
+            '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}',
+            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋').'">'
         );
     }
 
@@ -205,7 +202,7 @@ class ExtensionTest extends Unit
 
         $this->extensionRenderTest(
             '{{ actionInput("A URL WITH CHARS !@#$%^&*()😋") }}',
-            '<input type="hidden" name="action" value="A URL WITH CHARS !@#$%^&*()😋">'
+            '<input type="hidden" name="action" value="A URL WITH CHARS !@#$%^&amp;*()😋">'
         );
     }
 

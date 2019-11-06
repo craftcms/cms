@@ -14,7 +14,7 @@ use DateTime;
  * Class CraftIdToken model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftIdToken extends Model
 {

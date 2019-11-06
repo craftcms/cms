@@ -1,0 +1,79 @@
+# Running Release Notes for Craft 3.4
+
+### Added
+- Added support for delta element updates. ([#4064](https://github.com/craftcms/cms/issues/4064))
+- Elements now track which field values have changed since the element was first loaded. ([#4149](https://github.com/craftcms/cms/issues/4149))
+- It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
+- Added the `verifyEmailPath` config setting.
+- Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
+- Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
+- Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
+- Added `craft\assetpreviews\HtmlPreview`.
+- Added `craft\assetpreviews\ImagePreview`.
+- Added `craft\assetpreviews\NoPreview`.
+- Added `craft\assetpreviews\PdfPreview`.
+- Added `craft\base\AssetPreview`.
+- Added `craft\base\AssetPreviewInterface`.
+- Added `craft\base\AssetPreviewTrait`.
+- Added `craft\base\ElementInterface::clearDirtyFields()`.
+- Added `craft\base\ElementInterface::getDirtyFields()`.
+- Added `craft\base\ElementInterface::isFieldDirty()`.
+- Added `craft\db\Connection::DRIVER_MYSQL`.
+- Added `craft\db\Connection::DRIVER_PGSQL`.
+- Added `craft\elements\MatrixBlock::$dirty`.
+- Added `craft\events\AssetPreviewEvent`.
+- Added `craft\events\DefineGqlTypeFieldsEvent`.
+- Added `craft\events\DefineGqlValidationRulesEvent`.
+- Added `craft\events\RegisterGqlPermissionsEvent`.
+- Added `craft\gql\TypeManager`.
+- Added `craft\helpers\Db::parseDsn()`.
+- Added `craft\helpers\Db::url2config()`.
+- Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
+- Added `craft\services\Assets::getAssetPreview()`.
+- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
+- Added `craft\services\Gql::getValidationRules()`.
+- Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
+- Added `craft\web\Controller::requireGuest()`.
+- Added `craft\web\twig\nodes\RequireGuestNode`.
+- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
+- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
+- Added `craft\web\User::guestRequired()`.
+- Added `craft\web\View::$minifyCss`.
+- Added `craft\web\View::$minifyJs`.
+- Added `craft\web\View::getDeltaNames()`.
+- Added `craft\web\View::getIsDeltaRegistrationActive()`.
+- Added `craft\web\View::registerDeltaName()`.
+- Added `craft\web\View::setIsDeltaRegistrationActive()`.
+- Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
+- Added the Minify PHP package.
+
+### Changed
+- Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
+- The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
+- Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
+- Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
+- Plain Text fields’ Column Type settings now have an “Automatic” option, which is selected by default for new fields. ([#5099](https://github.com/craftcms/cms/issues/5099))
+- Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
+- CSS registered with `craft\web\View::registerCss()` or the `{% css %}` tag is now minified by default. ([#5183}https://github.com/craftcms/cms/issues/5183])
+- JavaScript code registered with `craft\web\registerJs()` or the `{% js %}` tag is now minified per the `useCompressedJs` config setting. ([#5183}https://github.com/craftcms/cms/issues/5183])
+- `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- The installer now requires `config/db.php` to be setting the `dsn` database config setting with a `DB_DSN` environment variable, if a connection can’t already be established.
+- The full GraphQL schema is now always generated when Dev Mode is enabled.
+- The `_includes/forms/field.html` template now supports `fieldAttributes`, `labelAttributes`, and `inputAttributes` variables.
+- The `_includes/field.html` template now supports a `registerDeltas` variable.
+- The `_layouts/cp.html` template now supports `mainAttributes` and `mainFormAttributes` variables.
+- Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
+- Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`. 
+- `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
+- Updated Yii to 2.0.29.
+
+### Deprecated
+- Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
+- Deprecated `craft\config\DbConfig::DRIVER_MYSQL`.
+- Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
+- Deprecated `craft\config\DbConfig::updateDsn()`.
+- Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
+- Deprecated `craft\services\Search::indexElementFields()`.

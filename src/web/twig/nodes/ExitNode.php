@@ -30,7 +30,7 @@ use yii\web\UnsupportedMediaTypeHttpException;
  * Class ExitNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ExitNode extends Node
 {

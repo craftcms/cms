@@ -174,11 +174,29 @@ const actions = {
 
                     switch(item.type) {
                         case 'plugin-edition': {
-                            // Set the license key if we have a valid one
                             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](item.plugin)
 
-                            if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
-                                item.licenseKey = pluginLicenseInfo.licenseKey
+                            // Check that the current plugin license exists and is `valid`
+                            if (
+                                pluginLicenseInfo &&
+                                pluginLicenseInfo.licenseKey &&
+                                (pluginLicenseInfo.licenseKeyStatus === 'valid')
+                            ) {
+                                // Check if the license has issues other than `wrong_edition` or `astray`
+                                let hasIssues = false
+
+                                if (pluginLicenseInfo.licenseIssues.length > 0) {
+                                    pluginLicenseInfo.licenseIssues.forEach((issue) => {
+                                        if (issue !== 'wrong_edition' && issue !== 'astray') {
+                                            hasIssues = true
+                                        }
+                                    })
+                                }
+
+                                // If we don’t have issues for this license, we can attach its key to the item
+                                if (!hasIssues) {
+                                    item.licenseKey = pluginLicenseInfo.licenseKey
+                                }
                             }
 
                             item.cmsLicenseKey = window.cmsLicenseKey

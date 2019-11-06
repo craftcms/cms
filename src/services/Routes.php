@@ -19,7 +19,7 @@ use yii\base\Component;
  * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Routes extends Component
 {
@@ -121,6 +121,12 @@ class Routes extends Component
             return $this->_projectConfigRoutes;
         }
 
+        $this->_projectConfigRoutes = [];
+
+        if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            return $this->_projectConfigRoutes;
+        }
+
         $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
         ArrayHelper::multisort($routes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
@@ -170,7 +176,7 @@ class Routes extends Component
 
         // Compile the URI parts into a regex pattern
         $uriPattern = '';
-        $uriParts = array_filter($uriParts);
+        $uriParts = ArrayHelper::filterEmptyStringsFromArray($uriParts);
         $subpatternNameCounts = [];
 
         foreach ($uriParts as $part) {
@@ -226,6 +232,7 @@ class Routes extends Component
      *
      * @param int $routeId
      * @return bool
+     * @since 3.1.0
      */
     public function deleteRouteByUid(string $routeUid): bool
     {

@@ -25,7 +25,7 @@ use yii\db\Connection;
  * @method Asset|array|null one($db = null)
  * @method Asset|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-site-params
  * @supports-title-param
  * @replace {element} asset
@@ -708,7 +708,7 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if ($this->asArray === false && $this->withTransforms) {
+        if ($this->withTransforms) {
             $transforms = $this->withTransforms;
             if (!is_array($transforms)) {
                 $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];

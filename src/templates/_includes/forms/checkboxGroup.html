@@ -1,5 +1,5 @@
 {% if name is defined and name %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif -%}
 
 {%- set options = (options is defined ? options : []) %}

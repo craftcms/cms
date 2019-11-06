@@ -6,9 +6,9 @@
 
 
 {% block content %}
-        <input type="hidden" name="action" value="volumes/save-volume">
+        {{ actionInput('volumes/save-volume') }}
         {{ redirectInput('settings/assets') }}
-        {% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
+        {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
 
         <div id="assetvolume-settings">
             {{ forms.textField({

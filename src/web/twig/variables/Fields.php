@@ -17,7 +17,7 @@ use craft\models\FieldLayout;
  * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @deprecated in 3.0
  */
 class Fields

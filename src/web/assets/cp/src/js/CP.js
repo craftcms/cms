@@ -22,6 +22,8 @@ Craft.CP = Garnish.Base.extend(
         $contentContainer: null,
         $edition: null,
 
+        $confirmUnloadForms: null,
+        $deltaForms: null,
         $collapsibleTables: null,
 
         fixedHeader: false,
@@ -78,7 +80,7 @@ Craft.CP = Garnish.Base.extend(
 
                 // Wait a frame before initializing any confirm-unload forms,
                 // so other JS that runs on ready() has a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
+                Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
             }, this));
 
             // Alerts
@@ -129,21 +131,45 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        initConfirmUnloadForms: function() {
+        initSpecialForms: function() {
             // Look for forms that we should watch for changes on
             this.$confirmUnloadForms = $('form[data-confirm-unload]');
+            this.$deltaForms = $('form[data-delta]');
 
             if (!this.$confirmUnloadForms.length) {
                 return;
             }
 
-            var $form;
+            var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
+            var $form, serialized;
 
-            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                $form = this.$confirmUnloadForms.eq(i);
-                $form.data('initialSerializedValue', $form.serialize());
-                this.addListener($form, 'submit', function() {
-                    this.removeListener(Garnish.$win, 'beforeunload');
+            for (var i = 0; i < $forms.length; i++) {
+                $form = $forms.eq(i);
+                if (!$form.data('initialSerializedValue')) {
+                    if (typeof $form.data('serializer') === 'function') {
+                        serialized = $form.data('serializer')();
+                    } else {
+                        serialized = $form.serialize();
+                    }
+                    $form.data('initialSerializedValue', serialized);
+                }
+                this.addListener($form, 'submit', function(ev) {
+                    if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+                        this.removeListener(Garnish.$win, 'beforeunload');
+                    }
+                    if (Garnish.hasAttr($form, 'data-delta')) {
+                        ev.preventDefault();
+                        var serialized;
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                        Craft.createForm(data)
+                            .appendTo(Garnish.$bod)
+                            .submit();
+                    }
                 });
             }
 
@@ -198,7 +224,10 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.trigger('submit');
+            this.$primaryForm.trigger({
+                type: 'submit',
+                saveShortcut: true,
+            });
         },
 
         updateSidebarMenuLabel: function() {

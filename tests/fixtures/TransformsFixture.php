@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\fixtures;
+namespace crafttests\fixtures;
 
 use Craft;
 use craft\records\AssetTransform;

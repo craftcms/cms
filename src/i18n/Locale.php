@@ -23,7 +23,7 @@ use yii\helpers\FormatConverter;
  *
  * @property string $displayName The locale’s display name.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Locale extends BaseObject
 {
@@ -230,7 +230,7 @@ class Locale extends BaseObject
     /**
      * @var array The languages that use RTL orientation.
      */
-    private static $_rtlLanguages = ['ar', 'he', 'ur'];
+    private static $_rtlLanguages = ['ar', 'he', 'ur', 'fa'];
 
     /**
      * @var string|null The locale ID.
@@ -954,15 +954,10 @@ class Locale extends BaseObject
             $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
             $pattern = $formatter->getPattern();
 
-            // Use 4-digit year, and no leading zeroes on days/months
+            // Use 4-digit years
             return strtr($pattern, [
                 'yyyy' => 'yyyy',
                 'yy' => 'yyyy',
-                'MMMMM' => 'MMMMM',
-                'MMMM' => 'MMMM',
-                'MMM' => 'MMM',
-                'MM' => 'M',
-                'dd' => 'd',
             ]);
         }
 

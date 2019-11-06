@@ -34,7 +34,7 @@ use yii\web\HttpException;
  * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|`Craft::$app->plugins`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Plugins extends Component
 {
@@ -103,6 +103,12 @@ class Plugins extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var array[] Custom plugin configurations.
+     * @since 3.4.0
+     */
+    public $pluginConfigs;
 
     /**
      * @var bool Whether plugins have been loaded yet for this request
@@ -890,16 +896,17 @@ class Plugins extends Component
             if ($settings !== []) {
                 $config['settings'] = $settings;
             }
+
+            // Merge in the custom config, if there is one
+            if (isset($this->pluginConfigs[$handle])) {
+                $config = ArrayHelper::merge($config, $this->pluginConfigs[$handle]);
+            }
         }
 
         // Create the plugin
         /** @var Plugin $plugin */
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
-
-        if ($info !== null) {
-            $this->_setPluginMigrator($plugin, $info['id']);
-        }
-
+        $this->_setPluginMigrator($plugin, $info['id'] ?? null);
         return $plugin;
     }
 
@@ -1107,6 +1114,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @return string|null The plugin’s license key, or null if it isn’t known
+     * @throws InvalidLicenseKeyException
      */
     public function getPluginLicenseKey(string $handle)
     {
@@ -1292,9 +1300,9 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param int $id The plugin’s ID
+     * @param int|null $id The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, int $id)
+    private function _setPluginMigrator(PluginInterface $plugin, int $id = null)
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();

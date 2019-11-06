@@ -17,7 +17,7 @@ use yii\validators\Validator;
  * Class SlugValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SlugValidator extends Validator
 {
@@ -36,6 +36,7 @@ class SlugValidator extends Validator
 
     /**
      * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
+     * @since 3.1.9
      */
     public $language;
 

@@ -15,7 +15,7 @@ use craft\web\assets\updateswidget\UpdatesWidgetAsset;
  * Updates represents an Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Updates extends Widget
 {

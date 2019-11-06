@@ -33,7 +33,7 @@ use yii\db\Expression;
  * ConvertEntryRevisions job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class ConvertEntryRevisions extends BaseJob
 {
@@ -198,10 +198,11 @@ class ConvertEntryRevisions extends BaseJob
         $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
         if ($maxRevisions > 0) {
             $numSql = $this->db->getIsMysql() ? 'cast([[num]] as signed)' : '[[num]]';
-            $query->andWhere(['>', 'num', (new Query())
-                ->select(new Expression("max({$numSql})" . ($maxRevisions ? " - {$maxRevisions}" : '')))
-                ->from([Table::ENTRYVERSIONS])
-                ->where('[[entryId]] = [[v.entryId]]')
+            $query->andWhere([
+                '>', 'num', (new Query())
+                    ->select(new Expression("max({$numSql})" . ($maxRevisions ? " - {$maxRevisions}" : '')))
+                    ->from([Table::ENTRYVERSIONS])
+                    ->where('[[entryId]] = [[v.entryId]]')
             ]);
         }
 
@@ -249,7 +250,8 @@ class ConvertEntryRevisions extends BaseJob
             if ($diff) {
                 $this->db->createCommand()->update(Table::REVISIONS, [
                     'num' => new Expression('[[num]]' . ($diff > 0 ? '+' : '-') . abs($diff))
-                ], ['and',
+                ], [
+                    'and',
                     ['sourceId' => $entry->id],
                     ['>=', 'num', $lowestNum],
                 ], [], false)->execute();

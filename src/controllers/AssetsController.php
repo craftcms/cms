@@ -8,16 +8,15 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\AssetPreview;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
-use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
@@ -39,7 +38,7 @@ use yii\web\Response;
  * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetsController extends Controller
 {
@@ -800,13 +799,8 @@ class AssetsController extends Controller
 
         $this->_requirePermissionByAsset('viewVolume', $asset);
 
-        // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
-        App::maxPowerCaptain();
-        $localPath = $asset->getCopyOfFile();
-
         $response = Craft::$app->getResponse()
-            ->sendFile($localPath, $asset->filename);
-        FileHelper::unlink($localPath);
+            ->sendStreamAsFile($asset->stream, $asset->filename);
 
         return $response;
     }
@@ -913,37 +907,17 @@ class AssetsController extends Controller
             return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
         }
 
+        $assets = Craft::$app->getAssets();
 
-        if (!$asset->getSupportsPreview()) {
-            $modalHtml = '<p class="nopreview centeralign" style="top: calc(50% - 10px) !important; position: relative;">' . Craft::t('app', 'Preview not available.') . '</p>';
-        } else {
-            if ($asset->kind === 'image') {
-                /** @var Volume $volume */
-                $volume = $asset->getVolume();
-
-                if ($volume->hasUrls) {
-                    $imageUrl = $asset->getUrl();
-                } else {
-                    $source = $asset->getTransformSource();
-                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
-                }
-
-                $width = $asset->getWidth();
-                $height = $asset->getHeight();
-                $modalHtml = "<img src=\"$imageUrl\" width=\"{$width}\" height=\"{$height}\" data-maxWidth=\"{$width}\" data-maxHeight=\"{$height}\"/>";
-            } else {
-                $localCopy = $asset->getCopyOfFile();
-                $content = htmlspecialchars(file_get_contents($localCopy));
-                $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
-                $modalHtml = '<div class="highlight ' . $asset->kind . '"><pre><code class="language-' . $language . '">' . $content . '</code></pre></div>';
-                unlink($localCopy);
-            }
-        }
+        /** @var AssetPreview $preview */
+        $preview = $assets->getAssetPreview($asset);
 
         return $this->asJson([
             'success' => true,
-            'modalHtml' => $modalHtml,
-            'requestId' => $requestId
+            'modalHtml' => $preview->getModalHtml(),
+            'headHtml' => $preview->getHeadHtml(),
+            'footHtml' => $preview->getFootHtml(),
+            'requestId' => $requestId,
         ]);
     }
 

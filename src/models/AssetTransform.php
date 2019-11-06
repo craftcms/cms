@@ -19,7 +19,7 @@ use craft\validators\UniqueValidator;
  *
  * @property bool $isNamedTransform Whether this is a named transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransform extends Model
 {

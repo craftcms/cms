@@ -135,24 +135,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
-
-                        var $highlight = this.$container.find('.highlight');
-
-                        if ($highlight.length && $highlight.hasClass('json')) {
-                            var $target = $highlight.find('code');
-                            $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
-                        }
-
-                        if ($highlight.length) {
-                            Prism.highlightElement($highlight.find('code').get(0));
-                        } else {
-                            this.$container.find('img').css({
-                                width: containerWidth,
-                                height: containerHeight
-                            });
-                        }
-
-                        this.updateSizeAndPosition();
+                        Craft.appendHeadHtml(response.headHtml);
+                        Craft.appendFootHtml(response.footHtml);
                     } else {
                         alert(response.error);
 
@@ -160,62 +144,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     }
                 }
             }.bind(this));
-        },
-
-        /**
-         * Override default logic with some extra shenanigans
-         */
-        updateSizeAndPosition: function() {
-            if (!this.loaded) {
-                return;
-            }
-
-            var $img = this.$container.find('img');
-
-            if (this.loaded && $img.length) {
-                // Make sure we maintain the ratio
-
-                var maxWidth = $img.data('maxwidth'),
-                    maxHeight = $img.data('maxheight'),
-                    imageRatio = maxWidth / maxHeight,
-                    desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
-                    desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
-                    width = Math.min(desiredWidth, maxWidth),
-                    height = Math.round(Math.min(maxHeight, width / imageRatio));
-
-                width = Math.round(height * imageRatio);
-
-                $img.css({'width': width, 'height': height});
-                this._resizeContainer(width, height);
-
-                this.desiredWidth = width;
-                this.desiredHeight = height;
-
-            }
-
-            this.base();
-
-            if (this.loaded && $img.length) {
-                // Correct anomalities
-                var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), Garnish.$win.width() - (this.settings.minGutter * 2))),
-                    containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), Garnish.$win.height() - (this.settings.minGutter * 2)));
-                    containerWidth = Math.round(containerHeight * imageRatio);
-
-                // This might actually have put width over the viewport limits, so doublecheck that
-                if (containerWidth > Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2)) {
-                    containerWidth =  Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2);
-                    containerHeight = containerWidth / imageRatio;
-                }
-
-                this._resizeContainer(containerWidth, containerHeight);
-
-                $img.css({'width': containerWidth, 'height': containerHeight});
-            } else if (this.loaded) {
-                this.$container.find('.highlight')
-                    .height(this.$container.height())
-                    .width(this.$container.width())
-                    .css({'overflow': 'auto'});
-            }
         },
 
         /**

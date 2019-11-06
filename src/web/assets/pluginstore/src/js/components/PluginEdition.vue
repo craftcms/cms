@@ -4,7 +4,6 @@
             <edition-badge v-if="plugin.editions.length > 1" :name="edition.name" block big></edition-badge>
             <div class="price">
                 <template v-if="!isPluginEditionFree(edition)">
-
                     <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0">
                         <del>{{edition.price|currency}}</del>
                         {{(edition.price - licensedEdition.price)|currency}}

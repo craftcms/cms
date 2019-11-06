@@ -18,7 +18,7 @@ use yii\base\Exception;
  * DeleteUsers represents a Delete Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeleteUsers extends ElementAction
 {

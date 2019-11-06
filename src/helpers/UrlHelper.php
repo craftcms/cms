@@ -15,7 +15,7 @@ use yii\base\Exception;
  * Class Url
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UrlHelper
 {
@@ -67,6 +67,34 @@ class UrlHelper
     }
 
     /**
+     * Returns a query string based on the given params.
+     *
+     * @param array $params
+     * @return string
+     * @since 3.3.0
+     */
+    public static function buildQuery(array $params): string
+    {
+        if (empty($params)) {
+            return '';
+        }
+        // build the query string
+        $query = http_build_query($params);
+        if ($query === '') {
+            return '';
+        }
+        // Decode the param names and a few select chars in param values
+        $params = [];
+        foreach (explode('&', $query) as $param) {
+            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            $n = preg_replace('/\[[0-9]+\]/u', '[]', urldecode($n));
+            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $params[] = "$n=$v";
+        }
+        return implode('&', $params);
+    }
+
+    /**
      * Returns a URL with additional query string parameters.
      *
      * @param string $url
@@ -86,8 +114,8 @@ class UrlHelper
         $fragment = $fragment ?? $baseFragment;
 
         // Append to the base URL and return
-        if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+        if (($query = static::buildQuery($params)) !== '') {
+            $url .= '?' . $query;
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -112,8 +140,8 @@ class UrlHelper
         unset($params[$param]);
 
         // Rebuild
-        if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+        if (($query = static::buildQuery($params)) !== '') {
+            $url .= '?' . $query;
         }
         if ($fragment !== null) {
             $url .= '#' . $fragment;
@@ -169,6 +197,7 @@ class UrlHelper
      *
      * @param string $url
      * @return string
+     * @since 3.1.11
      */
     public static function rootRelativeUrl(string $url): string
     {
@@ -637,8 +666,8 @@ class UrlHelper
             }
         }
 
-        if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+        if (($query = static::buildQuery($params)) !== '') {
+            $url .= '?' . $query;
         }
 
         if ($fragment !== null) {
@@ -662,20 +691,20 @@ class UrlHelper
             return [$params, $fragment];
         }
 
-        $arr = [];
         $fragment = null;
 
         if (is_string($params)) {
+            $params = ltrim($params, '?&');
+
             if (($fragmentPos = strpos($params, '#')) !== false) {
                 $fragment = substr($params, $fragmentPos + 1);
                 $params = substr($params, 0, $fragmentPos);
             }
 
-            $chunks = array_filter(explode('&', trim($params, '&?')));
-            foreach ($chunks as $chunk) {
-                $kv = explode('=', $chunk, 2);
-                $arr[$kv[0]] = $kv[1] ?? '';
-            }
+            parse_str($params, $arr);
+            $arr = ArrayHelper::filterEmptyStringsFromArray($arr);
+        } else {
+            $arr = [];
         }
 
         return [$arr, $fragment];

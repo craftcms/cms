@@ -24,7 +24,7 @@ use yii\db\Schema;
  * Date represents a Date/Time field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
@@ -242,9 +242,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
+            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
     }
 }

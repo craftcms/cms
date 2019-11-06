@@ -14,7 +14,7 @@ use yii\base\BaseObject;
  * Represents a term in the search query.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SearchQueryTerm extends BaseObject
 {

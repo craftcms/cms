@@ -10,9 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\elements\Entry;
 use craft\errors\EntryDraftNotFoundException;
-use craft\models\BaseEntryRevisionModel;
-use craft\models\EntryDraft;
-use craft\models\EntryVersion;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -21,7 +18,7 @@ use yii\base\InvalidConfigException;
  * An instance of the Entry Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntryRevisions()|`Craft::$app->entryRevisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @deprecated in 3.2
  */
 class EntryRevisions extends Component

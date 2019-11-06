@@ -21,7 +21,7 @@ use yii\base\Behavior;
  * @property-read ElementInterface|Element $source
  * @property-read User $creator
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DraftBehavior extends Behavior
 {
@@ -31,7 +31,7 @@ class DraftBehavior extends Behavior
     public $sourceId;
 
     /**
-     * @var int The draft creator’s ID
+     * @var int|null The draft creator’s ID
      */
     public $creatorId;
 
@@ -83,6 +83,7 @@ class DraftBehavior extends Behavior
      * Returns the draft’s source element.
      *
      * @return ElementInterface|null
+     * @deprecated in 3.2.9. Use [[ElementInterface::getSource()]] instead.
      */
     public function getSource()
     {
@@ -90,7 +91,8 @@ class DraftBehavior extends Behavior
             return null;
         }
 
-        return $this->owner::find()
+        $owner = $this->owner;
+        return $owner::find()
             ->id($this->sourceId)
             ->siteId($this->owner->siteId)
             ->anyStatus()
@@ -100,10 +102,14 @@ class DraftBehavior extends Behavior
     /**
      * Returns the draft’s creator.
      *
-     * @return User
+     * @return User|null
      */
-    public function getCreator(): User
+    public function getCreator()
     {
+        if (!$this->creatorId) {
+            return null;
+        }
+
         return User::find()
             ->id($this->creatorId)
             ->anyStatus()

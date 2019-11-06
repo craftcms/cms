@@ -30,7 +30,7 @@ use yii\web\Cookie;
  * @property UserElement|null $identity The logged-in user.
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends \yii\web\User
 {
@@ -150,7 +150,7 @@ class User extends \yii\web\User
      * ```twig{5}
      * <form method="post" action="" accept-charset="UTF-8">
      *     {{ csrfInput() }}
-     *     <input type="hidden" name="action" value="users/login">
+     *     {{ actionInput('users/login') }}
      *
      *     {% set username = craft.app.user.rememberedUsername %}
      *     <input type="text" name="loginName" value="{{ username }}">
@@ -191,6 +191,21 @@ class User extends \yii\web\User
     public function getIsGuest()
     {
         return parent::getIsGuest();
+    }
+
+    /**
+     * Redirects the user browser away from a guest page.
+     *
+     * @return Response the redirection response
+     * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
+     * @since 3.4.0
+     */
+    public function guestRequired()
+    {
+        if (!$this->checkRedirectAcceptable()) {
+            throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
+        }
+        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
     }
 
     /**
@@ -445,6 +460,7 @@ class User extends \yii\web\User
      * Generates a new user session token.
      *
      * @param int $userId
+     * @since 3.1.1
      */
     public function generateToken(int $userId)
     {
@@ -494,14 +510,15 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function afterLogout($identity)
+    protected function beforeLogout($identity)
     {
-        /** @var UserElement $identity */
-        // Delete the impersonation session, if there is one
-        $session = Craft::$app->getSession();
-        $session->remove(UserElement::IMPERSONATE_KEY);
+        if (!parent::beforeLogout($identity)) {
+            return false;
+        }
 
-        // Delete the session token
+        $session = Craft::$app->getSession();
+
+        // Delete the session token in the database
         $token = $session->get($this->tokenParam);
         if ($token !== null) {
             $session->remove($this->tokenParam);
@@ -512,6 +529,19 @@ class User extends \yii\web\User
                 ])
                 ->execute();
         }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterLogout($identity)
+    {
+        /** @var UserElement $identity */
+        // Delete the impersonation session, if there is one
+        $session = Craft::$app->getSession();
+        $session->remove(UserElement::IMPERSONATE_KEY);
 
         $this->destroyDebugPreferencesInSession();
 
@@ -599,7 +629,6 @@ class User extends \yii\web\User
     /**
      * @param string $authError
      * @param UserElement $user
-     * @return null
      */
     private function _handleLoginFailure(string $authError = null, UserElement $user = null)
     {

@@ -23,7 +23,7 @@ use yii\web\Request;
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Craft extends Yii
 {
@@ -76,6 +76,7 @@ class Craft extends Yii
      * @param string|null $str
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
+     * @since 3.1.0
      */
     public static function parseEnv(string $str = null)
     {

@@ -106,8 +106,8 @@
 }
 
 /* Recent Entries widget */
-.recententries .body {
-  overflow: hidden;
+.craft\\widgets\\recententries .body .table  {
+  table-layout: fixed;
 }
 
 /* New Users Widget */

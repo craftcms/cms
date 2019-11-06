@@ -11,6 +11,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -28,7 +29,7 @@ use yii\base\Exception;
  * An instance of the API service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getApi()|`Craft::$app->api`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Api extends Component
 {
@@ -198,6 +199,7 @@ class Api extends Component
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      * @throws Exception if composer.json can't be located
+     * @since 3.0.19
      */
     public function getComposerWhitelist(array $install): array
     {
@@ -486,7 +488,12 @@ class Api extends Component
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled']) {
                 $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
-                if (($licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle)) !== null) {
+                try {
+                    $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
+                } catch (InvalidLicenseKeyException $e) {
+                    $licenseKey = null;
+                }
+                if ($licenseKey !== null) {
                     $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
                 }
             }

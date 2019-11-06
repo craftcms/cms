@@ -5,15 +5,15 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="sections/save-entry-type">
+    {{ actionInput('sections/save-entry-type') }}
 
     {% if section.type == 'single' %}
         {{ redirectInput('settings/sections') }}
     {% else %}
         {{ redirectInput('settings/sections/'~section.id~'/entrytypes') }}
     {% endif %}
-    <input type="hidden" name="sectionId" value="{{ section.id }}">
-    {% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}
+    {{ hiddenInput('sectionId', section.id) }}
+    {% if entryType.id %}{{ hiddenInput('entryTypeId', entryType.id) }}{% endif %}
 
     {% if section.type != 'single' %}
         {{ forms.textField({

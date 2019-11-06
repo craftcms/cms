@@ -11,7 +11,7 @@ namespace craft\base;
  * EagerLoadingFieldInterface defines the common interface to be implemented by field classes that support eager-loading.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface EagerLoadingFieldInterface
 {
@@ -32,4 +32,13 @@ interface EagerLoadingFieldInterface
      * should be ignored.
      */
     public function getEagerLoadingMap(array $sourceElements);
+
+    /**
+     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
+     * should not be allowed in the GraphQL context.
+     *
+     * @return array|false
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions();
 }

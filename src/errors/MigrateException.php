@@ -13,7 +13,7 @@ use yii\base\Exception;
  * MigrateException represents an error that occurred while migrating Craft or a plugin.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrateException extends Exception
 {

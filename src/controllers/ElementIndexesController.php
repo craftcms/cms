@@ -16,7 +16,9 @@ use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -27,7 +29,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementIndexesController extends BaseElementsController
 {
@@ -60,6 +62,11 @@ class ElementIndexesController extends BaseElementsController
     protected $viewState;
 
     /**
+     * @var bool
+     */
+    protected $paginated = false;
+
+    /**
      * @var ElementQueryInterface|ElementQuery|null
      */
     protected $elementQuery;
@@ -81,11 +88,13 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
+        $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
-        $this->sourceKey = Craft::$app->getRequest()->getParam('source');
+        $this->sourceKey = $request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
+        $this->paginated = (bool)$request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
         if ($this->includeActions() && $this->sourceKey !== null) {
@@ -358,6 +367,10 @@ class ElementIndexesController extends BaseElementsController
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = (bool)$criteria['trashed'];
             }
+            if (ArrayHelper::remove($criteria, 'drafts')) {
+                $criteria['drafts'] = true;
+                $criteria['draftOf'] = false;
+            }
             Craft::configure($query, $criteria);
         }
 
@@ -365,7 +378,8 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            $descendantQuery = (clone $query)
+            $descendantQuery = clone $query;
+            $descendantQuery
                 ->offset(null)
                 ->limit(null)
                 ->orderBy(null)
@@ -375,7 +389,8 @@ class ElementIndexesController extends BaseElementsController
 
             // Get the actual elements
             /** @var Element[] $collapsedElements */
-            $collapsedElements = (clone $descendantQuery)
+            $collapsedElementsQuery = clone $descendantQuery;
+            $collapsedElements = $collapsedElementsQuery
                 ->id($collapsedElementIds)
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
@@ -389,7 +404,8 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $elementDescendantIds = (clone $descendantQuery)
+                    $elementDescendantsQuery = clone $descendantQuery;
+                    $elementDescendantIds = $elementDescendantsQuery
                         ->descendantOf($element)
                         ->ids();
 
@@ -416,10 +432,29 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
+        $count = (int)$this->elementQuery->count();
 
         $responseData = [
-            'count' => $this->elementQuery->count(),
+            'count' => $count,
         ];
+
+        if (!$this->paginated || !$this->elementQuery->limit || $count < $this->elementQuery->limit) {
+            $responseData['countLabel'] = Craft::t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', [
+                'total' => $count,
+                'item' => StringHelper::toLowerCase($elementType::displayName()),
+                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+            ]);
+        } else {
+            $first = min(($this->elementQuery->offset ?: 0) + 1, $count);
+            $last = min($first + ($this->elementQuery->limit - 1), $count);
+            $responseData['countLabel'] = Craft::t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', [
+                'first' => $first,
+                'last' => $last,
+                'total' => $count,
+                'item' => StringHelper::toLowerCase($elementType::displayName()),
+                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+            ]);
+        }
 
         $view = $this->getView();
 
@@ -433,18 +468,22 @@ class ElementIndexesController extends BaseElementsController
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
 
-        $responseData['html'] = $elementType::indexHtml(
-            $this->elementQuery,
-            $disabledElementIds,
-            $this->viewState,
-            $this->sourceKey,
-            $this->context,
-            $includeContainer,
-            $showCheckboxes
-        );
+        if ($this->sourceKey) {
+            $responseData['html'] = $elementType::indexHtml(
+                $this->elementQuery,
+                $disabledElementIds,
+                $this->viewState,
+                $this->sourceKey,
+                $this->context,
+                $includeContainer,
+                $showCheckboxes
+            );
 
-        $responseData['headHtml'] = $view->getHeadHtml();
-        $responseData['footHtml'] = $view->getBodyHtml();
+            $responseData['headHtml'] = $view->getHeadHtml();
+            $responseData['footHtml'] = $view->getBodyHtml();
+        } else {
+            $responseData['html'] = '';
+        }
 
         return $responseData;
     }

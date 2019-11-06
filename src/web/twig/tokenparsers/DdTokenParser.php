@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\DdNode;
-use craft\web\twig\nodes\ExitNode;
 use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
@@ -17,7 +16,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class DdTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DdTokenParser extends AbstractTokenParser
 {

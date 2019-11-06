@@ -24,7 +24,7 @@ use yii\base\InvalidConfigException;
  * CP functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Cp extends Component
 {
@@ -38,6 +38,7 @@ class Cp extends Component
 
     /**
      * @event RegisterCpSettingsEvent The event that is triggered when registering Control Panel nav items.
+     * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
@@ -110,6 +111,10 @@ class Cp extends Component
      */
     public function nav(): array
     {
+        $craftPro = Craft::$app->getEdition() === Craft::Pro;
+        $isAdmin = Craft::$app->getUser()->getIsAdmin();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
         $navItems = [
             [
                 'label' => Craft::t('app', 'Dashboard'),
@@ -150,7 +155,7 @@ class Cp extends Component
             ];
         }
 
-        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -190,20 +195,37 @@ class Cp extends Component
             ];
         }
 
-        if (
-            Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
-        ) {
-            $navItems[] = [
-                'url' => 'settings',
-                'label' => Craft::t('app', 'Settings'),
-                'fontIcon' => 'settings'
-            ];
-            $navItems[] = [
-                'url' => 'plugin-store',
-                'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin'
-            ];
+        if ($isAdmin) {
+            if ($craftPro && $generalConfig->enableGql) {
+                $navItems[] = [
+                    'label' => Craft::t('app', 'GraphQL'),
+                    'url' => 'graphql',
+                    'icon' => '@app/icons/graphql.svg',
+                    'subnav' => [
+                        'explore' => [
+                            'label' => Craft::t('app', 'Explore'),
+                            'url' => 'graphql',
+                        ],
+                        'schemas' => [
+                            'label' => Craft::t('app', 'Schemas'),
+                            'url' => 'graphql/schemas',
+                        ]
+                    ]
+                ];
+            }
+
+            if ($generalConfig->allowAdminChanges) {
+                $navItems[] = [
+                    'url' => 'settings',
+                    'label' => Craft::t('app', 'Settings'),
+                    'fontIcon' => 'settings'
+                ];
+                $navItems[] = [
+                    'url' => 'plugin-store',
+                    'label' => Craft::t('app', 'Plugin Store'),
+                    'fontIcon' => 'plugin'
+                ];
+            }
         }
 
         // Allow plugins to modify the nav
@@ -263,10 +285,14 @@ class Cp extends Component
             'icon' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
-        $settings[$label]['routes'] = [
-            'icon' => '@app/icons/routes.svg',
-            'label' => Craft::t('app', 'Routes')
-        ];
+
+        if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+            $settings[$label]['routes'] = [
+                'icon' => '@app/icons/routes.svg',
+                'label' => Craft::t('app', 'Routes')
+            ];
+        }
+
         $settings[$label]['users'] = [
             'icon' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')
@@ -359,6 +385,7 @@ class Cp extends Component
      * @param bool $includeAliases Whether aliases should be included in the list
      * (only enable this if the setting defines a URL or file path)
      * @return string[]
+     * @since 3.1.0
      */
     public function getEnvSuggestions(bool $includeAliases = false): array
     {
@@ -410,6 +437,7 @@ class Cp extends Component
      *
      * @param string $language
      * @return array|null
+     * @since 3.1.9
      */
     public function getAsciiCharMap(string $language)
     {
@@ -424,6 +452,7 @@ class Cp extends Component
      * Returns the available template path suggestions for template inputs.
      *
      * @return string[]
+     * @since 3.1.0
      */
     public function getTemplateSuggestions(): array
     {

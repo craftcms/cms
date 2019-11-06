@@ -12,10 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\User;
-use craft\helpers\StringHelper;
 use yii\base\Behavior;
-use yii\base\Model;
-use yii\validators\UrlValidator;
 
 /**
  * RevisionBehavior is applied to element revisions.
@@ -25,7 +22,7 @@ use yii\validators\UrlValidator;
  * @property-read User $creator
  * @property-read string $revisionLabel
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class RevisionBehavior extends Behavior
 {
@@ -73,10 +70,12 @@ class RevisionBehavior extends Behavior
      * Returns the revision’s source element.
      *
      * @return ElementInterface
+     * @deprecated in 3.2.9. Use [[ElementInterface::getSource()]] instead.
      */
     public function getSource(): ElementInterface
     {
-        return $this->owner::find()
+        $owner = $this->owner;
+        return $owner::find()
             ->id($this->sourceId)
             ->siteId($this->owner->siteId)
             ->anyStatus()

@@ -29,6 +29,7 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\models\Site;
 use craft\models\Structure;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
@@ -42,7 +43,7 @@ use yii\base\Exception;
  * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Sections extends Component
 {
@@ -66,6 +67,7 @@ class Sections extends Component
 
     /**
      * @event SectionEvent The event that is triggered before a section delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
 
@@ -91,6 +93,7 @@ class Sections extends Component
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
 
@@ -113,6 +116,8 @@ class Sections extends Component
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
      * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
      * :::
+     *
+     * @since 3.1.21
      */
     public $autoResaveEntries = true;
 
@@ -324,6 +329,7 @@ class Sections extends Component
      *
      * @param string $uid
      * @return Section|null
+     * @since 3.1.0
      */
     public function getSectionByUid(string $uid)
     {
@@ -912,6 +918,7 @@ class Sections extends Component
      * Prune a deleted field from entry type layouts.
      *
      * @param FieldEvent $event
+     * @since 3.1.20
      */
     public function pruneDeletedField(FieldEvent $event)
     {
@@ -957,6 +964,7 @@ class Sections extends Component
      * @param Section $section
      * @param int $siteId
      * @return bool
+     * @deprecated in 3.3
      */
     public function isSectionTemplateValid(Section $section, int $siteId): bool
     {
@@ -992,6 +1000,30 @@ class Sections extends Component
         $results = $this->_createEntryTypeQuery()
             ->andWhere(['sectionId' => $sectionId])
             ->orderBy(['sortOrder' => SORT_ASC])
+            ->all();
+
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Returns all entry types.
+     *
+     * ---
+     *
+     * ```php
+     * $entryTypes = Craft::$app->sections->getAllEntryTypes(1);
+     * ```
+     *
+     * @return EntryType[]
+     * @since 3.3.0
+     */
+    public function getAllEntryTypes(): array
+    {
+        $results = $this->_createEntryTypeQuery()
             ->all();
 
         foreach ($results as $key => $result) {
@@ -1469,12 +1501,12 @@ class Sections extends Component
      * @param Section $section
      * @param array|null $siteSettings
      * @return Entry The
-     * @see saveSection()
      * @throws Exception if reasons
+     * @see saveSection()
      */
     private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
     {
-        // Get all the entries that currently exist for this section
+        // Get the section's supported sites
         // ---------------------------------------------------------------------
 
         if ($siteSettings === null) {
@@ -1485,63 +1517,40 @@ class Sections extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $allSiteUids = array_keys($siteSettings);
+        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function(Site $site) use ($siteSettings) {
+            // Only include it if it's one of this section's sites
+            return isset($siteSettings[$site->uid]);
+        });
 
-        $entryData = (new Query())
-            ->select([
-                'e.id',
-                'typeId',
-                'siteId' => (new Query())
-                    ->select('es.siteId')
-                    ->from('{{%elements_sites}} es')
-                    ->innerJoin('{{%sites}} s', '[[s.id]] = [[es.siteId]]')
-                    ->where('[[es.elementId]] = [[e.id]]')
-                    ->andWhere(['in', 's.uid', $allSiteUids])
-                    ->limit(1)
-            ])
-            ->from(['{{%entries}} e'])
-            ->where(['e.sectionId' => $section->id])
-            ->orderBy(['e.id' => SORT_ASC])
-            ->all();
+        $siteIds = ArrayHelper::getColumn($sites, 'id', false);
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
 
-        /** @var EntryType[] $entryTypes */
-        $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
+        $entryTypeIds = ArrayHelper::getColumn($this->getEntryTypesBySectionId($section->id), 'id', false);
 
         // There should always be at least one entry type by the time this is called
-        if (empty($entryTypes)) {
+        if (empty($entryTypeIds)) {
             throw new Exception('No entry types exist for section ' . $section->id);
         }
 
         // Get/save the entry
         // ---------------------------------------------------------------------
 
-        $entry = null;
-
         // If there are any existing entries, find the first one with a valid typeId
-        foreach ($entryData as $data) {
-            if (isset($entryTypes[$data['typeId']])) {
-                $entry = Entry::find()
-                    ->id($data['id'])
-                    ->siteId($data['siteId'])
-                    ->anyStatus()
-                    ->one();
-                break;
-            }
-        }
+        $entry = Entry::find()
+            ->typeId($entryTypeIds)
+            ->siteId($siteIds)
+            ->anyStatus()
+            ->one();
 
         // Otherwise create a new one
         if ($entry === null) {
             // Create one
-            $firstSiteUid = reset($allSiteUids);
-            $firstEntryType = reset($entryTypes);
-
             $entry = new Entry();
-            $entry->siteId = Db::idByUid(Table::SITES, $firstSiteUid);
+            $entry->siteId = $siteIds[0];
             $entry->sectionId = $section->id;
-            $entry->typeId = $firstEntryType->id;
+            $entry->typeId = $entryTypeIds[0];
             $entry->title = $section->name;
         }
 
@@ -1554,10 +1563,16 @@ class Sections extends Component
         // Delete any other entries in the section
         // ---------------------------------------------------------------------
 
-        foreach ($entryData as $data) {
-            if ($data['id'] != $entry->id) {
-                Craft::$app->getElements()->deleteElementById($data['id'], Entry::class, $data['siteId']);
-            }
+        $elementsService = Craft::$app->getElements();
+        $otherEntriesQuery = Entry::find()
+            ->sectionId($section->id)
+            ->siteId('*')
+            ->unique()
+            ->id(['not', $entry->id])
+            ->anyStatus();
+
+        foreach ($otherEntriesQuery->each() as $entry) {
+            $elementsService->deleteElement($entry, true);
         }
 
         return $entry;
@@ -1567,8 +1582,8 @@ class Sections extends Component
      * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
      *
      * @param SectionRecord $sectionRecord
-     * @see saveSection()
      * @throws Exception if reasons
+     * @see saveSection()
      */
     private function _populateNewStructure(SectionRecord $sectionRecord)
     {

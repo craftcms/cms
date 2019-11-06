@@ -3,5 +3,12 @@
 
 {% block message %}
 <p>{{ 'Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.'|t('app')|md(inlineOnly=true) }}</p>
+{% if issues is defined and issues|length > 0 %}
+<ul>
+    {% for details in issues %}
+        <li>{{ '<strong>{cause}</strong> currently installed has the schema version of {existing} (expected {incoming})'|t('app', details)|raw }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 <p>{{ 'Try running `composer install` from your terminal to resolve.'|t('app')|md(inlineOnly=true) }}</p>
 {% endblock %}

@@ -36,7 +36,7 @@ use yii\web\NotFoundHttpException;
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @property-read bool $isPreview Whether this is an element preview request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Request extends \yii\web\Request
 {
@@ -44,6 +44,15 @@ class Request extends \yii\web\Request
     // =========================================================================
 
     use RequestTrait;
+
+    // Constants
+    // =========================================================================
+
+    const CP_PATH_LOGIN = 'login';
+    const CP_PATH_LOGOUT = 'logout';
+    const CP_PATH_SET_PASSWORD = 'set-password';
+    const CP_PATH_VERIFY_EMAIL = 'verify-email';
+    const CP_PATH_UPDATE = 'update';
 
     // Properties
     // =========================================================================
@@ -62,6 +71,7 @@ class Request extends \yii\web\Request
 
     /**
      * @param int The highest page number that Craft should accept.
+     * @since 3.1.14
      */
     public $maxPageNum = 100000;
 
@@ -189,7 +199,6 @@ class Request extends \yii\web\Request
                 $site = $sitesService->getCurrentSite();
             } else {
                 $site = $this->_requestedSite($sitesService);
-                $sitesService->setCurrentSite($site);
             }
 
             // If the requested URI begins with the current site's base URL path,
@@ -219,6 +228,20 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
             array_shift($this->_segments);
+
+            // Force 'p' pageTrigger
+            // (all that really matters is that it doesn't have a trailing slash, but whatever.)
+            $generalConfig->pageTrigger = 'p';
+        }
+
+        if (isset($sitesService)) {
+            // Set the active site to either the requested site or the primary site, depending on the request type
+            if ($this->_isCpRequest) {
+                // The current site could have been set by the bootstrop script if the CRAFT_SITE constant is defined
+                $sitesService->setCurrentSite(null);
+            } else if (isset($site)) {
+                $sitesService->setCurrentSite($site);
+            }
         }
 
         // Is this a paginated request?
@@ -291,10 +314,10 @@ class Request extends \yii\web\Request
      * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
      *
      * @param bool $returnRealPathInfo Whether the real path info should be returned instead.
-     * @see \yii\web\UrlManager::processRequest()
-     * @see \yii\web\UrlRule::processRequest()
      * @return string The requested path, or the path info.
      * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
+     * @see \yii\web\UrlManager::processRequest()
+     * @see \yii\web\UrlRule::processRequest()
      */
     public function getPathInfo(bool $returnRealPathInfo = false): string
     {
@@ -385,6 +408,7 @@ class Request extends \yii\web\Request
      * Returns the token submitted with the request, if there is one.
      *
      * @return string|null The token, or `null` if there isn’t one.
+     * @throws BadRequestHttpException if an invalid token is supplied
      */
     public function getToken()
     {
@@ -393,6 +417,10 @@ class Request extends \yii\web\Request
             $this->_token = $this->getQueryParam($param)
                 ?? $this->getHeaders()->get('X-Craft-Token')
                 ?? false;
+            if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
+                $this->_token = false;
+                throw new BadRequestHttpException('Invalid token');
+            }
         }
 
         return $this->_token ?: null;
@@ -492,7 +520,7 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return $this->getQueryParam('x-craft-preview') !== null;
+        return $this->getQueryParam('x-craft-preview') !== null || $this->getQueryParam('x-craft-live-preview') !== null;
     }
 
     /**
@@ -980,6 +1008,22 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the normalized content type.
+     *
+     * @return string|null
+     * @since 3.3.8
+     */
+    public function getNormalizedContentType()
+    {
+        $rawContentType = $this->getContentType();
+        if (($pos = strpos($rawContentType, ';')) !== false) {
+            // e.g. text/html; charset=UTF-8
+            return substr($rawContentType, 0, $pos);
+        }
+        return $rawContentType;
+    }
+
+    /**
      * @inheritdoc
      * @internal Based on \yii\web\Request::resolve(), but we don't modify $_GET/$this->_queryParams in the process.
      */
@@ -1097,10 +1141,7 @@ class Request extends \yii\web\Request
      */
     private function _segments(string $path): array
     {
-        return array_values(array_filter(explode('/', $path), function($segment) {
-            // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
-            return $segment !== '';
-        }));
+        return array_values(ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)));
     }
 
     /**
@@ -1151,6 +1192,8 @@ class Request extends \yii\web\Request
                 $parsed['host'] !== $hostName &&
                 (
                     !function_exists('idn_to_ascii') ||
+                    !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
+                    !defined('INTL_IDNA_VARIANT_UTS46') ||
                     idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
                 )
             ) {
@@ -1226,18 +1269,33 @@ class Request extends \yii\web\Request
 
             // Is this an action request?
             if ($this->_isCpRequest) {
-                $loginPath = 'login';
-                $logoutPath = 'logout';
-                $updatePath = 'update';
+                $loginPath = self::CP_PATH_LOGIN;
+                $logoutPath = self::CP_PATH_LOGOUT;
+                $setPasswordPath = self::CP_PATH_SET_PASSWORD;
+                $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
+                $updatePath = self::CP_PATH_UPDATE;
             } else {
                 $loginPath = trim($generalConfig->getLoginPath(), '/');
                 $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                $verifyEmailPath = trim($generalConfig->getVerifyEmailPath(), '/');
                 $updatePath = null;
             }
 
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
-            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
-            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $updatePath], true);
+            if ($this->getNormalizedContentType() !== 'application/json') {
+                $actionParam = $this->getParam('action');
+            } else {
+                $actionParam = $this->getQueryParam('action');
+            }
+            $hasActionParam = $actionParam !== null;
+            $hasSpecialPath = in_array($this->_path, [
+                $loginPath,
+                $logoutPath,
+                $setPasswordPath,
+                $verifyEmailPath,
+                $updatePath,
+            ], true);
 
             if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
@@ -1261,6 +1319,12 @@ class Request extends \yii\web\Request
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
+                            break;
+                        case $setPasswordPath:
+                            $this->_actionSegments = ['users', 'set-password'];
+                            break;
+                        case $verifyEmailPath:
+                            $this->_actionSegments = ['users', 'verify-email'];
                             break;
                         case $updatePath:
                             $this->_actionSegments = ['updater', 'index'];
@@ -1297,7 +1361,11 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($value);
         }
 
-        return StringHelper::convertToUtf8($value);
+        if (is_string($value)) {
+            return StringHelper::convertToUtf8($value);
+        }
+
+        return $value;
     }
 
     /**

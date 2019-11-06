@@ -82,19 +82,23 @@ const getters = {
                 ],
                 "pro": [
                     {
+                        name: "Unlimited user accounts",
+                        description: "Create unlimited user accounts, user groups, user permissions, and public user registration.",
+                    },
+                    {
                         name: "Enhanced content previewing",
                         description: "Preview your content from multiple targets, including single-page applications.",
                     },
                     {
-                        name: "Unlimited user accounts",
-                        description: "Create unlimited user accounts, user groups, user permissions, and public user registration.",
+                        name: "GraphQL API",
+                        description: "Make your content available to other applications with a self-generating GraphQL API.",
                     },
                     {
                         name: "System branding",
                         description: "Personalize the Control Panel for your brand.",
                     },
                     {
-                        name: "Developer support",
+                        name: "Basic developer support",
                         description: "Get developer-to-developer support right from the Craft core development team.",
                     },
                 ]

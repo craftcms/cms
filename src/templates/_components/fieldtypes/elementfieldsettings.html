@@ -64,8 +64,8 @@
 
     {% block validateRelatedElementsField %}
         {{ forms.checkboxField({
-            label: 'Validate related {type}'|t('app', { type:pluralElementType|lower }),
-            instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type:pluralElementType|lower }),
+            label: 'Validate related {type}'|t('app', { type: pluralElementType|lower }),
+            instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType|lower }),
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
             checked: field.validateRelatedElements

@@ -17,10 +17,13 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
+use JSMin\JSMin;
+use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
@@ -28,11 +31,13 @@ use Twig\Extension\CoreExtension;
 use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
+use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
+use yii\web\Response as WebResponse;
 
 /**
  * @inheritdoc
@@ -49,7 +54,7 @@ use yii\web\AssetBundle as YiiAssetBundle;
  * @property-write string[] $registeredAssetBundles the asset bundle names that should be marked as already registered
  * @property-write string[] $registeredJsFiles the JS files that should be marked as already registered
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class View extends \yii\web\View
 {
@@ -98,6 +103,18 @@ class View extends \yii\web\View
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether to minify CSS registered with [[registerCss()]]
+     * @since 3.4.0
+     */
+    public $minifyCss;
+
+    /**
+     * @var bool Whether to minify JS registered with [[registerJs()]]
+     * @since 3.4.0
+     */
+    public $minifyJs;
 
     /**
      * @var array The sizes that element thumbnails should be rendered in
@@ -175,6 +192,20 @@ class View extends \yii\web\View
     private $_namespace;
 
     /**
+     * @var bool Whether delta input name registration is open.
+     * @see getIsDeltaRegistrationActive()
+     * @see setIsDeltaRegistrationActive()
+     * @see registerDeltaName()
+     */
+    private $_registerDeltaNames = false;
+
+    /**
+     * @var string[] The registered delta input names.
+     * @see registerDeltaName()
+     */
+    private $_deltaNames = [];
+
+    /**
      * @var array
      */
     private $_jsBuffers = [];
@@ -235,6 +266,23 @@ class View extends \yii\web\View
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
         } else {
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
+        }
+
+        if ($this->minifyCss === null || $this->minifyJs === null) {
+            $response = Craft::$app->getResponse();
+            if ($this->minifyCss === null) {
+                $this->minifyCss = (
+                    $response instanceof WebResponse &&
+                    $response->format === WebResponse::FORMAT_HTML
+                );
+            }
+            if ($this->minifyJs === null) {
+                $this->minifyJs = (
+                    $response instanceof WebResponse &&
+                    $response->format === WebResponse::FORMAT_HTML &&
+                    Craft::$app->getConfig()->getGeneral()->useCompressedJs
+                );
+            }
         }
 
         // Register the cp.elements.element hook
@@ -345,7 +393,6 @@ class View extends \yii\web\View
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
-        Craft::beginProfile($template, __METHOD__);
 
         try {
             $output = $this->getTwig()->render($template, $variables);
@@ -357,7 +404,6 @@ class View extends \yii\web\View
             throw $e;
         }
 
-        Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
         // Set template mode back to original
@@ -474,19 +520,45 @@ class View extends \yii\web\View
      *
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
+     * @param string $templateMode The template mode to use.
      * @return string The rendered template.
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
-    public function renderString(string $template, array $variables = []): string
+    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
+        // If there are no dynamic tags, just return the template
+        if (strpos($template, '{') === false) {
+            return $template;
+        }
+
+        $oldTemplateMode = $this->templateMode;
+        $this->setTemplateMode($templateMode);
+
         $twig = $this->getTwig();
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
-        $result = $twig->createTemplate($template)->render($variables);
+
+        $e = null;
+        try {
+            $result = $twig->createTemplate($template)->render($variables);
+        } catch (\Throwable $e) {
+            // throw it later
+        }
+
         $this->_renderingTemplate = $lastRenderingTemplate;
         $twig->setDefaultEscaperStrategy();
+        $this->setTemplateMode($oldTemplateMode);
+
+        if ($e !== null) {
+            if (!YII_DEBUG) {
+                // Throw a generic exception instead
+                throw new Exception('An error occurred when rendering a template.', 0, $e);
+            }
+            throw $e;
+        }
+
         return $result;
     }
 
@@ -504,52 +576,21 @@ class View extends \yii\web\View
      * @param string $template the source template string
      * @param mixed $object the object that should be passed into the template
      * @param array $variables any additional variables that should be available to the template
+     * @param string $templateMode The template mode to use.
      * @return string The rendered template.
      * @throws Exception in case of failure
      * @throws \Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, $object, array $variables = []): string
+    public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
         // If there are no dynamic tags, just return the template
         if (strpos($template, '{') === false) {
             return $template;
         }
 
+        $oldTemplateMode = $this->templateMode;
+        $this->setTemplateMode($templateMode);
         $twig = $this->getTwig();
-
-        // Is this the first time we've parsed this template?
-        $cacheKey = md5($template);
-        if (!isset($this->_objectTemplates[$cacheKey])) {
-            // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-            $template = $this->normalizeObjectTemplate($template);
-            $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
-        }
-
-        // Get the variables to pass to the template
-        if ($object instanceof Model) {
-            foreach ($object->attributes() as $name) {
-                if (!isset($variables[$name]) && strpos($template, $name) !== false) {
-                    $variables[$name] = $object->$name;
-                }
-            }
-        }
-
-        if ($object instanceof Arrayable) {
-            // See if we should be including any of the extra fields
-            $extra = [];
-            foreach ($object->extraFields() as $field => $definition) {
-                if (is_int($field)) {
-                    $field = $definition;
-                }
-                if (strpos($template, $field) !== false) {
-                    $extra[] = $field;
-                }
-            }
-            $variables = array_merge($object->toArray([], $extra, false), $variables);
-        }
-
-        $variables['object'] = $object;
-        $variables['_variables'] = $variables;
 
         // Temporarily disable strict variables if it's enabled
         $strictVariables = $twig->isStrictVariables();
@@ -558,21 +599,57 @@ class View extends \yii\web\View
             $twig->disableStrictVariables();
         }
 
-        // Render it!
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
-        /** @var Template $templateObj */
-        $templateObj = $this->_objectTemplates[$cacheKey];
 
         $e = null;
         try {
+            // Is this the first time we've parsed this template?
+            $cacheKey = md5($template);
+            if (!isset($this->_objectTemplates[$cacheKey])) {
+                // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
+                $template = $this->normalizeObjectTemplate($template);
+                $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
+            }
+
+            // Get the variables to pass to the template
+            if ($object instanceof Model) {
+                foreach ($object->attributes() as $name) {
+                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                        $variables[$name] = $object->$name;
+                    }
+                }
+            }
+
+            if ($object instanceof Arrayable) {
+                // See if we should be including any of the extra fields
+                $extra = [];
+                foreach ($object->extraFields() as $field => $definition) {
+                    if (is_int($field)) {
+                        $field = $definition;
+                    }
+                    if (strpos($template, $field) !== false) {
+                        $extra[] = $field;
+                    }
+                }
+                $variables = array_merge($object->toArray([], $extra, false), $variables);
+            }
+
+            $variables['object'] = $object;
+            $variables['_variables'] = $variables;
+
+            // Render it!
+            /** @var TwigTemplate $templateObj */
+            $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
         } catch (\Throwable $e) {
+            // throw it later
         }
 
         $this->_renderingTemplate = $lastRenderingTemplate;
         $twig->setDefaultEscaperStrategy();
+        $this->setTemplateMode($oldTemplateMode);
 
         // Re-enable strict variables
         if ($strictVariables) {
@@ -809,6 +886,19 @@ class View extends \yii\web\View
     }
 
     /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function registerCss($css, $options = [], $key = null)
+    {
+        if ($this->minifyCss) {
+            $css = Minify_CSSmin::minify($css);
+        }
+
+        parent::registerCss($css, $options, $key);
+    }
+
+    /**
      * Registers a hi-res CSS code block.
      *
      * @param string $css the CSS code block to be registered
@@ -840,6 +930,11 @@ class View extends \yii\web\View
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
+
+        if ($this->minifyJs) {
+            $js = JSMin::minify($js);
+        }
+
         parent::registerJs($js, $position, $key);
     }
 
@@ -1064,6 +1159,65 @@ JS;
     public function setNamespace(string $namespace = null)
     {
         $this->_namespace = $namespace;
+    }
+
+    /**
+     * Registers a delta input name.
+     *
+     * This can be either the name of a single form input, or a prefix used by multiple input names.
+     *
+     * The input name will be namespaced with the currently active [[getNamespace()|namespace]], if any.
+     *
+     * When a form that supports delta updates is submitted, any delta inputs (or groups of inputs) that didn’t change
+     * over the lifespan of the page will be omitted from the POST request.
+     *
+     * Note that delta input names will only be registered if delta registration is active
+     * (see [[getIsDeltaRegistrationActive()]]).
+     *
+     * @param string $inputName
+     * @since 3.4.0
+     */
+    public function registerDeltaName(string $inputName)
+    {
+        if ($this->_registerDeltaNames) {
+            $this->_deltaNames[] = $this->namespaceInputName($inputName);
+        }
+    }
+
+    /**
+     * Returns whether delta input name registration is currently active
+     *
+     * @return bool
+     * @see registerDeltaName()
+     * @since 3.4.0
+     */
+    public function getIsDeltaRegistrationActive(): bool
+    {
+        return $this->_registerDeltaNames;
+    }
+
+    /**
+     * Sets whether delta input name registration is active.
+     *
+     * @param bool $active
+     * @see registerDeltaName()
+     * @since 3.4.0
+     */
+    public function setIsDeltaRegistrationActive(bool $active)
+    {
+        $this->_registerDeltaNames = $active;
+    }
+
+    /**
+     * Returns all of the registered delta input names.
+     *
+     * @return string[]
+     * @since 3.4.0
+     * @see registerDeltaName()
+     */
+    public function getDeltaNames(): array
+    {
+        return $this->_deltaNames;
     }
 
     /**
@@ -1331,6 +1485,7 @@ JS;
      * Sets the JS files that should be marked as already registered.
      *
      * @param string[] $keys
+     * @since 3.0.10
      */
     public function setRegisteredJsFiles(array $keys)
     {
@@ -1341,6 +1496,7 @@ JS;
      * Sets the asset bundle names that should be marked as already registered.
      *
      * @param string[] $names Asset bundle names
+     * @since 3.0.10
      */
     public function setRegisteredAssetBundles(array $names)
     {
@@ -1641,12 +1797,22 @@ JS;
         }
 
         $this->_twigOptions = [
-            'base_template_class' => Template::class,
             // See: https://github.com/twigphp/Twig/issues/1951
             'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
             'auto_reload' => true,
             'charset' => Craft::$app->charset,
         ];
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        // Only load our custom Template class if they still have suppressTemplateErrors enabled
+        if ($generalConfig->suppressTemplateErrors) {
+            $this->_twigOptions['base_template_class'] = Template::class;
+        }
+
+        if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $this->_twigOptions['autoescape'] = 'js';
+        }
 
         if (YII_DEBUG) {
             $this->_twigOptions['debug'] = true;
@@ -1734,6 +1900,7 @@ JS;
 
         /** @var Element $element */
         $element = $context['element'];
+        $label = $element->getUiLabel();
 
         if (!isset($context['context'])) {
             $context['context'] = 'index';
@@ -1784,6 +1951,7 @@ JS;
                 'data-label' => (string)$element,
                 'data-url' => $element->getUrl(),
                 'data-level' => $element->level,
+                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
             ]);
 
         if ($context['context'] === 'field') {
@@ -1834,13 +2002,19 @@ JS;
 
         $html .= '<span class="title">';
 
-        $label = HtmlHelper::encode($element->getUiLabel());
+        $encodedLabel = HtmlHelper::encode($label);
 
         if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+            if ($element->getIsDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
+            } else if ($element->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+            }
+
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
-            $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
+            $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
         } else {
-            $html .= $label;
+            $html .= $encodedLabel;
         }
 
         $html .= '</span></div></div>';

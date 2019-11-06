@@ -155,11 +155,11 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
 
         $this->_sessionGetStub(time() + 50);
-        $this->assertSame(50, $this->user->getElevatedSessionTimeout());
+        $this->assertEqualsWithDelta(50, $this->user->getElevatedSessionTimeout(), 2.0);
 
         // If the session->get() return value is smaller than time 0 is returned
         $this->_sessionGetStub(time() - 50);
-        $this->assertSame(0, $this->user->getElevatedSessionTimeout());
+        $this->assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
     }
 
     /**

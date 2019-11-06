@@ -129,12 +129,14 @@
                     $body = $('<div class="body"/>').appendTo($modal).html(data.confirm),
                     $footer = $('<footer class="footer"/>').appendTo($modal),
                     $buttons = $('<div class="buttons right"/>').appendTo($footer),
-                    $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons),
-                    $okBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'OK') + '"/>').appendTo($buttons);
+                    $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Keep them') + '</div>').appendTo($buttons),
+                    $okBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'Delete them') + '"/>').appendTo($buttons);
 
                 Craft.initUiElements($body);
 
                 var modal = new Garnish.Modal($modal, {
+                    hideOnEsc: false,
+                    hideOnShadeClick: false,
                     onHide: $.proxy(this, 'onActionResponse')
                 });
 

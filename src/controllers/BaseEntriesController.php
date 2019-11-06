@@ -21,7 +21,7 @@ use yii\web\ForbiddenHttpException;
  * It extends [[Controller]], overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseEntriesController extends Controller
 {
@@ -59,7 +59,6 @@ abstract class BaseEntriesController extends Controller
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
-        $userSession = Craft::$app->getUser();
         $permissionSuffix = ':' . $entry->getSection()->uid;
 
         if (Craft::$app->getIsMultiSite()) {
@@ -77,10 +76,12 @@ abstract class BaseEntriesController extends Controller
             return;
         }
 
+        $userId = Craft::$app->getUser()->getId();
+
         if ($entry->getIsDraft()) {
             // If it's another user's draft, make sure they have permission to edit those
             /** @var Entry|DraftBehavior $entry */
-            if ($entry->creatorId != $userSession->getId()) {
+            if ($entry->creatorId != $userId) {
                 $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
             }
             return;
@@ -88,7 +89,7 @@ abstract class BaseEntriesController extends Controller
 
         // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
         if (
-            $entry->authorId != $userSession->getIdentity()->id &&
+            $entry->authorId != $userId &&
             $entry->getSection()->type !== Section::TYPE_SINGLE
         ) {
             $this->requirePermission('editPeerEntries' . $permissionSuffix);

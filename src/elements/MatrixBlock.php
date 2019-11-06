@@ -16,12 +16,9 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
-use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
-use craft\models\Section;
-use craft\models\Site;
+use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
-use craft\validators\SiteIdValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -32,7 +29,7 @@ use yii\base\InvalidConfigException;
  * @property ElementInterface $owner the owner
  * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MatrixBlock extends Element implements BlockElementInterface
 {
@@ -133,6 +130,16 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $map;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var MatrixBlockTypeModel $context */
+        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
+    }
+
     // Properties
     // =========================================================================
 
@@ -161,6 +168,13 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @var int|null Sort order
      */
     public $sortOrder;
+
+    /**
+     * @var bool Whether the block has changed.
+     * @internal
+     * @since 3.4.0
+     */
+    public $dirty = false;
 
     /**
      * @var bool Collapsed
@@ -232,7 +246,7 @@ class MatrixBlock extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_getField(), $owner);
+        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_field(), $owner);
     }
 
     /**
@@ -298,7 +312,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getContentTable(): string
     {
-        return $this->_getField()->contentTable;
+        return $this->_field()->contentTable;
     }
 
     /**
@@ -363,17 +377,14 @@ class MatrixBlock extends Element implements BlockElementInterface
         }
     }
 
+
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
-    public function getHasFreshContent(): bool
+    public function getGqlTypeName(): string
     {
-        // Defer to the owner element
-        try {
-            return $this->getOwner()->getHasFreshContent();
-        } catch (InvalidConfigException $e) {
-            return false;
-        }
+        return static::gqlTypeNameByContext($this->getType());
     }
 
     // Events
@@ -450,7 +461,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      *
      * @return Matrix
      */
-    private function _getField(): Matrix
+    private function _field(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

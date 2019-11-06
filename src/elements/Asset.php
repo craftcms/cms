@@ -64,7 +64,7 @@ use yii\base\UnknownPropertyException;
  * @property VolumeInterface $volume the asset’s volume
  * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Asset extends Element
 {
@@ -178,6 +178,26 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var Volume $context */
+        return $context->handle . '_Asset';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var Volume $context */
+        return ['volumes.' . $context->uid];
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineSources(string $context = null): array
     {
@@ -266,7 +286,7 @@ class Asset extends Element
             );
 
             // Edit Image
-            if ($canDeleteAndSave) {
+            if ($userSession->checkPermission('editImagesInVolume:' . $volume->uid)) {
                 $actions[] = EditImage::class;
             }
 
@@ -960,6 +980,7 @@ class Asset extends Element
      * @return string
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
+     * @since 3.0.6
      */
     public function getContents(): string
     {
@@ -996,9 +1017,12 @@ class Asset extends Element
      * Returns whether this asset can be previewed.
      *
      * @return bool
+     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreview]] instead.
      */
     public function getSupportsPreview(): bool
     {
+        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', self::class . '::getSupportsPreview() has been deprecated. Use \craft\services\Assets::getAssetPreview() instead.');
+
         return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
@@ -1130,8 +1154,7 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
+                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
@@ -1176,6 +1199,15 @@ class Asset extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getVolume());
     }
 
     /**
@@ -1497,7 +1529,9 @@ class Asset extends Element
             }
 
             // Upload the file to the new location
-            $newVolume->createFileByStream($newPath, $stream, []);
+            $newVolume->createFileByStream($newPath, $stream, [
+                'mimetype' => FileHelper::getMimeType($tempPath)
+            ]);
 
             // Rackspace will disconnect the stream automatically
             if (is_resource($stream)) {

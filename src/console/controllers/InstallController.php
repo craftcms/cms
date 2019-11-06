@@ -8,13 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
-use craft\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
@@ -22,7 +22,7 @@ use yii\helpers\Console;
  * Craft CMS CLI installer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class InstallController extends Controller
 {
@@ -84,7 +84,7 @@ class InstallController extends Controller
     }
 
     /**
-     * Runs the install migration
+     * Runs the install migration.
      *
      * @return int
      */
@@ -173,17 +173,21 @@ class InstallController extends Controller
             $migrator->addMigrationHistory($name);
         }
 
+        $this->_ensureYamlFileExists();
+
         return ExitCode::OK;
     }
 
     /**
-     * Installs a plugin
+     * Installs a plugin.
      *
      * @param string $handle
      * @return int
      */
     public function actionPlugin(string $handle): int
     {
+        $this->_ensureYamlFileExists();
+
         $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
@@ -304,5 +308,14 @@ class InstallController extends Controller
             goto top;
         }
         return $password;
+    }
+
+    private function _ensureYamlFileExists()
+    {
+        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            $this->stdout('Generating project.yaml file from internal config ... ', Console::FG_YELLOW);
+            Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        }
     }
 }

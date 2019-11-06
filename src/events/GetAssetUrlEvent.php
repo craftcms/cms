@@ -15,7 +15,7 @@ use yii\base\Event;
  * Get Asset url event class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GetAssetUrlEvent extends Event
 {

@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Table;
-use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
@@ -22,7 +21,7 @@ use yii\base\Component;
  * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|`Craft::$app->pluginStore`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PluginStore extends Component
 {

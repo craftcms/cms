@@ -6,14 +6,15 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="sites/save-site">
+    {{ actionInput('sites/save-site') }}
     {{ redirectInput('settings/sites') }}
-    {% if site.id %}<input type="hidden" name="siteId" value="{{ site.id }}">{% endif %}
+    {% if site.id %}{{ hiddenInput('siteId', site.id) }}{% endif %}
 
     {{ forms.selectField({
         first: true,
         label: "Group"|t('app'),
         instructions: "Which group should this site belong to?"|t('app'),
+        warning: site.id and craft.app.isMultiSite ? 'Changing this may result in data loss.'|t('app'),
         id: 'group',
         name: 'group',
         options: groupOptions,
@@ -73,7 +74,7 @@
                 on: site.primary
             }) }}
         {% else %}
-            <input type="hidden" name="primary" value="1">
+            {{ hiddenInput('primary', '1') }}
         {% endif %}
 
         <hr>

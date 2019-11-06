@@ -13,7 +13,7 @@ use craft\base\LogTargetTrait;
  * Class FileTarget
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FileTarget extends \yii\log\FileTarget
 {

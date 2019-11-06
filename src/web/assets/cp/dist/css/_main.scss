@@ -51,24 +51,17 @@ body, input, select, textarea {
   margin-bottom: 0 !important;
 }
 
-body.rtl .ltr {
-  text-align: left;
-  direction: rtl;
-}
+.text,
+table.editable textarea {
+  body.rtl .ltr & {
+    text-align: left !important;
+    direction: ltr !important;
+  }
 
-body.rtl .input.ltr {
-  text-align: left;
-  direction: ltr;
-}
-
-body.ltr .input.rtl {
-  text-align: right;
-  direction: rtl;
-}
-
-body.rtl .text.ltr {
-  text-align: right !important;
-  direction: ltr !important;
+  body.ltr .rtl & {
+    text-align: right !important;
+    direction: rtl !important;
+  }
 }
 
 /* icons */
@@ -107,12 +100,12 @@ a.fieldtoggle:before,
 
 body.rtl [data-icon=list]:before,
 body.rtl [data-icon-after=list]:after {
-  content: attr(listrtl);
+  content: 'listrtl';
 }
 
 body.rtl [data-icon=structure]:before,
 body.rtl [data-icon-after=structure]:after {
-  content: attr(structurertl);
+  content: 'structurertl';
 }
 
 .icon.secure:before {
@@ -909,11 +902,13 @@ ul.icons li a:hover {
 
   &:not(.flex-nowrap) {
     flex-wrap: wrap;
+
+    & > * {
+      margin-bottom: 7px;
+    }
   }
 
   & > * {
-    margin-bottom: 7px;
-
     &.label {
       white-space: nowrap;
     }
@@ -1078,7 +1073,8 @@ ul.icons li a:hover {
   background-image: url(../images/spinner_submit.gif);
 }
 
-.secondary-buttons .btn.icon.add.loading.submit:after {
+.secondary-buttons .btn.icon.add.loading.submit:after,
+.btn.secondary.icon.add.loading.submit:after {
   background-image: url(../images/spinner_submit_secondary.gif);
 }
 
@@ -1215,10 +1211,14 @@ ul.icons li a:hover {
 }
 
 /* submit buttons */
-.btn.submit {
+.btn.submit,
+.btn.secondary {
   color: #fff;
-  background-image: linear-gradient($submitColor, #cc5643);
   @include light-on-dark-text;
+}
+
+.btn.submit {
+  background-image: linear-gradient($submitColor, #cc5643);
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
@@ -1231,17 +1231,22 @@ ul.icons li a:hover {
   background-image: linear-gradient($submitActiveColor, #994032);
 }
 
-.secondary-buttons .btn.submit {
+.secondary-buttons .btn.submit,
+.btn.secondary {
   background-image: linear-gradient($secondarySubmitColor, #878f99);
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
+.btn.secondary:not(.disabled):not(.inactive):hover,
+.btn.secondary:not(.disabled):not(.inactive).hover {
   background-image: linear-gradient($secondarySubmitHoverColor, #697480);
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active,
+.btn.secondary:not(.disabled):not(.inactive):active,
+.btn.secondary:not(.disabled):not(.inactive).active {
   background-image: linear-gradient($secondarySubmitActiveColor, #697380);
 }
 
@@ -2273,32 +2278,6 @@ table.editable {
           }
         }
 
-        &.code {
-          textarea::-webkit-input-placeholder {
-            @include sans-serif-font;
-          }
-
-          textareainput:-ms-input-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea::-ms-input-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea:-moz-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea::-moz-placeholder {
-            @include sans-serif-font;
-          }
-
-          textarea::placeholder {
-            @include sans-serif-font;
-          }
-        }
-
         .flex > * {
           margin-bottom: 0;
         }
@@ -3009,7 +2988,7 @@ ul.tree,
   }
 
   .tip-right {
-    @include right(-15px);
+    right: -15px;
     width: 15px;
     height: 30px;
     background-image: url(../images/hudtip_right.png);
@@ -3395,7 +3374,7 @@ ul.tree,
     display: inline-block;
     margin-top: -1px;
     width: 10px;
-    margin-right: 10px;
+    @include margin-right(10px);
     text-align: center;
     font-size: 14px;
     color: $lightTextColor;
@@ -3475,7 +3454,6 @@ ul.tree,
 .shadow-box {
   border-radius: $paneBorderRadius;
   border: 1px solid #ccc;
-  width: 100%;
   box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -3764,6 +3742,7 @@ div.checkbox:before {
   display: block;
   position: absolute;
   @include left(0);
+  top: 0;
   width: 12px !important;
   height: 12px;
   content: '.';
@@ -4760,7 +4739,8 @@ only screen and (min-resolution: 1.5dppx) {
   .btn.icon.add.loading.submit:after {
     background-image: url(../images/spinner_submit_2x.gif);
   }
-  .secondary-buttons .btn.icon.add.loading.submit:after {
+  .secondary-buttons .btn.icon.add.loading.submit:after,
+  .btn.secondary.icon.add.loading.submit:after {
     background-image: url(../images/spinner_submit_secondary_2x.gif);
   }
 

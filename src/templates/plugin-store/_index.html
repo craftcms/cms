@@ -137,7 +137,7 @@
                 <li>
                     <form method="post" id="disconnect">
                         {{ csrfInput() }}
-                        <input type="hidden" name="action" value="plugin-store/disconnect">
+                        {{ actionInput('plugin-store/disconnect') }}
                         <a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
                     </form>
                 </li>
@@ -146,7 +146,7 @@
 
         <form id="craftid-connect-form" method="post">
             {{ csrfInput() }}
-            <input type="hidden" name="action" value="plugin-store/connect">
+            {{ actionInput('plugin-store/connect') }}
             <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
                 <i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
             </div>

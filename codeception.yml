@@ -5,8 +5,8 @@ paths:
   data: tests/_data
   support: tests/_support
   envs: tests/_envs
+bootstrap: _bootstrap.php
 settings:
-  bootstrap: _bootstrap.php
   colors: true
   memory_limit: 2048M
 coverage:
@@ -23,7 +23,6 @@ coverage:
     - src/views/*
     - src/web/assets/*
     - bootstrap/*
-    - docs/*
     - lib/*
     - tests/*
     - vendor/*
@@ -61,3 +60,8 @@ groups:
   validators: [tests/unit/validators]
   web: [tests/unit/web]
   app: [tests/unit/AppTest.php]
+  gql:
+    - 'tests/unit/gql'
+    - 'tests/unit/services/GqlTest'
+    - 'tests/unit/helpers/GqlHelperTest'
+    - 'tests/gql/GqlCest'

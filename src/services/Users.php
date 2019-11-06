@@ -34,6 +34,7 @@ use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
+use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -44,7 +45,7 @@ use yii\db\Exception as DbException;
  * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Users extends Component
 {
@@ -385,7 +386,8 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'verify-email');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getVerifyEmailPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
     }
 
     /**
@@ -396,7 +398,8 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'set-password');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
     }
 
     /**
@@ -619,12 +622,11 @@ class Users extends Component
 
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->email = $user->unverifiedEmail;
+        $userRecord->unverifiedEmail = null;
 
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $userRecord->username = $user->unverifiedEmail;
         }
-
-        $userRecord->unverifiedEmail = null;
 
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());
@@ -883,22 +885,15 @@ class Users extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        $userIds = (new Query())
-            ->select(['id'])
-            ->from([Table::USERS])
-            ->where([
-                'and',
-                ['pending' => true],
-                ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
-            ])
-            ->column();
+        $query = User::find()
+            ->status('pending')
+            ->andWhere(['<', 'users.verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]);
 
         $elementsService = Craft::$app->getElements();
 
-        foreach ($userIds as $userId) {
-            $user = $this->getUserById($userId);
+        foreach ($query->each() as $user) {
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
     }
 
@@ -1073,7 +1068,7 @@ class Users extends Component
      * @param User $impersonator
      * @param User $impersonatee
      * @return bool
-     * @since 3.2
+     * @since 3.2.0
      */
     public function canImpersonate(User $impersonator, User $impersonatee): bool
     {
@@ -1205,22 +1200,22 @@ class Users extends Component
     }
 
     /**
-     * Sets a new verification code on a user, and returns their new verification URL
+     * Sets a new verification code on a user, and returns a verification URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     * @param string $action The UsersController action that the URL should point to
-     * @return string The new Password Reset URL.
+     * @param string $fePath The path to use if we end up linking to the front end
+     * @param string $cpPath The path to use if we end up linking to the Control Panel
+     * @return string
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
      */
-    private function _getUserUrl(User $user, string $action): string
+    private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1228,22 +1223,17 @@ class Users extends Component
 
         $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
-        if ($user->can('accessCp')) {
-            // Only use getCpUrl() if the base CP URL has been explicitly set,
-            // so UrlHelper won't use HTTP_HOST
-            if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $scheme);
-            }
-
-            $path = $generalConfig->cpTrigger . '/' . $path;
+        if (!$user->can('accessCp')) {
+            return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else {
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        // Only use cpUrl() if the base CP URL has been explicitly set,
+        // so UrlHelper won't use HTTP_HOST
+        if ($generalConfig->baseCpUrl) {
+            return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 
-        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
+        $path = $generalConfig->cpTrigger . '/' . $cpPath;
+        return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

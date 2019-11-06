@@ -39,7 +39,7 @@
         <hr>
     {% endif %}
 
-    <input type="hidden" name="action" value="system-settings/save-email-settings">
+    {{ actionInput('system-settings/save-email-settings') }}
     {{ redirectInput('settings') }}
 
     {{ forms.autosuggestField({

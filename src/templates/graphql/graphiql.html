@@ -1,0 +1,18 @@
+{% extends "_layouts/cp" %}
+{% set title = "Explore the GraphQL API"|t %}
+{% set selectedSubnavItem = 'explore' %}
+
+{% block main %}
+    <div data-endpoint="{{ url }}" id="graphiql">
+        <div class="spinner big"></div>
+    </div>
+{% endblock %}
+
+{% js %}
+    var gqlSchemas = {{ schemas|json_encode|raw }};
+    var selectedSchema = {{ {
+        name: selectedSchema.name,
+        token: selectedSchema.accessToken,
+    }|json_encode|raw }};
+    initGraphiQl();
+{% endjs %}

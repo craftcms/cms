@@ -13,7 +13,7 @@ use yii\queue\ExecEvent;
  * Verbose Behavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
 {

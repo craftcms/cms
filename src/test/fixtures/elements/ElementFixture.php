@@ -9,9 +9,10 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
 use craft\errors\InvalidElementException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -22,7 +23,7 @@ use yii\test\ActiveFixture;
  * Credit to: https://github.com/robuust/craft-fixtures
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
+ * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
@@ -35,6 +36,12 @@ abstract class ElementFixture extends ActiveFixture
      * @var array
      */
     protected $siteIds = [];
+
+    /**
+     * @var bool Whether the fixture data should be unloaded
+     * @since 3.3.5
+     */
+    public $unload = true;
 
     // Public Methods
     // =========================================================================
@@ -99,7 +106,7 @@ abstract class ElementFixture extends ActiveFixture
                 if ($fieldLayout) {
                     $element->fieldLayoutId = $fieldLayout->id;
                 } else {
-                    codecept_debug("Field layout with type: $fieldLayoutType but this was not findable");
+                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
             }
 
@@ -138,31 +145,41 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->getData() as $data) {
-            $element = $this->getElement($data);
+        if ($this->unload) {
+            foreach ($this->getData() as $data) {
+                $element = $this->getElement($data);
 
-            if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
-                throw new InvalidElementException($element, 'Unable to delete element.');
+                if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
+                    throw new InvalidElementException($element, 'Unable to delete element.');
+                }
             }
-        }
 
-        $this->data = [];
+            $this->data = [];
+        }
     }
 
     /**
      * Get element model.
      *
      * @param array|null $data The data to get the element by
-     * @return Element
+     * @return ElementInterface|null
      */
     public function getElement(array $data = null)
     {
-        $modelClass = $this->modelClass;
-
         if ($data === null) {
-            return new $modelClass();
+            return new $this->modelClass();
         }
 
+        return $this->generateElementQuery($data)->one();
+    }
+
+    /**
+     * @param array $data
+     * @return ElementQuery
+     */
+    public function generateElementQuery(array $data): ElementQuery
+    {
+        $modelClass = $this->modelClass;
         $query = $modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
@@ -171,7 +188,7 @@ abstract class ElementFixture extends ActiveFixture
             }
         }
 
-        return $query->one();
+        return $query;
     }
 
     // Protected Methods

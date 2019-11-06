@@ -19,7 +19,7 @@ use craft\services\Elements;
  * ResaveElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ResaveElements extends BaseJob
 {
@@ -93,7 +93,8 @@ class ResaveElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
-        $query = $this->elementType::find();
+        $elementType = $this->elementType;
+        $query = $elementType::find();
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);

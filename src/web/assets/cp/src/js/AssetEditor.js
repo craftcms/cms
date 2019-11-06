@@ -34,6 +34,8 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
         onHideHud: function () {
             if (this.reloadIndex && this.settings.elementIndex) {
                 this.settings.elementIndex.updateElements();
+            } else if (this.reloadIndex && this.settings.input) {
+                this.settings.input.refreshThumbnail(this.$element.data('id'));
             }
 
             this.base();

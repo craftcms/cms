@@ -8,7 +8,14 @@
 namespace craft\services;
 
 use Craft;
+use craft\assetpreviews\HtmlPreview;
+use craft\assetpreviews\ImagePreview;
+use craft\assetpreviews\NoPreview;
+use craft\assetpreviews\PdfPreview;
+use craft\base\AssetPreview;
+use craft\base\AssetPreviewInterface;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -21,6 +28,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
@@ -48,7 +56,7 @@ use yii\base\NotSupportedException;
  * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets extends Component
 {
@@ -80,6 +88,12 @@ class Assets extends Component
      * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
      */
     const EVENT_GET_THUMB_PATH = 'getThumbPath';
+
+    /**
+     * @event AssetPreviewEvent The event that is triggered when an asset is previewed
+     * @since 3.4.0
+     */
+    const EVENT_GET_ASSET_PREVIEW = 'getAssetPreview';
 
     // Properties
     // =========================================================================
@@ -241,11 +255,11 @@ class Assets extends Component
      *
      * @param int $folderId
      * @param string $newName
-     * @throws AssetConflictException If a folder already exists with such name in Assets Index
+     * @return string The new folder name after cleaning it.
      * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
      * @throws VolumeObjectExistsException If a folder already exists with such name in the Volume, but not in Index
      * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the Volume.
-     * @return string The new folder name after cleaning it.
+     * @throws AssetConflictException If a folder already exists with such name in Assets Index
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -866,13 +880,14 @@ class Assets extends Component
      * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return int
      * @throws VolumeException If the volume cannot be found.
      */
-    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): int
+    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
+        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -1023,6 +1038,42 @@ class Assets extends Component
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
         return $folder;
+    }
+
+    /**
+     *
+     * @param Asset $asset
+     * @return AssetPreviewInterface
+     * @since 3.4.0
+     */
+    public function getAssetPreview(Asset $asset): AssetPreviewInterface
+    {
+        $event = new AssetPreviewEvent(['asset' => $asset]);
+
+        // Give plugins a chance to register their own preview handlers
+        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_PREVIEW)) {
+            $this->trigger(self::EVENT_GET_ASSET_PREVIEW, $event);
+        }
+
+        $preview = $event->previewHandler;
+
+        if ($preview instanceof AssetPreview) {
+            return $preview;
+        }
+
+        // These are our default preview handlers if one is not supplied
+        switch($asset->kind) {
+            case Asset::KIND_IMAGE:
+                return new ImagePreview($asset);
+            case Asset::KIND_PDF:
+                return new PdfPreview($asset);
+            case Asset::KIND_HTML:
+            case Asset::KIND_JSON:
+            case Asset::KIND_JAVASCRIPT:
+                return new HtmlPreview($asset);
+            default:
+                return new NoPreview($asset);
+        }
     }
 
     // Private Methods

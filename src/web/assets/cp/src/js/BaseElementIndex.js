@@ -42,6 +42,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         searching: false,
         searchText: null,
         trashed: false,
+        drafts: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -207,7 +208,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Automatically update the elements after new search text has been sitting for a 1/2 second
-            this.addListener(this.$search, 'textchange', $.proxy(function() {
+            this.addListener(this.$search, 'input', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
                 } else if (this.searching && !this.$search.val()) {
@@ -585,7 +586,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0
+                trashed: this.trashed ? 1 : 0,
+                drafts: this.drafts ? 1 : 0,
             };
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
@@ -600,7 +602,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: $.extend({}, this.getSelectedSourceState())
+                viewState: $.extend({}, this.getSelectedSourceState()),
+                paginated: this._isViewPaginated() ? 1 : 0,
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -745,7 +748,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         afterAction: function(action, params) {
 
-            // There may be a new background task that needs to be run
+            // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
@@ -1324,11 +1327,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
+            this.trashed = false;
+            this.drafts = false;
+            this.status = null;
+
             if (Garnish.hasAttr($option, 'data-trashed')) {
                 this.trashed = true;
-                this.status = null;
+            } else if (Garnish.hasAttr($option, 'data-drafts')) {
+                this.drafts = true;
             } else {
-                this.trashed = false;
                 this.status = $option.data('status');
             }
 
@@ -1437,7 +1444,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            if (this.trashed || this.searching) {
+            if (this.trashed || this.drafts || this.searching) {
                 $option.addClass('disabled');
                 if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
@@ -1516,6 +1523,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // View
         // -------------------------------------------------------------------------
 
+        _isViewPaginated: function() {
+            return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
+        },
+
         _updateView: function(params, response) {
             // Cleanup
             // -------------------------------------------------------------
@@ -1535,10 +1546,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.$countContainer.html('');
-            var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
 
-            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
-                this.$countContainer.text(response.count + ' ' + elementTypeName);
+            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.countLabel);
             } else {
                 var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
                 var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
@@ -1554,14 +1564,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     title: Craft.t('app', 'Next Page')
                 }).appendTo($paginationContainer);
 
-                var first = Math.min((this.settings.batchSize * (this.page - 1)) + 1, response.count);
                 $('<div/>', {
                     'class': 'page-info',
-                    text: Craft.t('app', '{first}-{last} of {total}', {
-                        first: Craft.formatNumber(first),
-                        last: Craft.formatNumber(Math.min(first + (this.settings.batchSize - 1), response.count)),
-                        total: Craft.formatNumber(response.count)
-                    }) + ' ' + elementTypeName
+                    text: response.countLabel
                 }).appendTo($paginationContainer);
 
                 if (this.page > 1) {
@@ -1784,6 +1789,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+                delete params.criteria.limit;
 
                 var limit = parseInt($limitField.find('input').val());
                 if (limit && !isNaN(limit)) {
@@ -1795,9 +1801,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     $spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        var url = Craft.getCpUrl('', {
-                            token: response.token
-                        });
+                        var params = {};
+                        params[Craft.tokenParam] = response.token;
+                        var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
@@ -1845,9 +1851,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
             toolbarFixed: null,
-
-            elementTypeName: Craft.t('app', 'Element'),
-            elementTypePluralName: Craft.t('app', 'Elements'),
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,

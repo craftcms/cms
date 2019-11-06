@@ -61,7 +61,7 @@ use yii\base\Exception;
  * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Fields extends Component
 {
@@ -102,6 +102,7 @@ class Fields extends Component
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -132,6 +133,7 @@ class Fields extends Component
 
     /**
      * @event FieldEvent The event that is triggered before a field delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
 
@@ -238,6 +240,18 @@ class Fields extends Component
     public function getGroupById(int $groupId)
     {
         return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+    }
+
+    /**
+     * Returns a field group by its UID.
+     *
+     * @param string $groupUid The field group’s UID
+     * @return FieldGroup|null The field group, or null if it doesn’t exist
+     * @since 3.3.0
+     */
+    public function getGroupByUid(string $groupUid)
+    {
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'uid', $groupUid);
     }
 
     /**
@@ -702,6 +716,7 @@ class Fields extends Component
      *
      * @param FieldInterface $field
      * @return array
+     * @since 3.1.0
      */
     public function createFieldConfig(FieldInterface $field): array
     {
@@ -780,6 +795,7 @@ class Fields extends Component
      * Preps a field to be saved.
      *
      * @param FieldInterface $field
+     * @since 3.1.2
      */
     public function prepFieldForSave(FieldInterface $field)
     {
@@ -888,6 +904,7 @@ class Fields extends Component
      *
      * @param $fieldUid
      * @throws \Throwable if database error
+     * @since 3.1.0
      */
     public function applyFieldDelete($fieldUid)
     {
@@ -958,6 +975,8 @@ class Fields extends Component
      *
      * This should be called whenever a field is updated or deleted directly in
      * the database, rather than going through this service.
+     *
+     * @since 3.0.20
      */
     public function refreshFields()
     {
@@ -1044,6 +1063,7 @@ class Fields extends Component
      *
      * @param int $layoutId The field layout ID
      * @return int[]
+     * @since 3.1.24
      */
     public function getFieldIdsByLayoutId(int $layoutId): array
     {
@@ -1385,6 +1405,7 @@ class Fields extends Component
      *
      * @param int $id The field layout’s ID
      * @return bool Whether the layout was restored successfully
+     * @since 3.1.0
      */
     public function restoreLayoutById(int $id): bool
     {
@@ -1417,6 +1438,7 @@ class Fields extends Component
      * @param string $fieldUid
      * @param array $data
      * @param string $context
+     * @since 3.1.0
      */
     public function applyFieldSave(string $fieldUid, array $data, string $context)
     {

@@ -11,7 +11,7 @@ namespace craft\db;
  * This class provides constants for defining Craft’s database table names.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 abstract class Table
 {
@@ -45,6 +45,7 @@ abstract class Table
     const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     const FIELDS = '{{%fields}}';
     const GLOBALSETS = '{{%globalsets}}';
+    const GQLSCHEMAS = '{{%gqlschemas}}';
     const INFO = '{{%info}}';
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';

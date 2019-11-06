@@ -109,6 +109,17 @@ class UrlHelperTest extends Unit
     // =========================================================================
 
     /**
+     * @dataProvider buildQueryDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testBuildQuery($result, $input)
+    {
+        $this->assertSame($result, UrlHelper::buildQuery($input));
+    }
+
+    /**
      * Tests various methods of the UrlHelper which check that a URL confirms to a specification. I.E. Is it protocol relative or absolute
      *
      * @dataProvider protocolRelativeUrlDataProvider
@@ -333,7 +344,7 @@ class UrlHelperTest extends Unit
         $this->assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
 
         $siteUrl = UrlHelper::actionUrl('endpoint');
-        $this->assertSame('http://test.craftcms.test/index.php?p=actions%2Fendpoint', $siteUrl);
+        $this->assertSame('http://test.craftcms.test/index.php?p=actions/endpoint', $siteUrl);
     }
 
     /**
@@ -348,6 +359,26 @@ class UrlHelperTest extends Unit
 
     // Data Providers
     // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function buildQueryDataProvider(): array
+    {
+        return [
+            ['', []],
+            ['', ['foo' => null]],
+            ['foo=1', ['foo' => true]],
+            ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
+            ['foo[]=1&foo[]=2', ['foo' => [1, 2]]],
+            ['foo[bar]=baz', ['foo[bar]' => 'baz']],
+            ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
+            ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
+            ['foo+bar=baz', ['foo+bar' => 'baz']],
+            ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
+            ['foo={bar}', ['foo' => '{bar}']],
+        ];
+    }
 
     /**
      * @return array
@@ -405,17 +436,17 @@ class UrlHelperTest extends Unit
         return [
             'test-empty' => ['{baseUrl}?p={cpTrigger}', '', []],
             'test-simple-endpoint' => [
-                '{baseUrl}?p={cpTrigger}%2Fnav&param1=entry1&param2=entry2',
+                '{baseUrl}?p={cpTrigger}/nav&param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             'test-preexisting-endpoints' => [
-                '{baseUrl}?p={cpTrigger}%2Fnav&param3=entry3&param1=entry1&param2=entry2',
+                '{baseUrl}?p={cpTrigger}/nav&param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             [
-                '{baseUrl}?p={cpTrigger}%2Fnav&param1=entry1&param2=entry2',
+                '{baseUrl}?p={cpTrigger}/nav&param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
@@ -513,7 +544,7 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             '4-spaces' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?++++=',
+                self::ABSOLUTE_URL_HTTPS_WWW,
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    ',
                 'urlWithParams'
@@ -694,6 +725,8 @@ class UrlHelperTest extends Unit
     {
         return [
             ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],
+            // https://github.com/craftcms/cms/issues/4778
+            ['http://test.craftcms.test/index.php?p=endpoint&param1=x&param2[]=y&param2[]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
         ];
     }
 
