@@ -11,9 +11,9 @@
                 </div>
 
                 <div class="description flex-1">
-                    <h2>{{ plugin.name }}</h2>
-                    <p>{{ plugin.shortDescription }}</p>
-                    <p><a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a></p>
+                    <h1 class="text-lg font-bold mb-2">{{ plugin.name }}</h1>
+                    <p class="mb-2 text-grey-dark">{{ plugin.shortDescription }}</p>
+                    <p class="mb-2"><a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a></p>
                 </div>
 
                 <div v-if="actionsLoading">
