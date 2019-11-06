@@ -53,8 +53,6 @@ class PrepareQueryTest extends Unit
                 ]
             ])]
         );
-
-
     }
 
     protected function _after()
