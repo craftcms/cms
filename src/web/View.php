@@ -369,7 +369,7 @@ class View extends \yii\web\View
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode that should be used when rendering the template
+     * @param string|null $templateMode The template mode to use
      * @return string the rendering result
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
@@ -429,7 +429,7 @@ class View extends \yii\web\View
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode that should be used when rendering the template
+     * @param string|null $templateMode The template mode to use
      * @return string the rendering result
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
@@ -483,7 +483,7 @@ class View extends \yii\web\View
      * @param string $template The name of the template the macro lives in.
      * @param string $macro The name of the macro.
      * @param array $args Any arguments that should be passed to the macro.
-     * @param string|null $templateMode The template mode that should be used when rendering the template.
+     * @param string|null $templateMode The template mode to use.
      * @return string The rendered macro output.
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
@@ -705,7 +705,7 @@ class View extends \yii\web\View
      * method found anything.
      *
      * @param string $name The name of the template.
-     * @param string|null $templateMode The template mode to use when checking if the template exists.
+     * @param string|null $templateMode The template mode to use.
      * @return bool Whether the template exists.
      * @throws Exception
      */
