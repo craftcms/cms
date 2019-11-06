@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\models\GqlSchema::getAllScopePairs()`.
+- Added `craft\models\GqlSchema::getAllScopePairsForAction()`.
+
 ### Fixed
 - Fixed a SQL error that could occur when using PostgreSQL.
 
