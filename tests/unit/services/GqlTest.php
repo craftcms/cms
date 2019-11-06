@@ -245,6 +245,7 @@ class GqlTest extends Unit
         $cacheValue = 'testValue';
 
         $gql = Craft::$app->getGql();
+        $gql->invalidateCaches();
         $gql->setCachedResult($cacheKey, $cacheValue);
 
         $cacheKey = 'testKey';
