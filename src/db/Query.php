@@ -51,9 +51,6 @@ class Query extends \yii\db\Query
     {
         parent::init();
 
-        // Set $from in case getTablesUsedInFrom() is called
-        $this->from = ['elements' => Table::ELEMENTS];
-
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
         }
