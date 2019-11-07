@@ -17,15 +17,6 @@ use Craft;
  */
 class Search
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var array Character mappings
-     * @see _getCharMap()
-     */
-    private static $_charMaps = [];
-
     // Public Methods
     // =========================================================================
 
@@ -62,7 +53,7 @@ class Search
 
         if ($processCharMap) {
             // Remove punctuation and diacritics
-            $str = strtr($str, self::_getCharMap($language ?? Craft::$app->language));
+            $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
         }
 
         // Remove ignore-words?
@@ -85,23 +76,6 @@ class Search
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Get array of chars to be used for conversion.
-     *
-     * @param string $language
-     * @return array
-     */
-    private static function _getCharMap(string $language): array
-    {
-        if (isset(self::$_charMaps[$language])) {
-            return self::$_charMaps[$language];
-        }
-
-        // This will replace accented chars with non-accented chars
-        $map = StringHelper::asciiCharMap(true, $language);
-        return self::$_charMaps[$language] = $map;
-    }
 
     /**
      * Returns the asciiPunctuation array.
