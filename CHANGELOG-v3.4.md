@@ -61,6 +61,7 @@
 - `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - The installer now requires `config/db.php` to be setting the `dsn` database config setting with a `DB_DSN` environment variable, if a connection can’t already be established.
 - The full GraphQL schema is now always generated when Dev Mode is enabled.
+- Punctuation is now removed from search keywords and search terms, rather than being replaced with a space. ([#5214](https://github.com/craftcms/cms/issues/5214))
 - The `_includes/forms/field.html` template now supports `fieldAttributes`, `labelAttributes`, and `inputAttributes` variables.
 - The `_includes/field.html` template now supports a `registerDeltas` variable.
 - The `_layouts/cp.html` template now supports `mainAttributes` and `mainFormAttributes` variables.

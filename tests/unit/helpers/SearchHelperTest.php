@@ -74,8 +74,11 @@ class SearchHelperTest extends Unit
             ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄'],
 
             // Ignorance isn't mb-4 safe
-            ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']]
+            ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']],
 
+            // https://github.com/craftcms/cms/issues/5214
+            ['a doggs tale', 'A Dogg’s Tale'],
+            ['a doggs tale', 'A Dogg\'s Tale'],
         ];
     }
 }
