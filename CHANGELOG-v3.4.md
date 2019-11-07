@@ -1,5 +1,11 @@
 # Running Release Notes for Craft 3.4
 
+> {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
+>
+> ```bash
+> > ./craft resave/entries --update-search-index
+> ```
+
 ### Added
 - Added support for delta element updates. ([#4064](https://github.com/craftcms/cms/issues/4064))
 - Elements now track which field values have changed since the element was first loaded. ([#4149](https://github.com/craftcms/cms/issues/4149))
