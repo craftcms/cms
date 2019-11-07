@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a SQL error that could occur when using PostgreSQL.
+- Fixed a SQL error that could occur when calling an element query’s `ids()` method with `indexBy('id')` set on it. ([#5216](https://github.com/craftcms/cms/issues/5216))
 
 ## 3.3.15 - 2019-11-05
 
