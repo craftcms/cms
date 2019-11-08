@@ -481,17 +481,17 @@ Craft.DraftEditor = Garnish.Base.extend(
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
             }
 
+
+            // Filter out anything that hasn't changed
+            var initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue'));
+            debugger;
+            var d
+            data = Craft.findDeltaData(initialData, data, this.getDeltaNames());
+
             return data;
         },
 
         swapDuplicatedElementIds: function(data) {
-            if (Garnish.isArray(data)) {
-                for (var i = 0; i < data.length; i++) {
-                    data[i] = this.swapDuplicatedElementIds(data[i]);
-                }
-                return data;
-            }
-
             for (var oldId in this.duplicatedElements) {
                 if (this.duplicatedElements.hasOwnProperty(oldId)) {
                     data = data
@@ -506,6 +506,18 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             }
             return data;
+        },
+
+        getDeltaNames: function() {
+            var deltaNames = Craft.deltaNames.slice(0);
+            for (var i = 0; i < deltaNames.length; i++) {
+                for (var oldId in this.duplicatedElements) {
+                    if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                        deltaNames[i] = deltaNames[i].replace('][' + oldId + ']', '][' + this.duplicatedElements[oldId] + ']');
+                    }
+                }
+            }
+            return deltaNames;
         },
 
         updatePreviewTargets: function(previewTargets) {
@@ -686,8 +698,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Duplicate the form with normalized data
             var data = this.prepareData(this.serializeForm(false));
-            // Filter out anything that hasn't changed
-            data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames);
             var $form = Craft.createForm(data);
 
             if (this.settings.draftId) {
