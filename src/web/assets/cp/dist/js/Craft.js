@@ -1,4 +1,4 @@
-/*!   - 2019-10-28 */
+/*!   - 2019-11-07 */
 (function($){
 
 /** global: Craft */
@@ -13483,12 +13483,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         prepareData: function(data) {
             // Swap out element IDs with their duplicated ones
-            for (var oldId in this.duplicatedElements) {
-                if (this.duplicatedElements.hasOwnProperty(oldId)) {
-                    data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
-                        '][' + this.duplicatedElements[oldId] + ']');
-                }
-            }
+            data = this.swapDuplicatedElementIds(data);
 
             // Add the draft info
             if (this.settings.draftId) {
@@ -13497,6 +13492,30 @@ Craft.DraftEditor = Garnish.Base.extend(
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
             }
 
+            return data;
+        },
+
+        swapDuplicatedElementIds: function(data) {
+            if (Garnish.isArray(data)) {
+                for (var i = 0; i < data.length; i++) {
+                    data[i] = this.swapDuplicatedElementIds(data[i]);
+                }
+                return data;
+            }
+
+            for (var oldId in this.duplicatedElements) {
+                if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                    data = data
+                        .replace(
+                            new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
+                            '][' + this.duplicatedElements[oldId] + ']'
+                        )
+                        .replace(
+                            new RegExp('=' + oldId + '\\b', 'g'),
+                            '=' + this.duplicatedElements[oldId]
+                        );
+                }
+            }
             return data;
         },
 
