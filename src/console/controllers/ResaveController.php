@@ -195,16 +195,7 @@ class ResaveController extends Controller
     {
         $query = MatrixBlock::find();
         if ($this->field !== null) {
-            $fieldId = (new Query())
-                ->select(['id'])
-                ->from([Table::FIELDS])
-                ->where(['type' => Matrix::class, 'handle' => $this->field])
-                ->scalar();
-            if (!$fieldId) {
-                $this->stderr("No Matrix field exists with the handle \"{$this->field}\"." . PHP_EOL, Console::FG_RED);
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-            $query->fieldId($fieldId);
+            $query->field(explode(',', $this->field));
         }
         if ($this->type !== null) {
             $query->type(explode(',', $this->type));

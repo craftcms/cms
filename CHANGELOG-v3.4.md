@@ -14,6 +14,7 @@
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
+- It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -26,6 +27,7 @@
 - Added `craft\base\ElementInterface::isFieldDirty()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
+- Added `craft\elements\db\MatrixBlockQuery::field()`.
 - Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
