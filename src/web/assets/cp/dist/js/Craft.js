@@ -13495,11 +13495,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Filter out anything that hasn't changed
             var initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue'));
-            debugger;
-            var d
-            data = Craft.findDeltaData(initialData, data, this.getDeltaNames());
-
-            return data;
+            return Craft.findDeltaData(initialData, data, this.getDeltaNames());
         },
 
         swapDuplicatedElementIds: function(data) {
