@@ -22,7 +22,7 @@
 
         data() {
             return {
-                loading: true,
+                loading: false,
             }
         },
 
@@ -33,13 +33,17 @@
         },
 
         mounted() {
-            this.$store.dispatch('pluginStore/getCmsEditions')
-                .then(() => {
-                    this.loading = false
-                })
-                .catch(() => {
-                    this.loading = false
-                })
+            if (!this.cmsEditions) {
+                this.loading = true
+
+                this.$store.dispatch('pluginStore/getCmsEditions')
+                    .then(() => {
+                        this.loading = false
+                    })
+                    .catch(() => {
+                        this.loading = false
+                    })
+            }
         },
 
         beforeDestroy() {
