@@ -221,7 +221,6 @@ class PluginStoreController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \yii\base\InvalidConfigException
      */
     public function actionCraftData(): Response
     {
@@ -230,7 +229,8 @@ class PluginStoreController extends Controller
         $data = [];
 
         // Current user
-        $data['currentUser'] = Craft::$app->getUser()->getIdentity();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $data['currentUser'] = $currentUser->getAttributes(['email']);
 
         // Craft ID account
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
