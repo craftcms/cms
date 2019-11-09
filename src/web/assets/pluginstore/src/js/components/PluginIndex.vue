@@ -56,24 +56,8 @@
         methods: {
             onOrderByChange() {
                 this.error = null
-                this.loading = true
-                this.page = 1
 
-                this.$store.dispatch(this.action, this.requestActionData)
-                    .then((response) => {
-                        this.loading = false
-                        if (response.data.currentPage < response.data.total) {
-                            this.hasMore = true
-                            this.page++
-                            this.$root.$on('viewScroll', this.onScroll)
-                            this.$root.$on('windowScroll', this.onScroll)
-                        } else {
-                            this.hasMore = false
-                        }
-                    })
-                    .catch(() => {
-                        this.loading = false
-                    })
+                this.requestPlugins(true)
             },
 
             onScroll() {
@@ -85,23 +69,12 @@
                 }
 
                 if (this.scrollDistFromBottom() < 300) {
-                    this.loadingBottom = true
-                    this.$store.dispatch(this.action, {
-                            ...this.requestActionData,
-                            appendData: true,
-                        })
-                        .then(response => {
-                            this.loadingBottom = false
-
-                            if (response.data.currentPage < response.data.total) {
-                                this.hasMore = true
-                                this.page++
-                                this.$root.$on('viewScroll', this.onScroll)
-                                this.$root.$on('windowScroll', this.onScroll)
-                            } else {
-                                this.hasMore = false
-                            }
-                        })
+                    this.requestPlugins(false, (response) => {
+                        if (response.data.currentPage < response.data.total) {
+                            this.$root.$on('viewScroll', this.onScroll)
+                            this.$root.$on('windowScroll', this.onScroll)
+                        }
+                    })
                 } else {
                     this.$root.$on('viewScroll', this.onScroll)
                     this.$root.$on('windowScroll', this.onScroll)
@@ -134,7 +107,7 @@
                 return 'window'
             },
 
-            requestPlugins() {
+            requestPlugins(dontAppendData, onAfterSuccess) {
                 if (this.loading) {
                     return null
                 }
@@ -143,21 +116,26 @@
                     return null
                 }
 
-                if (!this.hasMore) {
+                if (!dontAppendData && !this.hasMore) {
                     return null
                 }
 
-                if (this.viewHasScrollbar()) {
-                    return null
+                if (dontAppendData) {
+                    this.page = 1
+                    this.loading = true
+                } else {
+                    this.loadingBottom = true
                 }
-
-                this.loadingBottom = true
 
                 this.$store.dispatch(this.action, {
                         ...this.requestActionData,
-                        appendData: true,
+                        appendData: !dontAppendData,
                     })
                     .then((response) => {
+                        if (response.data && response.data.error) {
+                            throw response.data.error
+                        }
+
                         this.loading = false
                         this.loadingBottom = false
 
@@ -171,8 +149,23 @@
                         } else {
                             this.hasMore = false
                         }
+
+                        if (typeof onAfterSuccess === 'function') {
+                            onAfterSuccess(response)
+                        }
                     })
                     .catch(() => {
+                        let errorMsg
+
+                        if (typeof thrown === 'string') {
+                            errorMsg = thrown
+                        } else if(thrown.response.data.error) {
+                            errorMsg = thrown.response.data.error
+                        } else {
+                            errorMsg = thrown.response.data.message
+                        }
+
+                        this.error = errorMsg
                         this.loading = false
                         this.loadingBottom = false
                     })
@@ -202,46 +195,14 @@
 
             mountPluginIndex() {
                 this.$store.commit('pluginStore/updatePlugins', [])
-                this.loadingBottom = true
-                this.page = 1
 
-                this.$store.dispatch(this.action, this.requestActionData)
-                    .then((response) => {
-                        if (response.data && response.data.error) {
-                            throw response.data.error
-                        }
-
-                        this.loadingBottom = false
-
-                        if (response.data.currentPage < response.data.total) {
-                            this.hasMore = true
-                            this.page++
-
-                            if (!this.viewHasScrollbar()) {
-                                this.requestPlugins()
-                            }
-
-                            this.$root.$on('viewScroll', this.onScroll)
-                            this.$root.$on('windowScroll', this.onScroll)
-                            this.$root.$on('windowResize', this.onWindowResize)
-                        } else {
-                            this.hasMore = false
-                        }
-                    })
-                    .catch((thrown) => {
-                        let errorMsg
-
-                        if (typeof thrown === 'string') {
-                            errorMsg = thrown
-                        } else if(thrown.response.data.error) {
-                            errorMsg = thrown.response.data.error
-                        } else {
-                            errorMsg = thrown.response.data.message
-                        }
-
-                        this.error = errorMsg
-                        this.loadingBottom = false
-                    })
+                this.requestPlugins(true, (response) => {
+                    if (response.data.currentPage < response.data.total) {
+                        this.$root.$on('viewScroll', this.onScroll)
+                        this.$root.$on('windowScroll', this.onScroll)
+                        this.$root.$on('windowResize', this.onWindowResize)
+                    }
+                })
             },
 
             destroyPluginIndex() {
