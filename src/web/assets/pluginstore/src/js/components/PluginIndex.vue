@@ -54,6 +54,27 @@
         },
 
         methods: {
+            destroyPluginIndex() {
+                this.error = null
+                this.$root.$off('viewScroll', this.onScroll)
+                this.$root.$off('windowScroll', this.onScroll)
+                this.$root.$off('windowResize', this.onWindowResize)
+
+                this.$store.dispatch('pluginStore/cancelRequests')
+            },
+
+            mountPluginIndex() {
+                this.$store.commit('pluginStore/updatePlugins', [])
+
+                this.requestPlugins(true, (response) => {
+                    if (response.data.currentPage < response.data.total) {
+                        this.$root.$on('viewScroll', this.onScroll)
+                        this.$root.$on('windowScroll', this.onScroll)
+                        this.$root.$on('windowResize', this.onWindowResize)
+                    }
+                })
+            },
+
             onOrderByChange() {
                 this.error = null
 
@@ -81,30 +102,23 @@
                 }
             },
 
-            scrollContainer() {
-                return this.scrollMode() === 'view' ? document.getElementById('content').getElementsByClassName('ps-main')[0] : document.documentElement
-            },
-
-            scrollDistFromBottom() {
-                const $container = this.scrollContainer()
-                const scrollTop = $container.scrollTop
-                const scrollHeight = $container.scrollHeight
-
-                let offsetHeight = window.outerHeight
-
-                if (this.scrollMode() === 'view') {
-                    offsetHeight = $container.offsetHeight
+            onWindowResize() {
+                if (!this.hasMore) {
+                    return null
                 }
 
-                return scrollHeight - Math.max((scrollTop + offsetHeight), 0)
-            },
-
-            scrollMode() {
-                if (window.innerWidth >= 975) {
-                    return 'view'
+                if (this.viewHasScrollbar()) {
+                    return null
                 }
 
-                return 'window'
+                this.requestPlugins()
+            },
+
+            refreshPluginIndex() {
+                this.$nextTick(() => {
+                    this.destroyPluginIndex()
+                    this.mountPluginIndex()
+                })
             },
 
             requestPlugins(dontAppendData, onAfterSuccess) {
@@ -171,16 +185,30 @@
                     })
             },
 
-            onWindowResize() {
-                if (!this.hasMore) {
-                    return null
+            scrollContainer() {
+                return this.scrollMode() === 'view' ? document.getElementById('content').getElementsByClassName('ps-main')[0] : document.documentElement
+            },
+
+            scrollDistFromBottom() {
+                const $container = this.scrollContainer()
+                const scrollTop = $container.scrollTop
+                const scrollHeight = $container.scrollHeight
+
+                let offsetHeight = window.outerHeight
+
+                if (this.scrollMode() === 'view') {
+                    offsetHeight = $container.offsetHeight
                 }
 
-                if (this.viewHasScrollbar()) {
-                    return null
+                return scrollHeight - Math.max((scrollTop + offsetHeight), 0)
+            },
+
+            scrollMode() {
+                if (window.innerWidth >= 975) {
+                    return 'view'
                 }
 
-                this.requestPlugins()
+                return 'window'
             },
 
             viewHasScrollbar() {
@@ -192,34 +220,6 @@
 
                 return false
             },
-
-            mountPluginIndex() {
-                this.$store.commit('pluginStore/updatePlugins', [])
-
-                this.requestPlugins(true, (response) => {
-                    if (response.data.currentPage < response.data.total) {
-                        this.$root.$on('viewScroll', this.onScroll)
-                        this.$root.$on('windowScroll', this.onScroll)
-                        this.$root.$on('windowResize', this.onWindowResize)
-                    }
-                })
-            },
-
-            destroyPluginIndex() {
-                this.error = null
-                this.$root.$off('viewScroll', this.onScroll)
-                this.$root.$off('windowScroll', this.onScroll)
-                this.$root.$off('windowResize', this.onWindowResize)
-
-                this.$store.dispatch('pluginStore/cancelRequests')
-            },
-
-            refreshPluginIndex() {
-                this.$nextTick(() => {
-                    this.destroyPluginIndex()
-                    this.mountPluginIndex()
-                })
-            }
         },
 
         mounted() {
