@@ -235,10 +235,6 @@ class PluginStoreController extends Controller
         // Craft ID account
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
 
-        // Countries
-        $api = Craft::$app->getApi();
-        $data['countries'] = $api->getCountries();
-
         // Craft license/edition info
         $data['licensedEdition'] = Craft::$app->getLicensedEdition();
         $data['canTestEditions'] = Craft::$app->getCanTestEditions();

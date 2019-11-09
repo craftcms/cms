@@ -45,6 +45,29 @@ export default {
         })
     },
 
+
+    /**
+     * Get countries.
+     */
+    getCountries() {
+        return new Promise((resolve, reject) => {
+            _axios.get('countries', {
+                    baseURL: process.env.VUE_APP_CRAFT_API_ENDPOINT,
+                    headers: window.apiHeaders,
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
+    },
+
     /**
      * Get Plugin License Info.
      */

@@ -127,7 +127,14 @@ const actions = {
             api.getCraftData()
                 .then(response => {
                     commit('updateCraftData', {response})
-                    resolve(response)
+                    api.getCountries()
+                        .then(response => {
+                            commit('updateCountries', {response})
+                            resolve()
+                        })
+                        .catch(error => {
+                            reject(error)
+                        })
                 })
                 .catch(error => {
                     reject(error)
@@ -197,7 +204,6 @@ const actions = {
 const mutations = {
     updateCraftData(state, {response}) {
         state.canTestEditions = response.data.canTestEditions
-        state.countries = response.data.countries
         state.craftId = response.data.craftId
         state.craftLogo = response.data.craftLogo
         state.currentUser = response.data.currentUser
@@ -209,6 +215,10 @@ const mutations = {
         state.CraftEdition = response.data.CraftEdition
         state.CraftPro = response.data.CraftPro
         state.CraftSolo = response.data.CraftSolo
+    },
+
+    updateCountries(state, {response}) {
+        state.countries = response.data.countries
     },
 
     updateCraftId(state, craftId) {
