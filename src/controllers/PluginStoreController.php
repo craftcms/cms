@@ -278,18 +278,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Returns the Plugin Store’s data.
-     *
-     * @return Response
-     */
-    public function actionPluginStoreData()
-    {
-        $pluginStoreData = Craft::$app->getApi()->getPluginStoreData();
-
-        return $this->asJson($pluginStoreData);
-    }
-
-    /**
      * Returns plugin details.
      *
      * @return Response
@@ -313,19 +301,6 @@ class PluginStoreController extends Controller
         $pluginChangelog = Craft::$app->getApi()->getPluginChangelog($pluginId);
 
         return $this->asJson($pluginChangelog);
-    }
-
-    /**
-     * Returns developer details.
-     *
-     * @return Response
-     */
-    public function actionDeveloper()
-    {
-        $developerId = Craft::$app->getRequest()->getParam('developerId');
-        $developer = Craft::$app->getApi()->getDeveloper($developerId);
-
-        return $this->asJson($developer);
     }
 
     /**

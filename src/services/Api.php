@@ -121,18 +121,6 @@ class Api extends Component
     }
 
     /**
-     * Returns plugins data for the Plugin Store.
-     *
-     * @return array
-     * @throws RequestException if the API gave a non-2xx response
-     */
-    public function getPluginStoreData(): array
-    {
-        $response = $this->request('GET', 'plugin-store');
-        return Json::decode((string)$response->getBody());
-    }
-
-    /**
      * Returns plugin details.
      *
      * @param int $pluginId
@@ -157,20 +145,6 @@ class Api extends Component
     public function getPluginChangelog(int $pluginId): array
     {
         $response = $this->request('GET', 'plugin/' . $pluginId . '/changelog');
-        return Json::decode((string)$response->getBody());
-    }
-
-    /**
-     * Returns the developer details.
-     *
-     * @param int $developerId
-     *
-     * @return array
-     * @throws RequestException if the API gave a non-2xx response
-     */
-    public function getDeveloper(int $developerId): array
-    {
-        $response = $this->request('GET', 'developer/' . $developerId);
         return Json::decode((string)$response->getBody());
     }
 
