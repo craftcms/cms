@@ -239,17 +239,6 @@ class PluginStoreController extends Controller
         $api = Craft::$app->getApi();
         $data['countries'] = $api->getCountries();
 
-        // Craft editions
-        $data['editions'] = [];
-        foreach ($api->getCmsEditions() as $editionInfo) {
-            $data['editions'][$editionInfo['handle']] = [
-                'name' => $editionInfo['name'],
-                'handle' => $editionInfo['handle'],
-                'price' => $editionInfo['price'],
-                'renewalPrice' => $editionInfo['renewalPrice'],
-            ];
-        }
-
         // Craft license/edition info
         $data['licensedEdition'] = Craft::$app->getLicensedEdition();
         $data['canTestEditions'] = Craft::$app->getCanTestEditions();

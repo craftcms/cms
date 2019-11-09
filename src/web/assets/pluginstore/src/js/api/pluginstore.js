@@ -48,6 +48,27 @@ export default {
     },
 
     /**
+     * Get CMS editions.
+     *
+     * @returns {AxiosPromise<any>}
+     */
+    getCmsEditions() {
+        return new Promise((resolve, reject) => {
+            _axios.get('cms-editions')
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
+    },
+
+    /**
      * Get developer.
      *
      * @param developerId

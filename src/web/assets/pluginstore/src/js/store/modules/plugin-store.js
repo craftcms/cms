@@ -5,6 +5,7 @@ import api from '../../api/pluginstore'
  */
 const state = {
     categories: [],
+    cmsEditions: null,
     developer: null,
     expiryDateOptions: [],
     featuredPlugins: [],
@@ -70,6 +71,20 @@ const actions = {
                 .then(response => {
                     commit('updateCoreData', {response})
                     resolve(response)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    getCmsEditions({commit}) {
+        return new Promise((resolve, reject) => {
+            api.getCmsEditions()
+                .then(response => {
+                    commit('updateCmsEditions', {response})
+                    resolve(response)
+
                 })
                 .catch(error => {
                     reject(error)
@@ -212,6 +227,10 @@ const mutations = {
         state.categories = response.data.categories
         state.expiryDateOptions = response.data.expiryDateOptions
         state.sortOptions = response.data.sortOptions
+    },
+
+    updateCmsEditions(state, {response}) {
+        state.cmsEditions = response.data.editions
     },
 
     updateDeveloper(state, developer) {

@@ -10,7 +10,6 @@ const state = {
     craftLogo: null,
     currentUser: null,
     defaultPluginSvg: null,
-    editions: null,
     licensedEdition: null,
     pluginLicenseInfo: {},
     poweredByStripe: null,
@@ -203,7 +202,6 @@ const mutations = {
         state.craftLogo = response.data.craftLogo
         state.currentUser = response.data.currentUser
         state.defaultPluginSvg = response.data.defaultPluginSvg
-        state.editions = response.data.editions
         state.licensedEdition = response.data.licensedEdition
         state.poweredByStripe = response.data.poweredByStripe
 
