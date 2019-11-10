@@ -48,6 +48,7 @@ Garnish.$doc.ready(function() {
                 pluginLicenseInfoLoaded: false,
                 cartDataLoaded: false,
                 allDataLoaded: false,
+                craftDataLoaded: false,
                 showModal: false,
                 statusMessage: null,
             }
@@ -233,11 +234,15 @@ Garnish.$doc.ready(function() {
                     this.pluginStoreDataLoaded = true
                 }
 
-                if (this.coreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded || !this.pluginLicenseInfoLoaded)) {
+                if (this.craftIdDataLoaded && this.cartDataLoaded) {
+                    this.craftDataLoaded = true
+                }
+
+                if (this.pluginStoreDataLoaded && !this.craftDataLoaded) {
                     this.$pluginStoreActionsSpinner.removeClass('hidden')
                 }
 
-                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
+                if (this.pluginStoreDataLoaded && this.craftDataLoaded) {
                     // All data loaded
                     this.$pluginStoreActions.removeClass('hidden')
                     this.$pluginStoreActionsSpinner.addClass('hidden')
