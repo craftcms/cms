@@ -69,27 +69,11 @@ Garnish.$doc.ready(function() {
 
         watch: {
             cart(cart) {
-                let totalQty = 0
-
-                if (cart) {
-                    totalQty = cart.totalQty
-                }
-
-                $('.badge', this.$cartButton).html(totalQty)
+                this.$emit('cartChange', cart)
             },
 
             craftId() {
-                if (this.craftId) {
-                    $('.label', this.$craftId).html(this.craftId.username)
-
-                    this.$craftId.removeClass('hidden')
-                    this.$craftIdConnectForm.addClass('hidden')
-                    this.$craftIdDisconnectForm.removeClass('hidden')
-                } else {
-                    this.$craftId.addClass('hidden')
-                    this.$craftIdConnectForm.removeClass('hidden')
-                    this.$craftIdDisconnectForm.addClass('hidden')
-                }
+                this.$emit('craftIdChange')
             }
         },
 
@@ -119,7 +103,7 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftIdJson) {
-                const craftId = JSON.parse(craftIdJson);
+                const craftId = JSON.parse(craftIdJson)
                 this.$store.commit('craft/updateCraftId', craftId)
                 this.$store.commit('craft')
                 this.$emit('craftIdUpdated')
@@ -130,20 +114,21 @@ Garnish.$doc.ready(function() {
              */
             initializeOuterComponents() {
                 // Header Title
-                this.$headerTitle = $('#header h1');
-                this.$headerTitle.on('click', function() {
+                const $headerTitle = $('#header h1')
+
+                $headerTitle.on('click', function() {
                     this.$router.push({path: '/'})
                 }.bind(this))
 
                 // Cart button
-                this.$cartButton = $('#cart-button')
+                const $cartButton = $('#cart-button')
 
-                this.$cartButton.on('click', function(e) {
+                $cartButton.on('click', function(e) {
                     e.preventDefault()
                     this.openModal('cart')
                 }.bind(this))
 
-                this.$cartButton.keydown(function(e) {
+                $cartButton.keydown(function(e) {
                     switch (e.which) {
                         case 13: // Enter
                         case 32: // Space
@@ -154,34 +139,56 @@ Garnish.$doc.ready(function() {
                     }
                 }.bind(this))
 
+                this.$on('cartChange', function (cart) {
+                    let totalQty = 0
+
+                    if (cart) {
+                        totalQty = cart.totalQty
+                    }
+
+                    $('.badge', $cartButton).html(totalQty)
+                })
+
                 // Plugin Store actions
-                this.$pluginStoreActions = $('#pluginstore-actions')
-                this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
+                const $pluginStoreActions = $('#pluginstore-actions')
+                const $pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
 
-                // Craft ID account
-                this.$craftId = $('#craftid-account')
+                // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
+                this.$on('dataLoaded', function() {
+                    if (this.pluginStoreDataLoaded && !this.craftDataLoaded) {
+                        $pluginStoreActionsSpinner.removeClass('hidden')
+                    }
+                }.bind(this))
 
-                // Connect form
-                this.$craftIdConnectForm = $('#craftid-connect-form')
+                // Hide actions spinner when Plugin Store data and Craft data have finished loading.
+                this.$on('allDataLoaded', function() {
+                    $pluginStoreActions.removeClass('hidden')
+                    $pluginStoreActionsSpinner.addClass('hidden')
+                })
 
-                // Disconnect form
-                this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
+                // Craft ID
+                const $craftId = $('#craftid-account')
+                const $craftIdConnectForm = $('#craftid-connect-form')
+                const $craftIdDisconnectForm = $('#craftid-disconnect-form')
+
+                this.$on('craftIdChange', function() {
+                    if (this.craftId) {
+                        $('.label', $craftId).html(this.craftId.username)
+
+                        $craftId.removeClass('hidden')
+                        $craftIdConnectForm.addClass('hidden')
+                        $craftIdDisconnectForm.removeClass('hidden')
+                    } else {
+                        $craftId.addClass('hidden')
+                        $craftIdConnectForm.removeClass('hidden')
+                        $craftIdDisconnectForm.addClass('hidden')
+                    }
+                })
 
                 // Cancel ajax requests when an outbound link gets clicked
                 $('a[href]').on('click', function() {
                     this.$store.dispatch('craft/cancelRequests')
                     this.$store.dispatch('pluginStore/cancelRequests')
-                }.bind(this))
-
-                this.$on('dataLoaded', function() {
-                    if (this.pluginStoreDataLoaded && !this.craftDataLoaded) {
-                        this.$pluginStoreActionsSpinner.removeClass('hidden')
-                    }
-                }.bind(this))
-
-                this.$on('allDataLoaded', function() {
-                    this.$pluginStoreActions.removeClass('hidden')
-                    this.$pluginStoreActionsSpinner.addClass('hidden')
                 }.bind(this))
             },
 
