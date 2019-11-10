@@ -89,7 +89,7 @@
             // retrieve plugin
             const pluginHandle = this.$route.params.handle
 
-            if (this.$root.pluginStoreDataLoaded && this.$root.craftIdDataLoaded && this.$root.cartDataLoaded) {
+            if (this.$root.allDataLoaded) {
                 // buy plugin
                 this.buyPlugin(pluginHandle)
             } else {

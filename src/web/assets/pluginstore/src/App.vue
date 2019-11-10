@@ -4,7 +4,7 @@
             <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
         </transition>
 
-        <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError && $root.pluginLicenseInfoLoaded">
+        <template v-if="$root.pluginStoreDataLoaded">
             <sidebar></sidebar>
 
             <div class="ps-main" @scroll.passive="onViewScroll">

@@ -41,11 +41,13 @@ Garnish.$doc.ready(function() {
                 plugin: null,
                 pluginId: null,
                 modalStep: null,
+                coreDataLoaded: false,
                 pluginStoreDataLoaded: false,
                 pluginStoreDataError: false,
                 craftIdDataLoaded: false,
                 pluginLicenseInfoLoaded: false,
                 cartDataLoaded: false,
+                allDataLoaded: false,
                 showModal: false,
                 statusMessage: null,
             }
@@ -166,9 +168,10 @@ Garnish.$doc.ready(function() {
             },
 
             loadPluginStoreData() {
+                // core data
                 this.$store.dispatch('pluginStore/getCoreData')
                     .then(() => {
-                        this.pluginStoreDataLoaded = true
+                        this.coreDataLoaded = true
                         this.$emit('dataLoaded')
                     })
                     .catch((error) => {
@@ -177,6 +180,20 @@ Garnish.$doc.ready(function() {
                         } else {
                             this.pluginStoreDataError = true
                             this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
+                        }
+                    })
+
+                // plugin license info
+                this.$store.dispatch('craft/getPluginLicenseInfo')
+                    .then(() => {
+                        this.pluginLicenseInfoLoaded = true
+                        this.$emit('dataLoaded')
+                    })
+                    .catch((error) => {
+                        if (axios.isCancel(error)) {
+                            // Request canceled
+                        } else {
+                            throw error
                         }
                     })
             },
@@ -198,21 +215,6 @@ Garnish.$doc.ready(function() {
                         this.craftIdDataLoaded = true
                     })
             },
-
-            loadPluginLicenseInfo() {
-                this.$store.dispatch('craft/getPluginLicenseInfo')
-                    .then(() => {
-                        this.pluginLicenseInfoLoaded = true
-                        this.$emit('dataLoaded')
-                    })
-                    .catch((error) => {
-                        if (axios.isCancel(error)) {
-                            // Request canceled
-                        } else {
-                            throw error
-                        }
-                    })
-            },
         },
 
         created() {
@@ -227,14 +229,19 @@ Garnish.$doc.ready(function() {
 
             // On data loaded
             this.$on('dataLoaded', function() {
-                if (this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded || !this.pluginLicenseInfoLoaded)) {
+                if (this.coreDataLoaded && this.pluginLicenseInfoLoaded) {
+                    this.pluginStoreDataLoaded = true
+                }
+
+                if (this.coreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded || !this.pluginLicenseInfoLoaded)) {
                     this.$pluginStoreActionsSpinner.removeClass('hidden')
                 }
 
-                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded && this.pluginLicenseInfoLoaded) {
+                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
                     // All data loaded
                     this.$pluginStoreActions.removeClass('hidden')
                     this.$pluginStoreActionsSpinner.addClass('hidden')
+                    this.allDataLoaded = true
                     this.$emit('allDataLoaded')
                 }
             }.bind(this))
@@ -242,7 +249,6 @@ Garnish.$doc.ready(function() {
             // Load data
             this.loadPluginStoreData()
             this.loadCraftData()
-            this.loadPluginLicenseInfo()
         },
     }).$mount('#app')
 })
