@@ -42,13 +42,11 @@ Garnish.$doc.ready(function() {
                 pluginId: null,
                 modalStep: null,
                 coreDataLoaded: false,
-                pluginStoreDataLoaded: false,
                 pluginStoreDataError: false,
                 craftIdDataLoaded: false,
                 pluginLicenseInfoLoaded: false,
                 cartDataLoaded: false,
                 allDataLoaded: false,
-                craftDataLoaded: false,
                 showModal: false,
                 statusMessage: null,
             }
@@ -59,6 +57,14 @@ Garnish.$doc.ready(function() {
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
             }),
+
+            pluginStoreDataLoaded() {
+                return this.coreDataLoaded && this.pluginLicenseInfoLoaded
+            },
+
+            craftDataLoaded() {
+                return this.craftIdDataLoaded && this.cartDataLoaded
+            },
         },
 
         watch: {
@@ -166,6 +172,17 @@ Garnish.$doc.ready(function() {
                     this.$store.dispatch('craft/cancelRequests')
                     this.$store.dispatch('pluginStore/cancelRequests')
                 }.bind(this))
+
+                this.$on('dataLoaded', function() {
+                    if (this.pluginStoreDataLoaded && !this.craftDataLoaded) {
+                        this.$pluginStoreActionsSpinner.removeClass('hidden')
+                    }
+                }.bind(this))
+
+                this.$on('allDataLoaded', function() {
+                    this.$pluginStoreActions.removeClass('hidden')
+                    this.$pluginStoreActionsSpinner.addClass('hidden')
+                }.bind(this))
             },
 
             loadPluginStoreData() {
@@ -230,25 +247,16 @@ Garnish.$doc.ready(function() {
 
             // On data loaded
             this.$on('dataLoaded', function() {
-                if (this.coreDataLoaded && this.pluginLicenseInfoLoaded) {
-                    this.pluginStoreDataLoaded = true
+                if (!this.pluginStoreDataLoaded) {
+                    return null
                 }
 
-                if (this.craftIdDataLoaded && this.cartDataLoaded) {
-                    this.craftDataLoaded = true
+                if (!this.craftDataLoaded) {
+                    return null
                 }
 
-                if (this.pluginStoreDataLoaded && !this.craftDataLoaded) {
-                    this.$pluginStoreActionsSpinner.removeClass('hidden')
-                }
-
-                if (this.pluginStoreDataLoaded && this.craftDataLoaded) {
-                    // All data loaded
-                    this.$pluginStoreActions.removeClass('hidden')
-                    this.$pluginStoreActionsSpinner.addClass('hidden')
-                    this.allDataLoaded = true
-                    this.$emit('allDataLoaded')
-                }
+                this.allDataLoaded = true
+                this.$emit('allDataLoaded')
             }.bind(this))
 
             // Load data
