@@ -82,12 +82,6 @@ Garnish.$doc.ready(function() {
                 Craft.cp.displayError(message)
             },
 
-            showPlugin(plugin) {
-                this.plugin = plugin
-                this.pluginId = plugin.id
-                this.openModal('plugin-details')
-            },
-
             openModal(modalStep) {
                 this.modalStep = modalStep
 
