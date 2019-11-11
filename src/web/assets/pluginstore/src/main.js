@@ -43,7 +43,7 @@ Garnish.$doc.ready(function() {
                 modalStep: null,
                 coreDataLoaded: false,
                 pluginStoreDataError: false,
-                craftIdDataLoaded: false,
+                craftDataLoaded: false,
                 pluginLicenseInfoLoaded: false,
                 cartDataLoaded: false,
                 allDataLoaded: false,
@@ -60,10 +60,6 @@ Garnish.$doc.ready(function() {
 
             pluginStoreDataLoaded() {
                 return this.coreDataLoaded && this.pluginLicenseInfoLoaded
-            },
-
-            craftDataLoaded() {
-                return this.craftIdDataLoaded && this.cartDataLoaded
             },
         },
 
@@ -155,7 +151,7 @@ Garnish.$doc.ready(function() {
 
                 // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
                 this.$on('dataLoaded', function() {
-                    if (this.pluginStoreDataLoaded && !this.craftDataLoaded) {
+                    if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded)) {
                         $pluginStoreActionsSpinner.removeClass('hidden')
                     }
                 }.bind(this))
@@ -203,11 +199,11 @@ Garnish.$doc.ready(function() {
             loadCraftData() {
                 this.$store.dispatch('craft/getCraftData')
                     .then(() => {
-                        this.craftIdDataLoaded = true
+                        this.craftDataLoaded = true
                         this.$emit('dataLoaded')
                     })
                     .catch(() => {
-                        this.craftIdDataLoaded = true
+                        this.craftDataLoaded = true
                     })
             },
 
@@ -254,6 +250,10 @@ Garnish.$doc.ready(function() {
                 }
 
                 if (!this.craftDataLoaded) {
+                    return null
+                }
+
+                if (!this.cartDataLoaded) {
                     return null
                 }
 
