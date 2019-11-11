@@ -192,6 +192,31 @@ Garnish.$doc.ready(function() {
                 }.bind(this))
             },
 
+            loadCartData() {
+                this.$store.dispatch('cart/getCart')
+                    .then(() => {
+                        this.cartDataLoaded = true
+                        this.$emit('dataLoaded')
+                    })
+            },
+
+            loadCraftData() {
+                this.$store.dispatch('craft/getCraftData')
+                    .then(() => {
+                        this.craftIdDataLoaded = true
+                        this.$emit('dataLoaded')
+                    })
+                    .catch(() => {
+                        this.craftIdDataLoaded = true
+                    })
+            },
+
+            loadData() {
+                this.loadPluginStoreData()
+                this.loadCraftData()
+                this.loadCartData()
+            },
+
             loadPluginStoreData() {
                 // core data
                 this.$store.dispatch('pluginStore/getCoreData')
@@ -223,22 +248,17 @@ Garnish.$doc.ready(function() {
                     })
             },
 
-            loadCraftData() {
-                this.$store.dispatch('craft/getCraftData')
-                    .then(() => {
-                        this.craftIdDataLoaded = true
-                        this.$emit('dataLoaded')
+            onDataLoaded() {
+                if (!this.pluginStoreDataLoaded) {
+                    return null
+                }
 
-                        // Load cart
-                        this.$store.dispatch('cart/getCart')
-                            .then(() => {
-                                this.cartDataLoaded = true
-                                this.$emit('dataLoaded')
-                            })
-                    })
-                    .catch(() => {
-                        this.craftIdDataLoaded = true
-                    })
+                if (!this.craftDataLoaded) {
+                    return null
+                }
+
+                this.allDataLoaded = true
+                this.$emit('allDataLoaded')
             },
         },
 
@@ -253,22 +273,10 @@ Garnish.$doc.ready(function() {
             this.initializeOuterComponents()
 
             // On data loaded
-            this.$on('dataLoaded', function() {
-                if (!this.pluginStoreDataLoaded) {
-                    return null
-                }
-
-                if (!this.craftDataLoaded) {
-                    return null
-                }
-
-                this.allDataLoaded = true
-                this.$emit('allDataLoaded')
-            }.bind(this))
+            this.$on('dataLoaded', this.onDataLoaded)
 
             // Load data
-            this.loadPluginStoreData()
-            this.loadCraftData()
+            this.loadData()
         },
     }).$mount('#app')
 })
