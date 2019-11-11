@@ -168,7 +168,7 @@
                             onAfterSuccess(response)
                         }
                     })
-                    .catch(() => {
+                    .catch((thrown) => {
                         let errorMsg
 
                         if (typeof thrown === 'string') {
