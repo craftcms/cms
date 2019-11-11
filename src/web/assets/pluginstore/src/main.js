@@ -37,16 +37,16 @@ Garnish.$doc.ready(function() {
 
         data() {
             return {
+                allDataLoaded: false,
+                cartDataLoaded: false,
+                coreDataLoaded: false,
+                craftDataLoaded: false,
+                modalStep: null,
                 pageTitle: 'Plugin Store',
                 plugin: null,
                 pluginId: null,
-                modalStep: null,
-                coreDataLoaded: false,
-                pluginStoreDataError: false,
-                craftDataLoaded: false,
                 pluginLicenseInfoLoaded: false,
-                cartDataLoaded: false,
-                allDataLoaded: false,
+                pluginStoreDataError: false,
                 showModal: false,
                 statusMessage: null,
             }
@@ -58,6 +58,11 @@ Garnish.$doc.ready(function() {
                 craftId: state => state.craft.craftId,
             }),
 
+            /**
+             * Returns `true``if the core data and the plugin license info have been loaded.
+             *
+             * @returns {boolean}
+             */
             pluginStoreDataLoaded() {
                 return this.coreDataLoaded && this.pluginLicenseInfoLoaded
             },
@@ -74,24 +79,47 @@ Garnish.$doc.ready(function() {
         },
 
         methods: {
+            /**
+             * Displays a notice.
+             *
+             * @param message
+             */
             displayNotice(message) {
                 Craft.cp.displayNotice(message)
             },
 
+            /**
+             * Displays an error.
+             *
+             * @param message
+             */
             displayError(message) {
                 Craft.cp.displayError(message)
             },
 
+            /**
+             * Opens up the modal.
+             *
+             * @param modalStep
+             */
             openModal(modalStep) {
                 this.modalStep = modalStep
 
                 this.showModal = true
             },
 
+            /**
+             * Closes the modal.
+             */
             closeModal() {
                 this.showModal = false
             },
 
+            /**
+             * Updates Craft ID.
+             *
+             * @param craftIdJson
+             */
             updateCraftId(craftIdJson) {
                 const craftId = JSON.parse(craftIdJson)
                 this.$store.commit('craft/updateCraftId', craftId)
@@ -182,6 +210,9 @@ Garnish.$doc.ready(function() {
                 }.bind(this))
             },
 
+            /**
+             * Loads the cart data.
+             */
             loadCartData() {
                 this.$store.dispatch('cart/getCart')
                     .then(() => {
@@ -190,6 +221,9 @@ Garnish.$doc.ready(function() {
                     })
             },
 
+            /**
+             * Loads Craft data.
+             */
             loadCraftData() {
                 this.$store.dispatch('craft/getCraftData')
                     .then(() => {
@@ -201,12 +235,18 @@ Garnish.$doc.ready(function() {
                     })
             },
 
+            /**
+             * Loads all the data required for the Plugin Store and cart to work.
+             */
             loadData() {
                 this.loadPluginStoreData()
                 this.loadCraftData()
                 this.loadCartData()
             },
 
+            /**
+             * Loads the Plugin Store’s plugin data.
+             */
             loadPluginStoreData() {
                 // core data
                 this.$store.dispatch('pluginStore/getCoreData')
@@ -238,6 +278,11 @@ Garnish.$doc.ready(function() {
                     })
             },
 
+            /**
+             * Checks that all the data has been loaded.
+             *
+             * @returns {null}
+             */
             onDataLoaded() {
                 if (!this.pluginStoreDataLoaded) {
                     return null
