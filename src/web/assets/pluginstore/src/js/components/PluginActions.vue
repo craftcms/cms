@@ -71,9 +71,16 @@
                 </template>
         </template>
 
-        <div v-if="!plugin.latestCompatibleVersion" class="text-grey mt-4 px-8">
-            <p>Only up to {{plugin.latestCompatibleVersion}} is compatible with your version of Craft.</p>
-        </div>
+        <template v-if="plugin.latestCompatibleVersion && plugin.latestCompatibleVersion != plugin.version">
+            <div class="text-grey mt-4 px-8">
+                <p>Only up to {{plugin.latestCompatibleVersion}} is compatible with your version of Craft.</p>
+            </div>
+        </template>
+        <template v-else-if="!plugin.latestCompatibleVersion">
+            <div class="text-grey mt-4 px-8">
+                <p>This plugin isn’t compatible with your version of Craft.</p>
+            </div>
+        </template>
     </div>
 </template>
 
