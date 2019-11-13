@@ -8,7 +8,7 @@
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
                 <btn v-else-if="licensedEdition === edition.handle" kind="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
@@ -48,7 +48,7 @@
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn type="submit" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
+                        <btn type="submit" :disabled="(!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)) || !plugin.latestCompatibleVersion" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
