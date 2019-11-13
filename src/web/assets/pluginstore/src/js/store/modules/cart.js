@@ -425,6 +425,11 @@ const actions = {
         return new Promise((resolve, reject) => {
             api.updateCart(cartNumber, data)
                 .then(cartResponse => {
+                    if (cartResponse.data && cartResponse.data.errors) {
+                        reject({response: cartResponse})
+                        return null
+                    }
+
                     dispatch('updateCartPlugins', {cartResponse})
                         .then(() => {
                             resolve(cartResponse)
