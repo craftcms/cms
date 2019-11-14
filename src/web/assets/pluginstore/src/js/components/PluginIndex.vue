@@ -113,7 +113,12 @@
 
                 if (dontAppendData) {
                     this.page = 1
-                    this.loading = true
+
+                    if (this.plugins.length > 0) {
+                        this.loading = true
+                    } else {
+                        this.loadingBottom = true
+                    }
                 } else {
                     this.loadingBottom = true
                 }
@@ -210,12 +215,14 @@
         mounted() {
             this.$store.commit('pluginStore/updatePlugins', [])
 
-            this.requestPlugins(true, (response) => {
-                if (response.data.currentPage < response.data.total) {
-                    this.$root.$on('viewScroll', this.onScroll)
-                    this.$root.$on('windowScroll', this.onScroll)
-                    this.$root.$on('windowResize', this.onWindowResize)
-                }
+            this.$nextTick(() => {
+                this.requestPlugins(true, (response) => {
+                    if (response.data.currentPage < response.data.total) {
+                        this.$root.$on('viewScroll', this.onScroll)
+                        this.$root.$on('windowScroll', this.onScroll)
+                        this.$root.$on('windowResize', this.onWindowResize)
+                    }
+                })
             })
         },
 
