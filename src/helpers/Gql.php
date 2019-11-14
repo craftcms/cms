@@ -22,16 +22,10 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * @var array Cached permission pairs for schemas by id.
-     */
-    private static $cachedPairs = [];
-
-    /**
      * Returns true if the active schema is aware of the provided scope(s).
      *
      * @param string|string[] $scopes The scope(s) to check.
      * @return bool
-     * @throws GqlException
      */
     public static function isSchemaAwareOf($scopes): bool
     {
@@ -63,34 +57,12 @@ class Gql
      */
     public static function extractAllowedEntitiesFromSchema($action = 'read'): array
     {
-        $activeSchema = Craft::$app->getGql()->getActiveSchema();
-
-        if (empty(self::$cachedPairs[$activeSchema->id])) {
-            try {
-                $permissions = (array)$activeSchema->scope;
-                $pairs = [];
-
-                foreach ($permissions as $permission) {
-                    // Check if this is for the requested action
-                    if (StringHelper::endsWith($permission, ':' . $action)) {
-                        $permission = StringHelper::removeRight($permission, ':' . $action);
-
-                        $parts = explode('.', $permission);
-
-                        if (count($parts) === 2) {
-                            $pairs[$parts[0]][] = $parts[1];
-                        }
-                    }
-                }
-
-                self::$cachedPairs[$activeSchema->id] = $pairs;
-            } catch (GqlException $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
-                return [];
-            }
+        try {
+            return Craft::$app->getGql()->getActiveSchema()->getAllScopePairsForAction($action);
+        } catch (GqlException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return [];
         }
-
-        return self::$cachedPairs[$activeSchema->id];
     }
 
     /**

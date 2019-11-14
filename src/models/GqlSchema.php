@@ -9,6 +9,7 @@ namespace craft\models;
 
 use craft\base\Model;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
 
@@ -83,6 +84,12 @@ class GqlSchema extends Model
      */
     public $isTemporary = false;
 
+    /**
+     * @var array Instance cache for the extracted scope pairs
+     * @since 3.3.16
+     */
+    private $_cachedPairs = [];
+
     // Public Methods
     // =========================================================================
 
@@ -147,9 +154,51 @@ class GqlSchema extends Model
      *
      * @param $name
      * @return bool
+     * @since 
      */
     public function has(string $name): bool
     {
         return is_array($this->scope) && in_array($name, $this->scope, true);
+    }
+
+    /**
+     * Return all scope pairs.
+     *
+     * @return array
+     * @since 3.3.16
+     */
+    public function getAllScopePairs(): array
+    {
+        if (!empty($this->_cachedPairs)) {
+            return $this->_cachedPairs;
+        }
+
+        foreach ((array)$this->scope as $permission) {
+            if (preg_match('/:([\w-]+)$/', $permission, $matches)) {
+                $action = $matches[1];
+                $permission = StringHelper::removeRight($permission, ':' . $action);
+                $parts = explode('.', $permission);
+
+                if (count($parts) === 2) {
+                    $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
+                }
+            }
+        }
+
+        return $this->_cachedPairs;
+    }
+
+    /**
+     * Return all scope pairs.
+     *
+     * @param string $action
+     * @return array
+     * @since 3.3.16
+     */
+    public function getAllScopePairsForAction(string $action = 'read'): array
+    {
+        $pairs = $this->getAllScopePairs();
+
+        return $pairs[$action] ?? [];
     }
 }
