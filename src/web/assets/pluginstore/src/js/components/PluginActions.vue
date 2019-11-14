@@ -73,12 +73,12 @@
 
         <template v-if="plugin.latestCompatibleVersion && plugin.latestCompatibleVersion != plugin.version">
             <div class="text-grey mt-4 px-8">
-                <p>Only up to {{plugin.latestCompatibleVersion}} is compatible with your version of Craft.</p>
+                <p>{{ "Only up to {version} is compatible with your version of Craft."|t('app', {version: plugin.latestCompatibleVersion}) }}</p>
             </div>
         </template>
         <template v-else-if="!plugin.latestCompatibleVersion">
             <div class="text-grey mt-4 px-8">
-                <p>This plugin isn’t compatible with your version of Craft.</p>
+                <p>{{ "This plugin isn’t compatible with your version of Craft."|t('app') }}</p>
             </div>
         </template>
     </div>
