@@ -227,6 +227,10 @@ const actions = {
             // request plugins by plugin id
             pluginStoreApi.getPluginsByHandles(pluginHandles)
                 .then((response) => {
+                    if (response.data && response.data.error) {
+                        throw response.data.error
+                    }
+
                     const data = response.data
                     const plugins = []
 

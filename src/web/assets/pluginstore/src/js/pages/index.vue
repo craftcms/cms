@@ -10,9 +10,18 @@
                 <plugin-grid :plugins="featuredSection.plugins" :auto-limit="true"></plugin-grid>
             </div>
 
-            <template v-if="activeTrialPlugins.length > 0">
+            <template v-if="activeTrialPlugins.length > 0 || activeTrialsError">
                 <h2>{{ "Active Trials"|t('app') }}</h2>
-                <plugin-grid :plugins="activeTrialPlugins" :trialMode="true"></plugin-grid>
+
+                <template v-if="activeTrialPlugins.length > 0">
+                    <plugin-grid :plugins="activeTrialPlugins" :trialMode="true"></plugin-grid>
+                </template>
+
+                <template v-if="activeTrialsError">
+                    <div class="mb-8">
+                        <p class="error">{{activeTrialsError}}</p>
+                    </div>
+                </template>
             </template>
         </template>
 
@@ -33,6 +42,7 @@
 
         data() {
             return {
+                activeTrialsError: null,
                 activeTrialsLoaded: false,
                 featuredSectionsLoaded: false,
                 loading: false,
@@ -74,6 +84,7 @@
                     this.$emit('dataLoaded')
                 })
                 .catch(() => {
+                    this.activeTrialsError = this.$options.filters.t('Couldn’t load active trials.', 'app')
                     this.activeTrialsLoaded = true
                     this.$emit('dataLoaded')
                 })
