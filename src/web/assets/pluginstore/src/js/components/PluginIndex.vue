@@ -17,6 +17,7 @@
 </template>
 
 <script>
+    import {mapState} from 'vuex'
     import PluginGrid from './PluginGrid'
     import PluginIndexSort from './PluginIndexSort'
 
@@ -30,8 +31,8 @@
 
         data() {
             return {
-                orderBy: 'activeInstalls',
-                direction: 'desc',
+                orderBy: null,
+                direction: null,
 
                 loading: false,
                 loadingBottom: false,
@@ -43,6 +44,10 @@
         },
 
         computed: {
+            ...mapState({
+                sortOptions: state => state.pluginStore.sortOptions,
+            }),
+
             requestActionData() {
                 return {
                     ...this.requestData,
@@ -54,27 +59,6 @@
         },
 
         methods: {
-            destroyPluginIndex() {
-                this.error = null
-                this.$root.$off('viewScroll', this.onScroll)
-                this.$root.$off('windowScroll', this.onScroll)
-                this.$root.$off('windowResize', this.onWindowResize)
-
-                this.$store.dispatch('pluginStore/cancelRequests')
-            },
-
-            mountPluginIndex() {
-                this.$store.commit('pluginStore/updatePlugins', [])
-
-                this.requestPlugins(true, (response) => {
-                    if (response.data.currentPage < response.data.total) {
-                        this.$root.$on('viewScroll', this.onScroll)
-                        this.$root.$on('windowScroll', this.onScroll)
-                        this.$root.$on('windowResize', this.onWindowResize)
-                    }
-                })
-            },
-
             onOrderByChange() {
                 this.error = null
 
@@ -112,13 +96,6 @@
                 }
 
                 this.requestPlugins()
-            },
-
-            refreshPluginIndex() {
-                this.$nextTick(() => {
-                    this.destroyPluginIndex()
-                    this.mountPluginIndex()
-                })
             },
 
             requestPlugins(dontAppendData, onAfterSuccess) {
@@ -222,12 +199,33 @@
             },
         },
 
+        created() {
+            const keys = Object.keys(this.sortOptions)
+            const firstOptionKey = keys[0]
+
+            this.orderBy = firstOptionKey
+            this.direction = this.sortOptions[firstOptionKey]
+        },
+
         mounted() {
-            this.mountPluginIndex()
+            this.$store.commit('pluginStore/updatePlugins', [])
+
+            this.requestPlugins(true, (response) => {
+                if (response.data.currentPage < response.data.total) {
+                    this.$root.$on('viewScroll', this.onScroll)
+                    this.$root.$on('windowScroll', this.onScroll)
+                    this.$root.$on('windowResize', this.onWindowResize)
+                }
+            })
         },
 
         beforeDestroy() {
-            this.destroyPluginIndex()
+            this.error = null
+            this.$root.$off('viewScroll', this.onScroll)
+            this.$root.$off('windowScroll', this.onScroll)
+            this.$root.$off('windowResize', this.onWindowResize)
+
+            this.$store.dispatch('pluginStore/cancelRequests')
         }
     }
 </script>

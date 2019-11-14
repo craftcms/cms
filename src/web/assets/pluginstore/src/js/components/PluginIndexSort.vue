@@ -22,8 +22,8 @@
                 selectedDirection: null,
                 sortMenuBtnAttributes: null,
                 options: {
-                    attribute: 'activeInstalls',
-                    direction: 'desc',
+                    attribute: null,
+                    direction: null,
                 },
             }
         },
@@ -37,8 +37,11 @@
         },
 
         mounted() {
+            this.options.attribute = this.orderBy
+            this.options.direction = this.direction
+
             this.sortMenuBtnAttributes = {
-                activeInstalls: this.$options.filters.t("Popularity", 'app'),
+                popularity: this.$options.filters.t("Popularity", 'app'),
                 dateUpdated: this.$options.filters.t("Last Update", 'app'),
                 name: this.$options.filters.t("Name", 'app'),
             }

@@ -22,15 +22,6 @@
             PluginIndex,
         },
 
-        data() {
-            return {
-                sortingOptions: {
-                    attribute: 'activeInstalls',
-                    sort: 'desc',
-                },
-            }
-        },
-
         watch: {
             searchQuery() {
                 this.search()
