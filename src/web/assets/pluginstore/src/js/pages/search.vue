@@ -24,7 +24,12 @@
 
         watch: {
             searchQuery() {
-                this.search()
+                this.$router.push({path: '/'})
+
+                this.$nextTick(() => {
+                    this.$router.push({path: '/search'})
+
+                })
             }
         },
 
@@ -38,12 +43,6 @@
                 return {
                     searchQuery: this.searchQuery,
                 }
-            }
-        },
-
-        methods: {
-            search() {
-                this.$refs.pluginIndex.refreshPluginIndex()
             }
         },
 
