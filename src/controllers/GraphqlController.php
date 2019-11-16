@@ -12,6 +12,7 @@ use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql;
 use craft\helpers\UrlHelper;
+use craft\models\GqlToken;
 use craft\models\GqlSchema;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
@@ -88,6 +89,7 @@ class GraphqlController extends Controller
 
         $gqlService = Craft::$app->getGql();
 
+        $token = null;
         $schema = null;
         $authorizationHeader = Craft::$app->request->headers->get('authorization');
 
@@ -95,10 +97,10 @@ class GraphqlController extends Controller
             $token = $matches[1];
             if ($token === '*') {
                 $this->requireAdmin(false);
-                $schema = Gql::createFullAccessSchema();
+                $token = Gql::createFullAccessToken();
             } else {
                 try {
-                    $schema = $gqlService->getSchemaByAccessToken($token);
+                    $token = $gqlService->getTokenByAccessToken($token);
                 } catch (InvalidArgumentException $e) {
                     throw new BadRequestHttpException('Invalid authorization token.');
                 }
@@ -106,19 +108,23 @@ class GraphqlController extends Controller
         }
 
         // What if something already set it on the service?
-        if (!$schema) {
+        if (!$token) {
             try {
                 $schema = $gqlService->getActiveSchema();
             } catch (GqlException $exception) {
-                // Well, go for the public schema then.
-                $schema = $gqlService->getPublicSchema();
+                // Well, go for the public token then.
+                $token = $gqlService->getPublicToken();
             }
         }
 
-        $schemaExpired = $schema && $schema->expiryDate && $schema->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
+        if (!$schema) {
+            $schemaExpired = $token && $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
 
-        if (!$schema || !$schema->enabled || $schemaExpired) {
-            throw new ForbiddenHttpException('Invalid authorization token.');
+            if (!$token || !$token->enabled || $schemaExpired) {
+                throw new ForbiddenHttpException('Invalid authorization token.');
+            }
+
+            $schema = $token->getSchema();
         }
 
         $query = $operationName = $variables = null;
@@ -171,39 +177,40 @@ class GraphqlController extends Controller
         $this->requireAdmin(false);
         $this->getView()->registerAssetBundle(GraphiqlAsset::class);
 
-        $schemaUid = Craft::$app->getRequest()->getQueryParam('schemaUid');
+        $tokenUid = Craft::$app->getRequest()->getQueryParam('tokenUid');
         $gqlService = Craft::$app->getGql();
 
-        if ($schemaUid && $schemaUid !== '*') {
+        if ($tokenUid && $tokenUid !== '*') {
             try {
-                $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
+                $selectedToken = $gqlService->getTokenByUid($tokenUid);
             } catch (InvalidArgumentException $e) {
-                throw new BadRequestHttpException('Invalid schema UID.');
+                throw new BadRequestHttpException('Invalid token UID.');
             }
-            Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
+            Craft::$app->getSession()->authorize("graphql-token:{$tokenUid}");
         } else {
-            $selectedSchema = Gql::createFullAccessSchema();
+            $selectedToken = Gql::createFullAccessToken();
         }
 
-        $schemas = [
-            Craft::t('app', 'Full Schema') => '*',
+        $tokens = [
+            Craft::t('app', 'Full Access Token') => '*',
         ];
 
-        foreach ($gqlService->getSchemas() as $schema) {
-            $name = $schema->getIsPublic() ? Craft::t('app', 'Public Schema') : $schema->name;
-            $schemas[$name] = $schema->uid;
+        foreach ($gqlService->getTokens() as $token) {
+            $name = $token->getIsPublic() ? Craft::t('app', 'Public Token') : $token->name;
+            $tokens[$name] = $token->uid;
         }
 
         return $this->renderTemplate('graphql/graphiql', [
             'url' => UrlHelper::actionUrl('graphql/api'),
-            'schemas' => $schemas,
-            'selectedSchema' => $selectedSchema
+            'tokens' => $tokens,
+            'selectedToken' => $selectedToken
         ]);
     }
 
     /**
      * @return Response
      * @throws ForbiddenHttpException
+     * @since 3.4.0
      */
     public function actionViewSchemas(): Response
     {
@@ -212,43 +219,58 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @param int|null $schemaId
-     * @param GqlSchema|null $schema
+     * @param int|null $tokenId
+     * @param GqlToken|null $token
      * @return Response
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
+     * @since 3.4.0
      */
-    public function actionEditSchema(int $schemaId = null, GqlSchema $schema = null): Response
+    public function actionEditToken(int $tokenId = null, GqlToken $token = null): Response
     {
         $this->requireAdmin(false);
 
         $gqlService = Craft::$app->getGql();
         $accessToken = null;
 
-        if ($schema || $schemaId) {
-            if (!$schema) {
-                $schema = $gqlService->getSchemaById($schemaId);
+        if ($token || $tokenId) {
+            if (!$token) {
+                $token = $gqlService->getTokenById($tokenId);
             }
 
-            if (!$schema) {
-                throw new NotFoundHttpException('Schema not found');
+            if (!$token) {
+                throw new NotFoundHttpException('Token not found');
             }
 
-            if ($schema->getIsPublic()) {
-                $title = Craft::t('app', 'Edit the Public GraphQL Schema');
+            if ($token->getIsPublic()) {
+                $title = Craft::t('app', 'Edit the Public GraphQL Token');
             } else {
-                $title = trim($schema->name) ?: Craft::t('app', 'Edit GraphQL Schema');
+                $title = trim($token->name) ?: Craft::t('app', 'Edit GraphQL Token');
             }
         } else {
-            $schema = new GqlSchema();
+            $token = new GqlToken();
             $accessToken = $this->_generateToken();
-            $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL schema');
+            $title = trim($token->name) ?: Craft::t('app', 'Create a new GraphQL token');
         }
 
-        return $this->renderTemplate('graphql/schemas/_edit', compact(
-            'schema',
+        $schemas = $gqlService->getSchemas();
+
+        $schemaOptions = [
+            ['label' => '-', 'value' => null,]
+        ];
+
+        foreach ($schemas as $schema) {
+            $schemaOptions[] = [
+                'label' => $schema->name,
+                'value' => $schema->id
+            ];
+        }
+
+        return $this->renderTemplate('graphql/tokens/_edit', compact(
+            'token',
             'title',
-            'accessToken'
+            'accessToken',
+            'schemaOptions'
         ));
     }
 
@@ -259,11 +281,135 @@ class GraphqlController extends Controller
      * @throws NotFoundHttpException
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\Exception
+     * @since 3.4.0
+     */
+    public function actionSaveToken()
+    {
+        $this->requirePostRequest();
+        $this->requireAdmin(false);
+        $this->requireElevatedSession();
+
+        $gqlService = Craft::$app->getGql();
+        $request = Craft::$app->getRequest();
+
+        $tokenId = $request->getBodyParam('tokenId');
+
+        if ($tokenId) {
+            $token = $gqlService->getTokenById($tokenId);
+
+            if (!$token) {
+                throw new NotFoundHttpException('Token not found');
+            }
+        } else {
+            $token = new GqlToken();
+        }
+
+        $token->name = $request->getBodyParam('name') ?? $token->name;
+        $token->accessToken = $request->getBodyParam('accessToken') ?? $token->accessToken;
+        $token->enabled = (bool)$request->getRequiredBodyParam('enabled');
+        $token->schemaId = $request->getBodyParam('schema');
+
+        if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
+            $token->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        }
+
+        $session = Craft::$app->getSession();
+
+        if (!$gqlService->saveToken($token)) {
+            $session->setError(Craft::t('app', 'Couldn’t save token.'));
+
+            // Send the volume back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'token' => $token
+            ]);
+
+            return null;
+        }
+
+        $session->setNotice(Craft::t('app', 'Schema saved.'));
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.4.0
+     */
+    public function actionDeleteToken(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireAdmin(false);
+
+        $schemaId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+
+        Craft::$app->getGql()->deleteTokenById($schemaId);
+
+        return $this->asJson(['success' => true]);
+    }
+
+
+    /**
+     * @return Response
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionViewTokens(): Response
+    {
+        $this->requireAdmin();
+        return $this->renderTemplate('graphql/tokens/_index');
+    }
+
+    /**
+     * @param int|null $schemaId
+     * @param GqlSchema|null $schema
+     * @return Response
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
+     * @since 3.4.0
+    */
+    public function actionEditSchema(int $schemaId = null, GqlSchema $schema = null): Response
+    {
+        $this->requireAdmin();
+
+        $gqlService = Craft::$app->getGql();
+
+        if ($schema || $schemaId) {
+            if (!$schema) {
+                $schema = $gqlService->getSchemaById($schemaId);
+            }
+
+            if (!$schema) {
+                throw new NotFoundHttpException('Schema not found');
+            }
+
+            $title = trim($schema->name) ?: Craft::t('app', 'Edit GraphQL Schema');
+        } else {
+            $schema = new GqlSchema();
+            $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL Schema');
+        }
+
+
+        return $this->renderTemplate('graphql/schemas/_edit', compact(
+            'schema',
+            'title'
+        ));
+    }
+
+    /**
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     * @since 3.4.0
      */
     public function actionSaveSchema()
     {
         $this->requirePostRequest();
-        $this->requireAdmin(false);
+        $this->requireAdmin();
         $this->requireElevatedSession();
 
         $gqlService = Craft::$app->getGql();
@@ -282,14 +428,7 @@ class GraphqlController extends Controller
         }
 
         $schema->name = $request->getBodyParam('name') ?? $schema->name;
-        $schema->accessToken = $request->getBodyParam('accessToken') ?? $schema->accessToken;
-        $schema->enabled = (bool)$request->getRequiredBodyParam('enabled');
         $schema->scope = $request->getBodyParam('permissions');
-
-        if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
-            $schema->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
-
         $session = Craft::$app->getSession();
 
         if (!$gqlService->saveSchema($schema)) {
@@ -311,6 +450,24 @@ class GraphqlController extends Controller
     /**
      * @return Response
      * @throws BadRequestHttpException
+     * @since 3.4.0
+     */
+    public function actionDeleteSchema(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireAdmin();
+
+        $schemaId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+
+        Craft::$app->getGql()->deleteSchemaById($schemaId);
+
+        return $this->asJson(['success' => true]);
+    }
+
+    /**
+     * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionFetchToken(): Response
     {
@@ -322,7 +479,7 @@ class GraphqlController extends Controller
         $schemaUid = Craft::$app->getRequest()->getRequiredBodyParam('schemaUid');
 
         try {
-            $schema = Craft::$app->getGql()->getSchemaByUid($schemaUid);
+            $schema = Craft::$app->getGql()->getTokenByUid($schemaUid);
         } catch (InvalidArgumentException $e) {
             throw new BadRequestHttpException('Invalid schema UID.');
         }
@@ -344,23 +501,6 @@ class GraphqlController extends Controller
         return $this->asJson([
             'accessToken' => $this->_generateToken(),
         ]);
-    }
-
-    /**
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionDeleteSchema(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-        $this->requireAdmin(false);
-
-        $schemaId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-
-        Craft::$app->getGql()->deleteSchemaById($schemaId);
-
-        return $this->asJson(['success' => true]);
     }
 
     /**

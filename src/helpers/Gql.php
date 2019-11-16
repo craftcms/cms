@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
+use craft\models\GqlToken;
 use GraphQL\Type\Definition\UnionType;
 
 /**
@@ -195,26 +196,19 @@ class Gql
     /**
      * Creates a temporary schema with full access to the GraphQL API.
      *
-     * @return GqlSchema
-     * @since 3.3.12
+     * @return GqlToken
+     * @since 3.4.0
      */
-    public static function createFullAccessSchema(): GqlSchema
+    public static function createFullAccessToken(): GqlToken
     {
         $permissionGroups = Craft::$app->getGql()->getAllPermissions();
-
-        $schema = new GqlSchema([
-            'uid' => '*',
-            'name' => Craft::t('app', 'Full Schema'),
-            'accessToken' => '*',
-            'enabled' => true,
-            'isTemporary' => true,
-            'scope' => []
-        ]);
+        $schema = new GqlSchema(['name' => 'Full Access Token']);
 
         // Fetch all nested permissions
         $traverser = function($permissions) use ($schema, &$traverser) {
             foreach ($permissions as $permission => $config) {
                 $schema->scope[] = $permission;
+
                 if (isset($config['nested'])) {
                     $traverser($config['nested']);
                 }
@@ -224,6 +218,15 @@ class Gql
         foreach ($permissionGroups as $permissionGroup) {
             $traverser($permissionGroup);
         }
+
+        $schema = new GqlToken([
+            'uid' => '*',
+            'name' => Craft::t('app', 'Full Schema'),
+            'accessToken' => '*',
+            'enabled' => true,
+            'isTemporary' => true,
+            'schema' => $schema
+        ]);
 
         return $schema;
     }

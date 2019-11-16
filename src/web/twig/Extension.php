@@ -971,8 +971,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function gqlFunction(string $query, array $variables = null, string $operationName = null): array
     {
-        $schema = Gql::createFullAccessSchema();
-        return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
+        $token = Gql::createFullAccessToken();
+        return Craft::$app->getGql()->executeQuery($token->getSchema(), $query, $variables, $operationName);
     }
 
     /**

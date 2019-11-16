@@ -1,0 +1,127 @@
+{% extends "_layouts/cp" %}
+
+{% requireEdition CraftPro %}
+
+{% set selectedSubnavItem = 'tokens' %}
+
+{% set fullPageForm = true %}
+
+{% set crumbs = [
+    { label: "GraphQL Tokens"|t('app'), url: url('graphql/tokens') }
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <input type="hidden" name="action" value="graphql/save-token">
+    {{ redirectInput('graphql/tokens') }}
+    {% if token.id %}<input type="hidden" name="tokenId" value="{{ token.id }}">{% endif %}
+
+    <div id="token-settings">
+        {% if not token.isPublic %}
+            {{ forms.textField({
+                first: true,
+                label: "Name"|t('app'),
+                instructions: "What this token will be called in the CP."|t('app'),
+                id: 'name',
+                name: 'name',
+                value: token.name,
+                errors: token.getErrors('name'),
+                autofocus: true,
+                required: true,
+            }) }}
+
+            {% embed '_includes/forms/field' with {
+                label: "Access Token"|t('app'),
+                instructions: 'The token that must be provided with GraphQL requests to access this token.'|t('app'),
+                id: 'accessToken',
+            } %}
+                {% block input %}
+                    {% import '_includes/forms' as forms %}
+                    <div class="flex">
+                        {{ forms.text({
+                            id: 'accessToken',
+                            name: 'accessToken',
+                            value: accessToken ?? '••••••••••••••••••••••••••••••••',
+                            errors: token.getErrors('accessToken'),
+                            readonly: true,
+                            disabled: not (accessToken ?? false),
+                            class: 'code',
+                            size: 32
+                        }) }}
+                        <div class="btngroup">
+                            {% if not (accessToken ?? false) %}
+                                <div id="show-btn" class="btn">{{ 'Show'|t('app') }}</div>
+                            {% endif %}
+                            <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>
+                        </div>
+                        <div id="token-spinner" class="spinner hidden"></div>
+                    </div>
+                {% endblock %}
+            {% endembed %}
+        {% endif %}
+
+        {{ forms.dateTimeField({
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (token.expiryDate ? token.expiryDate : null),
+            errors: token.getErrors('expiryDate')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: token.enabled,
+        }) }}
+
+        <hr>
+
+        <h2>{{ 'Select the schema for this token'|t('app') }}</h2>
+
+        {{ forms.selectField({
+            name: 'schema',
+            id: 'schema',
+            options: schemaOptions,
+            value: token.schemaId
+        }) }}
+
+    </div>
+{% endblock %}
+
+{% js %}
+    {% if not token.isPublic %}
+        {% if token.id %}
+            $('#show-btn').on('click', function() {
+                Craft.elevatedSessionManager.requireElevatedSession(function() {
+                    $('#token-spinner').removeClass('hidden');
+                    var data = {{ {tokenUid: token.uid}|json_encode|raw }};
+                    Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
+                        $('#token-spinner').addClass('hidden');
+                        if (textStatus === 'success') {
+                            $('#accessToken')
+                                .val(response.accessToken)
+                                .removeClass('disabled');
+                            $('#show-btn').remove();
+                        }
+                    });
+                });
+            });
+        {% endif %}
+        $('#regen-btn').on('click', function() {
+            $('#token-spinner').removeClass('hidden');
+            Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
+                $('#token-spinner').addClass('hidden');
+                if (textStatus === 'success') {
+                    $('#accessToken')
+                        .val(response.accessToken)
+                        .prop('disabled', false)
+                        .removeClass('disabled');
+                }
+            });
+        });
+    {% endif %}
+
+    new Craft.ElevatedSessionForm('#main-form');
+{% endjs %}

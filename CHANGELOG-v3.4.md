@@ -8,6 +8,8 @@
 
 ### Added
 - Added support for delta element updates. ([#4064](https://github.com/craftcms/cms/issues/4064))
+- Split GraphQL Schemas into schemas and tokens. Schemas are now assigned to tokens, allowing multiple tokens to use the same schema.
+- Add Project Config support for GraphQL schemas. ([#4829]((https://github.com/craftcms/cms/issues/4829))
 - Elements now track which field values have changed since the element was first loaded. ([#4149](https://github.com/craftcms/cms/issues/4149))
 - It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 - Added the `verifyEmailPath` config setting.
@@ -25,6 +27,10 @@
 - Added `craft\base\ElementInterface::clearDirtyFields()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
 - Added `craft\base\ElementInterface::isFieldDirty()`.
+- Added `craft\controllers\GraphqlController::actionDeleteToken()`.
+- Added `craft\controllers\GraphqlController::actionEditToken()`.
+- Added `craft\controllers\GraphqlController::actionSaveToken()`.
+- Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
 - Added `craft\elements\db\MatrixBlockQuery::field()`.
@@ -32,16 +38,32 @@
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
+- Added `craft\events\ExecuteGqlQueryEvent::$schemaId`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\events\TemplateEvent::$templateMode`.
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
+- Added `craft\helpers\Gql::createFullAccessToken()`.
+- Added `craft\models\GqlToken`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\records\GqlToken`.
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
 - Added `craft\services\Assets::getAssetPreview()`.
+- Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
 - Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
+- Added `craft\services\Gql::deleteSchema()`.
+- Added `craft\services\Gql::deleteSchemaById()`.
+- Added `craft\services\Gql::deleteTokenById()`.
+- Added `craft\services\Gql::getPublicToken()`.
+- Added `craft\services\Gql::getTokenByAccessToken()`.
+- Added `craft\services\Gql::getTokenById()`.
+- Added `craft\services\Gql::getTokenByUid()`.
+- Added `craft\services\Gql::getTokens()`.
 - Added `craft\services\Gql::getValidationRules()`.
+- Added `craft\services\Gql::handleChangedSchema()`.
+- Added `craft\services\Gql::handleDeletedSchema()`.
+- Added `craft\services\Gql::saveToken()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.
@@ -75,6 +97,7 @@
 - The `_layouts/cp.html` template now supports `mainAttributes` and `mainFormAttributes` variables.
 - Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
 - Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`. 
+- `craft\models\GqlSchema::$scope` is now read-only. Setting scope manually is now only possible when creating a new model.
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
@@ -88,4 +111,20 @@
 - Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
+- Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
 - Deprecated `craft\services\Search::indexElementFields()`.
+
+### Removed
+- Removed `craft\helpers\Gql::createFullAccessSchema()`.
+- Removed `craft\models\GqlSchema::PUBLIC_TOKEN`.
+- Removed `craft\models\GqlSchema::$accessToken`.
+- Removed `craft\models\GqlSchema::$enabled`.
+- Removed `craft\models\GqlSchema::$expiryDate`.
+- Removed `craft\models\GqlSchema::$lastUsed`.
+- Removed `craft\models\GqlSchema::$dateCreated`.
+- Removed `craft\models\GqlSchema::$isTemporary`.
+- Removed `craft\models\GqlSchema::getIsPublic()`.
+- Removed `craft\services\Gql::getPublicSchema()`.
+
+
+

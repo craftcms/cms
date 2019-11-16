@@ -1424,6 +1424,7 @@ class ProjectConfig extends Component
             'globalSets' => $this->_getGlobalSetData(),
             'plugins' => $this->_getPluginData(),
             'imageTransforms' => $this->_getTransformData(),
+            'graphql' => $this->_getGqlData(),
         ];
 
         return $data;
@@ -2086,7 +2087,6 @@ class ProjectConfig extends Component
         return $pluginData;
     }
 
-
     /**
      * Return asset transform config array
      *
@@ -2119,6 +2119,31 @@ class ProjectConfig extends Component
         }
 
         return $transformRows;
+    }
+
+    /**
+     * Return GraphQL config array
+     *
+     * @return array
+     */
+    private function _getGqlData(): array
+    {
+        $scopeRows = (new Query())
+            ->select([
+                'name',
+                'scope',
+                'uid',
+            ])
+            ->from([Table::GQLSCOPES])
+            ->indexBy('uid')
+            ->all();
+
+        foreach ($scopeRows as &$row) {
+            unset($row['uid']);
+            $row['scope'] = Json::decodeIfJson($row['scope']);
+        }
+
+        return ['scopes' => $scopeRows];
     }
 
     /**

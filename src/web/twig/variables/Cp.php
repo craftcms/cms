@@ -197,20 +197,29 @@ class Cp extends Component
 
         if ($isAdmin) {
             if ($craftPro && $generalConfig->enableGql) {
+                $subNavItems = [
+                    'explore' => [
+                        'label' => Craft::t('app', 'Explore'),
+                        'url' => 'graphql',
+                    ],
+                    'tokens' => [
+                        'label' => Craft::t('app', 'Tokens'),
+                        'url' => 'graphql/tokens',
+                    ]
+                ];
+                
+                if ($generalConfig->allowAdminChanges) {
+                    $subNavItems['schemas'] = [
+                        'label' => Craft::t('app', 'Schemas'),
+                        'url' => 'graphql/schemas',
+                    ];
+                }
+
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
                     'icon' => '@app/icons/graphql.svg',
-                    'subnav' => [
-                        'explore' => [
-                            'label' => Craft::t('app', 'Explore'),
-                            'url' => 'graphql',
-                        ],
-                        'schemas' => [
-                            'label' => Craft::t('app', 'Schemas'),
-                            'url' => 'graphql/schemas',
-                        ]
-                    ]
+                    'subnav' => $subNavItems
                 ];
             }
 

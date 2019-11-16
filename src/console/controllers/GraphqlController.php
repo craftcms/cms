@@ -102,28 +102,28 @@ class GraphqlController extends Controller
      */
     protected function getGqlSchema()
     {
-        $schema = null;
+        $token = null;
         $gqlService = Craft::$app->getGql();
-        // First try to get the schema from the passed in token
+        // First try to get the token from the passed in token
         if ($this->token !== null) {
             try {
-                $schema = $gqlService->getSchemaByAccessToken($this->token);
+                $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
                 $this->stdout('Invalid authorization token: ', Console::FG_RED);
                 $this->stdout($this->token . PHP_EOL, Console::FG_YELLOW);
                 return null;
             }
         }
-        // Next look up the active schema
-        if ($schema === null) {
+        // Next look up the active token
+        if ($token === null) {
             try {
-                $schema = $gqlService->getActiveSchema();
+                $token = $gqlService->getActiveSchema();
             } catch (GqlException $exception) {
-                // Well, go for the public schema then.
-                $schema = $gqlService->getPublicSchema();
+                // Well, go for the public token then.
+                $token = $gqlService->getPublicToken();
             }
         }
 
-        return $schema;
+        return $token->getSchema();
     }
 }
