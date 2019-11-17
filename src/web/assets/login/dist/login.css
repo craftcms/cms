@@ -13,7 +13,7 @@ body { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-or
 #login-form .btn, #login-form .select:not(.selectize) select { background-color: #cdd8e4; }
 #login-form .btn:focus, #login-form .btn:hover, #login-form .select:not(.selectize) select:focus, #login-form .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 #login-form .btn:active, #login-form .btn.active, #login-form .select:not(.selectize) select:active, #login-form .select:not(.selectize) select.active { background-color: #acbed2; }
-#login-form .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+#login-form .text { background-color: #cdd8e4; }
 #login-form .text:focus { background-color: #bdcbdb; }
 
 #login-form.has-logo { padding-top: 116px; }
@@ -21,7 +21,7 @@ body { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-or
 #login-form h1 { text-align: center; font-size: 3em; color: #3f4d5a; word-wrap: break-word; }
 
 #login-fields { position: relative; }
-#login-fields:after { position: absolute; z-index: 1; top: 0; right: 0; left: 0; bottom: 0; display: block; content: '.'; font-size: 0; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
+#login-fields:after { position: absolute; z-index: 1; top: 0; right: 0; left: 0; bottom: 0; display: block; content: '.'; font-size: 0; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
 #login-fields .text { -webkit-box-shadow: none; box-shadow: none; }
 
 #login-form .field { margin: 0; }

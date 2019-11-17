@@ -397,7 +397,6 @@ $largeBorderRadius: 5px;
 
   .text {
     background-color: $grey200;
-    box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
 
     &:focus {
       background-color: darken($grey200, 5%);
@@ -452,7 +451,7 @@ $largeBorderRadius: 5px;
   border: none;
   background-color: $grey100;
   border-radius: $largeBorderRadius;
-  box-shadow: inset 0 1px 3px -1px darken($grey100, 10%);
+  box-shadow: inset 0 1px 3px -1px transparentize($grey800, 0.7);
 }
 
 @mixin text-input-focused-styles {

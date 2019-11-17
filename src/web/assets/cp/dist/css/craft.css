@@ -1017,7 +1017,7 @@ body.rtl .meta > .field > .input > .select select { padding: 7px 0 7px 12px; }
 .header .btn, .header .select:not(.selectize) select, .hud-header .btn, .hud-header .select:not(.selectize) select, .footer .btn, .footer .select:not(.selectize) select, .hud-footer .btn, .hud-footer .select:not(.selectize) select { background-color: #cdd8e4; }
 .header .btn:focus, .header .btn:hover, .header .select:not(.selectize) select:focus, .header .select:not(.selectize) select:hover, .hud-header .btn:focus, .hud-header .btn:hover, .hud-header .select:not(.selectize) select:focus, .hud-header .select:not(.selectize) select:hover, .footer .btn:focus, .footer .btn:hover, .footer .select:not(.selectize) select:focus, .footer .select:not(.selectize) select:hover, .hud-footer .btn:focus, .hud-footer .btn:hover, .hud-footer .select:not(.selectize) select:focus, .hud-footer .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 .header .btn:active, .header .btn.active, .header .select:not(.selectize) select:active, .header .select:not(.selectize) select.active, .hud-header .btn:active, .hud-header .btn.active, .hud-header .select:not(.selectize) select:active, .hud-header .select:not(.selectize) select.active, .footer .btn:active, .footer .btn.active, .footer .select:not(.selectize) select:active, .footer .select:not(.selectize) select.active, .hud-footer .btn:active, .hud-footer .btn.active, .hud-footer .select:not(.selectize) select:active, .hud-footer .select:not(.selectize) select.active { background-color: #acbed2; }
-.header .text, .hud-header .text, .footer .text, .hud-footer .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+.header .text, .hud-header .text, .footer .text, .hud-footer .text { background-color: #cdd8e4; }
 .header .text:focus, .hud-header .text:focus, .footer .text:focus, .hud-footer .text:focus { background-color: #bdcbdb; }
 
 .header, .hud-header { border-radius: 5px 5px 0 0; padding: 24px; -webkit-box-shadow: inset 0 -1px 0 rgba(51, 64, 77, 0.1); box-shadow: inset 0 -1px 0 rgba(51, 64, 77, 0.1); }
@@ -1217,7 +1217,7 @@ table.shadow-box thead:first-child tr:first-child th:last-child, table.shadow-bo
 table.shadow-box thead:last-child tr:last-child th:first-child, table.shadow-box thead:last-child tr:last-child th:first-child.disabled:after, table.shadow-box thead:last-child tr:last-child td:first-child, table.shadow-box thead:last-child tr:last-child td:first-child.disabled:after, table.shadow-box tbody:last-child tr:last-child th:first-child, table.shadow-box tbody:last-child tr:last-child th:first-child.disabled:after, table.shadow-box tbody:last-child tr:last-child td:first-child, table.shadow-box tbody:last-child tr:last-child td:first-child.disabled:after, table.editable thead:last-child tr:last-child th:first-child, table.editable thead:last-child tr:last-child th:first-child.disabled:after, table.editable thead:last-child tr:last-child td:first-child, table.editable thead:last-child tr:last-child td:first-child.disabled:after, table.editable tbody:last-child tr:last-child th:first-child, table.editable tbody:last-child tr:last-child th:first-child.disabled:after, table.editable tbody:last-child tr:last-child td:first-child, table.editable tbody:last-child tr:last-child td:first-child.disabled:after { border-bottom-left-radius: 4px; }
 table.shadow-box thead:last-child tr:last-child th:last-child, table.shadow-box thead:last-child tr:last-child th:last-child.disabled:after, table.shadow-box thead:last-child tr:last-child td:last-child, table.shadow-box thead:last-child tr:last-child td:last-child.disabled:after, table.shadow-box tbody:last-child tr:last-child th:last-child, table.shadow-box tbody:last-child tr:last-child th:last-child.disabled:after, table.shadow-box tbody:last-child tr:last-child td:last-child, table.shadow-box tbody:last-child tr:last-child td:last-child.disabled:after, table.editable thead:last-child tr:last-child th:last-child, table.editable thead:last-child tr:last-child th:last-child.disabled:after, table.editable thead:last-child tr:last-child td:last-child, table.editable thead:last-child tr:last-child td:last-child.disabled:after, table.editable tbody:last-child tr:last-child th:last-child, table.editable tbody:last-child tr:last-child th:last-child.disabled:after, table.editable tbody:last-child tr:last-child td:last-child, table.editable tbody:last-child tr:last-child td:last-child.disabled:after { border-bottom-right-radius: 4px; }
 
-.text:not(.selectize-text), .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input { border: none; background-color: #e4edf6; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px #bed2e9; box-shadow: inset 0 1px 3px -1px #bed2e9; }
+.text:not(.selectize-text), .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input { border: none; background-color: #e4edf6; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); }
 
 .text.focus, .text:focus, .border-box.focus, .border-box:focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize-text > .selectize-control > .selectize-input:focus { outline: none; background-color: #d1dff0; }
 
@@ -1318,7 +1318,7 @@ body.ltr .checkboxfield.has-instructions .instructions { padding-left: 20px; }
 body.rtl .checkboxfield.has-instructions .instructions { padding-right: 20px; }
 
 /* multiselect */
-.multiselect > select { border: none; background-color: #e4edf6; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px #bed2e9; box-shadow: inset 0 1px 3px -1px #bed2e9; color: #3f4d5a; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+.multiselect > select { border: none; background-color: #e4edf6; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); color: #3f4d5a; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 .multiselect > select:focus { outline: none; background-color: #d1dff0; }
 .multiselect > select option { padding: 1px 8px; }
 
@@ -1446,7 +1446,7 @@ body.rtl .selectize.select .selectize-control .selectize-input { padding: 7px 10
 .selectize.select.fullwidth .selectize-control, .selectize.select.fullwidth .selectize-control .selectize-input { min-width: 100%; }
 
 /* multi select styles */
-.selectize.multiselect .selectize-control.multi .selectize-input { border: none; background-color: #e4edf6; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px #bed2e9; box-shadow: inset 0 1px 3px -1px #bed2e9; padding: 6px 8px; }
+.selectize.multiselect .selectize-control.multi .selectize-input { border: none; background-color: #e4edf6; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); padding: 6px 8px; }
 
 .selectize.multiselect .selectize-control.multi .selectize-input.has-items { padding: 5px 8px; }
 
@@ -1572,7 +1572,7 @@ body.rtl .matrix-configurator .mc-sidebar { border-left: 1px solid rgba(51, 64, 
 .matrix-configurator .mc-sidebar .btn, .matrix-configurator .mc-sidebar .select:not(.selectize) select { background-color: #cdd8e4; }
 .matrix-configurator .mc-sidebar .btn:focus, .matrix-configurator .mc-sidebar .btn:hover, .matrix-configurator .mc-sidebar .select:not(.selectize) select:focus, .matrix-configurator .mc-sidebar .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 .matrix-configurator .mc-sidebar .btn:active, .matrix-configurator .mc-sidebar .btn.active, .matrix-configurator .mc-sidebar .select:not(.selectize) select:active, .matrix-configurator .mc-sidebar .select:not(.selectize) select.active { background-color: #acbed2; }
-.matrix-configurator .mc-sidebar .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+.matrix-configurator .mc-sidebar .text { background-color: #cdd8e4; }
 .matrix-configurator .mc-sidebar .text:focus { background-color: #bdcbdb; }
 
 body.ltr .matrix-configurator .mc-sidebar.block-types { left: 0; }
@@ -1885,7 +1885,7 @@ body.rtl #user-info { padding: 0 14px 0 7px; }
 #global-header .btn, #global-header .select:not(.selectize) select, #header .btn, #header .select:not(.selectize) select, #toolbar .btn, #toolbar .select:not(.selectize) select { background-color: #cdd8e4; }
 #global-header .btn:focus, #global-header .btn:hover, #global-header .select:not(.selectize) select:focus, #global-header .select:not(.selectize) select:hover, #header .btn:focus, #header .btn:hover, #header .select:not(.selectize) select:focus, #header .select:not(.selectize) select:hover, #toolbar .btn:focus, #toolbar .btn:hover, #toolbar .select:not(.selectize) select:focus, #toolbar .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 #global-header .btn:active, #global-header .btn.active, #global-header .select:not(.selectize) select:active, #global-header .select:not(.selectize) select.active, #header .btn:active, #header .btn.active, #header .select:not(.selectize) select:active, #header .select:not(.selectize) select.active, #toolbar .btn:active, #toolbar .btn.active, #toolbar .select:not(.selectize) select:active, #toolbar .select:not(.selectize) select.active { background-color: #acbed2; }
-#global-header .text, #header .text, #toolbar .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+#global-header .text, #header .text, #toolbar .text { background-color: #cdd8e4; }
 #global-header .text:focus, #header .text:focus, #toolbar .text:focus { background-color: #bdcbdb; }
 #global-header .flex, #header .flex, #toolbar .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; max-width: 100%; }
 #global-header .flex.flex-nowrap, #header .flex.flex-nowrap, #toolbar .flex.flex-nowrap { min-width: 0; }
@@ -1920,7 +1920,7 @@ body.rtl #sidebar-container { margin-right: -24px; }
 #sidebar .btn, #sidebar .select:not(.selectize) select { background-color: #cdd8e4; }
 #sidebar .btn:focus, #sidebar .btn:hover, #sidebar .select:not(.selectize) select:focus, #sidebar .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 #sidebar .btn:active, #sidebar .btn.active, #sidebar .select:not(.selectize) select:active, #sidebar .select:not(.selectize) select.active { background-color: #acbed2; }
-#sidebar .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+#sidebar .text { background-color: #cdd8e4; }
 #sidebar .text:focus { background-color: #bdcbdb; }
 #sidebar.fixed { position: fixed; overflow-y: auto; padding-top: 14px; padding-bottom: 14px; }
 #sidebar nav li a { border-radius: 5px; }
@@ -1943,7 +1943,7 @@ body.rtl #sidebar-container { margin-right: -24px; }
 #tabs .btn, #tabs .select:not(.selectize) select { background-color: #cdd8e4; }
 #tabs .btn:focus, #tabs .btn:hover, #tabs .select:not(.selectize) select:focus, #tabs .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 #tabs .btn:active, #tabs .btn.active, #tabs .select:not(.selectize) select:active, #tabs .select:not(.selectize) select.active { background-color: #acbed2; }
-#tabs .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+#tabs .text { background-color: #cdd8e4; }
 #tabs .text:focus { background-color: #bdcbdb; }
 #tabs ul { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; max-width: calc(100% - 40px); }
 #tabs ul li { max-width: 100%; }
@@ -1991,7 +1991,7 @@ body.rtl #details { padding-right: 14px; }
 #details .meta.read-only .btn, #details .meta.read-only .select:not(.selectize) select { background-color: #cdd8e4; }
 #details .meta.read-only .btn:focus, #details .meta.read-only .btn:hover, #details .meta.read-only .select:not(.selectize) select:focus, #details .meta.read-only .select:not(.selectize) select:hover { background-color: #bdcbdb; }
 #details .meta.read-only .btn:active, #details .meta.read-only .btn.active, #details .meta.read-only .select:not(.selectize) select:active, #details .meta.read-only .select:not(.selectize) select.active { background-color: #acbed2; }
-#details .meta.read-only .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+#details .meta.read-only .text { background-color: #cdd8e4; }
 #details .meta.read-only .text:focus { background-color: #bdcbdb; }
 #details .meta.read-only .btn { -webkit-box-shadow: inset 0 0 0 1px rgba(123, 135, 147, 0.5); box-shadow: inset 0 0 0 1px rgba(123, 135, 147, 0.5); }
 #details .meta > .field, #details .meta > .data { margin: 0 -24px !important; }
@@ -2034,7 +2034,7 @@ body.rtl #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
   #sidebar-toggle-container .btn, #sidebar-toggle-container .select:not(.selectize) select { background-color: #cdd8e4; }
   #sidebar-toggle-container .btn:focus, #sidebar-toggle-container .btn:hover, #sidebar-toggle-container .select:not(.selectize) select:focus, #sidebar-toggle-container .select:not(.selectize) select:hover { background-color: #bdcbdb; }
   #sidebar-toggle-container .btn:active, #sidebar-toggle-container .btn.active, #sidebar-toggle-container .select:not(.selectize) select:active, #sidebar-toggle-container .select:not(.selectize) select.active { background-color: #acbed2; }
-  #sidebar-toggle-container .text { background-color: #cdd8e4; -webkit-box-shadow: inset 0 1px 3px -1px #acbed2; box-shadow: inset 0 1px 3px -1px #acbed2; }
+  #sidebar-toggle-container .text { background-color: #cdd8e4; }
   #sidebar-toggle-container .text:focus { background-color: #bdcbdb; }
   #sidebar-toggle:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; content: 'downangle'; }
   body.ltr #sidebar-toggle:after { margin-left: 5px; }
