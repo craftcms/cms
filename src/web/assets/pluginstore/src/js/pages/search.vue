@@ -9,7 +9,12 @@
             <spinner></spinner>
         </template>
         <template v-else>
-            <plugin-grid :plugins="pluginsToRender"></plugin-grid>
+            <template v-if="pluginsToRender.length">
+                <plugin-grid :plugins="pluginsToRender"></plugin-grid>
+            </template>
+            <template v-else>
+              <p>No plugins found.</p>
+            </template>
         </template>
     </div>
 </template>
