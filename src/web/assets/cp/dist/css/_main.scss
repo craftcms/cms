@@ -1429,6 +1429,14 @@ h2 + .actions {
 /*  Tables
 /* ----------------------------------------*/
 
+.scrolltable {
+  margin-left: -1px;
+  margin-right: -1px;
+  width: calc(100% + 2px);
+  padding: 0 1px;
+  overflow-x: auto;
+}
+
 table {
   &.fixed-layout {
     table-layout: fixed;
@@ -1890,6 +1898,8 @@ $checkboxPadding: 20px;
 
   // table views
   .tableview {
+    overflow-x: auto;
+
     tr {
       outline: none;
 

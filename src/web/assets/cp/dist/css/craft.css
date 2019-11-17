@@ -588,6 +588,8 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------
 /*  Tables
 /* ----------------------------------------*/
+.scrolltable { margin-left: -1px; margin-right: -1px; width: calc(100% + 2px); padding: 0 1px; overflow-x: auto; }
+
 table.fixed-layout { table-layout: fixed; }
 table th.thin, table td.thin { width: 0.01% !important; }
 table thead th { font-weight: bold; vertical-align: top; line-height: 1.2; color: #7b8793; }
@@ -712,6 +714,7 @@ body.rtl .element.loading:after { left: 3px; }
 .elements { position: relative; }
 .elements.busy { min-height: 200px; }
 .elements.busy:after { display: block; content: '.'; font-size: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.75) url(../images/spinner.gif) no-repeat 50% 50%; }
+.elements .tableview { overflow-x: auto; }
 .elements .tableview tr { outline: none; }
 .elements .tableview tr.sel th, .elements .tableview tr.sel td { background-color: #cdd8e4 !important; }
 .elements .tableview th, .elements .tableview td { position: relative; }

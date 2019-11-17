@@ -16,30 +16,32 @@
 {% block content %}
     {% set schemas = craft.app.gql.schemas %}
 
-    <table id="schemas" class="data fullwidth collapsible">
-        <thead>
-            <th scope="col">{{ "Schema name"|t('app') }}</th>
-            <th scope="col">{{ "Enabled"|t('app') }}</th>
-            <th scope="col">{{ "Last Used"|t('app') }}</th>
-            <th scope="col">{{ "Expires"|t('app') }}</th>
-            <th></th>
-        </thead>
-        <tbody>
-            {% for schema in schemas %}
-                <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.isPublic ? 'Public Schema'|t('app') : schema.name }}</a></th>
-                    <td data-title="{{ 'Enabled'|t('app') }}">{% if schema.enabled %}<div data-icon="check"></div>{% endif %}</td>
-                    {{ _self.timestampCell('Last Used'|t('app'), schema.lastUsed) }}
-                    {{ _self.timestampCell('Expires'|t('app'), schema.expiryDate) }}
-                    <th class="thin">
-                        {% if not schema.isPublic %}
-                            <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
-                        {% endif %}
-                    </th>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="scrolltable">
+        <table id="schemas" class="data fullwidth">
+            <thead>
+                <th scope="col">{{ "Schema name"|t('app') }}</th>
+                <th scope="col">{{ "Enabled"|t('app') }}</th>
+                <th scope="col">{{ "Last Used"|t('app') }}</th>
+                <th scope="col">{{ "Expires"|t('app') }}</th>
+                <th></th>
+            </thead>
+            <tbody>
+                {% for schema in schemas %}
+                    <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.isPublic ? 'Public Schema'|t('app') : schema.name }}</a></th>
+                        <td data-title="{{ 'Enabled'|t('app') }}">{% if schema.enabled %}<div data-icon="check"></div>{% endif %}</td>
+                        {{ _self.timestampCell('Last Used'|t('app'), schema.lastUsed) }}
+                        {{ _self.timestampCell('Expires'|t('app'), schema.expiryDate) }}
+                        <th class="thin">
+                            {% if not schema.isPublic %}
+                                <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
+                            {% endif %}
+                        </th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <div class="buttons">
         <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>

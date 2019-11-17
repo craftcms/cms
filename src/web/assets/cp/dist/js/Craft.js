@@ -19749,10 +19749,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         },
 
         afterInit: function() {
-            // Make the table collapsible for mobile devices
-            Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
-            Craft.cp.updateResponsiveTables();
-
             // Set the sort header
             this.initTableHeaders();
 
@@ -19874,15 +19870,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
             }
 
             Craft.cp.updateResponsiveTables();
-        },
-
-        destroy: function() {
-            if (this.$table) {
-                // Remove the soon-to-be-wiped-out table from the list of collapsible tables
-                Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
-            }
-
-            this.base();
         },
 
         createElementEditor: function($element) {
