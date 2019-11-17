@@ -53,7 +53,6 @@
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
 - Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::deleteSchema()`.
-- Added `craft\services\Gql::deleteSchemaById()`.
 - Added `craft\services\Gql::deleteTokenById()`.
 - Added `craft\services\Gql::getPublicToken()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
