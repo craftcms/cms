@@ -20,7 +20,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         $container: null,
         $main: null,
-        $mainSpinner: null,
         isIndexBusy: false,
 
         $sidebar: null,
@@ -119,7 +118,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
             this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
             this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
-            this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
@@ -130,15 +128,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.settings.hideSidebar) {
                 this.$sidebar.hide();
                 $('.body, .content', this.$container).removeClass('has-sidebar');
-            }
-
-            // Keep the toolbar at the top of the window
-            if (
-                (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
-                !Garnish.isMobileBrowser(true)
-            ) {
-                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
-                this.addListener(Garnish.$scrollContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -382,31 +371,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
             }, this));
-        },
-
-        updateFixedToolbar: function(e) {
-            this.updateFixedToolbar._scrollTop = Garnish.$scrollContainer.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
-                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
-                    this.$toolbar.addClass('fixed');
-                }
-
-                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
-                    this.$toolbar.css({
-                        top: Garnish.$scrollContainer.offset().top,
-                        width: this.$main.width()
-                    });
-                }
-            } else {
-                if (this.$toolbar.hasClass('fixed')) {
-                    this.$toolbar.removeClass('fixed');
-                    this.$toolbar.css('width', '');
-                    this.$elements.css('padding-top', '');
-                    this.$toolbar.css('top', '0');
-                }
-            }
         },
 
         initSource: function($source) {
@@ -680,7 +644,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar.css('min-height', this.$toolbar.height());
 
             // Hide any toolbar inputs
-            this._$detachedToolbarItems = this.$toolbarFlexContainer.children().not(this.$selectAllContainer).not(this.$mainSpinner);
+            this._$detachedToolbarItems = this.$toolbarFlexContainer.children().not(this.$selectAllContainer);
             this._$detachedToolbarItems.detach();
 
             if (!this._$triggers) {
@@ -760,7 +724,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            this._$detachedToolbarItems.insertBefore(this.$mainSpinner);
+            this._$detachedToolbarItems.insertAfter(this.$selectAllContainer);
             this._$triggers.detach();
 
             this.$toolbarFlexContainer.children().not(this.$selectAllContainer).removeClass('hidden');
@@ -934,7 +898,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Create the buttons if there's more than one mode available to this source
             if (this.sourceViewModes.length > 1) {
-                this.$viewModeBtnContainer = $('<div class="btngroup"/>').insertBefore(this.$mainSpinner);
+                this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$toolbarFlexContainer);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
                     var sourceViewMode = this.sourceViewModes[i];
@@ -1188,12 +1152,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setIndexBusy: function() {
-            this.$mainSpinner.removeClass('invisible');
+            this.$elements.addClass('busy');
             this.isIndexBusy = true;
         },
 
         setIndexAvailable: function() {
-            this.$mainSpinner.addClass('invisible');
+            this.$elements.removeClass('busy');
             this.isIndexBusy = false;
         },
 
@@ -1850,7 +1814,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
-            toolbarFixed: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,

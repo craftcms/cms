@@ -10,28 +10,30 @@
 {% endblock %}
 
 {% block content %}
-    <table id="entrytypes" class="data fullwidth collapsible">
-        <thead>
-            <th scope="col">{{ "Name"|t('app') }}</th>
-            <th scope="col">{{ "Handle"|t('app') }}</th>
-            {% if multiple %}
-                <td class="thin"></td>
-                <td class="thin"></td>
-            {% endif %}
-        </thead>
-        <tbody>
-            {% for entryType in entryTypes %}
-                <tr data-id="{{ entryType.id }}" data-uid="{{ entryType.uid }}" data-name="{{ entryType.name|t('site') }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t('site') }}</a></th>
-                    <td data-title="{{ 'Handle'|t('app') }}"><code>{{ entryType.handle }}</code></td>
-                    {% if multiple %}
-                        <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="scrolltable">
+        <table id="entrytypes" class="data fullwidth">
+            <thead>
+                <th scope="col">{{ "Name"|t('app') }}</th>
+                <th scope="col">{{ "Handle"|t('app') }}</th>
+                {% if multiple %}
+                    <td class="thin"></td>
+                    <td class="thin"></td>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for entryType in entryTypes %}
+                    <tr data-id="{{ entryType.id }}" data-uid="{{ entryType.uid }}" data-name="{{ entryType.name|t('site') }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t('site') }}</a></th>
+                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ entryType.handle }}</code></td>
+                        {% if multiple %}
+                            <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
 
 

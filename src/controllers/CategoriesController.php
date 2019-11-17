@@ -18,7 +18,6 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
-use craft\web\assets\editcategory\EditCategoryAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -415,8 +414,6 @@ class CategoriesController extends Controller
         $variables['nextCategoryUrl'] = "categories/{$variables['group']->handle}/new{$siteSegment}";
 
         // Render the template!
-        $this->getView()->registerAssetBundle(EditCategoryAsset::class);
-
         return $this->renderTemplate('categories/_edit', $variables);
     }
 

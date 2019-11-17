@@ -20,7 +20,7 @@
 /* ----------------------------------------*/
 
 body, html {
-  background: $bgColor;
+  background-color: $grey100;
 }
 
 html.noscroll,
@@ -142,7 +142,7 @@ body.rtl [data-icon-after=structure]:after {
 
 .help:before {
   content: 'help';
-  color: #9d2dcc;
+  color: $pink400;
 }
 
 #preview-btn,
@@ -166,49 +166,12 @@ body.rtl [data-icon-after=structure]:after {
   }
 }
 
-/* nav */
-.nav {
-  display: block;
-}
-
-.nav ul li a {
-  display: block;
-  padding: 5px 0;
-  color: #b3b3b3;
-}
-
-.nav ul li a:hover {
-  color: $linkColor;
-  text-decoration: none;
-}
-
-.nav ul li a .status {
-  @include margin(0, 7px, 0, 6px);
-}
-
-.nav ul li a .badge {
-  display: block;
-  @include floatright;
-  padding: 0 7px;
-  border-radius: 9px;
-  line-height: 18px;
-  font-weight: bold;
-}
-
-.nav ul li a[data-icon]:before {
-  margin: 0 8px 0 3px;
-}
-
-.nav ul li a.sel {
-  color: #2c2c2c;
-}
-
 /* headings */
 h1 {
   margin-bottom: 24px;
-  font-weight: 300;
-  font-size: 24px;
-  line-height: 1;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.2;
 }
 
 h2 {
@@ -345,8 +308,7 @@ li.sel a {
 #revision-btn.disabled {
   opacity: 1;
   color: $mediumDarkTextColor;
-  background: transparent;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+  background-color: transparentize($grey200, 0.5) !important;
 }
 
 /* status icons */
@@ -364,7 +326,7 @@ li.sel a {
 }
 
 .checkmark-icon {
-  background: darken($bgColor, 10%);
+  background-color: $grey200;
 
   &:before {
     content: 'check';
@@ -373,7 +335,7 @@ li.sel a {
 }
 
 .alert-icon {
-  background: darken($bgColor, 10%);
+  background-color: $grey200;
 
   &:before {
     content: 'alert';
@@ -565,8 +527,8 @@ td.right {
 }
 
 .token:focus {
-  border-color: $mediumTextColor;
-  background: #aaa;
+  box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
+  background-color: $white;
   outline: none;
 }
 
@@ -596,7 +558,7 @@ td.right {
 
 .icon.move:before {
   content: 'move';
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor;
 }
 
 .icon.move:not(.disabled):hover:before {
@@ -609,15 +571,15 @@ td.right {
 
 .icon.delete:before {
   content: 'remove';
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor;
 }
 
 .icon.delete:not(.disabled):hover:before {
-  color: $red;
+  color: $red600;
 }
 
 .icon.delete:not(.disabled):active:before {
-  color: darken($red, 10%);
+  color: darken($red600, 10%);
 }
 
 .hidden {
@@ -709,7 +671,11 @@ td.right {
 
 /* Customize Sources */
 .sidebar .customize-sources {
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor !important;
+
+  &:hover {
+    color: $linkColor !important;;
+  }
 }
 
 .sidebar .customize-sources:hover {
@@ -734,10 +700,11 @@ td.right {
   padding: 10px 0;
   border: none;
   width: 200px;
-  height: calc(100% - 78px);
-  background: $lightBgColor;
+  height: calc(100% - 62px);
+  box-sizing: border-box;
+  background-color: $grey050;
   overflow: auto;
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.06);
+  box-shadow: inset -1px 0 0 $hairlineColor;
 }
 
 .customize-sources-modal > .cs-sidebar > .btn {
@@ -749,19 +716,19 @@ td.right {
   margin-top: -1px;
   @include margin-right(1px);
   @include padding(10px, 14px, 10px, 40px);
-  background: #fcfcfc;
-  border: solid rgba(0, 0, 0, 0.06);
+  background-color: $grey100;
+  border: solid $hairlineColor;
   border-width: 1px 0;
   user-select: none;
   cursor: default;
 }
 
 .customize-sources-item + .customize-sources-item:not(.heading) {
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid $hairlineColor;
 }
 
 .customize-sources-item.sel {
-  background: #ececec;
+  background-color: $grey200;
   z-index: 1;
 }
 
@@ -785,11 +752,10 @@ td.right {
   font-weight: bold;
 }
 
-/*.matrix-configurator .mc-sidebar .items .btn { margin: 14px; }*/
-
 .customize-sources-modal > .source-settings {
   position: relative;
-  height: calc(100% - 106px);
+  height: calc(100% - 62px);
+  box-sizing: border-box;
   padding: 24px;
   overflow: auto;
 }
@@ -813,50 +779,46 @@ ul.icons {
   margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
-}
 
-ul.icons:after {
-  @include clearafter;
-}
+  li {
+    margin: 0 0 10px;
 
-ul.icons li {
-  margin: 0 0 10px;
-}
+    a {
+      display: block;
+      position: relative;
+      padding: 60px 5px 10px;
+      width: 110px;
+      text-align: center;
+      color: $textColor;
+      border-radius: 4px;
+      border: 1px solid $white;
 
-ul.icons li a {
-  display: block;
-  position: relative;
-  padding: 60px 5px 10px;
-  width: 110px;
-  text-align: center;
-  color: $textColor;
-  border-radius: 4px;
-  border: 1px solid #fff;
-}
+      &:before {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        font-size: 40px;
+        line-height: 60px;
+      }
 
-ul.icons li a img,
-ul.icons li a svg {
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 12px;
-  left: calc(50% - 20px);
-}
+      &:hover {
+        text-decoration: none;
+        background-color: $grey050;
+        border-color: $grey100;
+      }
 
-ul.icons li a:before {
-  display: block;
-  position: absolute;
-  top: 0;
-  @include left(0);
-  width: 100%;
-  font-size: 40px;
-  line-height: 60px;
-}
-
-ul.icons li a:hover {
-  text-decoration: none;
-  background-color: #f9f9f9;
-  border-color: #f2f2f2;
+      img,
+      svg {
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        top: 12px;
+        left: calc(50% - 20px);
+      }
+    }
+  }
 }
 
 @media only screen and (max-width: 380px) {
@@ -877,18 +839,8 @@ ul.icons li a:hover {
 
 .toolbar {
   position: relative;
-  margin-bottom: 21px;
-  min-height: 32px;
-
-  &.fixed {
-    position: fixed;
-    z-index: 1;
-    top: 0;
-    margin: 0 -1px;
-    padding: 7px 1px 0;
-    background: #fff;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
-  }
+  margin-bottom: 14px;
+  min-height: 34px;
 
   .flex {
     align-items: flex-start;
@@ -953,8 +905,8 @@ ul.icons li a:hover {
 
 .btn {
   display: inline-block;
-  border-radius: $btnBorderRadius;
-  padding: 6px 12px;
+  border-radius: $largeBorderRadius;
+  padding: 7px 14px;
   border: none;
   text-align: center;
   white-space: nowrap;
@@ -962,28 +914,18 @@ ul.icons li a:hover {
   cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
-
+  outline: none;
   color: $textColor;
+  background-color: $grey100;
 
-  &:focus {
-    outline: none;
-    box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+  &:focus,
+  &:hover {
+    background-color: darken($grey100, 5%);
   }
 
   &:active,
   &.active {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15);
-  }
-
-  &:not(.submit) {
-    color: $textColor;
-    background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
-
-    &:active,
-    &.active {
-      background-image: linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
-    }
+    background-color: darken($grey100, 10%);
   }
 
   &[type='color'] {
@@ -1019,7 +961,7 @@ ul.icons li a:hover {
 
 .btn,
 .spinner {
-  height: 32px;
+  height: 34px;
 }
 
 .btn[data-icon]:not(:empty):before,
@@ -1213,41 +1155,45 @@ ul.icons li a:hover {
 /* submit buttons */
 .btn.submit,
 .btn.secondary {
-  color: #fff;
-  @include light-on-dark-text;
+  &,
+  &:before,
+  &:after {
+    color: $white !important;
+    @include light-on-dark-text;
+  }
 }
 
 .btn.submit {
-  background-image: linear-gradient($submitColor, #cc5643);
+  background-color: $primaryColor !important;
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
 .btn.submit:not(.disabled):not(.inactive).hover {
-  background-image: linear-gradient($submitHoverColor, #b34b3b);
+  background-color: darken($primaryColor, 5%) !important;
 }
 
 .btn.submit:not(.disabled):not(.inactive):active,
 .btn.submit:not(.disabled):not(.inactive).active {
-  background-image: linear-gradient($submitActiveColor, #994032);
+  background-color: darken($primaryColor, 10%) !important;
 }
 
 .secondary-buttons .btn.submit,
 .btn.secondary {
-  background-image: linear-gradient($secondarySubmitColor, #878f99);
+  background-color: $secondaryColor !important;
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
 .btn.secondary:not(.disabled):not(.inactive):hover,
 .btn.secondary:not(.disabled):not(.inactive).hover {
-  background-image: linear-gradient($secondarySubmitHoverColor, #697480);
+  background-color: darken($secondaryColor, 5%) !important;
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active,
 .btn.secondary:not(.disabled):not(.inactive):active,
 .btn.secondary:not(.disabled):not(.inactive).active {
-  background-image: linear-gradient($secondarySubmitActiveColor, #697380);
+  background-color: darken($secondaryColor, 10%) !important;
 }
 
 div.btn.submit {
@@ -1262,14 +1208,14 @@ div.btn.submit input {
 
 /* dashed buttons */
 .btn.dashed {
-  border: 1px dashed rgba(0, 0, 0, 0.2) !important;
-  background: none !important;
+  border: 1px dashed $mediumHairlineColor;
+  background-color: transparent !important;
   box-shadow: none !important;
 }
 
 .btn.dashed:not(.disabled):active,
 .btn.dashed:not(.disabled).active {
-  background-color: hsla($hue, 10%, 50%, 0.1) !important;
+  background-color: transparentize($grey200, 0.75) !important;
 }
 
 /* color inputs */
@@ -1281,31 +1227,14 @@ div.btn.submit input {
   display: inline-block;
   position: relative;
   vertical-align: middle;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
   padding: 0;
-  background: url(../images/checkers.png);
+  background-color: url(../images/checkers.png);
 
   &:not(.static) {
     cursor: pointer;
-
-    &:not(.disabled) {
-      &:hover,
-      &:active,
-      &.active {
-        .color-preview {
-          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05);
-        }
-      }
-
-      &:active,
-      &.active {
-        .color-preview {
-          background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
-        }
-      }
-    }
   }
 
   &.small {
@@ -1319,9 +1248,8 @@ div.btn.submit input {
     @include left(0);
     width: 100%;
     height: 100%;
-    border-radius: 16px;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 17px;
+    box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
   }
 }
 
@@ -1408,7 +1336,10 @@ div.btn.submit input {
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
+
+    .handle {
+      background-color: $lightSelColor;
+    }
   }
 
   &.on {
@@ -1419,24 +1350,24 @@ div.btn.submit input {
 
   .label {
     @include floatleft;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 0 1px transparentize($black, 0.9);
   }
 
   .label.on,
   &:not(.dragging).on .label.off {
-    background: $successColor;
+    background-color: $successColor;
   }
 
   .label.off,
   &:not(.dragging):not(.on) .label.on {
-    background: hsl($hue, 10%, 65%);
+    background-color: $grey300;
   }
 
   .handle {
     position: relative;
     @include floatleft;
-    background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+    background-color: $white;
+    box-shadow: 0 0 0 1px transparentize($black, 0.9);
   }
 }
 
@@ -1448,7 +1379,7 @@ div.btn.submit input {
 
   .page-link {
     padding: 4px 13px 8px;
-    border-radius: $btnBorderRadius;
+    border-radius: $mediumBorderRadius;
     color: $textColor;
 
     &:before {
@@ -1457,7 +1388,7 @@ div.btn.submit input {
 
     &:not(.disabled) {
       transition: box-shadow linear 100ms;
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 0 0 1px $hairlineColor;
       cursor: pointer;
 
       &:hover {
@@ -1468,8 +1399,6 @@ div.btn.submit input {
 
     &.disabled {
       opacity: 1;
-      background: $bgColor;
-      font-weight: bold;
       color: $lightTextColor;
     }
   }
@@ -1500,187 +1429,249 @@ h2 + .actions {
 /*  Tables
 /* ----------------------------------------*/
 
-table thead th {
-  font-weight: bold;
-  @include alignleft;
-  vertical-align: top;
-  line-height: 1.2;
-  color: rgba(0, 0, 0, 0.5);
+.scrolltable {
+  margin-left: -1px;
+  margin-right: -1px;
+  width: calc(100% + 2px);
+  padding: 0 1px;
+  overflow-x: auto;
 }
 
-table thead th.ordered {
-  @include padding-right(26px);
-  background: #f2f2f2 url(../images/listview_sort.png) no-repeat;
-  body.ltr & {
-    background-position: 100% -3px;
+table {
+  &.fixed-layout {
+    table-layout: fixed;
   }
-  body.rtl & {
-    background-position: 0 -3px;
+
+  th.thin,
+  td.thin {
+    width: 0.01% !important;
   }
-}
 
-table thead th.ordered.desc {
-  body.ltr & {
-    background-position: 100% -34px;
+  thead {
+    th {
+      font-weight: bold;
+      @include alignleft;
+      vertical-align: top;
+      line-height: 1.2;
+      color: $mediumTextColor;
+    }
   }
-  body.rtl & {
-    background-position: 0 -34px;
+
+  // plain tables
+  &:not(.data) {
+    th,
+    td {
+      padding-top: 7px;
+      padding-bottom: 7px;
+
+      &:not(:first-child) {
+        padding-left: 14px;
+      }
+      &:not(:last-child) {
+        padding-right: 14px;
+      }
+    }
   }
-}
 
-table thead th.ordered:first-child {
-  @include padding-left(10px);
-}
+  // data tables
+  &.data {
+    margin-left: -1px;
+    margin-right: -1px;
 
-table thead th.ordered.loading {
-  background-image: url(../images/spinner_tableheader.gif);
-  body.ltr & {
-    background-position: 100% 4px;
+    &.fullwidth {
+      width: calc(100% + 2px);
+    }
+
+    th,
+    td {
+      padding-left: 14px;
+      padding-right: 14px;
+      border: solid transparent;
+      border-width: 1px 0;
+      background-clip: padding-box;
+
+      &:first-child {
+        @include border-left-width(1px);
+        @include border-top-left-radius($mediumBorderRadius);
+        @include border-bottom-left-radius($mediumBorderRadius);
+      }
+
+      &:last-child {
+        @include border-right-width(1px);
+        @include border-top-right-radius($mediumBorderRadius);
+        @include border-bottom-right-radius($mediumBorderRadius);
+      }
+    }
+
+    th {
+      font-weight: bold;
+
+      &.orderable:hover,
+      &.ordered {
+        background-color: $grey100;
+      }
+
+      &.ordered {
+        @include padding-right(26px);
+        background-image: url(../images/listview_sort.png);
+        background-repeat: no-repeat;
+
+        &:first-child {
+          @include padding-left(10px);
+        }
+
+        &:not(.desc) {
+          body.ltr & {
+            background-position: 100% 5px;
+          }
+          body.rtl & {
+            background-position: 0 5px;
+          }
+        }
+
+        &.desc {
+          body.ltr & {
+            background-position: 100% -26px;
+          }
+          body.rtl & {
+            background-position: 0 -26px;
+          }
+        }
+
+        &.loading {
+          background-image: url(../images/spinner_tableheader.gif);
+          body.ltr & {
+            background-position: 100% 4px;
+          }
+          body.rtl & {
+            background-position: 0 4px;
+          }
+        }
+      }
+    }
+
+    thead {
+      th,
+      td {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        width: auto;
+        background-color: $grey050;
+        cursor: default;
+      }
+
+      th {
+        white-space: nowrap;
+      }
+
+      & + tbody {
+        &:before {
+          content: '.';
+          font-size: 0;
+          line-height: 5px;
+          display: block;
+          height: 5px;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        &:not(.disabled):hover {
+          th,
+          td {
+            background-color: $grey050;
+          }
+        }
+      }
+
+      th,
+      td {
+        padding-top: 7px;
+        padding-bottom: 7px;
+      }
+
+      td {
+        &.timestamp {
+          @include alignright;
+          vertical-align: bottom;
+          white-space: nowrap;
+          color: $lightTextColor;
+        }
+      }
+    }
   }
-  body.rtl & {
-    background-position: 0 4px;
+
+  // collapsable data tables for small screens
+  // based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/
+  &.collapsed {
+    width: auto;
+
+    &,
+    tbody,
+    tbody tr,
+    tbody th,
+    tbody td {
+      display: block;
+      border: none;
+      padding: 0;
+      @include alignleft;
+      width: auto !important;
+      white-space: normal;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      tr {
+        padding: 6px 0;
+        border-bottom: 1px dotted $hairlineColor;
+
+        &:first-child,
+        &:last-child {
+          border-radius: 0 !important;
+        }
+
+        &:after {
+          @include clearafter;
+        }
+      }
+
+      th,
+      td {
+        padding: 2px 0 !important;
+      }
+
+      td {
+        &:empty {
+          display: none;
+        }
+      }
+
+      [data-title] {
+        @include margin-right(0);
+
+        &:before {
+          margin-right: 5px;
+          content: attr(data-title) ":";
+          font-weight: bold;
+        }
+
+        form {
+          display: inline-block;
+        }
+      }
+    }
   }
-}
-
-table thead th.orderable:hover {
-  background-color: #f9f9f9;
-}
-
-th.thin,
-td.thin {
-  width: 0.01% !important;
-}
-
-/* data */
-body.ltr table.data:not([dir='rtl']),
-body.rtl table.data[dir='ltr'] {
-  th:not(:first-child),
-  td:not(:first-child) {
-    padding-left: 14px;
-  }
-}
-body.rtl table.data:not([dir='ltr']),
-body.ltr table.data[dir='rtl'] {
-  th:not(:first-child),
-  td:not(:first-child) {
-    padding-right: 14px;
-  }
-}
-
-table.data thead th,
-table.data thead td {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  width: auto;
-  cursor: default;
-}
-
-table.data tbody th,
-table.data tbody td {
-  padding-top: 7px;
-  padding-bottom: 7px;
-  border-bottom: 1px dotted $hairlineColor;
-}
-
-table.data tbody tr:first-child th,
-table.data tbody tr:first-child td {
-  border-top: 1px dotted $hairlineColor;
-}
-
-table.data thead + tbody tr:first-child th,
-table.data thead + tbody tr:first-child td {
-  border-top-style: solid;
-}
-
-table.data th {
-  font-weight: bold;
-}
-
-table.data thead th {
-  white-space: nowrap;
-}
-
-table.data td.timestamp {
-  @include alignright;
-  vertical-align: bottom;
-  white-space: nowrap;
-  color: $lightTextColor;
-}
-
-table.fixed-layout {
-  table-layout: fixed;
-}
-
-/* collapsable data tables for small screens
-   based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
-table.collapsed {
-  width: auto;
-}
-
-table.collapsed,
-table.collapsed tbody,
-table.collapsed tbody tr,
-table.collapsed tbody th,
-table.collapsed tbody td {
-  display: block;
-  border: none;
-  padding: 0;
-  @include alignleft;
-  width: auto !important;
-  white-space: normal;
-}
-
-table.collapsed tbody th,
-table.collapsed tbody td {
-  padding: 2px 0 !important;
-}
-
-table.collapsed thead {
-  display: none;
-}
-
-table.collapsed tbody tr {
-  padding: 6px 0;
-  border-bottom: 1px dotted $hairlineColor;
-}
-
-table.collapsed tbody [data-title] {
-  @include margin-right(0);
-}
-
-table.collapsed tbody [data-title]:before {
-  margin-right: 5px;
-  content: attr(data-title) ":";
-  font-weight: bold;
-}
-
-table.collapsed tbody td:empty {
-  display: none;
-}
-
-table.collapsed tbody tr:after {
-  @include clearafter;
-}
-
-table.collapsed tbody td[data-title] form {
-  display: inline-block;
-}
-
-table.collapsed thead + tbody tr:first-child th,
-table.collapsed thead + tbody tr:first-child td {
-  border-top: none;
-}
-
-table.collapsed tbody tr:last-child th:not(:last-child),
-table.collapsed tbody tr:last-child td:not(:last-child) {
-  border-bottom: none;
 }
 
 .datatablesorthelper,
 .editabletablesorthelper,
 .thumbviewhelper {
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+  background-color: $white;
+  @include shadow;
 }
 
 .datatablesorthelper {
@@ -1727,8 +1718,8 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 
   &.sel,
   li.sel & {
-    border-radius: $elementBorderRadius;
-    background: $lightSelColor;
+    border-radius: $mediumBorderRadius;
+    background-color: $lightSelColor;
     cursor: default;
 
     &.hasthumb .elementthumb:after {
@@ -1740,7 +1731,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
       height: 100%;
       content: '.';
       font-size: 0;
-      background: rgba(35, 51, 76, 0.19);
+      background-color: transparentize($lightSelColor, 0.8);
     }
 
     &.loading:after {
@@ -1752,7 +1743,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
     display: block;
     max-width: 100%;
     max-height: 100%;
-    background: url(../images/checkers.svg) 0 0;
+    background-color: url(../images/checkers.svg) 0 0;
     flex-shrink: 0;
     pointer-events: none;
   }
@@ -1819,9 +1810,9 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
       position: absolute;
       top: 0;
       @include left(0);
-      border-radius: $elementBorderRadius;
+      border-radius: $mediumBorderRadius;
       overflow: hidden;
-      background: #fff;
+      background-color: $white;
       display: flex;
       justify-content: center;
       -ms-flex-pack: center;
@@ -1846,7 +1837,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
     }
 
     .delete:before {
-      color: rgba(0, 0, 0, 0.2);
+      color: $darkHairlineColor;
     }
 
     &.small,
@@ -1887,31 +1878,44 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 $checkboxPadding: 20px;
 
 .elements {
+  position: relative;
+
+  &.busy {
+    min-height: 200px;
+
+    &:after {
+      display: block;
+      content: '.';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparentize($white, 0.25) url(../images/spinner.gif) no-repeat 50% 50%;;
+    }
+  }
+
   // table views
   .tableview {
+    overflow-x: auto;
+
     tr {
       outline: none;
 
       &.sel {
+        th,
         td {
-          &:not(.checkbox-cell) {
-            background: $lightSelColor;
-          }
+          background-color: $lightSelColor !important;
         }
       }
     }
 
     th,
     td {
-      padding-top: 5px;
-      padding-bottom: 5px;
-    }
-
-    td {
       position: relative;
 
       &.checkbox-cell {
-        @include padding-right(7px);
         width: 12px !important;
         position: relative;
 
@@ -1919,11 +1923,6 @@ $checkboxPadding: 20px;
         div.checkbox {
           position: absolute;
           top: calc(50% - 6px);
-        }
-
-        & + td,
-        & + th {
-          @include padding-left(7px);
         }
       }
     }
@@ -2039,7 +2038,7 @@ $checkboxPadding: 20px;
       @include margin(-1px, 0, -1px, 8px);
       @include padding-left(0);
       height: 2px;
-      background: $linkColor !important;
+      background-color: $linkColor !important;
       @include border-left(none);
       border-radius: 1px;
     }
@@ -2067,7 +2066,7 @@ $checkboxPadding: 20px;
 
       &:before {
         content: 'downangle';
-        color: rgba(0, 0, 0, 0.2);
+        color: $darkHairlineColor;
       }
 
       &:not(.disabled):hover:before,
@@ -2166,11 +2165,14 @@ $checkboxPadding: 20px;
 
 /* editable tables */
 table.editable {
+  border-radius: $largeBorderRadius;
+  border: 1px solid $grey200;
+
   th,
   td.action {
     color: $mediumTextColor;
     font-weight: normal;
-    background: $bgColor;
+    background-color: $grey050;
   }
 
   thead,
@@ -2186,7 +2188,7 @@ table.editable {
   thead {
     tr {
       th {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        border-bottom: 1px solid $hairlineColor;
 
         span.info {
           position: absolute;
@@ -2201,24 +2203,24 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-top: 1px solid rgba(0, 0, 0, 0.07);
+          border-top: 1px solid $hairlineColor;
         }
       }
 
       &:last-child {
         td:first-child {
-          @include border-bottom-left-radius($paneBorderRadius);
+          @include border-bottom-left-radius($largeBorderRadius);
 
           textarea,
           input.text {
-            @include border-bottom-left-radius($paneBorderRadius - 1);
+            @include border-bottom-left-radius($largeBorderRadius - 1);
           }
         }
       }
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(1px solid rgba(0, 0, 0, 0.07));
+        @include border-left(1px solid $hairlineColor);
       }
 
       th {
@@ -2234,7 +2236,7 @@ table.editable {
       td {
         vertical-align: middle;
         text-align: center;
-        background: #fff;
+        background-color: $white;
 
         &.textual {
           vertical-align: top;
@@ -2246,6 +2248,10 @@ table.editable {
 
         &:not(.textual) {
           padding: 4px 10px;
+        }
+
+        &.textual {
+          padding: 0;
         }
 
         &.error {
@@ -2264,7 +2270,7 @@ table.editable {
             left: 0;
             width: 100%;
             height: 100%;
-            background: hsla($hue, 10%, 96%, 0.75);
+            background-color: transparentize($grey050, 0.25);
             user-select: none;
           }
         }
@@ -2290,14 +2296,15 @@ table.editable {
       display: block;
       width: 100%;
       border: none;
+      box-shadow: none;
       border-radius: 0;
       padding: 7px 10px;
-      background: transparent;
+      background-color: transparent;
       overflow: hidden;
       transition: none;
 
       &:focus {
-        border: 1px solid rgba(0, 0, 0, 0.15);
+        border: 1px solid $hairlineColor;
         padding: 6px 9px;
         outline: none;
       }
@@ -2339,15 +2346,15 @@ table.editable {
 
   & + .btn.add {
     display: block;
-    border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
-    border: 1px dashed $darkHairlineColorAlpha;
+    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
+    border: 1px dashed $mediumHairlineColor;
     border-top-width: 0;
-    background: none;
+    background-color: transparent;
     box-shadow: none;
 
     &:focus {
       border-style: solid;
-      border-color: $blue;
+      border-color: $blue600;
     }
   }
 }
@@ -2383,7 +2390,7 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
-  border-color: rgba(0, 0, 0, 0.40);
+  border-color: $darkHairlineColor;
 }
 
 .status.green,
@@ -2391,14 +2398,14 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: $green;
+  background-color: $teal500;
 }
 
 /* green */
 
 .status.orange,
 .status.pending {
-  background-color: $orange;
+  background-color: $yellow700;
 }
 
 /* orange */
@@ -2407,41 +2414,41 @@ ul.tree,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: $red;
+  background-color: $red600;
 }
 
 /* red */
 
 .status.yellow {
-  background-color: $yellow;
+  background-color: $yellow400;
 }
 
 .status.pink {
-  background-color: $pink;
+  background-color: $pink400;
 }
 
 .status.purple {
-  background-color: $purple;
+  background-color: #9B59B6;
 }
 
 .status.blue {
-  background-color: $blue;
+  background-color: $blue600;
 }
 
 .status.turquoise {
-  background-color: $turquoise;
+  background-color: $teal300;
 }
 
 .status.light {
-  background-color: $light;
+  background-color: $grey100;
 }
 
 .status.grey {
-  background-color: $grey;
+  background-color: $grey300;
 }
 
 .status.black {
-  background-color: $black;
+  background-color: $grey800;
 }
 
 .status.white,
@@ -2465,7 +2472,7 @@ ul.tree,
 .progressbar-inner {
   border-radius: 2px;
   height: 4px;
-  background: $textColor;
+  background-color: $textColor;
 }
 
 .progressbar:not(.pending) .progressbar-inner {
@@ -2474,7 +2481,7 @@ ul.tree,
 }
 
 .progressbar.pending .progressbar-inner {
-  background: url(../images/progressbar_pending.png) repeat-x;
+  background-color: url(../images/progressbar_pending.png) repeat-x;
   body.ltr & {
     animation-name: pendingprogress-ltr;
   }
@@ -2541,7 +2548,7 @@ ul.tree,
 }
 
 .elementselect .progress-shade {
-  background: rgba(255, 255, 255, 0.8);
+  background-color: transparentize($white, 0.2);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -2564,7 +2571,7 @@ ul.tree,
 .missing-component {
   padding: 7px 10px !important;
   max-width: 400px;
-  background: $lightBgColor !important;
+  background-color: $grey050 !important;
 
   .error {
     margin: 0;
@@ -2609,12 +2616,15 @@ ul.tree,
   position: relative;
   margin: 14px 0;
   padding: 24px;
-  border-radius: $paneBorderRadius;
+  border-radius: $largeBorderRadius;
   word-wrap: break-word;
   box-sizing: border-box;
 
-  .pane {
-    background: $lightBgColor;
+  .pane &,
+  #content & {
+    background-color: $grey050;
+    border: 1px solid $hairlineColor;
+    box-shadow: none;
   }
 }
 
@@ -2658,7 +2668,7 @@ ul.tree,
   }
 
   & > .data > .heading {
-    padding: 8px 0;
+    padding: 7px 0;
   }
 
   & > .field > .heading > label,
@@ -2668,7 +2678,7 @@ ul.tree,
 
   & > .field > .input,
   & > .data > .value {
-    padding: 8px 0;
+    padding: 7px 0;
     width: calc(100% - 112px);
   }
 
@@ -2677,17 +2687,19 @@ ul.tree,
   }
 
   & > .field {
-    box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
-    transition: box-shadow linear 100ms;
-
-    &.has-focus {
-      z-index: 1;
-      box-shadow: 0 0 5px hsl(205, 100%, 60%);
-    }
-
     &.has-errors {
       margin: 0 -1px !important;
       border: 1px solid $errorColor !important;
+
+      &:first-child {
+        border-top-left-radius: $largeBorderRadius;
+        border-top-right-radius: $largeBorderRadius;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: $largeBorderRadius;
+        border-bottom-right-radius: $largeBorderRadius;
+      }
 
       & + .field {
         border-top: none !important;
@@ -2695,12 +2707,7 @@ ul.tree,
     }
 
     & + .field {
-      border-top: 1px solid $hairlineColorAlpha;
-
-      &.has-focus {
-        border-top: none;
-        margin-top: 1px !important;
-      }
+      border-top: 1px solid $hairlineColor;
     }
 
     & > .heading {
@@ -2726,11 +2733,11 @@ ul.tree,
       & > .datetimewrapper > .timewrapper {
         & > .text {
           display: block;
-          margin: -8px 0;
+          margin: -7px 0;
           padding: 14px 0;
           border-radius: 0;
           box-shadow: none;
-          border: none !important;
+          background-color: transparent;
         }
       }
 
@@ -2738,7 +2745,7 @@ ul.tree,
       & > .timewrapper,
       & > .datetimewrapper > .datewrapper,
       & > .datetimewrapper > .timewrapper {
-        background: transparent;
+        background-color: transparent;
         .text:placeholder-shown + div[data-icon] {
           @include left(0);
         }
@@ -2773,13 +2780,13 @@ ul.tree,
   }
 }
 
-.meta > .field > .input .select {
+.meta > .field > .input > .select {
   display: block;
-  margin: -8px 0;
+  margin: -7px 0;
   width: 100%;
   border-radius: 0;
   box-shadow: none;
-  background: none;
+  background-color: transparent;
 
   &:after {
     @include right(0);
@@ -2792,9 +2799,9 @@ ul.tree,
   }
 
   select {
-    @include padding(8px, 12px, 8px, 0);
+    @include padding(7px, 12px, 7px, 0);
     width: 100%;
-    box-shadow: none;
+    background-color: transparent;
   }
 }
 
@@ -2810,9 +2817,9 @@ ul.tree,
 
 .modal,
 .hud .body {
-  border-radius: $paneBorderRadius;
-  background: #fff;
-  box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);
+  border-radius: $largeBorderRadius;
+  background-color: $white;
+  box-shadow: 0 25px 100px transparentize($grey900, 0.5);
 }
 
 .header,
@@ -2835,11 +2842,18 @@ ul.tree,
 }
 
 .header,
+.hud-header,
+.footer,
+.hud-footer {
+  background-color: $grey100;
+  @include dark-inputs;
+}
+
+.header,
 .hud-header {
-  border-radius: $paneBorderRadius $paneBorderRadius 0 0;
+  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
   padding: 24px;
-  background-image: linear-gradient(#fff, hsl($hue, 8%, 98%));
-  box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 -1px 0 $hairlineColor;
 
   h1 {
     margin: 0;
@@ -2848,10 +2862,9 @@ ul.tree,
 
 .footer,
 .hud-footer {
-  border-radius: 0 0 $paneBorderRadius $paneBorderRadius;
+  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
   padding: 14px 24px;
-  background-image: linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
-  box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 0 $hairlineColor;
 
   &.flex {
     & > * {
@@ -2891,11 +2904,11 @@ ul.tree,
 
 .modal-shade {
   &:not(.dark) {
-    background: rgba(255, 255, 255, 0.75) !important;
+    background-color: transparentize($white, 0.25) !important;
   }
 
   &.dark {
-    background: rgba(0, 0, 0, 0.75) !important;
+    background-color: transparentize($grey900, 0.5) !important;
   }
 }
 
@@ -3025,12 +3038,12 @@ ul.tree,
   ::-webkit-scrollbar-thumb {
     border-radius: 8px;
     border: 2px solid transparent;
-    background-color: rgba(0, 0, 0, .5);
+    background-color: transparentize($black, 0.5);
     background-clip: content-box;
   }
 
   ::-webkit-scrollbar-track {
-    background-color: $lightBgColor;
+    background-color: $grey050;
   }
 }
 
@@ -3060,7 +3073,7 @@ ul.tree,
         flex-direction: row;
         align-items: center;
         height: 190px;
-        background: #222;
+        background-color: $grey900;
 
         .image-preview {
           display: flex;
@@ -3083,12 +3096,18 @@ ul.tree,
             position: absolute;
             top: 10px;
             @include right(10px);
-            background: rgba(34, 34, 34, 0.9);
-            color: #fff;
-            border: 1px solid rgba(153, 153, 153, 0.9);
-            background-clip: padding-box;
-            box-shadow: none;
+            background-color: $grey600;
+            color: $white;
+            @include light-on-dark-text;
             transition: opacity linear 100ms;
+
+            @supports (backdrop-filter: blur(10px)) {
+              & {
+                background-color: transparentize($grey600, 0.6);
+                backdrop-filter: blur(10px);
+                transition: opacity linear 100ms, backdrop-filter linear 100ms;
+              }
+            }
           }
 
           &:hover .btn {
@@ -3107,7 +3126,7 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal {
-  padding-bottom: 58px;
+  padding-bottom: 62px;
   user-select: none;
 
   .body {
@@ -3127,7 +3146,7 @@ ul.tree,
       .sidebar {
         position: absolute;
         top: 0;
-        @include margin-left(-242px);
+        @include margin-left(-249px);
         height: 100%;
         overflow: auto;
       }
@@ -3135,11 +3154,16 @@ ul.tree,
       .main {
         margin: -24px;
         padding: 24px;
-        height: calc(100% - 48px);
+        height: 100%;
+        box-sizing: border-box;
         overflow: auto;
         position: relative;
 
         .elements {
+          &.busy {
+            min-height: calc(100% - 48px);
+          }
+
           .tableview table {
             .element {
               display: inline-block;
@@ -3152,14 +3176,7 @@ ul.tree,
 
               &.disabled {
                 opacity: 1;
-                color: #d4d4d4;
-
-                & + tr.disabled {
-                  th,
-                  td {
-                    border-top-color: rgba(0, 0, 0, 0.025);
-                  }
-                }
+                color: $grey200;
 
                 .element {
                   opacity: 0.25;
@@ -3253,7 +3270,7 @@ ul.tree,
   .content-summary {
     margin: -24px -24px 24px;
     padding: 24px;
-    background: $lightBgColor;
+    background-color: $grey050;
   }
 
   .options {
@@ -3452,12 +3469,13 @@ ul.tree,
 /* ----------------------------------------*/
 
 .shadow-box {
-  border-radius: $paneBorderRadius;
-  border: 1px solid #ccc;
-  box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+  border-radius: $largeBorderRadius;
+  border: 1px solid $grey200;
+  @include shadow;
 }
 
-table.shadow-box {
+table.shadow-box,
+table.editable {
   thead:first-child,
   tbody:first-child {
     tr:first-child {
@@ -3465,14 +3483,14 @@ table.shadow-box {
       td:first-child {
         &,
         &.disabled:after {
-          border-top-left-radius: $paneBorderRadius - 1;
+          border-top-left-radius: $mediumBorderRadius;
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-top-right-radius: $paneBorderRadius - 1;
+          border-top-right-radius: $mediumBorderRadius;
         }
       }
     }
@@ -3484,14 +3502,14 @@ table.shadow-box {
       td:first-child {
         &,
         &.disabled:after {
-          border-bottom-left-radius: $paneBorderRadius - 1;
+          border-bottom-left-radius: $largeBorderRadius - 1;
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-bottom-right-radius: $paneBorderRadius - 1;
+          border-bottom-right-radius: $largeBorderRadius - 1;
         }
       }
     }
@@ -3543,21 +3561,21 @@ textarea.text.fullwidth {
 
   &:first-child .text {
     &:first-child {
-      @include border-top-left-radius($btnBorderRadius);
+      @include border-top-left-radius($mediumBorderRadius);
     }
 
     &:last-child {
-      @include border-top-right-radius($btnBorderRadius);
+      @include border-top-right-radius($mediumBorderRadius);
     }
   }
 
   &:last-child .text {
     &:first-child {
-      @include border-bottom-left-radius($btnBorderRadius);
+      @include border-bottom-left-radius($mediumBorderRadius);
     }
 
     &:last-child {
-      @include border-bottom-right-radius($btnBorderRadius);
+      @include border-bottom-right-radius($mediumBorderRadius);
     }
   }
 
@@ -3604,7 +3622,7 @@ textarea.text.fullwidth {
 .chars-left {
   position: relative;
   @include floatright;
-  @include margin(-24px, 7px, 0, 0);
+  @include margin(-27px, 7px, 0, 0);
   color: $lightTextColor;
 
   &.negative-chars-left {
@@ -3626,12 +3644,12 @@ textarea.text.fullwidth {
 
       & > .site {
         display: inline-block;
-        border-radius: $btnBorderRadius;
+        border-radius: $mediumBorderRadius;
         @include margin-left(7px);
         padding: 0 4px;
         font-size: 11px;
         color: $mediumTextColor;
-        background: $bgColor;
+        background-color: $grey100;
       }
     }
   }
@@ -3748,8 +3766,8 @@ div.checkbox:before {
   content: '.';
   font-size: 0;
   border-radius: 1px;
-  background: #fff;
-  box-shadow: 0 0 0 1px $mediumHairlineColorAlpha;
+  background-color: $white;
+  box-shadow: 0 0 0 1px $mediumHairlineColor;
 }
 
 input.checkbox + label:before {
@@ -3788,7 +3806,8 @@ div.checkbox.indeterminate:before {
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
   outline: none;
-  box-shadow: 0 0 0 1px $blue;
+  background-color: $grey050;
+  box-shadow: 0 0 0 1px $darkHairlineColor;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
@@ -3817,11 +3836,11 @@ input.checkbox:focus + label:before,
 
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
-  padding: 5px 7px;
+  padding: 7px 14px;
 }
 
 .text {
-  background: #fff;
+  background-color: $white;
 
   &.small {
     padding: 3px;
@@ -3832,7 +3851,7 @@ input.checkbox:focus + label:before,
     padding: 0;
     border: none;
     outline: none;
-    background: none;
+    background-color: transparent;
   }
 }
 
@@ -3854,7 +3873,7 @@ input.checkbox:focus + label:before,
       position: absolute;
       top: 9px;
       @include left(9px);
-      color: $lightTextColor;
+      color: $mediumTextColor;
     }
 
     .text {
@@ -3921,19 +3940,17 @@ input.checkbox:focus + label:before,
 .timewrapper {
   display: inline-block;
   position: relative;
-  background: #fff;
 
   .text {
     position: relative;
     z-index: 1;
     width: 100%;
-    background: transparent;
 
     &:placeholder-shown + div[data-icon] {
       display: block;
       position: absolute;
       top: calc(50% - 10px);
-      @include left(8px);
+      @include left(14px);
       z-index: 0;
       color: $lightTextColor;
 
@@ -3941,10 +3958,11 @@ input.checkbox:focus + label:before,
       &:before {
         user-select: none;
         pointer-events: none;
+        z-index: 1;
       }
 
       #details & {
-        color: rgba(0, 0, 0, 0.25);
+        color: $darkHairlineColor;
       }
     }
 
@@ -3975,29 +3993,7 @@ input.checkbox:focus + label:before,
   }
 }
 
-::-webkit-input-placeholder {
-  @include placeholder-styles;
-}
-
-input:-ms-input-placeholder {
-  @include placeholder-styles;
-}
-
-::-ms-input-placeholder {
-  @include placeholder-styles;
-}
-
-:-moz-placeholder {
-  @include placeholder-styles;
-}
-
-::-moz-placeholder {
-  @include placeholder-styles;
-}
-
-::placeholder {
-  @include placeholder-styles;
-}
+@include placeholder-styles($grey300);
 
 /* Kill IE's special text features */
 ::-ms-reveal,
@@ -4030,7 +4026,7 @@ input:-ms-input-placeholder {
   white-space: pre;
 
   option {
-    background: #fff;
+    background-color: $white;
   }
 }
 
@@ -4038,8 +4034,11 @@ input:-ms-input-placeholder {
   @include select-input-fullwidth-styles;
 }
 
-.select:not(.selectize) select:focus {
-  @include select-input-focused-styles;
+.select:not(.selectize) select {
+  &:hover,
+  &:focus {
+    @include select-input-focused-styles;
+  }
 }
 
 .select:not(.selectize).small:after {
@@ -4056,7 +4055,7 @@ input:-ms-input-placeholder {
 .selectize .selectize-control.single .selectize-input {
   border-color: inherit;
   box-shadow: none;
-  background: none;
+  background-color: transparent;
 }
 
 .selectize .selectize-control.single .selectize-input:after {
@@ -4212,7 +4211,7 @@ body .selectize-dropdown .active {
 
 .ui-datepicker-calendar th,
 .ui-datepicker-calendar td {
-  padding: 2px;
+  padding: 2px !important;
 }
 
 .ui-datepicker-calendar th span,
@@ -4234,19 +4233,20 @@ body .selectize-dropdown .active {
 }
 
 .ui-datepicker-calendar td a:hover {
-  background: $lightSelColor;
+  background-color: $lightSelColor;
   text-decoration: none;
 }
 
 .ui-datepicker-calendar td a.ui-state-active {
-  background: $darkSelColor;
-  color: #fff;
+  background-color: $darkSelColor;
+  color: $white;
+  @include light-on-dark-text;
   cursor: default;
 }
 
 .ui-datepicker-calendar td.ui-datepicker-today a {
   border-radius: 13px;
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 0 0 2px $lightSelColor;
 }
 
 /* timepicker */
@@ -4269,12 +4269,13 @@ body .selectize-dropdown .active {
 }
 
 .ui-timepicker-list li:hover {
-  background: $lightSelColor;
+  background-color: $lightSelColor;
 }
 
 .ui-timepicker-list li.ui-timepicker-selected {
-  background: $darkSelColor;
-  color: #fff;
+  background-color: $darkSelColor;
+  color: $white;
+  @include light-on-dark-text;
   cursor: default;
 }
 
@@ -4299,7 +4300,7 @@ ul.errors li {
   height: 100%;
 
   &.no-access {
-    background: rgba(50, 50, 50, 0.9);
+    background-color: transparentize($grey900, 0.5);
   }
 
   .pane {
@@ -4308,6 +4309,7 @@ ul.errors li {
     margin-left: auto;
     margin-right: auto;
     width: 320px;
+    box-shadow: 0 25px 100px transparentize($grey900, 0.5);
   }
 }
 
@@ -4320,9 +4322,9 @@ ul.errors li {
   position: absolute;
   z-index: 2;
   width: 100%;
-  border-radius: $paneBorderRadius;
-  background: #fff;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  border-radius: $largeBorderRadius;
+  background-color: $white;
+  @include shadow;
   box-sizing: border-box;
   padding: 0 14px;
   text-align: left;
@@ -4357,7 +4359,26 @@ ul.errors li {
 .matrix-configurator > .field > .input {
   position: relative;
   @include padding-left(400px);
+  background-color: $grey050;
   overflow: hidden;
+  box-shadow: none;
+
+  &:after {
+    display: block;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    visibility: visible;
+    content: '.';
+    font-size: 0;
+    border-radius: $largeBorderRadius;
+    box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
+    user-select: none;
+    pointer-events: none;
+  }
 }
 
 .matrix-configurator .mc-sidebar {
@@ -4367,8 +4388,10 @@ ul.errors li {
   border: none;
   width: 200px;
   height: 100%;
-  background: hsla($hue, 8%, 0%, 0.03);
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.06);
+  @include border-right(1px solid $hairlineColor);
+  @include dark-inputs;
+  box-sizing: border-box;
+  background-color: $grey100;
 }
 
 .matrix-configurator .mc-sidebar.block-types {
@@ -4388,21 +4411,26 @@ ul.errors li {
   position: relative;
   margin-top: -1px;
   @include padding(11px, 45px, 10px, 14px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border: solid $hairlineColor;
+  border-width: 1px 0;
   user-select: none;
   cursor: default;
+  background-color: $grey100;
 }
 
 .matrixconfigitem.sel {
-  background: rgba(0, 0, 0, 0.05);
+  z-index: 1;
+  @include margin-right(-1px);
+  @include border-right-width(1px);
+  background-color: darken($grey100, 5%);
 }
 
 .matrixconfigitem.error {
-  background: rgba(255, 0, 0, 0.1);
+  background-color: transparentize($red600, 0.9);
 }
 
 .matrixconfigitem.sel.error {
-  background: rgba(200, 0, 0, 0.2);
+  background-color: transparentize($red600, 0.8)
 }
 
 .matrixconfigitem .handle {
@@ -4431,7 +4459,7 @@ ul.errors li {
 }
 
 .matrixconfigitem .actions .icon.settings:before {
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor;
 }
 
 .matrixconfigitem .actions .icon.settings.error:before {
@@ -4459,20 +4487,26 @@ ul.errors li {
 .matrix-configurator .field-settings > .col-inner-container > .heading {
   margin: 0;
   padding: 7px 14px 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03));
+  border-bottom: 1px solid $hairlineColor;
+  background-image: linear-gradient(transparentize($grey800, 1), transparentize($grey800, 0.95));
 }
 
-/* blocks */
-$titlebarBorderRadius: $paneBorderRadius - 1;
+/* Matrix fields */
+.matrix {
+  & > .buttons {
+    margin-top: 10px;
+  }
+}
+
+$titlebarBorderRadius: $largeBorderRadius - 1;
 
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
   padding: 0 14px 14px;
-  border-radius: $paneBorderRadius;
+  border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
-  background: $lightBgColor;
+  background-color: $grey050;
   outline: none;
 
   & > .titlebar {
@@ -4482,7 +4516,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 33px);
     border-bottom: 1px solid $hairlineColor;
-    background: $bgColor;
+    background-color: $grey050;
     color: $lightTextColor;
     overflow: hidden;
     white-space: nowrap;
@@ -4562,7 +4596,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
       width: 15px;
       height: 20px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.25);
+      color: $darkHairlineColor;
 
       &:hover {
         width: 15px;
@@ -4621,15 +4655,15 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
 
 /* site pickers */
 body.sitepicker {
-  #main-container {
-    #main {
-      #main-content {
-        padding: 30px;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-      }
-    }
+  #main-content {
+    padding: 30px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  #content-container {
+    max-width: 400px;
   }
 }
 
@@ -4660,8 +4694,8 @@ body.sitepicker {
       text-align: left;
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid $hairlineColorAlpha;
-      border-radius: $btnBorderRadius;
+      border: 1px solid $hairlineColor;
+      border-radius: $mediumBorderRadius;
       @include padding(9px, 42px, 9px, 15px);
       font-size: 16px;
       line-height: 1.4;
@@ -4723,7 +4757,8 @@ only screen and (min-resolution: 1.5dppx) {
     background-size: 26px;
   }
 
-  .spinner {
+  .spinner
+  .elements.busy:after {
     background-image: url(../images/spinner_2x.gif);
     background-size: 20px;
   }
