@@ -37,11 +37,18 @@
 {% endblock %}
 
 
+{% block toolbar %}
+    {% include '_elements/toolbar' with {
+        showSiteMenu: false,
+    } %}
+{% endblock %}
+
+
 {% block content %}
     <div class="elementindex">
-        {% include "_elements/indexcontainer" with {
-            showSiteMenu: false
-        } %}
+        <div class="main">
+            <div class="elements"></div>
+        </div>
     </div>
 {% endblock %}
 
@@ -53,7 +60,7 @@
 
 
 {% block initJs %}
-    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
+    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main-container'), {
         elementTypeName: '{{ elementInstance.displayName()|e("js") }}',
         elementTypePluralName: '{{ elementInstance.pluralDisplayName()|e("js") }}',
         context: '{{ context }}',

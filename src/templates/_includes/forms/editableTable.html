@@ -16,7 +16,7 @@
     {{- (class is iterable ? class : [class])|merge(fullWidth and (col.thin ?? false) ? ['thin'] : [])|join(' ') -}}
 {% endmacro %}
 
-<table id="{{ id }}" class="shadow-box editable{% if fullWidth %} fullwidth{% endif %}"
+<table id="{{ id }}" class="editable{% if fullWidth %} fullwidth{% endif %}"
        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>

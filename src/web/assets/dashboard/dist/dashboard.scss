@@ -1,15 +1,12 @@
 @charset "UTF-8";
 @import "../../../../../lib/craftcms-sass/mixins";
 
-#content {
-  background: none !important;
-}
-
 /* widgets */
 .widget {
   position: relative;
   perspective: 1000;
   transition: opacity linear 200ms, transform linear 200ms;
+  margin-bottom: 14px;
 }
 
 .widget.scaleout {
@@ -98,7 +95,7 @@
 }
 
 .widget > .back > .pane {
-  background: $lightBgColor;
+  background: $grey050;
 }
 
 .widget > .back > .pane > .errors {
@@ -151,8 +148,8 @@
 }
 
 .widgetmanagerhud .colspan-picker:not(.hover) a.active {
-  border: 1px solid #999;
-  background: #fff;
+  border: 1px solid $darkHairlineColor;
+  background: $white;
   @include border-left(medium none);
   @include border-right(medium none);
   height: 15px;
@@ -161,11 +158,11 @@
 }
 
 .widgetmanagerhud .colspan-picker:not(.hover) a.active.last {
-  @include border-right(1px solid #999);
+  @include border-right(1px solid $darkHairlineColor);
 }
 
 .widgetmanagerhud .colspan-picker a {
-  border: 1px solid rgba(0, 0, 0, .15);
+  border: 1px solid $hairlineColor;
   @include border-left(medium none);
   background-image: none;
   width: 7px;
@@ -179,15 +176,15 @@
 
 .widgetmanagerhud .colspan-picker a:first-child {
   width: 8px;
-  @include border-left(1px solid #999 !important);
+  @include border-left(1px solid $darkHairlineColor !important);
 }
 
 .widgetmanagerhud .colspan-picker a:hover {
-  @include border-right(1px solid #999 !important);
+  @include border-right(1px solid $darkHairlineColor !important);
 }
 
 .widgetmanagerhud .colspan-picker a.highlight {
-  border: 1px solid #999;
+  border: 1px solid $darkHairlineColor;
   @include border-left(medium none);
   @include border-right(medium none);
   height: 15px;
