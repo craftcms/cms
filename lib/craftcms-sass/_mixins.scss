@@ -178,6 +178,12 @@ $checkboxSize: 16px;
   box-shadow: 0 0 0 1px transparentize($grey200, 0.75), 0 2px 12px transparentize($grey200, 0.5);
 }
 
+@mixin modal {
+  border-radius: $largeBorderRadius;
+  background-color: $white;
+  box-shadow: 0 25px 100px transparentize($grey900, 0.5);
+}
+
 @mixin light-on-dark-text() {
   // Make light on dark text sharp on Macs
   // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)

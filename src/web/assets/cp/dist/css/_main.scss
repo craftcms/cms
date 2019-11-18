@@ -2818,9 +2818,7 @@ ul.tree,
 
 .modal,
 .hud .body {
-  border-radius: $largeBorderRadius;
-  background-color: $white;
-  box-shadow: 0 25px 100px transparentize($grey900, 0.5);
+  @include modal;
 }
 
 .header,
