@@ -2,28 +2,57 @@
 
 ## Unreleased
 
-### Added
-- Added `craft\gql\types\QueryArgument` GraphQL type which can be either an integer or a string.
-- Added the `authorGroupId` argument for the GraphQL `entries` query. 
+### Added
+- Added `craft\models\GqlSchema::getAllScopePairs()`.
+- Added `craft\models\GqlSchema::getAllScopePairsForAction()`.
 
 ### Changed
-- It is now possible to provide multiple values for the `height`, `width`, and `size` arguments when querying or filtering Assets using GraphQL.
-- It is now possible to provide multiple values for the `expiryDate` and `postDate` arguments when querying or filtering Entries using GraphQL.
-- It is now possible to provide multiple values for the `expiryDate` and `postDate` arguments in every GraphQL element query.
-- It is now possible to use the `not` keyword in the `folderId` and `volumeId` arguments when querying or filtering Assets using GraphQL.
-- It is now possible to use the `not` keyword in the `groupId` argument when querying or filtering Tags or Categories using GraphQL.
-- It is now possible to use the `not` keyword in the `sectionId`, `typeId`, and `authorId` arguments when querying or filtering Entries using GraphQL.
-- It is now possible to use the `not` keyword in the `fieldId`, `ownerId`, and `typeId` when filtering Matrix fields usings GraphQL.
-- It is now possible to use the `not` keyword in the `id` argument for every GraphQL query.
+- `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
+
+### Fixed
+- Fixed a SQL error that could occur when using PostgreSQL.
+- Fixed a SQL error that could occur when calling an element query’s `ids()` method with `indexBy('id')` set on it. ([#5216](https://github.com/craftcms/cms/issues/5216))
+- Fixed a layout issue with the GraphQL → Explore page on narrow browser windows. ([#5219](https://github.com/craftcms/cms/issues/5219))
+
+## 3.3.15 - 2019-11-05
+
+### Fixed
+- Fixed a bug where it wasn’t possible to apply project config changes that removed a Matrix block type which contained a nested Super Table field, if `allowAdminChanges` was set to `false`. ([#5078](https://github.com/craftcms/cms/issues/5078))
+- Fixed a bug where the nag alert that was shown when the wrong Craft edition was installed was including a “Resolve” link even if the user didn’t have access to the Plugin Store. ([#5190](https://github.com/craftcms/cms/issues/5190))
+- Fixed a PHP error that could occur when saving an element, if it had a Dropdown field that had been programmatically saved with integer option values. ([#5172](https://github.com/craftcms/cms/issues/5172))
+- Fixed a bug where “Updating search indexes” jobs could fail. ([#5191](https://github.com/craftcms/cms/issues/5191))
+- Fixed an error that could occur if an invalid PHP interval string was passed to `craft\helpers\DateTimeHelper::isValidIntervalString()`. ([#5193](https://github.com/craftcms/cms/issues/5193))
+- Fixed a bug where it wasn’t possible to access categories’ and tags’ `groupId` property via GraphQL. ([#5199](https://github.com/craftcms/cms/issues/5199))
+
+### Security
+- Fixed a bug where rows in the `sessions` table weren’t getting deleted when a user was logged out.
+
+## 3.3.14 - 2019-10-30
+
+### Added
+- GraphQL entry queries now support an `authorGroupId` argument.
+- Added `craft\gql\types\QueryArgument`.
+
+### Changed
+- It’s now possible to provide multiple values for the `height`, `width`, and `size` arguments when querying or filtering assets via GraphQL.
+- It’s now possible to provide multiple values for the `expiryDate` and `postDate` arguments when querying for elements via GraphQL.
+- It’s now possible to use the `not` keyword in the `id` argument when querying for elements via GraphQL.
+- It’s now possible to use the `not` keyword in the `folderId` and `volumeId` arguments when querying or filtering assets via GraphQL.
+- It’s now possible to use the `not` keyword in the `groupId` argument when querying or filtering tags or categories via GraphQL.
+- It’s now possible to use the `not` keyword in the `sectionId`, `typeId`, and `authorId` arguments when querying or filtering entries via GraphQL.
+- It’s now possible to use the `not` keyword in the `fieldId`, `ownerId`, and `typeId` when filtering Matrix blocks via GraphQL.
 - Craft no longer bundles Bootstrap, as the Debug Extension now provides its own copy.
+- Updated the bundled locale data based on ICU 64.1.
+- Formatted dates now include two-digit months and days if that’s what’s called for by the ICU date formats. ([#5186](https://github.com/craftcms/cms/issues/5186))
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would often warn authors when leaving the page even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load. ([craftcms/redactor#161](https://github.com/craftcms/redactor/issues/161))
-- Fixed a bug where sometimes Assets would not be moved to the correct folders when using the `Restrict uploads to a single folder` setting in a multi-site setup. ([#5139](https://github.com/craftcms/cms/issues/5139)
-- Fixed a bug where updating from the command line could run sometimes hit a memory limit error.
+- Fixed a bug where assets could remain in their temporary upload location after an entry was first published. ([#5139](https://github.com/craftcms/cms/issues/5139)
+- Fixed a bug where the `update` command could run out of memory. ([#1852](https://github.com/craftcms/cms/issues/1852))
 - Fixed a bug where saving a new GraphQL schema would not populate the UID property.
 - Fixed a bug where Craft wasn’t clearing search keywords for custom fields that weren’t searchable anymore. ([#5168](https://github.com/craftcms/cms/issues/5168))
 - Fixed a bug where `relatedTo` element query params weren’t returning elements that were related to the source element when previewing a draft or revision.
+- Fixed a bug where importing project config changes would break if they contained a changed global set and orphaned Matrix block types. ([#4789](https://github.com/craftcms/cms/issues/4789)
 
 ## 3.3.13 - 2019-10-23
 

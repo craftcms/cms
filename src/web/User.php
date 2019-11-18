@@ -495,14 +495,15 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function afterLogout($identity)
+    protected function beforeLogout($identity)
     {
-        /** @var UserElement $identity */
-        // Delete the impersonation session, if there is one
-        $session = Craft::$app->getSession();
-        $session->remove(UserElement::IMPERSONATE_KEY);
+        if (!parent::beforeLogout($identity)) {
+            return false;
+        }
 
-        // Delete the session token
+        $session = Craft::$app->getSession();
+
+        // Delete the session token in the database
         $token = $session->get($this->tokenParam);
         if ($token !== null) {
             $session->remove($this->tokenParam);
@@ -513,6 +514,19 @@ class User extends \yii\web\User
                 ])
                 ->execute();
         }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterLogout($identity)
+    {
+        /** @var UserElement $identity */
+        // Delete the impersonation session, if there is one
+        $session = Craft::$app->getSession();
+        $session->remove(UserElement::IMPERSONATE_KEY);
 
         $this->destroyDebugPreferencesInSession();
 

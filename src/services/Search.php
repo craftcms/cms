@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\config\DbConfig;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SiteNotFoundException;
@@ -107,7 +106,16 @@ class Search extends Component
      */
     public function indexElementAttributes(ElementInterface $element): bool
     {
+        // Acquire a lock for this element/site ID
+        $mutex = Craft::$app->getMutex();
         /** @var Element $element */
+        $lockKey = "searchindex:{$element->id}:{$element->siteId}";
+
+        if (!$mutex->acquire($lockKey)) {
+            // Not worth waiting around; for all we know the other process has newer search attributes anyway
+            return true;
+        }
+
         // Clear the element's current search keywords
         Craft::$app->getDb()->createCommand()
             ->delete(Table::SEARCHINDEX, [
@@ -146,6 +154,9 @@ class Search extends Component
 
             $this->indexElementFields($element->id, $element->siteId, $keywords);
         }
+
+        // Release the lock
+        $mutex->release($lockKey);
 
         return true;
     }
@@ -347,15 +358,6 @@ SQL;
     {
         $attribute = strtolower($attribute);
 
-        // Acquire a lock for this element/attribute/field ID/site ID
-        $mutex = Craft::$app->getMutex();
-        $lockKey = "searchindex:{$elementId}:{$attribute}:{$fieldId}:{$siteId}";
-
-        if (!$mutex->acquire($lockKey)) {
-            // Not worth waiting around; for all we know the other process has newer search attributes anyway
-            return;
-        }
-
         /** @var Site $site */
         $site = Craft::$app->getSites()->getSiteById($siteId);
 
@@ -396,9 +398,6 @@ SQL;
         $db->createCommand()
             ->insert(Table::SEARCHINDEX, $columns, false)
             ->execute();
-
-        // Release the lock
-        $mutex->release($lockKey);
     }
 
     /**
