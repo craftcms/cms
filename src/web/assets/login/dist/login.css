@@ -3,25 +3,13 @@ html, body { height: 100%; }
 body { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; }
 
 #login-form { display: block; width: 300px; background: no-repeat center top; }
-#login-form ::-webkit-input-placeholder { color: #7b8793; }
-#login-form input:-ms-input-placeholder { color: #7b8793; }
-#login-form ::-ms-input-placeholder { color: #7b8793; }
-#login-form :-moz-placeholder { color: #7b8793; }
-#login-form ::-moz-placeholder { color: #7b8793; }
-#login-form ::-webkit-input-placeholder { color: #7b8793; }
-#login-form ::placeholder { color: #7b8793; }
-#login-form .btn, #login-form .select:not(.selectize) select { background-color: #cdd8e4; }
-#login-form .btn:focus, #login-form .btn:hover, #login-form .select:not(.selectize) select:focus, #login-form .select:not(.selectize) select:hover { background-color: #bdcbdb; }
-#login-form .btn:active, #login-form .btn.active, #login-form .select:not(.selectize) select:active, #login-form .select:not(.selectize) select.active { background-color: #acbed2; }
-#login-form .text { background-color: #cdd8e4; }
-#login-form .text:focus { background-color: #bdcbdb; }
 
 #login-form.has-logo { padding-top: 116px; }
 
 #login-form h1 { text-align: center; font-size: 3em; color: #3f4d5a; word-wrap: break-word; }
 
-#login-fields { position: relative; }
-#login-fields:after { position: absolute; z-index: 1; top: 0; right: 0; left: 0; bottom: 0; display: block; content: '.'; font-size: 0; border-radius: 5px; -webkit-box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); box-shadow: inset 0 1px 3px -1px rgba(51, 64, 77, 0.3); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
+#login-fields { position: relative; padding: 1px; }
+#login-fields:after { position: absolute; z-index: 1; top: 0; right: 0; left: 0; bottom: 0; display: block; content: '.'; font-size: 0; border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; -webkit-box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; background-color: transparent; border-color: transparent; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
 #login-fields .text { -webkit-box-shadow: none; box-shadow: none; }
 
 #login-form .field { margin: 0; }
@@ -30,13 +18,14 @@ body { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-or
 
 .passwordwrapper .password-toggle { z-index: 1; }
 
-#loginName { padding: 14px 16px; border-radius: 5px 5px 0 0; }
+#loginName, #password { width: calc(100% + 2px); }
+
+#loginName { margin: -1px -1px 0; padding: 14px 16px; border-radius: 5px 5px 0 0; border-bottom-width: 0; }
+#loginName:focus { border-bottom-width: 1px; margin-bottom: -1px; }
 
 #login-form.reset-password #loginName { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
 
-#password-field { margin-top: 1px !important; -webkit-box-shadow: 0 -1px 0 #b9c8da; box-shadow: 0 -1px 0 #b9c8da; }
-
-#password { border-radius: 0 0 5px 5px; }
+#password { margin: 0 -1px -1px; border-radius: 0 0 5px 5px; }
 body.ltr #password { padding: 14px 5em 14px 16px; }
 body.rtl #password { padding: 14px 16px 14px 5em; }
 

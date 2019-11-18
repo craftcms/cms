@@ -588,8 +588,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #global-header,
 #header,
 #toolbar {
-  @include dark-inputs;
-
   .flex {
     flex-wrap: nowrap;
     max-width: 100%;
@@ -689,7 +687,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   padding: 0 48px;
   width: $sidebarWidth + 48;
   background-color: transparent;
-  @include dark-inputs;
 
   &.fixed {
     position: fixed;
@@ -739,7 +736,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   overflow: hidden;
   display: flex;
   align-items: center;
-  @include dark-inputs;
 
   ul {
     display: flex;
@@ -886,11 +882,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       padding-top: 14px;
       padding-bottom: 14px;
       background-color: $grey200;
-      @include dark-inputs;
-
-      .btn {
-        box-shadow: inset 0 0 0 1px $darkHairlineColor;
-      }
     }
 
     & > .field,
@@ -997,7 +988,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   #sidebar-toggle-container {
-    @include dark-inputs;
     display: block;
     margin-bottom: 14px;
   }

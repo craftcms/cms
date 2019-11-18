@@ -16,7 +16,6 @@ body {
   display: block;
   width: 300px;
   background: no-repeat center top;
-  @include dark-inputs;
 }
 
 #login-form.has-logo {
@@ -32,6 +31,7 @@ body {
 
 #login-fields {
   position: relative;
+  padding: 1px;
 
   &:after {
     position: absolute;
@@ -43,8 +43,9 @@ body {
     display: block;
     content: '.';
     font-size: 0;
-    border-radius: $largeBorderRadius;
-    box-shadow: inset 0 1px 3px -1px transparentize($grey800, 0.7);
+    @include input-styles;
+    background-color: transparent;
+    border-color: transparent;
     user-select: none;
     pointer-events: none;
   }
@@ -66,9 +67,21 @@ body {
   z-index: 1;
 }
 
+#loginName,
+#password {
+  width: calc(100% + 2px);
+}
+
 #loginName {
+  margin: -1px -1px 0;
   padding: 14px 16px;
   border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+  border-bottom-width: 0;
+
+  &:focus {
+    border-bottom-width: 1px;
+    margin-bottom: -1px;
+  }
 }
 
 #login-form.reset-password #loginName {
@@ -76,12 +89,8 @@ body {
   border-bottom-right-radius: $largeBorderRadius;
 }
 
-#password-field {
-  margin-top: 1px !important;
-  box-shadow: 0 -1px 0 darken($grey200, 6%);
-}
-
 #password {
+  margin: 0 -1px -1px;
   @include padding(14px, 5em, 14px, 16px);
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
 }

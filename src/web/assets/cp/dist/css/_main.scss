@@ -916,16 +916,16 @@ ul.icons {
   appearance: none;
   outline: none;
   color: $textColor;
-  background-color: $grey100;
+  background-color: transparentize($inputColor, 0.75);
 
   &:focus,
   &:hover {
-    background-color: darken($grey100, 5%);
+    background-color: transparentize($inputColor, 0.65);
   }
 
   &:active,
   &.active {
-    background-color: darken($grey100, 10%);
+    background-color: transparentize($inputColor, 0.5);
   }
 
   &[type='color'] {
@@ -946,7 +946,7 @@ ul.icons {
   }
 
   div.checkbox {
-    margin-top: 4px;
+    margin-top: 2px;
   }
 }
 
@@ -1875,7 +1875,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
   }
 }
 
-$checkboxPadding: 20px;
+$checkboxPadding: $checkboxSize + 8;
 
 .elements {
   position: relative;
@@ -1916,13 +1916,13 @@ $checkboxPadding: 20px;
       position: relative;
 
       &.checkbox-cell {
-        width: 12px !important;
+        width: $checkboxSize !important;
         position: relative;
 
         input.checkbox + label,
         div.checkbox {
           position: absolute;
-          top: calc(50% - 6px);
+          top: calc(50% - 7px);
         }
       }
     }
@@ -2390,7 +2390,7 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
-  border-color: $darkHairlineColor;
+  border-color: transparentize($inputColor, 0.2);
 }
 
 .status.green,
@@ -2738,6 +2738,7 @@ ul.tree,
           border-radius: 0;
           box-shadow: none;
           background-color: transparent;
+          border: none;
         }
       }
 
@@ -2846,7 +2847,6 @@ ul.tree,
 .footer,
 .hud-footer {
   background-color: $grey100;
-  @include dark-inputs;
 }
 
 .header,
@@ -3519,8 +3519,12 @@ table.editable {
 .text:not(.selectize-text),
 .border-box,
 .matrix-configurator > .field > .input,
-.selectize-text > .selectize-control > .selectize-input {
-  @include text-input-styles;
+.selectize-text > .selectize-control > .selectize-input,
+input.checkbox + label:before,
+div.checkbox:before,
+.multiselect > select,
+.selectize.multiselect .selectize-control.multi .selectize-input {
+  @include input-styles;
 }
 
 .text,
@@ -3528,7 +3532,7 @@ table.editable {
 .selectize-text > .selectize-control > .selectize-input {
   &.focus,
   &:focus {
-    @include text-input-focused-styles;
+    @include input-focused-styles;
   }
 }
 
@@ -3725,8 +3729,8 @@ textarea.text.fullwidth {
 input.checkbox {
   opacity: 0;
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: $checkboxSize;
+  height: $checkboxSize;
 }
 
 input.checkbox + label,
@@ -3734,7 +3738,7 @@ div.checkbox {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left(20px);
+  @include padding-left($checkboxSize + 5);
   cursor: pointer;
 }
 
@@ -3745,7 +3749,7 @@ input.checkbox:disabled + label,
 
 input.checkbox + label:empty,
 div.checkbox:empty {
-  @include padding-left(12px);
+  @include padding-left($checkboxSize);
 }
 
 input.checkbox + label:empty:after,
@@ -3761,13 +3765,11 @@ div.checkbox:before {
   position: absolute;
   @include left(0);
   top: 0;
-  width: 12px !important;
-  height: 12px;
+  width: $checkboxSize !important;
+  height: $checkboxSize;
+  box-sizing: border-box;;
   content: '.';
   font-size: 0;
-  border-radius: 1px;
-  background-color: $white;
-  box-shadow: 0 0 0 1px $mediumHairlineColor;
 }
 
 input.checkbox + label:before {
@@ -3786,7 +3788,7 @@ div.checkbox.checked:before,
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
   @include icon;
-  line-height: 12px;
+  line-height: $checkboxSize;
 }
 
 input.checkbox:checked:not(:indeterminate) + label:before,
@@ -3805,9 +3807,7 @@ div.checkbox.indeterminate:before {
 
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
-  outline: none;
-  background-color: $grey050;
-  box-shadow: 0 0 0 1px $darkHairlineColor;
+  @include input-focused-styles;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
@@ -3815,18 +3815,17 @@ input.checkbox:focus + label:before,
 }
 
 .checkboxfield.has-instructions .instructions {
-  @include padding-left(20px);
+  @include padding-left($checkboxSize + 5);
 }
 
 /* multiselect */
 .multiselect > select {
-  @include text-input-styles;
   color: $textColor;
   font-size: 14px;
   appearance: none;
 
   &:focus {
-    @include text-input-focused-styles;
+    @include input-focused-styles;
   }
 
   option {
@@ -3836,7 +3835,7 @@ input.checkbox:focus + label:before,
 
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
-  padding: 7px 14px;
+  padding: 6px 13px;
 }
 
 .text {
@@ -4091,7 +4090,6 @@ body .selectize-dropdown {
 
 /* multi select styles */
 .selectize.multiselect .selectize-control.multi .selectize-input {
-  @include text-input-styles;
   padding: 6px 8px;
 }
 
@@ -4111,7 +4109,7 @@ body .selectize-dropdown {
 
 /* shared styles */
 .selectize .selectize-control .selectize-input.focus {
-  @include text-input-focused-styles;
+  @include input-focused-styles;
 }
 
 /* menu styles */
@@ -4389,7 +4387,6 @@ ul.errors li {
   width: 200px;
   height: 100%;
   @include border-right(1px solid $hairlineColor);
-  @include dark-inputs;
   box-sizing: border-box;
   background-color: $grey100;
 }
