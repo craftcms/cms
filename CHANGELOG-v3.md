@@ -8,6 +8,7 @@
 
 ### Changed
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
+- Updated the `svg-sanatize` library to 0.13.0.
 
 ### Fixed
 - Fixed a SQL error that could occur when using PostgreSQL.
