@@ -407,7 +407,7 @@ class Api extends Component
      * Returns the headers that should be sent with API requests.
      *
      * @return array
-     * @since 3.3.12
+     * @since 3.3.16
      */
     public function getHeaders(): array
     {
