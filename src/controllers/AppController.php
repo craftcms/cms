@@ -32,6 +32,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class AppController extends Controller
 {
@@ -65,11 +66,27 @@ class AppController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @since 3.3.16
      */
     public function actionApiHeaders(): Response
     {
         $this->requireCpRequest();
         return $this->asJson(Api::headers());
+    }
+
+    /**
+     * Processes an API response’s headers.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.3.16
+     */
+    public function actionProcessApiResponseHeaders()
+    {
+        $this->requireCpRequest();
+        $headers = Craft::$app->getRequest()->getRequiredBodyParam('headers');
+        Api::processResponseHeaders($headers);
+        return $this->asJson(1);
     }
 
     /**

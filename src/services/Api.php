@@ -55,7 +55,7 @@ class Api extends Component
 
         if ($this->client === null) {
             $this->client = Craft::createGuzzleClient([
-                'base_uri' => 'https://api.craftcms.com/v1/'
+                'base_uri' => Craft::$app->baseApiUrl,
             ]);
         }
     }
@@ -315,88 +315,7 @@ class Api extends Component
             }
         }
 
-        // cache license info from the response
-        $cache = Craft::$app->getCache();
-        $duration = 86400;
-        if ($response->hasHeader('X-Craft-Allow-Trials')) {
-            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)$response->getHeaderLine('X-Craft-Allow-Trials'), $duration);
-        }
-        if ($response->hasHeader('X-Craft-License-Status')) {
-            $cache->set('licenseKeyStatus', $response->getHeaderLine('X-Craft-License-Status'), $duration);
-        }
-        if ($response->hasHeader('X-Craft-License-Domain')) {
-            $cache->set('licensedDomain', $response->getHeaderLine('X-Craft-License-Domain'), $duration);
-        }
-        if ($response->hasHeader('X-Craft-License-Edition')) {
-            $licensedEdition = $response->getHeaderLine('X-Craft-License-Edition');
-
-            switch ($licensedEdition) {
-                case 'solo':
-                    $licensedEdition = Craft::Solo;
-                    break;
-                case 'pro':
-                    $licensedEdition = Craft::Pro;
-                    break;
-                default:
-                    Craft::error('Invalid X-Craft-License-Edition header value: ' . $licensedEdition, __METHOD__);
-            }
-
-            $cache->set('licensedEdition', $licensedEdition, $duration);
-        }
-
-        $pluginLicenseStatuses = [];
-        $pluginLicenseEditions = [];
-        $pluginsService = Craft::$app->getPlugins();
-        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
-            if ($pluginInfo['isInstalled']) {
-                $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
-            }
-        }
-        if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
-            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
-            foreach ($pluginLicenseInfo as $info) {
-                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
-                $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
-            }
-        }
-        if ($response->hasHeader('X-Craft-Plugin-License-Editions')) {
-            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Editions'));
-            foreach ($pluginLicenseInfo as $info) {
-                list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
-                $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
-            }
-        }
-        foreach ($pluginLicenseStatuses as $pluginHandle => $pluginLicenseStatus) {
-            $pluginLicenseEdition = $pluginLicenseEditions[$pluginHandle] ?? null;
-            try {
-                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus, $pluginLicenseEdition);
-            } catch (InvalidPluginException $pluginException) {
-            }
-        }
-
-        // did we just get a new license key?
-        if ($response->hasHeader('X-Craft-License')) {
-            $license = $response->getHeaderLine('X-Craft-License');
-            $path = Craft::$app->getPath()->getLicenseKeyPath();
-
-            //  just in case there's some race condition where two licenses were requested simultaneously...
-            if (App::licenseKey() !== null) {
-                $i = 0;
-                do {
-                    $newPath = "{$path}." . ++$i;
-                } while (file_exists($newPath));
-                $path = $newPath;
-                Craft::warning("A new license key was issued, but we already had one. Writing it to {$path} instead.", __METHOD__);
-            }
-
-            try {
-                FileHelper::writeToFile($path, chunk_split($license, 50));
-            } catch (\ErrorException $err) {
-                // log and keep going
-                Craft::error("Could not write new license key to {$path}: {$err->getMessage()}\nLicense key: {$license}", __METHOD__);
-                Craft::$app->getErrorHandler()->logException($err);
-            }
-        }
+        ApiHelper::processResponseHeaders($response->getHeaders());
 
         if ($e !== null) {
             throw $e;

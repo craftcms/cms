@@ -1,4 +1,4 @@
-/*!   - 2019-10-28 */
+/*!   - 2019-11-18 */
 (function($){
 
 /** global: Craft */
@@ -432,6 +432,55 @@ $.extend(Craft,
                     Craft._waitingOnAjax = false;
                 }
             }, args[3]);
+        },
+
+        sendApiRequest: function(method, uri, options) {
+            return new Promise(function(resolve, reject) {
+                // Get the latest headers
+                this.postActionRequest('app/api-headers', function(headers, textStatus) {
+                    if (textStatus !== 'success') {
+                        reject();
+                        return;
+                    }
+
+                    $.ajax($.extend({
+                        url: Craft.baseApiUrl + uri,
+                        type: method,
+                        dataType: 'json',
+                        headers: headers,
+                        success: function(apiResponse, textStatus, jqXHR) {
+                            var headers = {};
+                            var headerLines = jqXHR.getAllResponseHeaders().split('\n');
+                            var parts, name, value;
+                            for (var i = 0; i < headerLines.length; i++) {
+                                parts = headerLines[i].split(':', 2);
+                                if (parts.length === 2) {
+                                    name = Craft.trim(parts[0]);
+                                    value = Craft.trim(parts[1]);
+                                    if (typeof headers[name] === 'undefined') {
+                                        headers[name] = [];
+                                    }
+                                    headers[name].push(value);
+                                }
+                            }
+                            Craft.postActionRequest('app/process-api-response-headers', {
+                                headers: headers,
+                            }, function() {
+                                resolve(apiResponse);
+                            });
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            // Ignore incomplete requests, likely due to navigating away from the page
+                            // h/t https://stackoverflow.com/a/22107079/1688568
+                            if (jqXHR.readyState !== 4) {
+                                return;
+                            }
+
+                            reject();
+                        }
+                    }, options || {}));
+                }.bind(this));
+            }.bind(this));
         },
 
         /**

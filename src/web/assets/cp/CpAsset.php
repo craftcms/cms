@@ -254,6 +254,7 @@ JS;
             'actionUrl' => UrlHelper::actionUrl(),
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
