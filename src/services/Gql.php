@@ -601,44 +601,44 @@ class Gql extends Component
     /**
      * Saves a GraphQL token.
      *
-     * @param GqlToken $schema the schema to save
+     * @param GqlToken $token the schema to save
      * @param bool $runValidation Whether the schema should be validated
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      * @since 3.4.0
      */
-    public function saveToken(GqlToken $schema, $runValidation = true): bool
+    public function saveToken(GqlToken $token, $runValidation = true): bool
     {
-        if ($schema->isTemporary) {
+        if ($token->isTemporary) {
             return false;
         }
 
-        $isNewToken = !$schema->id;
+        $isNewToken = !$token->id;
 
-        if ($runValidation && !$schema->validate()) {
+        if ($runValidation && !$token->validate()) {
             Craft::info('Schema not saved due to validation error.', __METHOD__);
             return false;
         }
 
         if ($isNewToken) {
-            $schemaRecord = new GqlTokenRecord();
+            $tokenRecord = new GqlTokenRecord();
         } else {
-            $schemaRecord = GqlTokenRecord::findOne($schema->id) ?: new GqlTokenRecord();
+            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
         }
 
-        $schemaRecord->name = $schema->name;
-        $schemaRecord->enabled = (bool)$schema->enabled;
-        $schemaRecord->expiryDate = $schema->expiryDate;
-        $schemaRecord->lastUsed = $schema->lastUsed;
-        $schemaRecord->schemaId = $schema->schemaId;
+        $tokenRecord->name = $token->name;
+        $tokenRecord->enabled = (bool)$token->enabled;
+        $tokenRecord->expiryDate = $token->expiryDate;
+        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->schemaId = $token->schemaId;
 
-        if ($schema->accessToken) {
-            $schemaRecord->accessToken = $schema->accessToken;
+        if ($token->accessToken) {
+            $tokenRecord->accessToken = $token->accessToken;
         }
 
-        $schemaRecord->save();
-        $schema->id = $schemaRecord->id;
-        $schema->uid = $schemaRecord->uid;
+        $tokenRecord->save();
+        $token->id = $tokenRecord->id;
+        $token->uid = $tokenRecord->uid;
 
         return true;
     }
@@ -799,7 +799,7 @@ class Gql extends Component
      * @param int $id The schema's ID
      * @return GqlSchema|null
      */
-    public function getSchemaById(int $id): GqlSchema
+    public function getSchemaById(int $id)
     {
         $result = $this->_createSchemaQuery()
             ->where(['id' => $id])
