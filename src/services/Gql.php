@@ -333,7 +333,7 @@ class Gql extends Component
      * @return array
      * @since 3.3.11
      */
-    public function executeQuery(GqlSchema $schema, string $query, $variables, $operationName, $debugMode): array
+    public function executeQuery(GqlSchema $schema, string $query, $variables = [], $operationName = '', $debugMode = false): array
     {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
