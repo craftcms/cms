@@ -253,6 +253,7 @@ JS;
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
+            'apiQuery' => UrlHelper::buildQuery(Craft::$app->apiQuery),
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),

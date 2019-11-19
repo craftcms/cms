@@ -1,4 +1,4 @@
-/*!   - 2019-11-18 */
+/*!   - 2019-11-19 */
 (function($){
 
 /** global: Craft */
@@ -443,13 +443,16 @@ $.extend(Craft,
                         return;
                     }
 
-                    $.ajax($.extend({
-                        url: Craft.baseApiUrl + uri,
+                    options = options || {};
+                    headers = $.extend(headers, options.headers || {});
+
+                    $.ajax($.extend({}, options, {
+                        url: Craft.baseApiUrl + uri + (Craft.apiQuery ? '?' + Craft.apiQuery : ''),
                         type: method,
                         dataType: 'json',
                         headers: headers,
                         success: function(apiResponse, textStatus, jqXHR) {
-                            var headers = {};
+                            var responseHeaders = {};
                             var headerLines = jqXHR.getAllResponseHeaders().split('\n');
                             var parts, name, value;
                             for (var i = 0; i < headerLines.length; i++) {
@@ -457,14 +460,14 @@ $.extend(Craft,
                                 if (parts.length === 2) {
                                     name = Craft.trim(parts[0]);
                                     value = Craft.trim(parts[1]);
-                                    if (typeof headers[name] === 'undefined') {
-                                        headers[name] = [];
+                                    if (typeof responseHeaders[name] === 'undefined') {
+                                        responseHeaders[name] = [];
                                     }
-                                    headers[name].push(value);
+                                    responseHeaders[name].push(value);
                                 }
                             }
                             Craft.postActionRequest('app/process-api-response-headers', {
-                                headers: headers,
+                                headers: responseHeaders,
                             }, function() {
                                 resolve(apiResponse);
                             });
@@ -478,7 +481,7 @@ $.extend(Craft,
 
                             reject();
                         }
-                    }, options || {}));
+                    }));
                 }.bind(this));
             }.bind(this));
         },
