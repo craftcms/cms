@@ -252,32 +252,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Returns plugin details.
-     *
-     * @return Response
-     */
-    public function actionPluginDetails()
-    {
-        $pluginId = Craft::$app->getRequest()->getParam('pluginId');
-        $pluginDetails = Craft::$app->getApi()->getPluginDetails($pluginId);
-
-        return $this->asJson($pluginDetails);
-    }
-
-    /**
-     * Returns plugin changelog.
-     *
-     * @return Response
-     */
-    public function actionPluginChangelog()
-    {
-        $pluginId = Craft::$app->getRequest()->getParam('pluginId');
-        $pluginChangelog = Craft::$app->getApi()->getPluginChangelog($pluginId);
-
-        return $this->asJson($pluginChangelog);
-    }
-
-    /**
      * Checkout.
      *
      * @return Response
