@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -61,7 +62,7 @@ class PluginStoreController extends Controller
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $allowUpdates = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges;
-        $apiHeaders = Craft::$app->getApi()->getHeaders();
+        $apiHeaders = Api::headers();
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
@@ -257,9 +258,7 @@ class PluginStoreController extends Controller
      */
     public function actionGetApiHeaders()
     {
-        $apiHeaders = Craft::$app->getApi()->getHeaders();
-
-        return $this->asJson($apiHeaders);
+        return $this->asJson(Api::headers());
     }
 
     /**

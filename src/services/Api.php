@@ -13,6 +13,7 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
+use craft\helpers\Api as ApiHelper;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -30,6 +31,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class Api extends Component
 {
@@ -229,7 +231,7 @@ class Api extends Component
         $requestBody = [
             'require' => $composerConfig['require'],
             'installed' => $installed,
-            'platform' => $this->platformVersions(true),
+            'platform' => ApiHelper::platformVersions(true),
             'install' => $install,
             'minimum-stability' => $minStability,
             'prefer-stable' => (bool)($composerConfig['prefer-stable'] ?? false),
@@ -300,7 +302,7 @@ class Api extends Component
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
         $options = ArrayHelper::merge($options, [
-            'headers' => $this->getHeaders(),
+            'headers' => ApiHelper::headers(),
         ]);
 
         $e = null;
@@ -401,104 +403,6 @@ class Api extends Component
         }
 
         return $response;
-    }
-
-    /**
-     * Returns the headers that should be sent with API requests.
-     *
-     * @return array
-     * @since 3.3.16
-     */
-    public function getHeaders(): array
-    {
-        $headers = [
-            'Accept' => 'application/json',
-            'X-Craft-System' => 'craft:' . Craft::$app->getVersion() . ';' . strtolower(Craft::$app->getEditionName()),
-        ];
-
-        // platform
-        $platform = [];
-        foreach ($this->platformVersions() as $name => $version) {
-            $platform[] = "{$name}:{$version}";
-        }
-        $headers['X-Craft-Platform'] = implode(',', $platform);
-
-        // request info
-        $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest()) {
-            if (($host = $request->getHostInfo()) !== null) {
-                $headers['X-Craft-Host'] = $host;
-            }
-            if (($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) !== null) {
-                $headers['X-Craft-User-Ip'] = $ip;
-            }
-        }
-
-        // email
-        if (($user = Craft::$app->getUser()->getIdentity()) !== null) {
-            $headers['X-Craft-User-Email'] = $user->email;
-        }
-
-        // Craft license
-        $headers['X-Craft-License'] = App::licenseKey() ?? (defined('CRAFT_LICENSE_KEY') ? '😱' : '🙏');
-
-        // plugin info
-        $pluginLicenses = [];
-        $pluginsService = Craft::$app->getPlugins();
-        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
-            if ($pluginInfo['isInstalled']) {
-                $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
-                try {
-                    $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
-                } catch (InvalidLicenseKeyException $e) {
-                    $licenseKey = null;
-                }
-                if ($licenseKey !== null) {
-                    $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
-                }
-            }
-        }
-        if (!empty($pluginLicenses)) {
-            $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
-        }
-
-        return $headers;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * Returns platform info.
-     *
-     * @param bool $useComposerOverrides Whether to factor in any `config.platform` overrides
-     * @return array
-     */
-    protected function platformVersions(bool $useComposerOverrides = false): array
-    {
-        // Let Composer's PlatformRepository do most of the work
-        $overrides = [];
-        if ($useComposerOverrides) {
-            try {
-                $jsonPath = Craft::$app->getComposer()->getJsonPath();
-                $config = Json::decode(file_get_contents($jsonPath));
-                $overrides = $config['config']['platform'] ?? [];
-            } catch (Exception $e) {
-                // couldn't locate composer.json - NBD
-            }
-        }
-        $repo = new PlatformRepository([], $overrides);
-
-        $versions = [];
-        foreach ($repo->getPackages() as $package) {
-            $versions[$package->getName()] = $package->getPrettyVersion();
-        }
-
-        // Also include the DB driver/version
-        $db = Craft::$app->getDb();
-        $versions[$db->getDriverName()] = $db->getVersion();
-
-        return $versions;
     }
 
     // Private Methods
