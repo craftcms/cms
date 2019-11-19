@@ -110,7 +110,7 @@ class GqlTest extends Unit
     public function testExecuteQuery()
     {
         $gql = Craft::$app->getGql();
-        $schema = $gql->getPublicSchema();
+        $schema = $gql->getPublicToken()->getSchema();
         $result = $gql->executeQuery($schema, '{ping}');
         $this->assertEquals(['data' => ['ping' => 'pong']], $result);
     }
@@ -123,7 +123,7 @@ class GqlTest extends Unit
     public function testQueryEvents()
     {
         $gql = Craft::$app->getGql();
-        $schema = $gql->getPublicSchema();
+        $schema = $gql->getPublicToken()->getSchema();
 
         Event::on(Gql::class, Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY, function (ExecuteGqlQueryEvent $event) {
             $event->result = ['data' => 'override'];
@@ -156,7 +156,7 @@ class GqlTest extends Unit
 
         Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = true;
 
-        $schema = $gql->getPublicSchema();
+        $schema = $gql->getPublicToken()->getSchema();
 
         $this->assertArrayNotHasKey($cacheKey, $cache);
         $result = $gql->executeQuery($schema, '{ping}');
@@ -222,13 +222,13 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'enabled' => true, 'scope' => ['usergroups.everyone:read']]);
-        $schema = $gqlService->getSchemaDef($token);
+        $gqlSchema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => ['usergroups.everyone:read']]);
+        $schema = $gqlService->getSchemaDef($gqlSchema);
 
         $gqlService->flushCaches();
 
-        $token = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'enabled' => true, 'scope' => ['volumes.someVolume:read']]);
-        $this->assertNotEquals($schema, $gqlService->getSchemaDef($token));
+        $gqlSchema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => ['volumes.someVolume:read']]);
+        $this->assertNotEquals($schema, $gqlService->getSchemaDef($gqlSchema));
     }
 
     /**
