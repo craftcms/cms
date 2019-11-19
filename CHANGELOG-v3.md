@@ -8,11 +8,14 @@
 
 ### Changed
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
+- Updated the `svg-sanitize` library to 0.13.0.
+- Updated Yii to 2.0.29.
 
 ### Fixed
 - Fixed a SQL error that could occur when using PostgreSQL.
 - Fixed a SQL error that could occur when calling an element query’s `ids()` method with `indexBy('id')` set on it. ([#5216](https://github.com/craftcms/cms/issues/5216))
 - Fixed a layout issue with the GraphQL → Explore page on narrow browser windows. ([#5219](https://github.com/craftcms/cms/issues/5219))
+- Fixed a bug where `craft\helpers\UrlHelper::buildQuery()` would remove array param index numbers. ([#5233](https://github.com/craftcms/cms/issues/5233))
 
 ## 3.3.15 - 2019-11-05
 
