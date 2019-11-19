@@ -9,6 +9,7 @@ namespace craftunit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
@@ -18,8 +19,10 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\models\GqlToken;
 use craft\services\Gql;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
@@ -239,6 +242,43 @@ class GqlTest extends Unit
         $this->assertNotEmpty(Craft::$app->getGql()->getAllPermissions());
     }
 
+    /**
+     * Test all Gql Token operations.
+     * @throws \yii\base\Exception
+     */
+    public function testTokenOperations()
+    {
+        $gql = Craft::$app->getGql();
+
+        $accessToken = StringHelper::randomString();
+
+        $token = new GqlToken([
+            'name' => StringHelper::randomString(15),
+            'accessToken' => $accessToken,
+            'enabled' => true,
+        ]);
+
+        $gql->saveToken($token);
+
+        // Test fetching token
+        $this->assertEquals($gql->getTokenById($token->id)->uid, $token->uid);
+        $this->assertEquals($gql->getTokenByUid($token->uid)->id, $token->id);
+        $this->assertEquals($gql->getTokenByAccessToken($token->accessToken)->id, $token->id);
+
+        // Test fetching all tokens and existence of public token
+        $allSchemas = Craft::$app->getGql()->getTokens();
+        $this->assertNotEmpty($allSchemas);
+        $this->assertEquals($allSchemas[0]->accessToken, GqlToken::PUBLIC_TOKEN);
+
+        // Test deleting
+        $gql->deleteTokenById($token->id);
+        $this->assertNull($gql->getTokenById($token->id));
+    }
+
+    /**
+     * Test all Gql Schema operations.
+     * @throws \yii\base\Exception
+     */
     public function testSchemaOperations()
     {
         $cacheKey = 'testKey';
@@ -248,35 +288,29 @@ class GqlTest extends Unit
         $gql->invalidateCaches();
         $gql->setCachedResult($cacheKey, $cacheValue);
 
-        $cacheKey = 'testKey';
-        $cacheValue = 'testValue';
-        $accessToken = StringHelper::randomString();
-
+        $schemaUid = StringHelper::UUID();
         $schema = new GqlSchema([
             'name' => StringHelper::randomString(15),
-            'accessToken' => $accessToken,
-            'enabled' => true,
-            'scope' => []
+            'scope' => [],
+            'uid' => $schemaUid,
         ]);
 
-        $this->assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
-
         // Make sure saving a schema invalidates caches
+        $this->assertNotFalse($gql->getCachedResult($cacheKey));
         $gql->saveSchema($schema);
         $this->assertFalse($gql->getCachedResult($cacheKey));
 
-        // Test fetching schema
-        $this->assertEquals($gql->getSchemaById($schema->id)->uid, $schema->uid);
-        $this->assertEquals($gql->getSchemaByUid($schema->uid)->id, $schema->id);
-        $this->assertEquals($gql->getSchemaByAccessToken($schema->accessToken)->id, $schema->id);
+        $schemaId = Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
 
-        // Test fetching all schemas and existance of public schema
+        // Test fetching schema
+        $this->assertEquals($gql->getSchemaById($schemaId)->uid, $schemaUid);
+
+        // Test fetching all schemas
         $allSchemas = Craft::$app->getGql()->getSchemas();
         $this->assertNotEmpty($allSchemas);
-        $this->assertEquals($allSchemas[0]->accessToken, GqlSchema::PUBLIC_TOKEN);
 
         // Test deleting
-        $gql->deleteSchemaById($schema->id);
-        $this->assertNull($gql->getSchemaById($schema->id));
+        $gql->deleteSchemaById($schemaId);
+        $this->assertNull($gql->getSchemaById($schemaId));
     }
 }
