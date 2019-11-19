@@ -123,7 +123,7 @@ class GqlSchema extends Model
         }
         return $this->_cachedPairs;
     }
-    
+
     /**
      * Return all scope pairs.
      *
