@@ -252,16 +252,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Get API headers.
-     *
-     * @return Response
-     */
-    public function actionGetApiHeaders()
-    {
-        return $this->asJson(Api::headers());
-    }
-
-    /**
      * Returns plugin details.
      *
      * @return Response

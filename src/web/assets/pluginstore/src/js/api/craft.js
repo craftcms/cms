@@ -141,6 +141,6 @@ export default {
      * @returns {AxiosPromise<any>}
      */
     getApiHeaders() {
-        return _axios.get(Craft.getActionUrl('plugin-store/get-api-headers'))
+        return _axios.get(Craft.getActionUrl('app/api-headers'))
     }
 }

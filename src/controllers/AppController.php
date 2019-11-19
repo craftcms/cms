@@ -11,6 +11,7 @@ use Craft;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
+use craft\helpers\Api;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -57,6 +58,18 @@ class AppController extends Controller
         }
 
         return parent::beforeAction($action);
+    }
+
+    /**
+     * Returns the latest Craftnet API headers.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionApiHeaders(): Response
+    {
+        $this->requireCpRequest();
+        return $this->asJson(Api::headers());
     }
 
     /**
