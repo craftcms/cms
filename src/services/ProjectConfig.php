@@ -2134,7 +2134,7 @@ class ProjectConfig extends Component
                 'scope',
                 'uid',
             ])
-            ->from([Table::GQLSCOPES])
+            ->from([Table::GQLSCHEMAS])
             ->indexBy('uid')
             ->all();
 
