@@ -105,7 +105,6 @@ class InterfaceAndGeneratorTest extends Unit
             'matrix',
             ['getAllBlockTypes' => function () { return $this->mockMatrixBlocks();}]
         );
-
     }
 
     protected function _after()
