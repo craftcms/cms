@@ -24,12 +24,12 @@ class QueryArgument extends ScalarType
     /**
      * @var string
      */
-    public $name = 'QueryParameter';
+    public $name = 'QueryArgument';
 
     /**
      * @var string
      */
-    public $description = 'The `QueryParameter` scalar type represents a value to be using in Craft element queries. It can be both an integer or a string.';
+    public $description = 'The `QueryArgument` scalar type represents a value to be using in Craft element queries. It can be both an integer or a string.';
 
     public function __construct(array $config = [])
     {
@@ -52,7 +52,7 @@ class QueryArgument extends ScalarType
      */
     public static function getName(): string
     {
-        return 'QueryParameter';
+        return 'QueryArgument';
     }
 
     /**
@@ -74,7 +74,7 @@ class QueryArgument extends ScalarType
     public function parseValue($value)
     {
         if (!is_int($value) && !is_string($value)) {
-            throw new GqlException("QueryParameter must be either a string or an integer.");
+            throw new GqlException("QueryArgument must be either a string or an integer.");
         }
 
         return $value;
@@ -94,6 +94,6 @@ class QueryArgument extends ScalarType
         }
 
         // Intentionally without message, as all information already in wrapped Exception
-        throw new GqlException("QueryParameter must be either a string or an integer.");
+        throw new GqlException("QueryArgument must be either a string or an integer.");
     }
 }
