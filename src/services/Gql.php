@@ -41,6 +41,7 @@ use craft\gql\queries\Ping as PingQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
@@ -533,6 +534,7 @@ class Gql extends Component
         $this->_schemaDef = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
+        TypeManager::flush();
         $this->invalidateCaches();
     }
 
