@@ -454,12 +454,11 @@ $.extend(Craft,
                         success: function(apiResponse, textStatus, jqXHR) {
                             var responseHeaders = {};
                             var headerLines = jqXHR.getAllResponseHeaders().split('\n');
-                            var parts, name, value;
+                            var colon, name, value;
                             for (var i = 0; i < headerLines.length; i++) {
-                                parts = headerLines[i].split(':', 2);
-                                if (parts.length === 2) {
-                                    name = Craft.trim(parts[0]);
-                                    value = Craft.trim(parts[1]);
+                                if (headerLines[i].startsWith('x-craft-') && (colon = headerLines[i].indexOf(':')) !== -1) {
+                                    name = Craft.trim(headerLines[i].substr(0, colon));
+                                    value = Craft.trim(headerLines[i].substr(colon + 1));
                                     if (typeof responseHeaders[name] === 'undefined') {
                                         responseHeaders[name] = [];
                                     }
