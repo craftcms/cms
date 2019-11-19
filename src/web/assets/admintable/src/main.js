@@ -2,82 +2,47 @@
 /* global Garnish */
 
 import Vue from 'vue'
-import {t} from '../../pluginstore/src/js/filters/craft'
-// import {mapState} from 'vuex'
-import store from './js/store/adminTable'
 import App from './App'
-import AdminTablePagination from './js/components/AdminTablePagination'
+import {t} from '../../pluginstore/src/js/filters/craft'
 
 Vue.filter('t', t)
 
-Garnish.$doc.ready(function() {
-    Craft.initUiElements()
-    const ADMIN_TABLE = document.querySelector('#admin-table');
-    const ADMIN_TABLE_PAGINATION = document.querySelector('#admin-table-pagination');
+Craft.VueAdminTable = Garnish.Base.extend({
+    init: function(settings) {
 
-    window.adminTableApp = new Vue({
-        render: createElement => {
-            let context = {
-                props: {...ADMIN_TABLE.dataset}
-            };
+        this.setSettings(settings, Craft.VueAdminTable.defaults);
 
-            return createElement(App, context);
-        },
-        store,
+        const props = this.settings;
 
-        components: {
-            App,
-        },
+        return new Vue({
+            components: {
+                App
+            },
+            data() {
+                return {};
+            },
+            render: (h) => {
+                return h(App, {
+                    props: props
+                })
+            },
+        }).$mount(this.settings.container);
+    },
 
-        data() {
-            return {
-
-            }
-        },
-
-        computed: {
-
-        },
-
-        watch: {
-
-        },
-
-        methods: {
-
-        }
-    }).$mount('#admin-table')
-
-    window.adminTablePagination = new Vue({
-        render: createElement => {
-            let context = {
-                props: {...ADMIN_TABLE_PAGINATION.dataset}
-            };
-
-            return createElement(AdminTablePagination, context);
-        },
-        store,
-
-        components: {
-            AdminTablePagination,
-        },
-
-        data() {
-            return {
-
-            }
-        },
-
-        computed: {
-
-        },
-
-        watch: {
-
-        },
-
-        methods: {
-
-        }
-    }).$mount('#admin-table-pagination')
-})
+},
+{
+    defaults: {
+        actions: [],
+        checkboxes: false,
+        columns: [],
+        container: null,
+        deleteAction: null,
+        perPage: 3,
+        reorderAction: null,
+        reorderSuccessMessage: Craft.t('app', 'Items reordered.') ,
+        reorderFailMessage:    Craft.t('app', 'Couldn’t reorder items.'),
+        search: false,
+        tableData: [],
+        tableDataEndpoint: null,
+    }
+});

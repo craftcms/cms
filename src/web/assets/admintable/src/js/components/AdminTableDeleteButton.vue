@@ -14,7 +14,7 @@
         name: 'AdminTableDeleteButton',
 
         props: {
-            id: Number,
+            id: [Number, String],
             name: String,
             actionUrl: String
         },

@@ -26,12 +26,15 @@
         <div class="tableview" :class="{ loading: isLoading }">
             <vuetable
                     ref="vuetable"
-                    :per-page="resultsPerPage"
+                    :per-page="perPage"
                     :css="tableCss"
                     :fields="fields"
                     :api-url="apiUrl"
-                    @vuetable:pagination-data="onPaginationData"
+                    :api-mode="apiUrl ? true : false"
+                    :data="tableData"
+                    pagination-path="links.pagination"
                     @vuetable:loaded="init"
+                    @vuetable:pagination-data="onPaginationData"
             >
                 <template slot="checkbox" slot-scope="props">
                     <admin-table-checkbox
@@ -42,6 +45,11 @@
                         v-on:removeCheck="removeCheck"
                     ></admin-table-checkbox>
                 </template>
+                <template slot="statusName" slot-scope="props">
+                    <span v-if="props.rowData.status !== undefined" class="status" :class="{enabled: props.rowData.status}"></span>
+                    <a class="cell-bold" v-if="props.rowData.url" href="props.rowData.url">{{ props.rowData.name }}</a>
+                    <span class="cell-bold" v-if="!props.rowData.url">{{ props.rowData.name }}</span>
+                </template>
                 <template slot="reorder" slot-scope="props">
                     <i class="move icon" :data-id="props.rowData.id"></i>
                 </template>
@@ -49,18 +57,22 @@
                     <admin-table-delete-button
                         :id="props.rowData.id"
                         :name="props.rowData.name"
-                        :action-url="deleteActionUrl"
+                        :action-url="deleteAction"
                         v-on:reload="reload"
                     ></admin-table-delete-button>
                 </template>
             </vuetable>
+            <admin-table-pagination
+                    ref="pagination"
+                    @vuetable-pagination:change-page="onChangePage"
+            ></admin-table-pagination>
         </div>
     </div>
 </template>
 <script>
     /* global Craft */
-    import {mapState} from 'vuex'
     import Vuetable from 'vuetable-2/src/components/Vuetable'
+    import AdminTablePagination from './js/components/AdminTablePagination'
     import AdminTableDeleteButton from './js/components/AdminTableDeleteButton';
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
@@ -69,37 +81,43 @@
     export default {
         components: {
             Vuetable,
+            AdminTablePagination,
             AdminTableCheckbox,
             AdminTableDeleteButton,
             AdminTableActionButton
         },
 
         props: [
-            'actionButtons',
+            'actions',
             'checkboxes',
             'columns',
-            'deleteActionUrl',
-            'endpoint',
+            'container',
+            'deleteAction',
+            'tableDataEndpoint',
             'perPage',
-            'reorder',
-            'reorderActionUrl'
+            'reorderAction',
+            'reorderSuccessMessage',
+            'reorderFailMessage',
+            'tableData',
         ],
 
         data() {
             return {
                 checks: [],
+                currentPage: 1,
                 tableClass: 'data fullwidth',
                 showToolbar: false,
                 isLoading: true,
                 isSelectAll: false,
-                sortable: null
+                sortable: null,
             }
         },
 
         methods: {
             init() {
-                if (this.showReorder) {
-                    this.sortable = Sortable.create(document.querySelector('.vuetable-body'), {
+                let tableBody = this.$el.querySelector('.vuetable-body');
+                if (this.reorderAction && tableBody) {
+                    this.sortable = Sortable.create(tableBody, {
                         handle: '.move.icon',
                         onSort: this.updateSortOrder
                     })
@@ -109,7 +127,7 @@
             },
 
             updateSortOrder(ev) {
-                let newIndex = ev.newIndex + (this.currentPage > 1 ? (this.currentPage-1) * this.resultsPerPage : 0);
+                let newIndex = ev.newIndex + (this.currentPage > 1 ? (this.currentPage-1) * this.perPage : 0);
                 // Make the order non-zero based
                 newIndex = newIndex + 1;
                 let moveHandle = ev.item.querySelector('.move.icon');
@@ -120,13 +138,13 @@
                         position: newIndex
                     };
 
-                    Craft.postActionRequest(this.reorderActionUrl, data, response => {
+                    Craft.postActionRequest(this.reorderAction, data, response => {
                         if (response && response.success) {
-                            Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
+                            Craft.cp.displayNotice(this.reorderSuccessMessage);
                         }
                     });
                 } else {
-                    Craft.cp.displayError(Craft.t('app', 'Unable to save order.'));
+                    Craft.cp.displayError(this.reorderFailMessage);
                 }
             },
 
@@ -156,42 +174,43 @@
                 this.isLoading = true;
                 this.deselectAll();
                 this.$refs.vuetable.reload();
-            }
+            },
+
+            onPaginationData (paginationData) {
+                this.currentPage = paginationData.current_page;
+                this.$refs.pagination.setPaginationData(paginationData)
+            },
+
+            onChangePage (page) {
+                this.$refs.vuetable.changePage(page)
+            },
+
         },
 
         computed: {
-            actions() {
-                return this.actionButtons !== undefined ? JSON.parse(this.actionButtons) : [];
-            },
-
             apiUrl() {
-                return Craft.actionUrl + this.endpoint;
-            },
+                if (!this.tableDataEndpoint) {
+                    return '';
+                }
 
-            tableColumns() {
-               return this.columns !== undefined ? JSON.parse(this.columns) : [];
+                return Craft.getActionUrl(this.tableDataEndpoint);
             },
 
             fields() {
                 let columns = [];
 
                 // Enable/Disable checkboxes
-                if (this.showCheckboxes) {
+                if (this.checkboxes && this.actions.length) {
                     columns.push({
                         name: '__slot:checkbox',
                         titleClass: 'thin',
                         dataClass: 'checkbox-cell'
                     });
-                    // columns.push({
-                    //     name: '__checkbox',
-                    //     titleClass: 'checkbox-cell thin',
-                    //     dataClass: 'checkbox-cell',
-                    // });
                 }
 
-                columns = [...columns,...this.tableColumns];
+                columns = [...columns,...this.columns];
 
-                if (this.showReorder) {
+                if (this.reorderAction) {
                     columns.push({
                         name: '__slot:reorder',
                         title: '',
@@ -199,7 +218,7 @@
                     });
                 }
 
-                if (this.deleteActionUrl) {
+                if (this.deleteAction) {
                     columns.push({
                         name: '__slot:delete',
                         titleClass: 'thin'
@@ -207,27 +226,6 @@
                 }
 
                 return columns;
-            },
-
-            showActions() {
-                return this.actions && this.actions.length
-            },
-
-            showCheckboxes() {
-                return this.checkboxes !== undefined ? JSON.parse(this.checkboxes) : false;
-            },
-
-            showReorder() {
-                return this.reorder !== undefined && this.reorderActionUrl ? JSON.parse(this.reorder) : false;
-            },
-
-            resultsPerPage() {
-                return this.perPage !== undefined ? JSON.parse(this.perPage) : 20;
-            },
-
-            onPaginationData (paginationData) {
-                this.$store.commit('updatePagination', paginationData);
-                return true;
             },
 
             tableCss() {
@@ -238,27 +236,11 @@
                 }
             },
 
-            ...mapState({
-                currentPage: state => {
-                    return state.currentPage
-                },
-            })
         },
-
-        watch: {
-            currentPage() {
-                this.isLoading = true;
-                this.deselectAll();
-            }
-        },
-
-        mounted() {
-            this.$store.commit('updateTable', this.$refs.vuetable)
-        }
     }
 </script>
 
-<style style="scss">
+<style lang="scss">
     .tableview td.checkbox-cell {
         padding-right: 7px;
         width: 12px !important;

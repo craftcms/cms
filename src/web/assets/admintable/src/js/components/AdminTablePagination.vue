@@ -15,29 +15,11 @@
 </template>
 
 <script>
-    import {mapState} from 'vuex'
     import PaginationMixin from 'vuetable-2/src/components/VuetablePaginationMixin'
 
     export default {
         name: 'AdminTablePagination',
         mixins: [PaginationMixin],
-        computed: {
-            ...mapState({
-                pagination: state => {
-                    return state.table.tablePagination
-                },
-            })
-        },
-        watch: {
-            pagination(newVal) {
-                this.tablePagination = newVal
-            }
-        },
-        methods: {
-            loadPage(page) {
-                this.$store.dispatch('updatePage', page)
-            }
-        }
     }
 </script>
 
