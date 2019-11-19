@@ -79,7 +79,7 @@ use yii\validators\Validator;
  * @property Element|null $prevSibling The element’s previous sibling
  * @property string|null $ref The reference string to this element
  * @property mixed $route The route that should be used when the element’s URI is requested
- * @property string|null $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property array $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property ElementQueryInterface $siblings All of the element’s siblings
  * @property Site $site Site the element is associated with
  * @property string|null $status The element’s status
