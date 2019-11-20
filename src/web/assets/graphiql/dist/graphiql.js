@@ -1,10 +1,3 @@
-
-var header = document.querySelector('#header');
-
-if (header) {
-    header.parentNode.removeChild(header);
-}
-
 // Parse the search string to get url parameters.
 var search = window.location.search;
 var parameters = {};

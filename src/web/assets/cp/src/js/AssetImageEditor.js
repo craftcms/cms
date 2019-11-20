@@ -282,7 +282,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             });
 
             this.$body.css({
-                'height': innerHeight - 58
+                'height': innerHeight - 62
             });
 
             if (innerWidth < innerHeight) {

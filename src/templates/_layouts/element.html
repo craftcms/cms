@@ -91,7 +91,7 @@
         {% if isCurrent %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+                    <div id="save-draft-btn" class="btn">{{ 'Save as a Draft'|t('app') }}</div>
                 {% else %}
                     <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
                 {% endif %}

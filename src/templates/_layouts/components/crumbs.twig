@@ -1,0 +1,12 @@
+<div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
+    <a id="nav-toggle" title="{{ 'Show nav'|t('app') }}"></a>
+    {% if crumbs %}
+        <nav>
+            <ul>
+                {% for crumb in crumbs %}
+                    <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>

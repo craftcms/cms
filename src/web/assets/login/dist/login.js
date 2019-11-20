@@ -5,8 +5,7 @@
         {
             $form: null,
             $loginNameInput: null,
-            $loginFields: null,
-            $passwordPaneItem: null,
+            $passwordFields: null,
             $passwordInput: null,
             $forgotPasswordLink: null,
             $rememberMeCheckbox: null,
@@ -22,8 +21,7 @@
             init: function() {
                 this.$form = $('#login-form');
                 this.$loginNameInput = $('#loginName');
-                this.$loginFields = $('#login-fields');
-                this.$passwordPaneItem = this.$loginFields.children();
+                this.$passwordFields = $('#password-fields');
                 this.$passwordInput = $('#password');
                 this.$forgotPasswordLink = $('#forgot-password');
                 this.$sslIcon = $('#ssl-icon');
@@ -193,16 +191,9 @@
                     this.$error.remove();
                 }
 
-                var formTopMargin = parseInt(this.$form.css('margin-top')),
-                    loginFieldsHeight = this.$loginFields.height(),
-                    newFormTopMargin = formTopMargin + Math.round(loginFieldsHeight / 2);
-
-                this.$form.velocity({marginTop: newFormTopMargin}, 'fast');
-                this.$loginFields.velocity({height: 24}, 'fast', $.proxy(function() {
-                    this.$loginFields.hide();
-                }, this));
-
                 this.$form.addClass('reset-password');
+                this.$passwordInput.remove();
+                this.$passwordFields.remove();
                 this.$submitBtn.addClass('reset-password');
                 this.$submitBtn.attr('value', Craft.t('app', 'Reset Password'));
                 this.$submitBtn.enable();

@@ -7,6 +7,8 @@
 > ```
 
 ### Added
+- Improved the overall look and feel of the Control Panel. ([#2883](https://github.com/craftcms/cms/issues/2883))
+- Added an overflow menu for Control Panel tabs that don’t fit into the available space. ([#3073](https://github.com/craftcms/cms/issues/3073))
 - Added support for delta element updates. ([#4064](https://github.com/craftcms/cms/issues/4064))
 - Split GraphQL Schemas into schemas and tokens. Schemas are now assigned to tokens, allowing multiple tokens to use the same schema.
 - Add Project Config support for GraphQL schemas. ([#4829]((https://github.com/craftcms/cms/issues/4829))

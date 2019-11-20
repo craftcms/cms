@@ -8,22 +8,24 @@
 {% block content %}
     {% set schemas = craft.app.gql.schemas %}
 
-    <table id="schemas" class="data fullwidth collapsible">
-        <thead>
-            <th schema="col">{{ "Schema name"|t('app') }}</th>
+    <div class="scrolltable">
+        <table id="schemas" class="data fullwidth">
+            <thead>
+                <th scope="col">{{ "Schema name"|t('app') }}</th>
             <th></th>
         </thead>
         <tbody>
             {% for schema in schemas %}
                 <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
                     <th schema="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.name }}</a></th>
-                    <th class="thin">
+                        <th class="thin">
                         <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
-                    </th>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        </th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <div class="buttons">
         <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>

@@ -28,8 +28,7 @@ ul.categories {
 
       &:hover {
         @apply .no-underline .z-10;
-        background: #fafafa;
-        border-color: #eee;
+        background-color: $grey100;
 
         &:not(.router-link-active) {
           color: $linkColor;
@@ -37,12 +36,8 @@ ul.categories {
       }
 
       &.router-link-active {
-        @apply .bg-grey-light;
+        background-color: $grey200;
       }
     }
-  }
-
-  li:hover + li:before {
-    border-color: transparent;
   }
 }
