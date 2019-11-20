@@ -149,6 +149,11 @@ class GraphqlController extends Controller
             throw new BadRequestHttpException('No GraphQL query was supplied.');
         }
 
+        if ($token) {
+            $token->lastUsed = DateTimeHelper::currentUTCDateTime();
+            $gqlService->saveToken($token);
+        }
+
         try {
             $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, Craft::$app->getConfig()->getGeneral()->devMode);
         } catch (\Throwable $e) {
