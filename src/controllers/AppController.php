@@ -17,6 +17,7 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
+use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
@@ -107,11 +108,50 @@ class AppController extends Controller
         }
 
         $request = Craft::$app->getRequest();
+        $updatesService = Craft::$app->getUpdates();
+
+        if ($request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
+            return $this->asJson(['cached' => false]);
+        }
+
         $forceRefresh = (bool)$request->getParam('forceRefresh');
         $includeDetails = (bool)$request->getParam('includeDetails');
 
-        $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        $updates = $updatesService->getUpdates($forceRefresh);
+        return $this->_updatesResponse($updates, $includeDetails);
+    }
 
+    /**
+     * Caches new update info and then returns it.
+     *
+     * @return Response
+     * @throws ForbiddenHttpException
+     * @since 3.3.16
+     */
+    public function actionCacheUpdates(): Response
+    {
+        $this->requireAcceptsJson();
+
+        // Require either the 'performUpdates' or 'utility:updates' permission
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
+        }
+
+        $updateData = Craft::$app->getRequest()->getBodyParam('updates');
+        $updatesService = Craft::$app->getUpdates();
+        $updates = $updatesService->cacheUpdates($updateData);
+        return $this->_updatesResponse($updates);
+    }
+
+    /**
+     * Returns updates info as JSON
+     * @param Updates $updates The updates model
+     * @param bool $includeDetails Whether to include update details
+     * @return Response
+     */
+    private function _updatesResponse(Updates $updates, bool $includeDetails = false): Response
+    {
         $allowUpdates = (
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&

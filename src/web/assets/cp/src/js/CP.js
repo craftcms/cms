@@ -503,28 +503,89 @@ Craft.CP = Garnish.Base.extend(
                 this.checkingForUpdates = true;
                 this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
 
-                var data = {
-                    forceRefresh: (forceRefresh === true)
-                };
+                this._checkForUpdates(forceRefresh)
+                    .then(function(info) {
+                        this.updateUtilitiesBadge();
+                        this.checkingForUpdates = false;
 
-                Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info) {
-                    this.updateUtilitiesBadge();
-                    this.checkingForUpdates = false;
+                        if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+                            var callbacks = this.checkForUpdatesCallbacks;
+                            this.checkForUpdatesCallbacks = null;
 
-                    if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
-                        var callbacks = this.checkForUpdatesCallbacks;
-                        this.checkForUpdatesCallbacks = null;
-
-                        for (var i = 0; i < callbacks.length; i++) {
-                            callbacks[i](info);
+                            for (var i = 0; i < callbacks.length; i++) {
+                                callbacks[i](info);
+                            }
                         }
-                    }
 
-                    this.trigger('checkForUpdates', {
-                        updateInfo: info
-                    });
-                }, this));
+                        this.trigger('checkForUpdates', {
+                            updateInfo: info
+                        });
+                    }.bind(this));
             }
+        },
+
+        _checkForUpdates: function(forceRefresh) {
+            return new Promise(function(resolve, reject) {
+                if (!forceRefresh) {
+                    this._checkForCachedUpdates()
+                        .then(function(info) {
+                            if (info.cached !== false) {
+                                resolve(info);
+                            }
+
+                            this._getUpdates()
+                                .then(function(info) {
+                                    resolve(info);
+                                });
+                        }.bind(this));
+                } else {
+                    this._getUpdates()
+                        .then(function(info) {
+                            resolve(info);
+                        });
+                }
+            }.bind(this));
+        },
+
+        _checkForCachedUpdates: function() {
+            return new Promise(function(resolve, reject) {
+                Craft.postActionRequest('app/check-for-updates', { onlyIfCached: true }, function(info, textStatus) {
+                    if (textStatus === 'success') {
+                        resolve(info);
+                    } else {
+                        resolve({ cached: false });
+                    }
+                });
+            });
+        },
+
+        _getUpdates: function() {
+            return new Promise(function(resolve, reject) {
+                Craft.sendApiRequest('GET', 'updates')
+                    .then(function(updates) {
+                        this._cacheUpdates(updates).then(resolve);
+                    }.bind(this))
+                    .catch(function(e) {
+                        this._cacheUpdates({}).then(resolve);
+                    }.bind(this));
+            }.bind(this));
+        },
+
+        _cacheUpdates: function(updates) {
+            return new Promise(function(resolve, reject) {
+                var data = JSON.stringify({
+                    updates: updates
+                });
+                Craft.postActionRequest('app/cache-updates', data, function(info, textStatus) {
+                    if (textStatus === 'success') {
+                        resolve(info);
+                    } else {
+                        reject();
+                    }
+                }, {
+                    contentType: 'application/json; charset=utf-8'
+                });
+            });
         },
 
         updateUtilitiesBadge: function() {
