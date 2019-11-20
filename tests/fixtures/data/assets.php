@@ -11,7 +11,7 @@ return [
         'filename' => 'product.jpg',
         'volumeId' => '1000',
         'folderId' => '1000',
-        'imageDescription' => 'Paint me like one of your French girls',
-        'volumeAndMass' => 'Almost as if this field is named to throw off some tests.',
+        'field:imageDescription' => 'Paint me like one of your French girls',
+        'field:volumeAndMass' => 'Almost as if this field is named to throw off some tests.',
     ],
 ];
