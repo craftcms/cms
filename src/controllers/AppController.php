@@ -138,10 +138,12 @@ class AppController extends Controller
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
-        $updateData = Craft::$app->getRequest()->getBodyParam('updates');
+        $request = Craft::$app->getRequest();
+        $updateData = $request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
         $updates = $updatesService->cacheUpdates($updateData);
-        return $this->_updatesResponse($updates);
+        $includeDetails = (bool)$request->getParam('includeDetails');
+        return $this->_updatesResponse($updates, $includeDetails);
     }
 
     /**
@@ -150,7 +152,7 @@ class AppController extends Controller
      * @param bool $includeDetails Whether to include update details
      * @return Response
      */
-    private function _updatesResponse(Updates $updates, bool $includeDetails = false): Response
+    private function _updatesResponse(Updates $updates, bool $includeDetails): Response
     {
         $allowUpdates = (
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
