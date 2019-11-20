@@ -13,6 +13,8 @@ var jsonMinify = require('gulp-json-minify');
 var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
+var gulpif = require('gulp-if');
+var sass = require('gulp-sass');
 
 var libPath = 'lib/';
 
@@ -21,7 +23,6 @@ var jsDeps = [
     { srcGlob: 'node_modules/d3/build/d3.js', dest: libPath+'d3' },
     { srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: libPath+'element-resize-detector' },
     { srcGlob: 'node_modules/fabric/dist/fabric.js', dest: libPath+'fabric' },
-    { srcGlob: 'node_modules/whatwg-fetch/fetch.js', dest: libPath+'fetch' },
     { srcGlob: 'node_modules/garnishjs/dist/garnish.js', dest: libPath+'garnishjs' },
     { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'inputmask' },
     { srcGlob: 'node_modules/jquery/dist/jquery.js', dest: libPath+'jquery' },
@@ -33,13 +34,6 @@ var jsDeps = [
     { srcGlob: 'node_modules/velocity-animate/velocity.js', dest: libPath+'velocity' },
     { srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: libPath+'xregexp' },
     { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' },
-    { srcGlob: 'node_modules/vue/dist/vue.js', dest: libPath+'vue' },
-    { srcGlob: 'node_modules/vue/dist/vue.min.js', dest: libPath+'vue' },
-    { srcGlob: 'node_modules/vue-router/dist/vue-router.js', dest: libPath+'vue-router' },
-    { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' },
-    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' },
-    { srcGlob: 'node_modules/vue-autosuggest/dist/vue-autosuggest.js', dest: libPath+'vue-autosuggest' }
-
 ];
 
 var d3LocaleData = [
@@ -48,15 +42,66 @@ var d3LocaleData = [
 ];
 
 var staticDeps = [
-    { srcGlob: 'node_modules/es6-promise/dist/es6-promise.min.js', dest: libPath+'es6-promise' },
-    { srcGlob: 'node_modules/graphiql/graphiql.css', dest: libPath+'graphiql/css' },
-    { srcGlob: 'node_modules/graphiql/graphiql.min.js', dest: libPath+'graphiql/js' },
-    { srcGlob: 'node_modules/react/umd/react.production.min.js', dest: libPath+'react' },
-    { srcGlob: 'node_modules/react-dom/umd/react-dom.production.min.js', dest: libPath+'react-dom' },
+    { srcGlob: 'node_modules/axios/dist/axios.min.js', dest: libPath+'axios' },
     { srcGlob: 'node_modules/selectize/dist/css/selectize.css', dest: libPath+'selectize' }
 ];
 
-gulp.task('deps', function() {
+var graphiqlJs = [
+    'node_modules/whatwg-fetch/fetch.js',
+    'node_modules/react/umd/react.production.min.js',
+    'node_modules/react-dom/umd/react-dom.production.min.js',
+    'node_modules/graphiql/graphiql.js',
+    'src/web/assets/graphiql/src/graphiql-init.js',
+];
+
+var graphiqlCss = [
+    'node_modules/graphiql/graphiql.css',
+    'src/web/assets/graphiql/src/graphiql.scss',
+];
+
+var graphiqlDist = 'src/web/assets/graphiql/dist';
+
+var vueJs = [
+    'node_modules/vue/dist/vue.min.js',
+    'node_modules/vue-router/dist/vue-router.min.js',
+    'node_modules/vuex/dist/vuex.min.js',
+    'node_modules/vue-autosuggest/dist/vue-autosuggest.js',
+];
+
+gulp.task('graphiql-js', function() {
+    return gulp.src(graphiqlJs)
+        .pipe(gulpif(/(fetch\.js|graphiql-init\.js)$/, uglify()))
+        .pipe(concat('graphiql.js'))
+        .pipe(gulp.dest(graphiqlDist));
+});
+
+gulp.task('graphiql-css', function() {
+    return gulp.src(graphiqlCss)
+        .pipe(sass().on('error', sass.logError))
+        .pipe(concat('graphiql.css'))
+        .pipe(gulp.dest(graphiqlDist));
+});
+
+gulp.task('graphiql', ['graphiql-js', 'graphiql-css']);
+
+gulp.task('vue', function() {
+    return gulp.src(vueJs)
+        .pipe(concat('vue.js'))
+        .pipe(gulp.dest(libPath+'vue'))
+});
+
+gulp.task('static-deps', function() {
+    var streams = [];
+    staticDeps.forEach(function(dep) {
+        streams.push(
+            gulp.src(dep.srcGlob)
+                .pipe(gulp.dest(dep.dest))
+        );
+    });
+    return es.merge(streams);
+});
+
+gulp.task('deps', ['graphiql', 'vue', 'static-deps'], function() {
     var streams = [];
 
     // Minify & move the JS deps
@@ -77,14 +122,6 @@ gulp.task('deps', function() {
         streams.push(
             gulp.src(dep.srcGlob)
                 .pipe(jsonMinify())
-                .pipe(gulp.dest(dep.dest))
-        );
-    });
-
-    // Statically move over any dep files we don't need to modify
-    staticDeps.forEach(function(dep) {
-        streams.push(
-            gulp.src(dep.srcGlob)
                 .pipe(gulp.dest(dep.dest))
         );
     });

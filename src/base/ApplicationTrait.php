@@ -1462,6 +1462,7 @@ trait ApplicationTrait
         $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
         $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
+        $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
     }
 
     /**

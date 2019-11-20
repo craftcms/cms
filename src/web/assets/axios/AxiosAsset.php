@@ -5,18 +5,18 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\vue;
+namespace craft\web\assets\axios;
 
 use craft\web\AssetBundle;
 
 /**
  * Vue asset bundle.
  */
-class VueAsset extends AssetBundle
+class AxiosAsset extends AssetBundle
 {
-    public $sourcePath = '@lib/vue';
+    public $sourcePath = '@lib/axios';
 
     public $js = [
-        'vue.js',
+        'axios.min.js',
     ];
 }
