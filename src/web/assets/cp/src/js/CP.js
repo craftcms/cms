@@ -35,6 +35,7 @@ Craft.CP = Garnish.Base.extend(
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
+        includingDetailsOnUpdatesCheck: false,
         checkForUpdatesCallbacks: null,
 
         init: function() {
@@ -479,15 +480,24 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        checkForUpdates: function(forceRefresh, callback) {
+        checkForUpdates: function(forceRefresh, includeDetails, callback) {
+            // Make 'includeDetails' optional
+            if (typeof includeDetails === 'function') {
+                callback = includeDetails;
+                includeDetails = false;
+            }
+
             // If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
             // then just set a new callback that re-checks for updates when the current one is done.
-            if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) {
+            if (this.checkingForUpdates && (
+                (forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) ||
+                (includeDetails === true && !this.includingDetailsOnUpdatesCheck)
+            )) {
                 var realCallback = callback;
 
                 callback = function() {
-                    Craft.cp.checkForUpdates(true, realCallback);
-                };
+                    this.checkForUpdates(forceRefresh, includeDetails, realCallback);
+                }.bind(this);
             }
 
             // Callback function?
@@ -502,8 +512,9 @@ Craft.CP = Garnish.Base.extend(
             if (!this.checkingForUpdates) {
                 this.checkingForUpdates = true;
                 this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+                this.includingDetailsOnUpdatesCheck = (includeDetails === true);
 
-                this._checkForUpdates(forceRefresh)
+                this._checkForUpdates(forceRefresh, includeDetails)
                     .then(function(info) {
                         this.updateUtilitiesBadge();
                         this.checkingForUpdates = false;
@@ -524,22 +535,22 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        _checkForUpdates: function(forceRefresh) {
+        _checkForUpdates: function(forceRefresh, includeDetails) {
             return new Promise(function(resolve, reject) {
                 if (!forceRefresh) {
-                    this._checkForCachedUpdates()
+                    this._checkForCachedUpdates(includeDetails)
                         .then(function(info) {
                             if (info.cached !== false) {
                                 resolve(info);
                             }
 
-                            this._getUpdates()
+                            this._getUpdates(includeDetails)
                                 .then(function(info) {
                                     resolve(info);
                                 });
                         }.bind(this));
                 } else {
-                    this._getUpdates()
+                    this._getUpdates(includeDetails)
                         .then(function(info) {
                             resolve(info);
                         });
@@ -547,9 +558,13 @@ Craft.CP = Garnish.Base.extend(
             }.bind(this));
         },
 
-        _checkForCachedUpdates: function() {
+        _checkForCachedUpdates: function(includeDetails) {
             return new Promise(function(resolve, reject) {
-                Craft.postActionRequest('app/check-for-updates', { onlyIfCached: true }, function(info, textStatus) {
+                var data = {
+                    onlyIfCached: true,
+                    includeDetails: includeDetails,
+                };
+                Craft.postActionRequest('app/check-for-updates', data, function(info, textStatus) {
                     if (textStatus === 'success') {
                         resolve(info);
                     } else {
@@ -559,11 +574,11 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        _getUpdates: function() {
+        _getUpdates: function(includeDetails) {
             return new Promise(function(resolve, reject) {
                 Craft.sendApiRequest('GET', 'updates')
                     .then(function(updates) {
-                        this._cacheUpdates(updates).then(resolve);
+                        this._cacheUpdates(updates, includeDetails).then(resolve);
                     }.bind(this))
                     .catch(function(e) {
                         this._cacheUpdates({}).then(resolve);
@@ -571,10 +586,11 @@ Craft.CP = Garnish.Base.extend(
             }.bind(this));
         },
 
-        _cacheUpdates: function(updates) {
+        _cacheUpdates: function(updates, includeDetails) {
             return new Promise(function(resolve, reject) {
                 var data = JSON.stringify({
-                    updates: updates
+                    updates: updates,
+                    includeDetails: includeDetails,
                 });
                 Craft.postActionRequest('app/cache-updates', data, function(info, textStatus) {
                     if (textStatus === 'success') {
