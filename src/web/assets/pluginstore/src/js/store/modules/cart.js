@@ -214,7 +214,7 @@ const actions = {
 
     getActiveTrialPlugins({commit, rootState, rootGetters}) {
         return new Promise((resolve, reject) => {
-            // get plugin license info and find active trial plugin ids
+            // get plugin license info and find active trial plugin handles
             const pluginHandles = []
             const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
 
@@ -224,7 +224,7 @@ const actions = {
                 }
             }
 
-            // request plugins by plugin id
+            // request plugins by plugin handle
             pluginStoreApi.getPluginsByHandles(pluginHandles)
                 .then((response) => {
                     if (response.data && response.data.error) {
