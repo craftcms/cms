@@ -48,7 +48,6 @@ var d3LocaleData = [
 ];
 
 var staticDeps = [
-    { srcGlob: 'node_modules/es6-promise/dist/es6-promise.min.js', dest: libPath+'es6-promise' },
     { srcGlob: 'node_modules/graphiql/graphiql.css', dest: libPath+'graphiql/css' },
     { srcGlob: 'node_modules/graphiql/graphiql.min.js', dest: libPath+'graphiql/js' },
     { srcGlob: 'node_modules/react/umd/react.production.min.js', dest: libPath+'react' },

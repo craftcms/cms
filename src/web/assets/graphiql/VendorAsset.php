@@ -25,7 +25,6 @@ class VendorAsset extends AssetBundle
         $this->sourcePath = '@lib';
 
         $this->js = [
-            'es6-promise/es6-promise.min.js',
             'fetch/fetch.js',
             'react/react.production.min.js',
             'react-dom/react-dom.production.min.js',
