@@ -39,6 +39,7 @@
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
+- Added `craft\helpers\FileHelper::writeGitignoreFile()`
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
 - Added `craft\services\Assets::getAssetPreview()`.

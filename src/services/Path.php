@@ -119,7 +119,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -139,7 +139,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -197,7 +197,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -512,24 +512,5 @@ class Path extends Component
     public function getLicenseKeyPath(): string
     {
         return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
-    }
-
-    /**
-     * Creates a .gitignore file in the given directory if it doesn’t exist yet
-     *
-     * @param string $path
-     */
-    private function _createGitignore(string $path)
-    {
-        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
-
-        if (is_file($gitignorePath)) {
-            return;
-        }
-
-        FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
-            // Prevent a segfault if this is called recursively
-            'lock' => false,
-        ]);
     }
 }
