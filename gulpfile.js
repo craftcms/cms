@@ -34,13 +34,6 @@ var jsDeps = [
     { srcGlob: 'node_modules/velocity-animate/velocity.js', dest: libPath+'velocity' },
     { srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: libPath+'xregexp' },
     { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' },
-    { srcGlob: 'node_modules/vue/dist/vue.js', dest: libPath+'vue' },
-    { srcGlob: 'node_modules/vue/dist/vue.min.js', dest: libPath+'vue' },
-    { srcGlob: 'node_modules/vue-router/dist/vue-router.js', dest: libPath+'vue-router' },
-    { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' },
-    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' },
-    { srcGlob: 'node_modules/vue-autosuggest/dist/vue-autosuggest.js', dest: libPath+'vue-autosuggest' }
-
 ];
 
 var d3LocaleData = [
@@ -49,6 +42,7 @@ var d3LocaleData = [
 ];
 
 var staticDeps = [
+    { srcGlob: 'node_modules/axios/dist/axios.min.js', dest: libPath+'axios' },
     { srcGlob: 'node_modules/selectize/dist/css/selectize.css', dest: libPath+'selectize' }
 ];
 
@@ -67,6 +61,13 @@ var graphiqlCss = [
 
 var graphiqlDist = 'src/web/assets/graphiql/dist';
 
+var vueJs = [
+    'node_modules/vue/dist/vue.min.js',
+    'node_modules/vue-router/dist/vue-router.min.js',
+    'node_modules/vuex/dist/vuex.min.js',
+    'node_modules/vue-autosuggest/dist/vue-autosuggest.js',
+];
+
 gulp.task('graphiql-js', function() {
     return gulp.src(graphiqlJs)
         .pipe(gulpif(/(fetch\.js|graphiql-init\.js)$/, uglify()))
@@ -83,7 +84,24 @@ gulp.task('graphiql-css', function() {
 
 gulp.task('graphiql', ['graphiql-js', 'graphiql-css']);
 
-gulp.task('deps', ['graphiql'], function() {
+gulp.task('vue', function() {
+    return gulp.src(vueJs)
+        .pipe(concat('vue.js'))
+        .pipe(gulp.dest(libPath+'vue'))
+});
+
+gulp.task('static-deps', function() {
+    var streams = [];
+    staticDeps.forEach(function(dep) {
+        streams.push(
+            gulp.src(dep.srcGlob)
+                .pipe(gulp.dest(dep.dest))
+        );
+    });
+    return es.merge(streams);
+});
+
+gulp.task('deps', ['graphiql', 'vue', 'static-deps'], function() {
     var streams = [];
 
     // Minify & move the JS deps
@@ -104,14 +122,6 @@ gulp.task('deps', ['graphiql'], function() {
         streams.push(
             gulp.src(dep.srcGlob)
                 .pipe(jsonMinify())
-                .pipe(gulp.dest(dep.dest))
-        );
-    });
-
-    // Statically move over any dep files we don't need to modify
-    staticDeps.forEach(function(dep) {
-        streams.push(
-            gulp.src(dep.srcGlob)
                 .pipe(gulp.dest(dep.dest))
         );
     });

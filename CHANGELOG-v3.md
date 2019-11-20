@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\models\GqlSchema::getAllScopePairs()`.
 - Added `craft\models\GqlSchema::getAllScopePairsForAction()`.
+- Added `craft\web\assets\axios\AxiosAsset.php`.
 
 ### Changed
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
