@@ -19,6 +19,7 @@
 - Fixed a PHP error that could occur when autoloading the `ContentBehavior` and `ElementQueryBehavior` classes in some envirnments.
 - Fixed an error where it was impossible to query for Date field values using GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
 - Fixed an error where deleting an element would not invalidate GraphQL result caches. ([#5238](https://github.com/craftcms/cms/issues/5238))
+- Fixed an error where rebuilding Project Config would omit preview target data for sections. ([#5215](https://github.com/craftcms/cms/issues/5215))
 
 ## 3.3.15 - 2019-11-05
 
