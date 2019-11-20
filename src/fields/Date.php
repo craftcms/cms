@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\i18n\Locale;
@@ -245,5 +246,13 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             /** @var ElementQuery $query */
             $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return DateTimeType::getType();
     }
 }
