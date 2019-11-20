@@ -11,6 +11,9 @@
 - Updated the `svg-sanitize` library to 0.13.0.
 - Updated Yii to 2.0.29.
 
+### Deprecated
+- Deprecated `craft\web\assets\graphiql\VendorAsset`.
+
 ### Fixed
 - Fixed a SQL error that could occur when using PostgreSQL.
 - Fixed a SQL error that could occur when calling an element query’s `ids()` method with `indexBy('id')` set on it. ([#5216](https://github.com/craftcms/cms/issues/5216))
