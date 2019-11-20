@@ -83,6 +83,22 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
 
     /**
      * @inheritdoc
+     * @since 3.4.0
+     */
+    public function afterSave(bool $isNew)
+    {
+        // If the folder doesn't exist yet, create it with a .gitignore file
+        $path = $this->getRootPath();
+        if (!is_dir($path)) {
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getRootPath(): string
     {
