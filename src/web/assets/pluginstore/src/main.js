@@ -224,11 +224,15 @@ Garnish.$doc.ready(function() {
             /**
              * Loads Craft data.
              */
-            loadCraftData() {
+            loadCraftData(afterSuccess) {
                 this.$store.dispatch('craft/getCraftData')
                     .then(() => {
                         this.craftDataLoaded = true
                         this.$emit('dataLoaded')
+
+                        if (typeof afterSuccess === 'function') {
+                            afterSuccess()
+                        }
                     })
                     .catch(() => {
                         this.craftDataLoaded = true
@@ -240,8 +244,10 @@ Garnish.$doc.ready(function() {
              */
             loadData() {
                 this.loadPluginStoreData()
-                this.loadCraftData()
-                this.loadCartData()
+
+                this.loadCraftData(function() {
+                    this.loadCartData()
+                }.bind(this))
             },
 
             /**
