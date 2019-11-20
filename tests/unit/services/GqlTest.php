@@ -213,7 +213,7 @@ class GqlTest extends Unit
         $gql->setCachedResult($cacheKey, $cacheValue);
         $this->assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
 
-        // Make sure setting anything in projet confeg invalidates caches.
+        // Make sure setting anything in project config invalidates caches.
         Craft::$app->getProjectConfig()->set('test.value', true);
         $this->assertFalse($gql->getCachedResult($cacheKey));
     }
