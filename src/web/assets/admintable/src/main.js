@@ -42,6 +42,7 @@ Craft.VueAdminTable = Garnish.Base.extend({
         reorderSuccessMessage: Craft.t('app', 'Items reordered.') ,
         reorderFailMessage:    Craft.t('app', 'Couldn’t reorder items.'),
         search: false,
+        searchPlaceholder: Craft.t('app', 'Search'),
         tableData: [],
         tableDataEndpoint: null,
     }

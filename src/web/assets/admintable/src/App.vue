@@ -1,11 +1,11 @@
 <template>
     <div>
-        <div v-show="actions.length || showToolbar" class="toolbar">
+        <div v-show="showToolbar" class="toolbar">
             <div class="flex">
 
-                <div class="selectallcontainer">
+                <div v-if="showCheckboxes" class="selectallcontainer">
                     <div v-on:click="handleSelectAll" class="btn" role="checkbox" tabindex="0" aria-checked="false">
-                        <div class="checkbox" :class="{ checked: isSelectAll === true }"></div>
+                        <div class="checkbox" :class="{ checked: checks.length && checks.length == $refs.vuetable.tableData.length, indeterminate: this.checks.length && this.checks.length != $refs.vuetable.tableData.length }"></div>
                     </div>
                 </div>
 
@@ -21,6 +21,18 @@
                     </admin-table-action-button>
                 </div>
 
+                <div v-if="search && !tableData.length" class="flex-grow texticon search icon clearable">
+                    <input
+                        class="text fullwidth"
+                        type="text"
+                        autocomplete="off"
+                        :placeholder="searchPlaceholder"
+                        v-model="searchTerm"
+                        @input="handleSearch"
+                    >
+                    <div class="clear hidden" title="Clear"></div>
+                </div>
+
             </div>
         </div>
         <div class="tableview" :class="{ loading: isLoading }">
@@ -32,15 +44,16 @@
                     :api-url="apiUrl"
                     :api-mode="apiUrl ? true : false"
                     :data="tableData"
-                    pagination-path="links.pagination"
+                    :append-params="appendParams"
+                    pagination-path="pagination"
                     @vuetable:loaded="init"
+                    @vuetable:loading="loading"
                     @vuetable:pagination-data="onPaginationData"
             >
                 <template slot="checkbox" slot-scope="props">
                     <admin-table-checkbox
                         :id="props.rowData.id"
                         :checks="checks"
-                        :select-all="isSelectAll"
                         v-on:addCheck="addCheck"
                         v-on:removeCheck="removeCheck"
                     ></admin-table-checkbox>
@@ -77,6 +90,7 @@
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
     import Sortable from 'sortablejs'
+    import {debounce, map} from 'lodash'
 
     export default {
         components: {
@@ -98,6 +112,8 @@
             'reorderAction',
             'reorderSuccessMessage',
             'reorderFailMessage',
+            'search',
+            'searchPlaceholder',
             'tableData',
         ],
 
@@ -106,9 +122,8 @@
                 checks: [],
                 currentPage: 1,
                 tableClass: 'data fullwidth',
-                showToolbar: false,
                 isLoading: true,
-                isSelectAll: false,
+                searchTerm: null,
                 sortable: null,
             }
         },
@@ -124,6 +139,10 @@
                 }
 
                 this.isLoading = false;
+            },
+
+            loading() {
+              this.isLoading = true;
             },
 
             updateSortOrder(ev) {
@@ -161,13 +180,23 @@
                 }
             },
 
+            handleSearch: debounce(function() {
+                this.reload();
+            }, 350),
+
             handleSelectAll() {
-                this.isSelectAll = !this.isSelectAll;
+                var tableData = this.$refs.vuetable.tableData;
+                if (this.checks.length != tableData.length) {
+                    tableData.forEach(row => {
+                        this.addCheck(row.id);
+                    });
+                } else {
+                    this.checks = [];
+                }
             },
 
             deselectAll() {
                 this.checks = [];
-                this.isSelectAll = false;
             },
 
             reload() {
@@ -179,10 +208,12 @@
             onPaginationData (paginationData) {
                 this.currentPage = paginationData.current_page;
                 this.$refs.pagination.setPaginationData(paginationData)
+                this.deselectAll();
             },
 
             onChangePage (page) {
                 this.$refs.vuetable.changePage(page)
+                this.deselectAll();
             },
 
         },
@@ -196,11 +227,21 @@
                 return Craft.getActionUrl(this.tableDataEndpoint);
             },
 
+            appendParams() {
+                if (!this.searchTerm) {
+                    return {};
+                }
+
+                return {
+                    search: this.searchTerm
+                };
+            },
+
             fields() {
                 let columns = [];
 
                 // Enable/Disable checkboxes
-                if (this.checkboxes && this.actions.length) {
+                if (this.showCheckboxes) {
                     columns.push({
                         name: '__slot:checkbox',
                         titleClass: 'thin',
@@ -208,7 +249,17 @@
                     });
                 }
 
-                columns = [...columns,...this.columns];
+                let customColumns = map(this.columns, item => {
+                    // Do not allow sorting for if you can manually reorder items
+                    if (this.reorderAction && item.hasOwnProperty('sortField')) {
+                        delete item.sortField;
+                        return item;
+                    }
+
+                    return item;
+                });
+
+                columns = [...columns,...customColumns];
 
                 if (this.reorderAction) {
                     columns.push({
@@ -226,6 +277,14 @@
                 }
 
                 return columns;
+            },
+
+            showCheckboxes() {
+              return (this.actions.length && this.checkboxes);
+            },
+
+            showToolbar() {
+                return (this.actions.length || (this.search && !this.tableData.length));
             },
 
             tableCss() {
@@ -258,5 +317,9 @@
 
     .tableview .cell-bold {
         font-weight: bold;
+    }
+
+    table thead th.sortable:hover {
+        background-color: #f9f9f9;
     }
 </style>
