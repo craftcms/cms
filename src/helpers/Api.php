@@ -120,7 +120,7 @@ abstract class Api
     /**
      * Processes an API response’s headers.
      *
-     * @param string[][] The response headers
+     * @param string[][]|string[] The response headers
      */
     public static function processResponseHeaders(array $headers)
     {
@@ -128,16 +128,16 @@ abstract class Api
         $cache = Craft::$app->getCache();
         $duration = 86400;
         if (isset($headers['x-craft-allow-trials'])) {
-            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)reset($headers['x-craft-allow-trials']), $duration);
+            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)self::_firstHeader($headers['x-craft-allow-trials']), $duration);
         }
         if (isset($headers['x-craft-license-status'])) {
-            $cache->set('licenseKeyStatus', reset($headers['x-craft-license-status']), $duration);
+            $cache->set('licenseKeyStatus', self::_firstHeader($headers['x-craft-license-status']), $duration);
         }
         if (isset($headers['x-craft-license-domain'])) {
-            $cache->set('licensedDomain', reset($headers['x-craft-license-domain']), $duration);
+            $cache->set('licensedDomain', self::_firstHeader($headers['x-craft-license-domain']), $duration);
         }
         if (isset($headers['x-craft-license-edition'])) {
-            $licensedEdition = reset($headers['x-craft-license-edition']);
+            $licensedEdition = self::_firstHeader($headers['x-craft-license-edition']);
 
             switch ($licensedEdition) {
                 case 'solo':
@@ -162,14 +162,14 @@ abstract class Api
             }
         }
         if (isset($headers['x-craft-plugin-license-statuses'])) {
-            $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-statuses']));
+            $pluginLicenseInfo = explode(',', self::_firstHeader($headers['x-craft-plugin-license-statuses']));
             foreach ($pluginLicenseInfo as $info) {
                 list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
         if (isset($headers['x-craft-plugin-license-editions'])) {
-            $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-editions']));
+            $pluginLicenseInfo = explode(',', self::_firstHeader($headers['x-craft-plugin-license-editions']));
             foreach ($pluginLicenseInfo as $info) {
                 list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
                 $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
@@ -185,7 +185,7 @@ abstract class Api
 
         // did we just get a new license key?
         if (isset($headers['x-craft-license'])) {
-            $license = reset($headers['x-craft-license']);
+            $license = self::_firstHeader($headers['x-craft-license']);
             $path = Craft::$app->getPath()->getLicenseKeyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
@@ -206,5 +206,19 @@ abstract class Api
                 Craft::$app->getErrorHandler()->logException($err);
             }
         }
+    }
+
+    /**
+     * Returns the first header.
+     *
+     * @param string|string[] $values
+     * @return string
+     */
+    private static function _firstHeader($values): string
+    {
+        if (is_string($values)) {
+            return $values;
+        }
+        return reset($values);
     }
 }

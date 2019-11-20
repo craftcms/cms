@@ -1,4 +1,4 @@
-/*!   - 2019-11-19 */
+/*!   - 2019-11-20 */
 (function($){
 
 /** global: Craft */
@@ -446,41 +446,21 @@ $.extend(Craft,
                     options = options || {};
                     headers = $.extend(headers, options.headers || {});
 
-                    $.ajax($.extend({}, options, {
-                        url: Craft.baseApiUrl + uri + (Craft.apiQuery ? '?' + Craft.apiQuery : ''),
-                        type: method,
-                        dataType: 'json',
-                        headers: headers,
-                        success: function(apiResponse, textStatus, jqXHR) {
-                            var responseHeaders = {};
-                            var headerLines = jqXHR.getAllResponseHeaders().split('\n');
-                            var colon, name, value;
-                            for (var i = 0; i < headerLines.length; i++) {
-                                if (headerLines[i].startsWith('x-craft-') && (colon = headerLines[i].indexOf(':')) !== -1) {
-                                    name = Craft.trim(headerLines[i].substr(0, colon));
-                                    value = Craft.trim(headerLines[i].substr(colon + 1));
-                                    if (typeof responseHeaders[name] === 'undefined') {
-                                        responseHeaders[name] = [];
-                                    }
-                                    responseHeaders[name].push(value);
-                                }
-                            }
+                    axios.request($.extend({}, options, {
+                            url: uri,
+                            method: method,
+                            baseURL: Craft.baseApiUrl,
+                            headers: headers,
+                            params: Craft.apiParams,
+                        }))
+                        .then(function(response) {
                             Craft.postActionRequest('app/process-api-response-headers', {
-                                headers: responseHeaders,
+                                headers: response.headers,
                             }, function() {
-                                resolve(apiResponse);
+                                resolve(response.data);
                             });
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            // Ignore incomplete requests, likely due to navigating away from the page
-                            // h/t https://stackoverflow.com/a/22107079/1688568
-                            if (jqXHR.readyState !== 4) {
-                                return;
-                            }
-
-                            reject();
-                        }
-                    }));
+                        })
+                        .catch(reject);
                 }.bind(this));
             }.bind(this));
         },
