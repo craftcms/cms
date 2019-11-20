@@ -17,7 +17,7 @@
         <tbody>
             {% for schema in schemas %}
                 <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
-                    <th schema="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.name }}</a></th>
+                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.name }}</a></th>
                         <th class="thin">
                         <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
                         </th>
