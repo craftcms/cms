@@ -455,7 +455,9 @@ const actions = {
             const cartItemPluginIds = []
 
             cart.lineItems.forEach((lineItem) => {
-                cartItemPluginIds.push(lineItem.purchasable.plugin.id)
+                if (lineItem.purchasable.type === 'plugin-edition') {
+                    cartItemPluginIds.push(lineItem.purchasable.plugin.id)
+                }
             })
 
             if (cartItemPluginIds.length > 0) {
