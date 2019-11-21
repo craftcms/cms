@@ -95,16 +95,25 @@ export default {
      */
     getPluginLicenseInfo() {
         return new Promise((resolve, reject) => {
-            _axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'cms-licenses', {
+                    params: {
+                        include: 'plugins',
+                    },
                 })
-                .catch((error) => {
-                    if (axios.isCancel(error)) {
-                        // request cancelled
-                    } else {
-                        reject(error)
-                    }
+                .then(function(response) {
+                    _axios.post(Craft.getActionUrl('app/get-plugin-license-info'), {
+                            pluginLicenses: response.license.pluginLicenses || [],
+                        })
+                        .then((response) => {
+                            resolve(response)
+                        })
+                        .catch((error) => {
+                            if (axios.isCancel(error)) {
+                                // request cancelled
+                            } else {
+                                reject(error)
+                            }
+                        })
                 })
         })
     },
