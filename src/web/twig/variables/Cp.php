@@ -202,18 +202,19 @@ class Cp extends Component
                         'label' => Craft::t('app', 'Explore'),
                         'url' => 'graphql',
                     ],
-                    'tokens' => [
-                        'label' => Craft::t('app', 'Tokens'),
-                        'url' => 'graphql/tokens',
-                    ]
                 ];
-                
+
                 if ($generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
                         'label' => Craft::t('app', 'Schemas'),
                         'url' => 'graphql/schemas',
                     ];
                 }
+
+                $subNavItems['tokens'] = [
+                    'label' => Craft::t('app', 'Tokens'),
+                    'url' => 'graphql/tokens',
+                ];
 
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
