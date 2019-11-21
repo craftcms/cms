@@ -77,12 +77,9 @@ class AdminTableAsset extends AssetBundle
         $this->css = [
             // $this->getModule($config, 'chunk-vendors.css'),
             // $this->getModule($config, 'app.css'),
-            'http://localhost:8082/chunk-vendors.css',
-            'http://localhost:8082/app.css',
         ];
 
         $this->js = [
-            'http://localhost:8082/chunk-vendors.js',
             'http://localhost:8082/app.js',
             // $this->getModule($config, 'chunk-vendors.js'),
             // $this->getModule($config, 'app.js'),
