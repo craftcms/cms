@@ -4,19 +4,30 @@
     Craft.PluginManager = Garnish.Base.extend(
         {
             init: function() {
-                Craft.postActionRequest('app/get-plugin-license-info', $.proxy(function(response, textStatus) {
-                    if (textStatus === 'success') {
-                        for (var handle in response) {
-                            if (response.hasOwnProperty(handle)) {
-                                if (!response[handle].isComposerInstalled) {
-                                    this.addUninstalledPluginRow(handle, response[handle]);
-                                } else {
-                                    (new Plugin($('#plugin-' + handle))).update(response[handle], handle);
+                Craft.sendApiRequest('GET', 'cms-licenses', {
+                        params: {
+                            include: 'plugins',
+                        },
+                    })
+                    .then(function(response) {
+                        Craft.postActionRequest('app/get-plugin-license-info', {
+                            pluginLicenses: response.license.pluginLicenses || [],
+                        }, function(response, textStatus) {
+                            if (textStatus === 'success') {
+                                for (var handle in response) {
+                                    if (response.hasOwnProperty(handle)) {
+                                        if (!response[handle].isComposerInstalled) {
+                                            this.addUninstalledPluginRow(handle, response[handle]);
+                                        } else {
+                                            (new Plugin($('#plugin-' + handle))).update(response[handle], handle);
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
-                }, this));
+                        }.bind(this), {
+                            contentType: 'json'
+                        });
+                    });
             },
 
             addUninstalledPluginRow: function(handle, info) {

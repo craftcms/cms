@@ -418,7 +418,9 @@ class AppController extends Controller
      */
     public function actionGetPluginLicenseInfo(): Response
     {
-        $result = $this->_pluginLicenseInfo();
+        $this->requireAdmin();
+        $pluginLicenses = Craft::$app->getRequest()->getBodyParam('pluginLicenses');
+        $result = $this->_pluginLicenseInfo($pluginLicenses);
         ArrayHelper::multisort($result, 'name');
         return $this->asJson($result);
     }
@@ -493,21 +495,26 @@ class AppController extends Controller
     /**
      * Returns plugin license info.
      *
+     * @param array|null $pluginLicenses
      * @return array
      */
-    private function _pluginLicenseInfo(): array
+    private function _pluginLicenseInfo(array $pluginLicenses = null): array
     {
         $result = [];
 
-        // Update our records and get license info from the API
-        $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+        if ($pluginLicenses === null) {
+            // Update our records and get license info from the API
+            $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+            $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
+        }
+
         $allPluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
         // Update our records & use all licensed plugins as a starting point
-        if (!empty($licenseInfo['pluginLicenses'])) {
+        if (!empty($pluginLicenses)) {
             $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
             $formatter = Craft::$app->getFormatter();
-            foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
+            foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
                     $handle = $pluginInfo['handle'];
