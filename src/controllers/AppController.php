@@ -445,7 +445,7 @@ class AppController extends Controller
         $pluginsService->setPluginLicenseKey($handle, $newKey ?: null);
 
         // Return the new plugin license info
-        return $this->asJson($this->_pluginLicenseInfo()[$handle]);
+        return $this->asJson(1);
     }
 
     // Private Methods

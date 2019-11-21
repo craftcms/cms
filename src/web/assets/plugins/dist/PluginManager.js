@@ -4,30 +4,42 @@
     Craft.PluginManager = Garnish.Base.extend(
         {
             init: function() {
-                Craft.sendApiRequest('GET', 'cms-licenses', {
-                        params: {
-                            include: 'plugins',
-                        },
-                    })
+                this.getPluginLicenseInfo()
                     .then(function(response) {
-                        Craft.postActionRequest('app/get-plugin-license-info', {
-                            pluginLicenses: response.license.pluginLicenses || [],
-                        }, function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                for (var handle in response) {
-                                    if (response.hasOwnProperty(handle)) {
-                                        if (!response[handle].isComposerInstalled) {
-                                            this.addUninstalledPluginRow(handle, response[handle]);
-                                        } else {
-                                            (new Plugin($('#plugin-' + handle))).update(response[handle], handle);
-                                        }
-                                    }
+                        for (var handle in response) {
+                            if (response.hasOwnProperty(handle)) {
+                                if (!response[handle].isComposerInstalled) {
+                                    this.addUninstalledPluginRow(handle, response[handle]);
+                                } else {
+                                    (new Plugin(this, $('#plugin-' + handle))).update(response[handle]);
                                 }
                             }
-                        }.bind(this), {
-                            contentType: 'json'
-                        });
-                    });
+                        }
+                    }.bind(this));
+            },
+
+            getPluginLicenseInfo: function() {
+                return new Promise(function(resolve, reject) {
+                    Craft.sendApiRequest('GET', 'cms-licenses', {
+                            params: {
+                                include: 'plugins',
+                            },
+                        })
+                        .then(function(response) {
+                            Craft.postActionRequest('app/get-plugin-license-info', {
+                                pluginLicenses: response.license.pluginLicenses || [],
+                            }, function(response, textStatus) {
+                                if (textStatus === 'success') {
+                                    resolve(response);
+                                } else {
+                                    reject();
+                                }
+                            }, {
+                                contentType: 'json'
+                            });
+                        })
+                        .catch(reject);
+                });
             },
 
             addUninstalledPluginRow: function(handle, info) {
@@ -41,7 +53,11 @@
                     $('#no-plugins').replaceWith($table);
                 }
 
-                var $row = $('<tr/>')
+                var $row = $('<tr/>', {
+                        data: {
+                            handle: handle,
+                        }
+                    })
                     .appendTo($table.children('tbody'))
                     .append(
                         $('<th/>')
@@ -216,6 +232,7 @@
 
     var Plugin = Garnish.Base.extend(
         {
+            manager: null,
             $row: null,
             $details: null,
             $keyContainer: null,
@@ -225,7 +242,8 @@
             handle: null,
             updateTimeout: null,
 
-            init: function($row) {
+            init: function(manager, $row) {
+                this.manager = manager;
                 this.$row = $row;
                 this.$details = this.$row.find('.details');
                 this.$keyContainer = $row.find('.license-key')
@@ -260,15 +278,18 @@
 
             updateLicenseStatus: function() {
                 this.$spinner.removeClass('hidden');
-                Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, $.proxy(function(response, textStatus) {
-                    this.$spinner.addClass('hidden');
+                Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, function(response, textStatus) {
                     if (textStatus === 'success') {
-                        this.update(response);
+                        this.manager.getPluginLicenseInfo()
+                            .then(function(response) {
+                                this.$spinner.addClass('hidden');
+                                this.update(response[this.handle]);
+                            }.bind(this));
                     }
-                }, this))
+                }.bind(this))
             },
 
-            update: function(info, handle) {
+            update: function(info) {
                 // update the status icon
                 var $oldIcon = this.$row.find('.license-key-status');
                 if (info.licenseKeyStatus == 'valid' || info.licenseIssues.length) {
@@ -286,7 +307,7 @@
                 var $oldEdition = this.$row.find('.edition');
                 if (info.hasMultipleEditions || info.isTrial) {
                     var $newEdition = info.upgradeAvailable
-                        ? $('<a/>', {href: Craft.getUrl('plugin-store/' + handle), 'class': 'edition'})
+                        ? $('<a/>', {href: Craft.getUrl('plugin-store/' + this.handle), 'class': 'edition'})
                         : $('<div/>', {'class': 'edition'});
                     if (info.hasMultipleEditions) {
                         $('<div/>', {'class': 'edition-name', text: info.edition}).appendTo($newEdition);
@@ -365,7 +386,7 @@
                                     $('<input/>', {
                                         type: 'hidden',
                                         name: 'pluginHandle',
-                                        value: handle
+                                        value: this.handle
                                     })
                                 )
                                 .append(
