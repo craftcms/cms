@@ -23,7 +23,7 @@ use yii\db\ActiveQueryInterface;
  * @property \DateTime $lastUsed When the schema was last used
  * @property GqlSchema $scope Scope
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.4.0
  */
 class GqlToken extends ActiveRecord
 {

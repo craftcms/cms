@@ -129,6 +129,3 @@
 - Removed `craft\models\GqlSchema::$isTemporary`.
 - Removed `craft\models\GqlSchema::getIsPublic()`.
 - Removed `craft\services\Gql::getPublicSchema()`.
-
-
-
