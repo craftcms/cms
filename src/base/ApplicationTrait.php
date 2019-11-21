@@ -159,11 +159,11 @@ trait ApplicationTrait
     public $baseApiUrl = 'https://api.craftcms.com/v1/';
 
     /**
-     * @var string[] Query params that should be appended to Craftnet API requests.
+     * @var string[]|null Query params that should be appended to Craftnet API requests.
      * @since 3.3.16
      * @internal
      */
-    public $apiParams = [];
+    public $apiParams;
 
     /**
      * @var
