@@ -183,19 +183,6 @@ const actions = {
                 })
         })
     },
-
-    updateApiHeaders() {
-        return new Promise((resolve, reject) => {
-            api.getApiHeaders()
-                .then(response => {
-                    window.apiHeaders = response.data
-                    resolve(response)
-                })
-                .catch(error => {
-                    reject(error)
-                })
-        })
-    }
 }
 
 /**

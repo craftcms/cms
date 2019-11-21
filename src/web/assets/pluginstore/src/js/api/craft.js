@@ -133,13 +133,4 @@ export default {
                 })
         })
     },
-
-    /**
-     * Get API headers.
-     *
-     * @returns {AxiosPromise<any>}
-     */
-    getApiHeaders() {
-        return _axios.get(Craft.getActionUrl('app/api-headers'))
-    }
 }

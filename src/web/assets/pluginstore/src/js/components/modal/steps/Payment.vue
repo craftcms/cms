@@ -220,18 +220,15 @@
                                     .then(() => {
                                         this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
                                             .then(() => {
-                                                this.$store.dispatch('craft/updateApiHeaders')
+                                                this.$store.dispatch('craft/getCraftData')
                                                     .then(() => {
-                                                        this.$store.dispatch('craft/getCraftData')
+                                                        this.$store.dispatch('craft/getPluginLicenseInfo')
                                                             .then(() => {
-                                                                this.$store.dispatch('craft/getPluginLicenseInfo')
+                                                                this.$store.dispatch('cart/resetCart')
                                                                     .then(() => {
-                                                                        this.$store.dispatch('cart/resetCart')
-                                                                            .then(() => {
-                                                                                this.loading = false
-                                                                                this.error = false
-                                                                                this.$root.modalStep = 'thank-you'
-                                                                            })
+                                                                        this.loading = false
+                                                                        this.error = false
+                                                                        this.$root.modalStep = 'thank-you'
                                                                     })
                                                             })
                                                     })
