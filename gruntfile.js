@@ -58,7 +58,7 @@ module.exports = function(grunt) {
                 cwd: 'src/web/assets',
                 src: [
                     '**/*.css',
-                    '!graphiql/**/*.scss',
+                    '!graphiql/**/*.css',
                     '!pluginstore/**/*.css'
                 ],
                 dest: 'src/web/assets'
@@ -95,7 +95,12 @@ module.exports = function(grunt) {
             otherjs: {
                 expand: true,
                 cwd: 'src/web/assets',
-                src: ['*/dist/*.js', '!*/dist/*.min.js', '!tests/dist/tests.js'],
+                src: [
+                    '*/dist/*.js',
+                    '!*/dist/*.min.js',
+                    '!graphiql/dist/*.js',
+                    '!tests/dist/tests.js',
+                ],
                 dest: 'src/web/assets',
                 rename: function(dest, src) {
                     // Keep them where they came from

@@ -24,6 +24,10 @@
 - Fixed an error where it was impossible to query for Date field values using GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
 - Fixed an error where deleting an element would not invalidate GraphQL result caches. ([#5238](https://github.com/craftcms/cms/issues/5238))
 - Fixed an error where rebuilding Project Config would omit preview target data for sections. ([#5215](https://github.com/craftcms/cms/issues/5215))
+- Fixed an error that occurred whet attempting to preview an entry revision. ([#5244](https://github.com/craftcms/cms/issues/5244))
+
+### Security
+- Craft now requires `Portable UTF-8 ^5.4.28`, fixing a security vulnerability.
 
 ## 3.3.15 - 2019-11-05
 
