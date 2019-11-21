@@ -1,6 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t('app') %}
 
+{% do view.registerTranslations('app', [
+    "Edit entry types ({count})",
+]) %}
+
+
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
@@ -52,8 +57,52 @@
             </tbody>
         </table>
     {% endif %}
+
+    <h2>Vue Admin Table</h2>
+    <div id="sections-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for section in sections %}
+    {% set isSingle = section.type == 'single' and section.getEntryTypes()|length == 1 %}
+
+    {% if isSingle %}
+        {% set entryTypeObject = section.getEntryTypes()[0] %}
+        {% set entryType = {
+            name: entryTypeObject.name|t('site'),
+            cpEditUrl: entryTypeObject.getCpEditUrl(),
+        } %}
+    {% else %}
+        {% set entryTypes = [] %}
+        {% set editEntryTypesUrl = url('settings/sections/' ~ section.id ~ '/entrytypes') %}
+        {% set entryTypesCount = section.getEntryTypes()|length %}
+
+        {% for entryTypeObject in section.getEntryTypes() %}
+            {% set entryTypes = entryTypes|merge([{
+                name: entryTypeObject.name|t('site'),
+                cpEditUrl: entryTypeObject.getCpEditUrl(),
+            }]) %}
+        {% endfor %}
+    {% endif %}
+
+    {% set tableData = tableData|merge([{
+        id: section.id,
+        name: section.name|t('site'),
+        title: {
+            label: section.name|t('site'),
+            url: url('settings/sections/' ~ section.id)
+        },
+        handle: section.handle,
+        type: section.type|title|t('app'),
+        entryTypes: {
+            isSingle: isSingle,
+            entryType: entryType ?? null,
+            entryTypes: entryTypes ?? null,
+            editEntryTypesUrl: editEntryTypesUrl ?? null,
+            entryTypesCount: entryTypesCount ?? null,
+        },
+    }]) %}
+{% endfor %}
 
 {% js %}
     var adminTable = new Craft.AdminTable({
@@ -69,5 +118,52 @@
                 $('#nav-entries').remove();
             }
         }
+    });
+
+    var columns = [
+        {
+            name: 'title',
+            title: Craft.t('app', 'Name'),
+            callback: function(value) {
+                return '<a href="'+value.url+'">' + value.label + '</a>';
+            }
+        },
+        {
+            name: 'handle',
+            title: Craft.t('app', 'Handle'),
+            callback: function(value) {
+                return '<code>' + value + '</code>';
+            }
+        },
+        { name: 'type', title: Craft.t('app', 'Type') },
+        {
+            name: 'entryTypes',
+            title: Craft.t('app', 'Entry Types'),
+            callback: function(value) {
+                if(value.isSingle) {
+                    return '<a href="' + value.entryType.editCpUrl + '">{{ "Edit entry type"|t('app') }}</a>'
+                } else {
+                    var ret = '<a href="' + value.editEntryTypesUrl + '">' + Craft.t('app', 'Edit entry types ({count})', {count: value.entryTypesCount}) + '</a>\r\n';
+                    ret += '<a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>';
+                    ret += '<div class="menu"><ul>';
+
+                    for (i = 0; i < value.entryTypes.length; i++) {
+                        var entryType = value.entryTypes[i]
+                        ret += '<li><a href="'+entryType.cpEditUrl+'">' + entryType.name + '</a></li>';
+                    }
+
+                    ret += '</ul></div>';
+
+                    return ret;
+                }
+            }
+        },
+    ];
+
+    var vueAdminTable = new Craft.VueAdminTable({
+        columns: columns,
+        container: '#sections-vue-admin-table',
+        deleteAction: 'sections/delete-section',
+        tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}

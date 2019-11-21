@@ -15,6 +15,7 @@ use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -54,6 +55,8 @@ class SectionsController extends Controller
     public function actionIndex(array $variables = []): Response
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
+
+        $this->getView()->registerAssetBundle(AdminTableAsset::class);
 
         return $this->renderTemplate('settings/sections/_index', $variables);
     }
