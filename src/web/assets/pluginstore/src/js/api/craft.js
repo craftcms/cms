@@ -103,6 +103,10 @@ export default {
                 .then(function(response) {
                     _axios.post(Craft.getActionUrl('app/get-plugin-license-info'), {
                             pluginLicenses: response.license.pluginLicenses || [],
+                        }, {
+                        headers: {
+                            'X-CSRF-Token': Craft.csrfTokenValue,
+                        }
                         })
                         .then((response) => {
                             resolve(response)
