@@ -124,20 +124,23 @@ abstract class Api
      */
     public static function processResponseHeaders(array $headers)
     {
+        // Normalize the headers
+        $headers = self::_normalizeHeaders(($headers));
+
         // cache license info from the response
         $cache = Craft::$app->getCache();
         $duration = 86400;
         if (isset($headers['x-craft-allow-trials'])) {
-            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)self::_firstHeader($headers['x-craft-allow-trials']), $duration);
+            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)reset($headers['x-craft-allow-trials']), $duration);
         }
         if (isset($headers['x-craft-license-status'])) {
-            $cache->set('licenseKeyStatus', self::_firstHeader($headers['x-craft-license-status']), $duration);
+            $cache->set('licenseKeyStatus', reset($headers['x-craft-license-status']), $duration);
         }
         if (isset($headers['x-craft-license-domain'])) {
-            $cache->set('licensedDomain', self::_firstHeader($headers['x-craft-license-domain']), $duration);
+            $cache->set('licensedDomain', reset($headers['x-craft-license-domain']), $duration);
         }
         if (isset($headers['x-craft-license-edition'])) {
-            $licensedEdition = self::_firstHeader($headers['x-craft-license-edition']);
+            $licensedEdition = reset($headers['x-craft-license-edition']);
 
             switch ($licensedEdition) {
                 case 'solo':
@@ -162,14 +165,14 @@ abstract class Api
             }
         }
         if (isset($headers['x-craft-plugin-license-statuses'])) {
-            $pluginLicenseInfo = explode(',', self::_firstHeader($headers['x-craft-plugin-license-statuses']));
+            $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-statuses']));
             foreach ($pluginLicenseInfo as $info) {
                 list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
         if (isset($headers['x-craft-plugin-license-editions'])) {
-            $pluginLicenseInfo = explode(',', self::_firstHeader($headers['x-craft-plugin-license-editions']));
+            $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-editions']));
             foreach ($pluginLicenseInfo as $info) {
                 list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
                 $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
@@ -185,7 +188,7 @@ abstract class Api
 
         // did we just get a new license key?
         if (isset($headers['x-craft-license'])) {
-            $license = self::_firstHeader($headers['x-craft-license']);
+            $license = reset($headers['x-craft-license']);
             $path = Craft::$app->getPath()->getLicenseKeyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
@@ -209,16 +212,17 @@ abstract class Api
     }
 
     /**
-     * Returns the first header.
+     * Normalizes the header names by converting them to lowercase and ensuring their values are arrays
      *
-     * @param string|string[] $values
-     * @return string
+     * @param string[][]|string[] $headers
+     * @return string[][]
      */
-    private static function _firstHeader($values): string
+    private static function _normalizeHeaders(array $headers): array
     {
-        if (is_string($values)) {
-            return $values;
+        $normalizedHeaders = [];
+        foreach ($headers as $name => $value) {
+            $normalizedHeaders[strtolower($name)] = (array)$value;
         }
-        return reset($values);
+        return $normalizedHeaders;
     }
 }
