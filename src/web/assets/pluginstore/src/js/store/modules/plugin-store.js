@@ -134,7 +134,7 @@ const actions = {
                     resolve(responseData)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
     },
@@ -196,9 +196,9 @@ const actions = {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
             api.searchPlugins(context.searchQuery, pluginIndexParams)
-                .then(response => {
-                    dispatch('updatePluginIndex', {context, response})
-                    resolve(response)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error)

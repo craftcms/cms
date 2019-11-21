@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -17,7 +16,6 @@ use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
 use craft\web\View;
 use craftcms\oauth2\client\provider\CraftId;
-use GuzzleHttp\Exception\RequestException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -245,91 +243,6 @@ class PluginStoreController extends Controller
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
         $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/powered_by_stripe.svg');
         $data['defaultPluginSvg'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/default-plugin.svg');
-
-        return $this->asJson($data);
-    }
-
-    /**
-     * Checkout.
-     *
-     * @return Response
-     */
-    public function actionCheckout()
-    {
-        $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
-
-        $orderNumber = (isset($payload['orderNumber']) ? $payload['orderNumber'] : null);
-        $token = (isset($payload['token']) ? $payload['token'] : null);
-        $expectedPrice = (isset($payload['expectedPrice']) ? $payload['expectedPrice'] : null);
-        $makePrimary = (isset($payload['makePrimary']) ? $payload['makePrimary'] : false);
-
-        $data = [
-            'orderNumber' => $orderNumber,
-            'token' => $token,
-            'expectedPrice' => $expectedPrice,
-            'makePrimary' => $makePrimary,
-        ];
-
-        $response = Craft::$app->getApi()->checkout($data);
-
-        return $this->asJson($response);
-    }
-
-    /**
-     * Create a cart.
-     *
-     * @return Response
-     */
-    public function actionCreateCart()
-    {
-        $data = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
-        $response = Craft::$app->getApi()->createCart($data);
-
-        return $this->asJson($response);
-    }
-
-
-    /**
-     * Get a cart.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionGetCart()
-    {
-        $orderNumber = Craft::$app->getRequest()->getRequiredParam('orderNumber');
-
-        try {
-            $data = Craft::$app->getApi()->getCart($orderNumber);
-            return $this->asJson($data);
-        } catch (RequestException $e) {
-            $data = Json::decode($e->getResponse()->getBody()->getContents());
-            $errorMsg = $e->getMessage();
-            if (isset($data['message'])) {
-                $errorMsg = $data['message'];
-            }
-
-            return $this->asErrorJson($errorMsg);
-        }
-    }
-
-    /**
-     * Update a cart.
-     *
-     * @return Response
-     */
-    public function actionUpdateCart()
-    {
-        $cartData = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
-
-        $orderNumber = $cartData['orderNumber'];
-        unset($cartData['orderNumber']);
-
-        try {
-            $data = Craft::$app->getApi()->updateCart($orderNumber, $cartData);
-        } catch (RequestException $e) {
-            $data = Json::decode($e->getResponse()->getBody()->getContents());
-        }
 
         return $this->asJson($data);
     }

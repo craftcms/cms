@@ -7,10 +7,16 @@ export default {
      * Checkout.
      */
     checkout(data) {
-        return axios.post(Craft.getActionUrl('plugin-store/checkout'), data, {
-            headers: {
-                'X-CSRF-Token': Craft.csrfTokenValue,
-            }
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('POST', 'payments', {
+                    data,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
         })
     },
 
@@ -18,22 +24,32 @@ export default {
      * Create cart.
      */
     createCart(data) {
-        return axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
-                headers: {
-                    'X-CSRF-Token': Craft.csrfTokenValue,
-                }
-            })
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('POST', 'carts', {
+                    data,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
     },
 
     /**
      * Get cart.
      */
     getCart(orderNumber) {
-        const data = {
-            orderNumber
-        }
-
-        return axios.get(Craft.getActionUrl('plugin-store/get-cart', data))
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('GET', 'carts/' + orderNumber)
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
     },
 
     /**
@@ -74,12 +90,14 @@ export default {
      * Update cart.
      */
     updateCart(orderNumber, data) {
-        data.orderNumber = orderNumber
-
-        return axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
-            headers: {
-                'X-CSRF-Token': Craft.csrfTokenValue,
-            }
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('POST', 'carts/' + orderNumber, {data})
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
         })
     },
 }

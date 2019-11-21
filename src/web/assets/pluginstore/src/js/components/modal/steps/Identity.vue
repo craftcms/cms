@@ -112,9 +112,10 @@
                             this.loading = false
                             this.$root.openModal('payment')
                         })
-                        .catch(() => {
+                        .catch((error) => {
                             this.loading = false
                             this.$root.displayError("Couldn’t save identity.")
+                            throw error
                         })
                 } else {
                     this.loading = false

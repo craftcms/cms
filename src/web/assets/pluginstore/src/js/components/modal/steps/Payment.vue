@@ -329,11 +329,11 @@
                 }
 
                 this.$store.dispatch('cart/saveCart', cartData)
-                    .then(response => {
-                        cb(response)
+                    .then(responseData => {
+                        cb(responseData)
                     })
-                    .catch(response => {
-                        cbError(response)
+                    .catch(error => {
+                        cbError(error)
                     })
             },
 

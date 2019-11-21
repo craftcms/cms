@@ -7,16 +7,10 @@
 
 namespace craft\services;
 
-use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
-use craft\enums\LicenseKeyStatus;
-use craft\errors\InvalidLicenseKeyException;
-use craft\errors\InvalidPluginException;
 use craft\helpers\Api as ApiHelper;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -111,24 +105,6 @@ class Api extends Component
     }
 
     /**
-     * Order checkout.
-     *
-     * @param array $data
-     *
-     * @return array
-     * @throws RequestException if the API gave a non-2xx response
-     */
-    public function checkout(array $data): array
-    {
-        $response = $this->request('POST', 'payments', [
-            'headers' => $this->getPluginStoreHeaders(),
-            RequestOptions::BODY => Json::encode($data),
-        ]);
-
-        return Json::decode((string)$response->getBody());
-    }
-
-    /**
      * Returns a list of package names that Composer should be allowed to update when installing/updating packages.
      *
      * @param array $install Package name/version pairs to be installed
@@ -217,54 +193,6 @@ class Api extends Component
     }
 
     /**
-     * Create a cart.
-     *
-     * @param array $data
-     *
-     * @return array
-     */
-    public function createCart(array $data)
-    {
-        $response = $this->request('POST', 'carts', [
-            'headers' => $this->getPluginStoreHeaders(),
-            RequestOptions::BODY => Json::encode($data),
-        ]);
-
-        return Json::decode((string)$response->getBody());
-    }
-
-    /**
-     * Get a cart by its order number.
-     *
-     * @param string $orderNumber
-     *
-     * @return array
-     */
-    public function getCart(string $orderNumber)
-    {
-        $response = $this->request('GET', 'carts/' . $orderNumber);
-        return Json::decode((string)$response->getBody());
-    }
-
-    /**
-     * Update a cart.
-     *
-     * @param string $orderNumber
-     * @param array $data
-     *
-     * @return array
-     */
-    public function updateCart(string $orderNumber, array $data)
-    {
-        $response = $this->request('POST', 'carts/' . $orderNumber, [
-            'headers' => $this->getPluginStoreHeaders(),
-            RequestOptions::BODY => Json::encode($data),
-        ]);
-
-        return Json::decode((string)$response->getBody());
-    }
-
-    /**
      * @param string $method
      * @param string $uri
      * @param array $options
@@ -294,26 +222,5 @@ class Api extends Component
         }
 
         return $response;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Returns Plugin Store headers
-     *
-     * @return array
-     */
-    private function getPluginStoreHeaders()
-    {
-        $headers = [];
-
-        $craftIdToken = Craft::$app->getPluginStore()->getToken();
-
-        if ($craftIdToken) {
-            $headers['Authorization'] = 'Bearer ' . $craftIdToken->accessToken;
-        }
-
-        return $headers;
     }
 }
