@@ -854,7 +854,7 @@ class UsersController extends Controller
             'bodyClass',
             'title',
             'tabs',
-            'selectedTab',
+            'selectedTab'
         ));
     }
 
