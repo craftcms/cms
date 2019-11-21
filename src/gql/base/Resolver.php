@@ -92,6 +92,16 @@ abstract class Resolver
             return [];
         }
 
+        $allFields = Craft::$app->getFields()->getAllFields(false);
+        $eagerLoadableFieldsByContext = [];
+
+        /** @var Field $field */
+        foreach ($allFields as $field) {
+            if ($field instanceof EagerLoadingFieldInterface) {
+                $eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
+            }
+        }
+
         /**
          * Traverse child nodes of a GraphQL query formed as AST.
          *
@@ -105,7 +115,7 @@ abstract class Resolver
          * @param null $parentField the current parent field, that we are in.
          * @return array
          */
-        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments) {
+        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments, $eagerLoadableFieldsByContext) {
             $eagerLoadNodes = [];
             $subNodes = $parentNode->selectionSet->selections ?? [];
 
@@ -116,7 +126,7 @@ abstract class Resolver
                 // If that's a GraphQL field
                 if ($subNode instanceof FieldNode) {
 
-                    $field = static::getPreloadableField($subNode->name->value, $context);
+                    $field = $eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                     // That is a Craft field that can be eager-loaded or is the special `children` property
                     if ($field || $subNode->name->value === 'children') {
@@ -124,6 +134,7 @@ abstract class Resolver
 
                         // Any arguments?
                         $argumentNodes = $subNode->arguments ?? [];
+
                         foreach ($argumentNodes as $argumentNode) {
                             if (isset($argumentNode->value->values)) {
                                 $values = [];
@@ -145,7 +156,7 @@ abstract class Resolver
                             // Load additional requirements enforced by schema
                             if ($additionalArguments === false) {
                                 // If `false` was returned, make sure nothing is returned.
-                                $arguments['id'] = 0;
+                                $arguments = ['id' => 0];
                             } else {
                                 foreach ($additionalArguments as $argumentName => $argumentValue) {
                                     if (isset($arguments[$argumentName])) {
@@ -159,7 +170,9 @@ abstract class Resolver
 
                                         // If that cleared out all that they wanted, make it an impossible condition
                                         if (empty($allowed)) {
-                                            $arguments['id'] = 0;
+                                            $arguments = ['id' => 0];
+
+                                            break;
                                         } else {
                                             $arguments[$argumentName] = $allowed;
                                         }
@@ -205,40 +218,5 @@ abstract class Resolver
         };
 
         return $traverseNodes($startingNode);
-    }
-
-    /**
-     * Get the preloadable field for the context or null if the field doesn't exist or is not preloadable.
-     *
-     * @param array $subFields
-     * @param string $context
-     * @return Field|null
-     */
-    protected static function getPreloadableField($fieldHandle, $context = 'global')
-    {
-        if (static::$eagerLoadableFieldsByContext === null) {
-            self::_loadEagerLoadableFields();
-        }
-
-        return self::$eagerLoadableFieldsByContext[$context][$fieldHandle] ?? null;
-    }
-
-    // Private methods
-    // =========================================================================
-
-    /**
-     * Load all the fields
-     */
-    private static function _loadEagerLoadableFields()
-    {
-        $allFields = Craft::$app->getFields()->getAllFields(false);
-        self::$eagerLoadableFieldsByContext = [];
-
-        /** @var Field $field */
-        foreach ($allFields as $field) {
-            if ($field instanceof EagerLoadingFieldInterface) {
-                self::$eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
-            }
-        }
     }
 }

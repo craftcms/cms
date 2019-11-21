@@ -219,6 +219,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
+     *
      * Each item in the array should be set to an array that has the following keys:
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
@@ -242,6 +243,11 @@ interface ElementInterface extends ComponentInterface
      * - **`nested`** – An array of sources that are nested within this one. Each nested source can have the same keys
      *   as top-level sources.
      *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineSources()]]
+     * instead of this method.
+     * :::
+     *
      * @param string|null $context The context ('index' or 'modal').
      * @return array The sources.
      */
@@ -252,6 +258,11 @@ interface ElementInterface extends ComponentInterface
      *
      * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
      * [[ElementActionInterface]] instance.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineActions()]]
+     * instead of this method.
+     * :::
      *
      * @param string $source The selected source’s key.
      * @return array The available element actions.
@@ -277,6 +288,11 @@ interface ElementInterface extends ComponentInterface
      *
      * There is no need for this method to worry about the ‘title’ or ‘slug’ attributes, or custom field handles;
      * those are indexed automatically.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override
+     * [[\craft\base\Element::defineSearchableAttributes()]] instead of this method.
+     * :::
      *
      * @return string[] The element attributes that should be searchable
      */
@@ -482,6 +498,11 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the route that should be used when the element’s URI is requested.
      *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::route()]]
+     * instead of this method.
+     * :::
+     *
      * @return mixed The route that the request should use, or null if no special action should be taken
      */
     public function getRoute();
@@ -541,6 +562,11 @@ interface ElementInterface extends ComponentInterface
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
      * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
+     * instead of this method.
+     * :::
      *
      * @return array
      * @since 3.2.0
@@ -851,6 +877,11 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
      *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]
+     * instead of this method.
+     * :::
+     *
      * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
      * @return array
      */
@@ -859,27 +890,10 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
-     * This method can be used to completely customize what actually shows up within the table’s body for a given
-     * attribute, rather than simply showing the attribute’s raw value.
-     * For example, if your elements have an “email” attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
-     *
-     * ```php
-     * switch ($attribute) {
-     *     case 'email':
-     *         return $this->email ? '<a href="mailto:'.$this->email.'">'.$this->email.'</a>' : '';
-     *     // ...
-     * }
-     * return parent::getTableAttributeHtml($attribute);
-     * ```
-     *
-     * [[Element::getTableAttributeHtml()]] provides a couple handy attribute checks by default, so it is a good
-     * idea to let the parent method get called (as shown above). They are:
-     *
-     * - If the attribute name is ‘link’ or ‘uri’, it will be linked to the front-end URL.
-     * - If the attribute is a custom field handle, it will pass the responsibility off to the field class.
-     * - If the attribute value is a DateTime object, the date will be formatted with a localized date format.
-     * - For anything else, it will output the attribute value as a string.
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::tableAttributeHtml()]]
+     * instead of this method.
+     * :::
      *
      * @param string $attribute The attribute name.
      * @return string The HTML that should be shown for a given attribute in Table View.

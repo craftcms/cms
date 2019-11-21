@@ -335,12 +335,12 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array $options options for file write. Valid options are:
      * - `createDirs`: bool, whether to create parent directories if they do
-     *   not exist. Defaults to true.
+     *   not exist. Defaults to `true`.
      * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
      * - `lock`: bool, whether a file lock should be used. Defaults to the
-     *   "useWriteFileLock" config setting.
-     * @throws InvalidArgumentException if the parent directory doesn't exist and options[createDirs] is false
+     *   `useWriteFileLock` config setting.
+     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])

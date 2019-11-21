@@ -43,8 +43,6 @@ class Category extends ObjectType
         $fieldName = $resolveInfo->fieldName;
 
         switch ($fieldName) {
-            case 'groupId':
-                return $source->groupIdp;
             case 'groupHandle':
                 return $source->getGroup()->handle;
         }

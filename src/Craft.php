@@ -190,9 +190,6 @@ class Craft extends Yii
             return;
         }
 
-
-        $fieldHandles = [];
-
         if (self::$app->getIsInstalled()) {
             // Properties are case-sensitive, so get all the binary-unique field handles
             if (self::$app->getDb()->getIsMysql()) {
@@ -206,6 +203,27 @@ class Craft extends Yii
                 ->from([Table::FIELDS])
                 ->select([$handleColumn, 'type'])
                 ->all();
+        } else {
+            $fields = [];
+        }
+
+        $fieldHandles = [];
+
+        foreach ($fields as $field) {
+            $fieldHandles[$field['handle']]['mixed'] = true;
+        }
+
+        if (!$isContentBehaviorFileValid) {
+            self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, true);
+        }
+
+        if (!$isElementQueryBehaviorFileValid) {
+            self::_generateElementQueryFile($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion, true);
+        }
+
+        if (!empty($fields)) {
+            $fieldHandles = [];
+
             foreach ($fields as $field) {
                 /** @var FieldInterface|string $fieldClass */
                 $fieldClass = $field['type'];
@@ -223,50 +241,76 @@ class Craft extends Yii
                     $fieldHandles[$field['handle']][$type] = true;
                 }
             }
+
+            if (!$isContentBehaviorFileValid) {
+                self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, false);
+            }
+
+            if (!$isElementQueryBehaviorFileValid) {
+                self::_generateElementQueryFile($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion, false);
+            }
         }
+    }
 
-        if (!$isContentBehaviorFileValid) {
-            $handles = [];
-            $properties = [];
-
-            foreach ($fieldHandles as $handle => $types) {
-                $phpDocTypes = implode('|', array_keys($types));
-                $handles[] = <<<EOD
-        '{$handle}' => true,
-EOD;
-
-                $properties[] = <<<EOD
     /**
-     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
+     * @param array $fieldHandles
+     * @param string $contentBehaviorFile
+     * @param string $storedFieldVersion
+     * @param bool $load
+     * @throws \yii\base\ErrorException
      */
-    public \${$handle};
-EOD;
-            }
+    private static function _generateContentBehaviorFile(array $fieldHandles, string $contentBehaviorFile, string $storedFieldVersion, bool $load)
+    {
+        $handles = [];
+        $properties = [];
 
-            self::_writeFieldAttributesFile(
-                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
-                ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
-                [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
-                $contentBehaviorFile
-            );
+        foreach ($fieldHandles as $handle => $types) {
+            $phpDocTypes = implode('|', array_keys($types));
+            $handles[] = <<<EOD
+    '{$handle}' => true,
+EOD;
+
+            $properties[] = <<<EOD
+/**
+ * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
+ */
+public \${$handle};
+EOD;
         }
 
-        if (!$isElementQueryBehaviorFileValid) {
-            $methods = [];
+        self::_writeFieldAttributesFile(
+            static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
+            ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
+            [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
+            $contentBehaviorFile,
+            $load
+        );
+    }
 
-            foreach (array_keys($fieldHandles) as $handle) {
-                $methods[] = <<<EOD
- * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
+    /**
+     * @param array $fieldHandles
+     * @param string $elementQueryBehaviorFile
+     * @param string $storedFieldVersion
+     * @param bool $load
+     * @throws \yii\base\ErrorException
+     */
+    private static function _generateElementQueryFile(array $fieldHandles, string $elementQueryBehaviorFile, string $storedFieldVersion, bool $load)
+    {
+        $methods = [];
+
+        foreach (array_keys($fieldHandles) as $handle) {
+            $methods[] = <<<EOD
+* @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
-            }
-
-            self::_writeFieldAttributesFile(
-                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
-                ['{VERSION}', '{METHOD_DOCS}'],
-                [$storedFieldVersion, implode("\n", $methods)],
-                $elementQueryBehaviorFile
-            );
         }
+
+        self::_writeFieldAttributesFile(
+            static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
+            ['{VERSION}', '{METHOD_DOCS}'],
+            [$storedFieldVersion, implode("\n", $methods)],
+            $elementQueryBehaviorFile,
+            $load
+        );
     }
 
     /**
@@ -329,13 +373,19 @@ EOD;
      * @param string[] $search
      * @param string[] $replace
      * @param string $destinationPath
+     * @param bool $load
+     * @throws \yii\base\ErrorException
      */
-    private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath)
+    private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath, bool $load)
     {
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         FileHelper::writeToFile($destinationPath, $fileContents);
-        include $destinationPath;
+        clearstatcache(true, $destinationPath);
+
+        if ($load) {
+            include $destinationPath;
+        }
     }
 }
 

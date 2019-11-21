@@ -60,7 +60,7 @@ class QueryArgument extends ScalarType
      */
     public function serialize($value)
     {
-        // The value not being a datetime would indicate an already formatted date.
+        // If it's neither int or string, attempt to make it a string.
         if (!is_int($value) && !is_string($value)) {
             $value = (string)$value;
         }

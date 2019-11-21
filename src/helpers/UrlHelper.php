@@ -87,7 +87,7 @@ class UrlHelper
         $params = [];
         foreach (explode('&', $query) as $param) {
             list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
-            $n = preg_replace('/\[[0-9]+\]/u', '[]', urldecode($n));
+            $n = urldecode($n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
             $params[] = "$n=$v";
         }

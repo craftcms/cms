@@ -15,6 +15,7 @@ class m190617_164400_add_gqlschemas_table extends Migration
      */
     public function safeUp()
     {
+        $this->dropTableIfExists(Table::GQLSCHEMAS);
         $this->createTable(Table::GQLSCHEMAS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),

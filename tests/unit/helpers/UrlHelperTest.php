@@ -370,13 +370,15 @@ class UrlHelperTest extends Unit
             ['', ['foo' => null]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo[]=1&foo[]=2', ['foo' => [1, 2]]],
+            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
             ['foo[bar]=baz', ['foo[bar]' => 'baz']],
             ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
             ['foo+bar=baz', ['foo+bar' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
+            ['foo[1]=bar', ['foo[1]' => 'bar']],
+            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
