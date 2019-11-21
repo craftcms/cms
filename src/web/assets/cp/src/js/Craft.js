@@ -442,13 +442,14 @@ $.extend(Craft,
 
                     options = options || {};
                     headers = $.extend(headers, options.headers || {});
+                    var params = $.extend(Craft.apiParams, options.params || {});
 
                     axios.request($.extend({}, options, {
                             url: uri,
                             method: method,
                             baseURL: Craft.baseApiUrl,
                             headers: headers,
-                            params: Craft.apiParams,
+                            params: params,
                         }))
                         .then(function(response) {
                             Craft.postActionRequest('app/process-api-response-headers', {
