@@ -53,9 +53,9 @@
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
 - Added `craft\services\Assets::getAssetPreview()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
-- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::deleteSchema()`.
 - Added `craft\services\Gql::deleteTokenById()`.
+- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::getPublicToken()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
