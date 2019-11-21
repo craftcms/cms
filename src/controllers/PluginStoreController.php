@@ -62,7 +62,6 @@ class PluginStoreController extends Controller
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $allowUpdates = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges;
-        $apiHeaders = Api::headers();
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
