@@ -351,6 +351,15 @@ $.extend(Craft,
                 data = {};
             }
 
+            options = options || {};
+
+            if (options.contentType && options.contentType.match(/\bjson\b/)) {
+                if (typeof data === 'object') {
+                    data = JSON.stringify(data);
+                }
+                options.contentType = 'application/json; charset=utf-8';
+            }
+
             var headers = {
                 'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
                 'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
@@ -387,7 +396,7 @@ $.extend(Craft,
             }, options));
 
             // Call the 'send' callback
-            if (options && typeof options.send === 'function') {
+            if (typeof options.send === 'function') {
                 options.send(jqXHR);
             }
 
@@ -11710,18 +11719,17 @@ Craft.CP = Garnish.Base.extend(
 
         _cacheUpdates: function(updates, includeDetails) {
             return new Promise(function(resolve, reject) {
-                var data = JSON.stringify({
+                Craft.postActionRequest('app/cache-updates', {
                     updates: updates,
                     includeDetails: includeDetails,
-                });
-                Craft.postActionRequest('app/cache-updates', data, function(info, textStatus) {
+                }, function(info, textStatus) {
                     if (textStatus === 'success') {
                         resolve(info);
                     } else {
                         reject();
                     }
                 }, {
-                    contentType: 'application/json; charset=utf-8'
+                    contentType: 'json'
                 });
             });
         },

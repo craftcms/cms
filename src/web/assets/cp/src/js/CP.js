@@ -588,18 +588,17 @@ Craft.CP = Garnish.Base.extend(
 
         _cacheUpdates: function(updates, includeDetails) {
             return new Promise(function(resolve, reject) {
-                var data = JSON.stringify({
+                Craft.postActionRequest('app/cache-updates', {
                     updates: updates,
                     includeDetails: includeDetails,
-                });
-                Craft.postActionRequest('app/cache-updates', data, function(info, textStatus) {
+                }, function(info, textStatus) {
                     if (textStatus === 'success') {
                         resolve(info);
                     } else {
                         reject();
                     }
                 }, {
-                    contentType: 'application/json; charset=utf-8'
+                    contentType: 'json'
                 });
             });
         },
