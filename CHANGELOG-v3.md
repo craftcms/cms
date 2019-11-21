@@ -5,11 +5,15 @@
 ### Added
 - Added `craft\models\GqlSchema::getAllScopePairs()`.
 - Added `craft\models\GqlSchema::getAllScopePairsForAction()`.
+- Added `craft\web\assets\axios\AxiosAsset.php`.
 
 ### Changed
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
 - Updated the `svg-sanitize` library to 0.13.0.
 - Updated Yii to 2.0.29.
+
+### Deprecated
+- Deprecated `craft\web\assets\graphiql\VendorAsset`.
 
 ### Fixed
 - Fixed a SQL error that could occur when using PostgreSQL.
@@ -17,8 +21,13 @@
 - Fixed a layout issue with the GraphQL → Explore page on narrow browser windows. ([#5219](https://github.com/craftcms/cms/issues/5219))
 - Fixed a bug where `craft\helpers\UrlHelper::buildQuery()` would remove array param index numbers. ([#5233](https://github.com/craftcms/cms/issues/5233))
 - Fixed a PHP error that could occur when autoloading the `ContentBehavior` and `ElementQueryBehavior` classes in some envirnments.
-- Fixed an error where it was impossible to query for Date field values using GraphQL. ([#5240](https://github.com/craftcms/cms/issues/#5240))
-- Fixed an error where deleting an element would not invalidate GraphQL result caches. ([#5238](https://github.com/craftcms/cms/issues/#5238))
+- Fixed an error where it was impossible to query for Date field values using GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
+- Fixed an error where deleting an element would not invalidate GraphQL result caches. ([#5238](https://github.com/craftcms/cms/issues/5238))
+- Fixed an error where rebuilding Project Config would omit preview target data for sections. ([#5215](https://github.com/craftcms/cms/issues/5215))
+- Fixed an error that occurred whet attempting to preview an entry revision. ([#5244](https://github.com/craftcms/cms/issues/5244))
+
+### Security
+- Craft now requires `Portable UTF-8 ^5.4.28`, fixing a security vulnerability.
 
 ## 3.3.15 - 2019-11-05
 

@@ -1,4 +1,4 @@
-/*!   - 2019-11-17 */
+/*!   - 2019-11-20 */
 (function($){
 
 /** global: Craft */
@@ -13313,7 +13313,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         ensureIsDraftOrRevision: function() {
             return new Promise(function(resolve, reject) {
-                if (!this.settings.draftId && !this.settings.revisionid) {
+                if (!this.settings.draftId && !this.settings.revisionId) {
                     this.createDraft()
                         .then(resolve)
                         .catch(reject);
