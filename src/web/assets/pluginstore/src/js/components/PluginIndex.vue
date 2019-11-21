@@ -10,6 +10,10 @@
 
         <plugin-grid :plugins="plugins"></plugin-grid>
 
+        <div v-if="plugins.length === 0 && !loadingBottom && !loading" class="mt-4">
+            <p>{{"No results."|t('app')}}</p>
+        </div>
+
         <div v-if="error" class="my-4 text-red">{{error}}</div>
 
         <spinner v-if="loadingBottom || (disableSorting && loading)" class="my-4"></spinner>
