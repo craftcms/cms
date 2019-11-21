@@ -61,6 +61,8 @@ class PluginStoreController extends Controller
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $allowUpdates = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges;
 
+        $craftIdAccessToken = $this->getCraftIdAccessToken();
+
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
         $view->registerJs('window.craftApiEndpoint = "' . Craft::$app->getPluginStore()->craftApiEndpoint . '";', View::POS_BEGIN);
@@ -68,6 +70,7 @@ class PluginStoreController extends Controller
         $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
         $view->registerJs('window.allowUpdates = ' . Json::encode($allowUpdates) . ';', View::POS_BEGIN);
         $view->registerJs('window.cmsLicenseKey = ' . Json::encode(App::licenseKey()) . ';', View::POS_BEGIN);
+        $view->registerJs('window.craftIdAccessToken = ' . Json::encode($craftIdAccessToken) . ';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
@@ -173,8 +176,10 @@ class PluginStoreController extends Controller
      */
     public function actionModalCallback(): Response
     {
+        $craftIdAccessToken = $this->getCraftIdAccessToken();
+
         return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
-            'craftIdAccount' => Craft::$app->getPluginStore()->getCraftIdAccount()
+            'craftIdAccessToken' => $craftIdAccessToken
         ]);
     }
 
@@ -229,9 +234,6 @@ class PluginStoreController extends Controller
         $currentUser = Craft::$app->getUser()->getIdentity();
         $data['currentUser'] = $currentUser->getAttributes(['email']);
 
-        // Craft ID account
-        $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
-
         // Craft license/edition info
         $data['licensedEdition'] = Craft::$app->getLicensedEdition();
         $data['canTestEditions'] = Craft::$app->getCanTestEditions();
@@ -280,5 +282,23 @@ class PluginStoreController extends Controller
     private function _getVueAppBaseUrl(): string
     {
         return UrlHelper::rootRelativeUrl(UrlHelper::url('plugin-store'));
+    }
+
+    /**
+     * Returns the Craft ID access token.
+     *
+     * @return string|null
+     */
+    private function getCraftIdAccessToken()
+    {
+        $craftIdAccessToken = null;
+        $pluginStoreService = Craft::$app->getPluginStore();
+        $craftIdToken = $pluginStoreService->getToken();
+
+        if ($craftIdToken && $craftIdToken->accessToken !== null) {
+            $craftIdAccessToken = $craftIdToken->accessToken;
+        }
+
+        return $craftIdAccessToken;
     }
 }

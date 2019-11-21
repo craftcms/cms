@@ -142,6 +142,19 @@ const actions = {
         })
     },
 
+    getCraftIdData({commit}, {accessToken}) {
+        return new Promise((resolve, reject) => {
+            api.getCraftIdData({accessToken})
+                .then(responseData => {
+                    commit('updateCraftIdData', {responseData})
+                    resolve()
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
     getPluginLicenseInfo({commit}) {
         return new Promise((resolve, reject) => {
             api.getPluginLicenseInfo()
@@ -191,7 +204,6 @@ const actions = {
 const mutations = {
     updateCraftData(state, {response}) {
         state.canTestEditions = response.data.canTestEditions
-        state.craftId = response.data.craftId
         state.craftLogo = response.data.craftLogo
         state.currentUser = response.data.currentUser
         state.defaultPluginSvg = response.data.defaultPluginSvg
@@ -202,6 +214,10 @@ const mutations = {
         state.CraftEdition = response.data.CraftEdition
         state.CraftPro = response.data.CraftPro
         state.CraftSolo = response.data.CraftSolo
+    },
+
+    updateCraftIdData(state, {responseData}) {
+        state.craftId = responseData
     },
 
     updateCountries(state, {responseData}) {

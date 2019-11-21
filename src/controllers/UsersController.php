@@ -831,33 +831,6 @@ class UsersController extends Controller
             }
         }
 
-        // Craft ID account
-        $craftIdAccount = null;
-        $craftIdError = null;
-        $craftIdToken = Craft::$app->getPluginStore()->getToken();
-
-        if ($craftIdToken && $craftIdToken->hasExpired()) {
-            $craftIdToken = null;
-        }
-
-        try {
-            $client = Craft::$app->getApi()->client;
-
-            if ($craftIdToken) {
-                $options = Craft::$app->getPluginStore()->getApiRequestOptions();
-                $craftIdAccountResponse = $client->get('account', $options);
-                $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-                if (isset($craftIdAccount['error'])) {
-                    $craftIdError = $craftIdAccount['error'];
-                    $craftIdAccount = null;
-                }
-            }
-        } catch (\Exception $e) {
-            $craftIdError = $e->getMessage();
-        }
-
-
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
@@ -882,9 +855,6 @@ class UsersController extends Controller
             'title',
             'tabs',
             'selectedTab',
-            'craftIdAccount',
-            'craftIdError',
-            'craftIdToken'
         ));
     }
 

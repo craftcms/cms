@@ -45,6 +45,29 @@ export default {
         })
     },
 
+    /**
+     * Get Craft ID data.
+     */
+    getCraftIdData({accessToken}) {
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('GET', 'account', {
+                    cancelToken: cancelTokenSource.token,
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                    }
+                })
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    if (axios.isCancel(error)) {
+                        // request cancelled
+                    } else {
+                        reject(error)
+                    }
+                })
+        })
+    },
 
     /**
      * Get countries.

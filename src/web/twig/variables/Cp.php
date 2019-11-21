@@ -46,20 +46,6 @@ class Cp extends Component
     // =========================================================================
 
     /**
-     * Returns the Craft ID account.
-     *
-     * @return array|null
-     */
-    public function craftIdAccount()
-    {
-        try {
-            return Craft::$app->getPluginStore()->getCraftIdAccount();
-        } catch (ServerException $e) {
-            return null;
-        }
-    }
-
-    /**
      * Returns the Craft ID account URL.
      *
      * @return string

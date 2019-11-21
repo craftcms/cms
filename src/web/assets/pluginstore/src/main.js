@@ -41,6 +41,7 @@ Garnish.$doc.ready(function() {
                 cartDataLoaded: false,
                 coreDataLoaded: false,
                 craftDataLoaded: false,
+                craftIdDataLoaded: false,
                 modalStep: null,
                 pageTitle: 'Plugin Store',
                 plugin: null,
@@ -120,8 +121,7 @@ Garnish.$doc.ready(function() {
              *
              * @param craftIdJson
              */
-            updateCraftId(craftIdJson) {
-                const craftId = JSON.parse(craftIdJson)
+            updateCraftId(craftId) {
                 this.$store.commit('craft/updateCraftId', craftId)
                 this.$store.commit('craft')
                 this.$emit('craftIdUpdated')
@@ -173,7 +173,7 @@ Garnish.$doc.ready(function() {
 
                 // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
                 this.$on('dataLoaded', function() {
-                    if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded)) {
+                    if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded && this.craftIdDataLoaded)) {
                         $pluginStoreActionsSpinner.removeClass('hidden')
                     }
                 }.bind(this))
@@ -239,6 +239,21 @@ Garnish.$doc.ready(function() {
                     })
             },
 
+            loadCraftIdData() {
+                if (window.craftIdAccessToken) {
+                    const accessToken = window.craftIdAccessToken
+
+                    this.$store.dispatch('craft/getCraftIdData', {accessToken})
+                        .then(() => {
+                            this.craftIdDataLoaded = true
+                            this.$emit('dataLoaded')
+                        })
+                } else {
+                    this.craftIdDataLoaded = true
+                    this.$emit('dataLoaded')
+                }
+            },
+
             /**
              * Loads all the data required for the Plugin Store and cart to work.
              */
@@ -246,6 +261,7 @@ Garnish.$doc.ready(function() {
                 this.loadPluginStoreData()
 
                 this.loadCraftData(function() {
+                    this.loadCraftIdData()
                     this.loadCartData()
                 }.bind(this))
             },
@@ -300,6 +316,10 @@ Garnish.$doc.ready(function() {
                 }
 
                 if (!this.cartDataLoaded) {
+                    return null
+                }
+
+                if (!this.craftIdDataLoaded) {
                     return null
                 }
 
