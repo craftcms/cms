@@ -9,7 +9,7 @@
 
 ### Changed
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
-- Updated the `svg-sanitize` library to 0.13.0.
+- Updated svg-sanitizer to 0.13.
 - Updated Yii to 2.0.29.
 
 ### Deprecated
@@ -20,14 +20,14 @@
 - Fixed a SQL error that could occur when calling an element query’s `ids()` method with `indexBy('id')` set on it. ([#5216](https://github.com/craftcms/cms/issues/5216))
 - Fixed a layout issue with the GraphQL → Explore page on narrow browser windows. ([#5219](https://github.com/craftcms/cms/issues/5219))
 - Fixed a bug where `craft\helpers\UrlHelper::buildQuery()` would remove array param index numbers. ([#5233](https://github.com/craftcms/cms/issues/5233))
-- Fixed a PHP error that could occur when autoloading the `ContentBehavior` and `ElementQueryBehavior` classes in some envirnments.
-- Fixed an error where it was impossible to query for Date field values using GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
-- Fixed an error where deleting an element would not invalidate GraphQL result caches. ([#5238](https://github.com/craftcms/cms/issues/5238))
-- Fixed an error where rebuilding Project Config would omit preview target data for sections. ([#5215](https://github.com/craftcms/cms/issues/5215))
+- Fixed a PHP error that could occur when autoloading the `ContentBehavior` and `ElementQueryBehavior` classes in some environments.
+- Fixed an error where it wasn’t possible to query by Date/Time field values via GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
+- Fixed an error where GraphQL caches weren’t getting invalidated when an element was deleted. ([#5238](https://github.com/craftcms/cms/issues/5238))
+- Fixed an error where rebuilding the project config would omit sections’ preview targets. ([#5215](https://github.com/craftcms/cms/issues/5215))
 - Fixed an error that occurred whet attempting to preview an entry revision. ([#5244](https://github.com/craftcms/cms/issues/5244))
 
 ### Security
-- Craft now requires `Portable UTF-8 ^5.4.28`, fixing a security vulnerability.
+- Craft now requires Portable UTF-8 5.4.28 or later, fixing a security vulnerability.
 
 ## 3.3.15 - 2019-11-05
 
@@ -2370,7 +2370,7 @@
 - The `{% js %}` tag now supports the following position params: `at POS_HEAD`, `at POS_BEGIN`, `at POS_END`, `on POS_READY`, and `on POS_LOAD` (e.g. `{% js at POS_END %}`).
 - Craft once again checks for `X-Forwarded-For` headers when determining the user’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 - Leading/trailing whitespace characters are now stripped from element titles on save. ([#3020](https://github.com/craftcms/cms/issues/3020))
-- Updated svg-sanitize to 0.9.
+- Updated svg-sanitizer to 0.9.
 
 ### Deprecated
 - Deprecated `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` should be used instead.
