@@ -170,7 +170,7 @@ const actions = {
                     resolve(response)
                 })
                 .catch(error => {
-                    return reject(error.response)
+                    return reject(error)
                 })
         })
     },

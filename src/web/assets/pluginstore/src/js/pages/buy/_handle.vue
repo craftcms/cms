@@ -49,7 +49,13 @@
                                     this.$router.push({path: '/'})
                                     this.$root.openModal('cart')
                                 })
+                                .catch((error) => {
+                                    throw error
+                                })
                         }
+                    })
+                    .catch((error) => {
+                        throw error
                     })
             },
 

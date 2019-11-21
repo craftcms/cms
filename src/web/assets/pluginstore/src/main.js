@@ -266,6 +266,7 @@ Garnish.$doc.ready(function() {
                         } else {
                             this.pluginStoreDataError = true
                             this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
+                            throw error
                         }
                     })
 
