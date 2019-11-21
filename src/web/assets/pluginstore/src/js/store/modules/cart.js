@@ -226,12 +226,12 @@ const actions = {
 
             // request plugins by plugin handle
             pluginStoreApi.getPluginsByHandles(pluginHandles)
-                .then((response) => {
-                    if (response.data && response.data.error) {
-                        throw response.data.error
+                .then((responseData) => {
+                    if (responseData && responseData.error) {
+                        throw responseData.error
                     }
 
-                    const data = response.data
+                    const data = responseData
                     const plugins = []
 
                     for (let i = 0; i < data.length; i++) {
@@ -460,18 +460,18 @@ const actions = {
 
             if (cartItemPluginIds.length > 0) {
                 pluginStoreApi.getPluginsByIds(cartItemPluginIds)
-                    .then((pluginsResponse) => {
+                    .then((pluginsResponseData) => {
                         commit('updateCart', {cartResponse})
-                        commit('updateCartPlugins', {pluginsResponse})
-                        resolve(pluginsResponse)
+                        commit('updateCartPlugins', {pluginsResponseData})
+                        resolve(pluginsResponseData)
                     })
                     .catch((error) => {
                         reject(error)
                     })
             } else {
-                const pluginsResponse = {data: []}
+                const pluginsResponseData = []
                 commit('updateCart', {cartResponse})
-                commit('updateCartPlugins', {pluginsResponse})
+                commit('updateCartPlugins', {pluginsResponseData})
                 resolve(pluginsResponse)
             }
         })
@@ -529,8 +529,8 @@ const mutations = {
         state.selectedExpiryDates = selectedExpiryDates
     },
 
-    updateCartPlugins(state, {pluginsResponse}) {
-        state.cartPlugins = pluginsResponse.data
+    updateCartPlugins(state, {pluginsResponseData}) {
+        state.cartPlugins = pluginsResponseData
     },
 
     updateSelectedExpiryDates(state, selectedExpiryDates) {

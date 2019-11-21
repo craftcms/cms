@@ -24,8 +24,8 @@
         methods: {
             buyPlugin(pluginHandle) {
                 pluginStoreApi.getPluginDetailsByHandle(pluginHandle)
-                    .then(response => {
-                        const plugin = response.data
+                    .then(responseData => {
+                        const plugin = responseData
 
                         if (!this.isPluginBuyable(plugin)) {
                             this.loading = false

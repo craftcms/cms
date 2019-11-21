@@ -74,8 +74,8 @@
                 }
 
                 if (this.scrollDistFromBottom() < 300) {
-                    this.requestPlugins(false, (response) => {
-                        if (response.data.currentPage < response.data.total) {
+                    this.requestPlugins(false, (responseData) => {
+                        if (responseData.currentPage < responseData.total) {
                             this.$root.$on('viewScroll', this.onScroll)
                             this.$root.$on('windowScroll', this.onScroll)
                         }
@@ -127,15 +127,15 @@
                         ...this.requestActionData,
                         appendData: !dontAppendData,
                     })
-                    .then((response) => {
-                        if (response.data && response.data.error) {
-                            throw response.data.error
+                    .then((responseData) => {
+                        if (responseData && responseData.error) {
+                            throw responseData.error
                         }
 
                         this.loading = false
                         this.loadingBottom = false
 
-                        if (response.data.currentPage < response.data.total) {
+                        if (responseData.currentPage < responseData.total) {
                             this.hasMore = true
                             this.page++
 
@@ -147,23 +147,21 @@
                         }
 
                         if (typeof onAfterSuccess === 'function') {
-                            onAfterSuccess(response)
+                            onAfterSuccess(responseData)
                         }
                     })
                     .catch((thrown) => {
-                        let errorMsg
+                        let errorMsg = this.$options.filters.t("Couldn’t get plugins.", 'app')
 
                         if (typeof thrown === 'string') {
                             errorMsg = thrown
-                        } else if(thrown.response.data.error) {
-                            errorMsg = thrown.response.data.error
-                        } else {
-                            errorMsg = thrown.response.data.message
                         }
 
                         this.error = errorMsg
                         this.loading = false
                         this.loadingBottom = false
+
+                        throw thrown
                     })
             },
 
@@ -216,8 +214,8 @@
             this.$store.commit('pluginStore/updatePlugins', [])
 
             this.$nextTick(() => {
-                this.requestPlugins(true, (response) => {
-                    if (response.data.currentPage < response.data.total) {
+                this.requestPlugins(true, (responseData) => {
+                    if (responseData.currentPage < responseData.total) {
                         this.$root.$on('viewScroll', this.onScroll)
                         this.$root.$on('windowScroll', this.onScroll)
                         this.$root.$on('windowResize', this.onWindowResize)

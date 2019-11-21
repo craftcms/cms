@@ -1,3 +1,5 @@
+/* global Craft */
+
 import axios from 'axios'
 
 // create a cancel token for axios
@@ -33,9 +35,11 @@ export default {
      */
     getCoreData() {
         return new Promise((resolve, reject) => {
-            _axios.get('plugin-store/core-data')
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin-store/core-data', {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -54,9 +58,11 @@ export default {
      */
     getCmsEditions() {
         return new Promise((resolve, reject) => {
-            _axios.get('cms-editions')
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'cms-editions', {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -76,9 +82,11 @@ export default {
      */
     getDeveloper(developerId) {
         return new Promise((resolve, reject) => {
-            _axios.get('developer/' + developerId)
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'developer/' + developerId, {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -98,9 +106,11 @@ export default {
      */
     getFeaturedSectionByHandle(featuredSectionHandle) {
         return new Promise((resolve, reject) => {
-            _axios.get('plugin-store/featured-section/' + featuredSectionHandle)
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin-store/featured-section/' + featuredSectionHandle, {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -119,9 +129,11 @@ export default {
      */
     getFeaturedSections() {
         return new Promise((resolve, reject) => {
-            _axios.get('plugin-store/featured-sections')
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin-store/featured-sections', {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -141,9 +153,11 @@ export default {
      */
     getPluginChangelog(pluginId) {
         return new Promise((resolve, reject) => {
-            _axios.get('plugin/' + pluginId + '/changelog')
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin/' + pluginId + '/changelog', {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -163,9 +177,11 @@ export default {
      */
     getPluginDetails(pluginId) {
         return new Promise((resolve, reject) => {
-            _axios.get('plugin/' + pluginId)
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin/' + pluginId, {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -185,9 +201,11 @@ export default {
      */
     getPluginDetailsByHandle(pluginHandle) {
         return new Promise((resolve, reject) => {
-            _axios.get('plugin-store/plugin/' + pluginHandle)
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle, {
+                    cancelToken: cancelTokenSource.token,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -211,11 +229,12 @@ export default {
             const params = this._getPluginIndexParams(pluginIndexParams)
             params.categoryId = categoryId
 
-            _axios.get('plugin-store/plugins', {
-                    params
+            Craft.sendApiRequest('GET', 'plugin-store/plugins', {
+                    cancelToken: cancelTokenSource.token,
+                    params,
                 })
-                .then((response) => {
-                    resolve(response)
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -239,11 +258,12 @@ export default {
             const params = this._getPluginIndexParams(pluginIndexParams)
             params.developerId = developerId
 
-            _axios.get('plugin-store/plugins', {
-                    params
+            Craft.sendApiRequest('GET', 'plugin-store/plugins', {
+                    cancelToken: cancelTokenSource.token,
+                    params,
                 })
-                .then((response) => {
-                    resolve(response)
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -266,11 +286,12 @@ export default {
         return new Promise((resolve, reject) => {
             const params = this._getPluginIndexParams(pluginIndexParams)
 
-            _axios.get('plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
-                    params
+            Craft.sendApiRequest('GET', 'plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
+                    cancelToken: cancelTokenSource.token,
+                    params,
                 })
-                .then((response) => {
-                    resolve(response)
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -298,13 +319,14 @@ export default {
                 pluginHandlesString = pluginHandles
             }
 
-            _axios.get('plugin-store/plugins-by-handles', {
-                params: {
-                    pluginHandles: pluginHandlesString
-                }
-            })
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugin-store/plugins-by-handles', {
+                    cancelToken: cancelTokenSource.token,
+                    params: {
+                        pluginHandles: pluginHandlesString
+                    },
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -332,13 +354,14 @@ export default {
                 pluginIdsString = pluginIds
             }
 
-            _axios.get('plugins', {
-                params: {
-                    ids: pluginIdsString
-                }
-            })
-                .then((response) => {
-                    resolve(response)
+            Craft.sendApiRequest('GET', 'plugins', {
+                    cancelToken: cancelTokenSource.token,
+                    params: {
+                        ids: pluginIdsString
+                    },
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {
@@ -361,12 +384,13 @@ export default {
         return new Promise((resolve, reject) => {
             const params = this._getPluginIndexParams(pluginIndexParams)
             params.searchQuery = searchQuery
-
-            _axios.get('plugin-store/plugins', {
-                params
-            })
-                .then((response) => {
-                    resolve(response)
+            
+            Craft.sendApiRequest('GET', 'plugin-store/plugins', {
+                    cancelToken: cancelTokenSource.token,
+                    params,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {

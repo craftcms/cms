@@ -51,12 +51,11 @@ export default {
      */
     getCountries() {
         return new Promise((resolve, reject) => {
-            _axios.get('countries', {
-                    baseURL: process.env.VUE_APP_CRAFT_API_ENDPOINT,
-                    headers: window.apiHeaders,
+            Craft.sendApiRequest('GET', 'countries', {
+                    cancelToken: cancelTokenSource.token,
                 })
-                .then((response) => {
-                    resolve(response)
+                .then((responseData) => {
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     if (axios.isCancel(error)) {

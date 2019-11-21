@@ -68,9 +68,9 @@ const actions = {
     getCoreData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCoreData()
-                .then(response => {
-                    commit('updateCoreData', {response})
-                    resolve(response)
+                .then(responseData => {
+                    commit('updateCoreData', {responseData})
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error)
@@ -81,9 +81,9 @@ const actions = {
     getCmsEditions({commit}) {
         return new Promise((resolve, reject) => {
             api.getCmsEditions()
-                .then(response => {
-                    commit('updateCmsEditions', {response})
-                    resolve(response)
+                .then(responseData => {
+                    commit('updateCmsEditions', {responseData})
+                    resolve(responseData)
 
                 })
                 .catch(error => {
@@ -94,31 +94,31 @@ const actions = {
 
     getDeveloper({commit}, developerId) {
         return api.getDeveloper(developerId)
-            .then(response => {
-                commit('updateDeveloper', response.data)
+            .then(responseData => {
+                commit('updateDeveloper', responseData)
             })
     },
 
     getFeaturedSectionByHandle({commit}, featuredSectionHandle) {
         return api.getFeaturedSectionByHandle(featuredSectionHandle)
-            .then(response => {
-                commit('updateFeaturedSection', response.data)
+            .then(responseData => {
+                commit('updateFeaturedSection', responseData)
             })
     },
 
     getFeaturedSections({commit}) {
         return api.getFeaturedSections()
-            .then(response => {
-                commit('updateFeaturedSections', response.data)
+            .then(responseData => {
+                commit('updateFeaturedSections', responseData)
             })
     },
 
     getPluginChangelog({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginChangelog(pluginId)
-                .then(response => {
-                    commit('updatePluginChangelog', response.data)
-                    resolve(response)
+                .then(responseData => {
+                    commit('updatePluginChangelog', responseData)
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error)
@@ -129,9 +129,9 @@ const actions = {
     getPluginDetails({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginDetails(pluginId)
-                .then(response => {
-                    commit('updatePluginDetails', response.data)
-                    resolve(response)
+                .then(responseData => {
+                    commit('updatePluginDetails', responseData)
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error.response)
@@ -141,8 +141,8 @@ const actions = {
 
     getPluginDetailsByHandle({commit}, pluginHandle) {
         return api.getPluginDetailsByHandle(pluginHandle)
-            .then(response => {
-                commit('updatePluginDetails', response.data)
+            .then(responseData => {
+                commit('updatePluginDetails', responseData)
             })
     },
 
@@ -151,9 +151,9 @@ const actions = {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
             api.getPluginsByCategory(context.categoryId, pluginIndexParams)
-                .then(response => {
-                    dispatch('updatePluginIndex', {context, response})
-                    resolve(response)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error)
@@ -166,9 +166,9 @@ const actions = {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
 
             api.getPluginsByDeveloperId(context.developerId, pluginIndexParams)
-                .then(response => {
-                    dispatch('updatePluginIndex', {context, response})
-                    resolve(response)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error)
@@ -181,8 +181,8 @@ const actions = {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
             
             return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
-                .then(response => {
-                    dispatch('updatePluginIndex', {context, response})
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
                     resolve(response)
                 })
                 .catch(error => {
@@ -206,11 +206,11 @@ const actions = {
         })
     },
 
-    updatePluginIndex({commit}, {context, response}) {
+    updatePluginIndex({commit}, {context, responseData}) {
         if (context.appendData && context.appendData === true) {
-            commit('appendPlugins', response.data.plugins)
+            commit('appendPlugins', responseData.plugins)
         } else {
-            commit('updatePlugins', response.data.plugins)
+            commit('updatePlugins', responseData.plugins)
         }
     },
 }
@@ -223,14 +223,14 @@ const mutations = {
         state.plugins = [...state.plugins, ...plugins]
     },
 
-    updateCoreData(state, {response}) {
-        state.categories = response.data.categories
-        state.expiryDateOptions = response.data.expiryDateOptions
-        state.sortOptions = response.data.sortOptions
+    updateCoreData(state, {responseData}) {
+        state.categories = responseData.categories
+        state.expiryDateOptions = responseData.expiryDateOptions
+        state.sortOptions = responseData.sortOptions
     },
 
-    updateCmsEditions(state, {response}) {
-        state.cmsEditions = response.data.editions
+    updateCmsEditions(state, {responseData}) {
+        state.cmsEditions = responseData.editions
     },
 
     updateDeveloper(state, developer) {

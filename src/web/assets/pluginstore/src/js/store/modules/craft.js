@@ -128,8 +128,8 @@ const actions = {
                 .then(response => {
                     commit('updateCraftData', {response})
                     api.getCountries()
-                        .then(response => {
-                            commit('updateCountries', {response})
+                        .then(responseData => {
+                            commit('updateCountries', {responseData})
                             resolve()
                         })
                         .catch(error => {
@@ -217,8 +217,8 @@ const mutations = {
         state.CraftSolo = response.data.CraftSolo
     },
 
-    updateCountries(state, {response}) {
-        state.countries = response.data.countries
+    updateCountries(state, {responseData}) {
+        state.countries = responseData.countries
     },
 
     updateCraftId(state, craftId) {
