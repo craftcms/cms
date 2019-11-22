@@ -39,11 +39,7 @@ class ProjectConfigTest extends Unit
     // @TODO: more tests, obviously.
 
     /**
-     * @param $result
-     * @param array $uriParts
-     * @param string $template
-     * @param string|null $siteUid
-     * @param string|null $routeUid
+     * Test if rebuilding project congif ignores the `readOnly` flag.
      */
     public function testRebuildIgnoresReadOnly()
     {
@@ -62,16 +58,5 @@ class ProjectConfigTest extends Unit
         $projectConfig->rebuild();
 
         $projectConfig->readOnly = $readOnly;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function _before()
-    {
-        parent::_before();
     }
 }
