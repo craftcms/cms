@@ -183,7 +183,7 @@ const actions = {
             return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
                 .then(responseData => {
                     dispatch('updatePluginIndex', {context, responseData})
-                    resolve(response)
+                    resolve(responseData)
                 })
                 .catch(error => {
                     reject(error)

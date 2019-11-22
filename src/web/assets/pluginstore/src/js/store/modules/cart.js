@@ -267,7 +267,7 @@ const actions = {
                     }
 
                     commit('updateActiveTrialPlugins', plugins)
-                    resolve(response)
+                    resolve(responseData)
                 })
                 .catch((error) => {
                     reject(error)
