@@ -317,7 +317,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
-                        /** @noinspection SlowArrayOperationsInLoopInspection */
                         $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
 
                         $fields[] = Craft::$app->getFields()->createField([
