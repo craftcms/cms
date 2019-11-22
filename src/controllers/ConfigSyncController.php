@@ -21,6 +21,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
+ * @internal
  */
 class ConfigSyncController extends BaseUpdaterController
 {

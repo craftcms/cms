@@ -31,6 +31,7 @@ use yii\base\InvalidArgumentException;
  * @property bool $wasCraftBreakpointSkipped Whether the build stored in craft_info is less than the minimum required build on the file system
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class Updates extends Component
 {
