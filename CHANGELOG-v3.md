@@ -26,6 +26,7 @@
 - Fixed an error where GraphQL caches weren’t getting invalidated when an element was deleted. ([#5238](https://github.com/craftcms/cms/issues/5238))
 - Fixed an error where rebuilding the project config would omit sections’ preview targets. ([#5215](https://github.com/craftcms/cms/issues/5215))
 - Fixed an error that occurred whet attempting to preview an entry revision. ([#5244](https://github.com/craftcms/cms/issues/5244))
+- Fixed a PHP error that could occur when the `relatedTo` param was set to an element query that would yield no results. ([#5242](https://github.com/craftcms/cms/issues/5242))
 
 ### Security
 - Craft now requires Portable UTF-8 5.4.28 or later, fixing a security vulnerability.
