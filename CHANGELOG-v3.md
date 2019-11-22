@@ -8,9 +8,12 @@
 - Added `craft\web\assets\axios\AxiosAsset.php`.
 
 ### Changed
+- Improved Plugin Store performance.
+- Craft now makes most of its API requests from JavaScript rather than PHP, so servers with maxed-out HTTP connections won’t get hung up waiting for the API response before serving additional requests. ([#5194](https://github.com/craftcms/cms/issues/5194), [#5232](https://github.com/craftcms/cms/issues/5232))
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
 - Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
 - The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
+- It’s now easier to send JSON requests with `Craft.postActionRequest()`, by passing `contentType: 'json'` in the `options` argument.
 - Updated svg-sanitizer to 0.13.
 - Updated Yii to 2.0.29.
 
@@ -146,9 +149,6 @@
 - Added the `allowOwnerDrafts` and `allowOwnerRevisions` Matrix block query params.
 - Added the ability to skip refreshing the project config before running individual tests. ([#5072](https://github.com/craftcms/cms/pull/5072))
 - Added `craft\test\Craft::resetProjectConfig()`.
-
-### Changed
-- Renamed `\craft\services\Api::headers()` to `getHeaders()` and made the method public.
 
 ### Fixed
 - Fixed a bug where Craft wasn’t passing assets’ MIME types to cloud storage services when saving them. ([#5052](https://github.com/craftcms/cms/issues/5052))
