@@ -10,9 +10,9 @@
 ### Changed
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
 - Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+- The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
 - Updated svg-sanitizer to 0.13.
 - Updated Yii to 2.0.29.
-- Running the `project-config/rebuild` command now ignores the `allowAdminChanges` setting.
 
 ### Deprecated
 - Deprecated `craft\web\assets\graphiql\VendorAsset`.
