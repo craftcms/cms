@@ -1,113 +1,116 @@
 <template>
-    <div v-if="pluginSnippet" class="plugin-details ps-container">
+    <div class="plugin-details ps-container">
+        <template v-if="!loading && plugin">
+            <!-- header -->
+            <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
+                <div class="plugin-icon">
+                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="100" />
+                    <img v-else :src="defaultPluginSvg" width="100" />
 
-        <!-- header -->
-        <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
-            <div class="plugin-icon">
-                <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
-                <img v-else :src="defaultPluginSvg" width="100" />
+                    <div v-if="showLicenseKeyStatus" class="license-key-status" :class="{valid: isLicenseValid}"></div>
+                </div>
 
-                <div v-if="showLicenseKeyStatus" class="license-key-status" :class="{valid: isLicenseValid}"></div>
+                <div class="description flex-1">
+                    <h1 class="text-lg font-bold mb-2">{{ plugin.name }}</h1>
+                    <p class="mb-2 text-grey-dark">{{ plugin.shortDescription }}</p>
+                    <p class="mb-2"><a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a></p>
+                </div>
+
+                <div v-if="actionsLoading">
+                    <spinner></spinner>
+                </div>
             </div>
 
-            <div class="description flex-1">
-                <h2>{{ pluginSnippet.name }}</h2>
-                <p>{{ pluginSnippet.shortDescription }}</p>
-                <p><a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a></p>
-            </div>
-
-            <div v-if="actionsLoading">
-                <spinner></spinner>
-            </div>
-        </div>
-
-        <!-- body -->
-        <div class="plugin-details-body">
-            <template v-if="!loading">
-
-                <template v-if="pluginLicenseInfo && pluginLicenseInfo.licenseIssues.length > 0">
-                    <ul>
-                        <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error" :key="'license-issue' + key">
-                            {{licenseIssue(errorCode)}}
-                        </li>
-                    </ul>
-
-                    <hr>
-                </template>
-
-                <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
-                    <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
-
-                    <hr>
-                </template>
-
-                <div class="lg:flex">
-                    <div class="lg:flex-1 lg:pr-8 lg:mr-4">
-                        <div v-if="longDescription" v-html="longDescription" class="readable"></div>
-                        <div v-else-if="plugin.shortDescription" v-html="plugin.shortDescription" class="readable"></div>
-                        <p v-else>No description.</p>
-                    </div>
-                    <div class="lg:pl-8 lg:ml-4">
+            <!-- body -->
+            <div class="plugin-details-body">
+                <template v-if="!loading">
+                    <template v-if="pluginLicenseInfo && pluginLicenseInfo.licenseIssues.length > 0">
                         <ul>
-                            <li v-if="plugin.documentationUrl" class="py-1">
-                                <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
-                                    <icon icon="book"></icon> {{ "Documentation"|t('app') }}
-                                </a>
+                            <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error" :key="'license-issue' + key">
+                                {{licenseIssue(errorCode)}}
                             </li>
-
-                            <li><a :href="plugin.repository"><icon icon="link" /> Repository</a></li>
                         </ul>
 
+                        <hr>
+                    </template>
+
+                    <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
+                        <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
+
+                        <hr>
+                    </template>
+
+                    <div class="lg:flex">
+                        <div class="lg:flex-1 lg:pr-8 lg:mr-4">
+                            <div v-if="longDescription" v-html="longDescription" class="readable"></div>
+                            <div v-else-if="plugin.shortDescription" v-html="plugin.shortDescription" class="readable"></div>
+                            <p v-else>No description.</p>
+                        </div>
+                        <div class="lg:pl-8 lg:ml-4">
+                            <ul>
+                                <li v-if="plugin.documentationUrl" class="py-1">
+                                    <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
+                                        <icon icon="book"></icon> {{ "Documentation"|t('app') }}
+                                    </a>
+                                </li>
+                                
+                                <li><a :href="plugin.repository" rel="noopener" target="_blank"><icon icon="link" /> Repository</a></li>
+                            </ul>
+
+                        </div>
                     </div>
-                </div>
 
-                <hr>
+                    <hr>
 
-                <div class="py-8">
-                    <plugin-editions :plugin="plugin"></plugin-editions>
-                </div>
+                    <div class="py-8">
+                        <plugin-editions :plugin="plugin"></plugin-editions>
+                    </div>
 
-                <hr>
+                    <hr>
 
-                <div class="max-w-sm mx-auto p-8">
-                    <h2 class="mt-0">{{ "Package Name"|t('app') }}</h2>
-                    <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
-                    <copy-package :plugin="plugin"></copy-package>
-                </div>
+                    <div class="max-w-sm mx-auto p-8">
+                        <h2 class="mt-0">{{ "Package Name"|t('app') }}</h2>
+                        <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
+                        <copy-package :plugin="plugin"></copy-package>
+                    </div>
 
-                <hr>
+                    <hr>
 
-                <h2 class="mb-4">{{ "Information"|t('app') }}</h2>
-                <div class="plugin-infos">
-                    <ul class="plugin-meta">
-                        <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
-                        <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
-                        <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls|formatNumber }}</strong></li>
-                        <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
-                        <li v-if="pluginCategories && pluginCategories.length > 0">
-                            <span>{{ "Categories"|t('app') }}</span>
-                            <div>
-                                <div v-for="(category, key) in pluginCategories" :key="'plugin-category-' + key">
-                                    <strong><a @click="viewCategory(category)">{{ category.title }}</a></strong>
+                    <h2 class="mb-4">{{ "Information"|t('app') }}</h2>
+                    <div class="plugin-infos">
+                        <ul class="plugin-meta">
+                            <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
+                            <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
+                            <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls|formatNumber }}</strong></li>
+                            <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
+                            <li v-if="pluginCategories && pluginCategories.length > 0">
+                                <span>{{ "Categories"|t('app') }}</span>
+                                <div>
+                                    <div v-for="(category, key) in pluginCategories" :key="'plugin-category-' + key">
+                                        <strong><a @click="viewCategory(category)">{{ category.title }}</a></strong>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                        <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
-                    </ul>
-                </div>
+                            </li>
+                            <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
+                        </ul>
+                    </div>
 
-                <p>
-                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" class="mr-2" />{{ "Report an issue"|t('app') }}</a>
-                </p>
+                    <p>
+                        <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" class="mr-2" />{{ "Report an issue"|t('app') }}</a>
+                    </p>
 
-                <hr>
+                    <hr>
 
-                <plugin-changelog :pluginId="$root.pluginId"></plugin-changelog>
-            </template>
-            <template v-else>
-                <spinner></spinner>
-            </template>
-        </div>
+                    <plugin-changelog :pluginId="plugin.id"></plugin-changelog>
+                </template>
+                <template v-else>
+                    <spinner></spinner>
+                </template>
+            </div>
+        </template>
+        <template v-else>
+            <spinner></spinner>
+        </template>
     </div>
 </template>
 
@@ -115,39 +118,37 @@
     /* global Craft */
 
     import {mapState, mapGetters, mapActions} from 'vuex'
-    import PluginScreenshots from '../../components/PluginScreenshots'
-    import PluginEditions from '../../components/PluginEditions'
-    import PluginChangelog from '../../components/PluginChangelog'
     import CopyPackage from '../../components/CopyPackage'
+    import PluginChangelog from '../../components/PluginChangelog'
+    import PluginEditions from '../../components/PluginEditions'
+    import PluginScreenshots from '../../components/PluginScreenshots'
 
     export default {
         components: {
-            PluginScreenshots,
-            PluginEditions,
-            PluginChangelog,
             CopyPackage,
+            PluginChangelog,
+            PluginEditions,
+            PluginScreenshots,
         },
 
         data() {
             return {
                 actionsLoading: false,
                 loading: false,
-                pluginSnippet: null,
             }
         },
 
         computed: {
             ...mapState({
                 categories: state => state.pluginStore.categories,
-                plugin: state => state.pluginStore.plugin,
-                plugins: state => state.pluginStore.plugins,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
+                plugin: state => state.pluginStore.plugin,
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
 
             ...mapGetters({
-                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
                 getPluginEdition: 'pluginStore/getPluginEdition',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
             longDescription() {
@@ -198,43 +199,10 @@
             }
         },
 
-        watch: {
-            pluginId(pluginId) {
-                this.loadPlugin(pluginId)
-                return pluginId
-            }
-        },
-
         methods: {
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
-
-            viewDeveloper(plugin) {
-                this.$root.closeModal()
-                this.$router.push({path: '/developer/' + plugin.developerId})
-            },
-
-            viewCategory(category) {
-                this.$root.closeModal()
-                this.$router.push({path: '/categories/' + category.id})
-            },
-
-            loadPlugin(pluginId) {
-                this.pluginSnippet = this.$store.getters['pluginStore/getPluginById'](pluginId)
-
-                if(!this.plugin || (this.plugin && this.plugin.id !== pluginId)) {
-                    this.loading = true
-                    this.$store.commit('pluginStore/updatePluginDetails', null)
-                    this.$store.dispatch('pluginStore/getPluginDetails', pluginId)
-                        .then(() => {
-                            this.loading = false
-                        })
-                        .catch(() => {
-                            this.loading = false
-                        })
-                }
-            },
 
             licenseIssue(errorCode) {
                 switch (errorCode) {
@@ -257,18 +225,34 @@
                     }
                 }
             },
+
+            viewCategory(category) {
+                this.$root.closeModal()
+                this.$router.push({path: '/categories/' + category.id})
+            },
+
+            viewDeveloper(plugin) {
+                this.$root.closeModal()
+                this.$router.push({path: '/developer/' + plugin.developerId})
+            },
         },
 
         mounted() {
             const pluginHandle = this.$route.params.handle
-            const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
 
-            if (plugin) {
-                this.$root.pluginId = plugin.id
-                this.loadPlugin(plugin.id)
-            } else {
-                this.$router.push({path: '/'})
-            }
+            this.loading = true
+
+            this.$store.dispatch('pluginStore/getPluginDetailsByHandle', pluginHandle)
+                .then(() => {
+                    this.loading = false
+                })
+                .catch(() => {
+                    this.loading = false
+                })
+        },
+
+        beforeDestroy() {
+            this.$store.dispatch('pluginStore/cancelRequests')
         },
 
         beforeRouteLeave(to, from, next) {

@@ -152,6 +152,20 @@ trait ApplicationTrait
     public $env;
 
     /**
+     * @var string The base Craftnet API URL to use.
+     * @since 3.3.16
+     * @internal
+     */
+    public $baseApiUrl = 'https://api.craftcms.com/v1/';
+
+    /**
+     * @var string[]|null Query params that should be appended to Craftnet API requests.
+     * @since 3.3.16
+     * @internal
+     */
+    public $apiParams;
+
+    /**
      * @var
      */
     private $_isInstalled;
@@ -1462,6 +1476,7 @@ trait ApplicationTrait
         $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
         $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
+        $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
     }
 
     /**

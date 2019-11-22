@@ -8,7 +8,7 @@
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
                 <btn v-else-if="licensedEdition === edition.handle" kind="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
@@ -32,23 +32,23 @@
                     <input type="hidden" name="packageName" :value="plugin.packageName">
                     <input type="hidden" name="handle" :value="plugin.handle">
                     <input type="hidden" name="edition" :value="edition.handle">
-                    <input type="hidden" name="version" :value="plugin.version">
+                    <input type="hidden" name="version" :value="plugin.latestCompatibleVersion">
                 </template>
 
                 <!-- Install (Free) -->
                 <template v-if="isPluginEditionFree">
-                    <btn kind="primary" type="submit" :loading="loading" block large>{{ "Install"|t('app') }}</btn>
+                    <btn kind="primary" type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion" block large>{{ "Install"|t('app') }}</btn>
                 </template>
 
                 <template v-else>
                     <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
-                        <btn type="submit" :loading="loading" block large>{{ "Install"|t('app') }}</btn>
+                        <btn type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion" block large>{{ "Install"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn type="submit" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
+                        <btn type="submit" :disabled="(!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)) || !plugin.latestCompatibleVersion" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
@@ -70,6 +70,17 @@
                     <btn icon="check" :disabled="true" block large> {{ "Installed"|t('app') }}</btn>
                 </template>
         </template>
+
+        <template v-if="plugin.latestCompatibleVersion && plugin.latestCompatibleVersion != plugin.version">
+            <div class="text-grey mt-4 px-8">
+                <p>{{ "Only up to {version} is compatible with your version of Craft."|t('app', {version: plugin.latestCompatibleVersion}) }}</p>
+            </div>
+        </template>
+        <template v-else-if="!plugin.latestCompatibleVersion">
+            <div class="text-grey mt-4 px-8">
+                <p>{{ "This plugin isn’t compatible with your version of Craft."|t('app') }}</p>
+            </div>
+        </template>
     </div>
 </template>
 
@@ -80,7 +91,6 @@
     import LicenseStatus from './LicenseStatus'
 
     export default {
-
         props: ['plugin', 'edition'],
 
         components: {
@@ -95,7 +105,6 @@
         },
 
         computed: {
-
             ...mapGetters({
                 getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
                 isInCart: 'cart/isInCart',
@@ -158,11 +167,9 @@
             csrfTokenValue() {
                 return Craft.csrfTokenValue
             },
-
         },
 
         methods: {
-
             addEditionToCart(editionHandle) {
                 this.addToCartloading = true
 
@@ -204,9 +211,7 @@
 
                 // Install (don’t prevent form submit)
             },
-
         }
-
     }
 </script>
 

@@ -263,7 +263,7 @@ class Gql extends Component
      * @return array
      * @since 3.3.11
      */
-    public function executeQuery(GqlSchema $schema, string $query, $variables, $operationName): array
+    public function executeQuery(GqlSchema $schema, string $query, $variables = [], $operationName = ''): array
     {
         $event = new ExecuteGqlQueryEvent([
             'accessToken' => $schema->accessToken,
@@ -625,7 +625,7 @@ class Gql extends Component
     }
 
     /**
-     * Get GraphQL type definitions from a list of models that support GraphQL
+     * Register GraphQL types
      * 
      * @return array the list of registered types.
      */

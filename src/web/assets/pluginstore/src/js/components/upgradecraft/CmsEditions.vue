@@ -1,6 +1,13 @@
 <template>
-    <div class="cms-editions">
-        <cms-edition v-for="(edition, key) in editions" :edition="edition" :key="key"></cms-edition>
+    <div>
+        <template v-if="!loading">
+            <div class="cms-editions">
+                <cms-edition v-for="(edition, key) in cmsEditions" :edition="edition" :key="key"></cms-edition>
+            </div>
+        </template>
+        <template v-else>
+            <spinner></spinner>
+        </template>
     </div>
 </template>
 
@@ -13,13 +20,35 @@
             CmsEdition,
         },
 
-        computed: {
-
-            ...mapState({
-                editions: state => state.craft.editions,
-            }),
-
+        data() {
+            return {
+                loading: false,
+            }
         },
+
+        computed: {
+            ...mapState({
+                cmsEditions: state => state.pluginStore.cmsEditions,
+            }),
+        },
+
+        mounted() {
+            if (!this.cmsEditions) {
+                this.loading = true
+
+                this.$store.dispatch('pluginStore/getCmsEditions')
+                    .then(() => {
+                        this.loading = false
+                    })
+                    .catch(() => {
+                        this.loading = false
+                    })
+            }
+        },
+
+        beforeDestroy() {
+            this.$store.dispatch('pluginStore/cancelRequests')
+        }
     }
 </script>
 

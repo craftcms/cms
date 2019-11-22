@@ -11,11 +11,13 @@ use Craft;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
+use craft\helpers\Api;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
+use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
@@ -31,6 +33,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class AppController extends Controller
 {
@@ -60,6 +63,34 @@ class AppController extends Controller
     }
 
     /**
+     * Returns the latest Craftnet API headers.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.3.16
+     */
+    public function actionApiHeaders(): Response
+    {
+        $this->requireCpRequest();
+        return $this->asJson(Api::headers());
+    }
+
+    /**
+     * Processes an API response’s headers.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.3.16
+     */
+    public function actionProcessApiResponseHeaders()
+    {
+        $this->requireCpRequest();
+        $headers = Craft::$app->getRequest()->getRequiredBodyParam('headers');
+        Api::processResponseHeaders($headers);
+        return $this->asJson(1);
+    }
+
+    /**
      * Returns update info.
      *
      * @return Response
@@ -77,11 +108,52 @@ class AppController extends Controller
         }
 
         $request = Craft::$app->getRequest();
+        $updatesService = Craft::$app->getUpdates();
+
+        if ($request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
+            return $this->asJson(['cached' => false]);
+        }
+
         $forceRefresh = (bool)$request->getParam('forceRefresh');
         $includeDetails = (bool)$request->getParam('includeDetails');
 
-        $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        $updates = $updatesService->getUpdates($forceRefresh);
+        return $this->_updatesResponse($updates, $includeDetails);
+    }
 
+    /**
+     * Caches new update info and then returns it.
+     *
+     * @return Response
+     * @throws ForbiddenHttpException
+     * @since 3.3.16
+     */
+    public function actionCacheUpdates(): Response
+    {
+        $this->requireAcceptsJson();
+
+        // Require either the 'performUpdates' or 'utility:updates' permission
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
+        }
+
+        $request = Craft::$app->getRequest();
+        $updateData = $request->getBodyParam('updates');
+        $updatesService = Craft::$app->getUpdates();
+        $updates = $updatesService->cacheUpdates($updateData);
+        $includeDetails = (bool)$request->getParam('includeDetails');
+        return $this->_updatesResponse($updates, $includeDetails);
+    }
+
+    /**
+     * Returns updates info as JSON
+     * @param Updates $updates The updates model
+     * @param bool $includeDetails Whether to include update details
+     * @return Response
+     */
+    private function _updatesResponse(Updates $updates, bool $includeDetails): Response
+    {
         $allowUpdates = (
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&
@@ -346,7 +418,9 @@ class AppController extends Controller
      */
     public function actionGetPluginLicenseInfo(): Response
     {
-        $result = $this->_pluginLicenseInfo();
+        $this->requireAdmin();
+        $pluginLicenses = Craft::$app->getRequest()->getBodyParam('pluginLicenses');
+        $result = $this->_pluginLicenseInfo($pluginLicenses);
         ArrayHelper::multisort($result, 'name');
         return $this->asJson($result);
     }
@@ -371,7 +445,7 @@ class AppController extends Controller
         $pluginsService->setPluginLicenseKey($handle, $newKey ?: null);
 
         // Return the new plugin license info
-        return $this->asJson($this->_pluginLicenseInfo()[$handle]);
+        return $this->asJson(1);
     }
 
     // Private Methods
@@ -421,21 +495,26 @@ class AppController extends Controller
     /**
      * Returns plugin license info.
      *
+     * @param array|null $pluginLicenses
      * @return array
      */
-    private function _pluginLicenseInfo(): array
+    private function _pluginLicenseInfo(array $pluginLicenses = null): array
     {
         $result = [];
 
-        // Update our records and get license info from the API
-        $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+        if ($pluginLicenses === null) {
+            // Update our records and get license info from the API
+            $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+            $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
+        }
+
         $allPluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
         // Update our records & use all licensed plugins as a starting point
-        if (!empty($licenseInfo['pluginLicenses'])) {
+        if (!empty($pluginLicenses)) {
             $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
             $formatter = Craft::$app->getFormatter();
-            foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
+            foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
                     $handle = $pluginInfo['handle'];

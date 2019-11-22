@@ -910,11 +910,14 @@ class ProjectConfig extends Component
         ], $event->config);
 
         $this->muteEvents = true;
+        $readOnly = $this->readOnly;
+        $this->readOnly = false;
 
         foreach ($configData as $path => $value) {
             $this->set($path, $value);
         }
 
+        $this->readOnly = $readOnly;
         $this->muteEvents = false;
     }
 
@@ -1511,6 +1514,7 @@ class ProjectConfig extends Component
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.propagationMethod',
+                'sections.previewTargets',
                 'sections.uid',
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
@@ -1541,6 +1545,7 @@ class ProjectConfig extends Component
             $sectionData[$uid] = $section;
             $sectionData[$uid]['entryTypes'] = [];
             $sectionData[$uid]['siteSettings'] = [];
+            $sectionData[$uid]['previewTargets'] = Json::decodeIfJson($section['previewTargets']);
         }
 
         $sectionSiteRows = (new Query())

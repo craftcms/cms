@@ -18,6 +18,7 @@ use yii\web\Response as YiiResponse;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class InstallController extends BaseUpdaterController
 {

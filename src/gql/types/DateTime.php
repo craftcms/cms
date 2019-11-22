@@ -42,7 +42,7 @@ class DateTime extends ScalarType
      */
     public static function getType(): DateTime
     {
-        return GqlEntityRegistry::getEntity(self::class) ?: GqlEntityRegistry::createEntity(self::class, new self());
+        return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
     }
 
     /**

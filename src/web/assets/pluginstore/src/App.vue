@@ -4,10 +4,10 @@
             <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
         </transition>
 
-        <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
+        <template v-if="$root.pluginStoreDataLoaded">
             <sidebar></sidebar>
 
-            <div class="ps-main">
+            <div class="ps-main" @scroll.passive="onViewScroll">
                 <router-view :key="$route.fullPath"></router-view>
             </div>
         </template>
@@ -39,11 +39,25 @@
         },
 
         computed: {
-
             ...mapState({
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
+        },
 
+        methods: {
+            onViewScroll($event) {
+                this.$root.$emit('viewScroll', $event)
+            }
+        },
+
+        mounted() {
+            window.addEventListener('resize', function($event) {
+                this.$root.$emit('windowResize', $event)
+            }.bind(this))
+
+            window.addEventListener('scroll', function($event) {
+                this.$root.$emit('windowScroll', $event)
+            }.bind(this))
         }
     }
 </script>

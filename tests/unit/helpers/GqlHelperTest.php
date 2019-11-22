@@ -11,8 +11,8 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use GraphQL\Type\Definition\UnionType;
 
 class GqlHelperTest extends Unit
 {
@@ -21,25 +21,15 @@ class GqlHelperTest extends Unit
      */
     protected $tester;
 
-    public function _before()
-    {
-        // Fake out token save that would occur on setting it.
-        $this->tester->mockMethods(
-            Craft::$app,
-            'gql',
-            ['saveSchema' => function () { return true;}]
-        );
-    }
-
     // Tests
     // =========================================================================
 
     /**
-     * Test Token helper methods.
+     * Test Schema helper methods.
      *
-     * @dataProvider tokenPermissionDataProvider
+     * @dataProvider schemaPermissionDataProvider
      *
-     * @param array $permissionSet list of permissions the token should have
+     * @param array $permissionSet list of permissions the active schema should have
      * @param string $permission A single permission to check
      * @param string $scope Permission check against this scope must return true
      * @param string $failingScope Permission check against this scope must return false
@@ -48,11 +38,11 @@ class GqlHelperTest extends Unit
      * @throws GqlException
      * @throws \yii\base\Exception
      */
-    public function testTokenHelper($permissionSet, $permission, $scope, $failingScope, $failAll = false)
+    public function testSchemaHelper($permissionSet, $permission, $scope, $failingScope, $failAll = false)
     {
-        $this->_setTokenWithPermissions($permissionSet);
+        $this->_setSchemaWithPermissions($permissionSet);
 
-        // Token awareness
+        // Schema awareness
         if (!$failAll) {
             $this->assertTrue(GqlHelper::canSchema($permission, $scope));
             $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
@@ -65,22 +55,80 @@ class GqlHelperTest extends Unit
     }
 
     /**
-     * Test permission extraction from token.
+     * Test permission extraction from schema.
      *
-     * @dataProvider tokenPermissionDataProviderForExtraction
+     * @dataProvider schemaPermissionDataProviderForExtraction
      *
-     * @param array $permissionSet list of permissions the token should have
-     *
-     * @throws GqlException
-     * @throws \yii\base\Exception
+     * @param array $permissionSet list of permissions the schems should have
      */
-    public function testTokenPermissionExtraction($permissionSet, $expectedPairs)
+    public function testSchemaPermissionExtraction($permissionSet, $expectedPairs)
     {
-        $this->_setTokenWithPermissions($permissionSet);
+        $this->_setSchemaWithPermissions($permissionSet);
         $this->assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
     }
 
-    public function tokenPermissionDataProvider()
+    /**
+     * Test various helper methods handling errors nicely if no schema set.
+     */
+    public function testVariousErrors()
+    {
+        // Null the schema
+        Craft::$app->getGql()->setActiveSchema(null);
+
+        $this->assertFalse(GqlHelper::isSchemaAwareOf('something'));
+        $this->assertFalse(GqlHelper::canSchema('something'));
+
+        $result = GqlHelper::extractAllowedEntitiesFromSchema();
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test whether `canQuery*` functions work correctly
+     *
+     * @throws \yii\base\Exception
+     */
+    public function testSchemaQueryAbility()
+    {
+        $permissionSet = [
+            'usergroups.allUsers:read',
+            'globalsets.someSet:read',
+            'entrytypes.someEntry:read',
+            'sections.someSection:read'
+        ];
+
+        $this->_setSchemaWithPermissions($permissionSet);
+
+        $this->assertTrue(GqlHelper::canQueryEntries());
+        $this->assertTrue(GqlHelper::canQueryGlobalSets());
+        $this->assertTrue(GqlHelper::canQueryUsers());
+        $this->assertFalse(GqlHelper::canQueryAssets());
+        $this->assertFalse(GqlHelper::canQueryCategories());
+        $this->assertFalse(GqlHelper::canQueryTags());
+    }
+
+    /**
+     * Test if a union type is successfully created
+     */
+    public function testUnionTypes()
+    {
+        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function () {return 'one';});
+        $this->assertInstanceOf(UnionType::class, $unionType);
+    }
+
+    /**
+     * Test if a full access schema is created correctly.
+     */
+    public function testFullAccessSchema()
+    {
+        $schema = GqlHelper::createFullAccessSchema();
+        $this->assertTrue($schema->isTemporary);
+
+        // Not very realistic to test *everything* without duplicating logic in the helper method
+        $this->assertNotEmpty($schema->scope);
+    }
+
+    public function schemaPermissionDataProvider()
     {
         return [
             [
@@ -118,7 +166,7 @@ class GqlHelperTest extends Unit
         ];
     }
 
-    public function tokenPermissionDataProviderForExtraction()
+    public function schemaPermissionDataProviderForExtraction()
     {
         return [
             [
@@ -184,12 +232,12 @@ class GqlHelperTest extends Unit
     }
 
     /**
-     * Set a token with permission set
+     * Set a schema with permission set
      */
-    public function _setTokenWithPermissions($scopeSet)
+    public function _setSchemaWithPermissions($scopeSet)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => $scopeSet]);
+        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => $scopeSet, 'isTemporary' => true]);
         $gqlService->setActiveSchema($schema);
     }
 }
