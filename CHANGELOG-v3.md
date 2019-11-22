@@ -11,7 +11,7 @@
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
 - Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
 - The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
-- Improved the error message when failing to sync global set. ([#5257](https://github.com/craftcms/cms/issues/5257)
+- Improved the error message when failing to sync global set. ([#5257](https://github.com/craftcms/cms/issues/5257))
 - Updated svg-sanitizer to 0.13.
 - Updated Yii to 2.0.29.
 
