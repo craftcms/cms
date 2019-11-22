@@ -1140,7 +1140,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         foreach ($newSortOrder as $blockId) {
-            $blockData = $newBlockData[$blockId] ?? [];
+            if (isset($newBlockData[$blockId])) {
+                $blockData = $newBlockData[$blockId];
+            } else if (
+                isset(Elements::$duplicatedElementSourceIds[$blockId]) &&
+                isset($newBlockData[Elements::$duplicatedElementSourceIds[$blockId]])
+            ) {
+                // $blockId is a duplicated block's ID, but the data was sent with the original block ID
+                $blockData = $newBlockData[Elements::$duplicatedElementSourceIds[$blockId]];
+            } else {
+                $blockData = [];
+            }
 
             // If this is a preexisting block but we don't have a record of it,
             // check to see if it was recently duplicated.

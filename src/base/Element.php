@@ -884,6 +884,12 @@ abstract class Element extends Component implements ElementInterface
     private $_normalizedFieldValues;
 
     /**
+     * @var bool Whether all field values should be considered dirty.
+     * @see isFieldDirty()
+     */
+    private $_allFieldsDirty = false;
+
+    /**
      * @var array Record of dirty fields.
      * @see isFieldDirty()
      */
@@ -927,6 +933,16 @@ abstract class Element extends Component implements ElementInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __clone()
+    {
+        // Mark all fields as dirty
+        $this->_allFieldsDirty = true;
+        parent::__clone();
+    }
 
     /**
      * Returns the string representation of the element.
@@ -1970,7 +1986,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isFieldDirty(string $fieldHandle): bool
     {
-        return isset($this->_dirtyFields[$fieldHandle]);
+        return $this->_allFieldsDirty || isset($this->_dirtyFields[$fieldHandle]);
     }
 
     /**
@@ -1978,6 +1994,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getDirtyFields(): array
     {
+        if ($this->_allFieldsDirty) {
+            return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
+        }
         if ($this->_dirtyFields) {
             return array_keys($this->_dirtyFields);
         }
@@ -1989,6 +2008,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function clearDirtyFields()
     {
+        $this->_allFieldsDirty = false;
         $this->_dirtyFields = null;
     }
 
