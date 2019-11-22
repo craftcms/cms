@@ -32,7 +32,6 @@
     import {mapState} from 'vuex'
 
     export default {
-
         data() {
             return {
                 showCategorySelector: false,
@@ -40,16 +39,13 @@
         },
 
         computed: {
-
             ...mapState({
                 categories: state => state.pluginStore.categories,
-                licensedEdition: state => state.craft.licensedEdition,
                 CraftEdition: state => state.craft.CraftEdition,
                 CraftPro: state => state.craft.CraftPro,
+                licensedEdition: state => state.craft.licensedEdition,
             }),
-
         },
-
     }
 </script>
 
@@ -137,7 +133,7 @@
         }
     }
 
-    @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+    @media only screen and (max-width: 974px) {
         .category-selector-btn {
             @apply .block;
         }

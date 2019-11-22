@@ -152,6 +152,20 @@ trait ApplicationTrait
     public $env;
 
     /**
+     * @var string The base Craftnet API URL to use.
+     * @since 3.3.16
+     * @internal
+     */
+    public $baseApiUrl = 'https://api.craftcms.com/v1/';
+
+    /**
+     * @var string[]|null Query params that should be appended to Craftnet API requests.
+     * @since 3.3.16
+     * @internal
+     */
+    public $apiParams;
+
+    /**
      * @var
      */
     private $_isInstalled;

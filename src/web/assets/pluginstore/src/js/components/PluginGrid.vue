@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ps-grid-plugins" v-if="plugins && plugins.length > 0">
-            <div class="ps-grid-box" v-for="(plugin, key) in plugins" :key="key">
+            <div class="ps-grid-box" v-for="(plugin, key) in plugins" :key="key" v-if="(!autoLimit || (autoLimit && key < limit))">
                 <plugin-card :plugin="plugin" @click="showPlugin(plugin)" :trialMode="trialMode"></plugin-card>
             </div>
         </div>
@@ -16,14 +16,53 @@
             PluginCard,
         },
 
-        props: ['plugins', 'trialMode'],
+        props: ['plugins', 'trialMode', 'autoLimit'],
+
+        data() {
+            return {
+                winWidth: null,
+            }
+        },
+
+        computed: {
+            limit() {
+                let totalPlugins = this.plugins.length
+
+                if (this.winWidth < 1400) {
+                    totalPlugins = 4
+                }
+
+                const remains = totalPlugins % (this.oddNumberOfColumns ? 3 : 2)
+
+                return totalPlugins - remains
+            },
+
+            oddNumberOfColumns() {
+                if (this.winWidth < 1400 || this.winWidth >= 1824) {
+                    return false
+                }
+
+                return true
+            }
+        },
 
         methods: {
-
             showPlugin(plugin) {
                 this.$router.push({path: '/' + plugin.handle})
             },
 
+            onWindowResize() {
+                this.winWidth = window.innerWidth
+            }
         },
+
+        mounted() {
+            this.winWidth = window.innerWidth
+            this.$root.$on('windowResize', this.onWindowResize)
+        },
+
+        beforeDestroy() {
+            this.$root.$off('windowResize', this.onWindowResize)
+        }
     }
 </script>
