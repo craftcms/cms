@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.16.1 - 2019-11-22
 
 ### Fixed
 - Fixed an error that occurred if Stringy 5.2 was installed.
