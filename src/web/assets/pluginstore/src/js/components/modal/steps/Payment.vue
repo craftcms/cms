@@ -86,7 +86,7 @@
                     <p v-if="error" class="error">{{ error }}</p>
 
                     <div class="mb-4">
-                        <btn kind="primary" type="submit" :loading="loading" :disabled="loading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
+                        <btn kind="primary" type="submit" :loading="loading" :disabled="loading || couponCodeLoading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
                     </div>
 
                     <p>
