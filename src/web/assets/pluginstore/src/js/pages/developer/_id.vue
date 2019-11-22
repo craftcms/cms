@@ -15,9 +15,9 @@
                         <div class="flex-1">
                             <h1 class="text-lg font-bold mb-2">{{developer.developerName}}</h1>
 
-                            <p class="mb-1">{{ developer.location }}</p>
+                            <p class="mb-1" v-if="developer.location">{{ developer.location }}</p>
 
-                            <ul>
+                            <ul v-if="developer.developerUrl">
                                 <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
                             </ul>
                         </div>
