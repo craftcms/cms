@@ -910,11 +910,14 @@ class ProjectConfig extends Component
         ], $event->config);
 
         $this->muteEvents = true;
+        $readOnly = $this->readOnly;
+        $this->readOnly = false;
 
         foreach ($configData as $path => $value) {
             $this->set($path, $value);
         }
 
+        $this->readOnly = $readOnly;
         $this->muteEvents = false;
     }
 

@@ -55,7 +55,7 @@
                                 </a>
                             </li>
 
-                            <li><a :href="plugin.repository"><icon icon="link" /> Repository</a></li>
+                            <li><a :href="plugin.repository" rel="noopener" target="_blank"><icon icon="link" /> Repository</a></li>
                         </ul>
 
                     </div>
