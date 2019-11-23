@@ -670,11 +670,31 @@ td.right {
 }
 
 /* Customize Sources */
-.sidebar .customize-sources {
-  color: $darkHairlineColor !important;
+.sidebar {
+  .customize-sources {
+    display: block;
+    margin: 14px -24px 4px;
+    @include padding(7px, 14px, 7px, 24px);
+    color: $lightTextColor !important;
+    transition: color linear 100ms;
 
-  &:hover {
-    color: $linkColor !important;;
+    .icon {
+      @include margin-right(4px);
+    }
+
+    .label {
+      opacity: 0;
+      transition: opacity linear 100ms;
+    }
+
+    &:hover {
+      color: $mediumTextColor !important;
+      text-decoration: none;
+
+      .label {
+        opacity: 1;
+      }
+    }
   }
 }
 

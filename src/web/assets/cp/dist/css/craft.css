@@ -327,8 +327,14 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 .content:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
 /* Customize Sources */
-.sidebar .customize-sources { color: rgba(123, 135, 147, 0.5) !important; }
-.sidebar .customize-sources:hover { color: #127FBF !important; }
+.sidebar .customize-sources { display: block; margin: 14px -24px 4px; color: #9aa5b1 !important; -webkit-transition: color linear 100ms; transition: color linear 100ms; }
+body.ltr .sidebar .customize-sources { padding: 7px 14px 7px 24px; }
+body.rtl .sidebar .customize-sources { padding: 7px 24px 7px 14px; }
+body.ltr .sidebar .customize-sources .icon { margin-right: 4px; }
+body.rtl .sidebar .customize-sources .icon { margin-left: 4px; }
+.sidebar .customize-sources .label { opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
+.sidebar .customize-sources:hover { color: #7b8793 !important; text-decoration: none; }
+.sidebar .customize-sources:hover .label { opacity: 1; }
 
 .sidebar .customize-sources:hover { color: #127FBF; }
 
