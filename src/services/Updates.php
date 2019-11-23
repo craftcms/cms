@@ -31,6 +31,7 @@ use yii\base\InvalidArgumentException;
  * @property bool $wasCraftBreakpointSkipped Whether the build stored in craft_info is less than the minimum required build on the file system
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class Updates extends Component
 {
@@ -109,15 +110,27 @@ class Updates extends Component
 
         try {
             $updateData = Craft::$app->getApi()->getUpdates();
-            $cacheDuration = 86400; // 24 hours
         } catch (\Throwable $e) {
             Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updateData = [];
-            $cacheDuration = 300; // 5 minutes
         }
 
+        return $this->cacheUpdates($updateData);
+    }
+
+    /**
+     * Caches new update info.
+     *
+     * @param array $updateData
+     * @return UpdatesModel
+     * @since 3.3.16
+     */
+    public function cacheUpdates(array $updateData): UpdatesModel
+    {
         // Instantiate the Updates model first so we don't chance caching bad data
         $updates = new UpdatesModel($updateData);
+        // Cache for 5 minutes or 24 hours depending on whether we actually have results
+        $cacheDuration = empty($updateData) ? 300 : 86400;
         Craft::$app->getCache()->set($this->cacheKey, $updateData, $cacheDuration);
         return $this->_updates = $updates;
     }

@@ -27,7 +27,6 @@
     import ChangelogRelease from './ChangelogRelease'
 
     export default {
-
         props: ['pluginId'],
 
         data() {
@@ -42,11 +41,9 @@
         },
 
         computed: {
-
             ...mapState({
                 pluginChangelog: state => state.pluginStore.pluginChangelog,
             }),
-
         },
 
         mounted() {
@@ -61,7 +58,6 @@
         destroyed() {
             this.$store.commit('pluginStore/updatePluginChangelog', null)
         }
-
     }
 </script>
 

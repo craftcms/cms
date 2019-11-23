@@ -39,8 +39,8 @@
 
         computed: {
             ...mapState({
-                screenshotModalImages: state => state.app.screenshotModalImages,
                 screenshotModalImageKey: state => state.app.screenshotModalImageKey,
+                screenshotModalImages: state => state.app.screenshotModalImages,
             }),
 
             swiper() {
@@ -70,8 +70,13 @@
                 this.$store.commit('app/updateShowingScreenshotModal', false)
             },
 
-            handleResize() {
+            handleEscapeKey(e) {
+                if (e.keyCode === 27) {
+                    this.close()
+                }
+            },
 
+            handleResize() {
                 if (this.screenshotModalImages.length === 0) {
                     return
                 }
@@ -104,15 +109,9 @@
                     imageElement.style.maxHeight = maxHeight + 'px'
                 }
             },
-
-            handleEscapeKey(e) {
-                if (e.keyCode === 27) {
-                    this.close()
-                }
-            }
         },
 
-        mounted: function () {
+        mounted() {
             this.swiper.slideTo(this.screenshotModalImageKey, 0)
             window.addEventListener('resize', this.handleResize)
             this.handleResize()

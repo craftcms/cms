@@ -1,6 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.16.1 - 2019-11-22
+
+### Fixed
+- Fixed an error that occurred if Stringy 5.2 was installed.
+
+## 3.3.16 - 2019-11-22
 
 ### Added
 - Added `craft\models\GqlSchema::getAllScopePairs()`.
@@ -8,11 +13,15 @@
 - Added `craft\web\assets\axios\AxiosAsset.php`.
 
 ### Changed
+- Improved Plugin Store performance.
+- Craft now makes most of its API requests from JavaScript rather than PHP, so servers with maxed-out HTTP connections won’t get hung up waiting for the API response before serving additional requests. ([#5194](https://github.com/craftcms/cms/issues/5194), [#5232](https://github.com/craftcms/cms/issues/5232))
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
 - Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
 - The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
+- Improved the error message when failing to sync global set. ([#5257](https://github.com/craftcms/cms/issues/5257))
+- It’s now easier to send JSON requests with `Craft.postActionRequest()`, by passing `contentType: 'json'` in the `options` argument.
 - Updated svg-sanitizer to 0.13.
-- Updated Yii to 2.0.29.
+- Updated Yii to 2.0.30.
 
 ### Deprecated
 - Deprecated `craft\web\assets\graphiql\VendorAsset`.
@@ -29,6 +38,7 @@
 - Fixed an error that occurred whet attempting to preview an entry revision. ([#5244](https://github.com/craftcms/cms/issues/5244))
 - Fixed a PHP error that could occur when the `relatedTo` param was set to an element query that would yield no results. ([#5242](https://github.com/craftcms/cms/issues/5242))
 - Fixed an error that could occur when saving a Matrix field. ([#5258](https://github.com/craftcms/cms/issues/5258))
+- Fixed a bug where Craft would sometimes fail to generate a correct GraphQL schema when Matrix fields were involved. ([#5255](https://github.com/craftcms/cms/issues/5255))
 
 ### Security
 - Craft now requires Portable UTF-8 5.4.28 or later, fixing a security vulnerability.

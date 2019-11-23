@@ -4,7 +4,7 @@ import Index from '../pages/index'
 import CategoriesId from '../pages/categories/_id'
 import UpgradeCraft from '../pages/upgrade-craft'
 import DeveloperId from '../pages/developer/_id'
-import FeaturedId from '../pages/featured/_id'
+import FeaturedHandle from '../pages/featured/_handle'
 import BuyHandle from '../pages/buy/_handle'
 import Tests from '../pages/tests'
 import NotFound from '../pages/_not-found'
@@ -44,9 +44,9 @@ export default new VueRouter({
             component: DeveloperId,
         },
         {
-            path: '/featured/:id',
-            name: 'FeaturedId',
-            component: FeaturedId,
+            path: '/featured/:handle',
+            name: 'FeaturedHandle',
+            component: FeaturedHandle,
         },
         {
             path: '/buy/:handle',

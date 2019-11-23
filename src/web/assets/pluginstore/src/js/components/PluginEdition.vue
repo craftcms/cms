@@ -44,7 +44,6 @@
     import EditionBadge from './EditionBadge'
 
     export default {
-
         props: ['plugin', 'edition'],
 
         components: {
@@ -54,7 +53,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
             }),
@@ -79,11 +77,9 @@
                     return null
                 }
                 
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                return this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
             }
-
         },
-
     }
 </script>
 

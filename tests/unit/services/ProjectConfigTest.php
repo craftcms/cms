@@ -15,9 +15,7 @@ use yii\base\NotSupportedException;
 /**
  * Unit tests for ProjectConfig service.
  *
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.3.16
  */
 class ProjectConfigTest extends Unit
@@ -39,7 +37,7 @@ class ProjectConfigTest extends Unit
     // @TODO: more tests, obviously.
 
     /**
-     * Test if rebuilding project congif ignores the `readOnly` flag.
+     * Test if rebuilding project config ignores the `readOnly` flag.
      */
     public function testRebuildIgnoresReadOnly()
     {

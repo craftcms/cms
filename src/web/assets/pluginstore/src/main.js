@@ -3,6 +3,7 @@
 /* global $ */
 
 import Vue from 'vue'
+import axios from 'axios'
 import {currency} from './js/filters/currency'
 import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft'
 import router from './js/router'
@@ -11,7 +12,6 @@ import {mapState} from 'vuex'
 import Modal from './js/components/modal/Modal'
 import StatusMessage from './js/components/StatusMessage'
 import App from './App'
-import './js/plugins/shave'
 import './js/plugins/craftui'
 import './js/plugins/vue-awesome-swiper'
 
@@ -37,15 +37,17 @@ Garnish.$doc.ready(function() {
 
         data() {
             return {
+                allDataLoaded: false,
+                cartDataLoaded: false,
+                coreDataLoaded: false,
+                craftDataLoaded: false,
+                craftIdDataLoaded: false,
+                modalStep: null,
                 pageTitle: 'Plugin Store',
                 plugin: null,
                 pluginId: null,
-                modalStep: null,
-                pluginStoreDataLoaded: false,
-                pluginStoreDataError: false,
-                craftIdDataLoaded: false,
                 pluginLicenseInfoLoaded: false,
-                cartDataLoaded: false,
+                pluginStoreDataError: false,
                 showModal: false,
                 statusMessage: null,
             }
@@ -56,62 +58,72 @@ Garnish.$doc.ready(function() {
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
             }),
+
+            /**
+             * Returns `true``if the core data and the plugin license info have been loaded.
+             *
+             * @returns {boolean}
+             */
+            pluginStoreDataLoaded() {
+                return this.coreDataLoaded && this.pluginLicenseInfoLoaded
+            },
         },
 
         watch: {
             cart(cart) {
-                let totalQty = 0
-
-                if (cart) {
-                    totalQty = cart.totalQty
-                }
-
-                $('.badge', this.$cartButton).html(totalQty)
+                this.$emit('cartChange', cart)
             },
 
             craftId() {
-                if (this.craftId) {
-                    $('.label', this.$craftId).html(this.craftId.username)
-
-                    this.$craftId.removeClass('hidden')
-                    this.$craftIdConnectForm.addClass('hidden')
-                    this.$craftIdDisconnectForm.removeClass('hidden')
-                } else {
-                    this.$craftId.addClass('hidden')
-                    this.$craftIdConnectForm.removeClass('hidden')
-                    this.$craftIdDisconnectForm.addClass('hidden')
-                }
+                this.$emit('craftIdChange')
             }
         },
 
         methods: {
+            /**
+             * Displays a notice.
+             *
+             * @param message
+             */
             displayNotice(message) {
                 Craft.cp.displayNotice(message)
             },
 
+            /**
+             * Displays an error.
+             *
+             * @param message
+             */
             displayError(message) {
                 Craft.cp.displayError(message)
             },
 
-            showPlugin(plugin) {
-                this.plugin = plugin
-                this.pluginId = plugin.id
-                this.openModal('plugin-details')
-            },
-
+            /**
+             * Opens up the modal.
+             *
+             * @param modalStep
+             */
             openModal(modalStep) {
                 this.modalStep = modalStep
 
                 this.showModal = true
             },
 
+            /**
+             * Closes the modal.
+             */
             closeModal() {
                 this.showModal = false
             },
 
-            updateCraftId(craftIdJson) {
-                const craftId = JSON.parse(craftIdJson);
-                this.$store.dispatch('craft/updateCraftId', {craftId})
+            /**
+             * Updates Craft ID.
+             *
+             * @param craftIdJson
+             */
+            updateCraftId(craftId) {
+                this.$store.commit('craft/updateCraftId', craftId)
+                this.$store.commit('craft')
                 this.$emit('craftIdUpdated')
             },
 
@@ -120,20 +132,21 @@ Garnish.$doc.ready(function() {
              */
             initializeOuterComponents() {
                 // Header Title
-                this.$headerTitle = $('#header h1');
-                this.$headerTitle.on('click', function() {
+                const $headerTitle = $('#header h1')
+
+                $headerTitle.on('click', function() {
                     this.$router.push({path: '/'})
                 }.bind(this))
 
                 // Cart button
-                this.$cartButton = $('#cart-button')
+                const $cartButton = $('#cart-button')
 
-                this.$cartButton.on('click', function(e) {
+                $cartButton.on('click', function(e) {
                     e.preventDefault()
                     this.openModal('cart')
                 }.bind(this))
 
-                this.$cartButton.keydown(function(e) {
+                $cartButton.keydown(function(e) {
                     switch (e.which) {
                         case 13: // Enter
                         case 32: // Space
@@ -144,56 +157,174 @@ Garnish.$doc.ready(function() {
                     }
                 }.bind(this))
 
+                this.$on('cartChange', function (cart) {
+                    let totalQty = 0
+
+                    if (cart) {
+                        totalQty = cart.totalQty
+                    }
+
+                    $('.badge', $cartButton).html(totalQty)
+                })
+
                 // Plugin Store actions
-                this.$pluginStoreActions = $('#pluginstore-actions')
-                this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
+                const $pluginStoreActions = $('#pluginstore-actions')
+                const $pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
 
-                // Craft ID account
-                this.$craftId = $('#craftid-account')
+                // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
+                this.$on('dataLoaded', function() {
+                    if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded && this.craftIdDataLoaded)) {
+                        $pluginStoreActionsSpinner.removeClass('hidden')
+                    }
+                }.bind(this))
 
-                // Connect form
-                this.$craftIdConnectForm = $('#craftid-connect-form')
+                // Hide actions spinner when Plugin Store data and Craft data have finished loading.
+                this.$on('allDataLoaded', function() {
+                    $pluginStoreActions.removeClass('hidden')
+                    $pluginStoreActionsSpinner.addClass('hidden')
+                })
 
-                // Disconnect form
-                this.$craftIdDisconnectForm = $('#craftid-disconnect-form')
+                // Craft ID
+                const $craftId = $('#craftid-account')
+                const $craftIdConnectForm = $('#craftid-connect-form')
+                const $craftIdDisconnectForm = $('#craftid-disconnect-form')
+
+                this.$on('craftIdChange', function() {
+                    if (this.craftId) {
+                        $('.label', $craftId).html(this.craftId.username)
+
+                        $craftId.removeClass('hidden')
+                        $craftIdConnectForm.addClass('hidden')
+                        $craftIdDisconnectForm.removeClass('hidden')
+                    } else {
+                        $craftId.addClass('hidden')
+                        $craftIdConnectForm.removeClass('hidden')
+                        $craftIdDisconnectForm.addClass('hidden')
+                    }
+                })
+
+                // Cancel ajax requests when an outbound link gets clicked
+                $('a[href]').on('click', function() {
+                    this.$store.dispatch('craft/cancelRequests')
+                    this.$store.dispatch('pluginStore/cancelRequests')
+                }.bind(this))
             },
 
-            loadPluginStoreData() {
-                this.$store.dispatch('pluginStore/getPluginStoreData')
+            /**
+             * Loads the cart data.
+             */
+            loadCartData() {
+                this.$store.dispatch('cart/getCart')
                     .then(() => {
-                        this.pluginStoreDataLoaded = true
+                        this.cartDataLoaded = true
                         this.$emit('dataLoaded')
                     })
-                    .catch(() => {
-                        this.pluginStoreDataError = true
-                        this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
-                    })
             },
 
-            loadCraftData() {
+            /**
+             * Loads Craft data.
+             */
+            loadCraftData(afterSuccess) {
                 this.$store.dispatch('craft/getCraftData')
                     .then(() => {
-                        this.craftIdDataLoaded = true
+                        this.craftDataLoaded = true
                         this.$emit('dataLoaded')
 
-                        // Load cart
-                        this.$store.dispatch('cart/getCart')
-                            .then(() => {
-                                this.cartDataLoaded = true
-                                this.$emit('dataLoaded')
-                            })
+                        if (typeof afterSuccess === 'function') {
+                            afterSuccess()
+                        }
                     })
                     .catch(() => {
-                        this.craftIdDataLoaded = true
+                        this.craftDataLoaded = true
                     })
             },
 
-            loadPluginLicenseInfo() {
+            loadCraftIdData() {
+                if (window.craftIdAccessToken) {
+                    const accessToken = window.craftIdAccessToken
+
+                    this.$store.dispatch('craft/getCraftIdData', {accessToken})
+                        .then(() => {
+                            this.craftIdDataLoaded = true
+                            this.$emit('dataLoaded')
+                        })
+                } else {
+                    this.craftIdDataLoaded = true
+                    this.$emit('dataLoaded')
+                }
+            },
+
+            /**
+             * Loads all the data required for the Plugin Store and cart to work.
+             */
+            loadData() {
+                this.loadPluginStoreData()
+
+                this.loadCraftData(function() {
+                    this.loadCraftIdData()
+                    this.loadCartData()
+                }.bind(this))
+            },
+
+            /**
+             * Loads the Plugin Store’s plugin data.
+             */
+            loadPluginStoreData() {
+                // core data
+                this.$store.dispatch('pluginStore/getCoreData')
+                    .then(() => {
+                        this.coreDataLoaded = true
+                        this.$emit('dataLoaded')
+                    })
+                    .catch((error) => {
+                        if (axios.isCancel(error)) {
+                            // Request canceled
+                        } else {
+                            this.pluginStoreDataError = true
+                            this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
+                            throw error
+                        }
+                    })
+
+                // plugin license info
                 this.$store.dispatch('craft/getPluginLicenseInfo')
                     .then(() => {
                         this.pluginLicenseInfoLoaded = true
                         this.$emit('dataLoaded')
                     })
+                    .catch((error) => {
+                        if (axios.isCancel(error)) {
+                            // Request canceled
+                        } else {
+                            throw error
+                        }
+                    })
+            },
+
+            /**
+             * Checks that all the data has been loaded.
+             *
+             * @returns {null}
+             */
+            onDataLoaded() {
+                if (!this.pluginStoreDataLoaded) {
+                    return null
+                }
+
+                if (!this.craftDataLoaded) {
+                    return null
+                }
+
+                if (!this.cartDataLoaded) {
+                    return null
+                }
+
+                if (!this.craftIdDataLoaded) {
+                    return null
+                }
+
+                this.allDataLoaded = true
+                this.$emit('allDataLoaded')
             },
         },
 
@@ -208,23 +339,10 @@ Garnish.$doc.ready(function() {
             this.initializeOuterComponents()
 
             // On data loaded
-            this.$on('dataLoaded', function() {
-                if (this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded || !this.pluginLicenseInfoLoaded)) {
-                    this.$pluginStoreActionsSpinner.removeClass('hidden')
-                }
-
-                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded && this.pluginLicenseInfoLoaded) {
-                    // All data loaded
-                    this.$pluginStoreActions.removeClass('hidden')
-                    this.$pluginStoreActionsSpinner.addClass('hidden')
-                    this.$emit('allDataLoaded')
-                }
-            }.bind(this))
+            this.$on('dataLoaded', this.onDataLoaded)
 
             // Load data
-            this.loadPluginStoreData()
-            this.loadCraftData()
-            this.loadPluginLicenseInfo()
+            this.loadData()
         },
     }).$mount('#app')
 })

@@ -15,6 +15,7 @@ use craft\controllers\BaseUpdaterController;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @internal
  */
 class RemoveController extends BaseUpdaterController
 {
