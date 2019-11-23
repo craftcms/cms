@@ -1469,7 +1469,6 @@ table {
       font-weight: bold;
       @include alignleft;
       vertical-align: top;
-      line-height: 1.2;
       color: $mediumTextColor;
     }
   }
@@ -1534,29 +1533,29 @@ table {
 
         &:not(.desc) {
           body.ltr & {
-            background-position: 100% 5px;
+            background-position: 100% 7px;
           }
           body.rtl & {
-            background-position: 0 5px;
+            background-position: 0 7px;
           }
         }
 
         &.desc {
           body.ltr & {
-            background-position: 100% -26px;
+            background-position: 100% -24px;
           }
           body.rtl & {
-            background-position: 0 -26px;
+            background-position: 0 -24px;
           }
         }
 
         &.loading {
           background-image: url(../images/spinner_tableheader.gif);
           body.ltr & {
-            background-position: 100% 12px;
+            background-position: 100% 14px;
           }
           body.rtl & {
-            background-position: 0 12px;
+            background-position: 0 14px;
           }
         }
       }
