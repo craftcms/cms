@@ -360,7 +360,7 @@ Craft.CP = Garnish.Base.extend(
             var maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
             var totalWidth = 0;
             var showOverflowMenu = false;
-            var tabMargin = Garnish.$bod.width() >= 768 ? -12 : -6;
+            var tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
             var $tab;
 
             // Start with the selected tab, because that needs to be visible

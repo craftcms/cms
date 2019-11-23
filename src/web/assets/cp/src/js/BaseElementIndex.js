@@ -19,7 +19,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sourceSelect: null,
 
         $container: null,
-        $main: null,
         isIndexBusy: false,
 
         $sidebar: null,
@@ -109,7 +108,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Find the DOM elements
             // ---------------------------------------------------------------------
 
-            this.$main = this.$container.find('.main');
             this.$toolbar = this.$container.find('.toolbar:first');
             this.$toolbarFlexContainer = this.$toolbar.children('.flex');
             this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
@@ -598,10 +596,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 delete this.view;
             }
 
-            this.$elements.html('');
-
             if (preservePagination !== true) {
-                this.$countContainer.html('&nbsp;');
                 this.setPage(1);
             }
 
@@ -644,13 +639,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar.css('min-height', this.$toolbar.height());
 
             // Hide any toolbar inputs
-            this._$detachedToolbarItems = this.$toolbarFlexContainer.children().not(this.$selectAllContainer);
+            this._$detachedToolbarItems = this.$toolbarFlexContainer.children();
             this._$detachedToolbarItems.detach();
 
             if (!this._$triggers) {
                 this._createTriggers();
             } else {
-                this._$triggers.insertAfter(this.$selectAllContainer);
+                this._$triggers.appendTo(this.$toolbarFlexContainer);
             }
 
             this.showingActionTriggers = true;
@@ -724,10 +719,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            this._$detachedToolbarItems.insertAfter(this.$selectAllContainer);
+            this._$detachedToolbarItems.appendTo(this.$toolbarFlexContainer);
             this._$triggers.detach();
-
-            this.$toolbarFlexContainer.children().not(this.$selectAllContainer).removeClass('hidden');
+            // this._$detachedToolbarItems.removeClass('hidden');
 
             // Unset the min toolbar height
             this.$toolbar.css('min-height', '');
@@ -744,17 +738,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     if (totalSelected === this.view.getEnabledElements().length) {
                         this.$selectAllCheckbox.removeClass('indeterminate');
                         this.$selectAllCheckbox.addClass('checked');
-                        this.$selectAllBtn.attr('aria-checked', 'true');
+                        this.$selectAllContainer.attr('aria-checked', 'true');
                     } else {
                         this.$selectAllCheckbox.addClass('indeterminate');
                         this.$selectAllCheckbox.removeClass('checked');
-                        this.$selectAllBtn.attr('aria-checked', 'mixed');
+                        this.$selectAllContainer.attr('aria-checked', 'mixed');
                     }
 
                     this.showActionTriggers();
                 } else {
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
-                    this.$selectAllBtn.attr('aria-checked', 'false');
+                    this.$selectAllContainer.attr('aria-checked', 'false');
                     this.hideActionTriggers();
                 }
             }
@@ -1501,11 +1495,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.actions = this.actionsHeadHtml = this.actionsFootHtml = this._$triggers = null;
             }
 
-            if (this.$selectAllContainer) {
-                // Git rid of the old select all button
-                this.$selectAllContainer.detach();
-            }
-
             // Update the count text
             // -------------------------------------------------------------
 
@@ -1552,28 +1541,34 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
 
+            // Update the view with the new container + elements HTML
+            // -------------------------------------------------------------
+
+            this.$elements.html(response.html);
+            Craft.appendHeadHtml(response.headHtml);
+            Craft.appendFootHtml(response.footHtml);
+
             // Batch actions setup
             // -------------------------------------------------------------
 
+            this.$selectAllContainer = this.$elements.find('.selectallcontainer:first');
+
             if (response.actions && response.actions.length) {
-                this.actions = response.actions;
-                this.actionsHeadHtml = response.actionsHeadHtml;
-                this.actionsFootHtml = response.actionsFootHtml;
+                if (this.$selectAllContainer.length) {
+                    this.actions = response.actions;
+                    this.actionsHeadHtml = response.actionsHeadHtml;
+                    this.actionsFootHtml = response.actionsFootHtml;
 
-                // First time?
-                if (!this.$selectAllContainer) {
-                    // Create the select all button
-                    this.$selectAllContainer = $('<div class="selectallcontainer"/>');
-                    this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
-                    this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
+                    // Create the select all checkbox
+                    this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(this.$selectAllContainer);
 
-                    this.$selectAllBtn.attr({
+                    this.$selectAllContainer.attr({
                         'role': 'checkbox',
                         'tabindex': '0',
                         'aria-checked': 'false'
                     });
 
-                    this.addListener(this.$selectAllBtn, 'click', function() {
+                    this.addListener(this.$selectAllContainer, 'click', function() {
                         if (this.view.getSelectedElements().length === 0) {
                             this.view.selectAllElements();
                         } else {
@@ -1581,30 +1576,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
                     });
 
-                    this.addListener(this.$selectAllBtn, 'keydown', function(ev) {
+                    this.addListener(this.$selectAllContainer, 'keydown', function(ev) {
                         if (ev.keyCode === Garnish.SPACE_KEY) {
                             ev.preventDefault();
 
                             $(ev.currentTarget).trigger('click');
                         }
                     });
-                } else {
-                    // Reset the select all button
-                    this.$selectAllCheckbox.removeClass('indeterminate checked');
-
-                    this.$selectAllBtn.attr('aria-checked', 'false');
                 }
-
-                // Place the select all button at the beginning of the toolbar
-                this.$selectAllContainer.prependTo(this.$toolbarFlexContainer);
+            } else {
+                if (!this.$selectAllContainer.siblings().length) {
+                    this.$selectAllContainer.parent('.header').remove();
+                }
+                this.$selectAllContainer.remove();
             }
-
-            // Update the view with the new container + elements HTML
-            // -------------------------------------------------------------
-
-            this.$elements.html(response.html);
-            Craft.appendHeadHtml(response.headHtml);
-            Craft.appendFootHtml(response.footHtml);
 
             // Create the view
             // -------------------------------------------------------------
@@ -1700,7 +1685,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this._$triggers = this._$triggers.add($div);
             }
 
-            this._$triggers.insertAfter(this.$selectAllContainer);
+            this._$triggers.appendTo(this.$toolbarFlexContainer);
             Craft.appendHeadHtml(this.actionsHeadHtml);
             Craft.appendFootHtml(this.actionsFootHtml);
 

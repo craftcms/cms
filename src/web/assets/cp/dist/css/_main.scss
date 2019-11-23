@@ -1429,12 +1429,29 @@ h2 + .actions {
 /*  Tables
 /* ----------------------------------------*/
 
-.scrolltable {
-  margin-left: -1px;
-  margin-right: -1px;
-  width: calc(100% + 2px);
-  padding: 0 1px;
+.tablepane {
+  margin: -24px -24px 0;
   overflow-x: auto;
+
+  table {
+    th,
+    td {
+      &:first-child {
+        @include padding-left(24px);
+      }
+      &:last-child {
+        @include padding-right(24px);
+      }
+    }
+
+    thead {
+      th,
+      td {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+      }
+    }
+  }
 }
 
 table {
@@ -1475,40 +1492,35 @@ table {
 
   // data tables
   &.data {
-    margin-left: -1px;
-    margin-right: -1px;
-
-    &.fullwidth {
-      width: calc(100% + 2px);
-    }
-
     th,
     td {
+      position: relative;
       padding-left: 14px;
       padding-right: 14px;
-      border: solid transparent;
-      border-width: 1px 0;
-      background-clip: padding-box;
+      box-sizing: border-box;
 
-      &:first-child {
-        @include border-left-width(1px);
-        @include border-top-left-radius($mediumBorderRadius);
-        @include border-bottom-left-radius($mediumBorderRadius);
-      }
+      &.checkbox-cell {
+        width: $checkboxSize !important;
+        box-sizing: content-box;
+        position: relative;
 
-      &:last-child {
-        @include border-right-width(1px);
-        @include border-top-right-radius($mediumBorderRadius);
-        @include border-bottom-right-radius($mediumBorderRadius);
+        input.checkbox + label,
+        div.checkbox {
+          position: absolute;
+          top: calc(50% - 7px);
+        }
       }
     }
 
     th {
       font-weight: bold;
 
-      &.orderable:hover,
-      &.ordered {
+      &.orderable:not(.ordered):hover {
         background-color: $grey100;
+      }
+
+      &.ordered {
+        background-color: $lightSelColor;
       }
 
       &.ordered {
@@ -1541,10 +1553,10 @@ table {
         &.loading {
           background-image: url(../images/spinner_tableheader.gif);
           body.ltr & {
-            background-position: 100% 4px;
+            background-position: 100% 12px;
           }
           body.rtl & {
-            background-position: 0 4px;
+            background-position: 0 12px;
           }
         }
       }
@@ -1553,42 +1565,55 @@ table {
     thead {
       th,
       td {
-        padding-top: 12px;
-        padding-bottom: 12px;
+        padding-top: 14px;
+        padding-bottom: 14px;
         width: auto;
         background-color: $grey050;
         cursor: default;
+
+        &:first-child {
+          @include border-top-left-radius($largeBorderRadius);
+          @include border-bottom-left-radius($largeBorderRadius);
+        }
+
+        &:last-child {
+          @include border-top-right-radius($largeBorderRadius);
+          @include border-bottom-right-radius($largeBorderRadius);
+        }
       }
 
       th {
         white-space: nowrap;
       }
-
-      & + tbody {
-        &:before {
-          content: '.';
-          font-size: 0;
-          line-height: 5px;
-          display: block;
-          height: 5px;
-        }
-      }
     }
 
     tbody {
       tr {
-        &:not(.disabled):hover {
-          th,
-          td {
-            background-color: $grey050;
+        outline: none;
+
+        &:not(.disabled) {
+          &:hover {
+            th,
+            td {
+              background-color: $grey050;
+            }
+          }
+
+          &.sel {
+            th,
+            td {
+              background-color: $lightSelColor;
+            }
           }
         }
       }
 
       th,
       td {
+        border-top: 1px solid transparent;
         padding-top: 7px;
         padding-bottom: 7px;
+        background-clip: padding-box;
       }
 
       td {
@@ -1629,11 +1654,6 @@ table {
         padding: 6px 0;
         border-bottom: 1px dotted $hairlineColor;
 
-        &:first-child,
-        &:last-child {
-          border-radius: 0 !important;
-        }
-
         &:after {
           @include clearafter;
         }
@@ -1672,11 +1692,6 @@ table {
 .thumbviewhelper {
   background-color: $white;
   @include shadow;
-}
-
-.datatablesorthelper {
-  margin: 0 -7px;
-  padding: 0 7px;
 }
 
 .datatablesorthelper,
@@ -1896,34 +1911,34 @@ $checkboxPadding: $checkboxSize + 8;
     }
   }
 
-  // table views
-  .tableview {
-    overflow-x: auto;
+  .header {
+    margin: -24px -24px 24px;
+    padding: 14px 24px;
+    background-color: $grey050;
+    box-shadow: none;
 
-    tr {
-      outline: none;
-
-      &.sel {
-        th,
-        td {
-          background-color: $lightSelColor !important;
-        }
-      }
+    &:after {
+      content: '';
     }
 
-    th,
-    td {
-      position: relative;
+    .selectallcontainer {
+      cursor: default;
 
-      &.checkbox-cell {
-        width: $checkboxSize !important;
-        position: relative;
+      &:focus {
+        outline: none;
+      }
 
-        input.checkbox + label,
-        div.checkbox {
-          position: absolute;
-          top: calc(50% - 7px);
-        }
+      .checkbox {
+        @include margin-right(5px);
+      }
+    }
+  }
+
+  // table views
+  .tableview {
+    thead {
+      th.selectallcontainer {
+        outline: none;
       }
     }
 
@@ -1939,7 +1954,7 @@ $checkboxPadding: $checkboxSize + 8;
     .toggle {
       display: block;
       position: absolute;
-      top: 13px;
+      top: calc(50% - 8px);
       @include margin-left(-20px);
     }
 
@@ -3737,6 +3752,8 @@ div.checkbox {
   clear: none;
   position: relative;
   @include padding-left($checkboxSize + 5);
+  line-height: 16px;
+  height: 16px;
   cursor: pointer;
 }
 

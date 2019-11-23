@@ -9,6 +9,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
         structureId: null,
         maxLevels: null,
 
+        _basePadding: null,
         _helperMargin: null,
 
         _$firstRowCells: null,
@@ -41,6 +42,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             this.structureId = this.tableView.$table.data('structure-id');
             this.maxLevels = parseInt(this.tableView.$table.attr('data-max-levels'));
 
+            this._basePadding = 14 + (this.tableView.elementIndex.actions ? 14 : 24); // see _elements/tableview/elements.html
+            this._helperMargin = this.tableView.elementIndex.actions ? 54 : 0;
+
             settings = $.extend({}, Craft.StructureTableSorter.defaults, settings, {
                 handle: '.move',
                 collapseDraggees: true,
@@ -53,14 +57,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             });
 
             this.base($elements, settings);
-        },
-
-        /**
-         * Start Dragging
-         */
-        startDragging: function() {
-            this._helperMargin = Craft.StructureTableSorter.HELPER_MARGIN + (this.tableView.elementIndex.actions ? 24 : 0);
-            this.base();
         },
 
         /**
@@ -148,20 +144,20 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 }
 
                 // Hard-set the cell widths
-                var $firstRowCell = $(this._$firstRowCells[i]),
-                    width = $firstRowCell.width();
+                var $firstRowCell = $(this._$firstRowCells[i]);
+                var width = $firstRowCell[0].getBoundingClientRect().width;
 
-                $firstRowCell.width(width);
-                $helperCell.width(width);
+                $firstRowCell.css('width', width+'px');
+                $helperCell.css('width', width+'px');
 
                 // Is this the title cell?
                 if (Garnish.hasAttr($firstRowCell, 'data-titlecell')) {
                     this._$titleHelperCell = $helperCell;
 
                     var padding = parseInt($firstRowCell.css('padding-' + Craft.left));
-                    this._titleHelperCellOuterWidth = width + padding - (this.tableView.elementIndex.actions ? 12 : 0);
+                    this._titleHelperCellOuterWidth = width;
 
-                    $helperCell.css('padding-' + Craft.left, Craft.StructureTableSorter.BASE_PADDING);
+                    $helperCell.css('padding-' + Craft.left, this._basePadding);
                 }
             }
 
@@ -243,7 +239,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                     var $draggee = $(this.$draggee[i]),
                         oldLevel = $draggee.data('level'),
                         newLevel = oldLevel + levelDiff,
-                        padding = Craft.StructureTableSorter.BASE_PADDING + (this.tableView.elementIndex.actions ? 7 : 0) + this._getLevelIndent(newLevel);
+                        padding = this._basePadding + this._getLevelIndent(newLevel);
 
                     $draggee.data('level', newLevel);
                     $draggee.find('.element').data('level', newLevel);
@@ -475,7 +471,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             // Apply the new margin/width
             this._updateIndent._closestLevelMagnetIndent = this._getLevelIndent(this._targetLevel) + this._updateIndent._magnetImpact;
             this.helpers[0].css('margin-' + Craft.left, this._updateIndent._closestLevelMagnetIndent + this._helperMargin);
-            this._$titleHelperCell.width(this._titleHelperCellOuterWidth - (this._updateIndent._closestLevelMagnetIndent + Craft.StructureTableSorter.BASE_PADDING));
+            this._$titleHelperCell.css('width', this._titleHelperCellOuterWidth - this._updateIndent._closestLevelMagnetIndent);
         },
 
         /**
@@ -590,8 +586,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 // =============================================================================
 
     {
-        BASE_PADDING: 36,
-        HELPER_MARGIN: -7,
+        HELPER_MARGIN: 0,
         LEVEL_INDENT: 44,
         MAX_GIVE: 22,
 

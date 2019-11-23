@@ -1051,13 +1051,25 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   #main-content,
   #tabs ul li a,
   #content,
-  #details .meta {
-    padding-left: 12px;
-    padding-right: 12px;
+  #details .meta,
+  .elements .header {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   #tabs ul li + li {
-    @include margin-left(-6px);
+    @include margin-left(-7px);
+  }
+
+  #footer {
+    margin-left: -14px;
+    margin-right: -14px;
+  }
+
+  .tablepane,
+  .elements .header {
+    margin-left: -14px;
+    margin-right: -14px;
   }
 }
 
