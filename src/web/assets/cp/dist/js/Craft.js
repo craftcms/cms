@@ -12039,7 +12039,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
-Garnish.$scrollContainer = Garnish.$bod;
+Garnish.$scrollContainer = Garnish.$win;
 Craft.cp = new Craft.CP();
 
 
