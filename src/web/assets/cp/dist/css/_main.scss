@@ -2935,6 +2935,8 @@ ul.tree,
 }
 
 .modal-shade {
+  backdrop-filter: blur(3px);
+
   &:not(.dark) {
     background-color: transparentize($white, 0.25) !important;
   }
