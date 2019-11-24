@@ -638,7 +638,9 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   .flex {
     &:not(:last-child) {
-      @include margin-right(7px);
+      @media only screen and (min-width: $minHorizontalUiWidth) {
+        @include margin-right(7px);
+      }
     }
   }
 

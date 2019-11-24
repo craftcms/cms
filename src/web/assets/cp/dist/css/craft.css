@@ -1867,8 +1867,8 @@ body.rtl #user-info { padding: 0 14px 0 7px; }
 body.fixed-header #header { position: fixed; z-index: 12; top: 0; background-color: #e4edf6; -webkit-box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); }
 @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { #header { -webkit-transition: background-color linear 100ms, -webkit-box-shadow linear 100ms, -webkit-backdrop-filter linear 100ms; transition: background-color linear 100ms, -webkit-box-shadow linear 100ms, -webkit-backdrop-filter linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms, -webkit-box-shadow linear 100ms, -webkit-backdrop-filter linear 100ms; }
   body.fixed-header #header { background-color: rgba(228, 237, 246, 0.4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); } }
-body.ltr #header .flex:not(:last-child) { margin-right: 7px; }
-body.rtl #header .flex:not(:last-child) { margin-left: 7px; }
+@media only screen and (min-width: 975px) { body.ltr #header .flex:not(:last-child) { margin-right: 7px; }
+  body.rtl #header .flex:not(:last-child) { margin-left: 7px; } }
 #header h1 { line-height: 32px; margin-top: 0; margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.ltr #header h1:not(:last-child) { margin-right: 14px !important; }
 body.rtl #header h1:not(:last-child) { margin-left: 14px !important; }
