@@ -47,7 +47,9 @@
 
 
 {% block content %}
-    <div class="elements"></div>
+    <div class="main">
+        <div class="elements"></div>
+    </div>
 {% endblock %}
 
 
@@ -58,12 +60,13 @@
 
 
 {% block initJs %}
-    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main-container'), {
+    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
         elementTypeName: '{{ elementInstance.displayName()|e("js") }}',
         elementTypePluralName: '{{ elementInstance.pluralDisplayName()|e("js") }}',
         context: '{{ context }}',
         storageKey: 'elementindex.{{ elementType|e("js") }}',
-        criteria: Craft.defaultIndexCriteria
+        criteria: Craft.defaultIndexCriteria,
+        toolbarSelector: '#toolbar'
     });
 {% endblock %}
 

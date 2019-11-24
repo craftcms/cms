@@ -19,6 +19,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sourceSelect: null,
 
         $container: null,
+        $main: null,
         isIndexBusy: false,
 
         $sidebar: null,
@@ -33,7 +34,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         customizeSourcesModal: null,
 
         $toolbar: null,
-        $toolbarFlexContainer: null,
         toolbarOffset: null,
 
         $search: null,
@@ -108,14 +108,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Find the DOM elements
             // ---------------------------------------------------------------------
 
-            this.$toolbar = this.$container.find('.toolbar:first');
-            this.$toolbarFlexContainer = this.$toolbar.children('.flex');
-            this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
+            this.$main = this.$container.find('.main');
+            this.$toolbar = this.$container.find(this.settings.toolbarSelector);
+            this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
             this.$statusMenuContainer = this.$statusMenuBtn.parent();
             this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
-            this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
-            this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
-            this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
+            this.$sortMenuBtn = this.$toolbar.find('.sortmenubtn:first');
+            this.$search = this.$toolbar.find('.search:first input:first');
+            this.$clearSearchBtn = this.$toolbar.find('.search:first > .clear');
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
@@ -639,13 +639,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar.css('min-height', this.$toolbar.height());
 
             // Hide any toolbar inputs
-            this._$detachedToolbarItems = this.$toolbarFlexContainer.children();
+            this._$detachedToolbarItems = this.$toolbar.children();
             this._$detachedToolbarItems.detach();
 
             if (!this._$triggers) {
                 this._createTriggers();
             } else {
-                this._$triggers.appendTo(this.$toolbarFlexContainer);
+                this._$triggers.appendTo(this.$toolbar);
             }
 
             this.showingActionTriggers = true;
@@ -719,7 +719,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            this._$detachedToolbarItems.appendTo(this.$toolbarFlexContainer);
+            this._$detachedToolbarItems.appendTo(this.$toolbar);
             this._$triggers.detach();
             // this._$detachedToolbarItems.removeClass('hidden');
 
@@ -892,7 +892,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Create the buttons if there's more than one mode available to this source
             if (this.sourceViewModes.length > 1) {
-                this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$toolbarFlexContainer);
+                this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$toolbar);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
                     var sourceViewMode = this.sourceViewModes[i];
@@ -1135,10 +1135,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.settings.buttonContainer) {
                 return $(this.settings.buttonContainer);
             } else {
-                var $container = $('#button-container');
+                var $container = $('#action-button');
 
                 if (!$container.length) {
-                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
+                    $container = $('<div id="action-button"/>').appendTo($('#header'));
                 }
 
                 return $container;
@@ -1685,7 +1685,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this._$triggers = this._$triggers.add($div);
             }
 
-            this._$triggers.appendTo(this.$toolbarFlexContainer);
+            this._$triggers.appendTo(this.$toolbar);
             Craft.appendHeadHtml(this.actionsHeadHtml);
             Craft.appendFootHtml(this.actionsFootHtml);
 
@@ -1796,6 +1796,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             multiSelect: false,
             buttonContainer: null,
             hideSidebar: false,
+            toolbarSelector: '.toolbar:first',
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',

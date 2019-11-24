@@ -586,8 +586,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #global-header,
-#header,
-#toolbar {
+#header {
   .flex {
     flex-wrap: nowrap;
     max-width: 100%;
@@ -637,6 +636,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
   }
 
+  .flex {
+    &:not(:last-child) {
+      @include margin-right(7px);
+    }
+  }
+
   h1 {
     line-height: 32px;
     margin-top: 0;
@@ -655,6 +660,18 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   .btngroup {
     margin-top: 0;
   }
+}
+
+#page-title {
+  &.has-toolbar {
+    @media only screen and (min-width: $minHorizontalUiWidth) {
+      min-width: #{$sidebarWidth + 24 - 7} !important;
+    }
+  }
+}
+
+#toolbar {
+  flex: 1;
 }
 
 #main-content {
@@ -969,13 +986,19 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 // Rearrange #main-content to flow vertically at < 999
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-  #toolbar,
   #header {
-    flex-wrap: wrap;
+    display: block;
 
-    #button-container,
-    .flex {
+    .flex:not(#toolbar) {
       margin-top: 10px;
+    }
+  }
+
+  #toolbar {
+    flex-wrap: wrap !important;
+
+    & > * {
+      margin-top: 10px !important;
     }
   }
 
