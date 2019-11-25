@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an issue where the edition was not taken into account when clicking the “Buy Now” button in Settings → Plugins.
+
 ## 3.3.16.1 - 2019-11-22
 
 ### Fixed
