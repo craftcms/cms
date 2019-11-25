@@ -22,7 +22,7 @@
         },
 
         methods: {
-            buyPlugin(pluginHandle) {
+            buyPlugin(pluginHandle, editionHandle) {
                 pluginStoreApi.getPluginDetailsByHandle(pluginHandle)
                     .then(responseData => {
                         const plugin = responseData
@@ -37,10 +37,14 @@
                             this.$router.push({path: '/'})
                             this.$root.openModal('cart')
                         } else {
+                            if (!editionHandle) {
+                                editionHandle = plugin.editions[0].handle
+                            }
+
                             const item = {
                                 type: 'plugin-edition',
                                 plugin: plugin.handle,
-                                edition: plugin.editions[0].handle,
+                                edition: editionHandle,
                             }
 
                             this.$store.dispatch('cart/addToCart', [item])
@@ -92,17 +96,16 @@
             this.loading = true
             this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app')
 
-            // retrieve plugin
-            const pluginHandle = this.$route.params.handle
+            const plugin = this.$route.params.plugin
+            const edition = this.$route.params.edition
+
 
             if (this.$root.allDataLoaded) {
-                // buy plugin
-                this.buyPlugin(pluginHandle)
+                this.buyPlugin(plugin, edition)
             } else {
                 // wait for the cart to be ready
                 this.$root.$on('allDataLoaded', function() {
-                    // buy plugin
-                    this.buyPlugin(pluginHandle)
+                    this.buyPlugin(plugin, edition)
                 }.bind(this))
             }
         }
