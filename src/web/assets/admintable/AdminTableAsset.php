@@ -12,7 +12,7 @@ use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
 
 /**
- * Asset bundle for the Plugin Store page
+ * Asset bundle for admin tables
  */
 class AdminTableAsset extends AssetBundle
 {
