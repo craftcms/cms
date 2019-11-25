@@ -58,6 +58,7 @@
 - Added `craft\web\View::registerDeltaName()`.
 - Added `craft\web\View::setIsDeltaRegistrationActive()`.
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
+- Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
 - Added the Minify PHP package.
 
 ### Changed
