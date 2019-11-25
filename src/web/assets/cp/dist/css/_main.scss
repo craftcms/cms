@@ -1533,52 +1533,6 @@ table {
 
     th {
       font-weight: bold;
-
-      &.orderable:not(.ordered):hover {
-        background-color: $grey100;
-      }
-
-      &.ordered {
-        background-color: $lightSelColor;
-      }
-
-      &.ordered {
-        @include padding-right(26px);
-        background-image: url(../images/listview_sort.png);
-        background-repeat: no-repeat;
-
-        &:first-child {
-          @include padding-left(10px);
-        }
-
-        &:not(.desc) {
-          body.ltr & {
-            background-position: 100% 7px;
-          }
-          body.rtl & {
-            background-position: 0 7px;
-          }
-        }
-
-        &.desc {
-          body.ltr & {
-            background-position: 100% -24px;
-          }
-          body.rtl & {
-            background-position: 0 -24px;
-          }
-        }
-
-        &.loading {
-          background-image: url(../images/spinner_tableheader.gif);
-          body.ltr & {
-            background-position: 100% 14px;
-          }
-          body.rtl & {
-            background-position: 0 14px;
-          }
-        }
-      }
     }
 
     thead {
@@ -1603,6 +1557,52 @@ table {
 
       th {
         white-space: nowrap;
+
+        &.orderable:not(.ordered):hover {
+          background-color: $grey100;
+        }
+
+        &.ordered {
+          background-color: $lightSelColor;
+        }
+
+        &.ordered {
+          @include padding-right(26px);
+          background-image: url(../images/listview_sort.png);
+          background-repeat: no-repeat;
+
+          &:first-child {
+            @include padding-left(10px);
+          }
+
+          &:not(.desc) {
+            body.ltr & {
+              background-position: 100% 9px;
+            }
+            body.rtl & {
+              background-position: 0 9px;
+            }
+          }
+
+          &.desc {
+            body.ltr & {
+              background-position: 100% -22px;
+            }
+            body.rtl & {
+              background-position: 0 -22px;
+            }
+          }
+
+          &.loading {
+            background-image: url(../images/spinner_tableheader.gif);
+            body.ltr & {
+              background-position: 100% 16px;
+            }
+            body.rtl & {
+              background-position: 0 16px;
+            }
+          }
+        }
       }
     }
 
@@ -1923,10 +1923,11 @@ $checkboxPadding: $checkboxSize + 8;
       font-size: 0;
       position: absolute;
       top: 0;
-      left: 0;
-      width: 100%;
+      left: -24px;
+      width: calc(100% + #{24 + 24}px);
       height: 100%;
       background: transparentize($white, 0.25) url(../images/spinner.gif) no-repeat 50% 50%;;
+      border-radius: $largeBorderRadius;
     }
   }
 
@@ -4781,13 +4782,20 @@ only screen and (min-resolution: 1.5dppx) {
     }
   }
 
-  table thead th.ordered {
-    background-image: url(../images/listview_sort_2x.png);
-    background-size: 26px;
-  }
-  table thead th.ordered.loading {
-    background-image: url(../images/spinner_tableheader_2x.gif);
-    background-size: 26px;
+  table.data {
+    thead {
+      th {
+        &.ordered {
+          background-image: url(../images/listview_sort_2x.png);
+          background-size: 26px;
+
+          &.loading {
+            background-image: url(../images/spinner_tableheader_2x.gif);
+            background-size: 26px;
+          }
+        }
+      }
+    }
   }
 
   .spinner
