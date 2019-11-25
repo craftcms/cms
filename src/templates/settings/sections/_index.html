@@ -141,7 +141,7 @@
             title: Craft.t('app', 'Entry Types'),
             callback: function(value) {
                 if(value.isSingle) {
-                    return '<a href="' + value.entryType.editCpUrl + '">{{ "Edit entry type"|t('app') }}</a>'
+                    return '<a href="' + value.entryType.cpEditUrl + '">{{ "Edit entry type"|t('app') }}</a>'
                 } else {
                     var ret = '<a href="' + value.editEntryTypesUrl + '">' + Craft.t('app', 'Edit entry types ({count})', {count: value.entryTypesCount}) + '</a>\r\n';
                     ret += '<a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>';
