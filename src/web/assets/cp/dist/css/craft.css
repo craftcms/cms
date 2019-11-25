@@ -670,28 +670,28 @@ body.ltr .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(-90
 body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90deg) !important; transform: rotate(90deg) !important; }
 
 /* elements */
-.element { position: relative; cursor: default; outline: none !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; border-radius: 3px; }
+.element { position: relative; cursor: default; outline: none !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 .element:focus, li:focus .element { background-color: #f3f7fc; }
 .element.sel, li.sel .element { background-color: #cdd8e4 !important; cursor: default; }
 .element.sel.loading:after, li.sel .element.loading:after { background-image: url(../images/spinner_element.gif); }
 .element.hasthumb .elementthumb img { display: block; width: 100%; height: 100%; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
 .element .label { display: inline-block; }
-.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 6px 7px; }
+.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; }
 .element.small.hasstatus .status, .element.large:not(.hasthumb).hasstatus .status { position: absolute; top: calc(50% - 4px); }
 body.ltr .element.small.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasstatus .status { left: 7px; }
 body.rtl .element.small.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasstatus .status { right: 7px; }
 body.ltr .element.small.hasstatus:not(.hasthumb), body.ltr .element.large:not(.hasthumb).hasstatus:not(.hasthumb) { padding-left: 22px; }
 body.rtl .element.small.hasstatus:not(.hasthumb), body.rtl .element.large:not(.hasthumb).hasstatus:not(.hasthumb) { padding-right: 22px; }
-.element.small.hasthumb .elementthumb, .element.large:not(.hasthumb).hasthumb .elementthumb { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; position: absolute; top: calc(50% - 16px); width: 32px; height: 32px; border-radius: 3px; overflow: hidden; }
-body.ltr .element.small.hasthumb:not(.hasstatus), body.ltr .element.large:not(.hasthumb).hasthumb:not(.hasstatus) { padding-left: 44px; }
-body.rtl .element.small.hasthumb:not(.hasstatus), body.rtl .element.large:not(.hasthumb).hasthumb:not(.hasstatus) { padding-right: 44px; }
-body.ltr .element.small.hasthumb:not(.hasstatus) .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb:not(.hasstatus) .elementthumb { left: 7px; }
-body.rtl .element.small.hasthumb:not(.hasstatus) .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb:not(.hasstatus) .elementthumb { right: 7px; }
-body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 59px; }
-body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus { padding-right: 59px; }
-body.ltr .element.small.hasthumb.hasstatus .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .elementthumb { left: 22px; }
-body.rtl .element.small.hasthumb.hasstatus .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus .elementthumb { right: 22px; }
-.element.large.hasthumb { display: block; padding: 132px 7px 7px; width: 134px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+.element.small.hasthumb .elementthumb, .element.large:not(.hasthumb).hasthumb .elementthumb { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; position: absolute; top: calc(50% - 16px); width: 32px; height: 32px; border-radius: 16px; overflow: hidden; }
+body.ltr .element.small.hasthumb:not(.hasstatus), body.ltr .element.large:not(.hasthumb).hasthumb:not(.hasstatus) { padding-left: 38px; }
+body.rtl .element.small.hasthumb:not(.hasstatus), body.rtl .element.large:not(.hasthumb).hasthumb:not(.hasstatus) { padding-right: 38px; }
+body.ltr .element.small.hasthumb:not(.hasstatus) .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb:not(.hasstatus) .elementthumb { left: 1px; }
+body.rtl .element.small.hasthumb:not(.hasstatus) .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb:not(.hasstatus) .elementthumb { right: 1px; }
+body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 53px; }
+body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus { padding-right: 53px; }
+body.ltr .element.small.hasthumb.hasstatus .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .elementthumb { left: 21px; }
+body.rtl .element.small.hasthumb.hasstatus .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus .elementthumb { right: 21px; }
+.element.large.hasthumb { display: block; padding: 132px 7px 7px; width: 134px; -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 3px; }
 body.ltr .element.large.hasthumb.hasstatus { padding-left: 22pxpx; }
 body.rtl .element.large.hasthumb.hasstatus { padding-right: 22pxpx; }
 .element.large.hasthumb.hasstatus .status { position: absolute; top: 130px; }
@@ -704,7 +704,7 @@ body.rtl .element.large.hasthumb .elementthumb { right: 7px; }
 body.ltr .element.removable .label { padding-right: 20px; }
 body.rtl .element.removable .label { padding-left: 20px; }
 .element.removable .delete:before { color: rgba(123, 135, 147, 0.5); }
-.element.removable.small .delete, .element.removable.large:not(.hasthumb) .delete { position: absolute; }
+.element.removable.small .delete, .element.removable.large:not(.hasthumb) .delete { position: absolute; top: calc(50% - 11px); }
 body.ltr .element.removable.small .delete, body.ltr .element.removable.large:not(.hasthumb) .delete { right: 7px; }
 body.rtl .element.removable.small .delete, body.rtl .element.removable.large:not(.hasthumb) .delete { left: 7px; }
 .element.removable.large.hasthumb .delete { position: absolute; }

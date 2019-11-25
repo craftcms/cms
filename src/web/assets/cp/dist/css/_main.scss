@@ -1750,7 +1750,6 @@ $largeThumbSize: 120px;
   cursor: default;
   outline: none !important;
   user-select: none;
-  border-radius: $smallBorderRadius;
 
   &:focus,
   li:focus & {
@@ -1782,7 +1781,9 @@ $largeThumbSize: 120px;
   &.small,
   &.large:not(.hasthumb) {
     display: inline-block;
-    padding: 6px $baseElementSidePadding;
+    padding: $baseElementSidePadding;
+    border-radius: 17px;
+
     &.hasstatus {
       .status {
         position: absolute;
@@ -1790,9 +1791,11 @@ $largeThumbSize: 120px;
         top: calc(50% - 4px);
       }
     }
+
     &.hasstatus:not(.hasthumb) {
       @include padding-left($baseElementSidePadding + $elementStatusPadding);
     }
+
     &.hasthumb {
       .elementthumb {
         display: flex;
@@ -1802,19 +1805,23 @@ $largeThumbSize: 120px;
         top: calc(50% - 16px);
         width: $smallThumbSize;
         height: $smallThumbSize;
-        border-radius: $smallBorderRadius;
+        border-radius: 16px;
         overflow: hidden;
       }
+
       &:not(.hasstatus) {
-        @include padding-left($baseElementSidePadding + $smallThumbSize + $elementInnerSpacing);
+        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing);
+
         .elementthumb {
-          @include left($baseElementSidePadding);
+          @include left(1px);
         }
       }
+
       &.hasstatus {
-        @include padding-left($baseElementSidePadding + $elementStatusPadding + $smallThumbSize + $elementInnerSpacing);
+        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing + $elementStatusPadding);
+
         .elementthumb {
-          @include left($baseElementSidePadding + $elementStatusPadding);
+          @include left(1px + $elementStatusPadding + $elementInnerSpacing);
         }
       }
     }
@@ -1825,6 +1832,7 @@ $largeThumbSize: 120px;
     padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing} $baseElementSidePadding $baseElementSidePadding;
     width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
     box-sizing: border-box;
+    border-radius: $smallBorderRadius;
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $elementStatusPadding + px);
@@ -1872,6 +1880,7 @@ $largeThumbSize: 120px;
     &.large:not(.hasthumb) {
       .delete {
         position: absolute;
+        top: calc(50% - 11px);
         @include right($baseElementSidePadding);
       }
     }
