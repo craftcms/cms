@@ -575,18 +575,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.16
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Set $from in case getTablesUsedInFrom() is called
-        $this->from = ['elements' => Table::ELEMENTS];
-    }
-
-    /**
      * Required by the IteratorAggregate interface.
      *
      * @return ArrayIterator
@@ -1524,6 +1512,30 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.16.2
+     */
+    public function column($db = null)
+    {
+        // Avoid indexing by an ambiguous column
+        if (
+            $this->from === null &&
+            is_string($this->indexBy)  &&
+            in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
+        ) {
+            $indexBy = $this->indexBy;
+            $this->from = ['elements' => Table::ELEMENTS];
+            $this->indexBy = "elements.{$this->indexBy}";
+            $result = parent::column($db);
+            $this->from = null;
+            $this->indexBy = $indexBy;
+            return $result;
+        }
+
+        return parent::column($db);
     }
 
     /**
