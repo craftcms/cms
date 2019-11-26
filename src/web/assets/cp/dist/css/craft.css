@@ -1881,7 +1881,7 @@ body.rtl #header h1:not(:last-child) { margin-left: 14px !important; }
 
 #toolbar { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 
-#main-content { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; width: calc(100vw - 225px); padding: 0 24px 24px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+#main-content { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; width: calc(100vw - 225px); padding: 0 24px 48px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 #main-content > .grid:only-child { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 
 #sidebar-toggle-container { display: none; }
@@ -1915,12 +1915,12 @@ body.rtl #tabs ul li + li { margin-right: -12px; }
 #tabs #overflow-tab-btn:before { margin: 0; }
 #tabs #overflow-tab-btn:after { display: none; }
 
-#content { background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); border-radius: 5px; position: relative; background-clip: padding-box; padding: 24px; word-wrap: break-word; }
+#content { background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); border-radius: 5px; position: relative; background-clip: padding-box; padding: 24px 24px 48px; word-wrap: break-word; }
 body.ltr #content.square { border-top-left-radius: 0; }
 body.rtl #content.square { border-top-right-radius: 0; }
 #content > hr { margin-left: -24px; margin-right: -24px; }
 
-#footer { z-index: 1; margin: 24px -24px -24px; padding: 10px 24px; background-color: #f3f7fc; border-radius: 0 0 5px 5px; }
+#footer { z-index: 1; margin: 48px -24px -48px; padding: 10px 24px; background-color: #f3f7fc; border-radius: 0 0 5px 5px; }
 #footer > *, #footer .flex > * { margin-bottom: 0; }
 
 #details-container { -webkit-box-flex: 0; -ms-flex: 0 0 388px; flex: 0 0 388px; width: 388px; -webkit-box-sizing: border-box; box-sizing: border-box; }

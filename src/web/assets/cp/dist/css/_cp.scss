@@ -681,7 +681,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 24px 24px;
+  padding: 0 24px 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -828,7 +828,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   border-radius: $largeBorderRadius;
   position: relative;
   background-clip: padding-box;
-  padding: 24px;
+  padding: 24px 24px 48px;
   word-wrap: break-word;
 
   &.square {
@@ -848,7 +848,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #footer {
   z-index: 1;
-  margin: 24px -24px -24px;
+  margin: 48px -24px -48px;
   padding: 10px 24px;
   background-color: $grey050;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
