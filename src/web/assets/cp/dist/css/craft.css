@@ -607,9 +607,9 @@ table thead th { font-weight: bold; vertical-align: top; color: #7b8793; }
 body.ltr table thead th { text-align: left; }
 body.rtl table thead th { text-align: right; }
 table:not(.data) th, table:not(.data) td { padding-top: 7px; padding-bottom: 7px; }
-table:not(.data) th:not(:first-child), table:not(.data) td:not(:first-child) { padding-left: 14px; }
-table:not(.data) th:not(:last-child), table:not(.data) td:not(:last-child) { padding-right: 14px; }
-table.data th, table.data td { position: relative; padding-left: 14px; padding-right: 14px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+table:not(.data) th:not(:first-child), table:not(.data) td:not(:first-child) { padding-left: 12px; }
+table:not(.data) th:not(:last-child), table:not(.data) td:not(:last-child) { padding-right: 12px; }
+table.data th, table.data td { position: relative; padding-left: 12px; padding-right: 12px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 table.data th.checkbox-cell, table.data td.checkbox-cell { width: 16px !important; -webkit-box-sizing: content-box; box-sizing: content-box; position: relative; }
 table.data th.checkbox-cell input.checkbox + label, table.data th.checkbox-cell div.checkbox, table.data td.checkbox-cell input.checkbox + label, table.data td.checkbox-cell div.checkbox { position: absolute; top: calc(50% - 7px); }
 table.data th { font-weight: bold; }
