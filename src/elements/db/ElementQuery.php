@@ -1526,12 +1526,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             is_string($this->indexBy)  &&
             in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
         ) {
-            $indexBy = $this->indexBy;
             $this->from = ['elements' => Table::ELEMENTS];
-            $this->indexBy = "elements.{$this->indexBy}";
             $result = parent::column($db);
             $this->from = null;
-            $this->indexBy = $indexBy;
             return $result;
         }
 
