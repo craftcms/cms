@@ -2,7 +2,8 @@
 
 ## 3.3.16.3 - 2019-11-26
 
-### Fixed an error that occurred when an element query’s `indexBy` param was set `id`, `dateCreated`, `dateUpdated`, or `uid`.
+### Fixed
+- Fixed an error that occurred when an element query’s `indexBy` param was set `id`, `dateCreated`, `dateUpdated`, or `uid`.
 
 ## 3.3.16.2 - 2019-11-26
 
