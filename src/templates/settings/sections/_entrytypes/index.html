@@ -1,5 +1,12 @@
 {% extends "_layouts/cp" %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+]) %}
+
 {% set entryTypes = section.getEntryTypes() %}
 {% set multiple  = (entryTypes|length > 1) %}
 
@@ -32,6 +39,9 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <h2>Vue Admin Table</h2>
+    <div id="entrytypes-vue-admin-table"></div>
 {% endblock %}
 
 
@@ -47,3 +57,43 @@
         });
     {% endjs %}
 {% endif %}
+
+
+{% set tableData = [] %}
+{% for entryType in entryTypes %}
+    {% set tableData = tableData|merge([{
+        id: entryType.id,
+        title: {
+            label: entryType.name|t('site'),
+            url: url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id)
+        },
+        name: entryType.name|t('site'),
+        handle: entryType.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    {
+        name: 'title',
+        title: Craft.t('app', 'Name'),
+        callback: function(value) {
+            return '<a href="'+value.url+'">' + value.label + '</a>';
+        }
+    },
+    {
+        name: 'handle',
+        title: Craft.t('app', 'Handle'),
+        callback: function(value) {
+            return '<code>' + value + '</code>';
+        }
+    },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#entrytypes-vue-admin-table',
+    deleteAction: 'sections/delete-entry-type',
+    tableData: {{ tableData|json_encode|raw }},
+    });
+{% endjs %}

@@ -1,6 +1,13 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedNavItem = 'volumes' %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Type",
+]) %}
 
 {% block content %}
     <p id="novolumes"{% if volumes|length %} class="hidden"{% endif %}>
@@ -38,6 +45,9 @@
         </table>
     {% endif %}
 
+    <h2>Vue Admin Table</h2>
+    <div id="volumes-vue-admin-table"></div>
+
     <div class="buttons">
         <a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New volume"|t('app') }}</a>
     </div>
@@ -59,5 +69,66 @@
                 $('#nav-assets').remove();
             }
         }
+    });
+{% endjs %}
+
+
+{% set tableData = [] %}
+{% for volume in volumes %}
+    {% set volumeIsMissing = false %}
+
+    {% if volume is missing %}
+        {% set volumeIsMissing = true %}
+    {% endif %}
+
+    {% set tableData = tableData|merge([{
+        id: volume.id,
+        title: {
+            label: volume.name|t('site'),
+            url: url('settings/assets/volumes/' ~ volume.id)
+        },
+        name: volume.name|t('site'),
+        handle: volume.handle,
+        type: {
+            isMissing: volumeIsMissing,
+            label: volumeIsMissing ? volume.expectedType : volume.displayName()
+        },
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    {
+        name: 'title',
+        title: Craft.t('app', 'Name'),
+        callback: function(value) {
+            return '<a href="'+value.url+'">' + value.label + '</a>';
+        }
+    },
+    {
+        name: 'handle',
+        title: Craft.t('app', 'Handle'),
+        callback: function(value) {
+            return '<code>' + value + '</code>';
+        }
+    },
+    {
+        name: 'type',
+        title: Craft.t('app', 'Type'),
+        callback: function(value) {
+            if (value.isMissing) {
+                return '<span class="error">' + value.label + '</span>'
+            }
+
+            return value.label
+        }
+    },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#volumes-vue-admin-table',
+    deleteAction: 'tags/delete-tag-group',
+    tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}

@@ -1,6 +1,16 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedNavItem = 'transforms' %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Mode",
+    "Dimensions",
+    "Interlace",
+    "Format",
+]) %}
 
 {% block content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
@@ -36,6 +46,9 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <h2>Vue Admin Table</h2>
+    <div id="transforms-vue-admin-table"></div>
 {% endif %}
 
 <div class="buttons">
@@ -49,5 +62,69 @@
         noItemsSelector: '#notransforms',
         sortable: false,
         deleteAction: 'asset-transforms/delete-transform'
+    });
+{% endjs %}
+
+
+{% set tableData = [] %}
+{% for transform in transforms %}
+    {% if transform.mode %}
+        {% set mode = modes[transform.mode] %}
+    {%  endif %}
+
+    {% set tableData = tableData|merge([{
+        id: transform.id,
+        title: {
+            label: transform.name|t('site'),
+            url: url('settings/assets/transforms/' ~ transform.handle)
+        },
+        name: transform.name|t('site'),
+        handle: transform.handle,
+        mode: mode ?? null,
+        dimensions: (transform.width ? transform.width : 'Auto'|t('app')) ~ " × " ~ (transform.height ? transform.height : 'Auto'|t('app')),
+        interlace: transform.interlace ? transform.interlace|capitalize : 'None'|t('app'),
+        format: transform.format ? transform.format|capitalize : 'Auto'|t('app'),
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    {
+        name: 'title',
+        title: Craft.t('app', 'Name'),
+        callback: function(value) {
+            return '<a href="'+value.url+'">' + value.label + '</a>';
+        }
+    },
+    {
+        name: 'handle',
+        title: Craft.t('app', 'Handle'),
+        callback: function(value) {
+            return '<code>' + value + '</code>';
+        }
+    },
+    {
+        name: 'mode',
+        title: Craft.t('app', 'Mode'),
+    },
+    {
+        name: 'dimensions',
+        title: Craft.t('app', 'Dimensions'),
+    },
+    {
+        name: 'interlace',
+        title: Craft.t('app', 'Interlace'),
+    },
+    {
+        name: 'format',
+        title: Craft.t('app', 'Format'),
+    },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#transforms-vue-admin-table',
+    deleteAction: 'asset-transforms/delete-transform',
+    tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}

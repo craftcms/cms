@@ -4,6 +4,7 @@
 {% set title = "Fields"|t('app') %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fields\\FieldsAsset") %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% do view.registerTranslations('app', [
     "What do you want to name the group?",
@@ -12,6 +13,10 @@
     "Are you sure you want to delete this group and all its fields?",
     "Could not delete the group.",
     "Group renamed.",
+    "Name",
+    "Handle",
+    "Type",
+    "Group",
 ]) %}
 
 {% set crumbs = [
@@ -105,6 +110,9 @@
             </tbody>
         </table>
     {% endif %}
+
+    <h2>Vue Admin Table</h2>
+    <div id="fields-vue-admin-table"></div>
 {% endblock %}
 
 
@@ -113,5 +121,88 @@
         tableSelector: '#fields',
         noItemsSelector: '#nofields',
         deleteAction: 'fields/delete-field'
+    });
+{% endjs %}
+
+
+
+{% set tableData = [] %}
+{% for field in fields %}
+    {% set fieldIsMissing = false %}
+
+    {% if field is missing %}
+        {% set fieldIsMissing = true %}
+    {% endif %}
+
+    {% if groupId is not defined %}
+        {% set group = field.group.name|t('site') %}
+    {% endif %}
+
+    {% set tableData = tableData|merge([{
+        id: field.id,
+        title: {
+            label: field.name|t('site'),
+            url: url('settings/fields/edit/' ~ field.id),
+            required: field.required,
+        },
+        name: field.name|t('site'),
+        handle: field.handle,
+        type: {
+            isMissing: fieldIsMissing,
+            label: fieldIsMissing ? field.expectedType : field.displayName()
+        },
+
+        group: group ?? null,
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var columns = [
+        {
+            name: 'title',
+            title: Craft.t('app', 'Name'),
+            callback: function(value) {
+                let str = '<a href="'+value.url+'">' + value.label + '</a>';
+
+                if (value.required) {
+                    str += ' <span class="required"></span>'
+                }
+
+                return str
+            }
+        },
+        {
+            name: 'handle',
+            title: Craft.t('app', 'Handle'),
+            callback: function(value) {
+                return '<code>' + value + '</code>';
+            }
+        },
+        {
+            name: 'type',
+            title: Craft.t('app', 'Type'),
+            callback: function(value) {
+                if (value.isMissing) {
+                    return '<span class="error">' + value.label + '</span>'
+                }
+
+                return value.label
+            }
+        },
+    ];
+
+    {% if groupId is not defined %}
+        columns.push({
+            name: 'group',
+            title: Craft.t('app', 'Group'),
+        })
+
+    {% endif %}
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#fields-vue-admin-table',
+        deleteAction: 'fields/delete-field',
+        tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}

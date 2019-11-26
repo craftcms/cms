@@ -1,6 +1,13 @@
 {% extends "_layouts/cp" %}
 {% set title = "Tag Groups"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+]) %}
+
 {% block actionButton %}
     <a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t('app') }}</a>
 {% endblock %}
@@ -33,6 +40,9 @@
             </tbody>
         </table>
     {% endif %}
+
+    <h2>Vue Admin Table</h2>
+    <div id="taggroups-vue-admin-table"></div>
 {% endblock %}
 
 
@@ -42,5 +52,45 @@
         noItemsSelector: '#notaggroups',
         deleteAction: 'tags/delete-tag-group',
         confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t('app') }}',
+    });
+{% endjs %}
+
+
+{% set tableData = [] %}
+{% for tagGroup in tagGroups %}
+    {% set tableData = tableData|merge([{
+        id: tagGroup.id,
+        title: {
+            label: tagGroup.name|t('site'),
+            url: url('settings/tags/' ~ tagGroup.id)
+        },
+        name: tagGroup.name|t('site'),
+        handle: tagGroup.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var columns = [
+        {
+            name: 'title',
+            title: Craft.t('app', 'Name'),
+            callback: function(value) {
+                return '<a href="'+value.url+'">' + value.label + '</a>';
+            }
+        },
+        {
+            name: 'handle',
+            title: Craft.t('app', 'Handle'),
+            callback: function(value) {
+                return '<code>' + value + '</code>';
+            }
+        },
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#taggroups-vue-admin-table',
+        deleteAction: 'tags/delete-tag-group',
+        tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}
