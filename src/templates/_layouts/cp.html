@@ -70,7 +70,7 @@
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
-{% set tabs = tabs ?? null %}
+{% set tabs = tabs is defined and tabs|length != 1 ? tabs : null %}
 
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
