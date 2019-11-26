@@ -1,6 +1,14 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Manage categories",
+]) %}
+
 {% block actionButton %}
     <a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New category group"|t('app') }}</a>
 {% endblock %}
@@ -68,9 +76,7 @@
     }]) %}
 {% endfor %}
 
-
 {% js %}
-
     var columns = [
         {
             name: 'title',
@@ -95,7 +101,7 @@
         },
     ];
 
-    var vueAdminTable = new Craft.VueAdminTable({
+    new Craft.VueAdminTable({
         columns: columns,
         container: '#categorygroups-vue-admin-table',
         deleteAction: 'categories/delete-category-group',

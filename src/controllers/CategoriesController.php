@@ -18,7 +18,6 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
-use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\editcategory\EditCategoryAsset;
 use craft\web\Controller;
 use yii\base\Exception;
@@ -62,8 +61,6 @@ class CategoriesController extends Controller
         $this->requireAdmin();
 
         $groups = Craft::$app->getCategories()->getAllGroups();
-
-        $this->getView()->registerAssetBundle(AdminTableAsset::class);
 
         return $this->renderTemplate('settings/categories/index', [
             'categoryGroups' => $groups

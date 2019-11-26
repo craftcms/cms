@@ -1,10 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
 {% do view.registerTranslations('app', [
     "Edit entry types ({count})",
 ]) %}
-
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
@@ -105,7 +106,7 @@
 {% endfor %}
 
 {% js %}
-    var adminTable = new Craft.AdminTable({
+    new Craft.AdminTable({
         tableSelector: '#sections',
         noItemsSelector: '#nosections',
         deleteAction: 'sections/delete-section',
@@ -160,7 +161,7 @@
         },
     ];
 
-    var vueAdminTable = new Craft.VueAdminTable({
+    new Craft.VueAdminTable({
         columns: columns,
         container: '#sections-vue-admin-table',
         deleteAction: 'sections/delete-section',
