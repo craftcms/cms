@@ -1565,6 +1565,8 @@ abstract class Element extends Component implements ElementInterface
                     'url' => $url,
                 ],
             ];
+        } else {
+            return [];
         }
 
         // Normalize the targets
