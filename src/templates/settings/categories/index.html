@@ -35,6 +35,10 @@
             </tbody>
         </table>
     {% endif %}
+
+
+    <h2>Vue Admin Table</h2>
+    <div id="categorygroups-vue-admin-table"></div>
 {% endblock %}
 
 
@@ -44,5 +48,57 @@
         noItemsSelector: '#nocategorygroups',
         deleteAction: 'categories/delete-category-group',
         confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its categories?"|t('app') }}',
+    });
+{% endjs %}
+
+
+{% set tableData = [] %}
+{% for group in categoryGroups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: {
+            label: group.name|t('site'),
+            url: url('settings/categories/' ~ group.id)
+        },
+        name: group.name|t('site'),
+        handle: group.handle,
+        manageCategories: {
+            url: url('categories/'~group.handle)
+        },
+    }]) %}
+{% endfor %}
+
+
+{% js %}
+
+    var columns = [
+        {
+            name: 'title',
+            title: Craft.t('app', 'Name'),
+            callback: function(value) {
+                return '<a href="'+value.url+'">' + value.label + '</a>';
+            }
+        },
+        {
+            name: 'handle',
+            title: Craft.t('app', 'Handle'),
+            callback: function(value) {
+                return '<code>' + value + '</code>';
+            }
+        },
+        {
+            name: 'manageCategories',
+            title: "",
+            callback: function(value) {
+                return '<a href="'+value.url+'">' + Craft.t('app', "Manage categories") + '</a>';
+            }
+        },
+    ];
+
+    var vueAdminTable = new Craft.VueAdminTable({
+        columns: columns,
+        container: '#categorygroups-vue-admin-table',
+        deleteAction: 'categories/delete-category-group',
+        tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}
