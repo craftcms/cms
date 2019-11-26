@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an issue where string encoding might not behave as expected in some environments running PHP 7.3 or greater. (([#4239](https://github.com/craftcms/cms/issues/4239)))
+
 ## 3.3.16.3 - 2019-11-26
 
 ### Fixed
