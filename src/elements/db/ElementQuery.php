@@ -575,15 +575,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.16
-     */
-    public function init()
-    {
-        parent::init();
-    }
-
-    /**
      * Required by the IteratorAggregate interface.
      *
      * @return ArrayIterator
