@@ -168,13 +168,13 @@ class Gql
     /**
      * Creates a temporary schema with full access to the GraphQL API.
      *
-     * @return GqlToken
+     * @return GqlSchema
      * @since 3.4.0
      */
-    public static function createFullAccessToken(): GqlToken
+    public static function createFullAccessSchema(): GqlSchema
     {
         $permissionGroups = Craft::$app->getGql()->getAllPermissions();
-        $schema = new GqlSchema(['name' => 'Full Access Token']);
+        $schema = new GqlSchema(['name' => 'Full Access Schema', 'uid' => '*']);
 
         // Fetch all nested permissions
         $traverser = function($permissions) use ($schema, &$traverser) {
@@ -190,15 +190,6 @@ class Gql
         foreach ($permissionGroups as $permissionGroup) {
             $traverser($permissionGroup);
         }
-
-        $schema = new GqlToken([
-            'uid' => '*',
-            'name' => Craft::t('app', 'Full Schema'),
-            'accessToken' => '*',
-            'enabled' => true,
-            'isTemporary' => true,
-            'schema' => $schema
-        ]);
 
         return $schema;
     }

@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\helpers\Json;
 use craft\records\GqlToken as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
 
@@ -149,7 +148,7 @@ class GqlToken extends Model
     }
 
     /**
-     * Returns whether this is the public schema.
+     * Returns whether this is the public token.
      *
      * @return bool
      */

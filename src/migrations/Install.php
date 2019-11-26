@@ -382,6 +382,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'scope' => $this->text(),
+            'isPublic' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

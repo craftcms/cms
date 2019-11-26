@@ -16,6 +16,7 @@ use craft\db\Table;
  * @property int $id ID
  * @property string $name Schema name
  * @property array $scope The scope of the schema.
+ * @property bool $isPublic Whether this schema is public
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */

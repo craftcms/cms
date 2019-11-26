@@ -30,7 +30,9 @@
 - Added `craft\base\ElementInterface::getDirtyFields()`.
 - Added `craft\base\ElementInterface::isFieldDirty()`.
 - Added `craft\controllers\GraphqlController::actionDeleteToken()`.
+- Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
 - Added `craft\controllers\GraphqlController::actionEditToken()`.
+- Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
 - Added `craft\controllers\GraphqlController::actionSaveToken()`.
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
@@ -46,7 +48,6 @@
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
-- Added `craft\helpers\Gql::createFullAccessToken()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`
 - Added `craft\models\GqlToken`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
@@ -57,7 +58,7 @@
 - Added `craft\services\Gql::deleteSchema()`.
 - Added `craft\services\Gql::deleteTokenById()`.
 - Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
-- Added `craft\services\Gql::getPublicToken()`.
+- Added `craft\services\Gql::getSchemaByUid()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
 - Added `craft\services\Gql::getTokenByUid()`.
@@ -119,7 +120,6 @@
 - Deprecated `craft\services\Search::indexElementFields()`.
 
 ### Removed
-- Removed `craft\helpers\Gql::createFullAccessSchema()`.
 - Removed `craft\models\GqlSchema::PUBLIC_TOKEN`.
 - Removed `craft\models\GqlSchema::$accessToken`.
 - Removed `craft\models\GqlSchema::$enabled`.
@@ -128,4 +128,3 @@
 - Removed `craft\models\GqlSchema::$dateCreated`.
 - Removed `craft\models\GqlSchema::$isTemporary`.
 - Removed `craft\models\GqlSchema::getIsPublic()`.
-- Removed `craft\services\Gql::getPublicSchema()`.

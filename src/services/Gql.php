@@ -442,9 +442,7 @@ class Gql extends Component
         foreach ($rows as $row) {
             $token = new GqlToken($row);
 
-            if ($token->getIsPublic()) {
-                $publicToken = $token;
-            } else {
+            if (!$token->getIsPublic()) {
                 $schemas[] = $token;
                 $names[] = $token->name;
             }
@@ -453,30 +451,30 @@ class Gql extends Component
         // Sort them by name
         array_multisort($names, SORT_ASC, SORT_STRING, $schemas);
 
-        // Add the public token to the top
-        array_unshift($schemas, $publicToken ?? $this->_createPublicToken());
-
         return $schemas;
     }
-
     /**
      * Returns the public schema. If it does not exist, it will be created.
      *
-     * @return GqlToken
+     * @return GqlSchema
      * @throws Exception
-     * @since 3.4.0
      */
-    public function getPublicToken(): GqlToken
+    public function getPublicSchema(): GqlSchema
     {
         $result = $this->_createTokenQuery()
             ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
             ->one();
 
         if ($result) {
-            return new GqlToken($result);
+            if ($result['schemaId']) {
+                $token = new GqlToken($result);
+                return $token->getSchema();
+            } else {
+                return $this->_createPublicSchema($result['id']);
+            }
         }
 
-        return $this->_createPublicToken();
+        return $this->_createPublicSchema();
     }
 
     /**
@@ -585,10 +583,6 @@ class Gql extends Component
      */
     public function getTokenByAccessToken(string $token): GqlToken
     {
-        if ($token == GqlToken::PUBLIC_TOKEN) {
-            return $this->getPublicToken();
-        }
-
         $result = $this->_createTokenQuery()
             ->where(['accessToken' => $token])
             ->one();
@@ -690,7 +684,8 @@ class Gql extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $configData = [
             'name' => $schema->name,
-            'scope' => $schema->scope
+            'scope' => $schema->scope,
+            'isPublic' => $schema->isPublic
         ];
 
         $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
@@ -717,6 +712,7 @@ class Gql extends Component
 
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
+            $schemaRecord->isPublic = (bool)$data['isPublic'];
             $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode((array)$data['scope']) : [];
 
             // Save the scope
@@ -805,6 +801,21 @@ class Gql extends Component
     {
         $result = $this->_createSchemaQuery()
             ->where(['id' => $id])
+            ->one();
+
+        return $result ? new GqlSchema($result) : null;
+    }
+
+    /**
+     * Get a schema by its UID.
+     *
+     * @param string $uid The schema's UID
+     * @return GqlSchema|null
+     */
+    public function getSchemaByUid(string $uid)
+    {
+        $result = $this->_createSchemaQuery()
+            ->where(['uid' => $uid])
             ->one();
 
         return $result ? new GqlSchema($result) : null;
@@ -1166,6 +1177,7 @@ class Gql extends Component
                 'id',
                 'name',
                 'scope',
+                'isPublic',
                 'uid',
             ])
             ->from([Table::GQLSCHEMAS]);
@@ -1174,31 +1186,39 @@ class Gql extends Component
     }
 
     /**
-     * Creates the public token.
+     * Creates the public schema.
      *
-     * @return GqlToken
+     * @param int $tokenId Token id, if one exists already for the public schema
+     * @return GqlSchema
      * @throws Exception if the schema couldn't be created.
      */
-    private function _createPublicToken(): GqlToken
+    private function _createPublicSchema(int $tokenId = null): GqlSchema
     {
-        $schemaUid = StringHelper::UUID();
+        $existingSchema = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
 
-        $schema = new GqlSchema([
-            'name' => 'Public schema',
-            'uid' => $schemaUid
-        ]);
+        if ($existingSchema) {
+            $schema = new GqlSchema($existingSchema);
+        } else {
+            $schemaUid = StringHelper::UUID();
+            $schema = new GqlSchema([
+                'name' => 'Public schema',
+                'uid' => $schemaUid,
+                'isPublic' => true,
+            ]);
+        }
 
         $this->saveSchema($schema);
 
-        $schema = new GqlToken([
+        $token = $tokenId ? $this->getTokenById($tokenId) : new GqlToken([
             'name' => 'Public Token',
             'accessToken' => GqlToken::PUBLIC_TOKEN,
             'enabled' => true,
-            'schemaId' => Db::idByUid(Table::GQLSCHEMAS, $schemaUid)
         ]);
+        
+        $token->schemaId = $existingSchema ? $schema->id : Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
 
-        if (!$this->saveToken($schema)) {
-            throw new Exception('Couldn’t create public token.');
+        if (!$this->saveToken($token)) {
+            throw new Exception('Couldn’t create public schema.');
         }
 
         return $schema;

@@ -17,9 +17,9 @@
         <tbody>
             {% for schema in schemas %}
                 <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.name }}</a></th>
+                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ (schema.isPublic ? 'public' : schema.id)) }}">{{ schema.name }}</a></th>
                         <th class="thin">
-                        <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
+                        <a class="delete icon {{ schema.isPublic ? 'disabled' : '' }}" title="{{ 'Delete'|t('app') }}" role="button"></a>
                         </th>
                     </tr>
                 {% endfor %}
@@ -36,7 +36,6 @@
 {% js on ready %}
     new Craft.AdminTable({
         tableSelector: '#schemas',
-        minItems: 1,
         sortable: false,
         deleteAction: 'graphql/delete-schema'
     });

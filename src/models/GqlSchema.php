@@ -16,7 +16,6 @@ use craft\validators\UniqueValidator;
 /**
  * GraphQL schema class
  *
- * @property bool $isPublic Whether this is the public schema
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
@@ -39,6 +38,11 @@ class GqlSchema extends Model
      * @var array The schema’s scope
      */
     public $scope = [];
+
+    /**
+     * @var array Whether this schema is public
+     */
+    public $isPublic = false;
 
     /**
      * @var string $uid

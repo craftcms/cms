@@ -61,6 +61,7 @@ class GraphqlController extends Controller
     {
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
+
         if ($schema !== null) {
             $schemaDef = $gqlService->getSchemaDef($schema, true);
             // Output the schema
@@ -79,6 +80,7 @@ class GraphqlController extends Controller
     {
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
+
         if ($schema !== null) {
             $schemaDef = $gqlService->getSchemaDef($schema, true);
             // Output the schema
@@ -104,6 +106,7 @@ class GraphqlController extends Controller
     {
         $token = null;
         $gqlService = Craft::$app->getGql();
+
         // First try to get the token from the passed in token
         if ($this->token !== null) {
             try {
@@ -113,17 +116,20 @@ class GraphqlController extends Controller
                 $this->stdout($this->token . PHP_EOL, Console::FG_YELLOW);
                 return null;
             }
+
+            $schema = $token->getSchema();
         }
+
         // Next look up the active token
         if ($token === null) {
             try {
-                $token = $gqlService->getActiveSchema();
+                $schema = $gqlService->getActiveSchema();
             } catch (GqlException $exception) {
                 // Well, go for the public token then.
-                $token = $gqlService->getPublicToken();
+                $schema = $gqlService->getPublicSchema();
             }
         }
 
-        return $token->getSchema();
+        return $schema;
     }
 }

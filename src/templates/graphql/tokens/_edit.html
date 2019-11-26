@@ -91,37 +91,35 @@
 {% endblock %}
 
 {% js %}
-    {% if not token.isPublic %}
-        {% if token.id %}
-            $('#show-btn').on('click', function() {
-                Craft.elevatedSessionManager.requireElevatedSession(function() {
-                    $('#token-spinner').removeClass('hidden');
-                    var data = {{ {tokenUid: token.uid}|json_encode|raw }};
-                    Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
-                        $('#token-spinner').addClass('hidden');
-                        if (textStatus === 'success') {
-                            $('#accessToken')
-                                .val(response.accessToken)
-                                .removeClass('disabled');
-                            $('#show-btn').remove();
-                        }
-                    });
+    {% if token.id %}
+        $('#show-btn').on('click', function() {
+            Craft.elevatedSessionManager.requireElevatedSession(function() {
+                $('#token-spinner').removeClass('hidden');
+                var data = {{ {tokenUid: token.uid}|json_encode|raw }};
+                Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
+                    $('#token-spinner').addClass('hidden');
+                    if (textStatus === 'success') {
+                        $('#accessToken')
+                            .val(response.accessToken)
+                            .removeClass('disabled');
+                        $('#show-btn').remove();
+                    }
                 });
-            });
-        {% endif %}
-        $('#regen-btn').on('click', function() {
-            $('#token-spinner').removeClass('hidden');
-            Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
-                $('#token-spinner').addClass('hidden');
-                if (textStatus === 'success') {
-                    $('#accessToken')
-                        .val(response.accessToken)
-                        .prop('disabled', false)
-                        .removeClass('disabled');
-                }
             });
         });
     {% endif %}
+    $('#regen-btn').on('click', function() {
+        $('#token-spinner').removeClass('hidden');
+        Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
+            $('#token-spinner').addClass('hidden');
+            if (textStatus === 'success') {
+                $('#accessToken')
+                    .val(response.accessToken)
+                    .prop('disabled', false)
+                    .removeClass('disabled');
+            }
+        });
+    });
 
     new Craft.ElevatedSessionForm('#main-form');
 {% endjs %}
