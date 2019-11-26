@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- Fixed a SQL error that occurred when an element query’s `indexBy` param set to a column from a table besides `elements`. ([#5216](https://github.com/craftcms/cms/issues/5216))
 - Fixed an issue where the edition was not taken into account when clicking the “Buy Now” button in Settings → Plugins.
 
 ## 3.3.16.1 - 2019-11-22
