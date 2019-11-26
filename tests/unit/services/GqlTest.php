@@ -28,6 +28,7 @@ use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use GraphQL\Type\Definition\ObjectType;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 
 class GqlTest extends Unit
 {
@@ -113,7 +114,7 @@ class GqlTest extends Unit
     public function testExecuteQuery()
     {
         $gql = Craft::$app->getGql();
-        $schema = $gql->getPublicToken()->getSchema();
+        $schema = $gql->getPublicSchema();
         $result = $gql->executeQuery($schema, '{ping}');
         $this->assertEquals(['data' => ['ping' => 'pong']], $result);
     }
@@ -126,7 +127,7 @@ class GqlTest extends Unit
     public function testQueryEvents()
     {
         $gql = Craft::$app->getGql();
-        $schema = $gql->getPublicToken()->getSchema();
+        $schema = $gql->getPublicSchema();
 
         Event::on(Gql::class, Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY, function (ExecuteGqlQueryEvent $event) {
             $event->result = ['data' => 'override'];
@@ -159,7 +160,7 @@ class GqlTest extends Unit
 
         Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = true;
 
-        $schema = $gql->getPublicToken()->getSchema();
+        $schema = $gql->getPublicSchema();
 
         $this->assertArrayNotHasKey($cacheKey, $cache);
         $result = $gql->executeQuery($schema, '{ping}');
@@ -318,10 +319,19 @@ class GqlTest extends Unit
         $this->assertEquals($gql->getTokenByUid($token->uid)->id, $token->id);
         $this->assertEquals($gql->getTokenByAccessToken($token->accessToken)->id, $token->id);
 
-        // Test fetching all tokens and existence of public token
-        $allSchemas = Craft::$app->getGql()->getTokens();
+        // Test fetching all tokens
+        $allSchemas = $gql->getTokens();
         $this->assertNotEmpty($allSchemas);
-        $this->assertEquals($allSchemas[0]->accessToken, GqlToken::PUBLIC_TOKEN);
+
+        // Test public token doesn't exists
+        $this->tester->expectException(InvalidArgumentException::class, function () use ($gql) {
+            $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        });
+
+        // Test fetching public schema creates public token
+        $publicSchema = $gql->getPublicSchema();
+        $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $this->assertEquals($publicToken->accessToken, GqlToken::PUBLIC_TOKEN);
 
         // Test deleting
         $gql->deleteTokenById($token->id);

@@ -121,11 +121,10 @@ class GqlHelperTest extends Unit
      */
     public function testFullAccessSchema()
     {
-        $schema = GqlHelper::createFullAccessToken();
-        $this->assertTrue($schema->isTemporary);
+        $schema = GqlHelper::createFullAccessSchema();
 
         // Not very realistic to test *everything* without duplicating logic in the helper method
-        $this->assertNotEmpty($schema->getScope());
+        $this->assertNotEmpty($schema->scope);
     }
 
     public function schemaPermissionDataProvider()
