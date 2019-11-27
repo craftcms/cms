@@ -54,6 +54,50 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Prepends values to an array.
+     *
+     * This should be used instead of `array_unshift($array, ...$values)` when `$values` could be an empty array,
+     * as PHP < 7.3 would throw an error in that case.
+     *
+     * ---
+     * ```php
+     * ArrayHelper::prepend($array, ...$values);
+     * ```
+     *
+     * @param array &$array the array to be prepended to
+     * @param mixed ...$values the values to prepend.
+     * @since 3.4.0
+     */
+    public static function prepend(array &$array, ...$values)
+    {
+        if (!empty($values)) {
+            array_unshift($array, ...$values);
+        }
+    }
+
+    /**
+     * Appends values to an array.
+     *
+     * This should be used instead of `array_push($array, ...$values)` when `$values` could be an empty array,
+     * as PHP < 7.3 would throw an error in that case.
+     *
+     * ---
+     * ```php
+     * ArrayHelper::append($array, ...$values);
+     * ```
+     *
+     * @param array &$array the array to be appended to
+     * @param mixed ...$values the values to append.
+     * @since 3.4.0
+     */
+    public static function append(array &$array, ...$values)
+    {
+        if (!empty($values)) {
+            array_push($array, ...$values);
+        }
+    }
+
+    /**
      * Prepends or appends a value to an array.
      *
      * @param array &$array the array to be prepended/appended to

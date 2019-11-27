@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use yii\base\BaseObject;
@@ -213,11 +214,9 @@ class ElementRelationParamParser extends BaseObject
                         }
                     } else if ($element instanceof ElementQueryInterface) {
                         $ids = $element->ids();
-                        if (!empty($ids)) {
-                            array_push($relElementIds, ...$ids);
-                            if ($elementParam === 'element') {
-                                array_push($relSourceElementIds, ...$ids);
-                            }
+                        ArrayHelper::append($relElementIds, ...$ids);
+                        if ($elementParam === 'element') {
+                            ArrayHelper::append($relSourceElementIds, ...$ids);
                         }
                     }
                 }
