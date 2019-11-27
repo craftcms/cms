@@ -674,6 +674,41 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #toolbar {
   flex: 1;
+
+  .text {
+    border-radius: $largeBorderRadius;
+    background-color: transparentize($inputColor, 0.75);
+    box-shadow: none;
+
+    &::-webkit-input-placeholder {
+      color: $grey500;
+    }
+
+    &:-ms-input-placeholder {
+      color: $grey500;
+    }
+
+    &::-ms-input-placeholder {
+      color: $grey500;
+    }
+
+    &:-moz-placeholder {
+      color: $grey500;
+    }
+
+    &::-moz-placeholder {
+      color: $grey500;
+    }
+
+    &::placeholder {
+      color: $grey500;
+    }
+
+    &:not(:focus) {
+      border-color: transparent;
+      background-clip: border-box;
+    }
+  }
 }
 
 #main-content {
