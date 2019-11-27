@@ -3843,10 +3843,6 @@ div.checkbox:before {
   border-radius: $smallBorderRadius;
 }
 
-input.checkbox + label:before {
-  top: 3px;
-}
-
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
 div.checkbox.disabled + label {
