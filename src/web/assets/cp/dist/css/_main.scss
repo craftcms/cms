@@ -1526,7 +1526,7 @@ table {
         input.checkbox + label,
         div.checkbox {
           position: absolute;
-          top: calc(50% - 7px);
+          top: calc(50% - 8px);
         }
       }
     }
@@ -1788,7 +1788,7 @@ $largeThumbSize: 120px;
       .status {
         position: absolute;
         @include left($baseElementSidePadding);
-        top: calc(50% - 4px);
+        top: calc(50% - 5px);
       }
     }
 
@@ -1968,7 +1968,7 @@ $checkboxPadding: $checkboxSize + 4;
     .move {
       display: block;
       position: absolute;
-      top: calc(50% - 9px);
+      top: calc(50% - 11px);
       @include margin-left(-14px);
       font-size: 11px;
       text-decoration: none;

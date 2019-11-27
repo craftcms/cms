@@ -611,7 +611,7 @@ table:not(.data) th:not(:first-child), table:not(.data) td:not(:first-child) { p
 table:not(.data) th:not(:last-child), table:not(.data) td:not(:last-child) { padding-right: 12px; }
 table.data th, table.data td { position: relative; padding-left: 12px; padding-right: 12px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 table.data th.checkbox-cell, table.data td.checkbox-cell { width: 16px !important; -webkit-box-sizing: content-box; box-sizing: content-box; position: relative; }
-table.data th.checkbox-cell input.checkbox + label, table.data th.checkbox-cell div.checkbox, table.data td.checkbox-cell input.checkbox + label, table.data td.checkbox-cell div.checkbox { position: absolute; top: calc(50% - 7px); }
+table.data th.checkbox-cell input.checkbox + label, table.data th.checkbox-cell div.checkbox, table.data td.checkbox-cell input.checkbox + label, table.data td.checkbox-cell div.checkbox { position: absolute; top: calc(50% - 8px); }
 table.data th { font-weight: bold; }
 table.data thead th, table.data thead td { padding-top: 14px; padding-bottom: 14px; width: auto; background-color: #f3f7fc; cursor: default; }
 body.ltr table.data thead th:first-child, body.ltr table.data thead td:first-child { border-top-left-radius: 5px; }
@@ -677,7 +677,7 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 .element.hasthumb .elementthumb img { display: block; width: 100%; height: 100%; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
 .element .label { display: inline-block; }
 .element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; }
-.element.small.hasstatus .status, .element.large:not(.hasthumb).hasstatus .status { position: absolute; top: calc(50% - 4px); }
+.element.small.hasstatus .status, .element.large:not(.hasthumb).hasstatus .status { position: absolute; top: calc(50% - 5px); }
 body.ltr .element.small.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasstatus .status { left: 7px; }
 body.rtl .element.small.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasstatus .status { right: 7px; }
 body.ltr .element.small.hasstatus:not(.hasthumb), body.ltr .element.large:not(.hasthumb).hasstatus:not(.hasthumb) { padding-left: 22px; }
@@ -727,7 +727,7 @@ body.rtl .element.loading:after { left: 3px; }
 body.ltr .elements .header .selectallcontainer .checkbox { margin-right: 5px; }
 body.rtl .elements .header .selectallcontainer .checkbox { margin-left: 5px; }
 .elements .tableview thead th.selectallcontainer { outline: none; }
-.elements .tableview .move { display: block; position: absolute; top: calc(50% - 9px); font-size: 11px; text-decoration: none; }
+.elements .tableview .move { display: block; position: absolute; top: calc(50% - 11px); font-size: 11px; text-decoration: none; }
 body.ltr .elements .tableview .move { margin-left: -14px; }
 body.rtl .elements .tableview .move { margin-right: -14px; }
 .elements .tableview .toggle { display: block; position: absolute; top: calc(50% - 8px); }
