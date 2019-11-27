@@ -630,7 +630,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms;
 
       body.fixed-header & {
-        background-color: transparentize($grey100, 0.6);
+        background-color: transparentize($grey100, 0.25);
         backdrop-filter: blur(10px);
       }
     }
@@ -672,12 +672,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
+$toolbarIconColor: darken($inputColor, 10%);
+
 #toolbar {
   flex: 1;
 
   .btn,
   .text {
-    color: darken($inputColor, 10%);
+    color: darken($inputColor, 20%);
   }
 
   .icon:before,
@@ -685,7 +687,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: $inputColor;
+    color: $toolbarIconColor;
   }
 
   .text {
@@ -694,27 +696,27 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     box-shadow: none;
 
     &::-webkit-input-placeholder {
-      color: $inputColor;
+      color: $toolbarIconColor;
     }
 
     &:-ms-input-placeholder {
-      color: $inputColor;
+      color: $toolbarIconColor;
     }
 
     &::-ms-input-placeholder {
-      color: $inputColor;
+      color: $toolbarIconColor;
     }
 
     &:-moz-placeholder {
-      color: $inputColor;
+      color: $toolbarIconColor;
     }
 
     &::-moz-placeholder {
-      color: $inputColor;
+      color: $toolbarIconColor;
     }
 
     &::placeholder {
-      color: $inputColor;
+      color: $toolbarIconColor;
     }
 
     &:not(:focus) {

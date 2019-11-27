@@ -1867,7 +1867,7 @@ body.rtl #user-info { padding: 0 14px 0 7px; }
 #header { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-line-pack: stretch; align-content: stretch; -ms-flex-wrap: nowrap; flex-wrap: nowrap; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; padding-top: 13px; padding-bottom: 13px; position: relative; z-index: 2; width: calc(100vw - 225px); -webkit-box-sizing: border-box; box-sizing: border-box; background-color: rgba(154, 165, 177, 0); -webkit-box-shadow: 0 1px 0 rgba(51, 64, 77, 0); box-shadow: 0 1px 0 rgba(51, 64, 77, 0); -webkit-transition: background-color linear 100ms, -webkit-box-shadow linear 100ms; transition: background-color linear 100ms, -webkit-box-shadow linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms, -webkit-box-shadow linear 100ms; }
 body.fixed-header #header { position: fixed; z-index: 12; top: 0; background-color: #e4edf6; -webkit-box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); }
 @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { #header { -webkit-transition: background-color linear 100ms, -webkit-box-shadow linear 100ms, -webkit-backdrop-filter linear 100ms; transition: background-color linear 100ms, -webkit-box-shadow linear 100ms, -webkit-backdrop-filter linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms, -webkit-box-shadow linear 100ms, -webkit-backdrop-filter linear 100ms; }
-  body.fixed-header #header { background-color: rgba(228, 237, 246, 0.4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); } }
+  body.fixed-header #header { background-color: rgba(228, 237, 246, 0.75); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); } }
 @media only screen and (min-width: 975px) { body.ltr #header .flex:not(:last-child) { margin-right: 7px; }
   body.rtl #header .flex:not(:last-child) { margin-left: 7px; } }
 #header h1 { line-height: 32px; margin-top: 0; margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1878,15 +1878,15 @@ body.rtl #header h1:not(:last-child) { margin-left: 14px !important; }
 @media only screen and (min-width: 975px) { #page-title.has-toolbar { min-width: 242px !important; } }
 
 #toolbar { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
-#toolbar .btn, #toolbar .text { color: #4d6480; }
-#toolbar .icon:before, #toolbar .texticon:before, #toolbar .menubtn:after, #toolbar [data-icon]:before, #toolbar [data-icon-after]:after { color: #607d9f; }
+#toolbar .btn, #toolbar .text { color: #394b60; }
+#toolbar .icon:before, #toolbar .texticon:before, #toolbar .menubtn:after, #toolbar [data-icon]:before, #toolbar [data-icon-after]:after { color: #4d6480; }
 #toolbar .text { border-radius: 5px; background-color: rgba(96, 125, 159, 0.25); -webkit-box-shadow: none; box-shadow: none; }
-#toolbar .text::-webkit-input-placeholder { color: #607d9f; }
-#toolbar .text:-ms-input-placeholder { color: #607d9f; }
-#toolbar .text::-ms-input-placeholder { color: #607d9f; }
-#toolbar .text:-moz-placeholder { color: #607d9f; }
-#toolbar .text::-moz-placeholder { color: #607d9f; }
-#toolbar .text::placeholder { color: #607d9f; }
+#toolbar .text::-webkit-input-placeholder { color: #4d6480; }
+#toolbar .text:-ms-input-placeholder { color: #4d6480; }
+#toolbar .text::-ms-input-placeholder { color: #4d6480; }
+#toolbar .text:-moz-placeholder { color: #4d6480; }
+#toolbar .text::-moz-placeholder { color: #4d6480; }
+#toolbar .text::placeholder { color: #4d6480; }
 #toolbar .text:not(:focus) { border-color: transparent; background-clip: border-box; }
 
 #main-content { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; width: calc(100vw - 225px); padding: 0 24px 48px; -webkit-box-sizing: border-box; box-sizing: border-box; }
