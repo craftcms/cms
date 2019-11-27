@@ -26,6 +26,28 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
 
     /**
      * @inheritdoc
+     * @since 3.4.0
+     */
+    public function __set($name, $value)
+    {
+        if ($this->hasAttribute($name)) {
+            $value = Db::prepareValueForDb($value);
+        }
+        parent::__set($name, $value);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function setAttribute($name, $value)
+    {
+        $value = Db::prepareValueForDb($value);
+        parent::setAttribute($name, $value);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function beforeSave($insert)
     {
@@ -34,17 +56,12 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     }
 
     /**
-     * Prepares record values for DB storage.
+     * Sets the `dateCreated`, `dateUpdated`, and `uid` attributes on the record.
      *
      * @since 3.1.0
      */
     protected function prepareForDb()
     {
-        foreach ($this->fields() as $attribute) {
-            $this->$attribute = Db::prepareValueForDb($this->$attribute);
-        }
-
-        // Prepare the values
         $now = Db::prepareDateForDb(new \DateTime());
 
         if ($this->getIsNewRecord()) {
