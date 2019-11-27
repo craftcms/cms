@@ -40,6 +40,17 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle();
 
     /**
+     * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
+     * including when the last time they were changed, and who was logged-in at the time.
+     *
+     * @return bool Whether to track changes made to elements of this type.
+     * @see getDirtyAttributes()
+     * @see getDirtyFields()
+     * @since 3.4.0
+     */
+    public static function trackChanges(): bool;
+
+    /**
      * Returns whether elements of this type will be storing any data in the `content` table (titles or custom fields).
      *
      * @return bool Whether elements of this type will be storing any data in the `content` table.
@@ -756,6 +767,14 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
+     * Returns a list of attribute names that have changed since the element was first loaded.
+     *
+     * @return string[]
+     * @since 3.4.0
+     */
+    public function getDirtyAttributes(): array;
+
+    /**
      * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values
@@ -816,11 +835,11 @@ interface ElementInterface extends ComponentInterface
     public function getDirtyFields(): array;
 
     /**
-     * Resets the record of dirty fields.
+     * Resets the record of dirty attributes and fields.
      *
      * @since 3.4.0
      */
-    public function clearDirtyFields();
+    public function markAsClean();
 
     /**
      * Sets the element’s custom field values, when the values have come from post data.

@@ -22,6 +22,8 @@ abstract class Table
     const CATEGORIES = '{{%categories}}';
     const CATEGORYGROUPS = '{{%categorygroups}}';
     const CATEGORYGROUPS_SITES = '{{%categorygroups_sites}}';
+    const CHANGEDATTRIBUTES = '{{%changedattributes}}';
+    const CHANGEDFIELDS = '{{%changedfields}}';
     const CONTENT = '{{%content}}';
     const CRAFTIDTOKENS = '{{%craftidtokens}}';
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';

@@ -1867,6 +1867,10 @@ class Elements extends Component
         /** @var Element $element */
         $isNewElement = !$element->id;
 
+        // Are we tracking changes?
+        $trackChanges = !$isNewElement && $element::trackChanges();
+        $dirtyAttributes = [];
+
         // Force propagation for new elements
         $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
 
@@ -1965,6 +1969,11 @@ class Elements extends Component
                     $elementRecord->dateUpdated = Db::prepareValueForDb(new \DateTime());
                 }
 
+                // Update our list of dirty attributes
+                if ($trackChanges) {
+                    ArrayHelper::append($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes()));
+                }
+
                 // Save the element record
                 $elementRecord->save(false);
 
@@ -2017,6 +2026,14 @@ class Elements extends Component
             // Avoid `enabled` getting marked as dirty if it's not really changing
             if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $element->enabledForSite) {
                 $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
+            }
+
+            // Update our list of dirty attributes
+            if ($trackChanges && !$siteSettingsRecord->getIsNewRecord()) {
+                ArrayHelper::append($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes(['slug', 'uri'])));
+                if ($siteSettingsRecord->isAttributeChanged('enabled')) {
+                    $dirtyAttributes[] = 'enabledForSite';
+                }
             }
 
             if (!$siteSettingsRecord->save(false)) {
@@ -2105,8 +2122,47 @@ class Elements extends Component
             ]));
         }
 
+        // Update the changed attributes & fields
+        if ($trackChanges) {
+            $db = Craft::$app->getDb();
+            $userId = Craft::$app->getUser()->getId();
+            $timestamp = Db::prepareDateForDb(new \DateTime());
+
+            foreach ($element->getDirtyAttributes() as $attributeName) {
+                $db->createCommand()
+                    ->upsert(Table::CHANGEDATTRIBUTES, [
+                        'elementId' => $element->id,
+                        'siteId' => $element->siteId,
+                        'attribute' => $attributeName,
+                    ], [
+                        'dateUpdated' => $timestamp,
+                        'propagated' => $element->propagating,
+                        'userId' => $userId,
+                    ], [], false)
+                    ->execute();
+            }
+
+            if (($fieldLayout = $element->getFieldLayout()) !== null) {
+                foreach ($element->getDirtyFields() as $fieldHandle) {
+                    if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
+                        $db->createCommand()
+                            ->upsert(Table::CHANGEDFIELDS, [
+                                'elementId' => $element->id,
+                                'siteId' => $element->siteId,
+                                'fieldId' => $field->id,
+                            ], [
+                                'dateUpdated' => $timestamp,
+                                'propagated' => $element->propagating,
+                                'userId' => $userId,
+                            ], [], false)
+                            ->execute();
+                    }
+                }
+            }
+        }
+
         // Clear the element's record of dirty fields
-        $element->clearDirtyFields();
+        $element->markAsClean();
 
         return true;
     }
