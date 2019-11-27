@@ -74,7 +74,7 @@ class PreviewAsset extends ElementAction
                 settings.startingWidth = \$selectedItems.find('.element').data('image-width');
                 settings.startingHeight = \$selectedItems.find('.element').data('image-height');
             }
-            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), \$selectedItems, settings);
+            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), Craft.elementIndex.view.elementSelect, settings);
         }
     });
 })();
