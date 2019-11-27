@@ -675,33 +675,46 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #toolbar {
   flex: 1;
 
+  .btn,
+  .text {
+    color: darken($inputColor, 10%);
+  }
+
+  .icon:before,
+  .texticon:before,
+  .menubtn:after,
+  [data-icon]:before,
+  [data-icon-after]:after {
+    color: $inputColor;
+  }
+
   .text {
     border-radius: $largeBorderRadius;
     background-color: transparentize($inputColor, 0.75);
     box-shadow: none;
 
     &::-webkit-input-placeholder {
-      color: $grey500;
+      color: $inputColor;
     }
 
     &:-ms-input-placeholder {
-      color: $grey500;
+      color: $inputColor;
     }
 
     &::-ms-input-placeholder {
-      color: $grey500;
+      color: $inputColor;
     }
 
     &:-moz-placeholder {
-      color: $grey500;
+      color: $inputColor;
     }
 
     &::-moz-placeholder {
-      color: $grey500;
+      color: $inputColor;
     }
 
     &::placeholder {
-      color: $grey500;
+      color: $inputColor;
     }
 
     &:not(:focus) {
