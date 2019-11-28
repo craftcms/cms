@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed an issue where string encoding might not behave as expected in some environments running PHP 7.3 or greater. ([#4239](https://github.com/craftcms/cms/issues/4239))
 - Fixed an error that occurred when editing an entry if one of its past revisions used an entry type that was soft-deleted. ([#5270](https://github.com/craftcms/cms/issues/5270))
+- Fixed a JavaScript error that occurred when previewing assets via the “Preview file” action. ([#5272](https://github.com/craftcms/cms/pull/5272))
 
 ## 3.3.16.3 - 2019-11-26
 
