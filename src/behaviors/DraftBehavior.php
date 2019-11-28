@@ -80,6 +80,17 @@ class DraftBehavior extends Behavior
     }
 
     /**
+     * Returns the draft’s name.
+     *
+     * @return string
+     * @since 3.3.17
+     */
+    public function getDraftName(): string
+    {
+        return $this->draftName;
+    }
+
+    /**
      * Returns the draft’s source element.
      *
      * @return ElementInterface|null

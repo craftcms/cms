@@ -21,7 +21,7 @@
     .all() %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
-{% set supportedSites = craft.app.isMultiSite ? element.supportedSites : [element.site] %}
+{% set supportedSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.getSite()] %}
 {% set isMultiSiteElement = supportedSites|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
 {% set isRevision = element.getIsRevision() %}
@@ -40,12 +40,12 @@
 
 <div id="revision-btngroup" class="btngroup">
     <div id="revision-btn" class="btn {% if enableMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
-        {% if showSiteLabel %}{{ element.site.name|t('site') }} –{% endif %}
+        {% if showSiteLabel %}{{ element.getSite().name|t('site') }} –{% endif %}
         <span id="revision-label">
             {%- if isDraft %}
-                {{- element.draftName }}
+                {{- element.getDraftName() }}
             {%- elseif isRevision %}
-                {{- element.revisionLabel }}
+                {{- element.getRevisionLabel() }}
             {%- else %}
                 {{- 'Current'|t('app') }}
             {%- endif -%}
@@ -85,11 +85,12 @@
 
             {% if not isUnsavedDraft %}
                 <ul class="padded revision-group-current">
-                    {% set currentRevisionEditTime = element.currentRevision.dateCreated ?? element.dateUpdated %}
+                    {% set currentRevision = element.getCurrentRevision() %}
+                    {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
                     <li>
                         <a{% if not isDraft and not isRevision %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
                             <span class="light">{{ currentRevisionEditTime|timestamp('short') }}
-                                {%- if element.currentRevision %}, {{ element.currentRevision.creator }}{% endif %}
+                                {%- if currentRevision %}, {{ currentRevision.creator }}{% endif %}
                             </span>
                         </a>
                     </li>
@@ -121,7 +122,7 @@
                         <li>
                             {% set url = url(cpEditUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
                             <a{% if revision.revisionId == element.revisionId %} class="sel"{% endif %} href="{{ url }}">
-                                {{ revision.revisionLabel }}
+                                {{ revision.getRevisionLabel() }}
                                 {% set creator = revision.getCreator() %}
                                 {% if creator %}
                                     <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ creator }}</span>
