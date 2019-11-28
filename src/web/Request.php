@@ -1017,6 +1017,9 @@ class Request extends \yii\web\Request
 
         list($route, $params) = $result;
 
+        // Ensure params is an array
+        $params = is_array($params) ? $params : [];
+
         /** @noinspection AdditionOperationOnArraysInspection */
         return [$route, $params + $this->getQueryParams()];
     }
