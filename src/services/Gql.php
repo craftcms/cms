@@ -708,15 +708,33 @@ class Gql extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $schemaRecord = $this->_getSchemaRecord($schemaUid, true);
+            $schemaRecord = $this->_getSchemaRecord($schemaUid);
 
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)$data['isPublic'];
             $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode((array)$data['scope']) : [];
 
+            if (empty($schemaRecord->id) &&
+                ($allSchemas = Craft::$app->getSession()->get('migrationGqlSchemaData')) &&
+                !empty($allSchemas[$schemaUid])) {
+                $migratedSchema = $allSchemas[$schemaUid];
+            }
+
             // Save the scope
             $schemaRecord->save(false);
+
+            if (!empty($migratedSchema)) {
+                $token = new GqlToken([
+                    'name' => $migratedSchema['name'],
+                    'accessToken' => $migratedSchema['accessToken'],
+                    'enabled' => $migratedSchema['enabled'],
+                    'expiryDate' => $migratedSchema['expiryDate'],
+                    'lastUsed' => $migratedSchema['lastUsed'],
+                    'schemaId' => $schemaRecord->id,
+                ]);
+                $this->saveToken($token);
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -726,6 +744,7 @@ class Gql extends Component
 
         $this->invalidateCaches();
     }
+
     /**
      * Deletes a GraphQL schema by its ID.
      *
