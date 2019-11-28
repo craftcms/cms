@@ -2919,7 +2919,7 @@
 - Plugins can now be updated and removed from within the Control Panel.
 - Asset sources are now called “volumes”, and plugins can supply their own volume types.
 - Added the Image Editor, which can be used to rotate, crop, and flip images, as well as set focal points on them.
-- Added asset previews, which can be triggered via a “Preview file” action on the Assets index, or with a `shift` + `spacebar` keyboard shortcut throughout the Control Panel.
+- Added asset previews, which can be triggered via a “Preview file” action on the Assets index, or with a <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut throughout the Control Panel.
 - Asset editor HUDs now show image previews. ([#837](https://github.com/craftcms/cms/issues/837))
 - Added the “Utilities” section to the Control Panel, replacing the Tools area of the Settings page.
 - Added the Debug Toolbar, powered by the [Debug Extension for Yii 2](http://www.yiiframework.com/doc-2.0/guide-tool-debugger.html).
