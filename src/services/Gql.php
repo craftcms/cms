@@ -716,7 +716,7 @@ class Gql extends Component
             $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode((array)$data['scope']) : [];
 
             if (empty($schemaRecord->id) &&
-                ($allSchemas = Craft::$app->getSession()->get('migrationGqlSchemaData')) &&
+                ($allSchemas = Craft::$app->getCache()->get('migration:add_gql_project_config_support:schemas')) &&
                 !empty($allSchemas[$schemaUid])) {
                 $migratedSchema = $allSchemas[$schemaUid];
             }
@@ -724,6 +724,7 @@ class Gql extends Component
             // Save the scope
             $schemaRecord->save(false);
 
+            // If we're updating to 3.4, create the token for the schema.
             if (!empty($migratedSchema)) {
                 $token = new GqlToken([
                     'name' => $migratedSchema['name'],

@@ -23,6 +23,12 @@ class m191107_122000_add_gql_project_config_support extends Migration
      */
     public function safeUp()
     {
+        $cacheKey = 'migration:add_gql_project_config_support:schemas';
+        $cache = Craft::$app->getCache();
+
+        // In case of rollbacks and migration re-runs.
+        $cache->delete($cacheKey);
+
         $this->createTable(Table::GQLTOKENS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
@@ -65,7 +71,7 @@ class m191107_122000_add_gql_project_config_support extends Migration
             $this->delete(Table::GQLSCHEMAS);
 
             // Store the existing schemas on the session
-            Craft::$app->getSession()->set('migrationGqlSchemaData', $allSchemas);
+            $cache->set($cacheKey, $allSchemas);
             // We're good to split this data into token/schema combos
         } else {
             $projectConfig->muteEvents = true;
