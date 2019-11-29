@@ -1350,10 +1350,10 @@ class Sites extends Component
                     $updateCondition = ['elementId' => $elementIds];
 
                     $db->createCommand()
-                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition)
+                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition, [], false)
                         ->execute();
                     $db->createCommand()
-                        ->update(Table::CONTENT, $updateColumns, $updateCondition)
+                        ->update(Table::CONTENT, $updateColumns, $updateCondition, [], false)
                         ->execute();
                 }
             }
