@@ -145,7 +145,7 @@ abstract class Resolver
 
                                 $arguments[$argumentNode->name->value] = $values;
                             } else {
-                                $arguments[$argumentNode->name->value] = $argumentNode->value->value;
+                                $arguments[$argumentNode->name->value] = $argumentNode->value->value ?? null;
                             }
                         }
 
