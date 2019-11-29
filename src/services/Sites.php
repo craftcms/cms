@@ -634,7 +634,6 @@ class Sites extends Component
         $isNewSite = !$site->id;
 
         if (!empty($this->_sitesById)) {
-            // Did the primary site just change?
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } else {
             $oldPrimarySiteId = null;
@@ -705,7 +704,6 @@ class Sites extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $projectConfig->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
-        // Did the primary site just change?
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } catch (SiteNotFoundException $e) {
