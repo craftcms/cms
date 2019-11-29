@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementInterface::lowerDisplayName()` and `pluralLowerDisplayName()`. ([#5271](https://github.com/craftcms/cms/issues/5271))
+
 ### Fixed
 - Fixed an issue where string encoding might not behave as expected in some environments running PHP 7.3 or greater. ([#4239](https://github.com/craftcms/cms/issues/4239))
 - Fixed an error that occurred when editing an entry if one of its past revisions used an entry type that was soft-deleted. ([#5270](https://github.com/craftcms/cms/issues/5270))

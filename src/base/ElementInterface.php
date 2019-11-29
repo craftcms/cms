@@ -25,12 +25,28 @@ interface ElementInterface extends ComponentInterface
     // =========================================================================
 
     /**
+     * Returns the lowercase version of [[displayName()]].
+     *
+     * @return string
+     * @since 3.3.17
+     */
+    public static function lowerDisplayName(): string;
+
+    /**
      * Returns the plural version of [[displayName()]].
      *
      * @return string
      * @since 3.2.0
      */
     public static function pluralDisplayName(): string;
+
+    /**
+     * Returns the plural, lowercase version of [[displayName()]].
+     *
+     * @return string
+     * @since 3.3.17
+     */
+    public static function pluralLowerDisplayName(): string;
 
     /**
      * Returns the handle that should be used to refer to this element type from reference tags.

@@ -318,9 +318,33 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Element');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return StringHelper::toLowerCase(static::displayName());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Elements');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return StringHelper::toLowerCase(static::pluralDisplayName());
     }
 
     /**
@@ -1522,7 +1546,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri) {
             $previewTargets[] = [
                 'label' => Craft::t('app', 'Primary {type} page', [
-                    'type' => StringHelper::toLowerCase(static::displayName()),
+                    'type' => static::lowerDisplayName(),
                 ]),
                 'url' => $this->getIsHomepage() ? '' : $this->uri
             ];
