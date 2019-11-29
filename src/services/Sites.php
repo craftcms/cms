@@ -1344,6 +1344,9 @@ class Sites extends Component
                     $db->createCommand()
                         ->delete(Table::CONTENT, $deleteCondition)
                         ->execute();
+                    $db->createCommand()
+                        ->delete(Table::SEARCHINDEX, $deleteCondition)
+                        ->execute();
 
                     // Now swap the sites
                     $updateColumns = ['siteId' => $newPrimarySiteId];
@@ -1354,6 +1357,9 @@ class Sites extends Component
                         ->execute();
                     $db->createCommand()
                         ->update(Table::CONTENT, $updateColumns, $updateCondition, [], false)
+                        ->execute();
+                    $db->createCommand()
+                        ->update(Table::SEARCHINDEX, $updateColumns, $updateCondition, [], false)
                         ->execute();
                 }
             }
