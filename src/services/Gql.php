@@ -1222,7 +1222,7 @@ class Gql extends Component
         } else {
             $schemaUid = StringHelper::UUID();
             $schema = new GqlSchema([
-                'name' => 'Public schema',
+                'name' => 'Public Schema',
                 'uid' => $schemaUid,
                 'isPublic' => true,
             ]);
