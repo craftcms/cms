@@ -1527,7 +1527,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Avoid indexing by an ambiguous column
         if (
             $this->from === null &&
-            is_string($this->indexBy)  &&
+            is_string($this->indexBy) &&
             in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
         ) {
             $this->from = ['elements' => Table::ELEMENTS];

@@ -3,8 +3,6 @@
 namespace craft\test\mockclasses\gql;
 
 use craft\gql\GqlEntityRegistry;
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\Node;
 use GraphQL\Type\Definition\ScalarType;
 
 /**
@@ -26,6 +24,7 @@ class MockType extends ScalarType
     {
         return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
     }
+
     /**
      * @inheritdoc
      */
@@ -36,7 +35,7 @@ class MockType extends ScalarType
 
     public function serialize($value)
     {
-       return 'mock';
+        return 'mock';
     }
 
     public function parseValue($value)
