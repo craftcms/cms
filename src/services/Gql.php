@@ -710,23 +710,23 @@ class Gql extends Component
 
         try {
             $schemaRecord = $this->_getSchemaRecord($schemaUid);
+            $isNew = $schemaRecord->getIsNewRecord();
 
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
-            $schemaRecord->isPublic = (bool)$data['isPublic'];
+            $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
             $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode((array)$data['scope']) : [];
 
-            if (empty($schemaRecord->id) &&
-                ($allSchemas = Craft::$app->getCache()->get('migration:add_gql_project_config_support:schemas')) &&
-                !empty($allSchemas[$schemaUid])) {
-                $migratedSchema = $allSchemas[$schemaUid];
-            }
-
-            // Save the scope
+            // Save the schema record
             $schemaRecord->save(false);
 
-            // If we're updating to 3.4, create the token for the schema.
-            if (!empty($migratedSchema)) {
+            // If we're updating to 3.4+, check if the old token info for this schema was cached
+            if (
+                $isNew &&
+                ($allSchemas = Craft::$app->getCache()->get('migration:add_gql_project_config_support:schemas')) &&
+                !empty($allSchemas[$schemaUid])
+            ) {
+                $migratedSchema = $allSchemas[$schemaUid];
                 $token = new GqlToken([
                     'name' => $migratedSchema['name'],
                     'accessToken' => $migratedSchema['accessToken'],
