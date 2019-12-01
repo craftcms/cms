@@ -5,13 +5,17 @@
 
 {% set selectedSubnavItem = 'schemas' %}
 
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>
+{% endblock %}
+
 {% block content %}
     {% set schemas = craft.app.gql.schemas %}
 
     <div class="tablepane">
         <table id="schemas" class="data fullwidth">
             <thead>
-                <th scope="col">{{ "Schema name"|t('app') }}</th>
+                <th scope="col">{{ "Name"|t('app') }}</th>
             <th></th>
         </thead>
         <tbody>
@@ -25,10 +29,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-
-    <div class="buttons">
-        <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>
     </div>
 {% endblock %}
 
