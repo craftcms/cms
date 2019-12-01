@@ -23,6 +23,7 @@ abstract class AssetPreview extends Component implements AssetPreviewInterface
 
     /**
      * AssetPreview constructor.
+     *
      * @param Asset $asset
      */
     public function __construct(Asset $asset)

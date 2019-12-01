@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 

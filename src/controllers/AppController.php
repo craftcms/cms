@@ -148,6 +148,7 @@ class AppController extends Controller
 
     /**
      * Returns updates info as JSON
+     *
      * @param Updates $updates The updates model
      * @param bool $includeDetails Whether to include update details
      * @return Response

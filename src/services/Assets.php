@@ -1062,7 +1062,7 @@ class Assets extends Component
         }
 
         // These are our default preview handlers if one is not supplied
-        switch($asset->kind) {
+        switch ($asset->kind) {
             case Asset::KIND_IMAGE:
                 return new ImagePreview($asset);
             case Asset::KIND_PDF:
