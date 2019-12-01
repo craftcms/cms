@@ -210,7 +210,7 @@ class GraphqlController extends Controller
         }
 
         $schemas = [
-            Craft::t('app', 'Full Access Schema') => '*',
+            Craft::t('app', 'Full Schema') => '*',
         ];
 
         foreach ($gqlService->getSchemas() as $schema) {

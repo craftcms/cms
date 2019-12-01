@@ -173,7 +173,7 @@ class Gql
     public static function createFullAccessSchema(): GqlSchema
     {
         $permissionGroups = Craft::$app->getGql()->getAllPermissions();
-        $schema = new GqlSchema(['name' => 'Full Access Schema', 'uid' => '*']);
+        $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
 
         // Fetch all nested permissions
         $traverser = function($permissions) use ($schema, &$traverser) {
