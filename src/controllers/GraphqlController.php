@@ -578,10 +578,10 @@ class GraphqlController extends Controller
         $this->requireAdmin(false);
         $this->requireElevatedSession();
 
-        $schemaUid = Craft::$app->getRequest()->getRequiredBodyParam('schemaUid');
+        $tokenUid = Craft::$app->getRequest()->getRequiredBodyParam('tokenUid');
 
         try {
-            $schema = Craft::$app->getGql()->getTokenByUid($schemaUid);
+            $schema = Craft::$app->getGql()->getTokenByUid($tokenUid);
         } catch (InvalidArgumentException $e) {
             throw new BadRequestHttpException('Invalid schema UID.');
         }
