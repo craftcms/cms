@@ -65,23 +65,6 @@
     {{ redirectInput('graphql/schemas') }}
 
     <div id="token-settings">
-        {{ forms.dateTimeField({
-            label: "Expiry Date"|t('app'),
-            id: 'expiryDate',
-            name: 'expiryDate',
-            value: (token.expiryDate ? token.expiryDate : null),
-            errors: token.getErrors('expiryDate')
-        }) }}
-
-        {{ forms.lightswitchField({
-            label: 'Enabled'|t('app'),
-            id: 'enabled',
-            name: 'enabled',
-            on: token.enabled,
-        }) }}
-
-        <hr>
-
         <h2>{{ 'Configure the public schema'|t('app') }}</h2>
 
         {% set gqlPermissions = craft.app.gql.allPermissions %}
@@ -94,7 +77,25 @@
             {{ permissionList(schema, catPermissions) }}
         </div>
         {% endfor %}
+    </div>
+{% endblock %}
 
+{% block details %}
+    <div class="meta">
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: token.enabled,
+        }) }}
+
+        {{ forms.dateTimeField({
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (token.expiryDate ? token.expiryDate : null),
+            errors: token.getErrors('expiryDate')
+        }) }}
     </div>
 {% endblock %}
 
