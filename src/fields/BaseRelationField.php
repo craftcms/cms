@@ -19,8 +19,10 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
@@ -538,18 +540,35 @@ JS;
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $element = $this->_all($value, $element)->one();
-        } else {
-            $element = $value[0] ?? null;
+            $value = $this->_all($value, $element)->all();
         }
 
-        if ($element) {
-            return Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => $element
+        if (empty($value)) {
+            return '';
+        }
+
+        $first = array_shift($value);
+
+        $html = Craft::$app->getView()->renderTemplate('_elements/element', [
+            'element' => $first,
+        ]);
+
+        if (!empty($value)) {
+            $otherHtml = '';
+            foreach ($value as $other) {
+                $otherHtml .= Craft::$app->getView()->renderTemplate('_elements/element', [
+                    'element' => $other,
+                ]);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
+                'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
             ]);
         }
 
-        return '';
+        return $html;
     }
 
     /**

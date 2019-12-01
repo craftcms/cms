@@ -119,7 +119,7 @@ class View extends \yii\web\View
     /**
      * @var array The sizes that element thumbnails should be rendered in
      */
-    private static $_elementThumbSizes = [30, 60, 100, 200];
+    private static $_elementThumbSizes = [32, 64, 120, 240];
 
     /**
      * @var Environment|null The Twig environment instance used for CP templates

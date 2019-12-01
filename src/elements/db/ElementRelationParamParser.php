@@ -213,9 +213,11 @@ class ElementRelationParamParser extends BaseObject
                         }
                     } else if ($element instanceof ElementQueryInterface) {
                         $ids = $element->ids();
-                        array_push($relElementIds, ...$ids);
-                        if ($elementParam === 'element') {
-                            array_push($relSourceElementIds, ...$ids);
+                        if (!empty($ids)) {
+                            array_push($relElementIds, ...$ids);
+                            if ($elementParam === 'element') {
+                                array_push($relSourceElementIds, ...$ids);
+                            }
                         }
                     }
                 }

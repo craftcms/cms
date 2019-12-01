@@ -70,7 +70,7 @@
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
-{% set tabs = tabs ?? null %}
+{% set tabs = tabs is defined and tabs|length != 1 ? tabs : null %}
 
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
@@ -145,7 +145,7 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div class="flex flex-nowrap">
+                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
                                                 <h1 title="{{ title }}">{{ title }}</h1>
@@ -153,7 +153,12 @@
                                         {% endblock %}
                                         {% block contextMenu %}{% endblock %}
                                     </div>
-                                    <div class="flex">
+                                    {% if toolbar %}
+                                        <div id="toolbar" class="flex flex-nowrap">
+                                            {{ toolbar|raw }}
+                                        </div>
+                                    {% endif %}
+                                    <div id="action-button" class="flex">
                                         {% block actionButton %}
                                             {% if fullPageForm %}
                                                 <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
@@ -181,12 +186,6 @@
                         {# content-container #}
                         <div id="content-container">
                             {% block main %}
-                                {% if toolbar %}
-                                    <div id="toolbar" class="toolbar">
-                                        {{ toolbar|raw }}
-                                    </div>
-                                {% endif %}
-
                                 {% block tabs %}
                                     {% if tabs %}
                                         {% include "_includes/tabs" %}

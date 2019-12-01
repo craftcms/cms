@@ -3,14 +3,55 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\ElementInterface::lowerDisplayName()` and `pluralLowerDisplayName()`. ([#5271](https://github.com/craftcms/cms/issues/5271))
+
+### Changed
+- Error templates now have a `statusCode` variable even if the originating exception wasn’t an instance of `yii\web\HttpException`. ([#5273](https://github.com/craftcms/cms/issues/5273))
+- Number fields now normalize their numbers to integers or floats, if the value that came from the database is a numeric string. ([#5268](https://github.com/craftcms/cms/issues/5268))
+
+### Fixed
+- Fixed an issue where string encoding might not behave as expected in some environments running PHP 7.3 or greater. ([#4239](https://github.com/craftcms/cms/issues/4239))
+- Fixed an error that occurred when editing an entry if one of its past revisions used an entry type that was soft-deleted. ([#5270](https://github.com/craftcms/cms/issues/5270))
+- Fixed a JavaScript error that occurred when previewing assets via the “Preview file” action. ([#5272](https://github.com/craftcms/cms/pull/5272))
+- Fixed a bug where it was impossible to pass `null` values to arguments on GraphQL fields. ([#5267](https://github.com/craftcms/cms/issues/5267))
+- Fixed a bug where Craft wouldn’t update the search indexes for non-localized element types (like Users) when the primary site was changed. ([#5281](https://github.com/craftcms/cms/issues/5281))
+- Fixed a bug where it wasn’t possible to change images’ focal points on mobile. ([#3669](https://github.com/craftcms/cms/issues/3669))
+- Fixed a bug where it wasn’t possible to crop images on mobile. ([#5279](https://github.com/craftcms/cms/issues/5279))
+- Fixed an error that occurred if a token route didn’t specify any params. ([#5282](https://github.com/craftcms/cms/pull/5282))
+
+## 3.3.16.3 - 2019-11-26
+
+### Fixed
+- Fixed an error that occurred when an element query’s `indexBy` param was set `id`, `dateCreated`, `dateUpdated`, or `uid`.
+
+## 3.3.16.2 - 2019-11-26
+
+### Fixed
+- Fixed a SQL error that occurred when an element query’s `indexBy` param set to a column from a table besides `elements`. ([#5216](https://github.com/craftcms/cms/issues/5216))
+- Fixed an issue where the edition was not taken into account when clicking “Buy Now” buttons on Settings → Plugins.
+
+## 3.3.16.1 - 2019-11-22
+
+### Fixed
+- Fixed an error that occurred if Stringy 5.2 was installed.
+
+## 3.3.16 - 2019-11-22
+
+### Added
 - Added `craft\models\GqlSchema::getAllScopePairs()`.
 - Added `craft\models\GqlSchema::getAllScopePairsForAction()`.
 - Added `craft\web\assets\axios\AxiosAsset.php`.
 
 ### Changed
+- Improved Plugin Store performance.
+- Craft now makes most of its API requests from JavaScript rather than PHP, so servers with maxed-out HTTP connections won’t get hung up waiting for the API response before serving additional requests. ([#5194](https://github.com/craftcms/cms/issues/5194), [#5232](https://github.com/craftcms/cms/issues/5232))
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
-- Updated the `svg-sanitize` library to 0.13.0.
-- Updated Yii to 2.0.29.
+- Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+- The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
+- Improved the error message when failing to sync global set. ([#5257](https://github.com/craftcms/cms/issues/5257))
+- It’s now easier to send JSON requests with `Craft.postActionRequest()`, by passing `contentType: 'json'` in the `options` argument.
+- Updated svg-sanitizer to 0.13.
+- Updated Yii to 2.0.30.
 
 ### Deprecated
 - Deprecated `craft\web\assets\graphiql\VendorAsset`.
@@ -20,14 +61,17 @@
 - Fixed a SQL error that could occur when calling an element query’s `ids()` method with `indexBy('id')` set on it. ([#5216](https://github.com/craftcms/cms/issues/5216))
 - Fixed a layout issue with the GraphQL → Explore page on narrow browser windows. ([#5219](https://github.com/craftcms/cms/issues/5219))
 - Fixed a bug where `craft\helpers\UrlHelper::buildQuery()` would remove array param index numbers. ([#5233](https://github.com/craftcms/cms/issues/5233))
-- Fixed a PHP error that could occur when autoloading the `ContentBehavior` and `ElementQueryBehavior` classes in some envirnments.
-- Fixed an error where it was impossible to query for Date field values using GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
-- Fixed an error where deleting an element would not invalidate GraphQL result caches. ([#5238](https://github.com/craftcms/cms/issues/5238))
-- Fixed an error where rebuilding Project Config would omit preview target data for sections. ([#5215](https://github.com/craftcms/cms/issues/5215))
+- Fixed a PHP error that could occur when autoloading the `ContentBehavior` and `ElementQueryBehavior` classes in some environments.
+- Fixed an error where it wasn’t possible to query by Date/Time field values via GraphQL. ([#5240](https://github.com/craftcms/cms/issues/5240))
+- Fixed an error where GraphQL caches weren’t getting invalidated when an element was deleted. ([#5238](https://github.com/craftcms/cms/issues/5238))
+- Fixed an error where rebuilding the project config would omit sections’ preview targets. ([#5215](https://github.com/craftcms/cms/issues/5215))
 - Fixed an error that occurred whet attempting to preview an entry revision. ([#5244](https://github.com/craftcms/cms/issues/5244))
+- Fixed a PHP error that could occur when the `relatedTo` param was set to an element query that would yield no results. ([#5242](https://github.com/craftcms/cms/issues/5242))
+- Fixed an error that could occur when saving a Matrix field. ([#5258](https://github.com/craftcms/cms/issues/5258))
+- Fixed a bug where Craft would sometimes fail to generate a correct GraphQL schema when Matrix fields were involved. ([#5255](https://github.com/craftcms/cms/issues/5255))
 
 ### Security
-- Craft now requires `Portable UTF-8 ^5.4.28`, fixing a security vulnerability.
+- Craft now requires Portable UTF-8 5.4.28 or later, fixing a security vulnerability.
 
 ## 3.3.15 - 2019-11-05
 
@@ -2373,7 +2417,7 @@
 - The `{% js %}` tag now supports the following position params: `at POS_HEAD`, `at POS_BEGIN`, `at POS_END`, `on POS_READY`, and `on POS_LOAD` (e.g. `{% js at POS_END %}`).
 - Craft once again checks for `X-Forwarded-For` headers when determining the user’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 - Leading/trailing whitespace characters are now stripped from element titles on save. ([#3020](https://github.com/craftcms/cms/issues/3020))
-- Updated svg-sanitize to 0.9.
+- Updated svg-sanitizer to 0.9.
 
 ### Deprecated
 - Deprecated `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` should be used instead.
@@ -2891,7 +2935,7 @@
 - Plugins can now be updated and removed from within the Control Panel.
 - Asset sources are now called “volumes”, and plugins can supply their own volume types.
 - Added the Image Editor, which can be used to rotate, crop, and flip images, as well as set focal points on them.
-- Added asset previews, which can be triggered via a “Preview file” action on the Assets index, or with a `shift` + `spacebar` keyboard shortcut throughout the Control Panel.
+- Added asset previews, which can be triggered via a “Preview file” action on the Assets index, or with a <kbd>Shift</kbd> + <kbd>Spacebar</kbd> keyboard shortcut throughout the Control Panel.
 - Asset editor HUDs now show image previews. ([#837](https://github.com/craftcms/cms/issues/837))
 - Added the “Utilities” section to the Control Panel, replacing the Tools area of the Settings page.
 - Added the Debug Toolbar, powered by the [Debug Extension for Yii 2](http://www.yiiframework.com/doc-2.0/guide-tool-debugger.html).

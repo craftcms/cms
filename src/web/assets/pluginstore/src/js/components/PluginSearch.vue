@@ -23,14 +23,12 @@
         },
 
         methods: {
-
             search() {
                 if(this.searchQuery) {
                     this.$store.commit('app/updateSearchQuery', this.searchQuery)
                     this.$router.push({path: '/search'})
                 }
             }
-
         },
     }
 </script>

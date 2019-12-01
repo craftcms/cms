@@ -6,6 +6,7 @@
 
 <script>
     import {mapGetters} from 'vuex'
+    import pluginStoreApi from '../../api/pluginstore'
     import StatusMessage from '../../components/StatusMessage'
 
     export default {
@@ -21,30 +22,45 @@
         },
 
         methods: {
-            buyPlugin(plugin) {
-                if (!this.isPluginBuyable(plugin)) {
-                    this.loading = false
-                    this.$router.push({path: '/'})
-                    return;
-                }
+            buyPlugin(pluginHandle, editionHandle) {
+                pluginStoreApi.getPluginDetailsByHandle(pluginHandle)
+                    .then(responseData => {
+                        const plugin = responseData
 
-                if(this.isInCart(plugin)) {
-                    this.$router.push({path: '/'})
-                    this.$root.openModal('cart')
-                } else {
-                    const item = {
-                        type: 'plugin-edition',
-                        plugin: plugin.handle,
-                        edition: plugin.editions[0].handle,
-                    }
-
-                    this.$store.dispatch('cart/addToCart', [item])
-                        .then(() => {
+                        if (!this.isPluginBuyable(plugin)) {
                             this.loading = false
                             this.$router.push({path: '/'})
+                            return;
+                        }
+
+                        if(this.isInCart(plugin)) {
+                            this.$router.push({path: '/'})
                             this.$root.openModal('cart')
-                        })
-                }
+                        } else {
+                            if (!editionHandle) {
+                                editionHandle = plugin.editions[0].handle
+                            }
+
+                            const item = {
+                                type: 'plugin-edition',
+                                plugin: plugin.handle,
+                                edition: editionHandle,
+                            }
+
+                            this.$store.dispatch('cart/addToCart', [item])
+                                .then(() => {
+                                    this.loading = false
+                                    this.$router.push({path: '/'})
+                                    this.$root.openModal('cart')
+                                })
+                                .catch((error) => {
+                                    throw error
+                                })
+                        }
+                    })
+                    .catch((error) => {
+                        throw error
+                    })
             },
 
             isPluginBuyable(plugin) {
@@ -80,18 +96,16 @@
             this.loading = true
             this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app')
 
-            // retrieve plugin
-            const pluginHandle = this.$route.params.handle
-            const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
+            const plugin = this.$route.params.plugin
+            const edition = this.$route.params.edition
 
-            if (this.$root.pluginStoreDataLoaded && this.$root.craftIdDataLoaded && this.$root.cartDataLoaded) {
-                // buy plugin
-                this.buyPlugin(plugin)
+
+            if (this.$root.allDataLoaded) {
+                this.buyPlugin(plugin, edition)
             } else {
                 // wait for the cart to be ready
                 this.$root.$on('allDataLoaded', function() {
-                    // buy plugin
-                    this.buyPlugin(plugin)
+                    this.buyPlugin(plugin, edition)
                 }.bind(this))
             }
         }

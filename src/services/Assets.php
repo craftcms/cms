@@ -738,7 +738,7 @@ class Assets extends Component
                     $image->disableAnimation();
                 }
 
-                $image->scaleToFit($width, $height);
+                $image->scaleAndCrop($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
@@ -769,17 +769,17 @@ class Assets extends Component
 
         $extLength = strlen($ext);
         if ($extLength <= 3) {
-            $textSize = '26';
+            $textSize = '20';
         } else if ($extLength === 4) {
-            $textSize = '22';
+            $textSize = '17';
         } else {
             if ($extLength > 5) {
                 $ext = substr($ext, 0, 4) . '…';
             }
-            $textSize = '18';
+            $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
         FileHelper::writeToFile($path, $svg);

@@ -1,5 +1,7 @@
 <template>
-    <div>
+    <div class="flex self-end">
+        <spinner v-if="loading" class="mt-2 mr-4"></spinner>
+
         <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="options"></sort-menu-btn>
     </div>
 </template>
@@ -8,7 +10,7 @@
     import SortMenuBtn from './SortMenuBtn'
 
     export default {
-        props: ['sortingOptions'],
+        props: ['loading', 'orderBy', 'direction'],
 
         components: {
             SortMenuBtn,
@@ -20,24 +22,28 @@
                 selectedDirection: null,
                 sortMenuBtnAttributes: null,
                 options: {
-                    attribute: 'activeInstalls',
-                    direction: 'desc',
+                    attribute: null,
+                    direction: null,
                 },
             }
         },
 
         watch: {
             options() {
-                this.$emit('update:sortingOptions', this.options)
+                this.$emit('update:orderBy', this.options.attribute)
+                this.$emit('update:direction', this.options.direction)
+                this.$emit('change')
             },
         },
 
         mounted() {
+            this.options.attribute = this.orderBy
+            this.options.direction = this.direction
+
             this.sortMenuBtnAttributes = {
-                activeInstalls: this.$options.filters.t("Popularity", 'app'),
-                lastUpdate: this.$options.filters.t("Last Update", 'app'),
+                popularity: this.$options.filters.t("Popularity", 'app'),
+                dateUpdated: this.$options.filters.t("Last Update", 'app'),
                 name: this.$options.filters.t("Name", 'app'),
-                price: this.$options.filters.t("Price", 'app'),
             }
         }
     }

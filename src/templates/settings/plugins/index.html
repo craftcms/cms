@@ -20,7 +20,7 @@
 
 {% block content %}
     {% if info|length %}
-        <div class="scrolltable">
+        <div class="tablepane">
             <table id="plugins" class="data fullwidth">
                 <tbody>
                     {% for handle, config in info %}
@@ -65,7 +65,7 @@
                                             <div class="pane">
                                                 <input class="text code{% if config.licenseIssues is not empty %} error{% endif %}" size="29" value="{{ config.licenseKey[0:1] == '$' ? config.licenseKey : (config.licenseKey|replace('/.{4}/', '$0-')|trim('-')) }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
                                             </div>
-                                            <a class="btn{% if config.licenseIssues is not empty %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle)}}">{{ "Buy now"|t('app') }}</a>
+                                            <a class="btn{% if config.licenseIssues is not empty %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle~'/'~config.edition)}}">{{ "Buy now"|t('app') }}</a>
                                             <div class="spinner hidden"></div>
                                         </div>
                                         {% for issue in config.licenseIssues %}

@@ -163,8 +163,11 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if ($value === null && $this->defaultValue !== null && $this->isFresh($element)) {
-            return $this->defaultValue;
+        if ($value === null) {
+            if ($this->defaultValue !== null && $this->isFresh($element)) {
+                return $this->defaultValue;
+            }
+            return null;
         }
 
         // Was this submitted with a locale ID?
@@ -172,7 +175,20 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value === '' ? null : $value;
+        if ($value === '') {
+            return null;
+        }
+
+        if (is_string($value) && is_numeric($value)) {
+            if ((int)$value == $value) {
+                return (int)$value;
+            }
+            if ((float)$value == $value) {
+                return (float)$value;
+            }
+        }
+
+        return $value;
     }
 
     /**

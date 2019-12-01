@@ -15,9 +15,11 @@ use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
+use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
@@ -28,6 +30,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use ZipArchive;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -788,21 +791,46 @@ class AssetsController extends Controller
         $this->requireLogin();
         $this->requirePostRequest();
 
-        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
-        $assetService = Craft::$app->getAssets();
+        $assetIds = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $assets = Asset::find()
+            ->id($assetIds)
+            ->all();
 
-        $asset = $assetService->getAssetById($assetId);
-
-        if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to download does not exist.'));
+        if (empty($assets)) {
+            throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to download does not exist.'));
         }
 
-        $this->_requirePermissionByAsset('viewVolume', $asset);
+        foreach ($assets as $asset) {
+            $this->_requirePermissionByAsset('viewVolume', $asset);
+        }
 
-        $response = Craft::$app->getResponse()
-            ->sendStreamAsFile($asset->stream, $asset->filename);
+        // If only one asset was selected, send it back unzipped
+        if (count($assets) === 1) {
+            $asset = reset($assets);
+            return Craft::$app->getResponse()
+                ->sendStreamAsFile($asset->stream, $asset->filename);
+        }
 
-        return $response;
+        // Otherwise create a zip of all the selected assets
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+            throw new Exception('Cannot create zip at ' . $zipPath);
+        }
+
+        App::maxPowerCaptain();
+        foreach ($assets as $asset) {
+            $localPath = $asset->getCopyOfFile();
+            /** @var Volume $volume */
+            $volume = $asset->getVolume();
+            $zip->addFile($localPath, $volume->name . '/' . $asset->getPath());
+        }
+
+        $zip->close();
+
+        return Craft::$app->getResponse()
+            ->sendFile($zipPath, 'assets.zip');
     }
 
     /**
