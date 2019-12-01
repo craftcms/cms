@@ -120,22 +120,22 @@ class UrlManager extends \yii\web\UrlManager
             return false;
         }
 
-        if (($route = $this->_getRequestRoute($request)) !== false) {
-            // Merge in any additional route params
-            if (!empty($this->_routeParams)) {
-                if (isset($route[1])) {
-                    $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
-                } else {
-                    $route[1] = $this->_routeParams;
-                }
-            } else {
-                $this->_routeParams = $route[1];
-            }
-
-            return $route;
+        if (($route = $this->_getRequestRoute($request)) === false) {
+            return false;
         }
 
-        return false;
+        // Merge in any additional route params
+        if (!empty($this->_routeParams)) {
+            if (isset($route[1])) {
+                $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
+            } else {
+                $route[1] = $this->_routeParams;
+            }
+        } else {
+            $this->_routeParams = $route[1];
+        }
+
+        return $route;
     }
 
     /**
