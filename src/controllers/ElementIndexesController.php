@@ -441,8 +441,8 @@ class ElementIndexesController extends BaseElementsController
         if (!$this->paginated || !$this->elementQuery->limit || $count < $this->elementQuery->limit) {
             $responseData['countLabel'] = Craft::t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', [
                 'total' => $count,
-                'item' => StringHelper::toLowerCase($elementType::displayName()),
-                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+                'item' => $elementType::lowerDisplayName(),
+                'items' => $elementType::pluralLowerDisplayName(),
             ]);
         } else {
             $first = min(($this->elementQuery->offset ?: 0) + 1, $count);
@@ -451,8 +451,8 @@ class ElementIndexesController extends BaseElementsController
                 'first' => $first,
                 'last' => $last,
                 'total' => $count,
-                'item' => StringHelper::toLowerCase($elementType::displayName()),
-                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+                'item' => $elementType::lowerDisplayName(),
+                'items' => $elementType::pluralLowerDisplayName(),
             ]);
         }
 
