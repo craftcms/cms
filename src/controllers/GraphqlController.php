@@ -70,7 +70,7 @@ class GraphqlController extends Controller
     public function actionApi(): Response
     {
         $request = Craft::$app->getRequest();
-        $headerCollection = $request->getHeaders();
+        $requestHeaders = $request->getHeaders();
         $response = Craft::$app->getResponse();
 
         // Add CORS headers
@@ -93,24 +93,24 @@ class GraphqlController extends Controller
         $token = null;
         $schema = null;
 
-        if ($authorizationHeader = $headerCollection->get('authorization')) {
-            $token = preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches) ? $matches[1] : null;
-
-            try {
-                $token = $gqlService->getTokenByAccessToken($token);
-            } catch (InvalidArgumentException $e) {
-                throw new BadRequestHttpException('Invalid authorization token.');
+        if ($requestHeaders->has('authorization')) {
+            if (!preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
+                throw new BadRequestHttpException('Invalid Authorization header');
             }
-        } else if (($schemaUid = $headerCollection->get('x-craft-gql-schema'))) {
+            try {
+                $token = $gqlService->getTokenByAccessToken($matches[1]);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException('Invalid Authorization header');
+            }
+        } else if ($requestHeaders->has('x-craft-gql-schema')) {
             $this->requireAdmin(false);
-
+            $schemaUid = $requestHeaders->get('x-craft-gql-schema');
             if ($schemaUid === '*') {
                 $schema = Gql::createFullAccessSchema();
             } else {
                 $schema = $gqlService->getSchemaByUid($schemaUid);
             }
         }
-
 
         // What if something already set it on the service?
         if (!$token && !$schema) {
@@ -128,7 +128,7 @@ class GraphqlController extends Controller
             $schemaExpired = $token && $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
 
             if (!$token || !$token->enabled || $schemaExpired) {
-                throw new ForbiddenHttpException('Invalid authorization token.');
+                throw new BadRequestHttpException('Invalid Authorization header');
             }
 
             // Don't re-fetch public schema
@@ -156,7 +156,7 @@ class GraphqlController extends Controller
 
         // 400 error if we couldn't find the query
         if ($query === null) {
-            throw new BadRequestHttpException('No GraphQL query was supplied.');
+            throw new BadRequestHttpException('No GraphQL query was supplied');
         }
 
         if ($token) {
@@ -273,9 +273,7 @@ class GraphqlController extends Controller
 
         $schemas = $gqlService->getSchemas();
 
-        $schemaOptions = [
-            ['label' => '-', 'value' => null,]
-        ];
+        $schemaOptions = [];
 
         $publicSchema = $gqlService->getPublicSchema();
 
@@ -442,9 +440,9 @@ class GraphqlController extends Controller
             throw new NotFoundHttpException('Public schema not found');
         }
 
-        $title = trim($schema->name) ?: Craft::t('app', 'Edit the Public GraphQL Schema');
+        $title = Craft::t('app', 'Edit the public GraphQL schema');
 
-        return $this->renderTemplate('graphql/schemas/_publicSchema', compact(
+        return $this->renderTemplate('graphql/schemas/_edit', compact(
             'schema',
             'token',
             'title'

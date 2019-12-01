@@ -61,11 +61,11 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
 
 {% block content %}
-    <input type="hidden" name="action" value="graphql/save-schema">
+    {{ actionInput(schema.isPublic ? 'graphql/save-public-schema' : 'graphql/save-schema') }}
     {{ redirectInput('graphql/schemas') }}
-    {% if schema.id %}<input type="hidden" name="schemaId" value="{{ schema.id }}">{% endif %}
+    {% if schema.id %}{{ hiddenInput('schemaId', schema.id) }}{% endif %}
 
-    <div id="schema-settings">
+    {% if not schema.isPublic %}
         {{ forms.textField({
             first: true,
             label: "Name"|t('app'),
@@ -78,18 +78,42 @@
             required: true
         }) }}
 
+        <hr>
+    {% endif %}
 
-        {% set gqlPermissions = craft.app.gql.allPermissions %}
+    <h2>{{ 'Choose which content should be available with this schema:'|t('app') }}</h2>
 
-        {% for category, catPermissions in craft.app.gql.allPermissions %}
-            <div class="user-permissions">
-                <h3>{{ category }}</h3>
-                <div class="select-all"></div>
+    {% set gqlPermissions = craft.app.gql.allPermissions %}
 
-                {{ permissionList(schema, catPermissions) }}
-            </div>
-        {% endfor %}
-    </div>
+    {% for category, catPermissions in craft.app.gql.allPermissions %}
+        <div class="user-permissions">
+            <h3>{{ category }}</h3>
+            <div class="select-all"></div>
+
+            {{ permissionList(schema, catPermissions) }}
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block details %}
+    {% if schema.isPublic %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                label: 'Enabled'|t('app'),
+                id: 'enabled',
+                name: 'enabled',
+                on: token.enabled,
+            }) }}
+
+            {{ forms.dateTimeField({
+                label: "Expiry Date"|t('app'),
+                id: 'expiryDate',
+                name: 'expiryDate',
+                value: (token.expiryDate ? token.expiryDate : null),
+                errors: token.getErrors('expiryDate')
+            }) }}
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% js %}

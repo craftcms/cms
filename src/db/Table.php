@@ -45,8 +45,8 @@ abstract class Table
     const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     const FIELDS = '{{%fields}}';
     const GLOBALSETS = '{{%globalsets}}';
-    const GQLTOKENS = '{{%gqltokens}}';
     const GQLSCHEMAS = '{{%gqlschemas}}';
+    const GQLTOKENS = '{{%gqltokens}}';
     const INFO = '{{%info}}';
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';

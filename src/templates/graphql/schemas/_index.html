@@ -16,15 +16,23 @@
         <table id="schemas" class="data fullwidth">
             <thead>
                 <th scope="col">{{ "Name"|t('app') }}</th>
-            <th></th>
-        </thead>
-        <tbody>
-            {% for schema in schemas %}
-                <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ (schema.isPublic ? 'public' : schema.id)) }}">{{ schema.name }}</a></th>
-                        <th class="thin">
-                        <a class="delete icon {{ schema.isPublic ? 'disabled' : '' }}" title="{{ 'Delete'|t('app') }}" role="button"></a>
+                <th></th>
+            </thead>
+            <tbody>
+                {% for schema in schemas %}
+                    <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}">
+                            {% if schema.isPublic %}
+                                <a href="{{ url('graphql/schemas/public') }}">{{ 'Public Schema'|t('app') }}</a>
+                            {% else %}
+                                <a href="{{ url("graphql/schemas/#{schema.id}") }}">{{ schema.name|t('site') }}</a>
+                            {% endif %}
                         </th>
+                        <td class="thin">
+                            {% if not schema.isPublic %}
+                                <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -33,7 +41,7 @@
 {% endblock %}
 
 
-{% js on ready %}
+{% js %}
     new Craft.AdminTable({
         tableSelector: '#schemas',
         sortable: false,
