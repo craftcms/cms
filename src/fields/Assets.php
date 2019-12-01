@@ -479,7 +479,6 @@ class Assets extends BaseRelationField
                 // Make sure that all traces of processed files are removed.
                 $this->_uploadedDataFiles = null;
             }
-
         }
 
         // Are there any related assets?

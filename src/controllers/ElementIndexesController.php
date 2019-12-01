@@ -18,7 +18,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;

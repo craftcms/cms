@@ -695,7 +695,7 @@ class Gql extends Component
 
     /**
      * Register GraphQL types
-     * 
+     *
      * @return array the list of registered types.
      */
     private function _registerGqlTypes(): array

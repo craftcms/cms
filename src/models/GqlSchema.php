@@ -154,7 +154,6 @@ class GqlSchema extends Model
      *
      * @param $name
      * @return bool
-     * @since 
      */
     public function has(string $name): bool
     {
