@@ -127,7 +127,7 @@ class Tokens extends Component
         // Might be JSON, might not be
         $route = Json::decodeIfJson($route);
 
-        return $route;
+        return (array)$route;
     }
 
     /**

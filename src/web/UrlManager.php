@@ -124,16 +124,13 @@ class UrlManager extends \yii\web\UrlManager
             return false;
         }
 
-        // Merge in any additional route params
-        if (!empty($this->_routeParams)) {
-            if (isset($route[1])) {
-                $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
-            } else {
-                $route[1] = $this->_routeParams;
-            }
-        } else {
-            $this->_routeParams = $route[1];
+        // Make sure there's a params array
+        if (!isset($route[1])) {
+            $route[1] = [];
         }
+
+        // Merge in any additional route params
+        $route[1] = $this->_routeParams = ArrayHelper::merge($route[1], $this->_routeParams);
 
         return $route;
     }
