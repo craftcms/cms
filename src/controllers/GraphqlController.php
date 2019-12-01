@@ -12,8 +12,8 @@ use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql;
 use craft\helpers\UrlHelper;
-use craft\models\GqlToken;
 use craft\models\GqlSchema;
+use craft\models\GqlToken;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use yii\base\InvalidArgumentException;
@@ -85,7 +85,7 @@ class GraphqlController extends Controller
             $response->data = '';
             return $response;
         }
-        
+
         $response->format = Response::FORMAT_JSON;
 
         $gqlService = Craft::$app->getGql();
@@ -390,7 +390,7 @@ class GraphqlController extends Controller
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
-    */
+     */
     public function actionEditSchema(int $schemaId = null, GqlSchema $schema = null): Response
     {
         $this->requireAdmin();
@@ -425,7 +425,7 @@ class GraphqlController extends Controller
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
-    */
+     */
     public function actionEditPublicSchema(GqlSchema $schema = null): Response
     {
         $this->requireAdmin();

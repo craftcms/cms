@@ -50,8 +50,8 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\records\GqlToken as GqlTokenRecord;
 use craft\records\GqlSchema as GqlSchemaRecord;
+use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
@@ -224,7 +224,7 @@ class Gql extends Component
      * @since 3.4.0
      */
     const CONFIG_GQL_SCHEMAS_KEY = 'graphql.schemas';
-    
+
     /**
      * @var Schema Currently loaded schema definition
      */
@@ -453,6 +453,7 @@ class Gql extends Component
 
         return $schemas;
     }
+
     /**
      * Returns the public schema. If it does not exist, it will be created.
      *
@@ -855,7 +856,7 @@ class Gql extends Component
         $scopes = [];
 
         foreach ($rows as $row) {
-            $scopes[] =  new GqlSchema($row);
+            $scopes[] = new GqlSchema($row);
         }
 
         return $scopes;
@@ -1234,7 +1235,7 @@ class Gql extends Component
             'accessToken' => GqlToken::PUBLIC_TOKEN,
             'enabled' => true,
         ]);
-        
+
         $token->schemaId = $existingSchema ? $schema->id : Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
 
         if (!$this->saveToken($token)) {
@@ -1243,7 +1244,7 @@ class Gql extends Component
 
         return $schema;
     }
-    
+
     /**
      * Gets a schema's record by uid.
      *

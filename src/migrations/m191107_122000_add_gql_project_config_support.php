@@ -6,10 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\GqlToken;
 use craft\services\Gql;
 

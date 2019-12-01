@@ -11,7 +11,6 @@ use Craft;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
-use craft\models\GqlToken;
 use GraphQL\Type\Definition\UnionType;
 
 /**
