@@ -32,6 +32,7 @@ use craft\services\Categories;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
+use craft\services\Gql;
 use craft\services\Matrix;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
@@ -1598,5 +1599,12 @@ trait ApplicationTrait
             ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
+
+        // GraphQL Scopes
+        $gqlService = $this->getGql();
+        $projectConfigService
+            ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
+            ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
+            ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleDeletedSchema']);
     }
 }

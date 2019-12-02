@@ -83,6 +83,14 @@ class TypeManager extends Component
     }
 
     /**
+     * Flush all prepared field definitions.
+     */
+    public static function flush()
+    {
+        self::$_definitions = [];
+    }
+
+    /**
      * Actually trigger the event on an instance of the class.
      *
      * @param array $fields

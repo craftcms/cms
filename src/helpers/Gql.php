@@ -168,25 +168,18 @@ class Gql
      * Creates a temporary schema with full access to the GraphQL API.
      *
      * @return GqlSchema
-     * @since 3.3.12
+     * @since 3.4.0
      */
     public static function createFullAccessSchema(): GqlSchema
     {
         $permissionGroups = Craft::$app->getGql()->getAllPermissions();
-
-        $schema = new GqlSchema([
-            'uid' => '*',
-            'name' => Craft::t('app', 'Full Schema'),
-            'accessToken' => '*',
-            'enabled' => true,
-            'isTemporary' => true,
-            'scope' => []
-        ]);
+        $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
 
         // Fetch all nested permissions
         $traverser = function($permissions) use ($schema, &$traverser) {
             foreach ($permissions as $permission => $config) {
                 $schema->scope[] = $permission;
+
                 if (isset($config['nested'])) {
                     $traverser($config['nested']);
                 }
