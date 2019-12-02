@@ -22,7 +22,7 @@ class ExecuteGqlQueryEvent extends Event
 
     /**
      * @var string The access token used for this request.
-     * @deprecated since 3.4.0. Use [[schemaId]] instead to determine schema used.
+     * @deprecated in 3.4.0. Use [[schemaId]] instead to determine schema used.
      */
     public $accessToken;
 
