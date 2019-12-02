@@ -564,7 +564,7 @@ class TemplateCaches extends Component
      * Deletes any expired caches.
      *
      * @return bool
-     * @deprecated in 3.2. Use [[deleteExpiredCaches()]] instead.
+     * @deprecated in 3.2.0. Use [[deleteExpiredCaches()]] instead.
      */
     public function deleteExpiredCachesIfOverdue(): bool
     {

@@ -130,7 +130,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @var int Whether each site should get its own unique set of blocks
-     * @deprecated in 3.2. Use [[$propagationMethod]] instead
+     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
     public $localizeBlocks = false;
 

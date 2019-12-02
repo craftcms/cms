@@ -93,7 +93,7 @@ class Section extends Model
 
     /**
      * @var bool Propagate entries
-     * @deprecated in 3.2. Use [[$propagationMethod]] instead
+     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
 

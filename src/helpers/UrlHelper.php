@@ -553,7 +553,7 @@ class UrlHelper
      * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
      * @return string
-     * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
+     * @deprecated in 3.0.0. Use [[urlWithScheme()]] instead.
      */
     public static function urlWithProtocol(string $url, string $scheme): string
     {
@@ -567,7 +567,7 @@ class UrlHelper
      * urls, share entry URLs, etc.
      *
      * @return string
-     * @deprecated in 3.0. Use [[getSchemeForTokenizedUrl()]] instead.
+     * @deprecated in 3.0.0. Use [[getSchemeForTokenizedUrl()]] instead.
      */
     public static function getProtocolForTokenizedUrl(): string
     {

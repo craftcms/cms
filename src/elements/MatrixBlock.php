@@ -171,7 +171,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @var int|null Owner site ID
-     * @deprecated in 3.2. Use [[$siteId]] instead.
+     * @deprecated in 3.2.0. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 
