@@ -13,6 +13,8 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -1864,11 +1866,15 @@ class Elements extends Component
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = true): bool
     {
-        /** @var Element $element */
+        /** @var Element|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
-        $trackChanges = !$isNewElement && $element::trackChanges();
+        $trackChanges = (
+            !$isNewElement &&
+            $element::trackChanges() &&
+            (!$element->getIsDraft() || $element->trackChanges)
+        );
         $dirtyAttributes = [];
 
         // Force propagation for new elements

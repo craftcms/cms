@@ -46,6 +46,11 @@ class DraftBehavior extends Behavior
     public $draftNotes;
 
     /**
+     * @var bool Whether to track changes in this draft
+     */
+    public $trackChanges = false;
+
+    /**
      * @inheritdoc
      */
     public function events()

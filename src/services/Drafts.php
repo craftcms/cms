@@ -131,7 +131,7 @@ class Drafts extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Create the draft row
-            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes);
+            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes, $source::trackChanges());
 
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -140,6 +140,7 @@ class Drafts extends Component
                 'creatorId' => $creatorId,
                 'draftName' => $name,
                 'draftNotes' => $notes,
+                'trackChanges' => $source::trackChanges(),
             ];
 
             // Duplicate the element
@@ -342,10 +343,11 @@ class Drafts extends Component
      * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
+     * @param bool $trackChanges
      * @return int The new draft ID
      * @throws DbException
      */
-    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null): int
+    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
     {
         $db = Craft::$app->getDb();
         $db->createCommand()
@@ -354,6 +356,7 @@ class Drafts extends Component
                 'creatorId' => $creatorId,
                 'name' => $name,
                 'notes' => $notes,
+                'trackChanges' => $trackChanges,
             ], false)
             ->execute();
         return $db->getLastInsertID(Table::DRAFTS);

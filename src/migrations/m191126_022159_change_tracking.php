@@ -44,6 +44,8 @@ class m191126_022159_change_tracking extends Migration
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['userId'], Table::USERS, ['id'], 'SET NULL', 'CASCADE');
+
+        $this->addColumn(Table::DRAFTS, 'trackChanges', $this->boolean()->defaultValue(false)->notNull());
     }
 
     /**
@@ -57,6 +59,10 @@ class m191126_022159_change_tracking extends Migration
 
         if ($this->db->tableExists(Table::CHANGEDFIELDS)) {
             MigrationHelper::dropTable(Table::CHANGEDFIELDS, $this);
+        }
+
+        if ($this->db->columnExists(Table::DRAFTS, 'trackChanges')) {
+            $this->dropColumn(Table::DRAFTS, 'trackChanges');
         }
     }
 }

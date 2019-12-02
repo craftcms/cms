@@ -235,6 +235,7 @@ class Install extends Migration
             'creatorId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
+            'trackChanges' => $this->boolean()->defaultValue(false)->notNull(),
         ]);
         $this->createTable(Table::ELEMENTINDEXSETTINGS, [
             'id' => $this->primaryKey(),
