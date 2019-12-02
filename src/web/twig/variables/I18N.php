@@ -15,7 +15,7 @@ use craft\i18n\Locale;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 3.0
+ * @deprecated in 3.0.0
  */
 class I18N
 {

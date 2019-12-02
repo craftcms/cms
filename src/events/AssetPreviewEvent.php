@@ -30,6 +30,7 @@ class AssetPreviewEvent extends Event
 
     /**
      * An AssetPreview handler
+     *
      * @var AssetPreviewInterface $previewHandler
      */
     public $previewHandler;

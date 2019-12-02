@@ -56,7 +56,7 @@ function initGraphiQl() {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + selectedSchema.token,
+                'X-Craft-Gql-Schema': selectedSchema.schema,
             },
             body: JSON.stringify(graphQLParams),
             credentials: 'include',

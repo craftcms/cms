@@ -16,20 +16,11 @@ use craft\validators\UniqueValidator;
 /**
  * GraphQL schema class
  *
- * @property bool $isPublic Whether this is the public schema
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
 class GqlSchema extends Model
 {
-    // Constants
-    // =========================================================================
-
-    /**
-     * The public schema token value.
-     */
-    const PUBLIC_TOKEN = '__PUBLIC__';
-
     // Properties
     // =========================================================================
 
@@ -44,45 +35,19 @@ class GqlSchema extends Model
     public $name;
 
     /**
-     * @var string The access token
-     */
-    public $accessToken;
-
-    /**
-     * @var bool Is the schema enabled
-     */
-    public $enabled = true;
-
-    /**
-     * @var \DateTime|null Date expires
-     */
-    public $expiryDate;
-
-    /**
-     * @var \DateTime|null Date last used
-     */
-    public $lastUsed;
-
-    /**
      * @var array The schema’s scope
      */
     public $scope = [];
 
     /**
-     * @var \DateTime|null Date created
+     * @var array Whether this schema is public
      */
-    public $dateCreated;
+    public $isPublic = false;
 
     /**
      * @var string $uid
      */
     public $uid;
-
-    /**
-     * @var bool Whether this is a temporary schema
-     * @since 3.3.12
-     */
-    public $isTemporary = false;
 
     /**
      * @var array Instance cache for the extracted scope pairs
@@ -105,23 +70,12 @@ class GqlSchema extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'expiryDate';
-        $attributes[] = 'lastUsed';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['name', 'accessToken'], 'required'];
+        $rules[] = [['name'], 'required'];
         $rules[] = [
-            ['name', 'accessToken'],
+            ['name'],
             UniqueValidator::class,
             'targetClass' => GqlSchemaRecord::class,
         ];
@@ -140,21 +94,10 @@ class GqlSchema extends Model
     }
 
     /**
-     * Returns whether this is the public schema.
-     *
-     * @return bool
-     */
-    public function getIsPublic(): bool
-    {
-        return $this->accessToken === self::PUBLIC_TOKEN;
-    }
-
-    /**
      * Return whether this schema can perform an action
      *
      * @param $name
      * @return bool
-     * @since 
      */
     public function has(string $name): bool
     {
@@ -172,19 +115,16 @@ class GqlSchema extends Model
         if (!empty($this->_cachedPairs)) {
             return $this->_cachedPairs;
         }
-
         foreach ((array)$this->scope as $permission) {
             if (preg_match('/:([\w-]+)$/', $permission, $matches)) {
                 $action = $matches[1];
                 $permission = StringHelper::removeRight($permission, ':' . $action);
                 $parts = explode('.', $permission);
-
                 if (count($parts) === 2) {
                     $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
                 }
             }
         }
-
         return $this->_cachedPairs;
     }
 
@@ -198,7 +138,6 @@ class GqlSchema extends Model
     public function getAllScopePairsForAction(string $action = 'read'): array
     {
         $pairs = $this->getAllScopePairs();
-
         return $pairs[$action] ?? [];
     }
 }

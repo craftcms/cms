@@ -366,14 +366,23 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable(Table::GQLSCHEMAS, [
+        $this->createTable(Table::GQLTOKENS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'accessToken' => $this->string()->notNull(),
             'enabled' => $this->boolean()->notNull()->defaultValue(true),
             'expiryDate' => $this->dateTime(),
             'lastUsed' => $this->dateTime(),
+            'schemaId' => $this->integer(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::GQLSCHEMAS, [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
             'scope' => $this->text(),
+            'isPublic' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -770,8 +779,8 @@ class Install extends Migration
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);
-        $this->createIndex(null, Table::GQLSCHEMAS, ['accessToken'], true);
-        $this->createIndex(null, Table::GQLSCHEMAS, ['name'], true);
+        $this->createIndex(null, Table::GQLTOKENS, ['accessToken'], true);
+        $this->createIndex(null, Table::GQLTOKENS, ['name'], true);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['ownerId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);
@@ -932,6 +941,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::FIELDS, ['groupId'], Table::FIELDGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::GLOBALSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::GQLTOKENS, 'schemaId', Table::GQLSCHEMAS, 'id', 'SET NULL', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);

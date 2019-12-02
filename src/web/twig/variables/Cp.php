@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -183,20 +182,30 @@ class Cp extends Component
 
         if ($isAdmin) {
             if ($craftPro && $generalConfig->enableGql) {
+                $subNavItems = [
+                    'explore' => [
+                        'label' => Craft::t('app', 'Explore'),
+                        'url' => 'graphql',
+                    ],
+                ];
+
+                if ($generalConfig->allowAdminChanges) {
+                    $subNavItems['schemas'] = [
+                        'label' => Craft::t('app', 'Schemas'),
+                        'url' => 'graphql/schemas',
+                    ];
+                }
+
+                $subNavItems['tokens'] = [
+                    'label' => Craft::t('app', 'Tokens'),
+                    'url' => 'graphql/tokens',
+                ];
+
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
                     'icon' => '@app/icons/graphql.svg',
-                    'subnav' => [
-                        'explore' => [
-                            'label' => Craft::t('app', 'Explore'),
-                            'url' => 'graphql',
-                        ],
-                        'schemas' => [
-                            'label' => Craft::t('app', 'Schemas'),
-                            'url' => 'graphql/schemas',
-                        ]
-                    ]
+                    'subnav' => $subNavItems
                 ];
             }
 

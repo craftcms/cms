@@ -19,7 +19,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 3.2
+ * @deprecated in 3.2.0
  */
 class EntryRevisions extends Component
 {
@@ -28,49 +28,49 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is saved.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_BEFORE_SAVE_DRAFT = 'beforeSaveDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is saved.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_AFTER_SAVE_DRAFT = 'afterSaveDraft';
 
     /**
      * @event DraftEvent The event that is triggered before a draft is published.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is published.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
 
     /**
      * @event DraftEvent The event that is triggered before a draft is deleted.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is deleted.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
 
     /**
      * @event VersionEvent The event that is triggered before an entry is reverted to an old version.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_BEFORE_REVERT_ENTRY_TO_VERSION = 'beforeRevertEntryToVersion';
 
     /**
      * @event VersionEvent The event that is triggered after an entry is reverted to an old version.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_AFTER_REVERT_ENTRY_TO_VERSION = 'afterRevertEntryToVersion';
 
@@ -82,7 +82,7 @@ class EntryRevisions extends Component
      *
      * @param int $draftId
      * @return Entry|null
-     * @deprecated in 3.2. Use an entry query instead.
+     * @deprecated in 3.2.0. Use an entry query instead.
      */
     public function getDraftById(int $draftId)
     {
@@ -99,7 +99,7 @@ class EntryRevisions extends Component
      * @param int|null $siteId
      * @param bool $withContent Whether the field content should be included on the drafts
      * @return Entry[]
-     * @deprecated in 3.2. Use an entry query instead.
+     * @deprecated in 3.2.0. Use an entry query instead.
      */
     public function getDraftsByEntryId(int $entryId, int $siteId = null, bool $withContent = false): array
     {
@@ -118,7 +118,7 @@ class EntryRevisions extends Component
      * @param int|null $siteId
      * @return Entry[]
      * @throws InvalidConfigException
-     * @deprecated in 3.2. Use [[\craft\services\Drafts::getEditableDrafts()]] instead.
+     * @deprecated in 3.2.0. Use [[\craft\services\Drafts::getEditableDrafts()]] instead.
      */
     public function getEditableDraftsByEntryId(int $entryId, int $siteId = null): array
     {
@@ -140,7 +140,7 @@ class EntryRevisions extends Component
      *
      * @param int $versionId
      * @return Entry|null
-     * @deprecated in 3.2. Use an entry query instead.
+     * @deprecated in 3.2.0. Use an entry query instead.
      */
     public function getVersionById(int $versionId)
     {
@@ -157,7 +157,7 @@ class EntryRevisions extends Component
      * @param int $entryId The entry ID to search for
      * @param int|null $siteId The site ID to search for
      * @return bool
-     * @deprecated in 3.2. Use an entry query instead.
+     * @deprecated in 3.2.0. Use an entry query instead.
      */
     public function doesEntryHaveVersions(int $entryId, int $siteId = null): bool
     {
@@ -177,7 +177,7 @@ class EntryRevisions extends Component
      * @param bool $includeCurrent Whether to include the current "top" version of the entry.
      * @param bool $withContent Whether the field content should be included on the versions
      * @return Entry[]
-     * @deprecated in 3.2. Use an entry query instead.
+     * @deprecated in 3.2.0. Use an entry query instead.
      */
     public function getVersionsByEntryId(int $entryId, int $siteId = null, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
     {

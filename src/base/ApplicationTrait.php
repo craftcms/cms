@@ -32,6 +32,7 @@ use craft\services\Categories;
 use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
+use craft\services\Gql;
 use craft\services\Matrix;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
@@ -520,7 +521,7 @@ trait ApplicationTrait
      * Returns whether the system is currently live.
      *
      * @return bool
-     * @deprecated in 3.1. Use [[getIsLive()]] instead.
+     * @deprecated in 3.1.0. Use [[getIsLive()]] instead.
      */
     public function getIsSystemOn(): bool
     {
@@ -971,7 +972,7 @@ trait ApplicationTrait
      * Returns the entry revisions service.
      *
      * @return \craft\services\EntryRevisions The entry revisions service
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0.
      */
     public function getEntryRevisions()
     {
@@ -1598,5 +1599,12 @@ trait ApplicationTrait
             ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
+
+        // GraphQL Scopes
+        $gqlService = $this->getGql();
+        $projectConfigService
+            ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
+            ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
+            ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleDeletedSchema']);
     }
 }

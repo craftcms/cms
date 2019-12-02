@@ -39,7 +39,7 @@ class TypeResolverTest extends Unit
     protected function _before()
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
     }
 

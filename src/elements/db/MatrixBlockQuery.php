@@ -64,7 +64,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @var mixed
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public $ownerSiteId;
 
@@ -265,7 +265,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0
      */
     public function ownerSiteId()
     {
@@ -275,7 +275,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0
      */
     public function ownerSite()
     {
@@ -285,7 +285,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.0.
+     * @deprecated in 3.0.0
      */
     public function ownerLocale()
     {

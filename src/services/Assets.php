@@ -961,7 +961,7 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
-     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
+     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
@@ -1062,7 +1062,7 @@ class Assets extends Component
         }
 
         // These are our default preview handlers if one is not supplied
-        switch($asset->kind) {
+        switch ($asset->kind) {
             case Asset::KIND_IMAGE:
                 return new ImagePreview($asset);
             case Asset::KIND_PDF:

@@ -66,9 +66,25 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'entry');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'entries');
     }
 
     /**
@@ -851,7 +867,7 @@ class Entry extends Element
      * ```
      *
      * @return EntryType
-     * @throws InvalidConfigException if [[typeId]] is missing or invalid
+     * @throws InvalidConfigException if the section has no entry types
      */
     public function getType(): EntryType
     {
@@ -861,8 +877,12 @@ class Entry extends Element
 
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
-        if (!isset($sectionEntryTypes[$this->typeId])) {
-            throw new InvalidConfigException('Invalid entry type ID: ' . $this->typeId);
+        if ($this->typeId === null || !isset($sectionEntryTypes[$this->typeId])) {
+            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+            if (empty($sectionEntryTypes)) {
+                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+            }
+            return reset($sectionEntryTypes);
         }
 
         return $sectionEntryTypes[$this->typeId];
