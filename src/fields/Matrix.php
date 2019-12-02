@@ -482,7 +482,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         $query = MatrixBlock::find();
+        $this->_populateQuery($query, $element);
 
+        // Set the initially matched elements if $value is already set, which is the case if there was a validation
+        // error or we're loading an entry revision.
+        if ($value === '') {
+            $query->setCachedResult([]);
+        } else if ($element && is_array($value)) {
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Populates the field’s [[MatrixBlockQuery]] value based on the owner element.
+     *
+     * @param MatrixBlockQuery $query
+     * @param ElementInterface|null $element
+     * @since 3.4.0
+     */
+    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null)
+    {
         // Existing element?
         /** @var Element|null $element */
         if ($element && $element->id) {
@@ -494,16 +515,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $query
             ->fieldId($this->id)
             ->siteId($element->siteId ?? null);
-
-        // Set the initially matched elements if $value is already set, which is the case if there was a validation
-        // error or we're loading an entry revision.
-        if ($value === '') {
-            $query->setCachedResult([]);
-        } else if ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
-        }
-
-        return $query;
     }
 
     /**
@@ -915,9 +926,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $matrixService->saveField($this, $element);
         }
 
-        // Reset the field value if this is a new element
+        // Repopulate the Matrix block query if this is a new element
         if ($element->duplicateOf || $isNew) {
-            $element->setFieldValue($this->handle, null);
+            /** @var MatrixBlockQuery $query */
+            $query = $element->getFieldValue($this->handle);
+            $this->_populateQuery($query, $element);
+            $query->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);

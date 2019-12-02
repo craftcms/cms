@@ -1615,6 +1615,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Clears the cached result.
+     *
+     * @see getCachedResult()
+     * @see setCachedResult()
+     * @since 3.4.0
+     */
+    public function clearCachedResult()
+    {
+        $this->_result = $this->_resultCriteria = null;
+    }
+
+    /**
      * Returns an array of the current criteria attribute values.
      *
      * @return array
