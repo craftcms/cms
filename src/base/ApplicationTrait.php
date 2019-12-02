@@ -520,7 +520,7 @@ trait ApplicationTrait
      * Returns whether the system is currently live.
      *
      * @return bool
-     * @deprecated in 3.1. Use [[getIsLive()]] instead.
+     * @deprecated in 3.1.0. Use [[getIsLive()]] instead.
      */
     public function getIsSystemOn(): bool
     {
@@ -971,7 +971,7 @@ trait ApplicationTrait
      * Returns the entry revisions service.
      *
      * @return \craft\services\EntryRevisions The entry revisions service
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0.
      */
     public function getEntryRevisions()
     {
