@@ -103,7 +103,7 @@ class Routes extends Component
      * Returns the routes defined in the CP.
      *
      * @return array
-     * @deprecated in 3.1. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
+     * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
      */
     public function getDbRoutes(): array
     {

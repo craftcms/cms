@@ -268,7 +268,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume $value The property value
      * @return static self reference
-     * @deprecated since Craft 3.0. Use [[volume()]] instead.
+     * @deprecated in 3.0.0. Use [[volume()]] instead.
      */
     public function source($value)
     {
@@ -320,7 +320,7 @@ class AssetQuery extends ElementQuery
      *
      * @param int|int[] $value The property value
      * @return static self reference
-     * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
+     * @deprecated in Craft 3.0.0. Use [[volumeId()]] instead.
      */
     public function sourceId($value)
     {

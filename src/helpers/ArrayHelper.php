@@ -79,7 +79,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return array the filtered array
-     * @deprecated in 3.2. Use [[where()]] instead.
+     * @deprecated in 3.2.0. Use [[where()]] instead.
      */
     public static function filterByValue($array, $key, $value = true, bool $strict = false): array
     {

@@ -195,7 +195,7 @@ abstract class Model extends \yii\base\Model
      *
      * @param string $attribute The attribute name.
      * @return string|null The error message, or null if there are no errors.
-     * @deprecated in 3.0. Use [[getFirstError()]] instead.
+     * @deprecated in 3.0.0. Use [[getFirstError()]] instead.
      */
     public function getError(string $attribute)
     {
