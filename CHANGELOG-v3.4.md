@@ -67,7 +67,7 @@
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
 - The control panel no longer shows the tab bar on pages with only one tab. ([#2915](https://github.com/craftcms/cms/issues/2915))
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
-- The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
+- The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
 - Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Plain Text fields’ Column Type settings now have an “Automatic” option, which is selected by default for new fields. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Local asset volumes now ensure that their folder exists on save, and if it doesn’t, a `.gitignore` file will be added automatically to it, excluding the directory from Git. ([#5237](https://github.com/craftcms/cms/issues/5237))
