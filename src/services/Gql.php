@@ -832,6 +832,7 @@ class Gql extends Component
      *
      * @param string $uid The schema's UID
      * @return GqlSchema|null
+     * @since 3.4.0
      */
     public function getSchemaByUid(string $uid)
     {
