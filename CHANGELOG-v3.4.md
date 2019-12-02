@@ -1,5 +1,7 @@
 # Running Release Notes for Craft 3.4
 
+> {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
+
 > {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
 >
 > ```bash
@@ -10,8 +12,6 @@
 - Improved the overall look and feel of the Control Panel. ([#2883](https://github.com/craftcms/cms/issues/2883))
 - Added an overflow menu for Control Panel tabs that don’t fit into the available space. ([#3073](https://github.com/craftcms/cms/issues/3073))
 - Added support for delta element updates. ([#4064](https://github.com/craftcms/cms/issues/4064))
-- Split GraphQL Schemas into schemas and tokens. Schemas are now assigned to tokens, allowing multiple tokens to use the same schema.
-- Add Project Config support for GraphQL schemas. ([#4829]((https://github.com/craftcms/cms/issues/4829))
 - Elements now track which field values have changed since the element was first loaded. ([#4149](https://github.com/craftcms/cms/issues/4149))
 - It’s now possible to see all of the elements selected by relation fields from element indexes. ([#3030](https://github.com/craftcms/cms/issues/3030))
 - It’s now possible to download multiple assets at once as a zip file. ([#5259](https://github.com/craftcms/cms/issues/5259))
@@ -21,6 +21,8 @@
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
+- GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
+- GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -33,8 +35,8 @@
 - Added `craft\base\ElementInterface::isFieldDirty()`.
 - Added `craft\controllers\GraphqlController::actionDeleteToken()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
-- Added `craft\controllers\GraphqlController::actionEditToken()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
+- Added `craft\controllers\GraphqlController::actionEditToken()`.
 - Added `craft\controllers\GraphqlController::actionSaveToken()`.
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
@@ -104,15 +106,15 @@
 - The `_includes/field.html` template now supports a `registerDeltas` variable.
 - The `_layouts/cp.html` template now supports `mainAttributes` and `mainFormAttributes` variables.
 - Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
-- Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`. 
-- `craft\models\GqlSchema::$scope` is now read-only. Setting scope manually is now only possible when creating a new model.
-- `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
+- Renamed the`QueryParameter` GraphQL type to `QueryArgument`.
+- `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Updated Yii to 2.0.29.
-- GraphQL type `QueryParameter` is now correctly called `QueryArgument`.
 
 ### Deprecated
 - Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
