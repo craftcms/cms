@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\helpers\MigrationHelper;
@@ -53,11 +52,11 @@ class m191126_022159_change_tracking extends Migration
     public function safeDown()
     {
         if ($this->db->tableExists(Table::CHANGEDATTRIBUTES)) {
-            MigrationHelper::dropTable(Table::CHANGEDATTRIBUTES);
+            MigrationHelper::dropTable(Table::CHANGEDATTRIBUTES, $this);
         }
 
         if ($this->db->tableExists(Table::CHANGEDFIELDS)) {
-            MigrationHelper::dropTable(Table::CHANGEDFIELDS);
+            MigrationHelper::dropTable(Table::CHANGEDFIELDS, $this);
         }
     }
 }
