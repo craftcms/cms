@@ -1229,8 +1229,11 @@ class Request extends \yii\web\Request
     private function _getQueryStringPath(): string
     {
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-
-        return $this->getQueryParam($pathParam, '');
+        $value = $this->getQueryParam($pathParam, '');
+        if (!is_string($value)) {
+            return '';
+        }
+        return $value;
     }
 
     /**
