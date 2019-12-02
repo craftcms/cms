@@ -65,9 +65,9 @@ class UserSession
     /**
      * Returns the remembered username from cookie.
      *
-     * @return string
+     * @return string|null
      */
-    public function getRememberedUsername(): string
+    public function getRememberedUsername()
     {
         Craft::$app->getDeprecator()->log('craft.session.getRememberedUsername()', 'craft.session.getRememberedUsername() has been deprecated. Use craft.app.user.rememberedUsername instead.');
 

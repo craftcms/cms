@@ -18,6 +18,7 @@
 - Fixed a bug where it wasn’t possible to change images’ focal points on mobile. ([#3669](https://github.com/craftcms/cms/issues/3669))
 - Fixed a bug where it wasn’t possible to crop images on mobile. ([#5279](https://github.com/craftcms/cms/issues/5279))
 - Fixed an error that occurred if a token route didn’t specify any params. ([#5282](https://github.com/craftcms/cms/pull/5282))
+- Fixed a PHP error that occurred when calling the deprecated `craft.session.getRememberedUsername()` template method, if the `username` cookie wasn’t set. ([#5291](https://github.com/craftcms/cms/issues/5291))
 
 ## 3.3.16.3 - 2019-11-26
 
