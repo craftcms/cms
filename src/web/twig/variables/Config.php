@@ -16,7 +16,7 @@ use yii\base\InvalidArgumentException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 3.0
+ * @deprecated in 3.0.0
  */
 class Config
 {

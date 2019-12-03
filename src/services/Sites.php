@@ -634,7 +634,6 @@ class Sites extends Component
         $isNewSite = !$site->id;
 
         if (!empty($this->_sitesById)) {
-            // Did the primary site just change?
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } else {
             $oldPrimarySiteId = null;
@@ -705,7 +704,6 @@ class Sites extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $projectConfig->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
-        // Did the primary site just change?
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } catch (SiteNotFoundException $e) {
@@ -1346,16 +1344,22 @@ class Sites extends Component
                     $db->createCommand()
                         ->delete(Table::CONTENT, $deleteCondition)
                         ->execute();
+                    $db->createCommand()
+                        ->delete(Table::SEARCHINDEX, $deleteCondition)
+                        ->execute();
 
                     // Now swap the sites
                     $updateColumns = ['siteId' => $newPrimarySiteId];
                     $updateCondition = ['elementId' => $elementIds];
 
                     $db->createCommand()
-                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition)
+                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition, [], false)
                         ->execute();
                     $db->createCommand()
-                        ->update(Table::CONTENT, $updateColumns, $updateCondition)
+                        ->update(Table::CONTENT, $updateColumns, $updateCondition, [], false)
+                        ->execute();
+                    $db->createCommand()
+                        ->update(Table::SEARCHINDEX, $updateColumns, $updateCondition, [], false)
                         ->execute();
                 }
             }

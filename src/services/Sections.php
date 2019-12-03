@@ -964,7 +964,7 @@ class Sections extends Component
      * @param Section $section
      * @param int $siteId
      * @return bool
-     * @deprecated in 3.3
+     * @deprecated in 3.3.0
      */
     public function isSectionTemplateValid(Section $section, int $siteId): bool
     {

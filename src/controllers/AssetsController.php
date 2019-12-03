@@ -866,9 +866,12 @@ class AssetsController extends Controller
         if ($transformId) {
             $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
         } else {
-            $assetId = $request->getBodyParam('assetId');
-            $handle = $request->getBodyParam('handle');
+            $assetId = $request->getRequiredBodyParam('assetId');
+            $handle = $request->getRequiredBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
+            if ($assetModel === null) {
+                throw new BadRequestHttpException('Invalid asset ID: ' . $assetId);
+            }
             $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
         }
 

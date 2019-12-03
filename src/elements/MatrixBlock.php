@@ -47,9 +47,25 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix block');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Matrix Blocks');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix blocks');
     }
 
     /**
@@ -155,7 +171,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @var int|null Owner site ID
-     * @deprecated in 3.2. Use [[$siteId]] instead.
+     * @deprecated in 3.2.0. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 

@@ -96,7 +96,7 @@ class Request extends \yii\console\Request
      * Returns whether the current request is solely an action request. (Narrator: It isn't.)
      *
      * @return bool
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsSingleActionRequest(): bool
     {
@@ -118,7 +118,7 @@ class Request extends \yii\console\Request
      * Returns whether this is a Live Preview request. (Narrator: It isn't.)
      *
      * @return bool Whether this is a Live Preview request.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsLivePreview(): bool
     {

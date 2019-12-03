@@ -923,7 +923,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param int $precision
      * @param int $mode
      * @return int|float
-     * @deprecated in 3.0. Use Twig's |round filter instead.
+     * @deprecated in 3.0.0. Use Twig's |round filter instead.
      */
     public function roundFunction($value, int $precision = 0, int $mode = PHP_ROUND_HALF_UP)
     {

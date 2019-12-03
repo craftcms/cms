@@ -996,7 +996,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param string $value The property value
      * @return static self reference
-     * @deprecated in 3.0. Use [[site]] or [[siteId]] instead.
+     * @deprecated in 3.0.0. Use [[site]] or [[siteId]] instead.
      */
     public function locale(string $value)
     {
@@ -1042,7 +1042,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param mixed $value The property value (defaults to true)
      * @return static self reference
-     * @deprecated in 3.0. Use [[enabledForSite]] instead.
+     * @deprecated in 3.0.0. Use [[enabledForSite]] instead.
      */
     public function localeEnabled($value = true)
     {
@@ -1527,7 +1527,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Avoid indexing by an ambiguous column
         if (
             $this->from === null &&
-            is_string($this->indexBy)  &&
+            is_string($this->indexBy) &&
             in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
         ) {
             $this->from = ['elements' => Table::ELEMENTS];

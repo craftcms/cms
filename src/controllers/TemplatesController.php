@@ -241,6 +241,7 @@ class TemplatesController extends Controller
             'code' => $exception->getCode(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
+            'statusCode' => $statusCode,
         ], get_object_vars($exception));
 
         // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)

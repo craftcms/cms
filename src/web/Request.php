@@ -466,7 +466,7 @@ class Request extends \yii\web\Request
      * Returns whether the current request is solely an action request.
      *
      * @return bool
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsSingleActionRequest(): bool
     {
@@ -517,7 +517,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsLivePreview(): bool
     {
@@ -1229,8 +1229,11 @@ class Request extends \yii\web\Request
     private function _getQueryStringPath(): string
     {
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-
-        return $this->getQueryParam($pathParam, '');
+        $value = $this->getQueryParam($pathParam, '');
+        if (!is_string($value)) {
+            return '';
+        }
+        return $value;
     }
 
     /**
