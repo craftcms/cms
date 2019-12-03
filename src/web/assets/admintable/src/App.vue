@@ -58,10 +58,13 @@
                         v-on:removeCheck="removeCheck"
                     ></admin-table-checkbox>
                 </template>
-                <template slot="statusName" slot-scope="props">
+                <template slot="title" slot-scope="props">
                     <span v-if="props.rowData.status !== undefined" class="status" :class="{enabled: props.rowData.status}"></span>
-                    <a class="cell-bold" v-if="props.rowData.url" href="props.rowData.url">{{ props.rowData.name }}</a>
-                    <span class="cell-bold" v-if="!props.rowData.url">{{ props.rowData.name }}</span>
+                    <a class="cell-bold" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
+                    <span class="cell-bold" v-if="!props.rowData.url">{{ props.rowData.title }}</span>
+                </template>
+                <template slot="handle" slot-scope="props">
+                    <code>{{ props.rowData.handle }}</code>
                 </template>
                 <template slot="reorder" slot-scope="props">
                     <i class="move icon" :data-id="props.rowData.id"></i>
@@ -69,7 +72,9 @@
                 <template slot="delete" slot-scope="props">
                     <admin-table-delete-button
                         :id="props.rowData.id"
-                        :name="props.rowData.name"
+                        :name="props.rowData.title"
+                        :success-message="deleteSuccessMessage"
+                        :confirmation-message="deleteConfirmationMessage"
                         :action-url="deleteAction"
                         v-on:reload="reload"
                     ></admin-table-delete-button>
@@ -107,6 +112,8 @@
             'columns',
             'container',
             'deleteAction',
+            'deleteConfirmationMessage',
+            'deleteSuccessMessage',
             'tableDataEndpoint',
             'perPage',
             'reorderAction',
