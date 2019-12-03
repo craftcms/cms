@@ -72,7 +72,7 @@
                         <a class="menubtn" :title="props.rowData.menu.label"></a>
                         <div class="menu">
                             <ul>
-                                <li v-for="item in props.rowData.menu.items">
+                                <li v-for="(item, index) in props.rowData.menu.items" :key="index">
                                     <a :href="item.url">{{item.label}}</a>
                                 </li>
                             </ul>
