@@ -76,7 +76,7 @@
                         :success-message="deleteSuccessMessage"
                         :confirmation-message="deleteConfirmationMessage"
                         :action-url="deleteAction"
-                        v-on:reload="reload"
+                        v-on:reload="remove(props.rowIndex)"
                     ></admin-table-delete-button>
                 </template>
             </vuetable>
@@ -88,7 +88,7 @@
     </div>
 </template>
 <script>
-    /* global Craft */
+    /* global Craft, Vue */
     import Vuetable from 'vuetable-2/src/components/Vuetable'
     import AdminTablePagination from './js/components/AdminTablePagination'
     import AdminTableDeleteButton from './js/components/AdminTableDeleteButton';
@@ -210,6 +210,20 @@
                 this.isLoading = true;
                 this.deselectAll();
                 this.$refs.vuetable.reload();
+            },
+
+            remove(index) {
+              this.isLoading = true;
+
+              if (this.apiUrl) {
+                  this.deselectAll();
+                  this.$refs.vuetable.reload();
+              } else {
+                  Vue.delete(this.$refs.vuetable.tableData, index);
+                  this.$refs.vuetable.refresh();
+              }
+
+              this.isLoading = false;
             },
 
             onPaginationData (paginationData) {
