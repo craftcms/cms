@@ -8,6 +8,7 @@
 ### Changed
 - Error templates now have a `statusCode` variable even if the originating exception wasn’t an instance of `yii\web\HttpException`. ([#5273](https://github.com/craftcms/cms/issues/5273))
 - Number fields now normalize their numbers to integers or floats, if the value that came from the database is a numeric string. ([#5268](https://github.com/craftcms/cms/issues/5268))
+- Craft no longer throws an `UnknownPropertyException` if a Local asset volume was converted to a different volume type from `config/volumes.php`. ([#5277](https://github.com/craftcms/cms/issues/5277))
 
 ### Fixed
 - Fixed an issue where string encoding might not behave as expected in some environments running PHP 7.3 or greater. ([#4239](https://github.com/craftcms/cms/issues/4239))
