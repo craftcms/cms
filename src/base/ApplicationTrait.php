@@ -586,6 +586,7 @@ trait ApplicationTrait
         try {
             $row = (new Query())
                 ->from([Table::INFO])
+                ->where(['id' => 1])
                 ->one();
         } catch (DbException $e) {
             if ($throwException) {
@@ -682,18 +683,18 @@ trait ApplicationTrait
             return false;
         }
 
-        $attributes = Db::prepareValuesForDb($info);
-
-        // TODO: Remove this after the next breakpoint
-        unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
+        $attributes = [
+            'version' => $info->version,
+            'schemaVersion' => $info->schemaVersion,
+            'maintenance' => $info->maintenance,
+            'config' => Db::prepareValueForDb($info->config),
+            'configMap' => Db::prepareValueForDb($info->configMap),
+            'fieldVersion' => $info->fieldVersion,
+        ];
 
         // TODO: Remove this after the next breakpoint
         if (version_compare($info['version'], '3.1', '<')) {
             unset($attributes['config'], $attributes['configMap']);
-        }
-
-        if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
-            unset($attributes['id']);
         }
 
         if (
@@ -706,29 +707,18 @@ trait ApplicationTrait
             $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
         }
 
-        if ($this->getIsInstalled()) {
-            // TODO: Remove this after the next breakpoint
-            if (version_compare($info['version'], '3.0', '<')) {
-                unset($attributes['fieldVersion']);
-            }
-
-            $this->getDb()->createCommand()
-                ->update(Table::INFO, $attributes)
-                ->execute();
-        } else {
-            $this->getDb()->createCommand()
-                ->insert(Table::INFO, $attributes)
-                ->execute();
-
-            $this->setIsInstalled();
-
-            $row = (new Query())
-                ->from([Table::INFO])
-                ->one();
-
-            // Reload from DB with the new ID and modified dates.
-            $info = new Info($row);
+        // TODO: Remove this after the next breakpoint
+        if (version_compare($info['version'], '3.0', '<')) {
+            unset($attributes['fieldVersion']);
         }
+
+        $this->getDb()->createCommand()
+            ->upsert(Table::INFO, [
+                'id' => 1,
+            ], $attributes)
+            ->execute();
+
+        $this->setIsInstalled();
 
         // Use this as the new cached Info
         $this->_info = $info;

@@ -134,3 +134,6 @@
 - Removed `craft\models\GqlSchema::$dateCreated`.
 - Removed `craft\models\GqlSchema::$isTemporary`.
 - Removed `craft\models\GqlSchema::getIsPublic()`.
+
+### Fixed
+- Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
