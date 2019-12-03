@@ -8,6 +8,7 @@
     "Handle",
     "Name",
     "Edit entry types ({count})",
+    "Are you sure you want to delete “{name}” and all its entries?",
 ]) %}
 
 {% set crumbs = [
@@ -135,5 +136,6 @@
         container: '#sections-vue-admin-table',
         deleteAction: 'sections/delete-section',
         tableData: {{ tableData|json_encode|raw }},
+        deleteConfirmationMessage: Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?")
     });
 {% endjs %}
