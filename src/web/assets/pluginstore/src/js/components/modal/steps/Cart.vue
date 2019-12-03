@@ -102,8 +102,8 @@
                             </tbody>
                         </table>
 
-                        <div class="py-4">
-                            <btn kind="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
+                        <div class="py-4 flex">
+                            <btn kind="primary" @click="payment()" :loading="loadingCheckout">{{ "Checkout"|t('app') }}</btn>
                         </div>
                     </template>
 
@@ -155,6 +155,7 @@
                 activeTrialsLoading: false,
                 loadingItems: {},
                 loadingRemoveFromCart: {},
+                loadingCheckout: false,
             }
         },
 
@@ -291,7 +292,28 @@
 
             payment() {
                 if (this.craftId) {
-                    this.$root.openModal('payment')
+                    if (this.craftId.email === this.cart.email) {
+                        // Move straight to the cart if Craft ID account email and cart email are the same
+                        this.$root.openModal('payment')
+                    } else {
+                        // Otherwise update the cart’s email with the one from the Craft ID account
+                        let data = {
+                            email: this.craftId.email,
+                        }
+
+                        this.loadingCheckout = true
+
+                        this.$store.dispatch('cart/saveCart', data)
+                            .then(() => {
+                                this.loadingCheckout = false
+                                this.$root.openModal('payment')
+                            })
+                            .catch((error) => {
+                                this.loadingCheckout = false
+                                this.$root.displayError("Couldn’t update cart.")
+                                throw error
+                            })
+                    }
                 } else {
                     this.$root.openModal('identity')
                 }

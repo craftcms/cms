@@ -9,15 +9,7 @@
                 <p><label><input type="radio" value="craftid" v-model="identityMode" /> {{ "Use your Craft ID"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'craftid'">
-                    <template v-if="craftId">
-                        <ul>
-                            <li>{{ craftId.name }}</li>
-                            <li>{{ craftId.email }}</li>
-                        </ul>
-                        <btn kind="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
-                    </template>
-
-                    <p v-else>
+                    <p>
                         <btn kind="primary" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</btn>
                     </p>
                 </template>
@@ -69,10 +61,6 @@
             },
 
             validates() {
-                if (this.identityMode === 'craftid' && !this.craftId) {
-                    return false
-                }
-
                 if (this.identityMode === 'guest' && !this.guestEmail) {
                     return false
                 }
