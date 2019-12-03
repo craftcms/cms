@@ -92,6 +92,7 @@
                         :success-message="deleteSuccessMessage"
                         :confirmation-message="deleteConfirmationMessage"
                         :action-url="deleteAction"
+                        :disabled="canDelete"
                         v-on:reload="remove(props.rowIndex)"
                     ></admin-table-delete-button>
                 </template>
@@ -130,7 +131,7 @@
             'deleteAction',
             'deleteConfirmationMessage',
             'deleteSuccessMessage',
-            'tableDataEndpoint',
+            'minItems',
             'perPage',
             'reorderAction',
             'reorderSuccessMessage',
@@ -138,6 +139,7 @@
             'search',
             'searchPlaceholder',
             'tableData',
+            'tableDataEndpoint',
         ],
 
         data() {
@@ -272,6 +274,10 @@
                 return {
                     search: this.searchTerm
                 };
+            },
+
+            canDelete() {
+                return this.minItems && this.$refs.vuetable.tableData.length <= this.minItems
             },
 
             fields() {

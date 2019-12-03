@@ -3,6 +3,7 @@
     :title="'Delete'|t('app')"
     v-on:click.prevent="handleClick"
     class="delete icon"
+    :class="{disabled}"
     role="button"
     href="#"></a>
 </template>
@@ -18,7 +19,8 @@
             name: String,
             confirmationMessage: String,
             actionUrl: String,
-            successMessage: String
+            successMessage: String,
+            disabled: Boolean,
         },
 
         data() {
@@ -41,8 +43,8 @@
                 return confirm(this.confirm);
             },
             handleClick() {
-                if (this.confirmDelete()) {
-                    axios.post(Craft.getActionUrl(this.actionUrl), {id: this.id}, {
+                if (!this.disabled && this.confirmDelete()) {
+                  axios.post(Craft.getActionUrl(this.actionUrl), {id: this.id}, {
                         headers: {
                             'X-CSRF-Token': Craft.csrfTokenValue
                         }
