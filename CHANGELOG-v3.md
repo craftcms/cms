@@ -21,6 +21,7 @@
 - Fixed an error that occurred if a token route didn’t specify any params. ([#5282](https://github.com/craftcms/cms/pull/5282))
 - Fixed a PHP error that occurred when calling the deprecated `craft.session.getRememberedUsername()` template method, if the `username` cookie wasn’t set. ([#5291](https://github.com/craftcms/cms/issues/5291))
 - Fixed a PHP error that occurred if the path param (`p`) was set to an array. ([#5292](https://github.com/craftcms/cms/issues/5292))
+- Fixed an error that occurred when viewing trashed entries, if any of them had been deleted along with a user account. ([#5287](https://github.com/craftcms/cms/issues/5287))
 
 ## 3.3.16.3 - 2019-11-26
 
