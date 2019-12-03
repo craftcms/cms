@@ -267,14 +267,14 @@ class Craft extends Yii
         foreach ($fieldHandles as $handle => $types) {
             $phpDocTypes = implode('|', array_keys($types));
             $handles[] = <<<EOD
-    '{$handle}' => true,
+        '{$handle}' => true,
 EOD;
 
             $properties[] = <<<EOD
-/**
- * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
- */
-public \${$handle};
+    /**
+     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
+     */
+    public \${$handle};
 EOD;
         }
 
@@ -300,7 +300,7 @@ EOD;
 
         foreach (array_keys($fieldHandles) as $handle) {
             $methods[] = <<<EOD
-* @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
+ * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
         }
 
