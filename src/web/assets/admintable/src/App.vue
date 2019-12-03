@@ -77,6 +77,7 @@
                         :confirmation-message="deleteConfirmationMessage"
                         :action-url="deleteAction"
                         v-on:reload="remove(props.rowIndex)"
+                        v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
                     ></admin-table-delete-button>
                 </template>
             </vuetable>
