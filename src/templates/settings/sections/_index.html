@@ -4,6 +4,9 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% do view.registerTranslations('app', [
+    "Type",
+    "Handle",
+    "Name",
     "Edit entry types ({count})",
 ]) %}
 
@@ -66,42 +69,28 @@
 {% set tableData = [] %}
 {% for section in sections %}
     {% set isSingle = section.type == 'single' and section.getEntryTypes()|length == 1 %}
+    {% set menuItems = [] %}
 
-    {% if isSingle %}
-        {% set entryTypeObject = section.getEntryTypes()[0] %}
-        {% set entryType = {
-            name: entryTypeObject.name|t('site'),
-            cpEditUrl: entryTypeObject.getCpEditUrl(),
-        } %}
-    {% else %}
-        {% set entryTypes = [] %}
-        {% set editEntryTypesUrl = url('settings/sections/' ~ section.id ~ '/entrytypes') %}
-        {% set entryTypesCount = section.getEntryTypes()|length %}
-
-        {% for entryTypeObject in section.getEntryTypes() %}
-            {% set entryTypes = entryTypes|merge([{
-                name: entryTypeObject.name|t('site'),
-                cpEditUrl: entryTypeObject.getCpEditUrl(),
-            }]) %}
-        {% endfor %}
-    {% endif %}
+    {% for entryTypeObject in section.getEntryTypes() %}
+        {% set menuItems = menuItems|merge([{
+            label: entryTypeObject.name|t('site'),
+            url: entryTypeObject.getCpEditUrl(),
+        }]) %}
+    {% endfor %}
 
     {% set tableData = tableData|merge([{
         id: section.id,
-        name: section.name|t('site'),
-        title: {
-            label: section.name|t('site'),
-            url: url('settings/sections/' ~ section.id)
-        },
+        title: section.name|t('site'),
+        url: url('settings/sections/' ~ section.id),
         handle: section.handle,
         type: section.type|title|t('app'),
-        entryTypes: {
-            isSingle: isSingle,
-            entryType: entryType ?? null,
-            entryTypes: entryTypes ?? null,
-            editEntryTypesUrl: editEntryTypesUrl ?? null,
-            entryTypesCount: entryTypesCount ?? null,
-        },
+        menu: {
+            showItems: not isSingle,
+            menuBtnTitle: 'Entry Types'|t('app'),
+            label: isSingle ? 'Edit entry type'|t('app') : 'Edit entry types'|t('app'),
+            url: isSingle ? section.getEntryTypes()[0].getCpEditUrl() : url('settings/sections/' ~ section.id ~ '/entrytypes'),
+            items: menuItems,
+        }
     }]) %}
 {% endfor %}
 
@@ -123,11 +112,8 @@
 
     var columns = [
         {
-            name: 'title',
+            name: '__slot:title',
             title: Craft.t('app', 'Name'),
-            callback: function(value) {
-                return '<a href="'+value.url+'">' + value.label + '</a>';
-            }
         },
         {
             name: 'handle',
@@ -138,27 +124,9 @@
         },
         { name: 'type', title: Craft.t('app', 'Type') },
         {
-            name: 'entryTypes',
+            name: '__slot:menu',
             title: Craft.t('app', 'Entry Types'),
-            callback: function(value) {
-                if(value.isSingle) {
-                    return '<a href="' + value.entryType.cpEditUrl + '">{{ "Edit entry type"|t('app') }}</a>'
-                } else {
-                    var ret = '<a href="' + value.editEntryTypesUrl + '">' + Craft.t('app', 'Edit entry types ({count})', {count: value.entryTypesCount}) + '</a>\r\n';
-                    ret += '<a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>';
-                    ret += '<div class="menu"><ul>';
-
-                    for (i = 0; i < value.entryTypes.length; i++) {
-                        var entryType = value.entryTypes[i]
-                        ret += '<li><a href="'+entryType.cpEditUrl+'">' + entryType.name + '</a></li>';
-                    }
-
-                    ret += '</ul></div>';
-
-                    return ret;
-                }
-            }
-        },
+        }
     ];
 
     new Craft.VueAdminTable({

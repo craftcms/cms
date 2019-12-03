@@ -66,6 +66,22 @@
                 <template slot="handle" slot-scope="props">
                     <code>{{ props.rowData.handle }}</code>
                 </template>
+                <template slot="menu" slot-scope="props">
+                    <template v-if="props.rowData.menu.showItems">
+                        <a :href="props.rowData.url">{{props.rowData.menu.label}} ({{props.rowData.menu.items.length}})</a>
+                        <a class="menubtn" :title="props.rowData.menu.label"></a>
+                        <div class="menu">
+                            <ul>
+                                <li v-for="item in props.rowData.menu.items">
+                                    <a :href="item.url">{{item.label}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <a :href="props.rowData.menu.url">{{props.rowData.menu.label}}</a>
+                    </template>
+                </template>
                 <template slot="reorder" slot-scope="props">
                     <i class="move icon" :data-id="props.rowData.id"></i>
                 </template>
