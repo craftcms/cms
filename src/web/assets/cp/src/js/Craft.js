@@ -505,15 +505,17 @@ $.extend(Craft,
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
+            var modifiedDeltaNames = [];
             for (var n = 0; n < deltaNames.length; n++) {
-                if (
+                if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || (
                     typeof groupedNewParams[deltaNames[n]] === 'object' &&
                     (
                         typeof groupedOldParams[deltaNames[n]] !== 'object' ||
                         JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
                     )
-                ) {
+                )) {
                     params = params.concat(groupedNewParams[deltaNames[n]]);
+                    params.push('modifiedDeltaNames[]=' + deltaNames[n]);
                 }
             }
 
