@@ -80,8 +80,9 @@
 
     {% set tableData = tableData|merge([{
         id: section.id,
+        name: section.name|t('site'),
         title: section.name|t('site'),
-        url: url('settings/sections/' ~ section.id),
+        url: url('settings/sections/' ~ section.id ~ '/entrytypes'),
         handle: section.handle,
         type: section.type|title|t('app'),
         menu: {
