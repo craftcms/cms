@@ -16,7 +16,9 @@
         props: {
             id: [Number, String],
             name: String,
-            actionUrl: String
+            confirmationMessage: String,
+            actionUrl: String,
+            successMessage: String
         },
 
         data() {
@@ -25,19 +27,28 @@
             }
         },
 
+        computed: {
+            success() {
+                return this.successMessage !== undefined ? Craft.t('site', this.successMessage, {name: this.name}) : Craft.t('app', '“{name}” deleted.', {name: this.name});
+            },
+            confirm() {
+                return this.confirmationMessage !== undefined ? Craft.t('site', this.confirmationMessage, {name: this.name}) : Craft.t('app', 'Are you sure you want to delete “{name}”?', {name: this.name});
+            }
+        },
+
         methods: {
-            confirmDelete: function(name) {
-                return confirm(Craft.t('app', 'Are you sure you want to delete “{name}”?', {name: name}));
+            confirmDelete: function() {
+                return confirm(this.confirm);
             },
             handleClick() {
-                if (this.confirmDelete(this.name)) {
+                if (this.confirmDelete()) {
                     axios.post(Craft.getActionUrl(this.actionUrl), {id: this.id}, {
                         headers: {
                             'X-CSRF-Token': Craft.csrfTokenValue
                         }
                     }).then(response => {
                         if (response.data && response.data.success !== undefined && response.data.success) {
-                            Craft.cp.displayNotice(Craft.t('app', '“{name}” deleted.', {name: this.name}));
+                            Craft.cp.displayNotice(this.success);
                             this.$emit('reload');
                         }
                     });
