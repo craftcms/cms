@@ -64,10 +64,8 @@
 {% for group in categoryGroups %}
     {% set tableData = tableData|merge([{
         id: group.id,
-        title: {
-            label: group.name|t('site'),
-            url: url('settings/categories/' ~ group.id)
-        },
+        title: group.name|t('site'),
+        url: url('settings/categories/' ~ group.id),
         name: group.name|t('site'),
         handle: group.handle,
         manageCategories: {
@@ -79,18 +77,12 @@
 {% js %}
     var columns = [
         {
-            name: 'title',
+            name: '__slot:title',
             title: Craft.t('app', 'Name'),
-            callback: function(value) {
-                return '<a href="'+value.url+'">' + value.label + '</a>';
-            }
         },
         {
-            name: 'handle',
+            name: '__slot:handle',
             title: Craft.t('app', 'Handle'),
-            callback: function(value) {
-                return '<code>' + value + '</code>';
-            }
         },
         {
             name: 'manageCategories',

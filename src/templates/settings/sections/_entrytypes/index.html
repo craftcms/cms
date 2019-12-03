@@ -77,11 +77,8 @@ var columns = [
         title: Craft.t('app', 'Name'),
     },
     {
-        name: 'handle',
+        name: '__slot:handle',
         title: Craft.t('app', 'Handle'),
-        callback: function(value) {
-            return '<code>' + value + '</code>';
-        }
     },
 ];
 

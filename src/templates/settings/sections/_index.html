@@ -118,13 +118,13 @@
             title: Craft.t('app', 'Name'),
         },
         {
-            name: 'handle',
+            name: '__slot:handle',
             title: Craft.t('app', 'Handle'),
-            callback: function(value) {
-                return '<code>' + value + '</code>';
-            }
         },
-        { name: 'type', title: Craft.t('app', 'Type') },
+        {
+            name: 'type',
+            title: Craft.t('app', 'Type')
+        },
         {
             name: '__slot:menu',
             title: Craft.t('app', 'Entry Types'),

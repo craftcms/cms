@@ -77,10 +77,8 @@
 
     {% set tableData = tableData|merge([{
         id: schema.id,
-        title: {
-            label: schema.isPublic ? 'Public Schema'|t('app') : schema.name,
-            url: url('graphql/schemas/' ~ schema.id)
-        },
+        title: schema.isPublic ? 'Public Schema'|t('app') : schema.name,
+        url: url('graphql/schemas/' ~ schema.id),
         name: schema.isPublic ? 'Public Schema'|t('app') : schema.name,
         enabled: schema.enabled,
         lastUsed: {
@@ -99,11 +97,8 @@
 {% js %}
     var columns = [
         {
-            name: 'title',
+            name: '__slot:title',
             title: Craft.t('app', 'Schema Name'),
-            callback: function(value) {
-                return '<a href="'+value.url+'">' + value.label + '</a>';
-            }
         },
         {
             name: 'enabled',

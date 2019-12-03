@@ -162,7 +162,7 @@
             name: 'title',
             title: Craft.t('app', 'Name'),
             callback: function(value) {
-                let str = '<a href="'+value.url+'">' + value.label + '</a>';
+                let str = '<a class="cell-bold" href="'+value.url+'">' + value.label + '</a>';
 
                 if (value.required) {
                     str += ' <span class="required"></span>'
@@ -172,11 +172,8 @@
             }
         },
         {
-            name: 'handle',
+            name: '__slot:handle',
             title: Craft.t('app', 'Handle'),
-            callback: function(value) {
-                return '<code>' + value + '</code>';
-            }
         },
         {
             name: 'type',

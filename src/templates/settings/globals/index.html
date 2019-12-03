@@ -87,18 +87,12 @@
 {% js %}
 var columns = [
     {
-        name: 'title',
+        name: '__slot:title',
         title: Craft.t('app', 'Global Set Name'),
-        callback: function(value) {
-            return '<a href="'+value.url+'">' + value.label + '</a>';
-        }
     },
     {
-        name: 'handle',
+        name: '__slot:handle',
         title: Craft.t('app', 'Handle'),
-        callback: function(value) {
-            return '<code>' + value + '</code>';
-        }
     },
 ];
 
