@@ -214,14 +214,16 @@ class Craft extends Yii
         }
 
         if (!$isContentBehaviorFileValid) {
+            // First generate ContentBehavior and autoload it without loading the fields
             self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, true);
         }
 
         if (!$isElementQueryBehaviorFileValid) {
-            self::_generateElementQueryFile($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion, true);
+            self::_generateElementQueryFile($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion);
         }
 
-        if (!empty($fields)) {
+        if (!$isContentBehaviorFileValid && !empty($fields)) {
+            // Now generate ContentBehavior again, this time with the correct field value types
             $fieldHandles = [];
 
             foreach ($fields as $field) {
@@ -242,13 +244,7 @@ class Craft extends Yii
                 }
             }
 
-            if (!$isContentBehaviorFileValid) {
-                self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, false);
-            }
-
-            if (!$isElementQueryBehaviorFileValid) {
-                self::_generateElementQueryFile($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion, false);
-            }
+            self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, false);
         }
     }
 
@@ -291,10 +287,9 @@ EOD;
      * @param array $fieldHandles
      * @param string $elementQueryBehaviorFile
      * @param string $storedFieldVersion
-     * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateElementQueryFile(array $fieldHandles, string $elementQueryBehaviorFile, string $storedFieldVersion, bool $load)
+    private static function _generateElementQueryFile(array $fieldHandles, string $elementQueryBehaviorFile, string $storedFieldVersion)
     {
         $methods = [];
 
@@ -309,7 +304,7 @@ EOD;
             ['{VERSION}', '{METHOD_DOCS}'],
             [$storedFieldVersion, implode("\n", $methods)],
             $elementQueryBehaviorFile,
-            $load
+            true
         );
     }
 
