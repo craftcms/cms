@@ -306,7 +306,7 @@ class Volumes extends Component
             'type' => \get_class($volume),
             'hasUrls' => (bool)$volume->hasUrls,
             'url' => $volume->url,
-            'settings' => $volume->getSettings(),
+            'settings' => ProjectConfigHelper::packAssociativeArray($volume->getSettings()),
             'sortOrder' => (int)$volume->sortOrder,
         ];
 
@@ -361,7 +361,7 @@ class Volumes extends Component
             $volumeRecord->hasUrls = $data['hasUrls'];
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
-            $volumeRecord->settings = $data['settings'];
+            $volumeRecord->settings = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {

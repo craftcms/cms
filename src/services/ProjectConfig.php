@@ -21,6 +21,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
@@ -56,6 +57,9 @@ class ProjectConfig extends Component
 
     // Key to use for schema version storage.
     const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
+
+    // Key to use for signaling ordered-to-associative array conversion
+    const CONFIG_ASSOC_KEY = '__assoc__';
 
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
@@ -627,7 +631,6 @@ class ProjectConfig extends Component
 
         $previousConfig = $this->_getStoredConfig();
         $value = ProjectConfigHelper::cleanupConfig($previousConfig);
-        ksort($value);
         $this->_storeYamlHistory($value);
 
         $info = Craft::$app->getInfo();
