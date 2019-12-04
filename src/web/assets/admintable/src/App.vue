@@ -35,69 +35,75 @@
 
             </div>
         </div>
-        <div class="tableview" :class="{ loading: isLoading }">
-            <vuetable
-                    ref="vuetable"
-                    :per-page="perPage"
-                    :css="tableCss"
-                    :fields="fields"
-                    :api-url="apiUrl"
-                    :api-mode="apiUrl ? true : false"
-                    :data="tableData"
-                    :append-params="appendParams"
-                    pagination-path="pagination"
-                    @vuetable:loaded="init"
-                    @vuetable:loading="loading"
-                    @vuetable:pagination-data="onPaginationData"
-            >
-                <template slot="checkbox" slot-scope="props">
-                    <admin-table-checkbox
-                        :id="props.rowData.id"
-                        :checks="checks"
-                        v-on:addCheck="addCheck"
-                        v-on:removeCheck="removeCheck"
-                    ></admin-table-checkbox>
-                </template>
-                <template slot="title" slot-scope="props">
-                    <span v-if="props.rowData.status !== undefined" class="status" :class="{enabled: props.rowData.status}"></span>
-                    <a class="cell-bold" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
-                    <span class="cell-bold" v-if="!props.rowData.url">{{ props.rowData.title }}</span>
-                </template>
-                <template slot="handle" slot-scope="props">
-                    <code>{{ props.rowData.handle }}</code>
-                </template>
-                <template slot="menu" slot-scope="props">
-                    <template v-if="props.rowData.menu.showItems">
-                        <a :href="props.rowData.url">{{props.rowData.menu.label}} ({{props.rowData.menu.items.length}})</a>
-                        <a class="menubtn" :title="props.rowData.menu.label"></a>
-                        <div class="menu">
-                            <ul>
-                                <li v-for="(item, index) in props.rowData.menu.items" :key="index">
-                                    <a :href="item.url">{{item.label}}</a>
-                                </li>
-                            </ul>
-                        </div>
+
+        <div v-if="this.isEmpty">
+            <p>{{ emptyMsg }}</p>
+        </div>
+        <div class="tableview" :class="{ loading: isLoading }" v-if="!this.isEmpty">
+            <div class="tablepane">
+                <vuetable
+                        ref="vuetable"
+                        :per-page="perPage"
+                        :css="tableCss"
+                        :fields="fields"
+                        :api-url="apiUrl"
+                        :api-mode="apiUrl ? true : false"
+                        :data="tableData"
+                        :append-params="appendParams"
+                        pagination-path="pagination"
+                        @vuetable:loaded="init"
+                        @vuetable:loading="loading"
+                        @vuetable:pagination-data="onPaginationData"
+                >
+                    <template slot="checkbox" slot-scope="props">
+                        <admin-table-checkbox
+                            :id="props.rowData.id"
+                            :checks="checks"
+                            v-on:addCheck="addCheck"
+                            v-on:removeCheck="removeCheck"
+                        ></admin-table-checkbox>
                     </template>
-                    <template v-else>
-                        <a :href="props.rowData.menu.url">{{props.rowData.menu.label}}</a>
+                    <template slot="title" slot-scope="props">
+                        <span v-if="props.rowData.status !== undefined" class="status" :class="{enabled: props.rowData.status}"></span>
+                        <a class="cell-bold" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
+                        <span class="cell-bold" v-if="!props.rowData.url">{{ props.rowData.title }}</span>
                     </template>
-                </template>
-                <template slot="reorder" slot-scope="props">
-                    <i class="move icon" :data-id="props.rowData.id"></i>
-                </template>
-                <template slot="delete" slot-scope="props">
-                    <admin-table-delete-button
-                        :id="props.rowData.id"
-                        :name="props.rowData.title"
-                        :success-message="deleteSuccessMessage"
-                        :confirmation-message="deleteConfirmationMessage"
-                        :action-url="deleteAction"
-                        :disabled="canDelete"
-                        v-on:reload="remove(props.rowIndex)"
-                        v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
-                    ></admin-table-delete-button>
-                </template>
-            </vuetable>
+                    <template slot="handle" slot-scope="props">
+                        <code>{{ props.rowData.handle }}</code>
+                    </template>
+                    <template slot="menu" slot-scope="props">
+                        <template v-if="props.rowData.menu.showItems">
+                            <a :href="props.rowData.url">{{props.rowData.menu.label}} ({{props.rowData.menu.items.length}})</a>
+                            <a class="menubtn" :title="props.rowData.menu.label"></a>
+                            <div class="menu">
+                                <ul>
+                                    <li v-for="(item, index) in props.rowData.menu.items" :key="index">
+                                        <a :href="item.url">{{item.label}}</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <a :href="props.rowData.menu.url">{{props.rowData.menu.label}}</a>
+                        </template>
+                    </template>
+                    <template slot="reorder" slot-scope="props">
+                        <i class="move icon" :data-id="props.rowData.id"></i>
+                    </template>
+                    <template slot="delete" slot-scope="props">
+                        <admin-table-delete-button
+                            :id="props.rowData.id"
+                            :name="props.rowData.title"
+                            :success-message="deleteSuccessMessage"
+                            :confirmation-message="deleteConfirmationMessage"
+                            :action-url="deleteAction"
+                            :disabled="canDelete"
+                            v-on:reload="remove(props.rowIndex)"
+                            v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
+                        ></admin-table-delete-button>
+                    </template>
+                </vuetable>
+            </div>
             <admin-table-pagination
                     ref="pagination"
                     @vuetable-pagination:change-page="onChangePage"
@@ -133,6 +139,7 @@
             'deleteCallback',
             'deleteConfirmationMessage',
             'deleteSuccessMessage',
+            'emptyMessage',
             'minItems',
             'perPage',
             'reorderAction',
@@ -152,6 +159,7 @@
                 isLoading: true,
                 searchTerm: null,
                 sortable: null,
+                isEmpty: false,
             }
         },
 
@@ -164,6 +172,7 @@
                         onSort: this.updateSortOrder
                     })
                 }
+                this.isEmpty = (this.$refs.vuetable.tableData.length) ? false : true;
 
                 this.isLoading = false;
             },
@@ -286,6 +295,14 @@
                 return this.minItems && this.$refs.vuetable.tableData.length <= this.minItems
             },
 
+            emptyMsg() {
+                if (this.emptyMessage) {
+                    return this.emptyMessage;
+                }
+
+                return Craft.t('app', 'No data available');
+            },
+
             fields() {
                 let columns = [];
 
@@ -342,8 +359,7 @@
                     handleIcon: 'move icon',
                     loadingClass: 'loading'
                 }
-            },
-
+            }
         },
     }
 </script>
