@@ -130,6 +130,7 @@
             'columns',
             'container',
             'deleteAction',
+            'deleteCallback',
             'deleteConfirmationMessage',
             'deleteSuccessMessage',
             'minItems',
@@ -240,6 +241,10 @@
               } else {
                   Vue.delete(this.$refs.vuetable.tableData, index);
                   this.$refs.vuetable.refresh();
+              }
+
+              if (this.deleteCallback && {}.toString.call(this.deleteCallback) === '[object Function]') {
+                  this.deleteCallback();
               }
 
               this.isLoading = false;
