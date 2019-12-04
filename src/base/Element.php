@@ -2105,10 +2105,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether elements have been eager-loaded with a given handle.
-     *
-     * @param string $handle The handle of the eager-loaded elements
-     * @return bool Whether elements have been eager-loaded with the given handle
+     * @inheritdoc
      */
     public function hasEagerLoadedElements(string $handle): bool
     {
@@ -2116,10 +2113,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the eager-loaded elements for a given handle.
-     *
-     * @param string $handle The handle of the eager-loaded elements
-     * @return ElementInterface[]|null The eager-loaded elements, or null
+     * @inheritdoc
      */
     public function getEagerLoadedElements(string $handle)
     {
@@ -2134,10 +2128,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Sets some eager-loaded elements on a given handle.
-     *
-     * @param string $handle The handle to load the elements with in the future
-     * @param ElementInterface[] $elements The eager-loaded elements
+     * @inheritdoc
      */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
