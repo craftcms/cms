@@ -21,6 +21,7 @@
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
+- It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager-loading criteria. 
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
 - GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
 - Added `craft\assetpreviews\HtmlPreview`.
@@ -32,7 +33,9 @@
 - Added `craft\base\AssetPreviewTrait`.
 - Added `craft\base\ElementInterface::clearDirtyFields()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
+- Added `craft\base\ElementInterface::getEagerLoadedElementCount()`.
 - Added `craft\base\ElementInterface::isFieldDirty()`.
+- Added `craft\base\ElementInterface::setEagerLoadedElementCount()`.
 - Added `craft\controllers\GraphqlController::actionDeleteToken()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.

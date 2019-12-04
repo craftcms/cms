@@ -950,6 +950,11 @@ abstract class Element extends Component implements ElementInterface
     private $_eagerLoadedElements;
 
     /**
+     * @var array|null
+     */
+    private $_eagerLoadedElementCounts;
+
+    /**
      * @var ElementInterface|false
      * @see getCurrentRevision()
      */
@@ -2133,6 +2138,22 @@ abstract class Element extends Component implements ElementInterface
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         $this->_eagerLoadedElements[$handle] = $elements;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadedElementCount(string $handle): int
+    {
+        return $this->_eagerLoadedElementCounts[$handle] ?? 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElementCount(string $handle, int $count)
+    {
+        $this->_eagerLoadedElementCounts[$handle] = $count;
     }
 
     /**

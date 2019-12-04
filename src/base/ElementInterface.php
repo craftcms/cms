@@ -905,6 +905,24 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElements(string $handle, array $elements);
 
     /**
+     * Returns the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return int The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function getEagerLoadedElementCount(string $handle): int;
+
+    /**
+     * Sets the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle to load the elements with in the future
+     * @param int $count The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function setEagerLoadedElementCount(string $handle, int $count);
+
+    /**
      * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
      *
      * @return bool Whether the element’s content is fresh
