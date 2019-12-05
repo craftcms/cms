@@ -706,7 +706,8 @@ class Plugins extends Component
         }
 
         // Update the plugin's settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArray($plugin->getSettings()->toArray());
+        $pluginSettings = $plugin->getSettings();
+        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArray($pluginSettings->toArray()) : [];
         Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $pluginSettings);
 
         $plugin->afterSaveSettings();

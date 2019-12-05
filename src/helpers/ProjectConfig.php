@@ -173,9 +173,11 @@ class ProjectConfig
     /**
      * Packs an associative array for storage in project config.
      *
-     * @param $array
+     * @param array $array
+     * @return array
+     * @since 3.4.0
      */
-    public static function packAssociativeArray($array)
+    public static function packAssociativeArray(array $array): array
     {
         foreach ($array as $setting => &$value) {
             if (ArrayHelper::isAssociative($value)) {
@@ -195,9 +197,11 @@ class ProjectConfig
     /**
      * Unpacks a packed associative array from project config storage.
      *
-     * @param $array
+     * @param array $array
+     * @return array
+     * @since 3.4.0
      */
-    public static function unpackAssociativeArray($array)
+    public static function unpackAssociativeArray(array $array): array
     {
         foreach ($array as $key => &$value) {
             if (is_array($value) && !empty($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
