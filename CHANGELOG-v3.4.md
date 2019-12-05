@@ -57,6 +57,8 @@
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
+- Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
+- Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\GqlToken`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\records\GqlToken`.
@@ -113,6 +115,7 @@
 - Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
 - Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Renamed the`QueryParameter` GraphQL type to `QueryArgument`.
+- Project config now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))

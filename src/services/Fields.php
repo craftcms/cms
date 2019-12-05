@@ -44,6 +44,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -720,7 +721,6 @@ class Fields extends Component
      */
     public function createFieldConfig(FieldInterface $field): array
     {
-        /** @var Field $field */
         $config = [
             'name' => $field->name,
             'handle' => $field->handle,
@@ -729,7 +729,7 @@ class Fields extends Component
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => get_class($field),
-            'settings' => $field->getSettings(),
+            'settings' => ProjectConfigHelper::packAssociativeArray($field->getSettings()),
             'contentColumnType' => $field->getContentColumnType(),
         ];
 
@@ -1524,6 +1524,10 @@ class Fields extends Component
             // Clear the translation key format if not using a custom translation method
             if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
                 $data['translationKeyFormat'] = null;
+            }
+
+            if (!empty($data['settings']) && is_array($data['settings'])) {
+                $data['settings'] = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
             }
 
             $fieldRecord->uid = $fieldUid;

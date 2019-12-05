@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\services\Fields;
+use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
 use yii\base\InvalidConfigException;
@@ -135,7 +136,6 @@ class ProjectConfig
     public static function cleanupConfig(array $config): array
     {
         $remove = [];
-        $sortItems = true;
 
         foreach ($config as $key => &$value) {
             // Only scalars, arrays and simple objects allowed.
@@ -156,12 +156,8 @@ class ProjectConfig
                     $remove[] = $key;
                 }
             }
-
-            // If the key isn't a UID, then don't sort this array
-            if ($sortItems && !StringHelper::isUUID($key)) {
-                $sortItems = false;
-            }
         }
+
         unset($value);
 
         // Remove empty stuff
@@ -169,10 +165,56 @@ class ProjectConfig
             unset($config[$removeKey]);
         }
 
-        if ($sortItems) {
-            ksort($config);
-        }
+        ksort($config);
 
         return $config;
+    }
+
+    /**
+     * Packs an associative array for storage in project config.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.4.0
+     */
+    public static function packAssociativeArray(array $array): array
+    {
+        foreach ($array as $setting => &$value) {
+            if (ArrayHelper::isAssociative($value)) {
+                $newValues = [];
+
+                foreach ($value as $key => $innerValue) {
+                    $newValues[] = [$key, $innerValue];
+                }
+
+                $value = [ProjectConfigService::CONFIG_ASSOC_KEY => $newValues];
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * Unpacks a packed associative array from project config storage.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.4.0
+     */
+    public static function unpackAssociativeArray(array $array): array
+    {
+        foreach ($array as $key => &$value) {
+            if (is_array($value) && !empty($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+                $associative = [];
+
+                foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                    $associative[$items[0]] = $items[1];
+                }
+
+                $value = $associative;
+            }
+        }
+
+        return $array;
     }
 }
