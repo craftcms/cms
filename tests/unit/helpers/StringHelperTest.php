@@ -2390,7 +2390,6 @@ class StringHelperTest extends Unit
         $provider = [
             // One needle
             [false, 'Str contains foo bar', []],
-            [false, 'Str contains foo bar', ['']],
             // Multiple needles
             [true, 'Str contains foo bar', ['foo', 'bar']],
             [true, '12398!@(*%!@# @!%#*&^%', [' @!%#*', '&^%']],
