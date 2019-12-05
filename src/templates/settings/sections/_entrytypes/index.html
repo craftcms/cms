@@ -86,6 +86,7 @@ new Craft.VueAdminTable({
     columns: columns,
     container: '#entrytypes-vue-admin-table',
     deleteAction: 'sections/delete-entry-type',
+    reorderAction: 'sections/reorder-entry-type',
     tableData: {{ tableData|json_encode|raw }},
     minItems: 1,
 });

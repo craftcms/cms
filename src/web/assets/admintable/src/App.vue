@@ -83,7 +83,7 @@
                     </template>
                 </template>
                 <template slot="reorder" slot-scope="props">
-                    <i class="move icon" :data-id="props.rowData.id"></i>
+                    <i class="move icon" :class="{disabled: !canReorder}" :data-id="props.rowData.id"></i>
                 </template>
                 <template slot="delete" slot-scope="props">
                     <admin-table-delete-button
@@ -92,7 +92,7 @@
                         :success-message="deleteSuccessMessage"
                         :confirmation-message="deleteConfirmationMessage"
                         :action-url="deleteAction"
-                        :disabled="canDelete"
+                        :disabled="!canDelete"
                         v-on:reload="remove(props.rowIndex)"
                         v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
                     ></admin-table-delete-button>
@@ -278,7 +278,11 @@
             },
 
             canDelete() {
-                return this.minItems && this.$refs.vuetable.tableData.length <= this.minItems
+                return !(this.minItems && this.$refs.vuetable.tableData.length <= this.minItems)
+            },
+
+            canReorder() {
+                return this.$refs.vuetable.tableData.length > 1
             },
 
             fields() {
