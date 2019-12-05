@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where the page URL could change when interacting with element selection modals.
+- Fixed a bug where the page URL could change when interacting with element selection modals. ([#]5254](https://github.com/craftcms/cms/issues/5254))
 
 ## 3.3.17 - 2019-12-03
 
