@@ -36,6 +36,8 @@
                 if (this.attributes) {
                     return this.attributes[this.value.attribute]
                 }
+
+                return null
             }
         },
 

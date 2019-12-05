@@ -155,6 +155,8 @@
                 if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return this.plugin.longDescription
                 }
+
+                return null
             },
 
             developerUrl() {
@@ -175,6 +177,8 @@
                     case 'mit':
                         return 'MIT'
                 }
+
+                return null
             },
 
             lastUpdate() {
