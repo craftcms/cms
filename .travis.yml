@@ -8,7 +8,6 @@ env:
 branches:
   only:
   - develop
-  - feature/tests
 services:
 - mysql
 - postgresql
@@ -36,7 +35,12 @@ cache:
   - "$HOME/.composer/cache"
   - "$HOME/.npm"
 addons:
-  postgresql: '9.6'
+  postgresql: "12"
+    apt:
+      packages:
+        - postgresql-12
+        - postgresql-client-12
+before_install: echo "extension = zip.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
