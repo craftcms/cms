@@ -512,11 +512,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             if (this.checkFormAfterUpdate) {
                 this.checkFormAfterUpdate = false;
-
-                // Only actually check the form if there's no active timeout for it
-                if (!this.timeout) {
-                    this.checkForm();
-                }
+                this.checkForm();
             }
         },
 
