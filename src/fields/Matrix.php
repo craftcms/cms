@@ -32,7 +32,9 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\i18n\Locale;
 use craft\models\MatrixBlockType;
+use craft\queue\jobs\ApplyMatrixPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
@@ -573,6 +575,36 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @inheritdoc
+     */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        /** @var Element|null $element */
+        if (!$element) {
+            return null;
+        }
+
+        switch ($this->propagationMethod) {
+            case self::PROPAGATION_METHOD_NONE:
+                return Craft::t('app', 'Blocks will only be saved in the {site} site.', [
+                    'site' => Craft::t('site', $element->getSite()->name),
+                ]);
+            case self::PROPAGATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'Blocks will be saved across all sites in the {group} site group.', [
+                    'group' => Craft::t('site', $element->getSite()->getGroup()->name),
+                ]);
+            case self::PROPAGATION_METHOD_LANGUAGE:
+                $language = (new Locale($element->getSite()->language))
+                    ->getDisplayName(Craft::$app->language);
+                return Craft::t('app', 'Blocks will be saved across all {language}-language sites.', [
+                    'language' => $language,
+                ]);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     public function getInputHtml($value, ElementInterface $element = null): string
@@ -876,15 +908,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'elementType' => MatrixBlock::class,
-                'criteria' => [
-                    'fieldId' => $this->id,
-                    'siteId' => '*',
-                    'unique' => true,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
+            Craft::$app->getQueue()->push(new ApplyMatrixPropagationMethod([
+                'fieldId' => $this->id,
+                'oldPropagationMethod' => $this->_oldPropagationMethod,
+                'newPropagationMethod' => $this->propagationMethod,
             ]));
             $this->_oldPropagationMethod = null;
         }

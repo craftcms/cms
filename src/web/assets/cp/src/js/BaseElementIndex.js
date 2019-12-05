@@ -277,9 +277,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Default to whatever page is in the URL
-            if (this.settings.context === 'index') {
-                this.setPage(Craft.pageNum);
-            }
+            this.setPage(Craft.pageNum);
 
             this.updateElements(true);
         },
@@ -519,6 +517,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          * Sets the page number.
          */
         setPage: function(page) {
+            if (this.settings.context !== 'index') {
+                return;
+            }
+
             page = Math.max(page, 1);
             this.page = page;
 
