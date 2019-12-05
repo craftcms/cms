@@ -2,8 +2,16 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\queue\jobs\ApplyMatrixPropagationMethod`.
+- Added `craft\services\Matrix::getSupportedSiteIds()`.
+
 ### Changed
+- When a Matrix field’s Propagation Method setting changes, the field’s blocks are now duplicated into any sites where their content would have otherwise been deleted. ([#5182](https://github.com/craftcms/cms/issues/5182))
 - Title fields’ translation icon tooltips now clarify that their values are translated for each site. ([#2064](https://github.com/craftcms/cms/issues/2064))
+
+### Deprecated
+- Deprecated `craft\services\Matrix::getSupportedSiteIdsForField()`. `getSupportedSiteIds()` should be used instead.
 
 ### Fixed
 - Fixed a bug where the page URL could change when interacting with element selection modals. ([#]5254](https://github.com/craftcms/cms/issues/5254))
