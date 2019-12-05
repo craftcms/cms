@@ -12,6 +12,7 @@ use craft\helpers\ProjectConfig;
 use craft\models\GqlToken;
 use craft\services\Fields;
 use craft\services\Gql;
+use craft\services\Matrix;
 use craft\services\Plugins;
 use craft\services\Volumes;
 
@@ -44,6 +45,15 @@ class m191204_085100_pack_savable_component_settings extends Migration
                 $projectConfig->set(Fields::CONFIG_FIELDS_KEY, $fields);
             }
 
+            // Matrix fields
+            $this->_updateNestedFields(Matrix::CONFIG_BLOCKTYPE_KEY, $projectConfig);
+
+            // Supertable fields
+            $this->_updateNestedFields('superTableBlockTypes', $projectConfig);
+
+            // Neo fields
+            $this->_updateNestedFields('neoBlockTypes', $projectConfig);
+
             // Volumes
             $volumes = $projectConfig->get(Volumes::CONFIG_VOLUME_KEY);
 
@@ -66,6 +76,27 @@ class m191204_085100_pack_savable_component_settings extends Migration
             }
 
             $projectConfig->muteEvents = false;
+        }
+    }
+
+    /**
+     * Update associated arrays in settings for nested field for a given path prefix.
+     * 
+     * @param $pathPrefix
+     * @param $projectConfig
+     */
+    private function _updateNestedFields ($pathPrefix, $projectConfig)
+    {
+        $blockTypes = $projectConfig->get($pathPrefix) ?? [];
+
+        foreach ($blockTypes as $blockTypeUid => $blockType) {
+            $fields = $blockType['fields'] ?? [];
+
+            foreach ($fields as &$field) {
+                $field['settings'] = ProjectConfig::packAssociativeArray($field['settings'] ?? []);
+            }
+
+            $projectConfig->set($pathPrefix . '.' . $blockTypeUid . '.fields', $fields);
         }
     }
 
