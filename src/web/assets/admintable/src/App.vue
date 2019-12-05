@@ -89,7 +89,7 @@
                         </template>
                     </template>
                     <template slot="reorder" slot-scope="props">
-                        <i class="move icon" :class="{disabled: !canReorder}" :data-id="props.rowData.id"></i>
+                        <i class="move icon vue-table-move-handle" :class="{disabled: !canReorder}" :data-id="props.rowData.id"></i>
                     </template>
                     <template slot="delete" slot-scope="props">
                         <admin-table-delete-button
@@ -157,6 +157,7 @@
                 checks: [],
                 currentPage: 1,
                 tableClass: 'data fullwidth',
+                tableBodySelector: '.vuetable-body',
                 isLoading: true,
                 searchTerm: null,
                 sortable: null,
@@ -166,11 +167,12 @@
 
         methods: {
             init() {
-                let tableBody = this.$el.querySelector('.vuetable-body');
-                if (this.reorderAction && tableBody) {
+                let tableBody = this.$el.querySelector(this.tableBodySelector);
+
+                if (this.canReorder) {
                     this.sortable = Sortable.create(tableBody, {
                         handle: '.move.icon',
-                        onSort: this.updateSortOrder
+                        onSort: this.handleReorder
                     })
                 }
                 this.isEmpty = (this.$refs.vuetable.tableData.length) ? false : true;
@@ -182,16 +184,17 @@
               this.isLoading = true;
             },
 
-            updateSortOrder(ev) {
-                let newIndex = ev.newIndex + (this.currentPage > 1 ? (this.currentPage-1) * this.perPage : 0);
-                // Make the order non-zero based
-                newIndex = newIndex + 1;
-                let moveHandle = ev.item.querySelector('.move.icon');
+            handleReorder(ev) {
+                let elements = [...ev.target.querySelectorAll('.vue-table-move-handle')];
 
-                if (moveHandle) {
+                if (elements.length) {
+                    let ids = map(elements, element => {
+                        return element.dataset.id;
+                    });
+
                     let data = {
-                        id: moveHandle.dataset.id,
-                        position: newIndex
+                        ids: JSON.stringify(ids),
+                        startPosition: (this.currentPage > 1 ? (this.currentPage-1) * this.perPage : 0) +1
                     };
 
                     Craft.postActionRequest(this.reorderAction, data, response => {
@@ -297,7 +300,7 @@
             },
 
             canReorder() {
-                return this.$refs.vuetable.tableData.length > 1
+                return (this.$refs.vuetable.tableData.length > 1 && this.reorderAction && this.$el.querySelector(this.tableBodySelector) && (!this.$refs.vuetable.tablePagination))
             },
 
             emptyMsg() {

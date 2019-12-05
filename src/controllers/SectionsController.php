@@ -404,23 +404,6 @@ class SectionsController extends Controller
     }
 
     /**
-     * Reorders an entry type to a new position.
-     *
-     * @return Response
-     */
-    public function actionReorderEntryType(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $entryTypeId = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
-        $entryTypePosition = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('position'));
-        Craft::$app->getSections()->reorderEntryType($entryTypeId, $entryTypePosition);
-
-        return $this->asJson(['success' => true]);
-    }
-
-    /**
      * Deletes an entry type.
      *
      * @return Response

@@ -1299,7 +1299,6 @@ class Sections extends Component
      * @param array $entryTypeIds
      * @return bool Whether the entry types were reordered successfully
      * @throws \Throwable if reasons
-     * @deprecated in 3.4. Use [[reorderEntryType()]] instead.
      */
     public function reorderEntryTypes(array $entryTypeIds): bool
     {
@@ -1321,48 +1320,6 @@ class Sections extends Component
                 $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
                 $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder + 1);
             }
-        }
-
-        return true;
-    }
-
-    /**
-     * Reorders an entry type to a new position.
-     *
-     * @param int $id The entry type ID to be reordered
-     * @param int $position The new entry type’s position
-     * @return bool Whether the entry types were reordered successfully
-     * @throws Exception
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\NotSupportedException
-     * @throws \yii\web\ServerErrorHttpException
-     */
-    public function reorderEntryType(int $id, int $position): bool
-    {
-        $entryType = EntryTypeRecord::find()->where(['id' => $id])->one();
-        $entryType->moveToPosition($position);
-        $entryType->save();
-
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $sectionRecord = null;
-
-        $entryTypes = $this->_createEntryTypeQuery()
-            ->addSelect(['sortOrder'])
-            ->where(['sectionId' => $entryType->sectionId])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($entryTypes as $entryTypeRecord) {
-            $entryTypeUid = $entryTypeRecord['uid'];
-            $entryTypeOrder = $entryTypeRecord['sortOrder'];
-
-            if (!$sectionRecord) {
-                $sectionRecord = SectionRecord::findOne($entryTypeRecord['sectionId']);
-            }
-
-            $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
-            $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder);
         }
 
         return true;
@@ -1468,6 +1425,9 @@ class Sections extends Component
             if ($entryTypeRecord->fieldLayoutId) {
                 Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
             }
+
+            // Move the entry type to the last position before soft deleting
+            $entryTypeRecord->moveLast();
 
             // Delete the entry type.
             Craft::$app->getDb()->createCommand()

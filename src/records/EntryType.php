@@ -11,7 +11,6 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
-use yii2tech\ar\position\PositionBehavior;
 
 /**
  * Class EntryType record.
@@ -39,21 +38,6 @@ class EntryType extends ActiveRecord
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @return array
-     */
-    public function behaviors(): array
-    {
-        $behaviors = parent::behaviors();
-
-        $behaviors['position'] = [
-            'class' => PositionBehavior::class,
-            'positionAttribute' => 'sortOrder',
-        ];
-
-        return $behaviors;
-    }
 
     /**
      * @inheritdoc
