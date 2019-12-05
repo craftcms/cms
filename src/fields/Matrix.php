@@ -34,6 +34,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use craft\models\MatrixBlockType;
+use craft\queue\jobs\ApplyMatrixPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
@@ -907,15 +908,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'elementType' => MatrixBlock::class,
-                'criteria' => [
-                    'fieldId' => $this->id,
-                    'siteId' => '*',
-                    'unique' => true,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
+            Craft::$app->getQueue()->push(new ApplyMatrixPropagationMethod([
+                'fieldId' => $this->id,
+                'oldPropagationMethod' => $this->_oldPropagationMethod,
+                'newPropagationMethod' => $this->propagationMethod,
             ]));
             $this->_oldPropagationMethod = null;
         }
