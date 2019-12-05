@@ -905,7 +905,8 @@ class Entry extends Element
         }
 
         if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
-            throw new InvalidConfigException('Invalid author ID: ' . $this->authorId);
+            // The author is probably soft-deleted. Just no author is set
+            return null;
         }
 
         return $this->_author;

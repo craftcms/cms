@@ -29,12 +29,12 @@ class AssetManager extends \yii\web\AssetManager
      * @param string $sourcePath directory or file path being published
      * @param bool $publish whether the directory or file should be published, if not already
      * @return string|false the published file or directory path, or false if $publish is false and the file or directory does not exist
+     * @todo remove this in Craft 4 (nothing is using $publish anymore)
      */
     public function getPublishedPath($sourcePath, bool $publish = false)
     {
         if ($publish === true) {
             list($path) = $this->publish($sourcePath);
-
             return $path;
         }
 

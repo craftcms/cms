@@ -881,6 +881,48 @@ interface ElementInterface extends ComponentInterface
     public function getFieldContext(): string;
 
     /**
+     * Returns whether elements have been eager-loaded with a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return bool Whether elements have been eager-loaded with the given handle
+     */
+    public function hasEagerLoadedElements(string $handle): bool;
+
+    /**
+     * Returns the eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return ElementInterface[]|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     */
+    public function getEagerLoadedElements(string $handle);
+
+    /**
+     * Sets some eager-loaded elements on a given handle.
+     *
+     * @param string $handle The handle to load the elements with in the future
+     * @param ElementInterface[] $elements The eager-loaded elements
+     */
+    public function setEagerLoadedElements(string $handle, array $elements);
+
+    /**
+     * Returns the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return int The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function getEagerLoadedElementCount(string $handle): int;
+
+    /**
+     * Sets the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle to load the elements with in the future
+     * @param int $count The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function setEagerLoadedElementCount(string $handle, int $count);
+
+    /**
      * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
      *
      * @return bool Whether the element’s content is fresh

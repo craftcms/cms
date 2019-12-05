@@ -121,10 +121,39 @@ Garnish.$doc.ready(function() {
              *
              * @param craftIdJson
              */
-            updateCraftId(craftId) {
+            updateCraftId(craftId, callback) {
                 this.$store.commit('craft/updateCraftId', craftId)
-                this.$store.commit('craft')
-                this.$emit('craftIdUpdated')
+
+                if (this.craftId && this.craftId.email !== this.cart.email) {
+                    // Update the cart’s email with the one from the Craft ID account
+                    let data = {
+                        email: this.craftId.email,
+                    }
+
+                    this.$store.dispatch('cart/saveCart', data)
+                        .then(() => {
+                            this.$emit('craftIdUpdated')
+
+                            if (callback) {
+                                callback()
+                            }
+                        })
+                        .catch((error) => {
+                            this.$root.displayError("Couldn’t update cart’s email.")
+
+                            if (callback) {
+                                callback()
+                            }
+
+                            throw error
+                        })
+                } else {
+                    this.$emit('craftIdUpdated')
+
+                    if (callback) {
+                        callback()
+                    }
+                }
             },
 
             /**

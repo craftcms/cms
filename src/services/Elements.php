@@ -1648,12 +1648,17 @@ class Elements extends Component
 
         $paths = [];
         $pathCriterias = [];
+        $countPaths = [];
 
         foreach ($with as $path) {
             // Using the array syntax?
             // ['foo.bar'] or ['foo.bar', criteria]
             if (is_array($path)) {
                 if (!empty($path[1])) {
+                    // Is this a count path?
+                    if (ArrayHelper::remove($path[1], 'count', false)) {
+                        $countPaths[$path[0]] = true;
+                    }
                     $pathCriterias['__root__.' . $path[0]] = $path[1];
                 }
 
@@ -1666,34 +1671,44 @@ class Elements extends Component
         // Load 'em up!
         $elementsByPath = ['__root__' => $elements];
         $elementTypesByPath = ['__root__' => $elementType];
+        $eagerLoadingMapsByPath = [];
 
         foreach ($paths as $path) {
             $pathSegments = explode('.', $path);
+            $totalSegments = count($pathSegments);
             $sourcePath = '__root__';
 
-            foreach ($pathSegments as $segment) {
+            foreach ($pathSegments as $segIndex => $segment) {
                 $targetPath = $sourcePath . '.' . $segment;
+                $pathCriteria = $pathCriterias[$targetPath] ?? [];
+
+                // Are we just fetching the count?
+                $getCount = isset($countPaths[$path]) && $segIndex === $totalSegments - 1;
 
                 // Figure out the path mapping wants a custom order
-                $useCustomOrder = (
-                    !empty($pathCriterias[$targetPath]['orderBy']) ||
-                    !empty($pathCriterias[$targetPath]['order'])
+                $useCustomOrder = !$getCount && (
+                    !empty($pathCriteria['orderBy']) ||
+                    !empty($pathCriteria['order'])
                 );
 
                 // Make sure we haven't already eager-loaded this target path
-                if (!isset($elementsByPath[$targetPath])) {
-                    // Guilty until proven innocent
-                    $elementsByPath[$targetPath] = $targetElements = $targetElementsById = $targetElementIdsBySourceIds = false;
-
-                    // Get the eager-loading map from the source element type
-                    /** @var Element $sourceElementType */
-                    $sourceElementType = $elementTypesByPath[$sourcePath];
-                    $map = $sourceElementType::eagerLoadingMap(array_values($elementsByPath[$sourcePath]), $segment);
+                if ($getCount || !isset($elementsByPath[$targetPath])) {
+                    // Have we already fetched the map from an earlier `count` path?
+                    if (array_key_exists($targetPath, $eagerLoadingMapsByPath)) {
+                        $map = $eagerLoadingMapsByPath[$targetPath];
+                    } else {
+                        // Get the eager-loading map from the source element type
+                        /** @var Element $sourceElementType */
+                        $sourceElementType = $elementTypesByPath[$sourcePath];
+                        $map = $eagerLoadingMapsByPath[$targetPath] = $sourceElementType::eagerLoadingMap(array_values($elementsByPath[$sourcePath]), $segment);
+                    }
 
                     if ($map === null) {
                         break;
                     }
 
+                    $targetElementIdsBySourceIds = null;
+                    $query = null;
                     $offset = 0;
                     $limit = null;
 
@@ -1728,7 +1743,7 @@ class Elements extends Component
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
-                            $pathCriterias[$targetPath] ?? []
+                            $pathCriteria
                         );
 
                         // Save the offset & limit params for later
@@ -1742,66 +1757,83 @@ class Elements extends Component
                         }
 
                         $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
+                    }
 
+                    if ($getCount) {
+                        // Just fetch the target elements’ IDs
+                        $targetElementIds = $query ? array_flip($query->ids()) : [];
+
+                        // Loop through the source elements and count up their targets
+                        foreach ($elementsByPath[$sourcePath] as $sourceElement) {
+                            $count = 0;
+                            if (!empty($targetElementIds) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                    if (isset($targetElementIds[$targetElementId])) {
+                                        $count++;
+                                    }
+                                }
+                            }
+                            $sourceElement->setEagerLoadedElementCount($segment, $count);
+                        }
+                    } else {
                         /** @var array|ElementInterface[] $targetElements */
-                        /** @var array|ElementInterface[] $targetElementsById */
-                        $targetElements = $query->asArray()->all();
+                        $targetElements = $query ? $query->asArray()->all() : [];
                         $elementsByPath[$targetPath] = [];
 
                         // Index the target elements by their IDs if we are using the map-defined order
                         if (!$useCustomOrder) {
+                            /** @var array|ElementInterface[] $targetElementsById */
                             $targetElementsById = [];
                             foreach ($targetElements as &$targetElement) {
                                 $targetElementsById[$targetElement['id']] = &$targetElement;
                             }
                         }
-                    }
 
-                    // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
-                    foreach ($elementsByPath[$sourcePath] as $sourceElement) {
-                        /** @var Element $sourceElement */
-                        $sourceElementId = $sourceElement->id;
-                        $targetElementsForSource = [];
+                        // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
+                        foreach ($elementsByPath[$sourcePath] as $sourceElement) {
+                            /** @var Element $sourceElement */
+                            $targetElementsForSource = [];
 
-                        if (isset($targetElementIdsBySourceIds[$sourceElementId])) {
-                            if ($useCustomOrder) {
-                                // Assign the elements in the order they were returned from the query
-                                foreach ($targetElements as &$targetElement) {
-                                    /** @var array|ElementInterface $targetElement */
-                                    $targetElementId = ArrayHelper::getValue($targetElement, 'id');
-                                    if (isset($targetElementIdsBySourceIds[$sourceElementId][$targetElementId])) {
-                                        $targetElementsForSource[] = &$targetElement;
+                            if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                                if ($useCustomOrder) {
+                                    // Assign the elements in the order they were returned from the query
+                                    foreach ($targetElements as &$targetElement) {
+                                        /** @var array|ElementInterface $targetElement */
+                                        $targetElementId = ArrayHelper::getValue($targetElement, 'id');
+                                        if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
+                                            $targetElementsForSource[] = &$targetElement;
+                                        }
+                                    }
+                                } else {
+                                    // Assign the elements in the order defined by the map
+                                    foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                        if (isset($targetElementsById[$targetElementId])) {
+                                            $targetElementsForSource[] = &$targetElementsById[$targetElementId];
+                                        }
                                     }
                                 }
-                            } else {
-                                // Assign the elements in the order defined by the map
-                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElementId]) as $targetElementId) {
-                                    if (isset($targetElementsById[$targetElementId])) {
-                                        $targetElementsForSource[] = &$targetElementsById[$targetElementId];
+
+                                // Ignore elements that don't fall within the offset & limit
+                                if ($offset || $limit) {
+                                    $targetElementsForSource = array_slice($targetElementsForSource, $offset, $limit);
+                                }
+
+                                foreach ($targetElementsForSource as &$targetElement) {
+                                    // Make sure the element has been instantiated
+                                    if (is_array($targetElement)) {
+                                        $targetElement = $query->createElement($targetElement);
+                                    }
+
+                                    // Store it on $elementsByPath FFR
+                                    if (!isset($elementsByPath[$targetPath][$targetElement->id])) {
+                                        $elementsByPath[$targetPath][$targetElement->id] = $targetElement;
                                     }
                                 }
+                                unset($targetElement);
                             }
 
-                            // Ignore elements that don't fall within the offset & limit
-                            if ($offset || $limit) {
-                                $targetElementsForSource = array_slice($targetElementsForSource, $offset, $limit);
-                            }
-
-                            foreach ($targetElementsForSource as &$targetElement) {
-                                // Make sure the element has been instantiated
-                                if (is_array($targetElement)) {
-                                    $targetElement = $query->createElement($targetElement);
-                                }
-
-                                // Store it on $elementsByPath FFR
-                                if (!isset($elementsByPath[$targetPath][$targetElement->id])) {
-                                    $elementsByPath[$targetPath][$targetElement->id] = $targetElement;
-                                }
-                            }
-                            unset($targetElement);
+                            $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
                         }
-
-                        $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
                     }
                 }
 

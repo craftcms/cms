@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.17 - 2019-12-03
 
 ### Added
 - Added `craft\base\ElementInterface::lowerDisplayName()` and `pluralLowerDisplayName()`. ([#5271](https://github.com/craftcms/cms/issues/5271))
@@ -8,6 +8,7 @@
 ### Changed
 - Error templates now have a `statusCode` variable even if the originating exception wasn’t an instance of `yii\web\HttpException`. ([#5273](https://github.com/craftcms/cms/issues/5273))
 - Number fields now normalize their numbers to integers or floats, if the value that came from the database is a numeric string. ([#5268](https://github.com/craftcms/cms/issues/5268))
+- Craft no longer throws an `UnknownPropertyException` if a Local asset volume was converted to a different volume type from `config/volumes.php`. ([#5277](https://github.com/craftcms/cms/issues/5277))
 
 ### Fixed
 - Fixed an issue where string encoding might not behave as expected in some environments running PHP 7.3 or greater. ([#4239](https://github.com/craftcms/cms/issues/4239))
@@ -20,6 +21,7 @@
 - Fixed an error that occurred if a token route didn’t specify any params. ([#5282](https://github.com/craftcms/cms/pull/5282))
 - Fixed a PHP error that occurred when calling the deprecated `craft.session.getRememberedUsername()` template method, if the `username` cookie wasn’t set. ([#5291](https://github.com/craftcms/cms/issues/5291))
 - Fixed a PHP error that occurred if the path param (`p`) was set to an array. ([#5292](https://github.com/craftcms/cms/issues/5292))
+- Fixed an error that occurred when viewing trashed entries, if any of them had been deleted along with a user account. ([#5287](https://github.com/craftcms/cms/issues/5287))
 
 ## 3.3.16.3 - 2019-11-26
 
