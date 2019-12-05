@@ -833,8 +833,6 @@ class Fields extends Component
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
-        $data['settings'] = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
-
         $this->applyFieldSave($fieldUid, $data, 'global');
     }
 
@@ -1526,6 +1524,10 @@ class Fields extends Component
             // Clear the translation key format if not using a custom translation method
             if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
                 $data['translationKeyFormat'] = null;
+            }
+
+            if (!empty($data['settings']) && is_array($data['settings'])) {
+                $data['settings'] = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
             }
 
             $fieldRecord->uid = $fieldUid;
