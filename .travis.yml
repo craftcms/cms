@@ -36,7 +36,10 @@ cache:
   - "$HOME/.npm"
 addons:
   postgresql: "9.6"
-before_install: echo "extension = zip.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+before_install:
+- |
+  pecl install zip
+  echo "extension = zip.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
