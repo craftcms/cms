@@ -292,6 +292,27 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        if (!$this->getIsTranslatable($element)) {
+            return null;
+        }
+
+        switch ($this->translationMethod) {
+            case self::TRANSLATION_METHOD_SITE:
+                return Craft::t('app', 'This field is translated for each site.');
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'This field is translated for each site group.');
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return Craft::t('app', 'This field is translated for each language.');
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTranslationKey(ElementInterface $element): string
     {
         /** @var Element $element */

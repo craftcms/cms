@@ -22,6 +22,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -705,7 +706,9 @@ class Plugins extends Component
         }
 
         // Update the plugin's settings in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $plugin->getSettings()->toArray());
+        $pluginSettings = $plugin->getSettings();
+        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArray($pluginSettings->toArray()) : [];
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $pluginSettings);
 
         $plugin->afterSaveSettings();
 
@@ -1373,6 +1376,10 @@ class Plugins extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
         $data = $projectConfig->get($configKey) ?? $projectConfig->get($configKey, true);
+
+        if (!empty($data['settings'])) {
+            $data['settings'] = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
+        }
 
         if (!$data) {
             throw new InvalidPluginException($handle);

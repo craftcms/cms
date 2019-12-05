@@ -92,6 +92,15 @@ interface FieldInterface extends SavableComponentInterface
     public function getIsTranslatable(ElementInterface $element = null): bool;
 
     /**
+     * Returns the description of this field’s translation support.
+     *
+     * @param ElementInterface|null $element The element being edited
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getTranslationDescription(ElementInterface $element = null);
+
+    /**
      * Returns the field’s translation key, based on a given element.
      *
      * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],

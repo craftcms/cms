@@ -21,6 +21,7 @@
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
+- It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager-loading criteria. 
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
 - GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
 - Added `craft\assetpreviews\HtmlPreview`.
@@ -32,7 +33,10 @@
 - Added `craft\base\AssetPreviewTrait`.
 - Added `craft\base\ElementInterface::clearDirtyFields()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
+- Added `craft\base\ElementInterface::getEagerLoadedElementCount()`.
 - Added `craft\base\ElementInterface::isFieldDirty()`.
+- Added `craft\base\ElementInterface::setEagerLoadedElementCount()`.
+- Added `craft\base\FieldInterface::getTranslationDescription()`.
 - Added `craft\controllers\GraphqlController::actionDeleteToken()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
@@ -52,7 +56,9 @@
 - Added `craft\gql\TypeManager`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
-- Added `craft\helpers\FileHelper::writeGitignoreFile()`
+- Added `craft\helpers\FileHelper::writeGitignoreFile()`.
+- Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
+- Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\GqlToken`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\records\GqlToken`.
@@ -94,6 +100,7 @@
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
 - Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Plain Text fields’ Column Type settings now have an “Automatic” option, which is selected by default for new fields. ([#5099](https://github.com/craftcms/cms/issues/5099))
+- Matrix fields now show an accurate description of their propagation behavior in the translation icon tooltip. ([#5304](https://github.com/craftcms/cms/issues/5304))
 - Local asset volumes now ensure that their folder exists on save, and if it doesn’t, a `.gitignore` file will be added automatically to it, excluding the directory from Git. ([#5237](https://github.com/craftcms/cms/issues/5237))
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
 - CSS registered with `craft\web\View::registerCss()` or the `{% css %}` tag is now minified by default. ([#5183}https://github.com/craftcms/cms/issues/5183])
@@ -108,6 +115,7 @@
 - Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
 - Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Renamed the`QueryParameter` GraphQL type to `QueryArgument`.
+- Project config now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
@@ -134,3 +142,6 @@
 - Removed `craft\models\GqlSchema::$dateCreated`.
 - Removed `craft\models\GqlSchema::$isTemporary`.
 - Removed `craft\models\GqlSchema::getIsPublic()`.
+
+### Fixed
+- Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))

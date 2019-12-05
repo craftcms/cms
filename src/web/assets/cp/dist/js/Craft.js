@@ -1,4 +1,4 @@
-/*!   - 2019-12-01 */
+/*!   - 2019-12-05 */
 (function($){
 
 /** global: Craft */
@@ -508,15 +508,17 @@ $.extend(Craft,
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
+            var modifiedDeltaNames = [];
             for (var n = 0; n < deltaNames.length; n++) {
-                if (
+                if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || (
                     typeof groupedNewParams[deltaNames[n]] === 'object' &&
                     (
                         typeof groupedOldParams[deltaNames[n]] !== 'object' ||
                         JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
                     )
-                ) {
+                )) {
                     params = params.concat(groupedNewParams[deltaNames[n]]);
+                    params.push('modifiedDeltaNames[]=' + deltaNames[n]);
                 }
             }
 
@@ -2170,9 +2172,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Default to whatever page is in the URL
-            if (this.settings.context === 'index') {
-                this.setPage(Craft.pageNum);
-            }
+            this.setPage(Craft.pageNum);
 
             this.updateElements(true);
         },
@@ -2412,6 +2412,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          * Sets the page number.
          */
         setPage: function(page) {
+            if (this.settings.context !== 'index') {
+                return;
+            }
+
             page = Math.max(page, 1);
             this.page = page;
 
@@ -13337,7 +13341,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Create the edit draft button
             this.createEditMetaBtn();
 
-            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+            this.addListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
                     return;
                 }
@@ -13531,7 +13535,10 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (force || (data !== this.lastSerializedValue)) {
+            if (
+                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
+                (force || (data !== this.lastSerializedValue))
+            ) {
                 this.saveDraft(data);
             }
         },
@@ -13780,11 +13787,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             if (this.checkFormAfterUpdate) {
                 this.checkFormAfterUpdate = false;
-
-                // Only actually check the form if there's no active timeout for it
-                if (!this.timeout) {
-                    this.checkForm();
-                }
+                this.checkForm(true);
             }
         },
 
