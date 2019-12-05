@@ -95,7 +95,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Create the edit draft button
             this.createEditMetaBtn();
 
-            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+            this.addListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
                     return;
                 }
