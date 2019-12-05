@@ -36,10 +36,10 @@ cache:
   - "$HOME/.npm"
 addons:
   postgresql: "12"
-    apt:
-      packages:
-        - postgresql-12
-        - postgresql-client-12
+  apt:
+    packages:
+      - postgresql-12
+      - postgresql-client-12
 before_install: echo "extension = zip.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 install:
 - |
