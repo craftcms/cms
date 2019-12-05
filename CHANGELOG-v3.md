@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Title fields’ translation icon tooltips now clarify that their values are translated for each site. ([#2064](https://github.com/craftcms/cms/issues/2064))
+
 ### Fixed
 - Fixed a bug where the page URL could change when interacting with element selection modals. ([#]5254](https://github.com/craftcms/cms/issues/5254))
 
