@@ -15,6 +15,10 @@ services:
 matrix:
   fast_finish: true
   include:
+  - php: 7.4
+    env: DB=mysql
+  - php: 7.4
+    env: DB=pgsql
   - php: 7.3
     env: DB=mysql
   - php: 7.3
