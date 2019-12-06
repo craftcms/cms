@@ -28,9 +28,9 @@
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
 - Added `craft\assetpreviews\PdfPreview`.
-- Added `craft\base\AssetPreview`.
 - Added `craft\base\AssetPreviewInterface`.
 - Added `craft\base\AssetPreviewTrait`.
+- Added `craft\base\AssetPreview`.
 - Added `craft\base\ElementInterface::clearDirtyFields()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
 - Added `craft\base\ElementInterface::getEagerLoadedElementCount()`.
@@ -45,8 +45,8 @@
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
-- Added `craft\elements\db\MatrixBlockQuery::field()`.
 - Added `craft\elements\MatrixBlock::$dirty`.
+- Added `craft\elements\db\MatrixBlockQuery::field()`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
@@ -65,9 +65,9 @@
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
 - Added `craft\services\Assets::getAssetPreview()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
+- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::deleteSchema()`.
 - Added `craft\services\Gql::deleteTokenById()`.
-- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::getSchemaByUid()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
@@ -79,9 +79,6 @@
 - Added `craft\services\Gql::saveToken()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
 - Added `craft\web\Controller::requireGuest()`.
-- Added `craft\web\twig\nodes\RequireGuestNode`.
-- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
-- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added `craft\web\User::guestRequired()`.
 - Added `craft\web\View::$minifyCss`.
 - Added `craft\web\View::$minifyJs`.
@@ -89,6 +86,9 @@
 - Added `craft\web\View::getIsDeltaRegistrationActive()`.
 - Added `craft\web\View::registerDeltaName()`.
 - Added `craft\web\View::setIsDeltaRegistrationActive()`.
+- Added `craft\web\twig\nodes\RequireGuestNode`.
+- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
+- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
 - Added the Minify PHP package.
