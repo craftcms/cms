@@ -2165,8 +2165,9 @@ class Elements extends Component
             $db = Craft::$app->getDb();
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(new \DateTime());
+            ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
 
-            foreach ($element->getDirtyAttributes() as $attributeName) {
+            foreach ($dirtyAttributes as $attributeName) {
                 $db->createCommand()
                     ->upsert(Table::CHANGEDATTRIBUTES, [
                         'elementId' => $element->id,
