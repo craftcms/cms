@@ -793,6 +793,7 @@ JS;
 
         return [
             'field' => $this,
+            'elementType' => $elementType::lowerDisplayName(),
             'pluralElementType' => $elementType::pluralLowerDisplayName(),
         ];
     }
