@@ -155,7 +155,7 @@
         {% endif %}
     {% elseif isDraft %}
         {% if canUpdateSource and saveSourceAction %}
-            <input type="submit" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
+            <input type="submit" class="btn submit" value="{{ 'Publish changes'|t('app') }}">
         {% endif %}
     {% elseif isRevision %}
         {% if canUpdateSource and revertSourceAction %}
@@ -199,6 +199,7 @@
         {% block settings %}
             {% if showStatusToggles %}
                 {{ forms.lightswitchField({
+                    status: element.getAttributeStatus('enabled'),
                     label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
                     id: 'enabled',
                     name: 'enabled',
@@ -209,6 +210,7 @@
 
                 {% if isMultiSiteElement %}
                     {{ forms.lightswitchField({
+                        status: element.getAttributeStatus('enabledForSite'),
                         fieldClass: not element.enabled ? 'hidden',
                         label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
                         id: 'enabledForSite',
@@ -245,6 +247,24 @@
             {% endif %}
         {% endblock %}
     </div>
+
+    {% if isDraft and element.getIsOutdated() %}
+        {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}
+        <div class="meta read-only warning">
+            <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
+            <div class="flex flex-nowrap">
+                {% if element.trackChanges %}
+                    {{ tag('div', {
+                        id: 'merge-changes-btn',
+                        class: ['btn'],
+                        role: 'button',
+                        text: 'Merge changes into draft'|t('app'),
+                    }) }}
+                    <div id="merge-changes-spinner" class="spinner hidden"></div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% set settings = {

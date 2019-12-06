@@ -1901,12 +1901,16 @@ class Elements extends Component
         /** @var Element|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
+        /** @var DraftBehavior|null $draftBehavior */
+        $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
+
         // Are we tracking changes?
         $trackChanges = (
             !$isNewElement &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            (!$element->getIsDraft() || $element->trackChanges)
+            ($draftBehavior->trackChanges ?? true) &&
+            !($draftBehavior->mergingChanges ?? false)
         );
         $dirtyAttributes = [];
 
@@ -2107,7 +2111,11 @@ class Elements extends Component
             }
 
             // It's now fully saved and propagated
-            if (!$element->propagating && !$element->duplicateOf) {
+            if (
+                !$element->propagating &&
+                !$element->duplicateOf &&
+                !($draftBehavior->mergingChanges ?? false)
+            ) {
                 $element->afterPropagate($isNewElement);
             }
 

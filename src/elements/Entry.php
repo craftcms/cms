@@ -1260,8 +1260,6 @@ EOD;
             if ($section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->_hasNewParent()) {
-                    $dirtyAttributes[] = 'newParentId';
-
                     if (!$this->newParentId) {
                         Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
                     } else {

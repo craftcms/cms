@@ -20,7 +20,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         timeout: null,
         saving: false,
         saveXhr: null,
-        checkFormAfterUpdate: false,
+        queue: null,
         submittingForm: false,
 
         duplicatedElements: null,
@@ -31,6 +31,8 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         init: function(settings) {
             this.setSettings(settings, Craft.DraftEditor.defaults);
+
+            this.queue = [];
 
             this.duplicatedElements = {};
 
@@ -113,6 +115,34 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
+
+            this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
+        },
+
+        mergeChanges: function() {
+            // Make sure there aren't any unsaved changes
+            this.checkForm(true);
+
+            // Make sure we aren't currently saving something
+            if (this.saving) {
+                this.queue.push(this.mergeChanges.bind(this));
+                return;
+            }
+
+            this.saving = true;
+            $('#merge-changes-spinner').removeClass('hidden');
+
+            Craft.postActionRequest('drafts/merge-source-changes', {
+                elementType: this.settings.elementType,
+                draftId: this.settings.draftId,
+                siteId: this.settings.siteId,
+            }, function(response, textStatus) {
+                if (textStatus === 'success') {
+                    window.location.reload();
+                } else {
+                    $('#merge-changes-spinner').addClass('hidden');
+                }
+            });
         },
 
         showStatusHud: function(target) {
@@ -322,7 +352,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.lastSerializedValue = data;
 
                 if (this.saving) {
-                    this.checkFormAfterUpdate = true;
+                    this.queue.push(function() {
+                        this.checkForm(true)
+                    }.bind(this));
                     return;
                 }
 
@@ -397,7 +429,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                             $saveBtnContainer.replaceWith($('<input/>', {
                                 type: 'submit',
                                 'class': 'btn submit',
-                                value: Craft.t('app', 'Update {type}', {type: this.settings.elementTypeDisplayName})
+                                value: Craft.t('app', 'Publish changes')
                             }));
                         }
 
@@ -541,9 +573,12 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.trigger('update');
 
-            if (this.checkFormAfterUpdate) {
-                this.checkFormAfterUpdate = false;
-                this.checkForm(true);
+            this.nextInQueue();
+        },
+
+        nextInQueue: function() {
+            if (this.queue.length) {
+                this.queue.shift()();
             }
         },
 

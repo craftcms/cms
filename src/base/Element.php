@@ -121,6 +121,13 @@ abstract class Element extends Component implements ElementInterface
     const SCENARIO_ESSENTIALS = 'essentials';
     const SCENARIO_LIVE = 'live';
 
+    // Attribute/Field Statuses
+    // -------------------------------------------------------------------------
+
+    const ATTR_STATUS_MODIFIED = 'modified';
+    const ATTR_STATUS_OUTDATED = 'outdated';
+    const ATTR_STATUS_CONFLICTED = 'conflicted';
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1971,6 +1978,35 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    function getAttributeStatus(string $attribute)
+    {
+        if (!$this->getIsDraft()) {
+            return null;
+        }
+
+        /** @var DraftBehavior $behavior */
+        $behavior = $this->getBehavior('draft');
+        $modified = $behavior->isAttributeModified($attribute);
+        $outdated = $behavior->isAttributeOutdated($attribute);
+        if ($modified && !$outdated) {
+            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
+        }
+        if ($outdated && !$modified) {
+            return [self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
+                'type' => static::lowerDisplayName(),
+            ])];
+        }
+        if ($outdated && $modified) {
+            return [self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
+                'type' => static::lowerDisplayName(),
+            ])];
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getDirtyAttributes(): array
     {
         $dirtyAttributes = $this->_dirtyAttributes ?? [];
@@ -2060,6 +2096,35 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_initialized) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    function getFieldStatus(string $fieldHandle)
+    {
+        if (!$this->getIsDraft()) {
+            return null;
+        }
+
+        /** @var DraftBehavior $behavior */
+        $behavior = $this->getBehavior('draft');
+        $modified = $behavior->isFieldModified($fieldHandle);
+        $outdated = $behavior->isFieldOutdated($fieldHandle);
+        if ($modified && !$outdated) {
+            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
+        }
+        if ($outdated && !$modified) {
+            return [self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
+                'type' => static::lowerDisplayName(),
+            ])];
+        }
+        if ($outdated && $modified) {
+            return [self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
+                'type' => static::lowerDisplayName(),
+            ])];
+        }
+        return null;
     }
 
     /**

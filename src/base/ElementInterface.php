@@ -783,6 +783,15 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
+     * Returns the status of a given attribute.
+     *
+     * @param string $attribute
+     * @return array|null
+     * @since 3.4.0
+     */
+    public function getAttributeStatus(string $attribute);
+
+    /**
      * Returns a list of attribute names that have changed since the element was first loaded.
      *
      * @return string[]
@@ -832,6 +841,15 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $value The value to set on the field
      */
     public function setFieldValue(string $fieldHandle, $value);
+
+    /**
+     * Returns the status of a given field.
+     *
+     * @param string $fieldHandle
+     * @return array|null
+     * @since 3.4.0
+     */
+    public function getFieldStatus(string $fieldHandle);
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.

@@ -7,9 +7,9 @@ use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
- * m191126_022159_change_tracking migration.
+ * m191206_001148_change_tracking migration.
  */
-class m191126_022159_change_tracking extends Migration
+class m191206_001148_change_tracking extends Migration
 {
     /**
      * @inheritdoc
@@ -26,6 +26,7 @@ class m191126_022159_change_tracking extends Migration
             'userId' => $this->integer(),
             'PRIMARY KEY([[elementId]], [[siteId]], [[attribute]])',
         ]);
+        $this->createIndex(null, Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
         $this->addForeignKey(null, Table::CHANGEDATTRIBUTES, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDATTRIBUTES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDATTRIBUTES, ['userId'], Table::USERS, ['id'], 'SET NULL', 'CASCADE');
@@ -40,12 +41,14 @@ class m191126_022159_change_tracking extends Migration
             'userId' => $this->integer(),
             'PRIMARY KEY([[elementId]], [[siteId]], [[fieldId]])',
         ]);
+        $this->createIndex(null, Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::CHANGEDFIELDS, ['userId'], Table::USERS, ['id'], 'SET NULL', 'CASCADE');
 
         $this->addColumn(Table::DRAFTS, 'trackChanges', $this->boolean()->defaultValue(false)->notNull());
+        $this->addColumn(table::DRAFTS, 'dateLastMerged', $this->dateTime());
     }
 
     /**
@@ -63,6 +66,10 @@ class m191126_022159_change_tracking extends Migration
 
         if ($this->db->columnExists(Table::DRAFTS, 'trackChanges')) {
             $this->dropColumn(Table::DRAFTS, 'trackChanges');
+        }
+
+        if ($this->db->columnExists(Table::DRAFTS, 'dateLastMerged')) {
+            $this->dropColumn(Table::DRAFTS, 'dateLastMerged');
         }
     }
 }

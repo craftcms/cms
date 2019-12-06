@@ -1795,7 +1795,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                 'draftName' => ArrayHelper::remove($row, 'draftName'),
                 'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-                'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges')
+                'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
+                'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
             ]);
         }
 
@@ -2436,8 +2437,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
 
             $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.4.2', '>=')) {
+            if (version_compare($schemaVersion, '3.4.3', '>=')) {
                 $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
+                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
             }
 
             if ($this->draftId) {

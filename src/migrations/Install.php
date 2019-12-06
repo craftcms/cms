@@ -236,6 +236,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
             'trackChanges' => $this->boolean()->defaultValue(false)->notNull(),
+            'dateLastMerged' => $this->dateTime(),
         ]);
         $this->createTable(Table::ELEMENTINDEXSETTINGS, [
             'id' => $this->primaryKey(),
@@ -757,6 +758,8 @@ class Install extends Migration
         $this->createIndex(null, Table::CATEGORYGROUPS, ['dateDeleted'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS_SITES, ['groupId', 'siteId'], true);
         $this->createIndex(null, Table::CATEGORYGROUPS_SITES, ['siteId'], false);
+        $this->createIndex(null, Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
+        $this->createIndex(null, Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
         $this->createIndex(null, Table::CONTENT, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::CONTENT, ['siteId'], false);
         $this->createIndex(null, Table::CONTENT, ['title'], false);
