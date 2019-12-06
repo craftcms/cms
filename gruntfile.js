@@ -36,7 +36,8 @@ module.exports = function(grunt) {
                 src: [
                     '**/*.scss',
                     '!graphiql/**/*.scss',
-                    '!pluginstore/**/*.scss'
+                    '!pluginstore/**/*.scss',
+                    '!admintable/**/*.scss',
                 ],
                 dest: 'src/web/assets',
                 rename: function(dest, src) {
@@ -59,7 +60,8 @@ module.exports = function(grunt) {
                 src: [
                     '**/*.css',
                     '!graphiql/**/*.css',
-                    '!pluginstore/**/*.css'
+                    '!pluginstore/**/*.css',
+                    '!admintable/**/*.css'
                 ],
                 dest: 'src/web/assets'
             }
@@ -125,7 +127,8 @@ module.exports = function(grunt) {
                 '!src/web/assets/**/*.min.js',
                 '!src/web/assets/cp/dist/js/Craft.js',
                 '!src/web/assets/graphiql/**/*.js',
-                '!src/web/assets/pluginstore/**/*.js'
+                '!src/web/assets/pluginstore/**/*.js',
+                '!src/web/assets/admintable/**/*.js'
             ],
             afterconcat: [
                 'src/web/assets/cp/dist/js/Craft.js'
