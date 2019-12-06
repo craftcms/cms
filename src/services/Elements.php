@@ -1904,6 +1904,7 @@ class Elements extends Component
         // Are we tracking changes?
         $trackChanges = (
             !$isNewElement &&
+            $element->duplicateOf === null &&
             $element::trackChanges() &&
             (!$element->getIsDraft() || $element->trackChanges)
         );
