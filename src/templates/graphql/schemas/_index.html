@@ -5,138 +5,35 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Schema Name",
-    "Enabled",
-    "Last Used",
-    "Expires",
-    "Public Schema",
-    "Never",
-]) %}
-
 {% set selectedSubnavItem = 'schemas' %}
 
-{% macro timestampCell(title, value) %}
-    {% if value %}
-        <td data-title="{{ title }}" title="{{ value|datetime('short') }}">{{ value|timestamp }}</td>
-    {% else %}
-        <td class="light" data-title="{{ title }}">{{ 'Never'|t('app') }}</td>
-    {% endif %}
-{% endmacro %}
-
-{% set schemas = craft.app.gql.schemas %}
-
-{% block content %}
-    <table id="schemas" class="data fullwidth collapsible">
-        <thead>
-            <th scope="col">{{ "Schema name"|t('app') }}</th>
-            <th scope="col">{{ "Enabled"|t('app') }}</th>
-            <th scope="col">{{ "Last Used"|t('app') }}</th>
-            <th scope="col">{{ "Expires"|t('app') }}</th>
-            <th></th>
-        </thead>
-        <tbody>
-            {% for schema in schemas %}
-                <tr data-id="{{ schema.id }}" data-name="{{ schema.name }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('graphql/schemas/' ~ schema.id) }}">{{ schema.isPublic ? 'Public Schema'|t('app') : schema.name }}</a></th>
-                    <td data-title="{{ 'Enabled'|t('app') }}">{% if schema.enabled %}<div data-icon="check"></div>{% endif %}</td>
-                    {{ _self.timestampCell('Last Used'|t('app'), schema.lastUsed) }}
-                    {{ _self.timestampCell('Expires'|t('app'), schema.expiryDate) }}
-                    <th class="thin">
-                        {% if not schema.isPublic %}
-                            <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
-                        {% endif %}
-                    </th>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <h2>Vue Admin Table</h2>
-    <div id="taggroups-vue-admin-table"></div>
-
-    <div class="buttons">
-        <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>
-    </div>
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>
 {% endblock %}
 
-
-{% js on ready %}
-    new Craft.AdminTable({
-        tableSelector: '#schemas',
-        minItems: 1,
-        sortable: false,
-        deleteAction: 'graphql/delete-schema'
-    });
-{% endjs %}
+{% block content %}
+    <div id="schemas-vue-admin-table"></div>
+{% endblock %}
 
 {% set tableData = [] %}
-{% for schema in schemas %}
-    {% set lastUsed = schema.lastUsed %}
-    {% set expiryDate = schema.expiryDate %}
-
-    {% set tableData = tableData|merge([{
+{% for schema in craft.app.gql.schemas %}
+	{% set tableData = tableData|merge([{
         id: schema.id,
-        title: schema.isPublic ? 'Public Schema'|t('app') : schema.name,
-        url: url('graphql/schemas/' ~ schema.id),
-        name: schema.isPublic ? 'Public Schema'|t('app') : schema.name,
-        enabled: schema.enabled,
-        lastUsed: {
-            date: lastUsed,
-            label: lastUsed ? lastUsed|timestamp : 'Never'|t('app'),
-            title: lastUsed ? lastUsed|datetime('short') : null,
-        },
-        expiryDate: {
-            date: expiryDate,
-            label: expiryDate ? expiryDate|timestamp : 'Never'|t('app'),
-            title: expiryDate ? expiryDate|datetime('short') : null,
-        }
+        title: schema.isPublic ? 'Public Schema'|t('app') : schema.name|t('site'),
+        url: schema.isPublic ? url('graphql/schemas/public') : url("graphql/schemas/#{schema.id}"),
+        _showDelete: not schema.isPublic
     }]) %}
 {% endfor %}
 
 {% js %}
-    var columns = [
-        {
-            name: '__slot:title',
-            title: Craft.t('app', 'Schema Name'),
-        },
-        {
-            name: 'enabled',
-            title: Craft.t('app', 'Enabled'),
-            callback: function(value) {
-                if (value) {
-                    return '<div data-icon="check"></div>';
-                }
-            }
-        },
-        {
-            name: 'lastUsed',
-            title: Craft.t('app', 'Last Used'),
-            callback: function(value) {
-                if (value.date) {
-                    return '<td title="' + value.title + '">' + value.label + '</td>';
-                } else {
-                    return '<td class="light">' + value.label + '</td>';
-                }
-            }
-        },
-        {
-            name: 'expiryDate',
-            title: Craft.t('app', 'Expires'),
-            callback: function(value) {
-                if (value.date) {
-                    return '<span title="' + value.title + '">' + value.label + '</span>';
-                } else {
-                    return '<span class="light">' + value.label + '</span>';
-                }
-            }
-        }
-    ];
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+];
 
-    new Craft.VueAdminTable({
-        columns: columns,
-        container: '#taggroups-vue-admin-table',
-        deleteAction: 'graphql/delete-schema',
-        tableData: {{ tableData|json_encode|raw }},
-    });
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#schemas-vue-admin-table',
+    deleteAction: 'graphql/delete-schema',
+    tableData: {{ tableData|json_encode|raw }}
+});
 {% endjs %}
