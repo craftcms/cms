@@ -1,5 +1,6 @@
 {%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
+{%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
@@ -31,6 +32,13 @@
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 <div {{ attr(fieldAttributes) }}>
+    {% if status %}
+        {{ tag('div', {
+            class: ['status-badge', status[0]],
+            text: status[1][0:1]|upper,
+            title: status[1],
+        }) }}
+    {% endif %}
     {% if label or instructions %}
         <div class="heading">
             {% if label %}

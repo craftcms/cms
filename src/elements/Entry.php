@@ -98,6 +98,14 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function trackChanges(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
@@ -1243,6 +1251,10 @@ EOD;
             $record->authorId = (int)$this->authorId ?: null;
             $record->postDate = $this->postDate;
             $record->expiryDate = $this->expiryDate;
+
+            // Capture the dirty attributes from the record
+            $dirtyAttributes = array_keys($record->getDirtyAttributes());
+
             $record->save(false);
 
             if ($section->type == Section::TYPE_STRUCTURE) {
@@ -1258,6 +1270,8 @@ EOD;
                 // Update the entry's descendants, who may be using this entry's URI in their own URIs
                 Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
             }
+
+            $this->setDirtyAttributes($dirtyAttributes);
         }
 
         parent::afterSave($isNew);

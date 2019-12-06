@@ -22,6 +22,7 @@
 
 {% if instructions or input %}
     {{ field({
+        status: element.getFieldStatus(field.handle),
         label: field.name|t('site')|e,
         translatable: translatable,
         translationDescription: field.getTranslationDescription(element),

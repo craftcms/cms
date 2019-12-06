@@ -21,8 +21,27 @@ use craft\helpers\StringHelper;
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function __set($name, $value)
+    {
+        if ($this->hasAttribute($name)) {
+            $value = $this->_prepareValue($name, $value);
+        }
+        parent::__set($name, $value);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function setAttribute($name, $value)
+    {
+        $value = $this->_prepareValue($name, $value);
+        parent::setAttribute($name, $value);
+    }
 
     /**
      * @inheritdoc
@@ -34,17 +53,12 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     }
 
     /**
-     * Prepares record values for DB storage.
+     * Sets the `dateCreated`, `dateUpdated`, and `uid` attributes on the record.
      *
      * @since 3.1.0
      */
     protected function prepareForDb()
     {
-        foreach ($this->fields() as $attribute) {
-            $this->$attribute = Db::prepareValueForDb($this->$attribute);
-        }
-
-        // Prepare the values
         $now = Db::prepareDateForDb(new \DateTime());
 
         if ($this->getIsNewRecord()) {
@@ -69,5 +83,25 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                 $this->markAttributeDirty('dateUpdated');
             }
         }
+    }
+
+    /**
+     * Prepares a value to be saved to the database.
+     *
+     * @param string $name The attribute name
+     * @param mixed $value The attribute value
+     * @return mixed The prepared value
+     * @since 3.4.0
+     */
+    private function _prepareValue(string $name, $value)
+    {
+        $value = Db::prepareValueForDb($value);
+
+        $columns = static::getTableSchema()->columns;
+        if (isset($columns[$name])) {
+            $value = $columns[$name]->phpTypecast($value);
+        }
+
+        return $value;
     }
 }
