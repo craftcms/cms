@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  *
  * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tag extends Element
 {
@@ -40,9 +40,25 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'tag');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Tags');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'tags');
     }
 
     /**

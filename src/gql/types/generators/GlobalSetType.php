@@ -11,8 +11,9 @@ use Craft;
 use craft\base\Field;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
+use craft\gql\TypeManager;
 use craft\gql\types\elements\GlobalSet;
 use craft\helpers\Gql as GqlHelper;
 
@@ -49,16 +50,15 @@ class GlobalSetType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $globalSetFields = array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+            $globalSetFields = TypeManager::prepareFieldDefinitions(array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new GlobalSet([
                 'name' => $typeName,
-                'fields' => function () use ($globalSetFields) {
+                'fields' => function() use ($globalSetFields) {
                     return $globalSetFields;
                 }
             ]));
-
         }
 
         return $gqlTypes;

@@ -6,11 +6,13 @@
         </div>
 
         <div>
-            <div class="plugin-name">
-                <strong>{{ plugin.name }}</strong>
-                <edition-badge v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1" :name="activeTrialPluginEdition.name"></edition-badge>
-            </div>
-            <div v-shave="{ height: 45 }">{{ plugin.shortDescription }}</div>
+           <div class="plugin-details-header">
+               <div class="plugin-name">
+                   <strong>{{ plugin.name }}</strong>
+                   <edition-badge v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1" :name="activeTrialPluginEdition.name"></edition-badge>
+               </div>
+               <div>{{ plugin.shortDescription }}</div>
+           </div>
             
             <p class="light">
                 <template v-if="priceRange.min !== priceRange.max">
@@ -43,7 +45,6 @@
     import EditionBadge from './EditionBadge'
 
     export default {
-
         props: ['plugin', 'trialMode'],
 
         components: {
@@ -51,7 +52,6 @@
         },
 
         computed: {
-
             ...mapState({
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
             }),
@@ -62,7 +62,7 @@
             }),
 
             activeTrialPluginEdition() {
-                return this.getActiveTrialPluginEdition(this.plugin.handle)
+                return this.getActiveTrialPluginEdition(this.plugin)
             },
 
             priceRange() {
@@ -102,20 +102,23 @@
                     max
                 }
             }
-
         },
-
     }
 </script>
 
 <style lang="scss" scoped>
     @import "../../../../../../../lib/craftcms-sass/mixins";
 
-    .plugin-name {
-        @apply .flex;
+    .plugin-details-header {
+        @apply .leading-normal .overflow-hidden .mb-1;
+        max-height: 4.75em;
 
-        .edition-badge {
-            @apply .ml-2;
+        .plugin-name {
+            @apply .flex .mb-1;
+
+            .edition-badge {
+                @apply .ml-2;
+            }
         }
     }
 

@@ -9,10 +9,10 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\elements\Category as CategoryArguments;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\Structure;
-use craft\gql\TypeLoader;
-use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -38,22 +38,20 @@ class Category extends Structure
      */
     public static function getType($fields = null): Type
     {
-        if ($type = GqlEntityRegistry::getEntity(self::class)) {
+        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
+        $type = GqlEntityRegistry::createEntity(self::getName(), new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all categories.',
-            'resolveType' => function (CategoryElement $value) {
+            'resolveType' => function(CategoryElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (CategoryType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        CategoryType::generateTypes();
 
         return $type;
     }
@@ -69,8 +67,9 @@ class Category extends Structure
     /**
      * @inheritdoc
      */
-    public static function getFieldDefinitions(): array {
-        return array_merge(parent::getFieldDefinitions(), [
+    public static function getFieldDefinitions(): array
+    {
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
@@ -92,6 +91,6 @@ class Category extends Structure
                 'type' => CategoryInterface::getType(),
                 'description' => 'The category’s parent.'
             ],
-        ]);
+        ]), self::getName());
     }
 }

@@ -55,7 +55,7 @@ use yii\web\Response;
  * @method UrlManager getUrlManager()   Returns the URL manager for this application.
  * @method User getUser()         Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Application extends \yii\web\Application
 {
@@ -332,7 +332,6 @@ class Application extends \yii\web\Application
 
         // Override where Yii should find its asset deps
         $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/bootstrap/dist', $libPath . '/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
         Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
         Craft::setAlias('@bower/punycode', $libPath . '/punycode');
@@ -480,7 +479,7 @@ class Application extends \yii\web\Application
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
+        $publishedPath = $this->getAssetManager()->publish(Craft::getAlias($sourcePath))[0] . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException($filePath . ' does not exist.');
         }
@@ -522,7 +521,7 @@ class Application extends \yii\web\Application
         }
 
         // Is this an installer action request?
-        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== Request::CP_PATH_LOGIN)) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);

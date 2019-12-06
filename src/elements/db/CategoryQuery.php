@@ -25,7 +25,7 @@ use yii\db\Connection;
  * @method Category|array|null one($db = null)
  * @method Category|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-structure-params
  * @supports-site-params
  * @supports-enabledforsite-param

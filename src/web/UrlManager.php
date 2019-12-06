@@ -20,7 +20,7 @@ use yii\web\UrlRule as YiiUrlRule;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UrlManager extends \yii\web\UrlManager
 {
@@ -74,6 +74,7 @@ class UrlManager extends \yii\web\UrlManager
 
     /**
      * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
+     * @since 3.2.0
      */
     public $checkToken = true;
 
@@ -119,22 +120,19 @@ class UrlManager extends \yii\web\UrlManager
             return false;
         }
 
-        if (($route = $this->_getRequestRoute($request)) !== false) {
-            // Merge in any additional route params
-            if (!empty($this->_routeParams)) {
-                if (isset($route[1])) {
-                    $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
-                } else {
-                    $route[1] = $this->_routeParams;
-                }
-            } else {
-                $this->_routeParams = $route[1];
-            }
-
-            return $route;
+        if (($route = $this->_getRequestRoute($request)) === false) {
+            return false;
         }
 
-        return false;
+        // Make sure there's a params array
+        if (!isset($route[1])) {
+            $route[1] = [];
+        }
+
+        // Merge in any additional route params
+        $route[1] = $this->_routeParams = ArrayHelper::merge($route[1], $this->_routeParams);
+
+        return $route;
     }
 
     /**

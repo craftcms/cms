@@ -91,6 +91,19 @@ use yii\mutex\Mutex;
  */
 class TestSetup
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string The seed project config from the file specified in codeception.yml
+     */
+    private static $_yamlProjectConfig = '';
+
+    /**
+     * @var array The result of running self::$_yamlParsedConfig through Yaml::parse().
+     */
+    private static $_parsedProjectConfig = [];
+
     // Public Methods
     // =========================================================================
 
@@ -154,17 +167,17 @@ class TestSetup
 
     /**
      * @param string $class
-     * @param array  $params
-     * @param bool   $ignorePreviousMigrations
+     * @param array $params
+     * @param bool $ignorePreviousMigrations
      *
      * @return bool
      * @throws InvalidConfigException
      * @throws \craft\errors\MigrationException
      */
-    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false) : bool
+    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException('Migration class: '. $class .' does not exist');
+            throw new InvalidArgumentException('Migration class: ' . $class . ' does not exist');
         }
 
         $migration = new $class($params);
@@ -226,7 +239,7 @@ class TestSetup
         $config = ArrayHelper::merge(
             [
                 'components' => [
-                'config' => $configService
+                    'config' => $configService
                 ],
             ],
             require $srcPath . '/config/app.php',
@@ -339,26 +352,60 @@ class TestSetup
 
         // Prevent `headers already sent` error when running tests in PhpStorm
         // https://stackoverflow.com/questions/31175636/headers-already-sent-running-unit-tests-in-phpstorm
-        ob_start ();
+        ob_start();
 
         return true;
     }
 
     /**
-     * @param string $projectConfigFile
+     * @param string $projectConfigFile - Whether to override the file specified in codeception.yml with a custom file.
      * @throws ErrorException
      */
-    public static function setupProjectConfig(string $projectConfigFile)
+    public static function setupProjectConfig(string $projectConfigFile = null)
     {
-        if (!is_file($projectConfigFile)) {
-            throw new InvalidArgumentException('Project config is not a file');
+        if ($projectConfigFile) {
+            if (!is_file($projectConfigFile)) {
+                throw new InvalidArgumentException('Project config specified is not a file');
+            }
+
+            $contents = file_get_contents($projectConfigFile);
+        } else {
+            $contents = self::getSeedProjectConfigData();
         }
 
-        $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH . '/project.yaml';
-        $contents = file_get_contents($projectConfigFile);
-
         // Write to the file.
-        FileHelper::writeToFile($testSuiteProjectConfigPath, $contents);
+        FileHelper::writeToFile(
+            CRAFT_CONFIG_PATH . '/project.yaml',
+            $contents
+        );
+    }
+
+    /**
+     * Returns the data from the project.yml file specified in the codeception.yml file.
+     *
+     * @param bool $asYaml Whether the raw yaml data should be returned. If set to false the parsed array data will be returned.
+     * @return array|string The project config in either yaml or as an array.
+     */
+    public static function getSeedProjectConfigData(bool $asYaml = true)
+    {
+        // Get the file path
+        $projectConfigFile = \craft\test\Craft::$testConfig['projectConfig']['file'] ?? null;
+        if (!$projectConfigFile) {
+            return null;
+        }
+
+        // This should be obvious....
+        if (!is_file($projectConfigFile)) {
+            throw new InvalidArgumentException('Project config specified is not a file');
+        }
+
+        // Ensure data actually *exists*
+        if (!self::$_parsedProjectConfig || !self::$_yamlProjectConfig) {
+            self::$_yamlProjectConfig = file_get_contents($projectConfigFile) ?: '';
+            self::$_parsedProjectConfig = Yaml::parse(self::$_yamlProjectConfig);
+        }
+
+        return $asYaml ? self::$_yamlProjectConfig : self::$_parsedProjectConfig;
     }
 
     /**
@@ -370,14 +417,17 @@ class TestSetup
      */
     public static function useProjectConfig()
     {
-        if (!Craft::$app) {
-            return false;
-        }
-
         $projectConfig = \craft\test\Craft::$testConfig['projectConfig'] ?? [];
-        $useProjectConfig = Craft::$app->getConfig()->getGeneral();
 
-        if ($projectConfig && isset($projectConfig['file']) && $useProjectConfig) {
+        if ($projectConfig &&
+            isset($projectConfig['file'])
+        ) {
+            // Fail hard if someone has specified a project config file but doesn't have project config enabled.
+            // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
+            if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+                throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
+            }
+
             return $projectConfig;
         }
 
@@ -405,15 +455,12 @@ class TestSetup
 
         // Replace the default site with what is desired by the project config. If project config is enabled.
         if ($projectConfig = self::useProjectConfig()) {
-            $existingProjectConfig = Yaml::parse(
-                file_get_contents($projectConfig['file']) ?: ''
-            );
+            $existingProjectConfig = self::getSeedProjectConfigData(false);
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
                 $doesConfigExist = ArrayHelper::firstWhere(
                     $existingProjectConfig['sites'],
-                    'primary',
-                    true
+                    'primary'
                 );
 
                 if ($doesConfigExist) {
@@ -432,7 +479,7 @@ class TestSetup
             'username' => 'craftcms',
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
-            'site' => $site,
+            'site' => $site
         ]);
 
         $migration->safeUp();

@@ -18,7 +18,7 @@ use yii\base\Component;
  * An instance of the GC service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->gc`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class Gc extends Component
 {

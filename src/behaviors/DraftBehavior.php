@@ -21,7 +21,7 @@ use yii\base\Behavior;
  * @property-read ElementInterface|Element $source
  * @property-read User $creator
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DraftBehavior extends Behavior
 {
@@ -77,6 +77,17 @@ class DraftBehavior extends Behavior
         Craft::$app->getDb()->createCommand()
             ->delete(Table::DRAFTS, ['id' => $this->owner->draftId])
             ->execute();
+    }
+
+    /**
+     * Returns the draft’s name.
+     *
+     * @return string
+     * @since 3.3.17
+     */
+    public function getDraftName(): string
+    {
+        return $this->draftName;
     }
 
     /**

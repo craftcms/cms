@@ -23,7 +23,7 @@ use yii\base\BaseObject;
  * Parses a relatedTo param on an ElementQuery.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementRelationParamParser extends BaseObject
 {
@@ -179,6 +179,7 @@ class ElementRelationParamParser extends BaseObject
 
         // Get the element IDs, wherever they are
         $relElementIds = [];
+        $relSourceElementIds = [];
         $glue = 'or';
 
         $elementParams = ['element', 'sourceElement', 'targetElement'];
@@ -198,11 +199,25 @@ class ElementRelationParamParser extends BaseObject
                 foreach ($elements as $element) {
                     if (is_numeric($element)) {
                         $relElementIds[] = $element;
+                        if ($elementParam === 'element') {
+                            $relSourceElementIds[] = $element;
+                        }
                     } else if ($element instanceof ElementInterface) {
-                        $relElementIds[] = $element->id;
+                        if ($elementParam === 'targetElement') {
+                            $relElementIds[] = $element->getSourceId();
+                        } else {
+                            $relElementIds[] = $element->id;
+                            if ($elementParam === 'element') {
+                                $relSourceElementIds[] = $element->getSourceId();
+                            }
+                        }
                     } else if ($element instanceof ElementQueryInterface) {
-                        foreach ($element->ids() as $id) {
-                            $relElementIds[] = $id;
+                        $ids = $element->ids();
+                        if (!empty($ids)) {
+                            array_push($relElementIds, ...$ids);
+                            if ($elementParam === 'element') {
+                                array_push($relSourceElementIds, ...$ids);
+                            }
                         }
                     }
                 }
@@ -216,7 +231,7 @@ class ElementRelationParamParser extends BaseObject
         }
 
         // Going both ways?
-        if (isset($relCriteria['element'])) {
+        if ($elementParam === 'element') {
             array_unshift($relElementIds, $glue);
 
             return $this->parse([
@@ -226,14 +241,14 @@ class ElementRelationParamParser extends BaseObject
                     'field' => $relCriteria['field']
                 ],
                 [
-                    'targetElement' => $relElementIds,
+                    'targetElement' => $relSourceElementIds,
                     'field' => $relCriteria['field']
                 ]
             ]);
         }
 
         // Figure out which direction we’re going
-        if (isset($relCriteria['sourceElement'])) {
+        if ($elementParam === 'sourceElement') {
             $dir = self::DIR_FORWARD;
         } else {
             $dir = self::DIR_REVERSE;

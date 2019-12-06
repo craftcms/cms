@@ -19,8 +19,10 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
@@ -32,7 +34,7 @@ use yii\base\NotSupportedException;
  * BaseRelationField is the base class for classes representing a relational field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseRelationField extends Field implements PreviewableFieldInterface, EagerLoadingFieldInterface
 {
@@ -342,7 +344,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         /** @var ElementQueryInterface|ElementInterface[] $value */
         if ($value instanceof ElementQueryInterface) {
-            return $this->_all($value)->count() === 0;
+            return !$this->_all($value, $element)->exists();
         }
 
         return empty($value);
@@ -416,7 +418,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var ElementQueryInterface $value */
-        return $this->_all($value)->ids();
+        return $this->_all($value, $element)->ids();
     }
 
     /**
@@ -476,10 +478,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $value = $element->getEagerLoadedElements($this->handle);
         } else {
             /** @var ElementQueryInterface $value */
-            $value
-                ->siteId('*')
-                ->unique()
-                ->preferSites([$this->targetSiteId($element)]);
+            $value = $this->_all($value, $element);
         }
 
         /** @var ElementQuery|array $value */
@@ -496,7 +495,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var ElementQuery $value */
         $titles = [];
 
-        foreach ($this->_all($value)->all() as $relatedElement) {
+        foreach ($value->all() as $relatedElement) {
             $titles[] = (string)$relatedElement;
         }
 
@@ -508,7 +507,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        $value = $this->_all($value)->all();
+        $value = $this->_all($value, $element)->all();
 
         if (empty($value)) {
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
@@ -541,18 +540,35 @@ JS;
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $element = $this->_all($value)->one();
-        } else {
-            $element = $value[0] ?? null;
+            $value = $this->_all($value, $element)->all();
         }
 
-        if ($element) {
-            return Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => $element
+        if (empty($value)) {
+            return '';
+        }
+
+        $first = array_shift($value);
+
+        $html = Craft::$app->getView()->renderTemplate('_elements/element', [
+            'element' => $first,
+        ]);
+
+        if (!empty($value)) {
+            $otherHtml = '';
+            foreach ($value as $other) {
+                $otherHtml .= Craft::$app->getView()->renderTemplate('_elements/element', [
+                    'element' => $other,
+                ]);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
+                'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
             ]);
         }
 
-        return '';
+        return $html;
     }
 
     /**
@@ -644,9 +660,12 @@ JS;
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        // Skip if the element is just propagating, and we're not localizing relations
+        // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         /** @var Element $element */
-        if (!$element->propagating || $this->localizeRelations) {
+        if (
+            $element->isFieldDirty($this->handle) &&
+            (!$element->propagating || $this->localizeRelations)
+        ) {
             /** @var ElementQuery $value */
             $value = $element->getFieldValue($this->handle);
 
@@ -654,7 +673,7 @@ JS;
             if ($value->id !== null) {
                 $targetIds = $value->id ?: [];
             } else {
-                $targetIds = $this->_all($value)->ids();
+                $targetIds = $this->_all($value, $element)->ids();
             }
 
             /** @var int|int[]|false|null $targetIds */
@@ -787,6 +806,7 @@ JS;
      * Returns an array of variables that should be passed to the settings template.
      *
      * @return array
+     * @since 3.2.10
      */
     protected function settingsTemplateVariables(): array
     {
@@ -952,15 +972,22 @@ JS;
     }
 
     /**
-     * Returns a clone of the element query value, prepped to include disabled elements.
+     * Returns a clone of the element query value, prepped to include disabled and cross-site elements.
      *
      * @param ElementQueryInterface $query
+     * @param ElementInterface|null $element
      * @return ElementQueryInterface
      */
-    private function _all(ElementQueryInterface $query): ElementQueryInterface
+    private function _all(ElementQueryInterface $query, ElementInterface $element = null): ElementQueryInterface
     {
         $clone = clone $query;
-        return $clone
-            ->anyStatus();
+        $clone
+            ->anyStatus()
+            ->siteId('*')
+            ->unique();
+        if ($element !== null) {
+            $clone->preferSites([$this->targetSiteId($element)]);
+        }
+        return $clone;
     }
 }

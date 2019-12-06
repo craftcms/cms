@@ -33,7 +33,7 @@
 {% set routes = craft.routes.getProjectConfigRoutes() %}
 
 
-{% block content %}
+{% block main %}
     <p id="noroutes"{% if routes %} class="hidden"{% endif %}>
         {{ "No routes exist yet."|t('app') }}
     </p>

@@ -14,8 +14,8 @@ use craft\elements\User;
  * User session functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class UserSession
 {
@@ -65,9 +65,9 @@ class UserSession
     /**
      * Returns the remembered username from cookie.
      *
-     * @return string
+     * @return string|null
      */
-    public function getRememberedUsername(): string
+    public function getRememberedUsername()
     {
         Craft::$app->getDeprecator()->log('craft.session.getRememberedUsername()', 'craft.session.getRememberedUsername() has been deprecated. Use craft.app.user.rememberedUsername instead.');
 

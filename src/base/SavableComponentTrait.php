@@ -13,7 +13,7 @@ use DateTime;
  * SavableComponentTrait implements the common methods and properties for savable component classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait SavableComponentTrait
 {

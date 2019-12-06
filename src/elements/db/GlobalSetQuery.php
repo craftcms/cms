@@ -20,7 +20,7 @@ use yii\db\Connection;
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-site-params
  * @replace {element} global set
  * @replace {elements} global sets

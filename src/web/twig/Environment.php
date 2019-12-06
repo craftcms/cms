@@ -18,7 +18,7 @@ use Twig\Source;
  * Base Twig template class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Environment extends TwigEnvironment
 {

@@ -90,7 +90,6 @@ return [
     'Are you sure you want to delete this group and all its fields?' => 'Вы уверены, что хотите удалить эту группу и все ее поля?',
     'Are you sure you want to delete this group?' => 'Вы действительно хотите удалить эту группу?',
     'Are you sure you want to delete this image?' => 'Вы уверены, что хотите удалить данное изображение?',
-    'Are you sure you want to delete this photo?' => 'Вы уверены, что хотите удалить эту фотографию?',
     'Are you sure you want to delete this route?' => 'Вы уверены, что хотите удалить этот маршрут?',
     'Are you sure you want to delete “{name}” and all entries that use it?' => 'Вы уверены, что хотите удалить «{name}» и все записи, которые используют его?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Вы уверены, что хотите удалить «{name}» и все его категории?',
@@ -101,6 +100,7 @@ return [
     'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Вы уверены, что хотите удалить плагин {plugin}? Все связанные с ним данные будут утеряны.',
     'Ascending' => 'По возрастанию',
     'Ask on Stack Exchange' => 'Задать вопрос на сайте Stack Exchange',
+    'asset' => 'ресурс',
     'Asset' => 'Ресурс',
     'Asset Indexes' => 'Индексы ресурсов',
     'Asset Settings' => 'Настройки ресурса',
@@ -108,6 +108,7 @@ return [
     'Asset indexing data' => 'Данные индексации ресурса',
     'Asset not found with that id' => 'Ресурс с таким id не обнаружен',
     'Asset transform index' => 'Индекс преобразования ресурса',
+    'assets' => 'ресурсы',
     'Assets' => 'Ресурсы',
     'Assets deleted.' => 'Ресурсы удалены.',
     'Assets in this volume have public URLs' => 'У ресурсов в этом томе публичные URL',
@@ -142,8 +143,10 @@ return [
     'Cancel' => 'Отмена',
     'Can’t run Craft CMS' => 'Не удается запустить Craft CMS',
     'Cart' => 'Корзина',
+    'categories' => 'категории',
     'Categories' => 'Категории',
     'Categories deleted.' => 'Категории удалены.',
+    'category' => 'категория',
     'Category' => 'Категория',
     'Category Groups' => 'Группы категорий',
     'Category URI Format' => 'Формат URI категории',
@@ -394,8 +397,10 @@ return [
     'Enter the text you want to appear on the {type} selection input.' => 'Введите текст, который вы хотите видеть при вводе выбора {type}.',
     'Enter your password to continue.' => 'Введите ваш пароль, чтобы продолжить.',
     'Enter your password to log back in.' => 'Введите пароль для входа обратно.',
+    'entries' => 'записи',
     'Entries' => 'Записи',
     'Entries deleted.' => 'Записи удалены.',
+    'entry' => 'запись',
     'Entry' => 'Запись',
     'Entry Type' => 'Тип записи',
     'Entry Types' => 'Типы записей',
@@ -453,8 +458,10 @@ return [
     'Give feedback' => 'Оставить отзыв',
     'Give your tab a name.' => 'Дайте вкладке имя.',
     'Global' => 'Глобальная переменная',
+    'global set' => 'глобальный набор',
     'Global Set' => 'Глобальный набор',
     'Global Set Name' => 'Название глобального набора данных',
+    'global sets' => 'глобальные наборы данных',
     'Global Sets' => 'Глобальные наборы данных',
     'Global set saved.' => 'Глобальный набор данных сохранен.',
     'Globals' => 'Глобальные данные',
@@ -892,9 +899,11 @@ return [
     'TLS' => 'TLS',
     'Table' => 'Таблица',
     'Table Columns' => 'Столбцы таблицы',
+    'tag' => 'метка',
     'Tag' => 'Метка',
     'Tag Groups' => 'Группы тегов',
     'Tag group saved.' => 'Группа тегов сохранена.',
+    'tags' => 'теги',
     'Tags' => 'Теги',
     'Temp Folder' => 'Папка «Temp»',
     'Temp files' => 'Временные файлы',
@@ -1030,6 +1039,7 @@ return [
     'Use a monospaced font' => 'Используйте моноширинный шрифт',
     'Use authentication' => 'Использовать авторизацию',
     'Use your Craft ID' => 'Используйте свой Craft ID',
+    'user' => 'пользователь',
     'User' => 'Пользователь',
     'User Accounts' => 'Учетные записи пользователей',
     'User Group' => 'Группа пользователей',
@@ -1050,6 +1060,7 @@ return [
     'Username' => 'Имя пользователя',
     'Username or Email' => 'Имя пользователя или адрес электронной почты',
     'Username or email is required.' => 'Имя пользователя или адрес электронной почты является обязательным.',
+    'users' => 'пользователи',
     'Users' => 'Пользователи',
     'Users deleted.' => 'Пользователи удалены.',
     'Users suspended.' => 'Действие учетных записей пользователей приостановлено.',
@@ -1137,13 +1148,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Ваша система не настроена для сохранения контента для данного сайта: {site}.',
     'You’re all up-to-date!' => 'У вас актуальная версия!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Вы запускаете Craft {edition} с лицекнзионным ключом Craft{licensedEdition}.',
-    'account_activation_body' => '안녕하세요 {{user.friendlyName}}님,
+    'account_activation_body' => 'Привет, {{user.friendlyName}}!
 
-{{siteName}}에서 계정을 생성해 주셔서 감사합니다! 계정을 활성화시키려면, 다음 링크를 클릭해 주세요:
+Благодарим за регистрацию на сайте {{siteName}}! Для того, чтобы завершить регистрацию и активировать свою учетную запись, перейдите по следующей ссылке:
 
 <{{link}}>
 
-본 이메일에 관해서 모르신다면, 그냥 무시해 주세요.',
+Если вы считаете, что получили это письмо по ошибке, просто проигнорируйте его.',
     'account_activation_heading' => 'Когда кто-то создает учетную запись:',
     'account_activation_subject' => 'Активируйте свою учетную запись',
     'by {author}' => 'автор: {author}',
@@ -1155,13 +1166,13 @@ return [
     'five' => 'пять',
     'folders' => 'папки',
     'folders and files' => 'папки и файлы',
-    'forgot_password_body' => '안녕하세요 {{user.friendlyName}}님,
+    'forgot_password_body' => 'Привет, {{user.friendlyName}}!
 
-{{siteName}}의 비밀번호를 재설정하려면, 이 링크를 클릭하세요:
+Для того, чтобы сменить свой пароль, перейдите по следующей ссылке:
 
-<{{link}}>
+{{link}}
 
-본 이메일을 기다리지 않으셨다면, 그냥 무시해 주세요.',
+Если вы считаете, что получили это письмо по ошибке, просто проигнорируйте его.',
     'forgot_password_heading' => 'Когда кто-то забывает свой пароль:',
     'forgot_password_subject' => 'Сбросить пароль',
     'four' => 'четыре',
@@ -1177,24 +1188,24 @@ return [
     'seconds' => 'секунд',
     'seven' => 'семь',
     'six' => 'шесть',
-    'test_email_body' => '안녕하세요 {{user.friendlyName}}님,
+    'test_email_body' => 'Привет, {{user.friendlyName}}!
 
-축하합니다! Craft로부터 성공적으로 이메일이 전송되었습니다.
+Поздравляем! Craft смог успешно отправить письмо.
 
-다음은 귀하가 사용한 설정입니다:
+Вот настройки, которые были использованы:
 
 {{ settings }}',
     'test_email_heading' => 'Когда вы тестируете настройки своей почты:',
     'test_email_subject' => 'Тестовое письмо от Craft',
     'three' => 'три',
     'two' => 'два',
-    'verify_new_email_body' => '안녕하세요 {{user.friendlyName}}님,
+    'verify_new_email_body' => 'Привет, {{user.friendlyName}}!
 
-다음 링크를 클릭하여 새로운 이메일 주소를 확인해 주세요:
+Пожалуйста, подтвердите свой адрес электронной почты, перейдя по следующей ссылке:
 
-<{{link}}>
+{{link}}
 
-이 이메일에 관해 모르신다면, 그냥 무시해 주세요.',
+Если вы считаете, что получили это письмо по ошибке, просто проигнорируйте его.',
     'verify_new_email_heading' => 'Когда кто-то изменяет свой адрес электронной почты:',
     'verify_new_email_subject' => 'Подтвердите свой новый адрес электронной почты',
     'week' => 'неделя',
@@ -1398,7 +1409,7 @@ return [
     'The URL/URI to use for this target.' => 'URL/URI для использования с этой целью.',
     'Licensed' => 'Лицензировано',
     'The maximum length (in bytes) the field can hold.' => 'Максимальная длина информации (байт), которая может содержаться в данном поле.',
-    'Find an official Craft Partner' => 'Найти официального Craft-партнера',
+    'Find an official Craft Partner' => 'Найти официального Craft-партнера',
     'Less' => 'Меньше',
     'Resaving {type}' => 'Пересохранить {type}',
     'Meet the Craft community' => 'Знакомьтесь с сообществом Craft',
@@ -1496,8 +1507,10 @@ return [
     'Define the schema’s scope' => 'Определить область действия схемы',
     'Edit the Public GraphQL Schema' => 'Редактировать публичную схему GraphQL',
     'Schema name' => 'Имя схемы',
-    'View category group - {categoryGroup}' => 'View category group - {categoryGroup}',
-    'Delete them' => 'Delete them',
-    'Keep them' => 'Keep them',
-    'View tag group - {tagGroup}' => 'View tag group - {tagGroup}'
+    'View category group - {categoryGroup}' => 'Просмотреть группу категорий - {categoryGroup}',
+    'Delete them' => 'Удалить',
+    'Keep them' => 'Сохранить',
+    'View tag group - {tagGroup}' => 'Просмотреть группу тегов - {tagGroup}',
+    'Single' => 'Single',
+    'Channel' => 'Channel'
 ];

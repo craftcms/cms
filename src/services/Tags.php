@@ -29,7 +29,7 @@ use yii\base\Component;
  * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tags extends Component
 {
@@ -53,6 +53,7 @@ class Tags extends Component
 
     /**
      * @event TagGroupEvent The event that is triggered before a tag group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -301,6 +302,7 @@ class Tags extends Component
      * @param int $groupId The tag group's ID
      * @return bool Whether the tag group was deleted successfully
      * @throws \Throwable if reasons
+     * @since 3.0.12
      */
     public function deleteTagGroupById(int $groupId): bool
     {

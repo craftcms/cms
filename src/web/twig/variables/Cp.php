@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -24,7 +23,7 @@ use yii\base\InvalidConfigException;
  * CP functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Cp extends Component
 {
@@ -38,25 +37,12 @@ class Cp extends Component
 
     /**
      * @event RegisterCpSettingsEvent The event that is triggered when registering Control Panel nav items.
+     * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns the Craft ID account.
-     *
-     * @return array|null
-     */
-    public function craftIdAccount()
-    {
-        try {
-            return Craft::$app->getPluginStore()->getCraftIdAccount();
-        } catch (ServerException $e) {
-            return null;
-        }
-    }
 
     /**
      * Returns the Craft ID account URL.
@@ -196,20 +182,30 @@ class Cp extends Component
 
         if ($isAdmin) {
             if ($craftPro && $generalConfig->enableGql) {
+                $subNavItems = [
+                    'explore' => [
+                        'label' => Craft::t('app', 'Explore'),
+                        'url' => 'graphql',
+                    ],
+                ];
+
+                if ($generalConfig->allowAdminChanges) {
+                    $subNavItems['schemas'] = [
+                        'label' => Craft::t('app', 'Schemas'),
+                        'url' => 'graphql/schemas',
+                    ];
+                }
+
+                $subNavItems['tokens'] = [
+                    'label' => Craft::t('app', 'Tokens'),
+                    'url' => 'graphql/tokens',
+                ];
+
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
                     'icon' => '@app/icons/graphql.svg',
-                    'subnav' => [
-                        'explore' => [
-                            'label' => Craft::t('app', 'Explore'),
-                            'url' => 'graphql',
-                        ],
-                        'schemas' => [
-                            'label' => Craft::t('app', 'Schemas'),
-                            'url' => 'graphql/schemas',
-                        ]
-                    ]
+                    'subnav' => $subNavItems
                 ];
             }
 
@@ -384,6 +380,7 @@ class Cp extends Component
      * @param bool $includeAliases Whether aliases should be included in the list
      * (only enable this if the setting defines a URL or file path)
      * @return string[]
+     * @since 3.1.0
      */
     public function getEnvSuggestions(bool $includeAliases = false): array
     {
@@ -435,6 +432,7 @@ class Cp extends Component
      *
      * @param string $language
      * @return array|null
+     * @since 3.1.9
      */
     public function getAsciiCharMap(string $language)
     {
@@ -449,6 +447,7 @@ class Cp extends Component
      * Returns the available template path suggestions for template inputs.
      *
      * @return string[]
+     * @since 3.1.0
      */
     public function getTemplateSuggestions(): array
     {

@@ -370,13 +370,15 @@ class UrlHelperTest extends Unit
             ['', ['foo' => null]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo[]=1&foo[]=2', ['foo' => [1, 2]]],
+            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
             ['foo[bar]=baz', ['foo[bar]' => 'baz']],
             ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
             ['foo+bar=baz', ['foo+bar' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
+            ['foo[1]=bar', ['foo[1]' => 'bar']],
+            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
@@ -726,7 +728,7 @@ class UrlHelperTest extends Unit
         return [
             ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],
             // https://github.com/craftcms/cms/issues/4778
-            ['http://test.craftcms.test/index.php?p=endpoint&param1=x&param2[]=y&param2[]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['http://test.craftcms.test/index.php?p=endpoint&param1=x&param2[0]=y&param2[1]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
         ];
     }
 

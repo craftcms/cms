@@ -18,7 +18,7 @@ use Twig\Template;
  * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to [[TemplateHelper::attribute()]] rather than twig_get_attribute().
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GetAttrNode extends GetAttrExpression
 {
@@ -26,10 +26,10 @@ class GetAttrNode extends GetAttrExpression
     // =========================================================================
 
     /**
-     * @param array  $nodes      An array of named nodes
-     * @param array  $attributes An array of attributes (should not be nodes)
-     * @param int    $lineno     The line number
-     * @param string $tag        The tag name associated with the Node
+     * @param array $nodes An array of named nodes
+     * @param array $attributes An array of attributes (should not be nodes)
+     * @param int $lineno The line number
+     * @param string $tag The tag name associated with the Node
      */
     public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0, string $tag = null)
     {

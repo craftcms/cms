@@ -15,7 +15,7 @@ use yii\base\Exception;
  * Class Url
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UrlHelper
 {
@@ -87,7 +87,7 @@ class UrlHelper
         $params = [];
         foreach (explode('&', $query) as $param) {
             list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
-            $n = preg_replace('/\[[0-9]+\]/u', '[]', urldecode($n));
+            $n = urldecode($n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
             $params[] = "$n=$v";
         }
@@ -197,6 +197,7 @@ class UrlHelper
      *
      * @param string $url
      * @return string
+     * @since 3.1.11
      */
     public static function rootRelativeUrl(string $url): string
     {
@@ -552,7 +553,7 @@ class UrlHelper
      * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
      * @return string
-     * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
+     * @deprecated in 3.0.0. Use [[urlWithScheme()]] instead.
      */
     public static function urlWithProtocol(string $url, string $scheme): string
     {
@@ -566,7 +567,7 @@ class UrlHelper
      * urls, share entry URLs, etc.
      *
      * @return string
-     * @deprecated in 3.0. Use [[getSchemeForTokenizedUrl()]] instead.
+     * @deprecated in 3.0.0. Use [[getSchemeForTokenizedUrl()]] instead.
      */
     public static function getProtocolForTokenizedUrl(): string
     {

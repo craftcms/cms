@@ -9,6 +9,7 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\TableSchema;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception;
 
@@ -16,7 +17,7 @@ use yii\db\Exception;
  * @inheritdoc
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Schema extends \yii\db\mysql\Schema
 {
@@ -310,15 +311,17 @@ SQL;
     {
         $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'my.cnf';
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        $parsed = Db::parseDsn($this->db->dsn);
+        $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;
+        $password = $this->db->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->db->password;
         $contents = '[client]' . PHP_EOL .
-            'user=' . $dbConfig->user . PHP_EOL .
-            'password="' . addslashes($dbConfig->password) . '"' . PHP_EOL .
-            'host=' . $dbConfig->server . PHP_EOL .
-            'port=' . $dbConfig->port;
+            'user=' . $username . PHP_EOL .
+            'password="' . addslashes($password) . '"' . PHP_EOL .
+            'host=' . ($parsed['host'] ?? '') . PHP_EOL .
+            'port=' . ($parsed['port'] ?? '');
 
-        if ($dbConfig->unixSocket) {
-            $contents .= PHP_EOL . 'socket=' . $dbConfig->unixSocket;
+        if (isset($parsed['unix_socket'])) {
+            $contents .= PHP_EOL . 'socket=' . $parsed['unix_socket'];
         }
 
         FileHelper::writeToFile($filePath, $contents);

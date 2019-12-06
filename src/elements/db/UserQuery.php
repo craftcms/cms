@@ -24,7 +24,7 @@ use yii\db\Connection;
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-status-param
  */
 class UserQuery extends ElementQuery
@@ -591,10 +591,11 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $this->subQuery->andWhere(['exists', (new Query())
-                ->from(['ugu' => Table::USERGROUPS_USERS])
-                ->where('[[elements.id]] = [[ugu.userId]]')
-                ->andWhere(Db::parseParam('groupId', $this->groupId))
+            $this->subQuery->andWhere([
+                'exists', (new Query())
+                    ->from(['ugu' => Table::USERGROUPS_USERS])
+                    ->where('[[elements.id]] = [[ugu.userId]]')
+                    ->andWhere(Db::parseParam('groupId', $this->groupId))
             ]);
         }
 

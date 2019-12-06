@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\AssetPreview;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
@@ -17,8 +18,8 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
@@ -29,6 +30,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use ZipArchive;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -39,7 +41,7 @@ use yii\web\Response;
  * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetsController extends Controller
 {
@@ -789,26 +791,46 @@ class AssetsController extends Controller
         $this->requireLogin();
         $this->requirePostRequest();
 
-        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
-        $assetService = Craft::$app->getAssets();
+        $assetIds = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $assets = Asset::find()
+            ->id($assetIds)
+            ->all();
 
-        $asset = $assetService->getAssetById($assetId);
-
-        if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to download does not exist.'));
+        if (empty($assets)) {
+            throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to download does not exist.'));
         }
 
-        $this->_requirePermissionByAsset('viewVolume', $asset);
+        foreach ($assets as $asset) {
+            $this->_requirePermissionByAsset('viewVolume', $asset);
+        }
 
-        // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
+        // If only one asset was selected, send it back unzipped
+        if (count($assets) === 1) {
+            $asset = reset($assets);
+            return Craft::$app->getResponse()
+                ->sendStreamAsFile($asset->stream, $asset->filename);
+        }
+
+        // Otherwise create a zip of all the selected assets
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+            throw new Exception('Cannot create zip at ' . $zipPath);
+        }
+
         App::maxPowerCaptain();
-        $localPath = $asset->getCopyOfFile();
+        foreach ($assets as $asset) {
+            $localPath = $asset->getCopyOfFile();
+            /** @var Volume $volume */
+            $volume = $asset->getVolume();
+            $zip->addFile($localPath, $volume->name . '/' . $asset->getPath());
+        }
 
-        $response = Craft::$app->getResponse()
-            ->sendFile($localPath, $asset->filename);
-        FileHelper::unlink($localPath);
+        $zip->close();
 
-        return $response;
+        return Craft::$app->getResponse()
+            ->sendFile($zipPath, 'assets.zip');
     }
 
     /**
@@ -873,9 +895,12 @@ class AssetsController extends Controller
         if ($transformId) {
             $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
         } else {
-            $assetId = $request->getBodyParam('assetId');
-            $handle = $request->getBodyParam('handle');
+            $assetId = $request->getRequiredBodyParam('assetId');
+            $handle = $request->getRequiredBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
+            if ($assetModel === null) {
+                throw new BadRequestHttpException('Invalid asset ID: ' . $assetId);
+            }
             $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
         }
 
@@ -913,37 +938,17 @@ class AssetsController extends Controller
             return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
         }
 
+        $assets = Craft::$app->getAssets();
 
-        if (!$asset->getSupportsPreview()) {
-            $modalHtml = '<p class="nopreview centeralign" style="top: calc(50% - 10px) !important; position: relative;">' . Craft::t('app', 'Preview not available.') . '</p>';
-        } else {
-            if ($asset->kind === 'image') {
-                /** @var Volume $volume */
-                $volume = $asset->getVolume();
-
-                if ($volume->hasUrls) {
-                    $imageUrl = $asset->getUrl();
-                } else {
-                    $source = $asset->getTransformSource();
-                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
-                }
-
-                $width = $asset->getWidth();
-                $height = $asset->getHeight();
-                $modalHtml = "<img src=\"$imageUrl\" width=\"{$width}\" height=\"{$height}\" data-maxWidth=\"{$width}\" data-maxHeight=\"{$height}\"/>";
-            } else {
-                $localCopy = $asset->getCopyOfFile();
-                $content = htmlspecialchars(file_get_contents($localCopy));
-                $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
-                $modalHtml = '<div class="highlight ' . $asset->kind . '"><pre><code class="language-' . $language . '">' . $content . '</code></pre></div>';
-                unlink($localCopy);
-            }
-        }
+        /** @var AssetPreview $preview */
+        $preview = $assets->getAssetPreview($asset);
 
         return $this->asJson([
             'success' => true,
-            'modalHtml' => $modalHtml,
-            'requestId' => $requestId
+            'modalHtml' => $preview->getModalHtml(),
+            'headHtml' => $preview->getHeadHtml(),
+            'footHtml' => $preview->getFootHtml(),
+            'requestId' => $requestId,
         ]);
     }
 

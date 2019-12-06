@@ -1,4 +1,4 @@
-/*!   - 2019-10-11 */
+/*!   - 2019-12-05 */
 (function($){
 
 /** global: Craft */
@@ -52,7 +52,7 @@ $.extend(Craft,
          * @return string D3 format
          */
         formatNumber: function(number, format) {
-            if(typeof format == 'undefined') {
+            if (typeof format == 'undefined') {
                 format = ',.0f';
             }
 
@@ -132,8 +132,7 @@ $.extend(Craft,
                 // Select the whole value
                 var length = val.length * 2;
                 $input[0].setSelectionRange(0, length);
-            }
-            else {
+            } else {
                 // Refresh the value to get the cursor positioned at the end
                 $input.val(val);
             }
@@ -175,8 +174,7 @@ $.extend(Craft,
 
                     if (name === '#') {
                         anchor = value;
-                    }
-                    else if (value !== null && value !== '') {
+                    } else if (value !== null && value !== '') {
                         aParams.push(name + '=' + value);
                     }
                 }
@@ -186,8 +184,7 @@ $.extend(Craft,
 
             if (Garnish.isArray(params)) {
                 params = params.join('&');
-            }
-            else {
+            } else {
                 params = Craft.trim(params, '&?');
             }
 
@@ -219,8 +216,7 @@ $.extend(Craft,
                         path = '';
                     }
                 }
-            }
-            else {
+            } else {
                 url = Craft.baseUrl;
             }
 
@@ -237,8 +233,7 @@ $.extend(Craft,
                     if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
                     }
-                }
-                else {
+                } else {
                     // Move the path into the query string params
 
                     // Is the path param already set?
@@ -249,8 +244,7 @@ $.extend(Craft,
                         if (endPath !== -1) {
                             basePath = params.substring(2, endPath);
                             params = params.substr(endPath + 1);
-                        }
-                        else {
+                        } else {
                             basePath = params.substr(2);
                             params = null;
                         }
@@ -328,8 +322,7 @@ $.extend(Craft,
         getCsrfInput: function() {
             if (Craft.csrfTokenName) {
                 return '<input type="hidden" name="' + Craft.csrfTokenName + '" value="' + Craft.csrfTokenValue + '"/>';
-            }
-            else {
+            } else {
                 return '';
             }
         },
@@ -349,6 +342,15 @@ $.extend(Craft,
                 options = callback;
                 callback = data;
                 data = {};
+            }
+
+            options = options || {};
+
+            if (options.contentType && options.contentType.match(/\bjson\b/)) {
+                if (typeof data === 'object') {
+                    data = JSON.stringify(data);
+                }
+                options.contentType = 'application/json; charset=utf-8';
             }
 
             var headers = {
@@ -387,7 +389,7 @@ $.extend(Craft,
             }, options));
 
             // Call the 'send' callback
-            if (options && typeof options.send === 'function') {
+            if (typeof options.send === 'function') {
                 options.send(jqXHR);
             }
 
@@ -427,11 +429,42 @@ $.extend(Craft,
 
                 if (Craft._ajaxQueue.length) {
                     Craft._postNextActionRequestInQueue();
-                }
-                else {
+                } else {
                     Craft._waitingOnAjax = false;
                 }
             }, args[3]);
+        },
+
+        sendApiRequest: function(method, uri, options) {
+            return new Promise(function(resolve, reject) {
+                // Get the latest headers
+                this.postActionRequest('app/api-headers', function(headers, textStatus) {
+                    if (textStatus !== 'success') {
+                        reject();
+                        return;
+                    }
+
+                    options = options || {};
+                    headers = $.extend(headers, options.headers || {});
+                    var params = $.extend(Craft.apiParams || {}, options.params || {});
+
+                    axios.request($.extend({}, options, {
+                            url: uri,
+                            method: method,
+                            baseURL: Craft.baseApiUrl,
+                            headers: headers,
+                            params: params,
+                        }))
+                        .then(function(response) {
+                            Craft.postActionRequest('app/process-api-response-headers', {
+                                headers: response.headers,
+                            }, function() {
+                                resolve(response.data);
+                            });
+                        })
+                        .catch(reject);
+                }.bind(this));
+            }.bind(this));
         },
 
         /**
@@ -450,6 +483,79 @@ $.extend(Craft,
                 arr[i] = $.trim(arr[i]);
             }
             return arr;
+        },
+
+        /**
+         * Compares old and new post data, and removes any values that haven't
+         * changed within the given list of delta namespaces.
+         *
+         * @param {string} oldData
+         * @param {string} newData
+         * @param {object} deltaNames
+         */
+        findDeltaData: function(oldData, newData, deltaNames) {
+            // Sort the delta namespaces from least -> most specific
+            deltaNames.sort(function(a, b) {
+                if (a.length === b.length) {
+                    return 0;
+                }
+                return a.length > b.length ? 1 : -1;
+            });
+
+            // Group all of the old & new params by namespace
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false);
+            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true);
+
+            // Figure out which of the new params should actually be posted
+            var params = groupedNewParams.__root__;
+            var modifiedDeltaNames = [];
+            for (var n = 0; n < deltaNames.length; n++) {
+                if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || (
+                    typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                    (
+                        typeof groupedOldParams[deltaNames[n]] !== 'object' ||
+                        JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                    )
+                )) {
+                    params = params.concat(groupedNewParams[deltaNames[n]]);
+                    params.push('modifiedDeltaNames[]=' + deltaNames[n]);
+                }
+            }
+
+            return params.join('&');
+        },
+
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot) {
+            var grouped = {};
+
+            if (withRoot) {
+                grouped.__root__ = [];
+            }
+
+            var n, paramName;
+
+            paramLoop: for (var p = 0; p < params.length; p++) {
+                // loop through the delta names from most -> least specific
+                for (n = deltaNames.length - 1; n >= 0; n--) {
+                    paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
+                    if (
+                        paramName === deltaNames[n] + '=' ||
+                        paramName === deltaNames[n] + '['
+                    ) {
+                        if (typeof grouped[deltaNames[n]] === 'undefined') {
+                            grouped[deltaNames[n]] = [];
+                        }
+                        grouped[deltaNames[n]].push(params[p]);
+                        continue paramLoop;
+                    }
+                }
+
+                if (withRoot) {
+                    grouped.__root__.push(params[p]);
+                }
+            }
+
+            return grouped;
         },
 
         /**
@@ -479,8 +585,7 @@ $.extend(Craft,
                     for (i = 0; i < keys.length; i++) {
                         keys[i] = keys[i].substring(1, keys[i].length - 1);
                     }
-                }
-                else {
+                } else {
                     keys = [];
                 }
 
@@ -494,15 +599,13 @@ $.extend(Craft,
                             // Figure out what this will be by looking at the next key
                             if (!keys[i + 1] || parseInt(keys[i + 1]) == keys[i + 1]) {
                                 parentElem[keys[i]] = [];
-                            }
-                            else {
+                            } else {
                                 parentElem[keys[i]] = {};
                             }
                         }
 
                         parentElem = parentElem[keys[i]];
-                    }
-                    else {
+                    } else {
                         // Last one. Set the value
                         if (!keys[i]) {
                             keys[i] = parentElem.length;
@@ -514,6 +617,37 @@ $.extend(Craft,
             }
 
             return expanded;
+        },
+
+        /**
+         * Creates a form element populated with hidden inputs based on a string of serialized form data.
+         *
+         * @param {string} data
+         * @returns {jQuery|HTMLElement}
+         */
+        createForm: function(data) {
+            var $form = $('<form/>', {
+                attr: {
+                    method: 'post',
+                    action: '',
+                    'accept-charset': 'UTF-8',
+                },
+            });
+
+            if (typeof data === 'string') {
+                var values = data.split('&');
+                var chunks;
+                for (var i = 0; i < values.length; i++) {
+                    chunks = values[i].split('=', 2);
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: decodeURIComponent(chunks[0]),
+                        value: decodeURIComponent(chunks[1] || '')
+                    }).appendTo($form);
+                }
+            }
+
+            return $form;
         },
 
         /**
@@ -548,8 +682,7 @@ $.extend(Craft,
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
-                    }
-                    else {
+                    } else {
                         if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2))) {
                             return false;
                         }
@@ -569,8 +702,7 @@ $.extend(Craft,
 
                 // All clear
                 return true;
-            }
-            else {
+            } else {
                 return (obj1 === obj2);
             }
         },
@@ -692,8 +824,7 @@ $.extend(Craft,
 
                 if (typeof callback === 'function') {
                     include = callback(arr[i], i);
-                }
-                else {
+                } else {
                     include = arr[i];
                 }
 
@@ -728,8 +859,7 @@ $.extend(Craft,
             if (index !== -1) {
                 arr.splice(index, 1);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -823,8 +953,7 @@ $.extend(Craft,
             if (showSeconds) {
                 minutes = Math.floor(seconds / secondsInMinute);
                 seconds = seconds % secondsInMinute;
-            }
-            else {
+            } else {
                 minutes = Math.round(seconds / secondsInMinute);
                 seconds = 0;
             }
@@ -1047,8 +1176,7 @@ $.extend(Craft,
 
             if (typeof this._elementIndexClasses[elementType] !== 'undefined') {
                 func = this._elementIndexClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementIndex;
             }
 
@@ -1066,8 +1194,7 @@ $.extend(Craft,
 
             if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
                 func = this._elementSelectorModalClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementSelectorModal;
             }
 
@@ -1086,8 +1213,7 @@ $.extend(Craft,
 
             if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
-            }
-            else {
+            } else {
                 func = Craft.BaseElementEditor;
             }
 
@@ -1105,8 +1231,7 @@ $.extend(Craft,
 
             if (typeof localStorage !== 'undefined' && typeof localStorage[key] !== 'undefined') {
                 return JSON.parse(localStorage[key]);
-            }
-            else {
+            } else {
                 return defaultValue;
             }
         },
@@ -1126,8 +1251,7 @@ $.extend(Craft,
                 // but has a max size of 0 bytes.
                 try {
                     localStorage[key] = JSON.stringify(value);
-                }
-                catch (e) {
+                } catch (e) {
                 }
             }
         },
@@ -1206,8 +1330,7 @@ $.extend($.fn,
         animateLeft: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({left: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({right: pos}, duration, easing, complete);
             }
         },
@@ -1215,8 +1338,7 @@ $.extend($.fn,
         animateRight: function(pos, duration, easing, complete) {
             if (Craft.orientation === 'ltr') {
                 return this.velocity({right: pos}, duration, easing, complete);
-            }
-            else {
+            } else {
                 return this.velocity({left: pos}, duration, easing, complete);
             }
         },
@@ -1320,8 +1442,7 @@ $.extend($.fn,
                 if (typeof settingName === 'string') {
                     settings = {};
                     settings[settingName] = settingValue;
-                }
-                else {
+                } else {
                     settings = settingName;
                 }
 
@@ -1331,8 +1452,7 @@ $.extend($.fn,
                         obj.setSettings(settings);
                     }
                 });
-            }
-            else {
+            } else {
                 if (!$.isPlainObject(settings)) {
                     settings = {};
                 }
@@ -1379,7 +1499,7 @@ $.extend($.fn,
                 }
 
                 var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
+                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.data('action')) {
                     $('<input type="hidden" name="action"/>')
@@ -1441,6 +1561,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -1627,6 +1749,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
         updateForm: function(response) {
             this.siteId = response.siteId;
+            this.deltaNames = response.deltaNames;
 
             this.$fieldsContainer.html(response.html);
 
@@ -1647,6 +1770,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+                this.initialData = this.hud.$body.serialize();
             }, this));
         },
 
@@ -1664,6 +1788,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
@@ -1789,7 +1915,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         $container: null,
         $main: null,
-        $mainSpinner: null,
         isIndexBusy: false,
 
         $sidebar: null,
@@ -1804,7 +1929,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         customizeSourcesModal: null,
 
         $toolbar: null,
-        $toolbarFlexContainer: null,
         toolbarOffset: null,
 
         $search: null,
@@ -1880,15 +2004,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             this.$main = this.$container.find('.main');
-            this.$toolbar = this.$container.find('.toolbar:first');
-            this.$toolbarFlexContainer = this.$toolbar.children('.flex');
-            this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
+            this.$toolbar = this.$container.find(this.settings.toolbarSelector);
+            this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
             this.$statusMenuContainer = this.$statusMenuBtn.parent();
             this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
-            this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
-            this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
-            this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
-            this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
+            this.$sortMenuBtn = this.$toolbar.find('.sortmenubtn:first');
+            this.$search = this.$toolbar.find('.search:first input:first');
+            this.$clearSearchBtn = this.$toolbar.find('.search:first > .clear');
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
@@ -1899,15 +2021,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.settings.hideSidebar) {
                 this.$sidebar.hide();
                 $('.body, .content', this.$container).removeClass('has-sidebar');
-            }
-
-            // Keep the toolbar at the top of the window
-            if (
-                (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
-                !Garnish.isMobileBrowser(true)
-            ) {
-                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
-                this.addListener(Garnish.$scrollContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -1977,7 +2090,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Automatically update the elements after new search text has been sitting for a 1/2 second
-            this.addListener(this.$search, 'textchange', $.proxy(function() {
+            this.addListener(this.$search, 'input', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
                 } else if (this.searching && !this.$search.val()) {
@@ -2059,9 +2172,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Default to whatever page is in the URL
-            if (this.settings.context === 'index') {
-                this.setPage(Craft.pageNum);
-            }
+            this.setPage(Craft.pageNum);
 
             this.updateElements(true);
         },
@@ -2151,31 +2262,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
             }, this));
-        },
-
-        updateFixedToolbar: function(e) {
-            this.updateFixedToolbar._scrollTop = Garnish.$scrollContainer.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
-                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
-                    this.$toolbar.addClass('fixed');
-                }
-
-                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
-                    this.$toolbar.css({
-                        top: Garnish.$scrollContainer.offset().top,
-                        width: this.$main.width()
-                    });
-                }
-            } else {
-                if (this.$toolbar.hasClass('fixed')) {
-                    this.$toolbar.removeClass('fixed');
-                    this.$toolbar.css('width', '');
-                    this.$elements.css('padding-top', '');
-                    this.$toolbar.css('top', '0');
-                }
-            }
         },
 
         initSource: function($source) {
@@ -2326,6 +2412,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          * Sets the page number.
          */
         setPage: function(page) {
+            if (this.settings.context !== 'index') {
+                return;
+            }
+
             page = Math.max(page, 1);
             this.page = page;
 
@@ -2403,10 +2493,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 delete this.view;
             }
 
-            this.$elements.html('');
-
             if (preservePagination !== true) {
-                this.$countContainer.html('&nbsp;');
                 this.setPage(1);
             }
 
@@ -2449,13 +2536,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar.css('min-height', this.$toolbar.height());
 
             // Hide any toolbar inputs
-            this._$detachedToolbarItems = this.$toolbarFlexContainer.children().not(this.$selectAllContainer).not(this.$mainSpinner);
+            this._$detachedToolbarItems = this.$toolbar.children();
             this._$detachedToolbarItems.detach();
 
             if (!this._$triggers) {
                 this._createTriggers();
             } else {
-                this._$triggers.insertAfter(this.$selectAllContainer);
+                this._$triggers.appendTo(this.$toolbar);
             }
 
             this.showingActionTriggers = true;
@@ -2529,10 +2616,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            this._$detachedToolbarItems.insertBefore(this.$mainSpinner);
+            this._$detachedToolbarItems.appendTo(this.$toolbar);
             this._$triggers.detach();
-
-            this.$toolbarFlexContainer.children().not(this.$selectAllContainer).removeClass('hidden');
+            // this._$detachedToolbarItems.removeClass('hidden');
 
             // Unset the min toolbar height
             this.$toolbar.css('min-height', '');
@@ -2549,17 +2635,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     if (totalSelected === this.view.getEnabledElements().length) {
                         this.$selectAllCheckbox.removeClass('indeterminate');
                         this.$selectAllCheckbox.addClass('checked');
-                        this.$selectAllBtn.attr('aria-checked', 'true');
+                        this.$selectAllContainer.attr('aria-checked', 'true');
                     } else {
                         this.$selectAllCheckbox.addClass('indeterminate');
                         this.$selectAllCheckbox.removeClass('checked');
-                        this.$selectAllBtn.attr('aria-checked', 'mixed');
+                        this.$selectAllContainer.attr('aria-checked', 'mixed');
                     }
 
                     this.showActionTriggers();
                 } else {
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
-                    this.$selectAllBtn.attr('aria-checked', 'false');
+                    this.$selectAllContainer.attr('aria-checked', 'false');
                     this.hideActionTriggers();
                 }
             }
@@ -2703,7 +2789,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Create the buttons if there's more than one mode available to this source
             if (this.sourceViewModes.length > 1) {
-                this.$viewModeBtnContainer = $('<div class="btngroup"/>').insertBefore(this.$mainSpinner);
+                this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$toolbar);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
                     var sourceViewMode = this.sourceViewModes[i];
@@ -2946,10 +3032,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.settings.buttonContainer) {
                 return $(this.settings.buttonContainer);
             } else {
-                var $container = $('#button-container');
+                var $container = $('#action-button');
 
                 if (!$container.length) {
-                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
+                    $container = $('<div id="action-button"/>').appendTo($('#header'));
                 }
 
                 return $container;
@@ -2957,12 +3043,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setIndexBusy: function() {
-            this.$mainSpinner.removeClass('invisible');
+            this.$elements.addClass('busy');
             this.isIndexBusy = true;
         },
 
         setIndexAvailable: function() {
-            this.$mainSpinner.addClass('invisible');
+            this.$elements.removeClass('busy');
             this.isIndexBusy = false;
         },
 
@@ -3306,11 +3392,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.actions = this.actionsHeadHtml = this.actionsFootHtml = this._$triggers = null;
             }
 
-            if (this.$selectAllContainer) {
-                // Git rid of the old select all button
-                this.$selectAllContainer.detach();
-            }
-
             // Update the count text
             // -------------------------------------------------------------
 
@@ -3357,28 +3438,34 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
 
+            // Update the view with the new container + elements HTML
+            // -------------------------------------------------------------
+
+            this.$elements.html(response.html);
+            Craft.appendHeadHtml(response.headHtml);
+            Craft.appendFootHtml(response.footHtml);
+
             // Batch actions setup
             // -------------------------------------------------------------
 
+            this.$selectAllContainer = this.$elements.find('.selectallcontainer:first');
+
             if (response.actions && response.actions.length) {
-                this.actions = response.actions;
-                this.actionsHeadHtml = response.actionsHeadHtml;
-                this.actionsFootHtml = response.actionsFootHtml;
+                if (this.$selectAllContainer.length) {
+                    this.actions = response.actions;
+                    this.actionsHeadHtml = response.actionsHeadHtml;
+                    this.actionsFootHtml = response.actionsFootHtml;
 
-                // First time?
-                if (!this.$selectAllContainer) {
-                    // Create the select all button
-                    this.$selectAllContainer = $('<div class="selectallcontainer"/>');
-                    this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
-                    this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
+                    // Create the select all checkbox
+                    this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(this.$selectAllContainer);
 
-                    this.$selectAllBtn.attr({
+                    this.$selectAllContainer.attr({
                         'role': 'checkbox',
                         'tabindex': '0',
                         'aria-checked': 'false'
                     });
 
-                    this.addListener(this.$selectAllBtn, 'click', function() {
+                    this.addListener(this.$selectAllContainer, 'click', function() {
                         if (this.view.getSelectedElements().length === 0) {
                             this.view.selectAllElements();
                         } else {
@@ -3386,30 +3473,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
                     });
 
-                    this.addListener(this.$selectAllBtn, 'keydown', function(ev) {
+                    this.addListener(this.$selectAllContainer, 'keydown', function(ev) {
                         if (ev.keyCode === Garnish.SPACE_KEY) {
                             ev.preventDefault();
 
                             $(ev.currentTarget).trigger('click');
                         }
                     });
-                } else {
-                    // Reset the select all button
-                    this.$selectAllCheckbox.removeClass('indeterminate checked');
-
-                    this.$selectAllBtn.attr('aria-checked', 'false');
                 }
-
-                // Place the select all button at the beginning of the toolbar
-                this.$selectAllContainer.prependTo(this.$toolbarFlexContainer);
+            } else {
+                if (!this.$selectAllContainer.siblings().length) {
+                    this.$selectAllContainer.parent('.header').remove();
+                }
+                this.$selectAllContainer.remove();
             }
-
-            // Update the view with the new container + elements HTML
-            // -------------------------------------------------------------
-
-            this.$elements.html(response.html);
-            Craft.appendHeadHtml(response.headHtml);
-            Craft.appendFootHtml(response.footHtml);
 
             // Create the view
             // -------------------------------------------------------------
@@ -3505,7 +3582,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this._$triggers = this._$triggers.add($div);
             }
 
-            this._$triggers.insertAfter(this.$selectAllContainer);
+            this._$triggers.appendTo(this.$toolbar);
             Craft.appendHeadHtml(this.actionsHeadHtml);
             Craft.appendFootHtml(this.actionsFootHtml);
 
@@ -3616,10 +3693,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             multiSelect: false,
             buttonContainer: null,
             hideSidebar: false,
+            toolbarSelector: '.toolbar:first',
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
-            toolbarFixed: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
@@ -4747,8 +4824,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = true;
 
-            this.addListener(this.$source, 'textchange', 'onSourceTextChange');
-            this.addListener(this.$target, 'textchange', 'onTargetTextChange');
+            this.addListener(this.$source, 'input', 'onSourceTextChange');
+            this.addListener(this.$target, 'input', 'onTargetTextChange');
             this.addListener(this.$form, 'submit', 'onFormSubmit');
         },
 
@@ -4791,6 +4868,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
+            if (!this.$target.is(':visible')) {
+                return;
+            }
+
             var sourceVal = this.$source.val();
 
             if (typeof sourceVal === 'undefined') {
@@ -5152,6 +5233,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         maxImageSize: null,
         lastLoadedDimensions: null,
         imageIsLoading: false,
+        mouseMoveEvent: null,
 
         // Rendering proxy functions
         renderImage: null,
@@ -5178,11 +5260,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             if (this.settings.allowSavingAsNew) {
                 this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as a new asset') + '</div>').appendTo(this.$buttons);
-                this.addListener(this.$saveBtn, 'activate', this.saveImage.bind(this));
+                this.addListener(this.$saveBtn, 'activate', this.saveImage);
             }
 
-            this.addListener(this.$replaceBtn, 'activate', this.saveImage.bind(this));
-            this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
+            this.addListener(this.$replaceBtn, 'activate', this.saveImage);
+            this.addListener(this.$cancelBtn, 'activate', this.hide);
             this.removeListener(this.$shade, 'click');
 
             this.maxImageSize = this.getMaxImageSize();
@@ -5301,13 +5383,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this._addControlListeners();
 
                 // Add mouse event listeners
-                this.addListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
-                this.addListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
-                this.addListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
-                this.addListener(this.$croppingCanvas, 'mouseout', function(ev) {
-                    this._handleMouseUp(ev);
-                    this._handleMouseMove(ev);
-                }.bind(this));
+                this.addListener(this.$croppingCanvas, 'mousemove,touchmove', this._handleMouseMove);
+                this.addListener(this.$croppingCanvas, 'mousedown,touchstart', this._handleMouseDown);
+                this.addListener(this.$croppingCanvas, 'mouseup,touchend', this._handleMouseUp);
+                this.addListener(this.$croppingCanvas, 'mouseout,touchcancel', this._handleMouseOut);
 
                 this._hideSpinner();
 
@@ -5371,7 +5450,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             });
 
             this.$body.css({
-                'height': innerHeight - 58
+                'height': innerHeight - 62
             });
 
             if (innerWidth < innerHeight) {
@@ -5612,29 +5691,37 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Return the current image dimensions that would be used in the current image area with no straightening or rotation applied.
          */
         getScaledImageDimensions: function() {
-            var imageRatio = this.originalHeight / this.originalWidth;
-            var editorRatio = this.editorHeight / this.editorWidth;
-
-            var dimensions = {};
-            if (imageRatio > editorRatio) {
-                dimensions.height = Math.min(this.editorHeight, this.originalHeight);
-                dimensions.width = Math.round(this.originalWidth / (this.originalHeight / dimensions.height));
-            } else {
-                dimensions.width = Math.min(this.editorWidth, this.originalWidth);
-                dimensions.height = Math.round(this.originalHeight * (dimensions.width / this.originalWidth));
+            if (typeof this.getScaledImageDimensions._ === 'undefined') {
+                this.getScaledImageDimensions._ = {};
             }
 
-            return dimensions;
+            this.getScaledImageDimensions._.imageRatio = this.originalHeight / this.originalWidth;
+            this.getScaledImageDimensions._.editorRatio = this.editorHeight / this.editorWidth;
+
+            this.getScaledImageDimensions._.dimensions = {};
+            if (this.getScaledImageDimensions._.imageRatio > this.getScaledImageDimensions._.editorRatio) {
+                this.getScaledImageDimensions._.dimensions.height = Math.min(this.editorHeight, this.originalHeight);
+                this.getScaledImageDimensions._.dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.getScaledImageDimensions._.dimensions.height));
+            } else {
+                this.getScaledImageDimensions._.dimensions.width = Math.min(this.editorWidth, this.originalWidth);
+                this.getScaledImageDimensions._.dimensions.height = Math.round(this.originalHeight * (this.getScaledImageDimensions._.dimensions.width / this.originalWidth));
+            }
+
+            return this.getScaledImageDimensions._.dimensions;
         },
 
         /**
          * Set the image dimensions to reflect the current zoom ratio.
          */
         _zoomImage: function() {
-            var imageDimensions = this.getScaledImageDimensions();
+            if (typeof this._zoomImage._ === 'undefined') {
+                this._zoomImage._ = {};
+            }
+
+            this._zoomImage._.imageDimensions = this.getScaledImageDimensions();
             this.image.set({
-                width: imageDimensions.width * this.zoomRatio,
-                height: imageDimensions.height * this.zoomRatio
+                width: this._zoomImage._.imageDimensions.width * this.zoomRatio,
+                height: this._zoomImage._.imageDimensions.height * this.zoomRatio
             });
         },
 
@@ -5644,26 +5731,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         _addControlListeners: function() {
 
             // Tabs
-            this.addListener(this.$tabs, 'click', '_handleTabClick');
+            this.addListener(this.$tabs, 'click', this._handleTabClick);
 
             // Focal point
-            this.addListener($('.focal-point'), 'click', function(ev) {
-                this.toggleFocalPoint(ev);
-            }.bind(this));
+            this.addListener($('.focal-point'), 'click', this.toggleFocalPoint);
 
             // Rotate controls
             this.addListener($('.rotate-left'), 'click', function() {
                 this.rotateImage(-90);
-            }.bind(this));
+            });
             this.addListener($('.rotate-right'), 'click', function() {
                 this.rotateImage(90);
-            }.bind(this));
+            });
             this.addListener($('.flip-vertical'), 'click', function() {
                 this.flipImage('y');
-            }.bind(this));
+            });
             this.addListener($('.flip-horizontal'), 'click', function() {
                 this.flipImage('x');
-            }.bind(this));
+            });
 
             // Straighten slider
             this.straighteningInput = new Craft.SlideRuleInput("slide-rule", {
@@ -5684,12 +5769,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 if (ev.keyCode === Garnish.SHIFT_KEY) {
                     this.shiftKeyHeld = true;
                 }
-            }.bind(this));
+            });
             this.addListener(Garnish.$doc, 'keyup', function(ev) {
                 if (ev.keyCode === Garnish.SHIFT_KEY) {
                     this.shiftKeyHeld = false;
                 }
-            }.bind(this));
+            });
 
             // Cropper constraint menu
             var constraintMenu = new Garnish.MenuBtn($('.crop .menubtn', this.$container), {
@@ -5761,27 +5846,31 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param [state]
          */
         storeCropperState: function(state) {
+            if (typeof this.storeCropperState._ === 'undefined') {
+                this.storeCropperState._ = {};
+            }
+
             // If we're asked to store a specific state.
             if (state) {
                 this.cropperState = state;
             } else if (this.clipper) {
-                var zoomFactor = 1 / this.zoomRatio;
+                this.storeCropperState._.zoomFactor = 1 / this.zoomRatio;
 
                 this.cropperState = {
-                    offsetX: (this.clipper.left - this.image.left) * zoomFactor,
-                    offsetY: (this.clipper.top - this.image.top) * zoomFactor,
-                    height: this.clipper.height * zoomFactor,
-                    width: this.clipper.width * zoomFactor,
+                    offsetX: (this.clipper.left - this.image.left) * this.storeCropperState._.zoomFactor,
+                    offsetY: (this.clipper.top - this.image.top) * this.storeCropperState._.zoomFactor,
+                    height: this.clipper.height * this.storeCropperState._.zoomFactor,
+                    width: this.clipper.width * this.storeCropperState._.zoomFactor,
                     imageDimensions: this.getScaledImageDimensions()
                 };
             } else {
-                var dimensions = this.getScaledImageDimensions();
+                this.storeCropperState._.dimensions = this.getScaledImageDimensions();
                 this.cropperState = {
                     offsetX: 0,
                     offsetY: 0,
-                    height: dimensions.height,
-                    width: dimensions.width,
-                    imageDimensions: dimensions
+                    height: this.storeCropperState._.dimensions.height,
+                    width: this.storeCropperState._.dimensions.width,
+                    imageDimensions: this.storeCropperState._.dimensions
                 };
             }
         },
@@ -5790,14 +5879,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Store focal point coordinates in a manner that is not tied to zoom ratio and rotation.
          */
         storeFocalPointState: function(state) {
+            if (typeof this.storeFocalPointState._ === 'undefined') {
+                this.storeFocalPointState._ = {};
+            }
+
             // If we're asked to store a specific state.
             if (state) {
                 this.focalPointState = state;
             } else if (this.focalPoint) {
-                var zoomFactor = 1 / this.zoomRatio;
+                this.storeFocalPointState._.zoomFactor = 1 / this.zoomRatio;
                 this.focalPointState = {
-                    offsetX: (this.focalPoint.left - this.image.left) * zoomFactor / this.scaleFactor,
-                    offsetY: (this.focalPoint.top - this.image.top) * zoomFactor / this.scaleFactor,
+                    offsetX: (this.focalPoint.left - this.image.left) * this.storeFocalPointState._.zoomFactor / this.scaleFactor,
+                    offsetY: (this.focalPoint.top - this.image.top) * this.storeFocalPointState._.zoomFactor / this.scaleFactor,
                     imageDimensions: this.getScaledImageDimensions()
                 };
             }
@@ -6395,13 +6488,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Remove all the events when hiding the editor.
          */
         onFadeOut: function() {
-            this.removeListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
-            this.removeListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
-            this.removeListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
-            this.removeListener(this.$croppingCanvas, 'mouseout', function(ev) {
-                this._handleMouseUp(ev);
-                this._handleMouseMove(ev);
-            }.bind(this));
             this.destroy();
         },
 
@@ -6720,31 +6806,35 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Redraw the cropper boundaries
          */
         _redrawCropperElements: function() {
+            if (typeof this._redrawCropperElements._ === 'undefined') {
+                this._redrawCropperElements._ = {};
+            }
+
             if (this.cropperHandles) {
                 this.croppingCanvas.remove(this.cropperHandles);
                 this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
             }
-            var lineOptions = {
+            this._redrawCropperElements._.lineOptions = {
                 strokeWidth: 4,
                 stroke: 'rgb(255,255,255)',
                 fill: false
             };
 
-            var gridOptions = {
+            this._redrawCropperElements._.gridOptions = {
                 strokeWidth: 2,
                 stroke: 'rgba(255,255,255,0.5)'
             };
 
             // Draw the handles
-            var pathGroup = [
-                new fabric.Path('M 0,10 L 0,0 L 10,0', lineOptions),
-                new fabric.Path('M ' + (this.clipper.width - 8) + ',0 L ' + (this.clipper.width + 4) + ',0 L ' + (this.clipper.width + 4) + ',10', lineOptions),
-                new fabric.Path('M ' + (this.clipper.width + 4) + ',' + (this.clipper.height - 8) + ' L' + (this.clipper.width + 4) + ',' + (this.clipper.height + 4) + ' L ' + (this.clipper.width - 8) + ',' + (this.clipper.height + 4), lineOptions),
-                new fabric.Path('M 10,' + (this.clipper.height + 4) + ' L 0,' + (this.clipper.height + 4) + ' L 0,' + (this.clipper.height - 8), lineOptions)
+            this._redrawCropperElements._.pathGroup = [
+                new fabric.Path('M 0,10 L 0,0 L 10,0', this._redrawCropperElements._.lineOptions),
+                new fabric.Path('M ' + (this.clipper.width - 8) + ',0 L ' + (this.clipper.width + 4) + ',0 L ' + (this.clipper.width + 4) + ',10', this._redrawCropperElements._.lineOptions),
+                new fabric.Path('M ' + (this.clipper.width + 4) + ',' + (this.clipper.height - 8) + ' L' + (this.clipper.width + 4) + ',' + (this.clipper.height + 4) + ' L ' + (this.clipper.width - 8) + ',' + (this.clipper.height + 4), this._redrawCropperElements._.lineOptions),
+                new fabric.Path('M 10,' + (this.clipper.height + 4) + ' L 0,' + (this.clipper.height + 4) + ' L 0,' + (this.clipper.height - 8), this._redrawCropperElements._.lineOptions)
             ];
 
-            this.cropperHandles = new fabric.Group(pathGroup, {
+            this.cropperHandles = new fabric.Group(this._redrawCropperElements._.pathGroup, {
                 left: this.clipper.left,
                 top: this.clipper.top,
                 originX: 'center',
@@ -6766,10 +6856,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.cropperGrid = new fabric.Group(
                 [
-                    new fabric.Line([this.clipper.width * 0.33, 0, this.clipper.width * 0.33, this.clipper.height], gridOptions),
-                    new fabric.Line([this.clipper.width * 0.66, 0, this.clipper.width * 0.66, this.clipper.height], gridOptions),
-                    new fabric.Line([0, this.clipper.height * 0.33, this.clipper.width, this.clipper.height * 0.33], gridOptions),
-                    new fabric.Line([0, this.clipper.height * 0.66, this.clipper.width, this.clipper.height * 0.66], gridOptions)
+                    new fabric.Line([this.clipper.width * 0.33, 0, this.clipper.width * 0.33, this.clipper.height], this._redrawCropperElements._.gridOptions),
+                    new fabric.Line([this.clipper.width * 0.66, 0, this.clipper.width * 0.66, this.clipper.height], this._redrawCropperElements._.gridOptions),
+                    new fabric.Line([0, this.clipper.height * 0.33, this.clipper.width, this.clipper.height * 0.33], this._redrawCropperElements._.gridOptions),
+                    new fabric.Line([0, this.clipper.height * 0.66, this.clipper.width, this.clipper.height * 0.66], this._redrawCropperElements._.gridOptions)
                 ], {
                     left: this.clipper.left,
                     top: this.clipper.top,
@@ -6873,15 +6963,26 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleMouseMove: function(ev) {
+            if (this.mouseMoveEvent !== null) {
+                Garnish.requestAnimationFrame(this._handleMouseMoveInternal.bind(this));
+            }
+            this.mouseMoveEvent = ev;
+        },
+
+        _handleMouseMoveInternal: function() {
+            if (this.mouseMoveEvent === null) {
+                return;
+            }
+
             if (this.focalPoint && this.draggingFocal) {
-                this._handleFocalDrag(ev);
+                this._handleFocalDrag(this.mouseMoveEvent);
                 this.storeFocalPointState();
                 this.renderImage();
             } else if (this.draggingCropper || this.scalingCropper) {
                 if (this.draggingCropper) {
-                    this._handleCropperDrag(ev);
+                    this._handleCropperDrag(this.mouseMoveEvent);
                 } else {
-                    this._handleCropperResize(ev);
+                    this._handleCropperResize(this.mouseMoveEvent);
                 }
 
                 this._redrawCropperElements();
@@ -6889,11 +6990,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.storeCropperState();
                 this.renderCropper();
             } else {
-                this._setMouseCursor(ev);
+                this._setMouseCursor(this.mouseMoveEvent);
             }
 
-            this.previousMouseX = ev.pageX;
-            this.previousMouseY = ev.pageY;
+            this.previousMouseX = this.mouseMoveEvent.pageX;
+            this.previousMouseY = this.mouseMoveEvent.pageY;
+
+            this.mouseMoveEvent = null;
         },
 
         /**
@@ -6908,35 +7011,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         /**
+         * Handle mouse out
+         *
+         * @param ev
+         */
+        _handleMouseOut: function(ev) {
+            this._handleMouseUp(ev);
+            this.mouseMoveEvent = ev;
+            this._handleMouseMoveInternal();
+        },
+
+        /**
          * Handle cropper being dragged.
          *
          * @param ev
          */
         _handleCropperDrag: function(ev) {
-            var deltaX = ev.pageX - this.previousMouseX;
-            var deltaY = ev.pageY - this.previousMouseY;
+            if (typeof this._handleCropperDrag._ === 'undefined') {
+                this._handleCropperDrag._ = {};
+            }
 
-            if (deltaX === 0 && deltaY === 0) {
+            this._handleCropperDrag._.deltaX = ev.pageX - this.previousMouseX;
+            this._handleCropperDrag._.deltaY = ev.pageY - this.previousMouseY;
+
+            if (this._handleCropperDrag._.deltaX === 0 && this._handleCropperDrag._.deltaY === 0) {
                 return;
             }
 
-            var rectangle = {
+            this._handleCropperDrag._.rectangle = {
                 left: this.clipper.left - this.clipper.width / 2,
                 top: this.clipper.top - this.clipper.height / 2,
                 width: this.clipper.width,
                 height: this.clipper.height
             };
 
-            var vertices = this._getRectangleVertices(rectangle, deltaX, deltaY);
+            this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.deltaX, this._handleCropperDrag._.deltaY);
 
             // Just make sure that the cropper stays inside the image
-            if (!this.arePointsInsideRectangle(vertices, this.imageVerticeCoords)) {
+            if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
                 return;
             }
 
             this.clipper.set({
-                left: this.clipper.left + deltaX,
-                top: this.clipper.top + deltaY
+                left: this.clipper.left + this._handleCropperDrag._.deltaX,
+                top: this.clipper.top + this._handleCropperDrag._.deltaY
             });
 
         },
@@ -6947,32 +7065,36 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleFocalDrag: function(ev) {
-            if (this.focalPoint) {
-                var deltaX = ev.pageX - this.previousMouseX;
-                var deltaY = ev.pageY - this.previousMouseY;
+            if (typeof this._handleFocalDrag._ === 'undefined') {
+                this._handleFocalDrag._ = {};
+            }
 
-                if (deltaX === 0 && deltaY === 0) {
+            if (this.focalPoint) {
+                this._handleFocalDrag._.deltaX = ev.pageX - this.previousMouseX;
+                this._handleFocalDrag._.deltaY = ev.pageY - this.previousMouseY;
+
+                if (this._handleFocalDrag._.deltaX === 0 && this._handleFocalDrag._.deltaY === 0) {
                     return;
                 }
 
-                var newX = this.focalPoint.left + deltaX;
-                var newY = this.focalPoint.top + deltaY;
+                this._handleFocalDrag._.newX = this.focalPoint.left + this._handleFocalDrag._.deltaX;
+                this._handleFocalDrag._.newY = this.focalPoint.top + this._handleFocalDrag._.deltaY;
 
                 // Just make sure that the focal point stays inside the image
                 if (this.currentView === 'crop') {
-                    if (!this.arePointsInsideRectangle([{x: newX, y: newY}], this.imageVerticeCoords)) {
+                    if (!this.arePointsInsideRectangle([{x: this._handleFocalDrag._.newX, y: this._handleFocalDrag._.newY}], this.imageVerticeCoords)) {
                         return;
                     }
                 } else {
-                    if (!(this.viewport.left - this.viewport.width / 2 - newX < 0 && this.viewport.left + this.viewport.width / 2 - newX > 0
-                        && this.viewport.top - this.viewport.height / 2 - newY < 0 && this.viewport.top + this.viewport.height / 2 - newY > 0)) {
+                    if (!(this.viewport.left - this.viewport.width / 2 - this._handleFocalDrag._.newX < 0 && this.viewport.left + this.viewport.width / 2 - this._handleFocalDrag._.newX > 0
+                        && this.viewport.top - this.viewport.height / 2 - this._handleFocalDrag._.newY < 0 && this.viewport.top + this.viewport.height / 2 - this._handleFocalDrag._.newY > 0)) {
                         return;
                     }
                 }
 
                 this.focalPoint.set({
-                    left: this.focalPoint.left + deltaX,
-                    top: this.focalPoint.top + deltaY
+                    left: this.focalPoint.left + this._handleFocalDrag._.deltaX,
+                    top: this.focalPoint.top + this._handleFocalDrag._.deltaY
                 });
             }
         },
@@ -7011,6 +7133,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Enforce the cropping constraint
          */
         enforceCroppingConstraint: function () {
+            if (typeof this.enforceCroppingConstraint._ === 'undefined') {
+                this.enforceCroppingConstraint._ = {};
+            }
+
             if (this.animationInProgress || !this.croppingConstraint) {
                 return;
             }
@@ -7018,7 +7144,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.animationInProgress = true;
 
             // Mock the clipping rectangle for collision tests
-            var rectangle = {
+            this.enforceCroppingConstraint._.rectangle = {
                 left: this.clipper.left - this.clipper.width / 2,
                 top: this.clipper.top - this.clipper.height / 2,
                 width: this.clipper.width,
@@ -7028,38 +7154,38 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // If wider than it should be
             if (this.clipper.width > this.clipper.height * this.croppingConstraint)
             {
-                var previousHeight = rectangle.height;
+                this.enforceCroppingConstraint._.previousHeight = this.enforceCroppingConstraint._.rectangle.height;
 
                 // Make it taller!
-                rectangle.height = this.clipper.width / this.croppingConstraint;
+                this.enforceCroppingConstraint._.rectangle.height = this.clipper.width / this.croppingConstraint;
 
                 // Getting really awkward having to convert between 0;0 being center or top-left corner.
-                rectangle.top -= (rectangle.height - previousHeight) / 2;
+                this.enforceCroppingConstraint._.rectangle.top -= (this.enforceCroppingConstraint._.rectangle.height - this.enforceCroppingConstraint._.previousHeight) / 2;
 
                 // If the clipper would end up out of bounds, make it narrower instead.
-                if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
-                    rectangle.width = this.clipper.height * this.croppingConstraint;
-                    rectangle.height = rectangle.width / this.croppingConstraint;
+                if (!this.arePointsInsideRectangle(this._getRectangleVertices(this.enforceCroppingConstraint._.rectangle), this.imageVerticeCoords)) {
+                    this.enforceCroppingConstraint._.rectangle.width = this.clipper.height * this.croppingConstraint;
+                    this.enforceCroppingConstraint._.rectangle.height = this.enforceCroppingConstraint._.rectangle.width / this.croppingConstraint;
                 }
             } else {
                 // Follow the same pattern, if taller than it should be.
-                var previousWidth = rectangle.width;
-                rectangle.width = this.clipper.height * this.croppingConstraint;
-                rectangle.left -= (rectangle.width - previousWidth) / 2;
+                this.enforceCroppingConstraint._.previousWidth = this.enforceCroppingConstraint._.rectangle.width;
+                this.enforceCroppingConstraint._.rectangle.width = this.clipper.height * this.croppingConstraint;
+                this.enforceCroppingConstraint._.rectangle.left -= (this.enforceCroppingConstraint._.rectangle.width - this.enforceCroppingConstraint._.previousWidth) / 2;
 
-                if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
-                    rectangle.height = this.clipper.width / this.croppingConstraint;
-                    rectangle.width = rectangle.height * this.croppingConstraint;
+                if (!this.arePointsInsideRectangle(this._getRectangleVertices(this.enforceCroppingConstraint._.rectangle), this.imageVerticeCoords)) {
+                    this.enforceCroppingConstraint._.rectangle.height = this.clipper.width / this.croppingConstraint;
+                    this.enforceCroppingConstraint._.rectangle.width = this.enforceCroppingConstraint._.rectangle.height * this.croppingConstraint;
                 }
             }
 
-            var properties = {
-                height: rectangle.height,
-                width: rectangle.width
+            this.enforceCroppingConstraint._.properties = {
+                height: this.enforceCroppingConstraint._.rectangle.height,
+                width: this.enforceCroppingConstraint._.rectangle.width
             };
 
             // Make sure to redraw cropper handles and gridlines when resizing
-            this.clipper.animate(properties, {
+            this.clipper.animate(this.enforceCroppingConstraint._.properties, {
                 onChange: function() {
                     this._redrawCropperElements();
                     this.croppingCanvas.renderAll();
@@ -7079,27 +7205,31 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleCropperResize: function(ev) {
+            if (typeof this._handleCropperResize._ === 'undefined') {
+                this._handleCropperResize._ = {};
+            }
+
             // Size deltas
-            var deltaX = ev.pageX - this.previousMouseX;
-            var deltaY = ev.pageY - this.previousMouseY;
+            this._handleCropperResize._.deltaX = ev.pageX - this.previousMouseX;
+            this._handleCropperResize._.deltaY = ev.pageY - this.previousMouseY;
 
             // Center deltas
-            var topDelta = 0;
-            var leftDelta = 0;
+            this._handleCropperResize._.topDelta = 0;
+            this._handleCropperResize._.leftDelta = 0;
 
             if (this.scalingCropper === 'b' || this.scalingCropper === 't') {
-                deltaX = 0;
+                this._handleCropperResize._.deltaX = 0;
             }
 
             if (this.scalingCropper === 'l' || this.scalingCropper === 'r') {
-                deltaY = 0;
+                this._handleCropperResize._.deltaY = 0;
             }
 
-            if (deltaX === 0 && deltaY === 0) {
+            if (this._handleCropperResize._.deltaX === 0 && this._handleCropperResize._.deltaY === 0) {
                 return;
             }
 
-            var rectangle = {
+            this._handleCropperResize._.rectangle = {
                 left: this.clipper.left - this.clipper.width / 2,
                 top: this.clipper.top - this.clipper.height / 2,
                 width: this.clipper.width,
@@ -7108,68 +7238,68 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Lock the aspect ratio if needed
             if (this.croppingConstraint) {
-                var change = 0;
+                this._handleCropperResize._.change = 0;
 
                 // Take into account the mouse direction and figure out the "real" change in cropper size
                 switch (this.scalingCropper) {
                     case 't':
-                        change = -deltaY;
+                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY;
                         break;
                     case 'b':
-                        change = deltaY;
+                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY;
                         break;
                     case 'r':
-                        change = deltaX;
+                        this._handleCropperResize._.change = this._handleCropperResize._.deltaX;
                         break;
                     case 'l':
-                        change = -deltaX;
+                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaX;
                         break;
                     case 'tr':
-                        change = -deltaY + deltaX;
+                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY + this._handleCropperResize._.deltaX;
                         break;
                     case 'tl':
-                        change = -deltaY - deltaX;
+                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY - this._handleCropperResize._.deltaX;
                         break;
                     case 'br':
-                        change = deltaY + deltaX;
+                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY + this._handleCropperResize._.deltaX;
                         break;
                     case 'bl':
-                        change = deltaY - deltaX;
+                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY - this._handleCropperResize._.deltaX;
                         break;
                 }
 
                 if (this.croppingConstraint > 1) {
-                    deltaX = change;
-                    deltaY = deltaX / this.croppingConstraint;
+                    this._handleCropperResize._.deltaX = this._handleCropperResize._.change;
+                    this._handleCropperResize._.deltaY = this._handleCropperResize._.deltaX / this.croppingConstraint;
                 } else {
-                    deltaY = change;
-                    deltaX = deltaY * this.croppingConstraint;
+                    this._handleCropperResize._.deltaY = this._handleCropperResize._.change;
+                    this._handleCropperResize._.deltaX = this._handleCropperResize._.deltaY * this.croppingConstraint;
                 }
 
-                rectangle.height += deltaY;
-                rectangle.width += deltaX;
+                this._handleCropperResize._.rectangle.height += this._handleCropperResize._.deltaY;
+                this._handleCropperResize._.rectangle.width += this._handleCropperResize._.deltaX;
 
                 // Make the cropper compress/expand relative to the correct edge to make it feel "right"
                 if (this.scalingCropper.match(/t/)) {
-                    rectangle.top -= deltaY;
-                    rectangle.left -= deltaX / 2;
-                    topDelta = -deltaY/2;
+                    this._handleCropperResize._.rectangle.top -= this._handleCropperResize._.deltaY;
+                    this._handleCropperResize._.rectangle.left -= this._handleCropperResize._.deltaX / 2;
+                    this._handleCropperResize._.topDelta = -this._handleCropperResize._.deltaY/2;
                 }
 
                 if (this.scalingCropper.match(/b/)) {
-                    rectangle.left += -deltaX / 2;
-                    topDelta = deltaY/2;
+                    this._handleCropperResize._.rectangle.left += -this._handleCropperResize._.deltaX / 2;
+                    this._handleCropperResize._.topDelta = this._handleCropperResize._.deltaY/2;
                 }
 
                 if (this.scalingCropper.match(/r/)) {
-                    rectangle.top += -deltaY / 2;
-                    leftDelta = deltaX/2;
+                    this._handleCropperResize._.rectangle.top += -this._handleCropperResize._.deltaY / 2;
+                    this._handleCropperResize._.leftDelta = this._handleCropperResize._.deltaX/2;
                 }
 
                 if (this.scalingCropper.match(/l/)) {
-                    rectangle.top -= deltaY / 2;
-                    rectangle.left -= deltaX;
-                    leftDelta = -deltaX/2;
+                    this._handleCropperResize._.rectangle.top -= this._handleCropperResize._.deltaY / 2;
+                    this._handleCropperResize._.rectangle.left -= this._handleCropperResize._.deltaX;
+                    this._handleCropperResize._.leftDelta = -this._handleCropperResize._.deltaX/2;
                 }
             } else {
 
@@ -7178,50 +7308,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     (this.scalingCropper === 'tl' || this.scalingCropper === 'tr' ||
                     this.scalingCropper === 'bl' || this.scalingCropper === 'br')
                 ) {
-                    var ratio;
-                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        ratio = this.clipper.width / this.clipper.height;
-                        deltaY = deltaX / ratio;
-                        deltaY *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
+                    this._handleCropperResize._.ratio;
+                    if (Math.abs(this._handleCropperResize._.deltaX) > Math.abs(this._handleCropperResize._.deltaY)) {
+                        this._handleCropperResize._.ratio = this.clipper.width / this.clipper.height;
+                        this._handleCropperResize._.deltaY = this._handleCropperResize._.deltaX / this._handleCropperResize._.ratio;
+                        this._handleCropperResize._.deltaY *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
                     } else {
-                        ratio = this.clipper.width / this.clipper.height;
-                        deltaX = deltaY * ratio;
-                        deltaX *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
+                        this._handleCropperResize._.ratio = this.clipper.width / this.clipper.height;
+                        this._handleCropperResize._.deltaX = this._handleCropperResize._.deltaY * this._handleCropperResize._.ratio;
+                        this._handleCropperResize._.deltaX *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
                     }
                 }
 
                 if (this.scalingCropper.match(/t/)) {
-                    rectangle.top += deltaY;
-                    rectangle.height -= deltaY;
+                    this._handleCropperResize._.rectangle.top += this._handleCropperResize._.deltaY;
+                    this._handleCropperResize._.rectangle.height -= this._handleCropperResize._.deltaY;
                 }
                 if (this.scalingCropper.match(/b/)) {
-                    rectangle.height += deltaY;
+                    this._handleCropperResize._.rectangle.height += this._handleCropperResize._.deltaY;
                 }
                 if (this.scalingCropper.match(/r/)) {
-                    rectangle.width += deltaX;
+                    this._handleCropperResize._.rectangle.width += this._handleCropperResize._.deltaX;
                 }
                 if (this.scalingCropper.match(/l/)) {
-                    rectangle.left += deltaX;
-                    rectangle.width -= deltaX;
+                    this._handleCropperResize._.rectangle.left += this._handleCropperResize._.deltaX;
+                    this._handleCropperResize._.rectangle.width -= this._handleCropperResize._.deltaX;
                 }
 
-                topDelta = deltaY/2;
-                leftDelta = deltaX/2;
+                this._handleCropperResize._.topDelta = this._handleCropperResize._.deltaY/2;
+                this._handleCropperResize._.leftDelta = this._handleCropperResize._.deltaX/2;
             }
 
-            if (rectangle.height < 30 || rectangle.width < 30) {
+            if (this._handleCropperResize._.rectangle.height < 30 || this._handleCropperResize._.rectangle.width < 30) {
                 return;
             }
 
-            if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
+            if (!this.arePointsInsideRectangle(this._getRectangleVertices(this._handleCropperResize._.rectangle), this.imageVerticeCoords)) {
                 return;
             }
 
             this.clipper.set({
-                top: this.clipper.top + topDelta,
-                left: this.clipper.left + leftDelta,
-                width: rectangle.width,
-                height: rectangle.height
+                top: this.clipper.top + this._handleCropperResize._.topDelta,
+                left: this.clipper.left + this._handleCropperResize._.leftDelta,
+                width: this._handleCropperResize._.rectangle.width,
+                height: this._handleCropperResize._.rectangle.height
             });
 
             this._redrawCropperElements();
@@ -7233,25 +7363,32 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _setMouseCursor: function(ev) {
-            var cursor = 'default';
-            var handle = this.croppingCanvas && this._cropperHandleHitTest(ev);
-            if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
-                cursor = 'pointer';
-            } else if (handle) {
-                if (handle === 't' || handle === 'b') {
-                    cursor = 'ns-resize';
-                } else if (handle === 'l' || handle === 'r') {
-                    cursor = 'ew-resize';
-                } else if (handle === 'tl' || handle === 'br') {
-                    cursor = 'nwse-resize';
-                } else if (handle === 'bl' || handle === 'tr') {
-                    cursor = 'nesw-resize';
-                }
-            } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
-                cursor = 'move';
+            if (typeof this._setMouseCursor._ === 'undefined') {
+                this._setMouseCursor._ = {};
             }
 
-            $('.body').css('cursor', cursor);
+            if (Garnish.isMobileBrowser(true)) {
+                return;
+            }
+            this._setMouseCursor._.cursor = 'default';
+            this._setMouseCursor._.handle = this.croppingCanvas && this._cropperHandleHitTest(ev);
+            if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
+                this._setMouseCursor._.cursor = 'pointer';
+            } else if (this._setMouseCursor._.handle) {
+                if (this._setMouseCursor._.handle === 't' || this._setMouseCursor._.handle === 'b') {
+                    this._setMouseCursor._.cursor = 'ns-resize';
+                } else if (this._setMouseCursor._.handle === 'l' || this._setMouseCursor._.handle === 'r') {
+                    this._setMouseCursor._.cursor = 'ew-resize';
+                } else if (this._setMouseCursor._.handle === 'tl' || this._setMouseCursor._.handle === 'br') {
+                    this._setMouseCursor._.cursor = 'nwse-resize';
+                } else if (this._setMouseCursor._.handle === 'bl' || this._setMouseCursor._.handle === 'tr') {
+                    this._setMouseCursor._.cursor = 'nesw-resize';
+                }
+            } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
+                this._setMouseCursor._.cursor = 'move';
+            }
+
+            $('.body').css('cursor', this._setMouseCursor._.cursor);
         },
 
         /**
@@ -7260,46 +7397,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _cropperHandleHitTest: function(ev) {
-            var parentOffset = this.$croppingCanvas.offset();
-            var mouseX = ev.pageX - parentOffset.left;
-            var mouseY = ev.pageY - parentOffset.top;
+            if (typeof this._cropperHandleHitTest._ === 'undefined') {
+                this._cropperHandleHitTest._ = {};
+            }
+
+            this._cropperHandleHitTest._.parentOffset = this.$croppingCanvas.offset();
+            this._cropperHandleHitTest._.mouseX = ev.pageX - this._cropperHandleHitTest._.parentOffset.left;
+            this._cropperHandleHitTest._.mouseY = ev.pageY - this._cropperHandleHitTest._.parentOffset.top;
 
             // Compensate for center origin coordinate-wise
-            var lb = this.clipper.left - this.clipper.width / 2;
-            var rb = lb + this.clipper.width;
-            var tb = this.clipper.top - this.clipper.height / 2;
-            var bb = tb + this.clipper.height;
+            this._cropperHandleHitTest._.lb = this.clipper.left - this.clipper.width / 2;
+            this._cropperHandleHitTest._.rb = this._cropperHandleHitTest._.lb + this.clipper.width;
+            this._cropperHandleHitTest._.tb = this.clipper.top - this.clipper.height / 2;
+            this._cropperHandleHitTest._.bb = this._cropperHandleHitTest._.tb + this.clipper.height;
 
             // Left side top/bottom
-            if (mouseX < lb + 10 && mouseX > lb - 3) {
-                if (mouseY < tb + 10 && mouseY > tb - 3) {
+            if (this._cropperHandleHitTest._.mouseX < this._cropperHandleHitTest._.lb + 10 && this._cropperHandleHitTest._.mouseX > this._cropperHandleHitTest._.lb - 3) {
+                if (this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.tb + 10 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.tb - 3) {
                     return 'tl';
-                } else if (mouseY < bb + 3 && mouseY > bb - 10) {
+                } else if (this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.bb + 3 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.bb - 10) {
                     return 'bl';
                 }
             }
             // Right side top/bottom
-            if (mouseX > rb - 13 && mouseX < rb + 3) {
-                if (mouseY < tb + 10 && mouseY > tb - 3) {
+            if (this._cropperHandleHitTest._.mouseX > this._cropperHandleHitTest._.rb - 13 && this._cropperHandleHitTest._.mouseX < this._cropperHandleHitTest._.rb + 3) {
+                if (this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.tb + 10 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.tb - 3) {
                     return 'tr';
-                } else if (mouseY < bb + 2 && mouseY > bb - 10) {
+                } else if (this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.bb + 2 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.bb - 10) {
                     return 'br';
                 }
             }
 
             // Left or right
-            if (mouseX < lb + 3 && mouseX > lb - 3 && mouseY < bb - 10 && mouseY > tb + 10) {
+            if (this._cropperHandleHitTest._.mouseX < this._cropperHandleHitTest._.lb + 3 && this._cropperHandleHitTest._.mouseX > this._cropperHandleHitTest._.lb - 3 && this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.bb - 10 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.tb + 10) {
                 return 'l';
             }
-            if (mouseX < rb + 1 && mouseX > rb - 5 && mouseY < bb - 10 && mouseY > tb + 10) {
+            if (this._cropperHandleHitTest._.mouseX < this._cropperHandleHitTest._.rb + 1 && this._cropperHandleHitTest._.mouseX > this._cropperHandleHitTest._.rb - 5 && this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.bb - 10 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.tb + 10) {
                 return 'r';
             }
 
             // Top or bottom
-            if (mouseY < tb + 4 && mouseY > tb - 2 && mouseX > lb + 10 && mouseX < rb - 10) {
+            if (this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.tb + 4 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.tb - 2 && this._cropperHandleHitTest._.mouseX > this._cropperHandleHitTest._.lb + 10 && this._cropperHandleHitTest._.mouseX < this._cropperHandleHitTest._.rb - 10) {
                 return 't';
             }
-            if (mouseY < bb + 2 && mouseY > bb - 4 && mouseX > lb + 10 && mouseX < rb - 10) {
+            if (this._cropperHandleHitTest._.mouseY < this._cropperHandleHitTest._.bb + 2 && this._cropperHandleHitTest._.mouseY > this._cropperHandleHitTest._.bb - 4 && this._cropperHandleHitTest._.mouseX > this._cropperHandleHitTest._.lb + 10 && this._cropperHandleHitTest._.mouseX < this._cropperHandleHitTest._.rb - 10) {
                 return 'b';
             }
 
@@ -7316,17 +7457,26 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
 
         _isMouseOver: function(event, object) {
-            var parentOffset = this.$croppingCanvas.offset();
-            var mouseX = event.pageX - parentOffset.left;
-            var mouseY = event.pageY - parentOffset.top;
+            if (typeof this._isMouseOver._ === 'undefined') {
+                this._isMouseOver._ = {};
+            }
+
+            this._isMouseOver._.parentOffset = this.$croppingCanvas.offset();
+            this._isMouseOver._.mouseX = event.pageX - this._isMouseOver._.parentOffset.left;
+            this._isMouseOver._.mouseY = event.pageY - this._isMouseOver._.parentOffset.top;
 
             // Compensate for center origin coordinate-wise
-            var lb = object.left - object.width / 2;
-            var rb = lb + object.width;
-            var tb = object.top - object.height / 2;
-            var bb = tb + object.height;
+            this._isMouseOver._.lb = object.left - object.width / 2;
+            this._isMouseOver._.rb = this._isMouseOver._.lb + object.width;
+            this._isMouseOver._.tb = object.top - object.height / 2;
+            this._isMouseOver._.bb = this._isMouseOver._.tb + object.height;
 
-            return (mouseX >= lb && mouseX <= rb && mouseY >= tb && mouseY <= bb);
+            return (
+                this._isMouseOver._.mouseX >= this._isMouseOver._.lb &&
+                this._isMouseOver._.mouseX <= this._isMouseOver._.rb &&
+                this._isMouseOver._.mouseY >= this._isMouseOver._.tb &&
+                this._isMouseOver._.mouseY <= this._isMouseOver._.bb
+            );
         },
 
         /**
@@ -7339,6 +7489,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param [offsetY]
          */
         _getRectangleVertices: function(rectangle, offsetX, offsetY) {
+            if (typeof this._getRectangleVertices._ === 'undefined') {
+                this._getRectangleVertices._ = {};
+            }
+
             if (typeof offsetX === 'undefined') {
                 offsetX = 0;
             }
@@ -7346,16 +7500,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 offsetY = 0;
             }
 
-            var topLeft = {
+            this._getRectangleVertices._.topLeft = {
                 x: rectangle.left + offsetX,
                 y: rectangle.top + offsetY
             };
 
-            var topRight = {x: topLeft.x + rectangle.width, y: topLeft.y};
-            var bottomRight = {x: topRight.x, y: topRight.y + rectangle.height};
-            var bottomLeft = {x: topLeft.x, y: bottomRight.y};
+            this._getRectangleVertices._.topRight = {x: this._getRectangleVertices._.topLeft.x + rectangle.width, y: this._getRectangleVertices._.topLeft.y};
+            this._getRectangleVertices._.bottomRight = {x: this._getRectangleVertices._.topRight.x, y: this._getRectangleVertices._.topRight.y + rectangle.height};
+            this._getRectangleVertices._.bottomLeft = {x: this._getRectangleVertices._.topLeft.x, y: this._getRectangleVertices._.bottomRight.y};
 
-            return [topLeft, topRight, bottomRight, bottomLeft];
+            return [this._getRectangleVertices._.topLeft, this._getRectangleVertices._.topRight, this._getRectangleVertices._.bottomRight, this._getRectangleVertices._.bottomLeft];
         },
 
         /**
@@ -7445,29 +7599,32 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param rectangle
          */
         arePointsInsideRectangle: function(points, rectangle) {
+            if (typeof this.arePointsInsideRectangle._ === 'undefined') {
+                this.arePointsInsideRectangle._ = {};
+            }
 
             // Pre-calculate the vectors and scalar products for two rectangle edges
-            var ab = this._getVector(rectangle.a, rectangle.b);
-            var bc = this._getVector(rectangle.b, rectangle.c);
-            var scalarAbAb = this._getScalarProduct(ab, ab);
-            var scalarBcBc = this._getScalarProduct(bc, bc);
+            this.arePointsInsideRectangle._.ab = this._getVector(rectangle.a, rectangle.b);
+            this.arePointsInsideRectangle._.bc = this._getVector(rectangle.b, rectangle.c);
+            this.arePointsInsideRectangle._.scalarAbAb = this._getScalarProduct(this.arePointsInsideRectangle._.ab, this.arePointsInsideRectangle._.ab);
+            this.arePointsInsideRectangle._.scalarBcBc = this._getScalarProduct(this.arePointsInsideRectangle._.bc, this.arePointsInsideRectangle._.bc);
 
-            for (var i = 0; i < points.length; i++) {
-                var point = points[i];
+            for (this.arePointsInsideRectangle._.i = 0; this.arePointsInsideRectangle._.i < points.length; this.arePointsInsideRectangle._.i++) {
+                this.arePointsInsideRectangle._.point = points[this.arePointsInsideRectangle._.i];
 
                 // Calculate the vectors for two rectangle sides and for
                 // the vector from vertices a and b to the point P
-                var ap = this._getVector(rectangle.a, point);
-                var bp = this._getVector(rectangle.b, point);
+                this.arePointsInsideRectangle._.ap = this._getVector(rectangle.a, this.arePointsInsideRectangle._.point);
+                this.arePointsInsideRectangle._.bp = this._getVector(rectangle.b, this.arePointsInsideRectangle._.point);
 
                 // Calculate scalar or dot products for some vector combinations
-                var scalarAbAp = this._getScalarProduct(ab, ap);
-                var scalarBcBp = this._getScalarProduct(bc, bp);
+                this.arePointsInsideRectangle._.scalarAbAp = this._getScalarProduct(this.arePointsInsideRectangle._.ab, this.arePointsInsideRectangle._.ap);
+                this.arePointsInsideRectangle._.scalarBcBp = this._getScalarProduct(this.arePointsInsideRectangle._.bc, this.arePointsInsideRectangle._.bp);
 
-                var projectsOnAB = 0 <= scalarAbAp && scalarAbAp <= scalarAbAb;
-                var projectsOnBC = 0 <= scalarBcBp && scalarBcBp <= scalarBcBc;
+                this.arePointsInsideRectangle._.projectsOnAB = 0 <= this.arePointsInsideRectangle._.scalarAbAp && this.arePointsInsideRectangle._.scalarAbAp <= this.arePointsInsideRectangle._.scalarAbAb;
+                this.arePointsInsideRectangle._.projectsOnBC = 0 <= this.arePointsInsideRectangle._.scalarBcBp && this.arePointsInsideRectangle._.scalarBcBp <= this.arePointsInsideRectangle._.scalarBcBc;
 
-                if (!(projectsOnAB && projectsOnBC)) {
+                if (!(this.arePointsInsideRectangle._.projectsOnAB && this.arePointsInsideRectangle._.projectsOnBC)) {
                     return false;
                 }
             }
@@ -7496,7 +7653,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         /**
-         * Returns the magnitude of a vector.
+         * Returns the magnitude of a vector_redrawCropperElements
+         * .
          *
          * @param vector
          */
@@ -9796,7 +9954,7 @@ Craft.AuthManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($form, 'submit', 'login');
             }
 
@@ -11020,7 +11178,7 @@ Craft.ColorInput = Garnish.Base.extend({
         this.createColorInput();
         this.handleTextChange();
 
-        this.addListener(this.$input, 'textchange', 'handleTextChange');
+        this.addListener(this.$input, 'input', 'handleTextChange');
     },
 
     createColorInput: function() {
@@ -11046,7 +11204,6 @@ Craft.ColorInput = Garnish.Base.extend({
 
     updateColor: function() {
         this.$input.val(this.$colorInput.val());
-        this.$input.data('garnish-textchange-value', this.$colorInput.val());
         this.handleTextChange();
     },
 
@@ -11063,7 +11220,6 @@ Craft.ColorInput = Garnish.Base.extend({
         if (val[0] !== '#') {
             val = '#'+val;
             this.$input.val(val);
-            this.$input.data('garnish-textchange-value', val);
         }
 
         this.$colorPreview.css('background-color', val);
@@ -11102,14 +11258,24 @@ Craft.CP = Garnish.Base.extend(
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
+        $headerContainer: null,
         $header: null,
         $mainContent: null,
         $details: null,
+        $tabsContainer: null,
+        $tabsList: null,
+        $tabs: null,
+        $overflowTabBtn: null,
+        $overflowTabList: null,
         $selectedTab: null,
+        selectedTabIndex: null,
+        $sidebarContainer: null,
         $sidebar: null,
         $contentContainer: null,
         $edition: null,
 
+        $confirmUnloadForms: null,
+        $deltaForms: null,
         $collapsibleTables: null,
 
         fixedHeader: false,
@@ -11123,6 +11289,7 @@ Craft.CP = Garnish.Base.extend(
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
+        includingDetailsOnUpdatesCheck: false,
         checkForUpdatesCallbacks: null,
 
         init: function() {
@@ -11139,9 +11306,11 @@ Craft.CP = Garnish.Base.extend(
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
+            this.$headerContainer = $('#header-container');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
             this.$details = $('#details');
+            this.$sidebarContainer = $('#sidebar-container');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
             this.$collapsibleTables = $('table.collapsible');
@@ -11149,13 +11318,15 @@ Craft.CP = Garnish.Base.extend(
 
             this.updateSidebarMenuLabel();
 
-            this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
-            this.updateFixedHeader();
+            if (this.$header.length) {
+                this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+                this.updateFixedHeader();
+            }
 
             Garnish.$doc.ready($.proxy(function() {
                 // Update responsive tables on window resize
-                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
-                this.updateResponsiveTables();
+                this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
+                this.handleWindowResize();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -11166,7 +11337,7 @@ Craft.CP = Garnish.Base.extend(
 
                 // Wait a frame before initializing any confirm-unload forms,
                 // so other JS that runs on ready() has a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
+                Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
             }, this));
 
             // Alerts
@@ -11217,18 +11388,20 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        initConfirmUnloadForms: function() {
+        initSpecialForms: function() {
             // Look for forms that we should watch for changes on
             this.$confirmUnloadForms = $('form[data-confirm-unload]');
+            this.$deltaForms = $('form[data-delta]');
 
             if (!this.$confirmUnloadForms.length) {
                 return;
             }
 
+            var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
             var $form, serialized;
 
-            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                $form = this.$confirmUnloadForms.eq(i);
+            for (var i = 0; i < $forms.length; i++) {
+                $form = $forms.eq(i);
                 if (!$form.data('initialSerializedValue')) {
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
@@ -11237,8 +11410,23 @@ Craft.CP = Garnish.Base.extend(
                     }
                     $form.data('initialSerializedValue', serialized);
                 }
-                this.addListener($form, 'submit', function() {
-                    this.removeListener(Garnish.$win, 'beforeunload');
+                this.addListener($form, 'submit', function(ev) {
+                    if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+                        this.removeListener(Garnish.$win, 'beforeunload');
+                    }
+                    if (Garnish.hasAttr($form, 'data-delta')) {
+                        ev.preventDefault();
+                        var serialized;
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                        Craft.createForm(data)
+                            .appendTo(Garnish.$bod)
+                            .submit();
+                    }
                 });
             }
 
@@ -11315,41 +11503,45 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initTabs: function() {
-            this.$selectedTab = null;
+            // Clear out all our old info in case the tabs were just replaced
+            this.$tabsList = this.$tabs = this.$overflowTabBtn = this.$overflowTabList = this.$selectedTab =
+                this.selectedTabIndex = null;
 
-            var $tabs = $('#tabs').find('> ul > li');
-            var tabs = [];
-            var tabWidths = [];
-            var totalWidth = 0;
-            var i, a, href;
+            this.$tabsContainer = $('#tabs');
+            if (!this.$tabsContainer.length) {
+                this.$tabsContainer = null;
+                return;
+            }
 
-            for (i = 0; i < $tabs.length; i++) {
-                tabs[i] = $($tabs[i]);
-                tabWidths[i] = tabs[i].width();
-                totalWidth += tabWidths[i];
+            this.$tabsList = this.$tabsContainer.find('> ul');
+            this.$tabs = this.$tabsList.find('> li');
+            this.$overflowTabBtn = $('#overflow-tab-btn');
+            if (!this.$overflowTabBtn.data('menubtn')) {
+                new Garnish.MenuBtn(this.$overflowTabBtn);
+            }
+            this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
+            var i, $tab, $a, href;
+
+            for (i = 0; i < this.$tabs.length; i++) {
+                $tab = this.$tabs.eq(i);
 
                 // Does it link to an anchor?
-                a = tabs[i].children('a');
-                href = a.attr('href');
+                $a = $tab.children('a');
+                href = $a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener(a, 'click', function(ev) {
+                    this.addListener($a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
 
                     if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
-                        this.selectTab(a);
+                        this.selectTab($a);
                     }
                 }
 
-                if (!this.$selectedTab && a.hasClass('sel')) {
-                    this.$selectedTab = a;
+                if (!this.$selectedTab && $a.hasClass('sel')) {
+                    this._selectTab($a, i);
                 }
-            }
-
-            // Now set their max widths
-            for (i = 0; i < $tabs.length; i++) {
-                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 
@@ -11369,10 +11561,22 @@ Craft.CP = Garnish.Base.extend(
             if (typeof history !== 'undefined') {
                 history.replaceState(undefined, undefined, href);
             }
-            Garnish.$win.trigger('resize');
+            this._selectTab($tab, this.$tabs.index($tab.parent()));
+            this.updateTabs();
+            this.$overflowTabBtn.data('menubtn').menu.hide();
+
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');
+        },
+
+        _selectTab: function($tab, index) {
             this.$selectedTab = $tab;
+            this.selectedTabIndex = index;
+            if (index === 0) {
+                $('#content').addClass('square');
+            } else {
+                $('#content').removeClass('square');
+            }
         },
 
         deselectTab: function() {
@@ -11384,7 +11588,54 @@ Craft.CP = Garnish.Base.extend(
             if (this.$selectedTab.attr('href').charAt(0) === '#') {
                 $(this.$selectedTab.attr('href')).addClass('hidden');
             }
-            this.$selectedTab = null;
+            this._selectTab(null, null);
+        },
+
+        handleWindowResize: function() {
+            this.updateTabs();
+            this.updateResponsiveTables();
+        },
+
+        updateTabs: function() {
+            if (!this.$tabsContainer) {
+                return;
+            }
+
+            var maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
+            var totalWidth = 0;
+            var showOverflowMenu = false;
+            var tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
+            var $tab;
+
+            // Start with the selected tab, because that needs to be visible
+            if (this.$selectedTab) {
+                this.$selectedTab.parent('li').appendTo(this.$tabsList);
+                totalWidth = Math.ceil(this.$selectedTab.parent('li').width());
+            }
+
+            for (var i = 0; i < this.$tabs.length; i++) {
+                $tab = this.$tabs.eq(i).appendTo(this.$tabsList);
+                if (i !== this.selectedTabIndex) {
+                    totalWidth += Math.ceil($tab.width());
+                    // account for the negative margin
+                    if (i !== 0 || this.$selectedTab) {
+                        totalWidth += tabMargin;
+                    }
+                }
+
+                if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
+                    $tab.find('> a').removeAttr('role');
+                } else {
+                    $tab.appendTo(this.$overflowTabList).find('> a').attr('role', 'option');
+                    showOverflowMenu = true;
+                }
+            }
+
+            if (showOverflowMenu) {
+                this.$overflowTabBtn.removeClass('hidden');
+            } else {
+                this.$overflowTabBtn.addClass('hidden');
+            }
         },
 
         updateResponsiveTables: function() {
@@ -11415,7 +11666,7 @@ Craft.CP = Garnish.Base.extend(
 
                     // Are we checking the table width?
                     if (this.updateResponsiveTables._check) {
-                        if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth) {
+                        if (this.updateResponsiveTables._$table.width() - 30 > this.updateResponsiveTables._containerWidth) {
                             this.updateResponsiveTables._$table.addClass('collapsed');
                         }
                     }
@@ -11428,30 +11679,41 @@ Craft.CP = Garnish.Base.extend(
 
         updateFixedHeader: function() {
             // Have we scrolled passed the top of #main?
-            if (this.$main.length && this.$main[0].getBoundingClientRect().top < 0) {
+            if (this.$main.length && this.$headerContainer[0].getBoundingClientRect().top < 0) {
                 if (!this.fixedHeader) {
-                    var headerHeight = this.$header.outerHeight();
+                    // Hard-set the header container height
+                    var headerHeight = this.$headerContainer.height();
+                    this.$headerContainer.height(headerHeight);
+                    Garnish.$bod.addClass('fixed-header');
+
+                    // Fix the sidebar and details pane positions if they are taller than #content-container
+                    var contentHeight = this.$contentContainer.outerHeight();
+                    var $detailsHeight = this.$details.outerHeight();
                     var css = {
                         top: headerHeight + 'px',
                         'max-height': 'calc(100vh - ' + headerHeight + 'px)'
                     };
-                    this.$sidebar.css(css);
-                    this.$details.css(css);
-
-                    this.$mainContent.css('margin-top', this.$header.outerHeight());
-                    Garnish.$bod.addClass('fixed-header');
-                    this.fixedheader = true;
+                    if (this.$sidebar.outerHeight() < contentHeight) {
+                        this.$sidebar.addClass('fixed').css(css);
+                    }
+                    if (this.$details.outerHeight() < contentHeight) {
+                        this.$details.addClass('fixed').css(css);
+                    }
+                    this.fixedHeader = true;
                 }
             }
-            else if (this.fixedheader) {
+            else if (this.fixedHeader) {
+                this.$headerContainer.height('auto');
                 Garnish.$bod.removeClass('fixed-header');
-                this.$details.css({
-                    top: null,
-                    'max-height': null
+                this.$sidebar.removeClass('fixed').css({
+                    top: '',
+                    'max-height': ''
                 });
-                this.$header.css('top', 0);
-                this.$mainContent.css('margin-top', 0);
-                this.fixedheader = false;
+                this.$details.removeClass('fixed').css({
+                    top: '',
+                    'max-height': ''
+                });
+                this.fixedHeader = false;
             }
         },
 
@@ -11567,15 +11829,24 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        checkForUpdates: function(forceRefresh, callback) {
+        checkForUpdates: function(forceRefresh, includeDetails, callback) {
+            // Make 'includeDetails' optional
+            if (typeof includeDetails === 'function') {
+                callback = includeDetails;
+                includeDetails = false;
+            }
+
             // If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
             // then just set a new callback that re-checks for updates when the current one is done.
-            if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) {
+            if (this.checkingForUpdates && (
+                (forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) ||
+                (includeDetails === true && !this.includingDetailsOnUpdatesCheck)
+            )) {
                 var realCallback = callback;
 
                 callback = function() {
-                    Craft.cp.checkForUpdates(true, realCallback);
-                };
+                    this.checkForUpdates(forceRefresh, includeDetails, realCallback);
+                }.bind(this);
             }
 
             // Callback function?
@@ -11590,29 +11861,95 @@ Craft.CP = Garnish.Base.extend(
             if (!this.checkingForUpdates) {
                 this.checkingForUpdates = true;
                 this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+                this.includingDetailsOnUpdatesCheck = (includeDetails === true);
 
-                var data = {
-                    forceRefresh: (forceRefresh === true)
-                };
+                this._checkForUpdates(forceRefresh, includeDetails)
+                    .then(function(info) {
+                        this.updateUtilitiesBadge();
+                        this.checkingForUpdates = false;
 
-                Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info) {
-                    this.updateUtilitiesBadge();
-                    this.checkingForUpdates = false;
+                        if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+                            var callbacks = this.checkForUpdatesCallbacks;
+                            this.checkForUpdatesCallbacks = null;
 
-                    if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
-                        var callbacks = this.checkForUpdatesCallbacks;
-                        this.checkForUpdatesCallbacks = null;
-
-                        for (var i = 0; i < callbacks.length; i++) {
-                            callbacks[i](info);
+                            for (var i = 0; i < callbacks.length; i++) {
+                                callbacks[i](info);
+                            }
                         }
-                    }
 
-                    this.trigger('checkForUpdates', {
-                        updateInfo: info
-                    });
-                }, this));
+                        this.trigger('checkForUpdates', {
+                            updateInfo: info
+                        });
+                    }.bind(this));
             }
+        },
+
+        _checkForUpdates: function(forceRefresh, includeDetails) {
+            return new Promise(function(resolve, reject) {
+                if (!forceRefresh) {
+                    this._checkForCachedUpdates(includeDetails)
+                        .then(function(info) {
+                            if (info.cached !== false) {
+                                resolve(info);
+                            }
+
+                            this._getUpdates(includeDetails)
+                                .then(function(info) {
+                                    resolve(info);
+                                });
+                        }.bind(this));
+                } else {
+                    this._getUpdates(includeDetails)
+                        .then(function(info) {
+                            resolve(info);
+                        });
+                }
+            }.bind(this));
+        },
+
+        _checkForCachedUpdates: function(includeDetails) {
+            return new Promise(function(resolve, reject) {
+                var data = {
+                    onlyIfCached: true,
+                    includeDetails: includeDetails,
+                };
+                Craft.postActionRequest('app/check-for-updates', data, function(info, textStatus) {
+                    if (textStatus === 'success') {
+                        resolve(info);
+                    } else {
+                        resolve({ cached: false });
+                    }
+                });
+            });
+        },
+
+        _getUpdates: function(includeDetails) {
+            return new Promise(function(resolve, reject) {
+                Craft.sendApiRequest('GET', 'updates')
+                    .then(function(updates) {
+                        this._cacheUpdates(updates, includeDetails).then(resolve);
+                    }.bind(this))
+                    .catch(function(e) {
+                        this._cacheUpdates({}).then(resolve);
+                    }.bind(this));
+            }.bind(this));
+        },
+
+        _cacheUpdates: function(updates, includeDetails) {
+            return new Promise(function(resolve, reject) {
+                Craft.postActionRequest('app/cache-updates', {
+                    updates: updates,
+                    includeDetails: includeDetails,
+                }, function(info, textStatus) {
+                    if (textStatus === 'success') {
+                        resolve(info);
+                    } else {
+                        reject();
+                    }
+                }, {
+                    contentType: 'json'
+                });
+            });
         },
 
         updateUtilitiesBadge: function() {
@@ -11783,7 +12120,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
-Garnish.$scrollContainer = $('#content');
+Garnish.$scrollContainer = Garnish.$win;
 Craft.cp = new Craft.CP();
 
 
@@ -12641,7 +12978,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
             this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
 
-            this.addListener(this.$labelInput, 'textchange', 'handleLabelInputChange');
+            this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
             this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
 
             return $([
@@ -12969,12 +13306,13 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Store the initial form value
             this.lastSerializedValue = this.serializeForm(true);
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.lastSerializedValue);
 
             // Override the serializer to use our own
             Craft.cp.$primaryForm.data('serializer', function() {
                 return this.serializeForm(true)
             }.bind(this));
+
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
 
             if (this.settings.draftId) {
                 this.initForDraft();
@@ -13003,7 +13341,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Create the edit draft button
             this.createEditMetaBtn();
 
-            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+            this.addListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
                     return;
                 }
@@ -13016,7 +13354,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
             });
 
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
@@ -13160,7 +13497,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         ensureIsDraftOrRevision: function() {
             return new Promise(function(resolve, reject) {
-                if (!this.settings.draftId && !this.settings.revisionid) {
+                if (!this.settings.draftId && !this.settings.revisionId) {
                     this.createDraft()
                         .then(resolve)
                         .catch(reject);
@@ -13198,7 +13535,10 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (force || (data !== this.lastSerializedValue)) {
+            if (
+                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
+                (force || (data !== this.lastSerializedValue))
+            ) {
                 this.saveDraft(data);
             }
         },
@@ -13379,12 +13719,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         prepareData: function(data) {
             // Swap out element IDs with their duplicated ones
-            for (var oldId in this.duplicatedElements) {
-                if (this.duplicatedElements.hasOwnProperty(oldId)) {
-                    data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
-                        '][' + this.duplicatedElements[oldId] + ']');
-                }
-            }
+            data = this.swapDuplicatedElementIds(data);
 
             // Add the draft info
             if (this.settings.draftId) {
@@ -13393,7 +13728,39 @@ Craft.DraftEditor = Garnish.Base.extend(
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
             }
 
+
+            // Filter out anything that hasn't changed
+            var initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue'));
+            return Craft.findDeltaData(initialData, data, this.getDeltaNames());
+        },
+
+        swapDuplicatedElementIds: function(data) {
+            for (var oldId in this.duplicatedElements) {
+                if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                    data = data
+                        .replace(
+                            new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
+                            '][' + this.duplicatedElements[oldId] + ']'
+                        )
+                        .replace(
+                            new RegExp('=' + oldId + '\\b', 'g'),
+                            '=' + this.duplicatedElements[oldId]
+                        );
+                }
+            }
             return data;
+        },
+
+        getDeltaNames: function() {
+            var deltaNames = Craft.deltaNames.slice(0);
+            for (var i = 0; i < deltaNames.length; i++) {
+                for (var oldId in this.duplicatedElements) {
+                    if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                        deltaNames[i] = deltaNames[i].replace('][' + oldId + ']', '][' + this.duplicatedElements[oldId] + ']');
+                    }
+                }
+            }
+            return deltaNames;
         },
 
         updatePreviewTargets: function(previewTargets) {
@@ -13420,11 +13787,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             if (this.checkFormAfterUpdate) {
                 this.checkFormAfterUpdate = false;
-
-                // Only actually check the form if there's no active timeout for it
-                if (!this.timeout) {
-                    this.checkForm();
-                }
+                this.checkForm(true);
             }
         },
 
@@ -13474,8 +13837,8 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.addListener(this.$notesTextInput, 'keydown', 'onNotesKeydown');
 
-            this.addListener(this.$nameTextInput, 'textchange', 'checkMetaValues');
-            this.addListener(this.$notesTextInput, 'textchange', 'checkMetaValues');
+            this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
+            this.addListener(this.$notesTextInput, 'input', 'checkMetaValues');
 
             this.metaHud.on('show', this.onMetaHudShow.bind(this));
             this.metaHud.on('hide', this.onMetaHudHide.bind(this));
@@ -13573,44 +13936,28 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Duplicate the form with normalized data
-            var $form = $('<form/>', {
-                attr: {
-                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
-                    'action': Craft.cp.$primaryForm.attr('action'),
-                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
-                    'method': Craft.cp.$primaryForm.attr('method'),
-                    'target': Craft.cp.$primaryForm.attr('target'),
-                }
-            });
             var data = this.prepareData(this.serializeForm(false));
-            var values = data.split('&');
-            var chunks;
-            for (var i = 0; i < values.length; i++) {
-                chunks = values[i].split('=', 2);
-                $('<input/>', {
-                    type: 'hidden',
-                    name: decodeURIComponent(chunks[0]),
-                    value: decodeURIComponent(chunks[1] || '')
-                }).appendTo($form);
-            }
+            var $form = Craft.createForm(data);
 
-            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'action',
-                    value: this.settings.applyDraftAction
-                }).appendTo($form);
-            }
+            if (this.settings.draftId) {
+                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'action',
+                        value: this.settings.applyDraftAction
+                    }).appendTo($form);
+                }
 
-            if (
-                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
-                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
-            ) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'redirect',
-                    value: this.settings.hashedRedirectUrl
-                }).appendTo($form);
+                if (
+                    (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                    (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+                ) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'redirect',
+                        value: this.settings.hashedRedirectUrl
+                    }).appendTo($form);
+                }
             }
 
             $form.appendTo(Garnish.$bod);
@@ -14106,8 +14453,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }));
 
                     this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
-                    this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
-                    $textarea.trigger('textchange');
+                    this.addListener($textarea, 'input', {type: col.type}, 'validateValue');
+                    $textarea.trigger('input');
 
                     textareasByColId[colId] = $textarea;
                 } else if (col.type === 'checkbox') {
@@ -14512,6 +14859,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             // Ignore if we're in the middle of getting the elevated session timeout
             if (Craft.elevatedSessionManager.fetchingTimeout) {
                 ev.preventDefault();
+                ev.stopImmediatePropagation();
                 return;
             }
 
@@ -14542,6 +14890,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
             // Prevent the form from submitting until the user has an elevated session
             ev.preventDefault();
+            ev.stopImmediatePropagation();
             Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'submitForm'));
         },
 
@@ -14628,7 +14977,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($passwordModal, 'submit', 'submitPassword');
             }
             else {
@@ -17876,24 +18225,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
-
-                        var $highlight = this.$container.find('.highlight');
-
-                        if ($highlight.length && $highlight.hasClass('json')) {
-                            var $target = $highlight.find('code');
-                            $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
-                        }
-
-                        if ($highlight.length) {
-                            Prism.highlightElement($highlight.find('code').get(0));
-                        } else {
-                            this.$container.find('img').css({
-                                width: containerWidth,
-                                height: containerHeight
-                            });
-                        }
-
-                        this.updateSizeAndPosition();
+                        Craft.appendHeadHtml(response.headHtml);
+                        Craft.appendFootHtml(response.footHtml);
                     } else {
                         alert(response.error);
 
@@ -17901,62 +18234,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     }
                 }
             }.bind(this));
-        },
-
-        /**
-         * Override default logic with some extra shenanigans
-         */
-        updateSizeAndPosition: function() {
-            if (!this.loaded) {
-                return;
-            }
-
-            var $img = this.$container.find('img');
-
-            if (this.loaded && $img.length) {
-                // Make sure we maintain the ratio
-
-                var maxWidth = $img.data('maxwidth'),
-                    maxHeight = $img.data('maxheight'),
-                    imageRatio = maxWidth / maxHeight,
-                    desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
-                    desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
-                    width = Math.min(desiredWidth, maxWidth),
-                    height = Math.round(Math.min(maxHeight, width / imageRatio));
-
-                width = Math.round(height * imageRatio);
-
-                $img.css({'width': width, 'height': height});
-                this._resizeContainer(width, height);
-
-                this.desiredWidth = width;
-                this.desiredHeight = height;
-
-            }
-
-            this.base();
-
-            if (this.loaded && $img.length) {
-                // Correct anomalities
-                var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), Garnish.$win.width() - (this.settings.minGutter * 2))),
-                    containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), Garnish.$win.height() - (this.settings.minGutter * 2)));
-                    containerWidth = Math.round(containerHeight * imageRatio);
-
-                // This might actually have put width over the viewport limits, so doublecheck that
-                if (containerWidth > Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2)) {
-                    containerWidth =  Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2);
-                    containerHeight = containerWidth / imageRatio;
-                }
-
-                this._resizeContainer(containerWidth, containerHeight);
-
-                $img.css({'width': containerWidth, 'height': containerHeight});
-            } else if (this.loaded) {
-                this.$container.find('.highlight')
-                    .height(this.$container.height())
-                    .width(this.$container.width())
-                    .css({'overflow': 'auto'});
-            }
         },
 
         /**
@@ -19042,6 +19319,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
         structureId: null,
         maxLevels: null,
 
+        _basePadding: null,
         _helperMargin: null,
 
         _$firstRowCells: null,
@@ -19074,6 +19352,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             this.structureId = this.tableView.$table.data('structure-id');
             this.maxLevels = parseInt(this.tableView.$table.attr('data-max-levels'));
 
+            this._basePadding = 14 + (this.tableView.elementIndex.actions ? 14 : 24); // see _elements/tableview/elements.html
+            this._helperMargin = this.tableView.elementIndex.actions ? 54 : 0;
+
             settings = $.extend({}, Craft.StructureTableSorter.defaults, settings, {
                 handle: '.move',
                 collapseDraggees: true,
@@ -19086,14 +19367,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             });
 
             this.base($elements, settings);
-        },
-
-        /**
-         * Start Dragging
-         */
-        startDragging: function() {
-            this._helperMargin = Craft.StructureTableSorter.HELPER_MARGIN + (this.tableView.elementIndex.actions ? 24 : 0);
-            this.base();
         },
 
         /**
@@ -19181,20 +19454,20 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 }
 
                 // Hard-set the cell widths
-                var $firstRowCell = $(this._$firstRowCells[i]),
-                    width = $firstRowCell.width();
+                var $firstRowCell = $(this._$firstRowCells[i]);
+                var width = $firstRowCell[0].getBoundingClientRect().width;
 
-                $firstRowCell.width(width);
-                $helperCell.width(width);
+                $firstRowCell.css('width', width+'px');
+                $helperCell.css('width', width+'px');
 
                 // Is this the title cell?
                 if (Garnish.hasAttr($firstRowCell, 'data-titlecell')) {
                     this._$titleHelperCell = $helperCell;
 
                     var padding = parseInt($firstRowCell.css('padding-' + Craft.left));
-                    this._titleHelperCellOuterWidth = width + padding - (this.tableView.elementIndex.actions ? 12 : 0);
+                    this._titleHelperCellOuterWidth = width;
 
-                    $helperCell.css('padding-' + Craft.left, Craft.StructureTableSorter.BASE_PADDING);
+                    $helperCell.css('padding-' + Craft.left, this._basePadding);
                 }
             }
 
@@ -19276,7 +19549,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                     var $draggee = $(this.$draggee[i]),
                         oldLevel = $draggee.data('level'),
                         newLevel = oldLevel + levelDiff,
-                        padding = Craft.StructureTableSorter.BASE_PADDING + (this.tableView.elementIndex.actions ? 7 : 0) + this._getLevelIndent(newLevel);
+                        padding = this._basePadding + this._getLevelIndent(newLevel);
 
                     $draggee.data('level', newLevel);
                     $draggee.find('.element').data('level', newLevel);
@@ -19508,7 +19781,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             // Apply the new margin/width
             this._updateIndent._closestLevelMagnetIndent = this._getLevelIndent(this._targetLevel) + this._updateIndent._magnetImpact;
             this.helpers[0].css('margin-' + Craft.left, this._updateIndent._closestLevelMagnetIndent + this._helperMargin);
-            this._$titleHelperCell.width(this._titleHelperCellOuterWidth - (this._updateIndent._closestLevelMagnetIndent + Craft.StructureTableSorter.BASE_PADDING));
+            this._$titleHelperCell.css('width', this._titleHelperCellOuterWidth - this._updateIndent._closestLevelMagnetIndent);
         },
 
         /**
@@ -19623,8 +19896,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 // =============================================================================
 
     {
-        BASE_PADDING: 36,
-        HELPER_MARGIN: -7,
+        HELPER_MARGIN: 0,
         LEVEL_INDENT: 44,
         MAX_GIVE: 22,
 
@@ -19655,10 +19927,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         },
 
         afterInit: function() {
-            // Make the table collapsible for mobile devices
-            Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
-            Craft.cp.updateResponsiveTables();
-
             // Set the sort header
             this.initTableHeaders();
 
@@ -19780,15 +20048,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
             }
 
             Craft.cp.updateResponsiveTables();
-        },
-
-        destroy: function() {
-            if (this.$table) {
-                // Remove the soon-to-be-wiped-out table from the list of collapsible tables
-                Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
-            }
-
-            this.base();
         },
 
         createElementEditor: function($element) {
@@ -20054,7 +20313,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$addTagInput = this.$container.children('.add').children('.text');
             this.$spinner = this.$addTagInput.next();
 
-            this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
+            this.addListener(this.$addTagInput, 'input', $.proxy(function() {
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }

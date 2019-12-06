@@ -10,16 +10,16 @@ namespace craft\test\console;
 use Closure;
 use Codeception\Stub;
 use Craft;
+use craft\console\Controller;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use craft\console\Controller;
 
 /**
  * Class ConsoleTest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class CommandTest
 {

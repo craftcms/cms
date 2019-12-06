@@ -17,6 +17,7 @@ use craft\events\VolumeEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
@@ -25,6 +26,7 @@ use craft\records\VolumeFolder;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use yii\base\Component;
+use yii\base\UnknownPropertyException;
 
 /**
  * Class AssetVolumesService
@@ -34,7 +36,7 @@ use yii\base\Component;
  * @license http://craftcms.com/license Craft License Agreement
  * @see http://craftcms.com
  * @package craft.app.services
- * @since 3.0
+ * @since 3.0.0
  */
 class Volumes extends Component
 {
@@ -80,6 +82,7 @@ class Volumes extends Component
 
     /**
      * @event VolumeEvent The event that is triggered before a volume delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
 
@@ -305,7 +308,7 @@ class Volumes extends Component
             'type' => \get_class($volume),
             'hasUrls' => (bool)$volume->hasUrls,
             'url' => $volume->url,
-            'settings' => $volume->getSettings(),
+            'settings' => ProjectConfigHelper::packAssociativeArray($volume->getSettings()),
             'sortOrder' => (int)$volume->sortOrder,
         ];
 
@@ -360,7 +363,7 @@ class Volumes extends Component
             $volumeRecord->hasUrls = $data['hasUrls'];
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
-            $volumeRecord->settings = $data['settings'];
+            $volumeRecord->settings = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
@@ -440,8 +443,8 @@ class Volumes extends Component
      * Reorders asset volumes.
      *
      * @param array $volumeIds
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function reorderVolumes(array $volumeIds): bool
     {
@@ -486,6 +489,11 @@ class Volumes extends Component
             $config = ['type' => $config];
         }
 
+        // JSON-decode the settings now so we don't have to do it twice in the event we need to remove the `path`
+        if (isset($config['settings']) && is_string($config['settings'])) {
+            $config['settings'] = Json::decode($config['settings']);
+        }
+
         // Are they overriding any settings?
         if (!empty($config['handle']) && ($override = $this->getVolumeOverrides($config['handle'])) !== null) {
             // Save a reference to the original config in case the volume type is missing
@@ -498,6 +506,18 @@ class Volumes extends Component
         try {
             /** @var Volume $volume */
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
+        } catch (UnknownPropertyException $e) {
+            // Special case for Local volumes that are being converted to something else
+            // https://github.com/craftcms/cms/issues/5277
+            if (
+                isset($originalConfig) &&
+                $originalConfig['type'] === Local::class &&
+                isset($originalConfig['settings']['path'])
+            ) {
+                unset($originalConfig['settings']['path']);
+                return $this->createVolume($originalConfig);
+            }
+            throw $e;
         } catch (MissingComponentException $e) {
             // Revert to the original config if it was overridden
             $config = $originalConfig ?? $config;
@@ -544,8 +564,8 @@ class Volumes extends Component
      * Deletes an asset volume by its ID.
      *
      * @param int $volumeId
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function deleteVolumeById(int $volumeId): bool
     {
@@ -562,8 +582,8 @@ class Volumes extends Component
      * Deletes an asset volume.
      *
      * @param VolumeInterface $volume The volume to delete
-     * @throws \Throwable
      * @return bool
+     * @throws \Throwable
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {

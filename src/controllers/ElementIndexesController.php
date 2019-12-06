@@ -18,7 +18,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -29,7 +28,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementIndexesController extends BaseElementsController
 {
@@ -91,7 +90,7 @@ class ElementIndexesController extends BaseElementsController
         $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
-        $this->sourceKey = $request->getParam('source');
+        $this->sourceKey = $request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
         $this->paginated = (bool)$request->getParam('paginated');
@@ -441,8 +440,8 @@ class ElementIndexesController extends BaseElementsController
         if (!$this->paginated || !$this->elementQuery->limit || $count < $this->elementQuery->limit) {
             $responseData['countLabel'] = Craft::t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', [
                 'total' => $count,
-                'item' => StringHelper::toLowerCase($elementType::displayName()),
-                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+                'item' => $elementType::lowerDisplayName(),
+                'items' => $elementType::pluralLowerDisplayName(),
             ]);
         } else {
             $first = min(($this->elementQuery->offset ?: 0) + 1, $count);
@@ -451,8 +450,8 @@ class ElementIndexesController extends BaseElementsController
                 'first' => $first,
                 'last' => $last,
                 'total' => $count,
-                'item' => StringHelper::toLowerCase($elementType::displayName()),
-                'items' => StringHelper::toLowerCase($elementType::pluralDisplayName()),
+                'item' => $elementType::lowerDisplayName(),
+                'items' => $elementType::pluralLowerDisplayName(),
             ]);
         }
 
@@ -468,18 +467,22 @@ class ElementIndexesController extends BaseElementsController
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
 
-        $responseData['html'] = $elementType::indexHtml(
-            $this->elementQuery,
-            $disabledElementIds,
-            $this->viewState,
-            $this->sourceKey,
-            $this->context,
-            $includeContainer,
-            $showCheckboxes
-        );
+        if ($this->sourceKey) {
+            $responseData['html'] = $elementType::indexHtml(
+                $this->elementQuery,
+                $disabledElementIds,
+                $this->viewState,
+                $this->sourceKey,
+                $this->context,
+                $includeContainer,
+                $showCheckboxes
+            );
 
-        $responseData['headHtml'] = $view->getHeadHtml();
-        $responseData['footHtml'] = $view->getBodyHtml();
+            $responseData['headHtml'] = $view->getHeadHtml();
+            $responseData['footHtml'] = $view->getBodyHtml();
+        } else {
+            $responseData['html'] = '';
+        }
 
         return $responseData;
     }

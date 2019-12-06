@@ -23,7 +23,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
@@ -188,6 +188,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
     /**
      * Re-adds all failed jobs to the queue
+     *
+     * @since 3.1.21
      */
     public function retryAll()
     {
@@ -534,7 +536,7 @@ EOD;
                         'progress' => 0,
                         'progressLabel' => null,
                     ],
-                    '[[timeUpdated]] < :time - [[ttr]]',
+                    ['and', ['fail' => false], '[[timeUpdated]] < :time - [[ttr]]'],
                     [':time' => $this->_reserveTime],
                     false
                 )

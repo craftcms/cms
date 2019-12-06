@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
@@ -26,7 +27,7 @@ use yii\db\Connection;
  * @method MatrixBlock|array|null one($db = null)
  * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-site-params
  * @supports-status-param
  * @replace {element} Matrix block
@@ -63,9 +64,23 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @var mixed
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public $ownerSiteId;
+
+    /**
+     * @var bool|null Whether the owner elements can be drafts.
+     * @used-by allowOwnerDrafts()
+     * @since 3.3.10
+     */
+    public $allowOwnerDrafts;
+
+    /**
+     * @var bool|null Whether the owner elements can be revisions.
+     * @used-by allowOwnerRevisions()
+     * @since 3.3.10
+     */
+    public $allowOwnerRevisions;
 
     /**
      * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
@@ -108,6 +123,68 @@ class MatrixBlockQuery extends ElementQuery
             default:
                 parent::__set($name, $value);
         }
+    }
+
+    /**
+     * Narrows the query results based on the field the Matrix blocks belong to.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | in a field with a handle of `foo`.
+     * | `'not foo'` | not in a field with a handle of `foo`.
+     * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a field with a handle of `foo` or `bar`.
+     * | a [[MatrixField]] object | in a field represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} in the Foo field #}
+     * {% set {elements-var} = {twig-method}
+     *     .field('foo')
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} in the Foo field
+     * ${elements-var} = {php-method}
+     *     ->field('foo')
+     *     ->all();
+     * ```
+     *
+     * @param string|string[]|MatrixField|null $value The property value
+     * @return static self reference
+     * @uses $fieldId
+     * @since 3.4.0
+     */
+    public function field($value)
+    {
+        if ($value instanceof MatrixField) {
+            $this->fieldId = $value->id;
+        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+            if (!is_string($value)) {
+                $value = reset($value);
+            }
+            $field = Craft::$app->getFields()->getFieldByHandle($value);
+            if ($field && $field instanceof MatrixField) {
+                $this->fieldId = $field->id;
+            } else {
+                $this->fieldId = false;
+            }
+        } else if ($value !== null) {
+            $this->fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(Db::parseParam('handle', $value))
+                ->andWhere(['type' => MatrixField::class])
+                ->column();
+        } else {
+            $this->fieldId = null;
+        }
+
+        return $this;
     }
 
     /**
@@ -188,7 +265,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0
      */
     public function ownerSiteId()
     {
@@ -198,7 +275,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0
      */
     public function ownerSite()
     {
@@ -208,7 +285,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.0.
+     * @deprecated in 3.0.0
      */
     public function ownerLocale()
     {
@@ -244,6 +321,48 @@ class MatrixBlockQuery extends ElementQuery
         /** @var Element $owner */
         $this->ownerId = $owner->id;
         $this->siteId = $owner->siteId;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the Matrix blocks’ owners are drafts.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `true` | which can belong to a draft.
+     * | `false` | which cannot belong to a draft.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 3.3.10
+     */
+    public function allowOwnerDrafts($value = true)
+    {
+        $this->allowOwnerDrafts = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on whether the Matrix blocks’ owners are revisions.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `true` | which can belong to a revision.
+     * | `false` | which cannot belong to a revision.
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @uses $allowOwnerDrafts
+     * @since 3.3.10
+     */
+    public function allowOwnerRevisions($value = true)
+    {
+        $this->allowOwnerRevisions = $value;
         return $this;
     }
 
@@ -343,6 +462,10 @@ class MatrixBlockQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if ($this->fieldId !== null && empty($this->fieldId)) {
+            throw new QueryAbortedException();
+        }
+
         $this->joinElementTable('matrixblocks');
 
         // Figure out which content table to use
@@ -393,14 +516,20 @@ class MatrixBlockQuery extends ElementQuery
         }
 
         // Ignore revision/draft blocks by default
-        if (!$this->id && !$this->ownerId) {
+        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->ownerId);
+        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->ownerId);
+
+        if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Matrix blocks can be nested.
-            $this->subQuery
-                ->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]')
-                ->andWhere([
-                    'owners.draftId' => null,
-                    'owners.revisionId' => null,
-                ]);
+            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]');
+
+            if (!$allowOwnerDrafts) {
+                $this->subQuery->andWhere(['owners.draftId' => null]);
+            }
+
+            if (!$allowOwnerRevisions) {
+                $this->subQuery->andWhere(['owners.revisionId' => null]);
+            }
         }
 
         return parent::beforePrepare();

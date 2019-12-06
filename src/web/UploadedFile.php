@@ -15,7 +15,7 @@ use yii\base\InvalidConfigException;
  * UploadedFile represents the information for an uploaded file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UploadedFile extends \yii\web\UploadedFile
 {

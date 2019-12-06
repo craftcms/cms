@@ -22,7 +22,7 @@ use GraphQL\Type\Definition\Type;
  * Entries represents an Entries field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Entries extends BaseRelationField
 {

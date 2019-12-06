@@ -64,7 +64,7 @@ use yii\base\UnknownPropertyException;
  * @property VolumeInterface $volume the asset’s volume
  * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Asset extends Element
 {
@@ -130,9 +130,25 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'asset');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Assets');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'assets');
     }
 
     /**
@@ -980,6 +996,7 @@ class Asset extends Element
      * @return string
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
+     * @since 3.0.6
      */
     public function getContents(): string
     {
@@ -1016,9 +1033,12 @@ class Asset extends Element
      * Returns whether this asset can be previewed.
      *
      * @return bool
+     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreview]] instead.
      */
     public function getSupportsPreview(): bool
     {
+        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', self::class . '::getSupportsPreview() has been deprecated. Use \craft\services\Assets::getAssetPreview() instead.');
+
         return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
@@ -1150,8 +1170,7 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
+                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .

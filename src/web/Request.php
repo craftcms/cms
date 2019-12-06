@@ -36,7 +36,7 @@ use yii\web\NotFoundHttpException;
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @property-read bool $isPreview Whether this is an element preview request.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Request extends \yii\web\Request
 {
@@ -44,6 +44,15 @@ class Request extends \yii\web\Request
     // =========================================================================
 
     use RequestTrait;
+
+    // Constants
+    // =========================================================================
+
+    const CP_PATH_LOGIN = 'login';
+    const CP_PATH_LOGOUT = 'logout';
+    const CP_PATH_SET_PASSWORD = 'set-password';
+    const CP_PATH_VERIFY_EMAIL = 'verify-email';
+    const CP_PATH_UPDATE = 'update';
 
     // Properties
     // =========================================================================
@@ -62,6 +71,7 @@ class Request extends \yii\web\Request
 
     /**
      * @param int The highest page number that Craft should accept.
+     * @since 3.1.14
      */
     public $maxPageNum = 100000;
 
@@ -189,7 +199,6 @@ class Request extends \yii\web\Request
                 $site = $sitesService->getCurrentSite();
             } else {
                 $site = $this->_requestedSite($sitesService);
-                $sitesService->setCurrentSite($site);
             }
 
             // If the requested URI begins with the current site's base URL path,
@@ -223,6 +232,16 @@ class Request extends \yii\web\Request
             // Force 'p' pageTrigger
             // (all that really matters is that it doesn't have a trailing slash, but whatever.)
             $generalConfig->pageTrigger = 'p';
+        }
+
+        if (isset($sitesService)) {
+            // Set the active site to either the requested site or the primary site, depending on the request type
+            if ($this->_isCpRequest) {
+                // The current site could have been set by the bootstrop script if the CRAFT_SITE constant is defined
+                $sitesService->setCurrentSite(null);
+            } else if (isset($site)) {
+                $sitesService->setCurrentSite($site);
+            }
         }
 
         // Is this a paginated request?
@@ -295,10 +314,10 @@ class Request extends \yii\web\Request
      * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
      *
      * @param bool $returnRealPathInfo Whether the real path info should be returned instead.
-     * @see \yii\web\UrlManager::processRequest()
-     * @see \yii\web\UrlRule::processRequest()
      * @return string The requested path, or the path info.
      * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
+     * @see \yii\web\UrlManager::processRequest()
+     * @see \yii\web\UrlRule::processRequest()
      */
     public function getPathInfo(bool $returnRealPathInfo = false): string
     {
@@ -465,7 +484,7 @@ class Request extends \yii\web\Request
      * Returns whether the current request is solely an action request.
      *
      * @return bool
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsSingleActionRequest(): bool
     {
@@ -516,7 +535,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsLivePreview(): bool
     {
@@ -1228,8 +1247,11 @@ class Request extends \yii\web\Request
     private function _getQueryStringPath(): string
     {
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-
-        return $this->getQueryParam($pathParam, '');
+        $value = $this->getQueryParam($pathParam, '');
+        if (!is_string($value)) {
+            return '';
+        }
+        return $value;
     }
 
     /**
@@ -1250,12 +1272,16 @@ class Request extends \yii\web\Request
 
             // Is this an action request?
             if ($this->_isCpRequest) {
-                $loginPath = 'login';
-                $logoutPath = 'logout';
-                $updatePath = 'update';
+                $loginPath = self::CP_PATH_LOGIN;
+                $logoutPath = self::CP_PATH_LOGOUT;
+                $setPasswordPath = self::CP_PATH_SET_PASSWORD;
+                $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
+                $updatePath = self::CP_PATH_UPDATE;
             } else {
                 $loginPath = trim($generalConfig->getLoginPath(), '/');
                 $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                $verifyEmailPath = trim($generalConfig->getVerifyEmailPath(), '/');
                 $updatePath = null;
             }
 
@@ -1266,7 +1292,13 @@ class Request extends \yii\web\Request
                 $actionParam = $this->getQueryParam('action');
             }
             $hasActionParam = $actionParam !== null;
-            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $updatePath], true);
+            $hasSpecialPath = in_array($this->_path, [
+                $loginPath,
+                $logoutPath,
+                $setPasswordPath,
+                $verifyEmailPath,
+                $updatePath,
+            ], true);
 
             if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
@@ -1290,6 +1322,12 @@ class Request extends \yii\web\Request
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
+                            break;
+                        case $setPasswordPath:
+                            $this->_actionSegments = ['users', 'set-password'];
+                            break;
+                        case $verifyEmailPath:
+                            $this->_actionSegments = ['users', 'verify-email'];
                             break;
                         case $updatePath:
                             $this->_actionSegments = ['updater', 'index'];

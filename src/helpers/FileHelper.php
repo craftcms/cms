@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
  * Class FileHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
@@ -278,6 +278,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $mimeType
      * @return bool
+     * @since 3.1.7
      */
     public static function canTrustMimeType(string $mimeType): bool
     {
@@ -319,6 +320,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
      * `finfo_open()` cannot determine it.
      * @return bool
+     * @since 3.0.9
      */
     public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
@@ -333,12 +335,12 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array $options options for file write. Valid options are:
      * - `createDirs`: bool, whether to create parent directories if they do
-     *   not exist. Defaults to true.
+     *   not exist. Defaults to `true`.
      * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
      * - `lock`: bool, whether a file lock should be used. Defaults to the
-     *   "useWriteFileLock" config setting.
-     * @throws InvalidArgumentException if the parent directory doesn't exist and options[createDirs] is false
+     *   `useWriteFileLock` config setting.
+     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -385,6 +387,35 @@ class FileHelper extends \yii\helpers\FileHelper
         if ($lock) {
             $mutex->release($lockName);
         }
+    }
+
+    /**
+     * Creates a `.gitignore` file in the given directory if one doesn’t exist yet.
+     *
+     * @param string $path
+     * @param array $options options for file write. Valid options are:
+     * - `createDirs`: bool, whether to create parent directories if they do
+     *   not exist. Defaults to `true`.
+     * - `lock`: bool, whether a file lock should be used. Defaults to `false`.
+     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws ErrorException in case of failure
+     * @since 3.4.0
+     */
+    public static function writeGitignoreFile(string $path, array $options = [])
+    {
+        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+
+        if (is_file($gitignorePath)) {
+            return;
+        }
+
+        $contents = "*\n!.gitignore\n";
+        $options = array_merge([
+            // Prevent a segfault if this is called recursively
+            'lock' => false,
+        ], $options);
+
+        static::writeToFile($gitignorePath, $contents, $options);
     }
 
     /**
@@ -564,6 +595,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $basePath The base path to the first file (sans `.X`)
      * @param int $max The most files that can coexist before we should start deleting them
+     * @since 3.0.38
      */
     public static function cycle(string $basePath, int $max = 50)
     {

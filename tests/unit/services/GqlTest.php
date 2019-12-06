@@ -9,20 +9,26 @@ namespace craftunit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\GqlException;
+use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\models\GqlToken;
 use craft\services\Gql;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use GraphQL\Type\Definition\ObjectType;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 
 class GqlTest extends Unit
 {
@@ -36,6 +42,9 @@ class GqlTest extends Unit
         Craft::$app->getGql()->flushCaches();
         $gql = Craft::$app->getGql();
         $gql->setActiveSchema(new GqlSchema());
+
+        // NO CACHING
+        Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = false;
     }
 
     protected function _after()
@@ -46,7 +55,7 @@ class GqlTest extends Unit
     // =========================================================================
 
     /**
-     * Test schema creation without token.
+     * Test getting active schema errors out if none set
      *
      * @expectedException \craft\errors\GqlException
      * @expectedExceptionMessage No schema is active.
@@ -55,7 +64,7 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
         $gqlService->setActiveSchema(null);
-        $gqlService->getSchemaDef();
+        $gqlService->getActiveSchema();
     }
 
     /**
@@ -100,6 +109,65 @@ class GqlTest extends Unit
     }
 
     /**
+     * Test if it's possible to execute a query
+     */
+    public function testExecuteQuery()
+    {
+        $gql = Craft::$app->getGql();
+        $schema = $gql->getPublicSchema();
+        $result = $gql->executeQuery($schema, '{ping}');
+        $this->assertEquals(['data' => ['ping' => 'pong']], $result);
+    }
+
+    /**
+     * Test query events
+     *
+     * @throws \yii\base\Exception
+     */
+    public function testQueryEvents()
+    {
+        $gql = Craft::$app->getGql();
+        $schema = $gql->getPublicSchema();
+
+        Event::on(Gql::class, Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY, function (ExecuteGqlQueryEvent $event) {
+            $event->result = ['data' => 'override'];
+        });
+
+        $result = $gql->executeQuery($schema, '{ping}');
+        $this->assertEquals(['data' => 'override'], $result);
+
+        Event::on(Gql::class, Gql::EVENT_AFTER_EXECUTE_GQL_QUERY, function (ExecuteGqlQueryEvent $event) {
+            $event->result = ['data' => 'different override'];
+        });
+
+        $result = $gql->executeQuery($schema, '{ping}');
+        $this->assertEquals(['data' => 'different override'], $result);
+    }
+
+    /**
+     * Test whether querying fills caches, if caching enabled.
+     *
+     * @throws \Exception
+     */
+    public function testQueryingFillsCache()
+    {
+        $cache = [];
+        $cacheKey = 'testKey';
+
+        $gql = $this->make(Craft::$app->getGql(), [
+            'setCachedResult' => function ($key, $value) use (&$cache, $cacheKey) {$cache[$cacheKey] = $value; },
+        ]);
+
+        Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = true;
+
+        $schema = $gql->getPublicSchema();
+
+        $this->assertArrayNotHasKey($cacheKey, $cache);
+        $result = $gql->executeQuery($schema, '{ping}');
+        $this->assertEquals($cache[$cacheKey], $result);
+    }
+
+    /**
      * Test adding custom directives to schema
      */
     public function testRegisteringDirective()
@@ -121,8 +189,11 @@ class GqlTest extends Unit
             $event->types[] = MockType::class;
         });
 
+        // Simulate it being reference in the schema or being defined by a generator
+        MockType::getType();
+
         $mockType = Craft::$app->getGql()->getSchemaDef()->getType(MockType::getName());
-        $this->assertInstanceOf('GraphQL\Type\Definition\ObjectType', $mockType);
+        $this->assertInstanceOf('GraphQL\Type\Definition\ScalarType', $mockType);
     }
 
     /**
@@ -155,13 +226,13 @@ class GqlTest extends Unit
     {
         $gqlService = Craft::$app->getGql();
 
-        $token = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'enabled' => true, 'scope' => ['usergroups.everyone:read']]);
-        $schema = $gqlService->getSchemaDef($token);
+        $gqlSchema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => ['usergroups.everyone:read']]);
+        $schema = $gqlService->getSchemaDef($gqlSchema);
 
         $gqlService->flushCaches();
 
-        $token = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'enabled' => true, 'scope' => ['volumes.someVolume:read']]);
-        $this->assertNotEquals($schema, $gqlService->getSchemaDef($token));
+        $gqlSchema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => ['volumes.someVolume:read']]);
+        $this->assertNotEquals($schema, $gqlService->getSchemaDef($gqlSchema));
     }
 
     /**
@@ -170,5 +241,131 @@ class GqlTest extends Unit
     public function testPermissionListGenerated()
     {
         $this->assertNotEmpty(Craft::$app->getGql()->getAllPermissions());
+    }
+
+    /**
+     * Test all sorts of ways to invalidate GraphQL cache.
+     */
+    public function testInvalidatingCache()
+    {
+        $gql = Craft::$app->getGql();
+        $elements = Craft::$app->getElements();
+
+        $gql->invalidateCaches();
+
+        $cacheKey = 'testKey';
+        $cacheValue = 'testValue';
+        $gql->setCachedResult($cacheKey, $cacheValue);
+
+        $schema = new GqlSchema([
+            'name' => StringHelper::randomString(15),
+            'scope' => []
+        ]);
+
+        $this->assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
+
+        // Make sure saving a schema invalidates caches
+        $gql->saveSchema($schema);
+        $this->assertFalse($gql->getCachedResult($cacheKey));
+
+        // Reset
+        $gql->setCachedResult($cacheKey, $cacheValue);
+        $this->assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
+
+        // Make sure saving an element invalidates caches.
+        $user = new User();
+        $user->username = 'testUser' . StringHelper::randomString(5);
+        $user->email = 'user@a' . StringHelper::randomString(5) . '.com';
+        $elements->saveElement($user);
+        $this->assertFalse($gql->getCachedResult($cacheKey));
+
+        // Reset
+        $gql->setCachedResult($cacheKey, $cacheValue);
+        $this->assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
+
+        // Make sure deleting an element invalidates caches.
+        $elements->deleteElement($user);
+        $this->assertFalse($gql->getCachedResult($cacheKey));
+
+        // Reset
+        $gql->setCachedResult($cacheKey, $cacheValue);
+        $this->assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
+
+        // Make sure setting anything in project config invalidates caches.
+        Craft::$app->getProjectConfig()->set('test.value', true);
+        $this->assertFalse($gql->getCachedResult($cacheKey));
+    }
+
+    /**
+     * Test all Gql Token operations.
+     * @throws \yii\base\Exception
+     */
+    public function testTokenOperations()
+    {
+        $gql = Craft::$app->getGql();
+
+        $accessToken = StringHelper::randomString();
+
+        $token = new GqlToken([
+            'name' => StringHelper::randomString(15),
+            'accessToken' => $accessToken,
+            'enabled' => true,
+        ]);
+
+        $gql->saveToken($token);
+
+        // Test fetching token
+        $this->assertEquals($gql->getTokenById($token->id)->uid, $token->uid);
+        $this->assertEquals($gql->getTokenByUid($token->uid)->id, $token->id);
+        $this->assertEquals($gql->getTokenByAccessToken($token->accessToken)->id, $token->id);
+
+        // Test fetching all tokens
+        $allSchemas = $gql->getTokens();
+        $this->assertNotEmpty($allSchemas);
+
+        // Test public token doesn't exists
+        $this->tester->expectException(InvalidArgumentException::class, function () use ($gql) {
+            $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        });
+
+        // Test fetching public schema creates public token
+        $publicSchema = $gql->getPublicSchema();
+        $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $this->assertEquals($publicToken->accessToken, GqlToken::PUBLIC_TOKEN);
+
+        // Test deleting
+        $gql->deleteTokenById($token->id);
+        $this->assertNull($gql->getTokenById($token->id));
+    }
+
+    /**
+     * Test all Gql Schema operations.
+     * @throws \yii\base\Exception
+     */
+    public function testSchemaOperations()
+    {
+        $gql = Craft::$app->getGql();
+        $gql->invalidateCaches();
+
+        $schemaUid = StringHelper::UUID();
+        $schema = new GqlSchema([
+            'name' => StringHelper::randomString(15),
+            'scope' => [],
+            'uid' => $schemaUid,
+        ]);
+
+        $gql->saveSchema($schema);
+        $schemaId = Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
+
+        // Test fetching schema
+        $this->assertEquals($gql->getSchemaById($schemaId)->uid, $schemaUid);
+
+        // Test fetching all schemas
+        $allSchemas = Craft::$app->getGql()->getSchemas();
+        $this->assertNotEmpty($allSchemas);
+
+        // Test deleting
+        $gql->deleteSchemaById($schemaId);
+        $this->assertNull($gql->getSchemaById($schemaId));
     }
 }

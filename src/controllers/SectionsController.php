@@ -27,7 +27,7 @@ use yii\web\Response;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SectionsController extends Controller
 {
@@ -179,7 +179,7 @@ class SectionsController extends Controller
             }
 
             if ($siteSettings->hasUrls = (bool)$siteSettings->uriFormat) {
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->template = $postedSettings['template'] ?? null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;

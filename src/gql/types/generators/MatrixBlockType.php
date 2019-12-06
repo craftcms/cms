@@ -12,8 +12,9 @@ use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
+use craft\gql\TypeManager;
 use craft\gql\types\elements\MatrixBlock;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 
@@ -53,15 +54,22 @@ class MatrixBlockType implements GeneratorInterface
                     $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
                 }
 
-                $blockTypeFields = array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+                $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
                 // Generate a type for each entry type
-                $entity = GqlEntityRegistry::createEntity($typeName, new MatrixBlock([
-                    'name' => $typeName,
-                    'fields' => function() use ($blockTypeFields) {
-                        return $blockTypeFields;
-                    }
-                ]));
+                $entity = GqlEntityRegistry::getEntity($typeName);
+
+                if (!$entity) {
+                    $entity = new MatrixBlock([
+                        'name' => $typeName,
+                        'fields' => function() use ($blockTypeFields) {
+                            return $blockTypeFields;
+                        }
+                    ]);
+
+                    // It's possible that creating the matrix block triggered creating all matrix block types, so check again.
+                    $entity = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, $entity);
+                }
             }
 
             $gqlTypes[$typeName] = $entity;

@@ -24,24 +24,26 @@
     </div>
 
     {% if categoryGroups|length %}
-        <table id="categorygroups" class="data collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <td></td>
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for group in categoryGroups %}
-                    <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-                        <td><a href="{{ url('categories/'~group.handle) }}">{{ "Manage categories"|t('app') }}</a></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="tablepane">
+            <table id="categorygroups" class="data fullwidth">
+                <thead>
+                    <th scope="col">{{ "Name"|t('app') }}</th>
+                    <th scope="col">{{ "Handle"|t('app') }}</th>
+                    <td></td>
+                    <td class="thin"></td>
+                </thead>
+                <tbody>
+                    {% for group in categoryGroups %}
+                        <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
+                            <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
+                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
+                            <td><a href="{{ url('categories/'~group.handle) }}">{{ "Manage categories"|t('app') }}</a></td>
+                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% endif %}
 
 

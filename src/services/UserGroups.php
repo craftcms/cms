@@ -25,7 +25,7 @@ use yii\base\Component;
  * An instance of the User Groups service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserGroups()|`Craft::$app->userGroups`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserGroups extends Component
 {
@@ -49,6 +49,7 @@ class UserGroups extends Component
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -332,6 +333,7 @@ class UserGroups extends Component
      * @param UserGroup $group The user group
      * @return bool Whether the user group was deleted successfully
      * @throws WrongEditionException if this is called from Craft Solo edition
+     * @since 3.0.12
      */
     public function deleteGroup(UserGroup $group): bool
     {

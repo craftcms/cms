@@ -32,7 +32,7 @@ use yii\base\Exception;
  * @license http://craftcms.com/license Craft License Agreement
  * @see http://craftcms.com
  * @package craft.app.services
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexer extends Component
 {

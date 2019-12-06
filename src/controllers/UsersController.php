@@ -28,6 +28,7 @@ use craft\helpers\User as UserHelper;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
+use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
@@ -49,7 +50,7 @@ use yii\web\Response;
  * authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UsersController extends Controller
 {
@@ -79,6 +80,8 @@ class UsersController extends Controller
      *     $e->contentSummary[] = 'A pair of sneakers';
      * });
      * ```
+     *
+     * @since 3.0.13
      */
     const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
@@ -297,7 +300,7 @@ class UsersController extends Controller
 
         // Redirect to the login page if this is a CP request
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->redirect('login');
+            return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
         return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
@@ -420,7 +423,7 @@ class UsersController extends Controller
             Craft::$app->getUser()->sendUsernameCookie($user);
 
             // Send them to the set password template.
-            return $this->_renderSetPasswordTemplate($user, [
+            return $this->_renderSetPasswordTemplate([
                 'code' => $code,
                 'id' => $uid,
                 'newUser' => $user->password ? false : true,
@@ -442,43 +445,51 @@ class UsersController extends Controller
         $user->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
         $user->setScenario(User::SCENARIO_PASSWORD);
 
-        if (Craft::$app->getElements()->saveElement($user)) {
-            if ($user->getStatus() == User::STATUS_PENDING) {
-                // Activate them
-                Craft::$app->getUsers()->activateUser($user);
+        if (!Craft::$app->getElements()->saveElement($user)) {
+            $errors = $user->getErrors('newPassword');
 
-                // Treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                    return $response;
-                }
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                return $this->asErrorJson(implode(', ', $errors));
             }
 
-            // Maybe automatically log them in
-            $this->_maybeLoginUserAfterAccountActivation($user);
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
-            // Can they access the CP?
-            if ($user->can('accessCp')) {
-                // Send them to the CP login page
-                $url = UrlHelper::cpUrl('login');
-            } else {
-                // Send them to the 'setPasswordSuccessPath'.
-                $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
-                $url = UrlHelper::siteUrl($setPasswordSuccessPath);
-            }
-
-            return $this->redirect($url);
+            return $this->_renderSetPasswordTemplate([
+                'errors' => $errors,
+                'code' => $code,
+                'id' => $uid,
+                'newUser' => $user->password ? false : true,
+            ]);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
+        if ($user->getStatus() == User::STATUS_PENDING) {
+            // Activate them
+            Craft::$app->getUsers()->activateUser($user);
 
-        $errors = $user->getErrors('newPassword');
+            // Treat this as an activation request
+            if (($response = $this->_onAfterActivateUser($user)) !== null) {
+                return $response;
+            }
+        }
 
-        return $this->_renderSetPasswordTemplate($user, [
-            'errors' => $errors,
-            'code' => $code,
-            'id' => $uid,
-            'newUser' => $user->password ? false : true,
-        ]);
+        // Maybe automatically log them in
+        $this->_maybeLoginUserAfterAccountActivation($user);
+
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        // Can they access the CP?
+        if ($user->can('accessCp')) {
+            // Send them to the CP login page
+            $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
+        } else {
+            // Send them to the 'setPasswordSuccessPath'.
+            $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
+            $url = UrlHelper::siteUrl($setPasswordSuccessPath);
+        }
+
+        return $this->redirect($url);
     }
 
     /**
@@ -821,33 +832,6 @@ class UsersController extends Controller
             }
         }
 
-        // Craft ID account
-        $craftIdAccount = null;
-        $craftIdError = null;
-        $craftIdToken = Craft::$app->getPluginStore()->getToken();
-
-        if ($craftIdToken && $craftIdToken->hasExpired()) {
-            $craftIdToken = null;
-        }
-
-        try {
-            $client = Craft::$app->getApi()->client;
-
-            if ($craftIdToken) {
-                $options = Craft::$app->getPluginStore()->getApiRequestOptions();
-                $craftIdAccountResponse = $client->get('account', $options);
-                $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-                if (isset($craftIdAccount['error'])) {
-                    $craftIdError = $craftIdAccount['error'];
-                    $craftIdAccount = null;
-                }
-            }
-        } catch (\Exception $e) {
-            $craftIdError = $e->getMessage();
-        }
-
-
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
@@ -871,10 +855,7 @@ class UsersController extends Controller
             'bodyClass',
             'title',
             'tabs',
-            'selectedTab',
-            'craftIdAccount',
-            'craftIdError',
-            'craftIdToken'
+            'selectedTab'
         ));
     }
 
@@ -971,7 +952,11 @@ class UsersController extends Controller
 
             if ($newEmail) {
                 // Does that email need to be verified?
-                if ($requireEmailVerification && (!$currentUser || $request->getBodyParam('sendVerificationEmail', true))) {
+                if ($requireEmailVerification && (
+                        !$currentUser ||
+                        (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
+                        $request->getBodyParam('sendVerificationEmail')
+                    )) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;
@@ -1075,7 +1060,9 @@ class UsersController extends Controller
 
             // Copy any 'unverifiedEmail' errors to 'email'
             // todo: clear out the 'unverifiedEmail' errors in Craft 4
-            $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+            if (!$user->hasErrors('email')) {
+                $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+            }
 
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -1109,7 +1096,8 @@ class UsersController extends Controller
             $preferences = array_merge($preferences, [
                 'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
-                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView'))
+                'showExceptionView' => (bool)$request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),
+                'profileTemplates' => (bool)$request->getBodyParam('profileTemplates', $user->getPreference('profileTemplates')),
             ]);
         }
 
@@ -1405,6 +1393,7 @@ class UsersController extends Controller
      * Returns a summary of the content that is owned by a given user ID(s).
      *
      * @return Response|null
+     * @since 3.0.13
      */
     public function actionUserContentSummary(): Response
     {
@@ -1657,28 +1646,23 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
      * @param array $variables
      * @return Response
      */
-    private function _renderSetPasswordTemplate(User $user, array $variables): Response
+    private function _renderSetPasswordTemplate(array $variables): Response
     {
         $view = $this->getView();
 
-        // If the user doesn't have CP access, see if a custom Set Password template exists
-        if (!$user->can('accessCp')) {
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+        // If this is a site request, see if a custom Set Password template exists
+        if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $templatePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
-
             if ($view->doesTemplateExist($templatePath)) {
                 return $this->renderTemplate($templatePath, $variables);
             }
         }
 
         // Otherwise go with the CP's template
-        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-
-        return $this->renderTemplate('setpassword', $variables);
+        return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -2034,12 +2018,11 @@ class UsersController extends Controller
         $view = $this->getView();
         $templateMode = $view->getTemplateMode();
         if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
-            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            $templateMode = View::TEMPLATE_MODE_CP;
         }
-        $html = $view->renderTemplate('users/_photo', [
+
+        return $view->renderTemplate('users/_photo', [
             'user' => $user
-        ]);
-        $view->setTemplateMode($templateMode);
-        return $html;
+        ], $templateMode);
     }
 }

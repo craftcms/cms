@@ -10,11 +10,11 @@ namespace craft\gql\interfaces;
 use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
-use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class Element
@@ -37,22 +37,20 @@ class Element extends InterfaceType
      */
     public static function getType($fields = null): Type
     {
-        if ($type = GqlEntityRegistry::getEntity(self::class)) {
+        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(self::class, new GqlInterfaceType([
+        $type = GqlEntityRegistry::createEntity(self::getName(), new GqlInterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all elements.',
-            'resolveType' => function (ElementInterface $value) {
+            'resolveType' => function(ElementInterface $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (ElementType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        ElementType::generateTypes();
 
         return $type;
     }
@@ -62,7 +60,7 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
@@ -118,7 +116,7 @@ class Element extends InterfaceType
                 'type' => DateTime::getType(),
                 'description' => 'The date the element was last updated.'
             ],
-        ]);
+        ]), self::getName());
     }
 
     /**

@@ -9,9 +9,9 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\Transform;
-use craft\gql\interfaces\Element;
-use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\Element;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use GraphQL\Type\Definition\InterfaceType;
@@ -38,22 +38,20 @@ class Asset extends Element
      */
     public static function getType($fields = null): Type
     {
-        if ($type = GqlEntityRegistry::getEntity(self::class)) {
+        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
+        $type = GqlEntityRegistry::createEntity(self::getName(), new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all assets.',
-            'resolveType' => function (AssetElement $value) {
+            'resolveType' => function(AssetElement $value) {
                 return $value->getGqlTypeName();
             }
         ]));
 
-        foreach (AssetType::generateTypes() as $typeName => $generatedType) {
-            TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
-        }
+        AssetType::generateTypes();
 
         return $type;
     }
@@ -71,7 +69,7 @@ class Asset extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
@@ -149,6 +147,6 @@ class Asset extends Element
                 'description' => 'The date the asset file was last modified.'
             ],
 
-        ]);
+        ]), self::getName());
     }
 }

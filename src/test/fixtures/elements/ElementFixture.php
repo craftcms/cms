@@ -38,9 +38,8 @@ abstract class ElementFixture extends ActiveFixture
     protected $siteIds = [];
 
     /**
-     * Whether the fixture data should be unloaded
-     *
-     * @var bool
+     * @var bool Whether the fixture data should be unloaded
+     * @since 3.3.5
      */
     public $unload = true;
 
@@ -178,7 +177,7 @@ abstract class ElementFixture extends ActiveFixture
      * @param array $data
      * @return ElementQuery
      */
-    public function generateElementQuery(array $data) : ElementQuery
+    public function generateElementQuery(array $data): ElementQuery
     {
         $modelClass = $this->modelClass;
         $query = $modelClass::find()->anyStatus()->trashed(null);

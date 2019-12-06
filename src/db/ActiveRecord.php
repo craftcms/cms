@@ -17,7 +17,7 @@ use craft\helpers\StringHelper;
  * @property string $dateUpdated Date updated
  * @property string $uid UUID
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
@@ -35,6 +35,8 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
 
     /**
      * Prepares record values for DB storage.
+     *
+     * @since 3.1.0
      */
     protected function prepareForDb()
     {

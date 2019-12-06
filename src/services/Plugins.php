@@ -22,6 +22,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -34,7 +35,7 @@ use yii\web\HttpException;
  * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|`Craft::$app->plugins`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Plugins extends Component
 {
@@ -103,6 +104,12 @@ class Plugins extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var array[] Custom plugin configurations.
+     * @since 3.4.0
+     */
+    public $pluginConfigs;
 
     /**
      * @var bool Whether plugins have been loaded yet for this request
@@ -699,7 +706,9 @@ class Plugins extends Component
         }
 
         // Update the plugin's settings in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $plugin->getSettings()->toArray());
+        $pluginSettings = $plugin->getSettings();
+        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArray($pluginSettings->toArray()) : [];
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $pluginSettings);
 
         $plugin->afterSaveSettings();
 
@@ -889,6 +898,11 @@ class Plugins extends Component
 
             if ($settings !== []) {
                 $config['settings'] = $settings;
+            }
+
+            // Merge in the custom config, if there is one
+            if (isset($this->pluginConfigs[$handle])) {
+                $config = ArrayHelper::merge($config, $this->pluginConfigs[$handle]);
             }
         }
 
@@ -1362,6 +1376,10 @@ class Plugins extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
         $data = $projectConfig->get($configKey) ?? $projectConfig->get($configKey, true);
+
+        if (!empty($data['settings'])) {
+            $data['settings'] = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
+        }
 
         if (!$data) {
             throw new InvalidPluginException($handle);

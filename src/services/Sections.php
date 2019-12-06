@@ -35,6 +35,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -43,7 +44,7 @@ use yii\base\Exception;
  * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Sections extends Component
 {
@@ -67,6 +68,7 @@ class Sections extends Component
 
     /**
      * @event SectionEvent The event that is triggered before a section delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
 
@@ -92,6 +94,7 @@ class Sections extends Component
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
 
@@ -114,6 +117,8 @@ class Sections extends Component
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
      * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
      * :::
+     *
+     * @since 3.1.21
      */
     public $autoResaveEntries = true;
 
@@ -325,6 +330,7 @@ class Sections extends Component
      *
      * @param string $uid
      * @return Section|null
+     * @since 3.1.0
      */
     public function getSectionByUid(string $uid)
     {
@@ -913,6 +919,7 @@ class Sections extends Component
      * Prune a deleted field from entry type layouts.
      *
      * @param FieldEvent $event
+     * @since 3.1.20
      */
     public function pruneDeletedField(FieldEvent $event)
     {
@@ -958,30 +965,18 @@ class Sections extends Component
      * @param Section $section
      * @param int $siteId
      * @return bool
-     * @deprecated in 3.3
+     * @deprecated in 3.3.0
      */
     public function isSectionTemplateValid(Section $section, int $siteId): bool
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
-        if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
-            // Set Craft to the site template mode
-            $view = Craft::$app->getView();
-            $oldTemplateMode = $view->getTemplateMode();
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-
-            // Does the template exist?
-            $templateExists = Craft::$app->getView()->doesTemplateExist((string)$sectionSiteSettings[$siteId]->template);
-
-            // Restore the original template mode
-            $view->setTemplateMode($oldTemplateMode);
-
-            if ($templateExists) {
-                return true;
-            }
+        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+            return false;
         }
 
-        return false;
+        $template = (string)$sectionSiteSettings[$siteId]->template;
+        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
     }
 
     // Entry Types

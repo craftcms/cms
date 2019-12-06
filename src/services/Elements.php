@@ -47,6 +47,7 @@ use craft\queue\jobs\UpdateSearchIndex;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
+use craft\validators\SlugValidator;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -58,7 +59,7 @@ use yii\db\Exception as DbException;
  * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Elements extends Component
 {
@@ -104,21 +105,57 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element is restored.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_RESTORE_ELEMENT = 'beforeRestoreElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is restored.
+     * @since 3.1.0
      */
     const EVENT_AFTER_RESTORE_ELEMENT = 'afterRestoreElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
+     *
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * from your event handler:
+     *
+     * ```php
+     * use craft\events\ElementEvent;
+     * use craft\helpers\ElementHelper;
+     * use craft\services\Elements;
+     *
+     * Craft::$app->elements->on(Elements::EVENT_BEFORE_SAVE_ELEMENT, function(ElementEvent $e) {
+     *     if (ElementHelper::isDraftOrRevision($e->element) {
+     *         return;
+     *     }
+     *
+     *     // ...
+     * });
+     * ```
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
+     *
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * from your event handler:
+     *
+     * ```php
+     * use craft\events\ElementEvent;
+     * use craft\helpers\ElementHelper;
+     * use craft\services\Elements;
+     *
+     * Craft::$app->elements->on(Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
+     *     if (ElementHelper::isDraftOrRevision($e->element) {
+     *         return;
+     *     }
+     *
+     *     // ...
+     * });
+     * ```
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
@@ -188,9 +225,15 @@ class Elements extends Component
     // =========================================================================
 
     /**
-     * @var array Stores a mapping of element IDs to their duplicated element ID(s).
+     * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
      */
     public static $duplicatedElementIds = [];
+
+    /**
+     * @var int[] Stores a mapping of duplicated element IDs to their source element IDs.
+     * @since 3.4.0
+     */
+    public static $duplicatedElementSourceIds = [];
 
     // Properties
     // =========================================================================
@@ -302,10 +345,6 @@ class Elements extends Component
      */
     public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false)
     {
-        if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
-            return null;
-        }
-
         if ($uri === '') {
             $uri = Element::HOMEPAGE_URI;
         }
@@ -474,18 +513,20 @@ class Elements extends Component
      * @param bool $runValidation Whether the element should be validated
      * @param bool $propagate Whether the element should be saved across all of its supported sites
      * (this can only be disabled when updating an existing element)
+     * @param bool $updateSearchIndex Whether to update the element search index for the element
+     * (this will happen via a background job if this is a web request)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Throwable if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
+    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = true): bool
     {
         // Force propagation for new elements
         /** @var Element $element */
         $propagate = !$element->id || $propagate;
 
-        return $this->_saveElementInternal($element, $runValidation, $propagate);
+        return $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
     }
 
     /**
@@ -494,10 +535,12 @@ class Elements extends Component
      * @param ElementQueryInterface $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
+     * @param bool $updateSearchIndex Whether to update the element search index for the element
+     * (this will happen via a background job if this is a web request)
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, $skipRevisions = true)
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, $skipRevisions = true, bool $updateSearchIndex = false)
     {
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
@@ -549,7 +592,7 @@ class Elements extends Component
 
                 if ($e === null) {
                     try {
-                        $this->saveElement($element);
+                        $this->_saveElementInternal($element, true, true, $updateSearchIndex);
                     } catch (\Throwable $e) {
                         if (!$continueOnError) {
                             throw $e;
@@ -732,6 +775,7 @@ class Elements extends Component
 
             // Map it
             static::$duplicatedElementIds[$element->id] = $mainClone->id;
+            static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
 
             // Propagate it
             foreach ($supportedSites as $siteInfo) {
@@ -775,15 +819,23 @@ class Elements extends Component
                     $siteClone->setAttributes($newAttributes, false);
                     $siteClone->siteId = $siteInfo['siteId'];
 
-                    // Set a unique URI on the site clone
-                    try {
-                        ElementHelper::setUniqueUri($siteClone);
-                    } catch (OperationAbortedException $e) {
-                        // Oh well, not worth bailing over
+                    if ($element::hasUris()) {
+                        // Make sure it has a valid slug
+                        (new SlugValidator())->validateAttribute($siteClone, 'slug');
+                        if ($siteClone->hasErrors('slug')) {
+                            throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . $siteClone->getFirstError('slug'));
+                        }
+
+                        // Set a unique URI on the site clone
+                        try {
+                            ElementHelper::setUniqueUri($siteClone);
+                        } catch (OperationAbortedException $e) {
+                            // Oh well, not worth bailing over
+                        }
                     }
 
                     if (!$this->_saveElementInternal($siteClone, false, false)) {
-                        throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);
+                        throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . implode(', ', $siteClone->getFirstErrors()));
                     }
                 }
             }
@@ -973,6 +1025,7 @@ class Elements extends Component
      * @param ElementInterface $prevailingElement The element that is sticking around.
      * @return bool Whether the elements were merged successfully.
      * @throws \Throwable if reasons
+     * @since 3.1.31
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
@@ -1215,6 +1268,7 @@ class Elements extends Component
      * @return bool Whether the element was restored successfully
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Throwable if reasons
+     * @since 3.1.0
      */
     public function restoreElement(ElementInterface $element): bool
     {
@@ -1594,12 +1648,17 @@ class Elements extends Component
 
         $paths = [];
         $pathCriterias = [];
+        $countPaths = [];
 
         foreach ($with as $path) {
             // Using the array syntax?
             // ['foo.bar'] or ['foo.bar', criteria]
             if (is_array($path)) {
                 if (!empty($path[1])) {
+                    // Is this a count path?
+                    if (ArrayHelper::remove($path[1], 'count', false)) {
+                        $countPaths[$path[0]] = true;
+                    }
                     $pathCriterias['__root__.' . $path[0]] = $path[1];
                 }
 
@@ -1612,34 +1671,44 @@ class Elements extends Component
         // Load 'em up!
         $elementsByPath = ['__root__' => $elements];
         $elementTypesByPath = ['__root__' => $elementType];
+        $eagerLoadingMapsByPath = [];
 
         foreach ($paths as $path) {
             $pathSegments = explode('.', $path);
+            $totalSegments = count($pathSegments);
             $sourcePath = '__root__';
 
-            foreach ($pathSegments as $segment) {
+            foreach ($pathSegments as $segIndex => $segment) {
                 $targetPath = $sourcePath . '.' . $segment;
+                $pathCriteria = $pathCriterias[$targetPath] ?? [];
+
+                // Are we just fetching the count?
+                $getCount = isset($countPaths[$path]) && $segIndex === $totalSegments - 1;
 
                 // Figure out the path mapping wants a custom order
-                $useCustomOrder = (
-                    !empty($pathCriterias[$targetPath]['orderBy']) ||
-                    !empty($pathCriterias[$targetPath]['order'])
+                $useCustomOrder = !$getCount && (
+                    !empty($pathCriteria['orderBy']) ||
+                    !empty($pathCriteria['order'])
                 );
 
                 // Make sure we haven't already eager-loaded this target path
-                if (!isset($elementsByPath[$targetPath])) {
-                    // Guilty until proven innocent
-                    $elementsByPath[$targetPath] = $targetElements = $targetElementsById = $targetElementIdsBySourceIds = false;
-
-                    // Get the eager-loading map from the source element type
-                    /** @var Element $sourceElementType */
-                    $sourceElementType = $elementTypesByPath[$sourcePath];
-                    $map = $sourceElementType::eagerLoadingMap(array_values($elementsByPath[$sourcePath]), $segment);
+                if ($getCount || !isset($elementsByPath[$targetPath])) {
+                    // Have we already fetched the map from an earlier `count` path?
+                    if (array_key_exists($targetPath, $eagerLoadingMapsByPath)) {
+                        $map = $eagerLoadingMapsByPath[$targetPath];
+                    } else {
+                        // Get the eager-loading map from the source element type
+                        /** @var Element $sourceElementType */
+                        $sourceElementType = $elementTypesByPath[$sourcePath];
+                        $map = $eagerLoadingMapsByPath[$targetPath] = $sourceElementType::eagerLoadingMap(array_values($elementsByPath[$sourcePath]), $segment);
+                    }
 
                     if ($map === null) {
                         break;
                     }
 
+                    $targetElementIdsBySourceIds = null;
+                    $query = null;
                     $offset = 0;
                     $limit = null;
 
@@ -1674,7 +1743,7 @@ class Elements extends Component
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
-                            $pathCriterias[$targetPath] ?? []
+                            $pathCriteria
                         );
 
                         // Save the offset & limit params for later
@@ -1688,66 +1757,83 @@ class Elements extends Component
                         }
 
                         $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
+                    }
 
+                    if ($getCount) {
+                        // Just fetch the target elements’ IDs
+                        $targetElementIds = $query ? array_flip($query->ids()) : [];
+
+                        // Loop through the source elements and count up their targets
+                        foreach ($elementsByPath[$sourcePath] as $sourceElement) {
+                            $count = 0;
+                            if (!empty($targetElementIds) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                    if (isset($targetElementIds[$targetElementId])) {
+                                        $count++;
+                                    }
+                                }
+                            }
+                            $sourceElement->setEagerLoadedElementCount($segment, $count);
+                        }
+                    } else {
                         /** @var array|ElementInterface[] $targetElements */
-                        /** @var array|ElementInterface[] $targetElementsById */
-                        $targetElements = $query->asArray()->all();
+                        $targetElements = $query ? $query->asArray()->all() : [];
                         $elementsByPath[$targetPath] = [];
 
                         // Index the target elements by their IDs if we are using the map-defined order
                         if (!$useCustomOrder) {
+                            /** @var array|ElementInterface[] $targetElementsById */
                             $targetElementsById = [];
                             foreach ($targetElements as &$targetElement) {
                                 $targetElementsById[$targetElement['id']] = &$targetElement;
                             }
                         }
-                    }
 
-                    // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
-                    foreach ($elementsByPath[$sourcePath] as $sourceElement) {
-                        /** @var Element $sourceElement */
-                        $sourceElementId = $sourceElement->id;
-                        $targetElementsForSource = [];
+                        // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
+                        foreach ($elementsByPath[$sourcePath] as $sourceElement) {
+                            /** @var Element $sourceElement */
+                            $targetElementsForSource = [];
 
-                        if (isset($targetElementIdsBySourceIds[$sourceElementId])) {
-                            if ($useCustomOrder) {
-                                // Assign the elements in the order they were returned from the query
-                                foreach ($targetElements as &$targetElement) {
-                                    /** @var array|ElementInterface $targetElement */
-                                    $targetElementId = ArrayHelper::getValue($targetElement, 'id');
-                                    if (isset($targetElementIdsBySourceIds[$sourceElementId][$targetElementId])) {
-                                        $targetElementsForSource[] = &$targetElement;
+                            if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                                if ($useCustomOrder) {
+                                    // Assign the elements in the order they were returned from the query
+                                    foreach ($targetElements as &$targetElement) {
+                                        /** @var array|ElementInterface $targetElement */
+                                        $targetElementId = ArrayHelper::getValue($targetElement, 'id');
+                                        if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
+                                            $targetElementsForSource[] = &$targetElement;
+                                        }
+                                    }
+                                } else {
+                                    // Assign the elements in the order defined by the map
+                                    foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                        if (isset($targetElementsById[$targetElementId])) {
+                                            $targetElementsForSource[] = &$targetElementsById[$targetElementId];
+                                        }
                                     }
                                 }
-                            } else {
-                                // Assign the elements in the order defined by the map
-                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElementId]) as $targetElementId) {
-                                    if (isset($targetElementsById[$targetElementId])) {
-                                        $targetElementsForSource[] = &$targetElementsById[$targetElementId];
+
+                                // Ignore elements that don't fall within the offset & limit
+                                if ($offset || $limit) {
+                                    $targetElementsForSource = array_slice($targetElementsForSource, $offset, $limit);
+                                }
+
+                                foreach ($targetElementsForSource as &$targetElement) {
+                                    // Make sure the element has been instantiated
+                                    if (is_array($targetElement)) {
+                                        $targetElement = $query->createElement($targetElement);
+                                    }
+
+                                    // Store it on $elementsByPath FFR
+                                    if (!isset($elementsByPath[$targetPath][$targetElement->id])) {
+                                        $elementsByPath[$targetPath][$targetElement->id] = $targetElement;
                                     }
                                 }
+                                unset($targetElement);
                             }
 
-                            // Ignore elements that don't fall within the offset & limit
-                            if ($offset || $limit) {
-                                $targetElementsForSource = array_slice($targetElementsForSource, $offset, $limit);
-                            }
-
-                            foreach ($targetElementsForSource as &$targetElement) {
-                                // Make sure the element has been instantiated
-                                if (is_array($targetElement)) {
-                                    $targetElement = $query->createElement($targetElement);
-                                }
-
-                                // Store it on $elementsByPath FFR
-                                if (!isset($elementsByPath[$targetPath][$targetElement->id])) {
-                                    $elementsByPath[$targetPath][$targetElement->id] = $targetElement;
-                                }
-                            }
-                            unset($targetElement);
+                            $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
                         }
-
-                        $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
                     }
                 }
 
@@ -1770,6 +1856,7 @@ class Elements extends Component
      * @param ElementInterface|null $siteElement The element loaded for the propagated site (only pass this if you
      * already had a reason to load it)
      * @throws Exception if the element couldn't be propagated
+     * @since 3.0.13
      */
     public function propagateElement(ElementInterface $element, int $siteId, ElementInterface $siteElement = null)
     {
@@ -1800,12 +1887,14 @@ class Elements extends Component
      * @param ElementInterface $element The element that is being saved
      * @param bool $runValidation Whether the element should be validated
      * @param bool $propagate Whether the element should be saved across all of its supported sites
+     * @param bool $updateSearchIndex Whether to update the element search index for the element
+     * (this will happen via a background job if this is a web request)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Throwable if reasons
      */
-    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
+    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
@@ -2022,11 +2111,18 @@ class Elements extends Component
 
         if (!$element->propagating && !ElementHelper::isDraftOrRevision($element)) {
             // Update search index
-            Craft::$app->getQueue()->push(new UpdateSearchIndex([
-                'elementType' => get_class($element),
-                'elementId' => $element->id,
-                'siteId' => $propagate ? '*' : $element->siteId,
-            ]));
+            if ($updateSearchIndex) {
+                if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                    Craft::$app->getSearch()->indexElementAttributes($element);
+                } else {
+                    Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                        'elementType' => get_class($element),
+                        'elementId' => $element->id,
+                        'siteId' => $propagate ? '*' : $element->siteId,
+                        'fieldHandles' => $element->getDirtyFields(),
+                    ]));
+                }
+            }
 
             // Delete any caches involving this element. (Even do this for new elements, since they
             // might pop up in a cached criteria.)
@@ -2040,6 +2136,9 @@ class Elements extends Component
                 'isNew' => $isNewElement,
             ]));
         }
+
+        // Clear the element's record of dirty fields
+        $element->clearDirtyFields();
 
         return true;
     }
@@ -2091,8 +2190,11 @@ class Elements extends Component
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    // Does this field produce the same translation key as it did for the master element?
-                    if ($field->getTranslationKey($siteElement) === $field->getTranslationKey($element)) {
+                    // Has this field changed, and does it produce the same translation key as it did for the master element?
+                    if (
+                        $element->isFieldDirty($field->handle) &&
+                        $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                    ) {
                         // Copy the master element's value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }

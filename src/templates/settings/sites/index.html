@@ -38,44 +38,46 @@
 
 
 {% block content %}
-    <table id="sites" class="data fullwidth collapsible">
-        <thead>
-            <th scope="col">{{ "Name"|t('app') }}</th>
-            <th scope="col">{{ "Handle"|t('app') }}</th>
-            <th scope="col">{{ "Language"|t('app') }}</th>
-            <th scope="col">{{ "Primary"|t('app') }}</th>
-            <th scope="col">{{ "Base URL"|t('app') }}</th>
-            {% if not group %}
-                <th scope="col">{{ "Group"|t('app') }}</th>
-            {% endif %}
-            {% if canSort %}
-                <td class="thin"></td>
-            {% endif %}
-            {% if multiple %}
-                <td class="thin"></td>
-            {% endif %}
-        </thead>
-        <tbody>
-            {% for site in sites %}
-                <tr data-id="{{ site.id }}" data-uid="{{ site.uid }}" data-name="{{ site.name|t('site') }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sites/' ~ site.id) }}">{{ site.name|t('site') }}</a></th>
-                    <td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
-                    <td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
-                    <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check"></div>{% endif %}</td>
-                    <td data-title="{{ 'Base URL'|t('app') }}"><code>{{ site.baseUrl }}</code></td>
-                    {% if not group %}
-                        <td data-title="{{ 'Group'|t('app') }}">{{ site.group.name|t('site') }}</td>
-                    {% endif %}
-                    {% if canSort %}
-                        <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
-                    {% endif %}
-                    {% if multiple %}
-                        <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="tablepane">
+        <table id="sites" class="data fullwidth">
+            <thead>
+                <th scope="col">{{ "Name"|t('app') }}</th>
+                <th scope="col">{{ "Handle"|t('app') }}</th>
+                <th scope="col">{{ "Language"|t('app') }}</th>
+                <th scope="col">{{ "Primary"|t('app') }}</th>
+                <th scope="col">{{ "Base URL"|t('app') }}</th>
+                {% if not group %}
+                    <th scope="col">{{ "Group"|t('app') }}</th>
+                {% endif %}
+                {% if canSort %}
+                    <td class="thin"></td>
+                {% endif %}
+                {% if multiple %}
+                    <td class="thin"></td>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for site in sites %}
+                    <tr data-id="{{ site.id }}" data-uid="{{ site.uid }}" data-name="{{ site.name|t('site') }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sites/' ~ site.id) }}">{{ site.name|t('site') }}</a></th>
+                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
+                        <td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
+                        <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check"></div>{% endif %}</td>
+                        <td data-title="{{ 'Base URL'|t('app') }}"><code>{{ site.baseUrl }}</code></td>
+                        {% if not group %}
+                            <td data-title="{{ 'Group'|t('app') }}">{{ site.group.name|t('site') }}</td>
+                        {% endif %}
+                        {% if canSort %}
+                            <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+                        {% endif %}
+                        {% if multiple %}
+                            <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
 
 

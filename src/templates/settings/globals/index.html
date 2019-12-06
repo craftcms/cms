@@ -29,22 +29,24 @@
         </p>
 
         {% if globalSets %}
-            <table id="sets" class="data fullwidth collapsible">
-                <thead>
-                    <th scope="col">{{ "Global Set Name"|t('app') }}</th>
-                    <th scope="col">{{ "Handle"|t('app') }}</th>
-                    <td class="thin"></td>
-                </thead>
-                <tbody>
-                    {% for globalSet in globalSets %}
-                        <tr data-id="{{ globalSet.id }}" data-name="{{ globalSet.name }}">
-                            <th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('site') }}</a></th>
-                            <td class="code" data-title="{{ 'Handle'|t('app') }}">{{ globalSet.handle }}</td>
-                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="tablepane">
+                <table id="sets" class="data fullwidth">
+                    <thead>
+                        <th scope="col">{{ "Global Set Name"|t('app') }}</th>
+                        <th scope="col">{{ "Handle"|t('app') }}</th>
+                        <td class="thin"></td>
+                    </thead>
+                    <tbody>
+                        {% for globalSet in globalSets %}
+                            <tr data-id="{{ globalSet.id }}" data-name="{{ globalSet.name }}">
+                                <th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('site') }}</a></th>
+                                <td class="code" data-title="{{ 'Handle'|t('app') }}">{{ globalSet.handle }}</td>
+                                <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </div>
 

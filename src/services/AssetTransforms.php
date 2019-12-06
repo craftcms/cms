@@ -44,7 +44,7 @@ use yii\base\InvalidArgumentException;
  * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|`Craft::$app->assetTransforms`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransforms extends Component
 {
@@ -83,6 +83,7 @@ class AssetTransforms extends Component
 
     /**
      * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
@@ -166,6 +167,7 @@ class AssetTransforms extends Component
      *
      * @param string $uid
      * @return AssetTransform|null
+     * @since 3.1.0
      */
     public function getTransformByUid(string $uid)
     {
@@ -529,8 +531,8 @@ class AssetTransforms extends Component
             'volumeId' => $asset->volumeId,
             'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
-            'fileExists' => 0,
-            'inProgress' => 0
+            'fileExists' => false,
+            'inProgress' => false
         ]);
 
         return $this->storeTransformIndexData($transformIndex);
@@ -679,7 +681,7 @@ class AssetTransforms extends Component
                     'and',
                     [
                         'assetId' => $asset->id,
-                        'fileExists' => 1,
+                        'fileExists' => true,
                         'location' => $possibleLocations,
                         'format' => $index->detectedFormat,
                     ],
@@ -1493,5 +1495,4 @@ class AssetTransforms extends Component
     {
         return AssetTransformRecord::findOne(['uid' => $uid]) ?? new AssetTransformRecord();
     }
-
 }

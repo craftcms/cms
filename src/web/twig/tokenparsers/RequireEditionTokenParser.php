@@ -16,7 +16,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class RequireEditionTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RequireEditionTokenParser extends AbstractTokenParser
 {

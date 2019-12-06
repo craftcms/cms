@@ -26,41 +26,43 @@
     </div>
 
     {% if sections|length %}
-        <table id="sections" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <th scope="col">{{ "Type"|t('app') }}</th>
-                <th scope="col">{{ "Entry Types"|t('app')}}</th>
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for section in sections %}
-                    <tr data-id="{{ section.id }}" data-name="{{ section.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('site') }}</a></th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
-                        <td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
-                        <td data-title="{{ 'Entry Types'|t('app') }}">
-                            {% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
-                                {% set entryType = section.getEntryTypes()[0] %}
-                                <a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t('app') }}</a>
-                            {% else %}
-                                <a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t('app', { count: section.getEntryTypes()|length }) }}</a>
-                                <a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>
-                                <div class="menu">
-                                    <ul>
-                                        {% for entryType in section.getEntryTypes() %}
-                                            <li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name|t('site') }}</a></li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-                        </td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="tablepane">
+            <table id="sections" class="data fullwidth">
+                <thead>
+                    <th scope="col">{{ "Name"|t('app') }}</th>
+                    <th scope="col">{{ "Handle"|t('app') }}</th>
+                    <th scope="col">{{ "Type"|t('app') }}</th>
+                    <th scope="col">{{ "Entry Types"|t('app')}}</th>
+                    <td class="thin"></td>
+                </thead>
+                <tbody>
+                    {% for section in sections %}
+                        <tr data-id="{{ section.id }}" data-name="{{ section.name|t('site') }}">
+                            <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('site') }}</a></th>
+                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
+                            <td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
+                            <td data-title="{{ 'Entry Types'|t('app') }}">
+                                {% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
+                                    {% set entryType = section.getEntryTypes()[0] %}
+                                    <a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t('app') }}</a>
+                                {% else %}
+                                    <a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t('app', { count: section.getEntryTypes()|length }) }}</a>
+                                    <a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>
+                                    <div class="menu">
+                                        <ul>
+                                            {% for entryType in section.getEntryTypes() %}
+                                                <li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name|t('site') }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% endif %}
 
     <h2>Vue Admin Table</h2>

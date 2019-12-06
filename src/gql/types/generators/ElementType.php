@@ -9,8 +9,9 @@ namespace craft\gql\types\generators;
 
 use craft\base\Element as BaseElement;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\Element as ElementInterface;
+use craft\gql\TypeManager;
 use craft\gql\types\elements\Element;
 
 /**
@@ -29,12 +30,12 @@ class ElementType implements GeneratorInterface
         $gqlTypes = [];
         $typeName = BaseElement::gqlTypeNameByContext(null);
 
-        $elementFields = ElementInterface::getFieldDefinitions();
+        $elementFields = TypeManager::prepareFieldDefinitions(ElementInterface::getFieldDefinitions(), $typeName);
 
         // Generate a type for each entry type
         $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Element([
             'name' => $typeName,
-            'fields' => function () use ($elementFields) {
+            'fields' => function() use ($elementFields) {
                 return $elementFields;
             }
         ]));

@@ -51,13 +51,15 @@
 
         computed: {
             ...mapGetters({
-                activeTrialPluginEditions: 'cart/activeTrialPluginEditions',
                 getPluginEdition: 'pluginStore/getPluginEdition',
                 getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
             activeTrialPluginEdition() {
-                return this.activeTrialPluginEditions[this.plugin.handle]
+                const pluginLicenseInfo = this.getPluginLicenseInfo(this.plugin.handle)
+                const edition = this.getPluginEdition(this.plugin, pluginLicenseInfo.edition)
+
+                return edition
             },
 
             pluginLicenseInfo() {
@@ -69,7 +71,7 @@
                     return null
                 }
 
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                return this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
             },
         },
 

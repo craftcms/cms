@@ -35,7 +35,7 @@ use yii\base\InvalidConfigException;
  * Assets represents an Assets field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets extends BaseRelationField
 {
@@ -423,23 +423,21 @@ class Assets extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        // Everything has been handled for propagating fields already.
+        // Figure out what we're working with and set up some initial variables.
+        $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+        $query = $element->getFieldValue($this->handle);
+        $assetsService = Craft::$app->getAssets();
+
+        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+            static $targetFolderId;
+            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+        };
+
+        // Folder creation and file uploads have been handles for propagating elements already.
         /** @var Element $element */
         if (!$element->propagating) {
-            $assetsService = Craft::$app->getAssets();
-
-            // Figure out what we're working with
-            $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
-
-            $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
-                static $targetFolderId;
-                return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
-            };
-
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
-
-            $query = $element->getFieldValue($this->handle);
 
             if (!empty($uploadedFiles)) {
                 $targetFolderId = $getTargetFolderId();
@@ -481,35 +479,35 @@ class Assets extends BaseRelationField
                 // Make sure that all traces of processed files are removed.
                 $this->_uploadedDataFiles = null;
             }
+        }
 
-            // Are there any related assets?
-            /** @var AssetQuery $query */
-            /** @var Asset[] $assets */
-            $assets = $query->all();
+        // Are there any related assets?
+        /** @var AssetQuery $query */
+        /** @var Asset[] $assets */
+        $assets = $query->all();
 
-            if (!empty($assets)) {
-                // Only enforce the single upload folder setting if this isn't a draft or revision
-                if ($this->useSingleFolder && !$isDraftOrRevision) {
-                    $targetFolderId = $getTargetFolderId();
-                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
-                        return $asset->folderId != $targetFolderId;
-                    });
-                } else {
-                    // Find the files with temp sources and just move those.
-                    $assetsToMove = Asset::find()
-                        ->id(ArrayHelper::getColumn($assets, 'id'))
-                        ->volumeId(':empty:')
-                        ->all();
-                }
+        if (!empty($assets)) {
+            // Only enforce the single upload folder setting if this isn't a draft or revision
+            if ($this->useSingleFolder && !$isDraftOrRevision) {
+                $targetFolderId = $getTargetFolderId();
+                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                    return $asset->folderId != $targetFolderId;
+                });
+            } else {
+                // Find the files with temp sources and just move those.
+                $assetsToMove = Asset::find()
+                    ->id(ArrayHelper::getColumn($assets, 'id'))
+                    ->volumeId(':empty:')
+                    ->all();
+            }
 
-                if (!empty($assetsToMove)) {
-                    $folder = $assetsService->getFolderById($getTargetFolderId());
+            if (!empty($assetsToMove)) {
+                $folder = $assetsService->getFolderById($getTargetFolderId());
 
-                    // Resolve all conflicts by keeping both
-                    foreach ($assetsToMove as $asset) {
-                        $asset->avoidFilenameConflicts = true;
-                        $assetsService->moveAsset($asset, $folder);
-                    }
+                // Resolve all conflicts by keeping both
+                foreach ($assetsToMove as $asset) {
+                    $asset->avoidFilenameConflicts = true;
+                    $assetsService->moveAsset($asset, $folder);
                 }
             }
         }
@@ -679,9 +677,9 @@ class Assets extends BaseRelationField
      * @param string $subpath
      * @param ElementInterface|null $element
      * @param bool $createDynamicFolders whether missing folders should be created in the process
-     * @throws InvalidVolumeException if the volume root folder doesn’t exist
-     * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
+     * @throws InvalidSubpathException if the subpath cannot be parsed in full
+     * @throws InvalidVolumeException if the volume root folder doesn’t exist
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {

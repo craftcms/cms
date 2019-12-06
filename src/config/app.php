@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.3.9',
-    'schemaVersion' => '3.3.3',
+    'version' => '3.4.0-alpha.1',
+    'schemaVersion' => '3.4.2',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -167,6 +167,9 @@ return [
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,
+            'messageFormatter' => [
+                'class' => craft\i18n\MessageFormatter::class,
+            ],
             'translations' => [
                 'yii' => [
                     'class' => craft\i18n\PhpMessageSource::class,

@@ -79,7 +79,7 @@ use yii\validators\Validator;
  * @property Element|null $prevSibling The element’s previous sibling
  * @property string|null $ref The reference string to this element
  * @property mixed $route The route that should be used when the element’s URI is requested
- * @property string|null $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property array $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property ElementQueryInterface $siblings All of the element’s siblings
  * @property Site $site Site the element is associated with
  * @property string|null $status The element’s status
@@ -91,7 +91,7 @@ use yii\validators\Validator;
  * @property-write string|null $revisionNotes revision notes to be saved
  * @mixin ContentBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Element extends Component implements ElementInterface
 {
@@ -103,6 +103,9 @@ abstract class Element extends Component implements ElementInterface
     // Constants
     // =========================================================================
 
+    /**
+     * @since 3.3.6
+     */
     const HOMEPAGE_URI = '__home__';
 
     // Statuses
@@ -153,11 +156,13 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
+     * @since 3.1.0
      */
     const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
 
     /**
      * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
+     * @since 3.2.0
      */
     const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
@@ -190,16 +195,84 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event ModelEvent The event that is triggered before the element is saved
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
+     *
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * from your event handler:
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\ModelEvent;
+     * use craft\helpers\ElementHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(Entry::class, Element::EVENT_BEFORE_SAVE, function(ModelEvent $e) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *         return;
+     *     }
+     *
+     *     // ...
+     * });
+     * ```
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
      * @event ModelEvent The event that is triggered after the element is saved
+     *
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * from your event handler:
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\ModelEvent;
+     * use craft\helpers\ElementHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(Entry::class, Element::EVENT_AFTER_SAVE, function(ModelEvent $e) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *         return;
+     *     }
+     *
+     *     // ...
+     * });
+     * ```
      */
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
      * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     *
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * from your event handler:
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\ModelEvent;
+     * use craft\helpers\ElementHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(Entry::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $e) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *         return;
+     *     }
+     *
+     *     // ...
+     * });
+     * ```
+     *
+     * @since 3.2.0
      */
     const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
@@ -217,11 +290,13 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event ModelEvent The event that is triggered before the element is restored
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_RESTORE = 'beforeRestore';
 
     /**
      * @event \yii\base\Event The event that is triggered after the element is restored
+     * @since 3.1.0
      */
     const EVENT_AFTER_RESTORE = 'afterRestore';
 
@@ -243,9 +318,33 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Element');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return StringHelper::toLowerCase(static::displayName());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Elements');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return StringHelper::toLowerCase(static::pluralDisplayName());
     }
 
     /**
@@ -789,6 +888,11 @@ abstract class Element extends Component implements ElementInterface
     protected $revisionNotes;
 
     /**
+     * @var bool
+     */
+    private $_initialized = false;
+
+    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -802,6 +906,18 @@ abstract class Element extends Component implements ElementInterface
      * @var array|null Record of the fields whose values have already been normalized
      */
     private $_normalizedFieldValues;
+
+    /**
+     * @var bool Whether all field values should be considered dirty.
+     * @see isFieldDirty()
+     */
+    private $_allFieldsDirty = false;
+
+    /**
+     * @var array Record of dirty fields.
+     * @see isFieldDirty()
+     */
+    private $_dirtyFields;
 
     /**
      * @var
@@ -834,6 +950,11 @@ abstract class Element extends Component implements ElementInterface
     private $_eagerLoadedElements;
 
     /**
+     * @var array|null
+     */
+    private $_eagerLoadedElementCounts;
+
+    /**
      * @var ElementInterface|false
      * @see getCurrentRevision()
      */
@@ -841,6 +962,16 @@ abstract class Element extends Component implements ElementInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __clone()
+    {
+        // Mark all fields as dirty
+        $this->_allFieldsDirty = true;
+        parent::__clone();
+    }
 
     /**
      * Returns the string representation of the element.
@@ -951,6 +1082,8 @@ abstract class Element extends Component implements ElementInterface
         if ($this->siteId === null && Craft::$app->getIsInstalled()) {
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
+
+        $this->_initialized = true;
     }
 
     /**
@@ -1442,20 +1575,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPreviewTargets(): array
     {
-        $previewTargets = [];
-
-        if ($this->uri) {
-            $previewTargets[] = [
-                'label' => Craft::t('app', 'Primary {type} page', [
-                    'type' => StringHelper::toLowerCase(static::displayName()),
-                ]),
-                'url' => $this->getIsHomepage() ? '' : $this->uri
-            ];
-        }
-
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $previewTargets = array_merge($previewTargets, $this->previewTargets());
-
+            $previewTargets = $this->previewTargets();
             // Give plugins a chance to modify them
             if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
                 $event = new RegisterPreviewTargetsEvent([
@@ -1464,20 +1585,37 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
                 $previewTargets = $event->previewTargets;
             }
+        } else if ($url = $this->getUrl()) {
+            $previewTargets = [
+                [
+                    'label' => Craft::t('app', 'Primary {type} page', [
+                        'type' => static::lowerDisplayName(),
+                    ]),
+                    'url' => $url,
+                ],
+            ];
+        } else {
+            return [];
         }
 
-        // Normalize the URLs
+        // Normalize the targets
+        $normalized = [];
         $view = Craft::$app->getView();
-        foreach ($previewTargets as &$previewTarget) {
-            // urlFormat => url
+
+        foreach ($previewTargets as $previewTarget) {
             if (isset($previewTarget['urlFormat'])) {
-                $previewTarget['url'] = $view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this);
-                unset($previewTarget['urlFormat']);
+                $url = trim($view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this));
+                if ($url !== '') {
+                    $previewTarget['url'] = $url;
+                    unset($previewTarget['urlFormat']);
+                }
             }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], null, null, $this->siteId);
+            if (isset($previewTarget['url'])) {
+                $normalized[] = $previewTarget;
+            }
         }
 
-        return $previewTargets;
+        return $normalized;
     }
 
     /**
@@ -1867,6 +2005,42 @@ abstract class Element extends Component implements ElementInterface
 
         // Don't assume that $value has been normalized
         unset($this->_normalizedFieldValues[$fieldHandle]);
+
+        // If the element is fully initialized, mark the value as dirty
+        if ($this->_initialized) {
+            $this->_dirtyFields[$fieldHandle] = true;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldDirty(string $fieldHandle): bool
+    {
+        return $this->_allFieldsDirty || isset($this->_dirtyFields[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDirtyFields(): array
+    {
+        if ($this->_allFieldsDirty) {
+            return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
+        }
+        if ($this->_dirtyFields) {
+            return array_keys($this->_dirtyFields);
+        }
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearDirtyFields()
+    {
+        $this->_allFieldsDirty = false;
+        $this->_dirtyFields = null;
     }
 
     /**
@@ -1936,10 +2110,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether elements have been eager-loaded with a given handle.
-     *
-     * @param string $handle The handle of the eager-loaded elements
-     * @return bool Whether elements have been eager-loaded with the given handle
+     * @inheritdoc
      */
     public function hasEagerLoadedElements(string $handle): bool
     {
@@ -1947,10 +2118,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the eager-loaded elements for a given handle.
-     *
-     * @param string $handle The handle of the eager-loaded elements
-     * @return ElementInterface[]|null The eager-loaded elements, or null
+     * @inheritdoc
      */
     public function getEagerLoadedElements(string $handle)
     {
@@ -1965,14 +2133,27 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Sets some eager-loaded elements on a given handle.
-     *
-     * @param string $handle The handle to load the elements with in the future
-     * @param ElementInterface[] $elements The eager-loaded elements
+     * @inheritdoc
      */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         $this->_eagerLoadedElements[$handle] = $elements;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadedElementCount(string $handle): int
+    {
+        return $this->_eagerLoadedElementCounts[$handle] ?? 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElementCount(string $handle, int $count)
+    {
+        $this->_eagerLoadedElementCounts[$handle] = $count;
     }
 
     /**
@@ -2071,18 +2252,21 @@ abstract class Element extends Component implements ElementInterface
             $originalNamespace = $view->getNamespace();
             $namespace = $view->namespaceInputName('fields', $originalNamespace);
             $view->setNamespace($namespace);
+            $view->setIsDeltaRegistrationActive(true);
 
             foreach ($fieldLayout->getFields() as $field) {
                 $fieldHtml = $view->renderTemplate('_includes/field', [
                     'element' => $this,
                     'field' => $field,
-                    'required' => $field->required
+                    'required' => $field->required,
+                    'registerDeltas' => true,
                 ]);
 
                 $html .= $view->namespaceInputs($fieldHtml, 'fields');
             }
 
-            Craft::$app->getView()->setNamespace($originalNamespace);
+            $view->setNamespace($originalNamespace);
+            $view->setIsDeltaRegistrationActive(false);
 
             $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
         }
@@ -2376,8 +2560,35 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
+     * This method can be used to completely customize what actually shows up within the table’s body for a given
+     * attribute, rather than simply showing the attribute’s raw value.
+     *
+     * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
+     * getTableAttributesHtml() method could do this:
+     *
+     * ```php
+     * switch ($attribute) {
+     *     case 'email':
+     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
+     *     // ...
+     * }
+     * return parent::tableAttributeHtml($attribute);
+     * ```
+     *
+     * ::: warning
+     * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
+     * :::
+     *
+     * By default the following will be returned:
+     *
+     * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
+     * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
+     * - If the attribute value is a [[DateTime]] object, the date will be formatted with a localized date format.
+     * - For anything else, it will output the attribute value as a string.
+     *
      * @param string $attribute The attribute name.
      * @return string The HTML that should be shown for a given attribute in Table View.
+     * @throws InvalidConfigException
      * @see getTableAttributeHtml()
      */
     protected function tableAttributeHtml(string $attribute): string
@@ -2491,7 +2702,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return array
      * @see getPreviewTargets()
-     * @since 3.2
+     * @since 3.2.0
      */
     protected function previewTargets(): array
     {

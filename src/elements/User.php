@@ -54,7 +54,7 @@ use yii\web\IdentityInterface;
  * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends Element implements IdentityInterface
 {
@@ -111,9 +111,25 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'user');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Users');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'users');
     }
 
     /**
@@ -489,6 +505,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var bool Whether the user has a dashboard
+     * @since 3.0.4
      */
     public $hasDashboard = false;
 
@@ -984,7 +1001,7 @@ class User extends Element implements IdentityInterface
      *
      * @param int $size The width and height the photo should be sized to
      * @return string|null
-     * @deprecated in 3.0. Use getPhoto().getUrl() instead.
+     * @deprecated in 3.0.0. Use getPhoto().getUrl() instead.
      */
     public function getPhotoUrl(int $size = 100)
     {
@@ -1243,11 +1260,10 @@ class User extends Element implements IdentityInterface
     {
         switch ($attribute) {
             case 'email':
-                return $this->email ? Html::encodeParams('<a href="mailto:{email}">{email}</a>', ['email' => $this->email]) : '';
+                return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
-
                 return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
         }
 

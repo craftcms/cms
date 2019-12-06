@@ -20,7 +20,7 @@ use craft\validators\LanguageValidator;
  * @property string $subject Subject
  * @property string $body Body
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemMessage extends ActiveRecord
 {

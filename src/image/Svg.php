@@ -17,7 +17,7 @@ use craft\helpers\Image as ImageHelper;
  * Svg class is used for SVG file manipulations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Svg extends Image
 {

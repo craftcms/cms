@@ -26,7 +26,7 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementsController extends BaseElementsController
 {
@@ -396,8 +396,9 @@ class ElementsController extends BaseElementsController
 
         $response['siteId'] = $element->siteId;
 
+        $view = $this->getView();
         $namespace = 'editor_' . StringHelper::randomString(10);
-        $this->getView()->setNamespace($namespace);
+        $view->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
@@ -410,12 +411,12 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">' .
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
+            $view->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
-        $view = $this->getView();
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
+        $response['deltaNames'] = $view->getDeltaNames();
 
         return $this->asJson($response);
     }

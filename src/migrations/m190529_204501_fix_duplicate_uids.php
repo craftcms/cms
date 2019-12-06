@@ -27,11 +27,12 @@ class m190529_204501_fix_duplicate_uids extends Migration
         $query = (new Query())
             ->select(['id', 'uid'])
             ->from([Table::ELEMENTS])
-            ->where(['in', 'uid', (new Query())
-                ->select(['uid'])
-                ->from([Table::ELEMENTS])
-                ->groupBy(['uid'])
-                ->having('count([[uid]]) > 1')
+            ->where([
+                'in', 'uid', (new Query())
+                    ->select(['uid'])
+                    ->from([Table::ELEMENTS])
+                    ->groupBy(['uid'])
+                    ->having('count([[uid]]) > 1')
             ])
             ->orderBy(['id' => SORT_ASC]);
 

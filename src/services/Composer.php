@@ -31,7 +31,7 @@ use yii\base\Exception;
  * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|`Craft::$app->composer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Composer extends Component
 {
@@ -55,6 +55,7 @@ class Composer extends Component
 
     /**
      * @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/
+     * @since 3.0.38
      */
     public $maxBackups = 50;
 

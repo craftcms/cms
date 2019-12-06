@@ -19,7 +19,7 @@ use yii\base\Component;
  * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Routes extends Component
 {
@@ -103,7 +103,7 @@ class Routes extends Component
      * Returns the routes defined in the CP.
      *
      * @return array
-     * @deprecated in 3.1. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
+     * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
      */
     public function getDbRoutes(): array
     {
@@ -232,6 +232,7 @@ class Routes extends Component
      *
      * @param int $routeId
      * @return bool
+     * @since 3.1.0
      */
     public function deleteRouteByUid(string $routeUid): bool
     {

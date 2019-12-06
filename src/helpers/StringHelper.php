@@ -16,7 +16,7 @@ use yii\base\InvalidConfigException;
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
@@ -25,7 +25,19 @@ class StringHelper extends \yii\helpers\StringHelper
 
     const UTF8 = 'UTF-8';
 
+    /**
+     * @since 3.0.37
+     */
     const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var array Character mappings
+     * @see asciiCharMap()
+     */
+    private static $_asciiCharMaps;
 
     // Public Methods
     // =========================================================================
@@ -117,10 +129,15 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function asciiCharMap(bool $flat = false, string $language = null): array
     {
+        $key = $flat ? 'flat-' . ($language ?? '*') : '*';
+        if (isset(self::$_asciiCharMaps[$key])) {
+            return self::$_asciiCharMaps[$key];
+        }
+
         $map = (new Stringy())->getAsciiCharMap();
 
         if (!$flat) {
-            return $map;
+            return self::$_asciiCharMaps[$key] = $map;
         }
 
         $flatMap = [];
@@ -145,7 +162,7 @@ class StringHelper extends \yii\helpers\StringHelper
             }
         }
 
-        return $flatMap;
+        return self::$_asciiCharMaps[$key] = $flatMap;
     }
 
     /**
@@ -469,7 +486,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * by setting $caseSensitive to false.
      *
      * @param string $str The string to check the end of.
-     * @param $substrings[] Substrings to look for.
+     * @param $substrings [] Substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $str ends with $substring.
      * @since 3.3.0
@@ -1228,6 +1245,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $str The string
      * @param string|callable $replace The replacement string, or callback function.
      * @return string The string with converted 4-byte UTF-8 characters
+     * @since 3.1.13
      */
     public static function replaceMb4(string $str, $replace): string
     {
@@ -1322,8 +1340,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * is also converted to lowercase. The language of the source string can
      * also be supplied for language-specific transliteration.
      *
-     * @param string      $str The string to process
-     * @param string      $replacement The string used to replace whitespace.
+     * @param string $str The string to process
+     * @param string $replacement The string used to replace whitespace.
      * @param string|null $language The language of the source string.
      * @return string The string converted to a URL slug.
      * @since 3.3.0
@@ -1747,6 +1765,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param bool $lower Whether the returned words should be lowercased
      * @param bool $removePunctuation Whether punctuation should be removed from the returned words
      * @return string[] The prepped words in the string
+     * @since 3.1.0
      */
     public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
     {

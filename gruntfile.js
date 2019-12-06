@@ -4,7 +4,12 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         watch: {
             sass: {
-                files: ['lib/craftcms-sass/_mixins.scss', 'src/web/assets/**/*.scss', '!src/web/assets/pluginstore/**/*.scss'],
+                files: [
+                    'lib/craftcms-sass/_mixins.scss',
+                    'src/web/assets/**/*.scss',
+                    '!src/web/assets/graphiql/**/*.scss',
+                    '!src/web/assets/pluginstore/**/*.scss',
+                ],
                 tasks: 'css'
             },
             cpjs: {
@@ -30,6 +35,7 @@ module.exports = function(grunt) {
                 cwd: 'src/web/assets',
                 src: [
                     '**/*.scss',
+                    '!graphiql/**/*.scss',
                     '!pluginstore/**/*.scss'
                 ],
                 dest: 'src/web/assets',
@@ -52,6 +58,7 @@ module.exports = function(grunt) {
                 cwd: 'src/web/assets',
                 src: [
                     '**/*.css',
+                    '!graphiql/**/*.css',
                     '!pluginstore/**/*.css'
                 ],
                 dest: 'src/web/assets'
@@ -69,6 +76,7 @@ module.exports = function(grunt) {
                     'src/web/assets/cp/src/js/Base*.js',
                     'src/web/assets/cp/src/js/*.js',
                     '!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)',
+                    '!src/web/assets/graphiql/**/*.js',
                     '!src/web/assets/pluginstore/**/*.js'
                 ],
                 dest: 'src/web/assets/cp/dist/js/Craft.js'
@@ -87,7 +95,12 @@ module.exports = function(grunt) {
             otherjs: {
                 expand: true,
                 cwd: 'src/web/assets',
-                src: ['*/dist/*.js', '!*/dist/*.min.js', '!tests/dist/tests.js'],
+                src: [
+                    '*/dist/*.js',
+                    '!*/dist/*.min.js',
+                    '!graphiql/dist/*.js',
+                    '!tests/dist/tests.js',
+                ],
                 dest: 'src/web/assets',
                 rename: function(dest, src) {
                     // Keep them where they came from
@@ -111,6 +124,7 @@ module.exports = function(grunt) {
                 'src/web/assets/**/*.js',
                 '!src/web/assets/**/*.min.js',
                 '!src/web/assets/cp/dist/js/Craft.js',
+                '!src/web/assets/graphiql/**/*.js',
                 '!src/web/assets/pluginstore/**/*.js'
             ],
             afterconcat: [

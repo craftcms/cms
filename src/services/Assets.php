@@ -8,6 +8,12 @@
 namespace craft\services;
 
 use Craft;
+use craft\assetpreviews\HtmlPreview;
+use craft\assetpreviews\ImagePreview;
+use craft\assetpreviews\NoPreview;
+use craft\assetpreviews\PdfPreview;
+use craft\base\AssetPreview;
+use craft\base\AssetPreviewInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
@@ -22,6 +28,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
@@ -49,7 +56,7 @@ use yii\base\NotSupportedException;
  * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets extends Component
 {
@@ -81,6 +88,12 @@ class Assets extends Component
      * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
      */
     const EVENT_GET_THUMB_PATH = 'getThumbPath';
+
+    /**
+     * @event AssetPreviewEvent The event that is triggered when an asset is previewed
+     * @since 3.4.0
+     */
+    const EVENT_GET_ASSET_PREVIEW = 'getAssetPreview';
 
     // Properties
     // =========================================================================
@@ -242,11 +255,11 @@ class Assets extends Component
      *
      * @param int $folderId
      * @param string $newName
-     * @throws AssetConflictException If a folder already exists with such name in Assets Index
+     * @return string The new folder name after cleaning it.
      * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
      * @throws VolumeObjectExistsException If a folder already exists with such name in the Volume, but not in Index
      * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the Volume.
-     * @return string The new folder name after cleaning it.
+     * @throws AssetConflictException If a folder already exists with such name in Assets Index
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -725,7 +738,7 @@ class Assets extends Component
                     $image->disableAnimation();
                 }
 
-                $image->scaleToFit($width, $height);
+                $image->scaleAndCrop($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
@@ -756,17 +769,17 @@ class Assets extends Component
 
         $extLength = strlen($ext);
         if ($extLength <= 3) {
-            $textSize = '26';
+            $textSize = '20';
         } else if ($extLength === 4) {
-            $textSize = '22';
+            $textSize = '17';
         } else {
             if ($extLength > 5) {
                 $ext = substr($ext, 0, 4) . '…';
             }
-            $textSize = '18';
+            $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
         FileHelper::writeToFile($path, $svg);
@@ -874,7 +887,7 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
-        /** @var Volume $volume  */
+        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -948,7 +961,7 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
-     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
+     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
@@ -1025,6 +1038,42 @@ class Assets extends Component
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
         return $folder;
+    }
+
+    /**
+     *
+     * @param Asset $asset
+     * @return AssetPreviewInterface
+     * @since 3.4.0
+     */
+    public function getAssetPreview(Asset $asset): AssetPreviewInterface
+    {
+        $event = new AssetPreviewEvent(['asset' => $asset]);
+
+        // Give plugins a chance to register their own preview handlers
+        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_PREVIEW)) {
+            $this->trigger(self::EVENT_GET_ASSET_PREVIEW, $event);
+        }
+
+        $preview = $event->previewHandler;
+
+        if ($preview instanceof AssetPreview) {
+            return $preview;
+        }
+
+        // These are our default preview handlers if one is not supplied
+        switch ($asset->kind) {
+            case Asset::KIND_IMAGE:
+                return new ImagePreview($asset);
+            case Asset::KIND_PDF:
+                return new PdfPreview($asset);
+            case Asset::KIND_HTML:
+            case Asset::KIND_JSON:
+            case Asset::KIND_JAVASCRIPT:
+                return new HtmlPreview($asset);
+            default:
+                return new NoPreview($asset);
+        }
     }
 
     // Private Methods

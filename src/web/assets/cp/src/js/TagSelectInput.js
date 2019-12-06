@@ -43,7 +43,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$addTagInput = this.$container.children('.add').children('.text');
             this.$spinner = this.$addTagInput.next();
 
-            this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
+            this.addListener(this.$addTagInput, 'input', $.proxy(function() {
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }

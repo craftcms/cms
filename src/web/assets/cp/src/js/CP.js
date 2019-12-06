@@ -14,14 +14,24 @@ Craft.CP = Garnish.Base.extend(
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
+        $headerContainer: null,
         $header: null,
         $mainContent: null,
         $details: null,
+        $tabsContainer: null,
+        $tabsList: null,
+        $tabs: null,
+        $overflowTabBtn: null,
+        $overflowTabList: null,
         $selectedTab: null,
+        selectedTabIndex: null,
+        $sidebarContainer: null,
         $sidebar: null,
         $contentContainer: null,
         $edition: null,
 
+        $confirmUnloadForms: null,
+        $deltaForms: null,
         $collapsibleTables: null,
 
         fixedHeader: false,
@@ -35,6 +45,7 @@ Craft.CP = Garnish.Base.extend(
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
+        includingDetailsOnUpdatesCheck: false,
         checkForUpdatesCallbacks: null,
 
         init: function() {
@@ -51,9 +62,11 @@ Craft.CP = Garnish.Base.extend(
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
+            this.$headerContainer = $('#header-container');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
             this.$details = $('#details');
+            this.$sidebarContainer = $('#sidebar-container');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
             this.$collapsibleTables = $('table.collapsible');
@@ -61,13 +74,15 @@ Craft.CP = Garnish.Base.extend(
 
             this.updateSidebarMenuLabel();
 
-            this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
-            this.updateFixedHeader();
+            if (this.$header.length) {
+                this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+                this.updateFixedHeader();
+            }
 
             Garnish.$doc.ready($.proxy(function() {
                 // Update responsive tables on window resize
-                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
-                this.updateResponsiveTables();
+                this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
+                this.handleWindowResize();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -78,7 +93,7 @@ Craft.CP = Garnish.Base.extend(
 
                 // Wait a frame before initializing any confirm-unload forms,
                 // so other JS that runs on ready() has a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
+                Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
             }, this));
 
             // Alerts
@@ -129,18 +144,20 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        initConfirmUnloadForms: function() {
+        initSpecialForms: function() {
             // Look for forms that we should watch for changes on
             this.$confirmUnloadForms = $('form[data-confirm-unload]');
+            this.$deltaForms = $('form[data-delta]');
 
             if (!this.$confirmUnloadForms.length) {
                 return;
             }
 
+            var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
             var $form, serialized;
 
-            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                $form = this.$confirmUnloadForms.eq(i);
+            for (var i = 0; i < $forms.length; i++) {
+                $form = $forms.eq(i);
                 if (!$form.data('initialSerializedValue')) {
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
@@ -149,8 +166,23 @@ Craft.CP = Garnish.Base.extend(
                     }
                     $form.data('initialSerializedValue', serialized);
                 }
-                this.addListener($form, 'submit', function() {
-                    this.removeListener(Garnish.$win, 'beforeunload');
+                this.addListener($form, 'submit', function(ev) {
+                    if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+                        this.removeListener(Garnish.$win, 'beforeunload');
+                    }
+                    if (Garnish.hasAttr($form, 'data-delta')) {
+                        ev.preventDefault();
+                        var serialized;
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                        Craft.createForm(data)
+                            .appendTo(Garnish.$bod)
+                            .submit();
+                    }
                 });
             }
 
@@ -227,41 +259,45 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initTabs: function() {
-            this.$selectedTab = null;
+            // Clear out all our old info in case the tabs were just replaced
+            this.$tabsList = this.$tabs = this.$overflowTabBtn = this.$overflowTabList = this.$selectedTab =
+                this.selectedTabIndex = null;
 
-            var $tabs = $('#tabs').find('> ul > li');
-            var tabs = [];
-            var tabWidths = [];
-            var totalWidth = 0;
-            var i, a, href;
+            this.$tabsContainer = $('#tabs');
+            if (!this.$tabsContainer.length) {
+                this.$tabsContainer = null;
+                return;
+            }
 
-            for (i = 0; i < $tabs.length; i++) {
-                tabs[i] = $($tabs[i]);
-                tabWidths[i] = tabs[i].width();
-                totalWidth += tabWidths[i];
+            this.$tabsList = this.$tabsContainer.find('> ul');
+            this.$tabs = this.$tabsList.find('> li');
+            this.$overflowTabBtn = $('#overflow-tab-btn');
+            if (!this.$overflowTabBtn.data('menubtn')) {
+                new Garnish.MenuBtn(this.$overflowTabBtn);
+            }
+            this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
+            var i, $tab, $a, href;
+
+            for (i = 0; i < this.$tabs.length; i++) {
+                $tab = this.$tabs.eq(i);
 
                 // Does it link to an anchor?
-                a = tabs[i].children('a');
-                href = a.attr('href');
+                $a = $tab.children('a');
+                href = $a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener(a, 'click', function(ev) {
+                    this.addListener($a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
 
                     if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
-                        this.selectTab(a);
+                        this.selectTab($a);
                     }
                 }
 
-                if (!this.$selectedTab && a.hasClass('sel')) {
-                    this.$selectedTab = a;
+                if (!this.$selectedTab && $a.hasClass('sel')) {
+                    this._selectTab($a, i);
                 }
-            }
-
-            // Now set their max widths
-            for (i = 0; i < $tabs.length; i++) {
-                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 
@@ -281,10 +317,22 @@ Craft.CP = Garnish.Base.extend(
             if (typeof history !== 'undefined') {
                 history.replaceState(undefined, undefined, href);
             }
-            Garnish.$win.trigger('resize');
+            this._selectTab($tab, this.$tabs.index($tab.parent()));
+            this.updateTabs();
+            this.$overflowTabBtn.data('menubtn').menu.hide();
+
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');
+        },
+
+        _selectTab: function($tab, index) {
             this.$selectedTab = $tab;
+            this.selectedTabIndex = index;
+            if (index === 0) {
+                $('#content').addClass('square');
+            } else {
+                $('#content').removeClass('square');
+            }
         },
 
         deselectTab: function() {
@@ -296,7 +344,54 @@ Craft.CP = Garnish.Base.extend(
             if (this.$selectedTab.attr('href').charAt(0) === '#') {
                 $(this.$selectedTab.attr('href')).addClass('hidden');
             }
-            this.$selectedTab = null;
+            this._selectTab(null, null);
+        },
+
+        handleWindowResize: function() {
+            this.updateTabs();
+            this.updateResponsiveTables();
+        },
+
+        updateTabs: function() {
+            if (!this.$tabsContainer) {
+                return;
+            }
+
+            var maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
+            var totalWidth = 0;
+            var showOverflowMenu = false;
+            var tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
+            var $tab;
+
+            // Start with the selected tab, because that needs to be visible
+            if (this.$selectedTab) {
+                this.$selectedTab.parent('li').appendTo(this.$tabsList);
+                totalWidth = Math.ceil(this.$selectedTab.parent('li').width());
+            }
+
+            for (var i = 0; i < this.$tabs.length; i++) {
+                $tab = this.$tabs.eq(i).appendTo(this.$tabsList);
+                if (i !== this.selectedTabIndex) {
+                    totalWidth += Math.ceil($tab.width());
+                    // account for the negative margin
+                    if (i !== 0 || this.$selectedTab) {
+                        totalWidth += tabMargin;
+                    }
+                }
+
+                if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
+                    $tab.find('> a').removeAttr('role');
+                } else {
+                    $tab.appendTo(this.$overflowTabList).find('> a').attr('role', 'option');
+                    showOverflowMenu = true;
+                }
+            }
+
+            if (showOverflowMenu) {
+                this.$overflowTabBtn.removeClass('hidden');
+            } else {
+                this.$overflowTabBtn.addClass('hidden');
+            }
         },
 
         updateResponsiveTables: function() {
@@ -327,7 +422,7 @@ Craft.CP = Garnish.Base.extend(
 
                     // Are we checking the table width?
                     if (this.updateResponsiveTables._check) {
-                        if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth) {
+                        if (this.updateResponsiveTables._$table.width() - 30 > this.updateResponsiveTables._containerWidth) {
                             this.updateResponsiveTables._$table.addClass('collapsed');
                         }
                     }
@@ -340,30 +435,41 @@ Craft.CP = Garnish.Base.extend(
 
         updateFixedHeader: function() {
             // Have we scrolled passed the top of #main?
-            if (this.$main.length && this.$main[0].getBoundingClientRect().top < 0) {
+            if (this.$main.length && this.$headerContainer[0].getBoundingClientRect().top < 0) {
                 if (!this.fixedHeader) {
-                    var headerHeight = this.$header.outerHeight();
+                    // Hard-set the header container height
+                    var headerHeight = this.$headerContainer.height();
+                    this.$headerContainer.height(headerHeight);
+                    Garnish.$bod.addClass('fixed-header');
+
+                    // Fix the sidebar and details pane positions if they are taller than #content-container
+                    var contentHeight = this.$contentContainer.outerHeight();
+                    var $detailsHeight = this.$details.outerHeight();
                     var css = {
                         top: headerHeight + 'px',
                         'max-height': 'calc(100vh - ' + headerHeight + 'px)'
                     };
-                    this.$sidebar.css(css);
-                    this.$details.css(css);
-
-                    this.$mainContent.css('margin-top', this.$header.outerHeight());
-                    Garnish.$bod.addClass('fixed-header');
-                    this.fixedheader = true;
+                    if (this.$sidebar.outerHeight() < contentHeight) {
+                        this.$sidebar.addClass('fixed').css(css);
+                    }
+                    if (this.$details.outerHeight() < contentHeight) {
+                        this.$details.addClass('fixed').css(css);
+                    }
+                    this.fixedHeader = true;
                 }
             }
-            else if (this.fixedheader) {
+            else if (this.fixedHeader) {
+                this.$headerContainer.height('auto');
                 Garnish.$bod.removeClass('fixed-header');
-                this.$details.css({
-                    top: null,
-                    'max-height': null
+                this.$sidebar.removeClass('fixed').css({
+                    top: '',
+                    'max-height': ''
                 });
-                this.$header.css('top', 0);
-                this.$mainContent.css('margin-top', 0);
-                this.fixedheader = false;
+                this.$details.removeClass('fixed').css({
+                    top: '',
+                    'max-height': ''
+                });
+                this.fixedHeader = false;
             }
         },
 
@@ -479,15 +585,24 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        checkForUpdates: function(forceRefresh, callback) {
+        checkForUpdates: function(forceRefresh, includeDetails, callback) {
+            // Make 'includeDetails' optional
+            if (typeof includeDetails === 'function') {
+                callback = includeDetails;
+                includeDetails = false;
+            }
+
             // If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
             // then just set a new callback that re-checks for updates when the current one is done.
-            if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) {
+            if (this.checkingForUpdates && (
+                (forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) ||
+                (includeDetails === true && !this.includingDetailsOnUpdatesCheck)
+            )) {
                 var realCallback = callback;
 
                 callback = function() {
-                    Craft.cp.checkForUpdates(true, realCallback);
-                };
+                    this.checkForUpdates(forceRefresh, includeDetails, realCallback);
+                }.bind(this);
             }
 
             // Callback function?
@@ -502,29 +617,95 @@ Craft.CP = Garnish.Base.extend(
             if (!this.checkingForUpdates) {
                 this.checkingForUpdates = true;
                 this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+                this.includingDetailsOnUpdatesCheck = (includeDetails === true);
 
-                var data = {
-                    forceRefresh: (forceRefresh === true)
-                };
+                this._checkForUpdates(forceRefresh, includeDetails)
+                    .then(function(info) {
+                        this.updateUtilitiesBadge();
+                        this.checkingForUpdates = false;
 
-                Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info) {
-                    this.updateUtilitiesBadge();
-                    this.checkingForUpdates = false;
+                        if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
+                            var callbacks = this.checkForUpdatesCallbacks;
+                            this.checkForUpdatesCallbacks = null;
 
-                    if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
-                        var callbacks = this.checkForUpdatesCallbacks;
-                        this.checkForUpdatesCallbacks = null;
-
-                        for (var i = 0; i < callbacks.length; i++) {
-                            callbacks[i](info);
+                            for (var i = 0; i < callbacks.length; i++) {
+                                callbacks[i](info);
+                            }
                         }
-                    }
 
-                    this.trigger('checkForUpdates', {
-                        updateInfo: info
-                    });
-                }, this));
+                        this.trigger('checkForUpdates', {
+                            updateInfo: info
+                        });
+                    }.bind(this));
             }
+        },
+
+        _checkForUpdates: function(forceRefresh, includeDetails) {
+            return new Promise(function(resolve, reject) {
+                if (!forceRefresh) {
+                    this._checkForCachedUpdates(includeDetails)
+                        .then(function(info) {
+                            if (info.cached !== false) {
+                                resolve(info);
+                            }
+
+                            this._getUpdates(includeDetails)
+                                .then(function(info) {
+                                    resolve(info);
+                                });
+                        }.bind(this));
+                } else {
+                    this._getUpdates(includeDetails)
+                        .then(function(info) {
+                            resolve(info);
+                        });
+                }
+            }.bind(this));
+        },
+
+        _checkForCachedUpdates: function(includeDetails) {
+            return new Promise(function(resolve, reject) {
+                var data = {
+                    onlyIfCached: true,
+                    includeDetails: includeDetails,
+                };
+                Craft.postActionRequest('app/check-for-updates', data, function(info, textStatus) {
+                    if (textStatus === 'success') {
+                        resolve(info);
+                    } else {
+                        resolve({ cached: false });
+                    }
+                });
+            });
+        },
+
+        _getUpdates: function(includeDetails) {
+            return new Promise(function(resolve, reject) {
+                Craft.sendApiRequest('GET', 'updates')
+                    .then(function(updates) {
+                        this._cacheUpdates(updates, includeDetails).then(resolve);
+                    }.bind(this))
+                    .catch(function(e) {
+                        this._cacheUpdates({}).then(resolve);
+                    }.bind(this));
+            }.bind(this));
+        },
+
+        _cacheUpdates: function(updates, includeDetails) {
+            return new Promise(function(resolve, reject) {
+                Craft.postActionRequest('app/cache-updates', {
+                    updates: updates,
+                    includeDetails: includeDetails,
+                }, function(info, textStatus) {
+                    if (textStatus === 'success') {
+                        resolve(info);
+                    } else {
+                        reject();
+                    }
+                }, {
+                    contentType: 'json'
+                });
+            });
         },
 
         updateUtilitiesBadge: function() {
@@ -695,7 +876,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
-Garnish.$scrollContainer = $('#content');
+Garnish.$scrollContainer = Garnish.$win;
 Craft.cp = new Craft.CP();
 
 

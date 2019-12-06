@@ -42,7 +42,7 @@ class DateTime extends ScalarType
      */
     public static function getType(): DateTime
     {
-        return GqlEntityRegistry::getEntity(self::class) ?: GqlEntityRegistry::createEntity(self::class, new self());
+        return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
     }
 
     /**
@@ -73,7 +73,7 @@ class DateTime extends ScalarType
      */
     public function parseValue($value)
     {
-        return (string) $value;
+        return (string)$value;
     }
 
     /**
@@ -82,7 +82,7 @@ class DateTime extends ScalarType
     public function parseLiteral($valueNode, array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return (string) $valueNode->value;
+            return (string)$valueNode->value;
         }
 
         // Intentionally without message, as all information already in wrapped Exception

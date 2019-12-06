@@ -13,19 +13,10 @@ use Craft;
  * Search helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Search
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var array Character mappings
-     * @see _getCharMap()
-     */
-    private static $_charMaps = [];
-
     // Public Methods
     // =========================================================================
 
@@ -57,9 +48,12 @@ class Search
         // Normalize to lowercase
         $str = mb_strtolower($str);
 
+        // Remove punctuation
+        $str = str_replace(self::_getPunctuation(), '', $str);
+
         if ($processCharMap) {
             // Remove punctuation and diacritics
-            $str = strtr($str, self::_getCharMap($language ?? Craft::$app->language));
+            $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
         }
 
         // Remove ignore-words?
@@ -82,29 +76,6 @@ class Search
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Get array of chars to be used for conversion.
-     *
-     * @param string $language
-     * @return array
-     */
-    private static function _getCharMap(string $language): array
-    {
-        if (isset(self::$_charMaps[$language])) {
-            return self::$_charMaps[$language];
-        }
-
-        // This will replace accented chars with non-accented chars
-        $map = StringHelper::asciiCharMap(true, $language);
-
-        // Replace punctuation with a space
-        foreach (self::_getPunctuation() as $value) {
-            $map[$value] = ' ';
-        }
-
-        return self::$_charMaps[$language] = $map;
-    }
 
     /**
      * Returns the asciiPunctuation array.
@@ -182,6 +153,7 @@ class Search
                 '–',
                 '—',
                 '―',
+                '_',
                 '‘',
                 '’',
                 '‚',

@@ -13,7 +13,7 @@ body.rtl form.utility .utility-status .progressbar { right: 0; }
 
 form.utility .utility-status .progressbar.has-status { top: 6px; }
 
-form.utility .utility-status .progressbar-status { margin-top: 17px; font-size: 12px; color: #8f98a3; text-align: center; }
+form.utility .utility-status .progressbar-status { margin-top: 17px; font-size: 12px; color: #7b8793; text-align: center; }
 body.ltr form.utility .utility-status .progressbar-status { left: 0; }
 body.rtl form.utility .utility-status .progressbar-status { right: 0; }
 body.ltr form.utility .utility-status .progressbar-status { padding-left: 10px; }

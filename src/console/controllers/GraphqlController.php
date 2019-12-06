@@ -8,16 +8,14 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\console\Controller;
 use craft\errors\GqlException;
 use craft\helpers\Console;
-use craft\console\Controller;
-
-use yii\helpers\Inflector;
+use GraphQL\Utils\SchemaPrinter;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
+use yii\helpers\Inflector;
 use yii\web\BadRequestHttpException;
-
-use GraphQL\Utils\SchemaPrinter;
 
 /**
  * Allows you to manage GraphQL schemas.
@@ -55,7 +53,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Print out a given GraphQL schema
+     * Print out a given GraphQL schema.
      *
      * @return int
      */
@@ -63,6 +61,7 @@ class GraphqlController extends Controller
     {
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
+
         if ($schema !== null) {
             $schemaDef = $gqlService->getSchemaDef($schema, true);
             // Output the schema
@@ -73,7 +72,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Dump out a given GraphQL schema to a file
+     * Dump out a given GraphQL schema to a file.
      *
      * @return int
      */
@@ -81,14 +80,15 @@ class GraphqlController extends Controller
     {
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
+
         if ($schema !== null) {
             $schemaDef = $gqlService->getSchemaDef($schema, true);
             // Output the schema
-            $filename = Inflector::slug($schema->name, '_').self::GQL_SCHEMA_EXTENSION;
+            $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
             $schemaDump = SchemaPrinter::doPrint($schemaDef);
             $result = file_put_contents($filename, $schemaDump);
             $this->stdout('Dumping GraphQL schema to file: ', Console::FG_YELLOW);
-            $this->stdout($filename.PHP_EOL);
+            $this->stdout($filename . PHP_EOL);
         }
 
         return ExitCode::OK;
@@ -104,24 +104,28 @@ class GraphqlController extends Controller
      */
     protected function getGqlSchema()
     {
-        $schema = null;
+        $token = null;
         $gqlService = Craft::$app->getGql();
-        // First try to get the schema from the passed in token
+
+        // First try to get the token from the passed in token
         if ($this->token !== null) {
             try {
-                $schema = $gqlService->getSchemaByAccessToken($this->token);
+                $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
                 $this->stdout('Invalid authorization token: ', Console::FG_RED);
-                $this->stdout($this->token.PHP_EOL, Console::FG_YELLOW);
+                $this->stdout($this->token . PHP_EOL, Console::FG_YELLOW);
                 return null;
             }
+
+            $schema = $token->getSchema();
         }
-        // Next look up the active schema
-        if ($schema === null) {
+
+        // Next look up the active token
+        if ($token === null) {
             try {
                 $schema = $gqlService->getActiveSchema();
             } catch (GqlException $exception) {
-                // Well, go for the public schema then.
+                // Well, go for the public token then.
                 $schema = $gqlService->getPublicSchema();
             }
         }

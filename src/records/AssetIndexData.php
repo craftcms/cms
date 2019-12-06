@@ -26,7 +26,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $recordId Record ID
  * @property Volume $volume Volume
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexData extends ActiveRecord
 {

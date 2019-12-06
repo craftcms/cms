@@ -20,7 +20,7 @@ use craft\validators\UniqueValidator;
  *
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class TagGroup extends Model
 {

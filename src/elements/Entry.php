@@ -41,7 +41,7 @@ use yii\base\InvalidConfigException;
  * @property Section $section the entry's section
  * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Entry extends Element
 {
@@ -66,9 +66,25 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'entry');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'entries');
     }
 
     /**
@@ -843,7 +859,7 @@ class Entry extends Element
      * ```
      *
      * @return EntryType
-     * @throws InvalidConfigException if [[typeId]] is missing or invalid
+     * @throws InvalidConfigException if the section has no entry types
      */
     public function getType(): EntryType
     {
@@ -853,8 +869,12 @@ class Entry extends Element
 
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
-        if (!isset($sectionEntryTypes[$this->typeId])) {
-            throw new InvalidConfigException('Invalid entry type ID: ' . $this->typeId);
+        if ($this->typeId === null || !isset($sectionEntryTypes[$this->typeId])) {
+            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+            if (empty($sectionEntryTypes)) {
+                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+            }
+            return reset($sectionEntryTypes);
         }
 
         return $sectionEntryTypes[$this->typeId];
@@ -885,7 +905,8 @@ class Entry extends Element
         }
 
         if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
-            throw new InvalidConfigException('Invalid author ID: ' . $this->authorId);
+            // The author is probably soft-deleted. Just no author is set
+            return null;
         }
 
         return $this->_author;
@@ -1094,6 +1115,8 @@ EOD;
 
     /**
      * Updates the entry's title, if its entry type has a dynamic title format.
+     *
+     * @since 3.0.3
      */
     public function updateTitle()
     {

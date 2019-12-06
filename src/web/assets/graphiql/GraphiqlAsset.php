@@ -14,30 +14,21 @@ use craft\web\assets\cp\CpAsset;
  * GraphiQL asset bundle.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.30
+ * @since 3.3.0
  */
 class GraphiqlAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->depends = [
-            VendorAsset::class,
-            CpAsset::class,
-        ];
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'graphiql' . $this->dotJs(),
-        ];
+    public $js = [
+        'graphiql.js',
+    ];
 
-        $this->css = [
-            'graphiql.css',
-        ];
-
-        parent::init();
-    }
+    public $css = [
+        'graphiql.css',
+    ];
 }

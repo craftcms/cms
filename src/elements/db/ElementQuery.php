@@ -44,7 +44,7 @@ use yii\db\ExpressionInterface;
  * @property string|Site $site The site or site handle that the elements should be returned in
  * @mixin ElementQueryBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -145,6 +145,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool Whether to ignore placeholder elements when populating the results.
      * @used-by ignorePlaceholders()
+     * @since 3.2.9
      */
     public $ignorePlaceholders = false;
 
@@ -153,42 +154,50 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var bool Whether draft elements should be returned.
+     * @since 3.2.0
      */
     public $drafts = false;
 
     /**
      * @var int|null The ID of the draft to return (from the `drafts` table)
+     * @since 3.2.0
      */
     public $draftId;
 
     /**
      * @var int|false|null The source element ID that drafts should be returned for.
      * Set to `false` to fetch unsaved drafts.
+     * @since 3.2.0
      */
     public $draftOf;
 
     /**
      * @var int|null The drafts’ creator ID
+     * @since 3.2.0
      */
     public $draftCreator;
 
     /**
      * @var bool Whether revision elements should be returned.
+     * @since 3.2.0
      */
     public $revisions = false;
 
     /**
      * @var int|null The ID of the revision to return (from the `revisions` table)
+     * @since 3.2.0
      */
     public $revisionId;
 
     /**
      * @var int|null The source element ID that revisions should be returned for
+     * @since 3.2.0
      */
     public $revisionOf;
 
     /**
      * @var int|null The revisions’ creator ID
+     * @since 3.2.0
      */
     public $revisionCreator;
 
@@ -229,6 +238,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether to return trashed (soft-deleted) elements.
      * If this is set to `null`, then both trashed and non-trashed elements will be returned.
      * @used-by trashed()
+     * @since 3.1.0
      */
     public $trashed = false;
 
@@ -255,14 +265,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool Whether only elements with unique IDs should be returned by the query.
      * @used-by unique()
-     * @since 3.2
+     * @since 3.2.0
      */
     public $unique = false;
 
     /**
      * @var array|null Determines which site should be selected when querying multi-site elements.
      * @used-by preferSites()
-     * @since 3.2
+     * @since 3.2.0
      */
     public $preferSites = false;
 
@@ -364,6 +374,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool|null Whether the resulting elements must have descendants.
      * @used-by hasDescendants()
+     * @since 3.0.4
      */
     public $hasDescendants;
 
@@ -985,7 +996,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param string $value The property value
      * @return static self reference
-     * @deprecated in 3.0. Use [[site]] or [[siteId]] instead.
+     * @deprecated in 3.0.0. Use [[site]] or [[siteId]] instead.
      */
     public function locale(string $value)
     {
@@ -997,7 +1008,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $unique
-     * @since 3.2
+     * @since 3.2.0
      */
     public function unique(bool $value = true)
     {
@@ -1008,7 +1019,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @uses $preferSites
-     * @since 3.2
+     * @since 3.2.0
      */
     public function preferSites(array $value = null)
     {
@@ -1031,7 +1042,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param mixed $value The property value (defaults to true)
      * @return static self reference
-     * @deprecated in 3.0. Use [[enabledForSite]] instead.
+     * @deprecated in 3.0.0. Use [[enabledForSite]] instead.
      */
     public function localeEnabled($value = true)
     {
@@ -1406,10 +1417,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
-            if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
-                throw new QueryAbortedException();
-            }
-
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
@@ -1505,6 +1512,27 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.16.2
+     */
+    public function column($db = null)
+    {
+        // Avoid indexing by an ambiguous column
+        if (
+            $this->from === null &&
+            is_string($this->indexBy) &&
+            in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
+        ) {
+            $this->from = ['elements' => Table::ELEMENTS];
+            $result = parent::column($db);
+            $this->from = null;
+            return $result;
+        }
+
+        return parent::column($db);
     }
 
     /**
@@ -1742,6 +1770,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['trashed'] = $row['dateDeleted'] !== null;
         }
 
+        // Set the custom field values
+        if (isset($fieldValues)) {
+            $row['fieldValues'] = $fieldValues;
+        }
+
         $behaviors = [];
 
         if ($this->drafts) {
@@ -1765,12 +1798,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var Element $element */
         $element = new $class($row);
         $element->attachBehaviors($behaviors);
-
-        // Set the custom field values
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (isset($fieldValues)) {
-            $element->setFieldValues($fieldValues);
-        }
 
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
@@ -2641,13 +2668,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
+                'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
-
-            // Only include the URI if this isn't headless mode
-            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
-                $select['elements_sites.uri'] = 'elements_sites.uri';
-            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
@@ -2684,10 +2707,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyUniqueParam(Connection $db)
     {
         if (!$this->unique || (
-            $this->siteId &&
-            $this->siteId !== '*' &&
-            (!is_array($this->siteId) || count($this->siteId) === 1)
-        )) {
+                $this->siteId &&
+                $this->siteId !== '*' &&
+                (!is_array($this->siteId) || count($this->siteId) === 1)
+            )) {
             return;
         }
 
@@ -2731,9 +2754,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         $qElements = $db->quoteTableName('elements');
         $qSubElements = $db->quoteTableName('subElements');
         $qTmpElements = $db->quoteTableName('tmpElements');
-        $subSelectSql = str_replace($qElements, $qSubElements, $subSelectSql);
+        $q = $qElements[0];
+        $subSelectSql = str_replace("{$qElements}.", "{$qSubElements}.", $subSelectSql);
+        $subSelectSql = str_replace("{$q} {$qElements}", "{$q} {$qSubElements}", $subSelectSql);
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
-        $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
 
         $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
     }

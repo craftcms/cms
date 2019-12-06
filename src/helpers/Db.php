@@ -13,6 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Schema;
 
@@ -20,7 +21,7 @@ use yii\db\Schema;
  * Class Db
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Db
 {
@@ -490,8 +491,7 @@ class Db
                 if ($operator === '!=') {
                     $val = !$val;
                 }
-                $valCondition = [$column => true];
-                $condition[] = $val ? $valCondition : ['not', $valCondition];
+                $condition[] = $val ? [$column => true] : ['or', ['not', [$column => true]], [$column => null]];
                 continue;
             }
 
@@ -653,6 +653,7 @@ class Db
      * @param Connection|null $db
      * @return int number of rows affected by the execution.
      * @throws \yii\db\Exception execution failed
+     * @since 3.0.12
      */
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
     {
@@ -680,6 +681,7 @@ class Db
      * @param string $table
      * @param string $uid
      * @return int|null
+     * @since 3.1.0
      */
     public static function idByUid(string $table, string $uid)
     {
@@ -698,6 +700,7 @@ class Db
      * @param string $table
      * @param string[] $uids
      * @return string[]
+     * @since 3.1.0
      */
     public static function idsByUids(string $table, array $uids): array
     {
@@ -714,6 +717,7 @@ class Db
      * @param string $table
      * @param int $id
      * @return string|null
+     * @since 3.1.0
      */
     public static function uidById(string $table, int $id)
     {
@@ -732,6 +736,7 @@ class Db
      * @param string $table
      * @param int[] $ids
      * @return string[]
+     * @since 3.1.0
      */
     public static function uidsByIds(string $table, array $ids): array
     {
@@ -740,6 +745,105 @@ class Db
             ->from([$table])
             ->where(['id' => $ids])
             ->pairs();
+    }
+
+    /**
+     * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
+     *
+     * @param string $dsn
+     * @param string|null $key The key that is needed from the DSN. If this is
+     * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
+     * doesn’t exist in the DSN string.
+     * @throws InvalidArgumentException if $dsn is invalid
+     * @since 3.4.0
+     */
+    public static function parseDsn(string $dsn, string $key = null)
+    {
+        if (($pos = strpos($dsn, ':')) === false) {
+            throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
+        }
+
+        $driver = strtolower(substr($dsn, 0, $pos));
+        if ($key === 'driver') {
+            return $driver;
+        }
+        if ($key === null) {
+            $parsed = [
+                'driver' => $driver,
+            ];
+        }
+
+        $params = substr($dsn, $pos + 1);
+        foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
+            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            if ($key === $n) {
+                return $v;
+            }
+            if ($key === null) {
+                $parsed[$n] = $v;
+            }
+        }
+        if ($key === null) {
+            return $parsed;
+        }
+        return false;
+    }
+
+    /**
+     * Generates a DB config from a database connection URL.
+     *
+     * This can be used from `config/db.php`:
+     * ---
+     * ```php
+     * $url = getenv('DB_URL');
+     * return craft\helpers\Db::url2config($url);
+     * ```
+     *
+     * @param string $url
+     * @return array
+     * @since 3.4.0
+     */
+    public static function url2config(string $url): array
+    {
+        $parsed = parse_url($url);
+
+        if (!isset($parsed['scheme'])) {
+            throw new InvalidArgumentException('Invalid URL: ' . $url);
+        }
+
+        $config = [];
+
+        // user & password
+        if (isset($parsed['user'])) {
+            $config['user'] = $parsed['user'];
+        }
+        if (isset($parsed['pass'])) {
+            $config['password'] = $parsed['pass'];
+        }
+
+        // URL scheme => driver
+        if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
+            $driver = Connection::DRIVER_PGSQL;
+        } else {
+            $driver = Connection::DRIVER_MYSQL;
+        }
+
+        // DSN params
+        $checkParams = [
+            'host' => 'host',
+            'port' => 'port',
+            'path' => 'dbname',
+        ];
+        $dsnParams = [];
+        foreach ($checkParams as $urlParam => $dsnParam) {
+            if (isset($parsed[$urlParam])) {
+                $dsnParams[] = "{$dsnParam}={$parsed[$urlParam]}";
+            }
+        }
+
+        $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
+
+        return $config;
     }
 
     // Private Methods

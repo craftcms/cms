@@ -10,7 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeLoader;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\UnionType;
 
 /**
@@ -22,18 +22,10 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * Cached permission pairs for schemas by id.
-     *
-     * @var array
-     */
-    private static $cachedPairs = [];
-
-    /**
      * Returns true if the active schema is aware of the provided scope(s).
      *
      * @param string|string[] $scopes The scope(s) to check.
      * @return bool
-     * @throws GqlException
      */
     public static function isSchemaAwareOf($scopes): bool
     {
@@ -42,7 +34,7 @@ class Gql
         }
 
         try {
-            $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
+            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
         } catch (GqlException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return false;
@@ -65,34 +57,12 @@ class Gql
      */
     public static function extractAllowedEntitiesFromSchema($action = 'read'): array
     {
-        $activeSchema = Craft::$app->getGql()->getActiveSchema();
-
-        if (empty(self::$cachedPairs[$activeSchema->id])) {
-            try {
-                $permissions = (array) $activeSchema->scope;
-                $pairs = [];
-
-                foreach ($permissions as $permission) {
-                    // Check if this is for the requested action
-                    if (StringHelper::endsWith($permission, ':' . $action)) {
-                        $permission = StringHelper::removeRight($permission, ':' . $action);
-
-                        $parts = explode('.', $permission);
-
-                        if (count($parts) === 2) {
-                            $pairs[$parts[0]][] = $parts[1];
-                        }
-                    }
-                }
-
-                self::$cachedPairs[$activeSchema->id] = $pairs;
-            } catch (GqlException $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
-                return [];
-            }
+        try {
+            return Craft::$app->getGql()->getActiveSchema()->getAllScopePairsForAction($action);
+        } catch (GqlException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return [];
         }
-
-        return self::$cachedPairs[$activeSchema->id];
     }
 
     /**
@@ -106,7 +76,7 @@ class Gql
     public static function canSchema($scope, $action = 'read'): bool
     {
         try {
-            $permissions = (array) Craft::$app->getGql()->getActiveSchema()->scope;
+            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
             return !empty(preg_grep('/^' . preg_quote($scope, '/') . '\:' . preg_quote($action, '/') . '$/i', $permissions));
         } catch (GqlException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
@@ -191,8 +161,35 @@ class Gql
             'resolveType' => $resolveFunction,
         ]));
 
-        TypeLoader::registerType($typeName, function () use ($unionType) { return $unionType ;});
-
         return $unionType;
+    }
+
+    /**
+     * Creates a temporary schema with full access to the GraphQL API.
+     *
+     * @return GqlSchema
+     * @since 3.4.0
+     */
+    public static function createFullAccessSchema(): GqlSchema
+    {
+        $permissionGroups = Craft::$app->getGql()->getAllPermissions();
+        $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
+
+        // Fetch all nested permissions
+        $traverser = function($permissions) use ($schema, &$traverser) {
+            foreach ($permissions as $permission => $config) {
+                $schema->scope[] = $permission;
+
+                if (isset($config['nested'])) {
+                    $traverser($config['nested']);
+                }
+            }
+        };
+
+        foreach ($permissionGroups as $permissionGroup) {
+            $traverser($permissionGroup);
+        }
+
+        return $schema;
     }
 }

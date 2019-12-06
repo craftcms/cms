@@ -27,7 +27,7 @@ use yii\db\Schema;
  * Field is the base class for classes representing fields in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
@@ -55,6 +55,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites
+     * @since 3.2.0
      */
     const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
 
@@ -72,11 +73,13 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @event FieldElementEvent The event that is triggered before the element is restored
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
 
     /**
      * @event FieldElementEvent The event that is triggered after the element is restored
+     * @since 3.1.0
      */
     const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
 
@@ -217,6 +220,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'enabledForSite',
                 'error',
                 'errors',
+                'errorSummary',
                 'fieldValue',
                 'fieldValues',
                 'id',
@@ -283,6 +287,27 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        if (!$this->getIsTranslatable($element)) {
+            return null;
+        }
+
+        switch ($this->translationMethod) {
+            case self::TRANSLATION_METHOD_SITE:
+                return Craft::t('app', 'This field is translated for each site.');
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'This field is translated for each site group.');
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return Craft::t('app', 'This field is translated for each language.');
+            default:
+                return null;
+        }
     }
 
     /**
@@ -395,6 +420,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return array
      * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @since 3.2.0
      */
     public function getSortOption(): array
     {
@@ -475,7 +501,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @inheritdoc
-     * @since 3.3.0
      */
     public function getContentGqlType()
     {
