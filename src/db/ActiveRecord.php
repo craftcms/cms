@@ -21,9 +21,6 @@ use craft\helpers\StringHelper;
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @since 3.4.0
@@ -31,7 +28,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     public function __set($name, $value)
     {
         if ($this->hasAttribute($name)) {
-            $value = Db::prepareValueForDb($value);
+            $value = $this->_prepareValue($name, $value);
         }
         parent::__set($name, $value);
     }
@@ -42,7 +39,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     public function setAttribute($name, $value)
     {
-        $value = Db::prepareValueForDb($value);
+        $value = $this->_prepareValue($name, $value);
         parent::setAttribute($name, $value);
     }
 
@@ -86,5 +83,25 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                 $this->markAttributeDirty('dateUpdated');
             }
         }
+    }
+
+    /**
+     * Prepares a value to be saved to the database.
+     *
+     * @param string $name The attribute name
+     * @param mixed $value The attribute value
+     * @return mixed The prepared value
+     * @since 3.4.0
+     */
+    private function _prepareValue(string $name, $value)
+    {
+        $value = Db::prepareValueForDb($value);
+
+        $columns = static::getTableSchema()->columns;
+        if (isset($columns[$name])) {
+            $value = $columns[$name]->phpTypecast($value);
+        }
+
+        return $value;
     }
 }

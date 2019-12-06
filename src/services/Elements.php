@@ -1987,9 +1987,9 @@ class Elements extends Component
 
                 // Set the attributes
                 $elementRecord->uid = $element->uid;
-                $elementRecord->draftId = $element->draftId;
-                $elementRecord->revisionId = $element->revisionId;
-                $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
+                $elementRecord->draftId = (int)$element->draftId ?: null;
+                $elementRecord->revisionId = (int)$element->revisionId ?: null;
+                $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
 
@@ -2010,7 +2010,11 @@ class Elements extends Component
 
                 // Update our list of dirty attributes
                 if ($trackChanges) {
-                    ArrayHelper::append($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes()));
+                    ArrayHelper::append($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
+                        'fieldLayoutId',
+                        'enabled',
+                        'archived',
+                    ])));
                 }
 
                 // Save the element record
@@ -2069,7 +2073,10 @@ class Elements extends Component
 
             // Update our list of dirty attributes
             if ($trackChanges && !$siteSettingsRecord->getIsNewRecord()) {
-                ArrayHelper::append($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes(['slug', 'uri'])));
+                ArrayHelper::append($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
+                    'slug',
+                    'uri',
+                ])));
                 if ($siteSettingsRecord->isAttributeChanged('enabled')) {
                     $dirtyAttributes[] = 'enabledForSite';
                 }
