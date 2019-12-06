@@ -815,7 +815,8 @@ JS;
 
         return [
             'field' => $this,
-            'pluralElementType' => $elementType::pluralDisplayName(),
+            'elementType' => $elementType::lowerDisplayName(),
+            'pluralElementType' => $elementType::pluralLowerDisplayName(),
         ];
     }
 

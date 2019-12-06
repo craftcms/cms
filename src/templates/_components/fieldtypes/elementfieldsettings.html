@@ -1,6 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set sourceOptions = field.getSourceOptions() %}
+{% set elementType = elementType ?? pluralElementType %}
 
 {% block fieldSettings %}
     {% block sourcesField %}
@@ -8,7 +9,7 @@
             {% if field.allowMultipleSources %}
                 {{ forms.checkboxSelectField({
                     label: "Sources"|t('app'),
-                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: field.displayName()|lower }),
+                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: pluralElementType }),
                     id: 'sources',
                     name: 'sources',
                     options: sourceOptions,
@@ -18,7 +19,7 @@
             {% else %}
                 {{ forms.selectField({
                     label: "Source"|t('app'),
-                    instructions: "Which source do you want to select {type} from?"|t('app', { type: field.displayName()|lower }),
+                    instructions: "Which source do you want to select {type} from?"|t('app', { type: pluralElementType }),
                     id: 'source',
                     name: 'source',
                     options: sourceOptions,
@@ -36,7 +37,7 @@
         {% if field.allowLimit %}
             {{ forms.textField({
                 label: "Limit"|t('app'),
-                instructions: "Limit the number of selectable {type}."|t('app', { type: field.displayName()|lower }),
+                instructions: "Limit the number of selectable {type}."|t('app', { type: pluralElementType }),
                 id: 'limit',
                 name: 'limit',
                 value: field.limit,
@@ -53,7 +54,7 @@
     {% block selectionLabelField %}
         {{ forms.textField({
             label: "Selection Label"|t('app'),
-            instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: field.displayName()|lower }),
+            instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: elementType }),
             id: 'selectionLabel',
             name: 'selectionLabel',
             value: field.selectionLabel,
@@ -64,8 +65,8 @@
 
     {% block validateRelatedElementsField %}
         {{ forms.checkboxField({
-            label: 'Validate related {type}'|t('app', { type: pluralElementType|lower }),
-            instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType|lower }),
+            label: 'Validate related {type}'|t('app', { type: pluralElementType }),
+            instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
             checked: field.validateRelatedElements
