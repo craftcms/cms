@@ -873,7 +873,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 }
 
-#content {
+.content {
   @include pane;
   border-radius: $largeBorderRadius;
   position: relative;
