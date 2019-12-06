@@ -2117,47 +2117,49 @@ class Elements extends Component
             throw $e;
         }
 
-        // Delete the rows that don't need to be there anymore
-        if (!$isNewElement) {
-            Db::deleteIfExists(
-                Table::ELEMENTS_SITES,
-                [
-                    'and',
-                    ['elementId' => $element->id],
-                    ['not', ['siteId' => $supportedSiteIds]]
-                ]
-            );
-
-            if ($element::hasContent()) {
+        if (!$element->propagating) {
+            // Delete the rows that don't need to be there anymore
+            if (!$isNewElement) {
                 Db::deleteIfExists(
-                    $element->getContentTable(),
+                    Table::ELEMENTS_SITES,
                     [
                         'and',
                         ['elementId' => $element->id],
                         ['not', ['siteId' => $supportedSiteIds]]
                     ]
                 );
-            }
-        }
 
-        if (!$element->propagating && !ElementHelper::isDraftOrRevision($element)) {
-            // Update search index
-            if ($updateSearchIndex) {
-                if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    Craft::$app->getSearch()->indexElementAttributes($element);
-                } else {
-                    Craft::$app->getQueue()->push(new UpdateSearchIndex([
-                        'elementType' => get_class($element),
-                        'elementId' => $element->id,
-                        'siteId' => $propagate ? '*' : $element->siteId,
-                        'fieldHandles' => $element->getDirtyFields(),
-                    ]));
+                if ($element::hasContent()) {
+                    Db::deleteIfExists(
+                        $element->getContentTable(),
+                        [
+                            'and',
+                            ['elementId' => $element->id],
+                            ['not', ['siteId' => $supportedSiteIds]]
+                        ]
+                    );
                 }
             }
 
-            // Delete any caches involving this element. (Even do this for new elements, since they
-            // might pop up in a cached criteria.)
-            Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+            if (!ElementHelper::isDraftOrRevision($element)) {
+                // Update search index
+                if ($updateSearchIndex) {
+                    if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                        Craft::$app->getSearch()->indexElementAttributes($element);
+                    } else {
+                        Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                            'elementType' => get_class($element),
+                            'elementId' => $element->id,
+                            'siteId' => $propagate ? '*' : $element->siteId,
+                            'fieldHandles' => $element->getDirtyFields(),
+                        ]));
+                    }
+                }
+
+                // Delete any caches involving this element. (Even do this for new elements, since they
+                // might pop up in a cached criteria.)
+                Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+            }
         }
 
         // Fire an 'afterSaveElement' event
