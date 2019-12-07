@@ -6,6 +6,7 @@
 {% do view.registerTranslations('app', [
     "Name",
     "Handle",
+    "No tag groups exist yet.",
 ]) %}
 
 {% block actionButton %}
@@ -16,47 +17,9 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-
 {% block content %}
-    <div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
-        <p>{{ "No tag groups exist yet."|t('app') }}</p>
-    </div>
-
-    {% if tagGroups|length %}
-        <div class="tablepane">
-            <table id="taggroups" class="data fullwidth">
-                <thead>
-                    <th scope="col">{{ "Name"|t('app') }}</th>
-                    <th scope="col">{{ "Handle"|t('app') }}</th>
-                    <td class="thin"></td>
-                </thead>
-                <tbody>
-                    {% for tagGroup in tagGroups %}
-                        <tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('site') }}">
-                            <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('site') }}</a></th>
-                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ tagGroup.handle }}</code></td>
-                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
-
-    <h2>Vue Admin Table</h2>
     <div id="taggroups-vue-admin-table"></div>
 {% endblock %}
-
-
-{% js %}
-    new Craft.AdminTable({
-        tableSelector: '#taggroups',
-        noItemsSelector: '#notaggroups',
-        deleteAction: 'tags/delete-tag-group',
-        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t('app') }}',
-    });
-{% endjs %}
-
 
 {% set tableData = [] %}
 {% for tagGroup in tagGroups %}
@@ -85,6 +48,7 @@
         columns: columns,
         container: '#taggroups-vue-admin-table',
         deleteAction: 'tags/delete-tag-group',
-        tableData: {{ tableData|json_encode|raw }},
+        emptyMessage: Craft.t('app', 'No tag groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}
