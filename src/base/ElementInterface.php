@@ -282,7 +282,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the available [element actions](https://docs.craftcms.com/v3/extend/element-action-types.html) for a
-     * given source (if one is provided).
+     * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
      * set to a `type` key, or by an instantiated element action object.
