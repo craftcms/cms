@@ -9,6 +9,7 @@
     "Name",
     "Edit entry types ({count})",
     "Are you sure you want to delete “{name}” and all its entries?",
+    "No sections exist yet.",
 ]) %}
 
 {% set crumbs = [
@@ -21,51 +22,6 @@
 
 
 {% block content %}
-    <div id="nosections"{% if sections %} class="hidden"{% endif %}>
-        <p>{{ "No sections exist yet."|t('app') }}</p>
-    </div>
-
-    {% if sections|length %}
-        <div class="tablepane">
-            <table id="sections" class="data fullwidth">
-                <thead>
-                    <th scope="col">{{ "Name"|t('app') }}</th>
-                    <th scope="col">{{ "Handle"|t('app') }}</th>
-                    <th scope="col">{{ "Type"|t('app') }}</th>
-                    <th scope="col">{{ "Entry Types"|t('app')}}</th>
-                    <td class="thin"></td>
-                </thead>
-                <tbody>
-                    {% for section in sections %}
-                        <tr data-id="{{ section.id }}" data-name="{{ section.name|t('site') }}">
-                            <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('site') }}</a></th>
-                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
-                            <td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
-                            <td data-title="{{ 'Entry Types'|t('app') }}">
-                                {% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
-                                    {% set entryType = section.getEntryTypes()[0] %}
-                                    <a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t('app') }}</a>
-                                {% else %}
-                                    <a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t('app', { count: section.getEntryTypes()|length }) }}</a>
-                                    <a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>
-                                    <div class="menu">
-                                        <ul>
-                                            {% for entryType in section.getEntryTypes() %}
-                                                <li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name|t('site') }}</a></li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
-
-    <h2>Vue Admin Table</h2>
     <div id="sections-vue-admin-table"></div>
 {% endblock %}
 
@@ -99,21 +55,6 @@
 {% endfor %}
 
 {% js %}
-    new Craft.AdminTable({
-        tableSelector: '#sections',
-        noItemsSelector: '#nosections',
-        deleteAction: 'sections/delete-section',
-        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t('app') }}',
-        onDeleteItem: function()
-        {
-            // Hide the Entries tab if that was the last one
-            if (adminTable.totalItems == 0)
-            {
-                $('#nav-entries').remove();
-            }
-        }
-    });
-
     var columns = [
         {
             name: '__slot:title',
@@ -137,7 +78,8 @@
         columns: columns,
         container: '#sections-vue-admin-table',
         deleteAction: 'sections/delete-section',
-        tableData: {{ tableData|json_encode|raw }},
-        deleteConfirmationMessage: Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?")
+        deleteConfirmationMessage: Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?"),
+        emptyMessage: Craft.t('app', 'No sections exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}
