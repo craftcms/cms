@@ -270,10 +270,11 @@ interface ElementInterface extends ComponentInterface
     public static function sources(string $context = null): array;
 
     /**
-     * Returns the available element actions for a given source (if one is provided).
+     * Returns the available [element actions](https://docs.craftcms.com/v3/extend/element-action-types.html) for a
+     * given source (if one is provided).
      *
-     * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
-     * [[ElementActionInterface]] instance.
+     * The actions can be represented by their fully qualified class name, a config array with the class name
+     * set to a `type` key, or by an instantiated element action object.
      *
      * ::: tip
      * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineActions()]]
