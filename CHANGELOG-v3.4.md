@@ -18,6 +18,7 @@
 - It’s now possible to see all of the elements selected by relation fields from element indexes. ([#3030](https://github.com/craftcms/cms/issues/3030))
 - It’s now possible to download multiple assets at once as a zip file. ([#5259](https://github.com/craftcms/cms/issues/5259))
 - It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
+- Added the `utils/prune-revisions` action. ([#4851](https://github.com/craftcms/cms/issues/4851))
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
