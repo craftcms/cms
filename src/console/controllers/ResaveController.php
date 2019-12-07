@@ -244,8 +244,6 @@ class ResaveController extends Controller
         /** @var ElementQuery $query */
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        $type = mb_strtolower($elementType::displayName());
-        $pType = mb_strtolower($elementType::pluralDisplayName());
 
         if ($this->elementId) {
             $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
@@ -276,11 +274,11 @@ class ResaveController extends Controller
         $count = (int)$query->count();
 
         if ($count === 0) {
-            $this->stdout("No {$pType} exist for that criteria." . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout('No ' . $elementType::pluralLowerDisplayName() . ' exist for that criteria.' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
-        $elementsText = $count === 1 ? $type : $pType;
+        $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
         $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
