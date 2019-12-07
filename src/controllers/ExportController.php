@@ -95,7 +95,7 @@ class ExportController extends Controller
                 throw new BadRequestHttpException('Invalid export format: ' . $format);
         }
 
-        $filename = mb_strtolower($elementType::pluralDisplayName()) . '.' . $format;
+        $filename = $elementType::pluralLowerDisplayName() . '.' . $format;
         $mimeType = FileHelper::getMimeTypeByExtension($filename);
 
         $response = Craft::$app->getResponse();
