@@ -17,12 +17,13 @@
     "Handle",
     "Type",
     "Group",
+    "This group doesn’t have any fields yet.",
+    "No fields exist yet.",
 ]) %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
-
 
 {% set groups = craft.app.fields.getAllGroups()|index('id') %}
 
@@ -32,7 +33,9 @@
     {% endif %}
 
     {% set fields = groups[groupId].getFields() %}
+    {% set emptyMessage = "This group doesn’t have any fields yet."|t('app') %}
 {% else %}
+    {% set emptyMessage = "No fields exist yet."|t('app') %}
     {% set fields = craft.app.fields.getAllFields() %}
 {% endif %}
 
@@ -72,59 +75,8 @@
 
 
 {% block content %}
-    <p id="nofields"{% if fields %} class="hidden"{% endif %}>
-        {% if groupId is defined %}
-            {{ "This group doesn’t have any fields yet."|t('app') }}
-        {% else %}
-            {{ "No fields exist yet."|t('app') }}
-        {% endif %}
-    </p>
-
-    {% if fields %}
-        <table id="fields" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <th scope="col">{{ "Type"|t('app') }}</th>
-                {% if groupId is not defined %}<th scope="col">{{ "Group"|t('app') }}</th>{% endif %}
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for field in fields %}
-                    <tr data-id="{{ field.id }}" data-name="{{ field.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/fields/edit/' ~ field.id) }}">{{ field.name|t('site') }}</a>
-                            {%- if field.required %} <span class="required"></span>{% endif -%}
-                        </th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ field.handle }}</code></td>
-                        <td data-title="{{ 'Type'|t('app') }}">
-                            {% if field is missing %}
-                                <span class="error">{{ field.expectedType }}</span>
-                            {% else %}
-                                {{ field.displayName() }}
-                            {% endif %}
-                        </td>
-                        {% if groupId is not defined %}<td data-title="{{ 'Group'|t('app') }}">{{ field.group.name|t('site') }}</td>{% endif %}
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
-
-    <h2>Vue Admin Table</h2>
     <div id="fields-vue-admin-table"></div>
 {% endblock %}
-
-
-{% js %}
-    new Craft.AdminTable({
-        tableSelector: '#fields',
-        noItemsSelector: '#nofields',
-        deleteAction: 'fields/delete-field'
-    });
-{% endjs %}
-
-
 
 {% set tableData = [] %}
 {% for field in fields %}
@@ -140,12 +92,8 @@
 
     {% set tableData = tableData|merge([{
         id: field.id,
-        title: {
-            label: field.name|t('site'),
-            url: url('settings/fields/edit/' ~ field.id),
-            required: field.required,
-        },
-        name: field.name|t('site'),
+        title: field.name|t('site'),
+        url: url('settings/fields/edit/' ~ field.id),
         handle: field.handle,
         type: {
             isMissing: fieldIsMissing,
@@ -158,19 +106,7 @@
 
 {% js %}
     var columns = [
-        {
-            name: 'title',
-            title: Craft.t('app', 'Name'),
-            callback: function(value) {
-                let str = '<a class="cell-bold" href="'+value.url+'">' + value.label + '</a>';
-
-                if (value.required) {
-                    str += ' <span class="required"></span>'
-                }
-
-                return str
-            }
-        },
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
         {
             name: '__slot:handle',
             title: Craft.t('app', 'Handle'),
@@ -193,13 +129,13 @@
             name: 'group',
             title: Craft.t('app', 'Group'),
         })
-
     {% endif %}
 
     new Craft.VueAdminTable({
         columns: columns,
         container: '#fields-vue-admin-table',
         deleteAction: 'fields/delete-field',
+        emptyMessage: Craft.t('app', '{{ emptyMessage }}'),
         tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}
