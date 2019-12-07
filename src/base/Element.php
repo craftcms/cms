@@ -494,11 +494,12 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines the available element actions for a given source (if one is provided).
+     * Defines the available element actions for a given source.
      *
      * @param string|null $source The selected source’s key, if any.
      * @return array The available element actions.
      * @see actions()
+     * @todo this shouldn't allow null in Craft 4
      */
     protected static function defineActions(string $source = null): array
     {
