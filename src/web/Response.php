@@ -17,6 +17,14 @@ use yii\web\HttpException;
  */
 class Response extends \yii\web\Response
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @since 3.4.0
+     */
+    const FORMAT_CSV = 'csv';
+
     // Properties
     // =========================================================================
 
@@ -46,6 +54,8 @@ class Response extends \yii\web\Response
                     return 'application/json';
                 case self::FORMAT_JSONP:
                     return 'application/javascript';
+                case self::FORMAT_CSV:
+                    return 'text/csv';
             }
         }
 
@@ -179,6 +189,19 @@ class Response extends \yii\web\Response
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    protected function defaultFormatters()
+    {
+        $formatters = parent::defaultFormatters();
+        $formatters[self::FORMAT_CSV] = [
+            'class' => CsvResponseFormatter::class,
+        ];
+        return $formatters;
+    }
 
     /**
      * @inheritdoc

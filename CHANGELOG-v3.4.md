@@ -107,6 +107,7 @@
 - Added `craft\services\Gql::saveToken()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
 - Added `craft\web\Controller::requireGuest()`.
+- Added `craft\web\CsvResponseFormatter`.
 - Added `craft\web\User::guestRequired()`.
 - Added `craft\web\View::$minifyCss`.
 - Added `craft\web\View::$minifyJs`.
