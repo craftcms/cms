@@ -36,9 +36,9 @@
             </div>
         </div>
 
-        <div :class="{ content: isFullPage }">
+        <div :class="{ content: fullPage }">
             <div v-if="this.isEmpty">
-                <p>{{ emptyMsg }}</p>
+                <p>{{ emptyMessage }}</p>
             </div>
 
             <div class="tableview" :class="{ loading: isLoading }" v-if="!this.isEmpty">
@@ -134,27 +134,74 @@
             AdminTableActionButton
         },
 
-        props: [
-            'actions',
-            'checkboxes',
-            'columns',
-            'container',
-            'deleteAction',
-            'deleteCallback',
-            'deleteConfirmationMessage',
-            'deleteSuccessMessage',
-            'emptyMessage',
-            'fullPage',
-            'minItems',
-            'perPage',
-            'reorderAction',
-            'reorderSuccessMessage',
-            'reorderFailMessage',
-            'search',
-            'searchPlaceholder',
-            'tableData',
-            'tableDataEndpoint',
-        ],
+        props: {
+            actions: {
+                type: Array,
+                default: () => { return [] },
+            },
+            checkboxes: {
+                type: Boolean,
+                default: false,
+            },
+            columns: {
+                type: Array,
+                default: () => { return [] },
+            },
+            deleteAction: {
+                type: String,
+                default: null,
+            },
+            deleteCallback: {
+                type: Function,
+            },
+            deleteConfirmationMessage: {
+                type: String,
+            },
+            deleteSuccessMessage: {
+                type: String
+            },
+            emptyMessage: {
+                type: String,
+                default: Craft.t('app', 'No data available.')
+            },
+            fullPage: {
+                type: Boolean,
+                default: false,
+            },
+            minItems: {
+                type: Number
+            },
+            perPage: {
+                type: Number,
+                default: 40,
+            },
+            reorderAction: {
+                type: String,
+            },
+            reorderSuccessMessage: {
+                type: String,
+                default: Craft.t('app', 'Items reordered.'),
+            },
+            reorderFailMessage: {
+                type: String,
+                default: Craft.t('app', 'Couldn’t reorder items.'),
+            },
+            search: {
+                type: Boolean,
+                default: false,
+            },
+            searchPlaceholder: {
+                type: String,
+                default: Craft.t('app', 'Search'),
+            },
+            tableData: {
+                type: Array,
+                default: () => { return [] },
+            },
+            tableDataEndpoint: {
+                type: String,
+            },
+        },
 
         data() {
             return {
@@ -305,18 +352,6 @@
 
             canReorder() {
                 return (this.$refs.vuetable.tableData.length > 1 && this.reorderAction && this.$el.querySelector(this.tableBodySelector) && (!this.$refs.vuetable.tablePagination))
-            },
-
-            isFullPage() {
-                return this.fullPage != undefined ? this.fullPage : false;
-            },
-
-            emptyMsg() {
-                if (this.emptyMessage) {
-                    return this.emptyMessage;
-                }
-
-                return Craft.t('app', 'No data available');
             },
 
             fields() {
