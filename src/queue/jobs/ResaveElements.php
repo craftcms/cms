@@ -79,7 +79,7 @@ class ResaveElements extends BaseJob
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
         return Craft::t('app', 'Resaving {type}', [
-            'type' => mb_strtolower($elementType::pluralDisplayName()),
+            'type' => $elementType::pluralLowerDisplayName(),
         ]);
     }
 

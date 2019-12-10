@@ -8,7 +8,6 @@ env:
 branches:
   only:
   - develop
-  - feature/tests
 services:
 - mysql
 - postgresql
@@ -32,7 +31,7 @@ cache:
   - "$HOME/.composer/cache"
   - "$HOME/.npm"
 addons:
-  postgresql: '9.6'
+  postgresql: "9.6"
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
