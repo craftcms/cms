@@ -1,21 +1,16 @@
 <template>
-    <div>
+    <div class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded }">
         <div v-show="showToolbar" class="toolbar">
             <div class="flex">
 
-                <div v-if="showCheckboxes" class="selectallcontainer">
-                    <div v-on:click="handleSelectAll" class="btn" role="checkbox" tabindex="0" aria-checked="false">
-                        <div class="checkbox" :class="{ checked: checks.length && checks.length == $refs.vuetable.tableData.length, indeterminate: this.checks.length && this.checks.length != $refs.vuetable.tableData.length }"></div>
-                    </div>
-                </div>
-
-                <div v-for="(action,index) in actions" :key="index" v-if="checks.length">
+                <div v-for="(action,index) in actions" :key="index">
                     <admin-table-action-button
                         :label="action.label"
                         :icon="action.icon"
                         :action="action.action"
                         :actions="action.actions"
                         :ids="checks"
+                        :enabled="checks.length ? true : false"
                         v-on:reload="reload"
                     >
                     </admin-table-action-button>
@@ -42,7 +37,7 @@
             </div>
 
             <div class="tableview" :class="{ loading: isLoading }" v-if="!this.isEmpty">
-                <div class="tablepane">
+                <div class="tablepane vue-admin-tablepane">
                     <vuetable
                             ref="vuetable"
                             :per-page="perPage"
@@ -171,6 +166,10 @@
             minItems: {
                 type: Number
             },
+            padded: {
+                type: Boolean,
+                default: false,
+            },
             perPage: {
                 type: Number,
                 default: 40,
@@ -207,12 +206,13 @@
             return {
                 checks: [],
                 currentPage: 1,
-                tableClass: 'data fullwidth',
-                tableBodySelector: '.vuetable-body',
+                isEmpty: false,
                 isLoading: true,
                 searchTerm: null,
+                selectAll: null,
                 sortable: null,
-                isEmpty: false,
+                tableBodySelector: '.vuetable-body',
+                tableClass: 'data fullwidth',
             }
         },
 
@@ -227,6 +227,11 @@
                     })
                 }
                 this.isEmpty = (this.$refs.vuetable.tableData.length) ? false : true;
+
+                this.$nextTick(() => {
+                    this.selectAll = this.$refs.vuetable.$el.querySelector('.selectallcontainer');
+                    this.selectAll.addEventListener('click', this.handleSelectAll);
+                });
 
                 this.isLoading = false;
             },
@@ -362,6 +367,7 @@
                     columns.push({
                         name: '__slot:checkbox',
                         titleClass: 'thin',
+                        title: '<div class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0" aria-checked="false"><div class="checkbox"></div></div>',
                         dataClass: 'checkbox-cell'
                     });
                 }
@@ -412,6 +418,26 @@
                 }
             }
         },
+
+        watch: {
+            checks() {
+                if (this.selectAll) {
+                    let checkbox = this.selectAll.querySelector('.checkbox');
+
+                    if (this.checks.length && this.checks.length == this.$refs.vuetable.tableData.length) {
+                        checkbox.classList.add('checked');
+                        checkbox.classList.remove('indeterminate');
+                    } else if (this.checks.length && this.checks.length != this.$refs.vuetable.tableData.length) {
+                        checkbox.classList.remove('checked');
+                        checkbox.classList.add('indeterminate');
+                    } else {
+                        checkbox.classList.remove('checked');
+                        checkbox.classList.remove('indeterminate');
+
+                    }
+                }
+            }
+        }
     }
 </script>
 
@@ -433,6 +459,18 @@
 
     .tableview .cell-bold {
         font-weight: bold;
+    }
+
+    .vue-admin-table .toolbar {
+        margin-bottom: 32px;
+    }
+
+    .vue-admin-table.vue-admin-table-padded .toolbar {
+        margin-bottom: 14px;
+    }
+
+    .vue-admin-table-padded .tablepane {
+        margin: 0;
     }
 
     table thead th.sortable:hover {
