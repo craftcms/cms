@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.18 - 2019-12-10
 
 ### Added
 - Added `craft\queue\jobs\ApplyMatrixPropagationMethod`.
