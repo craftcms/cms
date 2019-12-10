@@ -1993,14 +1993,18 @@ abstract class Element extends Component implements ElementInterface
             return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
         }
         if ($outdated && !$modified) {
-            return [self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         if ($outdated && $modified) {
-            return [self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         return null;
     }
@@ -2116,14 +2120,18 @@ abstract class Element extends Component implements ElementInterface
             return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
         }
         if ($outdated && !$modified) {
-            return [self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         if ($outdated && $modified) {
-            return [self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         return null;
     }
