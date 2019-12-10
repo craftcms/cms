@@ -22,18 +22,19 @@
         name: 'AdminTablePagination',
         mixins: [PaginationMixin],
         props: {
-          singular: {
-              type: String,
-              default: Craft.t('app', 'Item')
-          },
-          plural: {
-              type: String,
-              default: Craft.t('app', 'Items')
+          itemLabels: {
+              type: Object,
+              default: () => {
+                  return {
+                      singular: Craft.t('app', 'Item'),
+                      plural: Craft.t('app', 'Items')
+                  }
+              }
           }
         },
         computed: {
             countWording() {
-                return this.tablePagination.total == 1 ? this.singular : this.plural;
+                return this.tablePagination.total == 1 ? this.itemLabels.singular : this.itemLabels.plural;
             }
         }
     }

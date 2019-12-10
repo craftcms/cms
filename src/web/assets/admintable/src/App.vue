@@ -103,6 +103,7 @@
                 </div>
                 <admin-table-pagination
                         ref="pagination"
+                        :itemLabels="itemLabels"
                         @vuetable-pagination:change-page="onChangePage"
                 ></admin-table-pagination>
             </div>
@@ -162,6 +163,15 @@
             fullPage: {
                 type: Boolean,
                 default: false,
+            },
+            itemLabels: {
+                type: Object,
+                default: () => {
+                    return {
+                        singular: Craft.t('app', 'Item'),
+                        plural: Craft.t('app', 'Items'),
+                    }
+                }
             },
             minItems: {
                 type: Number
