@@ -1737,12 +1737,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 'class': 'fullwidth',
             }).appendTo($form);
 
-            var $limitField = Craft.ui.createTextField({
-                label: Craft.t('app', 'Limit'),
-                placeholder: Craft.t('app', 'No limit'),
-                type: 'number',
-                min: 1
-            }).appendTo($form);
+            // Only show the Limit field if there aren't any selected elements
+            var selectedElementIds = this.view.getSelectedElementIds();
+
+            if (!selectedElementIds.length) {
+                var $limitField = Craft.ui.createTextField({
+                    label: Craft.t('app', 'Limit'),
+                    placeholder: Craft.t('app', 'No limit'),
+                    type: 'number',
+                    min: 1
+                }).appendTo($form);
+            }
 
             $('<input/>', {
                 type: 'submit',
@@ -1776,9 +1781,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 params.type = $typeField.find('select').val();
                 params.format = $formatField.find('select').val();
-                var limit = parseInt($limitField.find('input').val());
-                if (limit && !isNaN(limit)) {
-                    params.criteria.limit = limit;
+
+                if (selectedElementIds.length) {
+                    params.criteria.id = selectedElementIds;
+                } else {
+                    var limit = parseInt($limitField.find('input').val());
+                    if (limit && !isNaN(limit)) {
+                        params.criteria.limit = limit;
+                    }
                 }
 
                 Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {

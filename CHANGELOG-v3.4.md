@@ -157,6 +157,7 @@
 - Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
 - Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Renamed the`QueryParameter` GraphQL type to `QueryArgument`.
+- If any elements are selected while exporting, only the selected elements will be included in the export. ([#5130](https://github.com/craftcms/cms/issues/5130))
 - Project config now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - Active record classes now normalize attribute values right when they are set.
 - `craft\models\GqlSchema::$scope` is now read-only.
