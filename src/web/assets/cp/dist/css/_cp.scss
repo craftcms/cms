@@ -692,7 +692,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .text {
     border-radius: $largeBorderRadius;
-    background-color: transparentize($inputColor, 0.75);
     box-shadow: none;
 
     &::-webkit-input-placeholder {
@@ -720,7 +719,6 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     &:not(:focus) {
-      border-color: transparent;
       background-clip: border-box;
     }
   }

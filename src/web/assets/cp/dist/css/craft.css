@@ -1888,14 +1888,14 @@ body.rtl #header h1:not(:last-child) { margin-left: 14px !important; }
 #toolbar { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #toolbar .btn, #toolbar .text { color: #394b60; }
 #toolbar .icon:before, #toolbar .texticon:before, #toolbar .menubtn:after, #toolbar [data-icon]:before, #toolbar [data-icon-after]:after { color: #4d6480; }
-#toolbar .text { border-radius: 5px; background-color: rgba(96, 125, 159, 0.25); -webkit-box-shadow: none; box-shadow: none; }
+#toolbar .text { border-radius: 5px; -webkit-box-shadow: none; box-shadow: none; }
 #toolbar .text::-webkit-input-placeholder { color: #4d6480; }
 #toolbar .text:-ms-input-placeholder { color: #4d6480; }
 #toolbar .text::-ms-input-placeholder { color: #4d6480; }
 #toolbar .text:-moz-placeholder { color: #4d6480; }
 #toolbar .text::-moz-placeholder { color: #4d6480; }
 #toolbar .text::placeholder { color: #4d6480; }
-#toolbar .text:not(:focus) { border-color: transparent; background-clip: border-box; }
+#toolbar .text:not(:focus) { background-clip: border-box; }
 
 #main-content { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; width: calc(100vw - 225px); padding: 0 24px 48px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 #main-content > .grid:only-child { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
