@@ -215,11 +215,11 @@ class Craft extends Yii
 
         if (!$isContentBehaviorFileValid) {
             // First generate ContentBehavior and autoload it without loading the fields
-            self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, true);
+            self::_generateContentBehavior($fieldHandles, $contentBehaviorFile, $storedFieldVersion, true);
         }
 
         if (!$isElementQueryBehaviorFileValid) {
-            self::_generateElementQueryFile($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion);
+            self::_generateElementQueryBehavior($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion);
         }
 
         if (!$isContentBehaviorFileValid && !empty($fields)) {
@@ -244,7 +244,7 @@ class Craft extends Yii
                 }
             }
 
-            self::_generateContentBehaviorFile($fieldHandles, $contentBehaviorFile, $storedFieldVersion, false);
+            self::_generateContentBehavior($fieldHandles, $contentBehaviorFile, $storedFieldVersion, false);
         }
     }
 
@@ -255,30 +255,37 @@ class Craft extends Yii
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateContentBehaviorFile(array $fieldHandles, string $contentBehaviorFile, string $storedFieldVersion, bool $load)
+    private static function _generateContentBehavior(array $fieldHandles, string $contentBehaviorFile, string $storedFieldVersion, bool $load)
     {
         $handles = [];
         $properties = [];
 
         foreach ($fieldHandles as $handle => $types) {
-            $phpDocTypes = implode('|', array_keys($types));
             $handles[] = <<<EOD
         '{$handle}' => true,
 EOD;
 
-            $properties[] = <<<EOD
+            if ($load) {
+                $properties[] = <<<EOD
+    public \${$handle};
+EOD;
+            } else {
+                $phpDocTypes = implode('|', array_keys($types));
+                $properties[] = <<<EOD
     /**
      * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
+            }
         }
 
-        self::_writeFieldAttributesFile(
+        self::_generateBehavior(
             static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
             ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
             [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
             $contentBehaviorFile,
+            !$load,
             $load
         );
     }
@@ -289,7 +296,7 @@ EOD;
      * @param string $storedFieldVersion
      * @throws \yii\base\ErrorException
      */
-    private static function _generateElementQueryFile(array $fieldHandles, string $elementQueryBehaviorFile, string $storedFieldVersion)
+    private static function _generateElementQueryBehavior(array $fieldHandles, string $elementQueryBehaviorFile, string $storedFieldVersion)
     {
         $methods = [];
 
@@ -299,11 +306,12 @@ EOD;
 EOD;
         }
 
-        self::_writeFieldAttributesFile(
+        self::_generateBehavior(
             static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
             ['{VERSION}', '{METHOD_DOCS}'],
             [$storedFieldVersion, implode("\n", $methods)],
             $elementQueryBehaviorFile,
+            true,
             true
         );
     }
@@ -368,18 +376,24 @@ EOD;
      * @param string[] $search
      * @param string[] $replace
      * @param string $destinationPath
+     * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath, bool $load)
+    private static function _generateBehavior(string $templatePath, array $search, array $replace, string $destinationPath, bool $write, bool $load)
     {
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
-        FileHelper::writeToFile($destinationPath, $fileContents);
-        clearstatcache(true, $destinationPath);
 
-        if ($load) {
-            include $destinationPath;
+        if ($write) {
+            FileHelper::writeToFile($destinationPath, $fileContents);
+            clearstatcache(true, $destinationPath);
+            if ($load) {
+                include $destinationPath;
+            }
+        } else if ($load) {
+            // Just evaluate the code
+            eval(preg_replace('/^<\?php\s*/', '', $fileContents));
         }
     }
 }
