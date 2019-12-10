@@ -496,9 +496,6 @@ abstract class Element extends Component implements ElementInterface
     {
         $exporters = static::defineExporters($source);
 
-        $exporters[] = Raw::class;
-        $exporters[] = Expanded::class;
-
         // Give plugins a chance to modify them
         $event = new RegisterElementExportersEvent([
             'source' => $source,
@@ -560,7 +557,10 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function defineExporters(string $source): array
     {
-        return [];
+        return [
+            Raw::class,
+            Expanded::class,
+        ];
     }
 
     /**
