@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div :class="{ content: fullPage }">
+        <div :class="{ 'content-pane': fullPage }">
             <div v-if="this.isEmpty">
                 <p>{{ emptyMessage }}</p>
             </div>
