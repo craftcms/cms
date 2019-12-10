@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
+use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
@@ -1421,7 +1422,7 @@ class Elements extends Component
         return $event->types;
     }
 
-    // Element Actions
+    // Element Actions & Exporters
     // -------------------------------------------------------------------------
 
     /**
@@ -1436,6 +1437,17 @@ class Elements extends Component
         $action = ComponentHelper::createComponent($config, ElementActionInterface::class);
 
         return $action;
+    }
+
+    /**
+     * Creates an element exporter with a given config.
+     *
+     * @param mixed $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @return ElementExporterInterface The element exporter
+     */
+    public function createExporter($config): ElementExporterInterface
+    {
+        return ComponentHelper::createComponent($config, ElementExporterInterface::class);
     }
 
     // Misc

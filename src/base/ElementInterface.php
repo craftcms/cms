@@ -298,6 +298,23 @@ interface ElementInterface extends ComponentInterface
     public static function actions(string $source): array;
 
     /**
+     * Returns the available export options for a given source.
+     *
+     * The exporters can be represented by their fully qualified class name, a config array with the class name
+     * set to a `type` key, or by an instantiated element exporter object.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineExporters()]]
+     * instead of this method.
+     * :::
+     *
+     * @param string $source The selected source’s key.
+     * @return array The available element exporters.
+     * @since 3.4.0
+     */
+    public static function exporters(string $source): array;
+
+    /**
      * Defines which element attributes should be searchable.
      *
      * This method should return an array of attribute names that can be accessed on your elements.

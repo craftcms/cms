@@ -27,6 +27,9 @@
 - It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager-loading criteria. 
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
 - GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
+- Added a new “Expanded” element exporter type, which includes expanded custom field values, including Matrix and relational fields. ([#4484](https://github.com/craftcms/cms/issues/4484))
+- It’s now possible to export elements as CSV, JSON, or XML files.
+- Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -37,6 +40,11 @@
 - Added `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Added `craft\base\Element::ATTR_STATUS_MODIFIED`.
 - Added `craft\base\Element::ATTR_STATUS_OUTDATED`.
+- Added `craft\base\Element::EVENT_REGISTER_EXPORTERS`.
+- Added `craft\base\Element::defineExporters()`.
+- Added `craft\base\ElementExporterInterface`.
+- Added `craft\base\ElementExporter`.
+- Added `craft\base\ElementInterface::exporters()`
 - Added `craft\base\ElementInterface::getAttributeStatus()`.
 - Added `craft\base\ElementInterface::getDirtyAttributes()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
@@ -70,10 +78,13 @@
 - Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\elements\db\ElementQuery::clearCachedResult()`.
 - Added `craft\elements\db\MatrixBlockQuery::field()`.
+- Added `craft\elements\exporters\Expanded`.
+- Added `craft\elements\exporters\Raw`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\ExecuteGqlQueryEvent::$schemaId`.
+- Added `craft\events\RegisterElementExportersEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\events\TemplateEvent::$templateMode`.
 - Added `craft\gql\TypeManager`.
@@ -92,6 +103,7 @@
 - Added `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::mergeSourceChanges()`.
+- Added `craft\services\Elements::createExporter()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
 - Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::deleteSchema()`.
