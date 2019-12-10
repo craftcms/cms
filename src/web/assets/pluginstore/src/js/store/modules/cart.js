@@ -285,16 +285,17 @@ const actions = {
                         // get cart by order number
                         api.getCart(orderNumber)
                             .then(cartResponseData => {
-                                if (!cartResponseData.error) {
-                                    dispatch('updateCartPlugins', {cartResponseData})
-                                        .then(() => {
-                                            resolve(cartResponseData)
-                                        })
-                                        .catch((error) => {
-                                            reject(error)
-                                        })
-                                } else {
-                                    // Couldn’t get cart for this order number? Try to create a new one.
+                                dispatch('updateCartPlugins', {cartResponseData})
+                                    .then(() => {
+                                        resolve(cartResponseData)
+                                    })
+                                    .catch((error) => {
+                                        reject(error)
+                                    })
+                            })
+                            .catch(error => {
+                                if (error && error.response && error.response.status && error.response.status === 404) {
+                                    // Couldn’t retrieve cart for this order number? Create a new one.
                                     dispatch('createCart')
                                         .then((cartResponseData) => {
                                             resolve(cartResponseData)
@@ -302,10 +303,10 @@ const actions = {
                                         .catch(cartError => {
                                             reject(cartError)
                                         })
+                                } else {
+                                    // Different error? Throw it.
+                                    reject(error)
                                 }
-                            })
-                            .catch(error => {
-                                reject(error)
                             })
                     } else {
                         // No order number yet? Create a new cart.
