@@ -1,11 +1,11 @@
 <template>
-  <form ref="adminMenuBtn" method="post">
+  <form ref="form" method="post">
     <input type="hidden" :name="tokenName" :value="tokenValue">
     <input type="hidden" name="action" :value="action">
     <input type="hidden" :name="param" :value="value">
     <input type="hidden" name="ids[]" v-for="(id, index) in ids" :key="index" :value="id">
 
-    <div class="btn menubtn" :data-icon="icon">{{label}}</div>
+    <div ref="button" class="btn menubtn" :data-icon="icon">{{label}}</div>
     <div class="menu" v-if="actions.length">
       <ul class="padded">
         <li v-for="(act,index) in actions" :key="index" v-once>
@@ -19,20 +19,22 @@
 </template>
 
 <script>
-    /* global Craft */
+    /* global Craft, $ */
     export default {
         name: 'AdminTableActionButton',
 
         props: {
-            label: String,
-            icon: String,
             action: String,
             actions: Array,
-            ids: Array
+            enabled: Boolean,
+            ids: Array,
+            label: String,
+            icon: String,
         },
 
         data() {
             return {
+                button: null,
                 tokenName: Craft.csrfTokenName,
                 tokenValue: Craft.csrfTokenValue,
                 param: '',
@@ -61,7 +63,7 @@
                     this.value = value;
 
                     this.$nextTick(() => {
-                        this.$refs.adminMenuBtn.submit();
+                        this.$refs.form.submit();
                     });
                 }
             }
@@ -71,9 +73,24 @@
 
         },
 
+        watch: {
+            enabled() {
+                if (this.enabled) {
+                    this.button.removeClass('disabled');
+                    this.button.data('menubtn').enable();
+                } else {
+                    this.button.addClass('disabled');
+                    this.button.data('menubtn').disable();
+                }
+            }
+        },
+
         mounted() {
             this.$nextTick(() => {
-                Craft.initUiElements(this.$refs.adminMenuBtn);
+                Craft.initUiElements(this.$refs.form);
+                this.button = $(this.$refs.button);
+                this.button.data('menubtn').disable();
+                this.button.addClass('disabled');
             });
         }
     }
