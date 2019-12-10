@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.3.18.1 - 2019-12-10
+
+### Fixed
+- Fixed a JavaScript error that could occur if Craft didn’t have a license key yet.
+
 ## 3.3.18 - 2019-12-10
 
 ### Added
