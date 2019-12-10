@@ -12,6 +12,7 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementExporter;
 use craft\base\Field;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -44,13 +45,12 @@ class Expanded extends ElementExporter
             }
         }
 
-        $elements = $query
-            ->with($eagerLoadableFields)
-            ->all();
-
         $data = [];
 
-        foreach ($elements as $element) {
+        /** @var ElementQuery $query */
+        $query->with($eagerLoadableFields);
+
+        foreach ($query->each() as $element) {
             /** @var Element $element */
             // Get the basic array representation excluding custom fields
             $attributes = array_flip($element->attributes());
