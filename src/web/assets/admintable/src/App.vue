@@ -25,7 +25,7 @@
                         v-model="searchTerm"
                         @input="handleSearch"
                     >
-                    <div class="clear hidden" title="Clear"></div>
+                    <div class="clear hidden" :title="searchClearTitle"></div>
                 </div>
 
             </div>
@@ -208,6 +208,7 @@
                 currentPage: 1,
                 isEmpty: false,
                 isLoading: true,
+                searchClearTitle: Craft.t('app', 'Clear'),
                 searchTerm: null,
                 selectAll: null,
                 sortable: null,
@@ -412,9 +413,12 @@
 
             tableCss() {
                 return {
-                    tableClass: this.tableClass,
+                    ascendingClass: 'ordered asc',
+                    descendingClass: 'ordered desc',
+                    sortableIcon: 'orderable',
                     handleIcon: 'move icon',
-                    loadingClass: 'loading'
+                    loadingClass: 'loading',
+                    tableClass: this.tableClass,
                 }
             }
         },
