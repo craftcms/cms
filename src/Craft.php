@@ -327,12 +327,12 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . self::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = self::$app->getConfig()->getConfigFromFile('guzzle');
+        $guzzleConfig = static::$app->getConfig()->getConfigFromFile('guzzle');
 
         // Merge default into guzzle config.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
