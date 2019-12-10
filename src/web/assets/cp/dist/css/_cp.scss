@@ -942,7 +942,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     border-radius: $largeBorderRadius;
     padding: 0 24px;
 
-    &:not(.read-only) {
+    &:not(.read-only):not(.warning) {
       @include pane;
       background-color: $grey050;
     }
@@ -951,6 +951,30 @@ $toolbarIconColor: darken($inputColor, 10%);
       padding-top: 14px;
       padding-bottom: 14px;
       background-color: $grey200;
+    }
+
+    &.warning {
+      border: 2px solid $yellow300;
+      padding: 19px 22px;
+      background: $grey050;
+      color: $textColor !important;
+
+      p {
+        margin-bottom: 5px;
+      }
+
+      .btn {
+        background-color: $yellow300;
+
+        &:hover,
+        &:focus {
+          background-color: darken($yellow300, 10%);
+        }
+
+        &:active {
+          background-color: darken($yellow300, 15%);
+        }
+      }
     }
 
     & > .field,
@@ -967,8 +991,15 @@ $toolbarIconColor: darken($inputColor, 10%);
       padding: 0 24px;
     }
 
-    & > .field + .field {
-      border-top-color: $hairlineColor;
+    & > .field {
+      .status-badge {
+        @include left(4px);
+        top: calc(50% - 8px);
+      }
+
+      & + .field {
+        border-top-color: $hairlineColor;
+      }
     }
 
     .text::placeholder,
@@ -1120,31 +1151,22 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 // Tighten up the padding at < 768
 @media only screen and (max-width: 767px) {
-  #global-header,
   #crumbs,
   #header,
-  #main-content,
-  #tabs ul li a,
-  #content,
-  #details .meta,
-  .elements .header {
-    padding-left: 14px;
-    padding-right: 14px;
+  #main-content {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
-  #tabs ul li + li {
-    @include margin-left(-7px);
-  }
+  #tabs ul li {
+    a {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
 
-  #footer {
-    margin-left: -14px;
-    margin-right: -14px;
-  }
-
-  .tablepane,
-  .elements .header {
-    margin-left: -14px;
-    margin-right: -14px;
+    & + li {
+      @include margin-left(-7px);
+    }
   }
 }
 
@@ -1506,6 +1528,7 @@ only screen and (min-resolution: 1.5dppx) {
         #details {
           .spinner {
             background-image: url(../images/spinner_details_2x.gif);
+            background-size: 20px;
           }
         }
       }

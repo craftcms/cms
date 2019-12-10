@@ -74,33 +74,13 @@ class ExportController extends Controller
             Craft::configure($query, $criteria);
         }
 
-        // Get the results and add a header row to the beginning
-        /** @var array $results */
         $results = $query->asArray()->all();
-        $header = !empty($results) ? array_keys(reset($results)) : [];
-        array_unshift($results, $header);
-
-        switch ($format) {
-            case 'csv':
-                $file = tempnam(sys_get_temp_dir(), 'export');
-                $fp = fopen($file, 'wb');
-                foreach ($results as $result) {
-                    fputcsv($fp, $result, ',');
-                }
-                fclose($fp);
-                $contents = file_get_contents($file);
-                unlink($file);
-                break;
-            default:
-                throw new BadRequestHttpException('Invalid export format: ' . $format);
-        }
-
-        $filename = mb_strtolower($elementType::pluralDisplayName()) . '.' . $format;
+        $filename = $elementType::pluralLowerDisplayName() . '.' . $format;
         $mimeType = FileHelper::getMimeTypeByExtension($filename);
 
         $response = Craft::$app->getResponse();
-        $response->content = $contents;
-        $response->format = Response::FORMAT_RAW;
+        $response->data = $results;
+        $response->format = $format;
         $response->setDownloadHeaders($filename, $mimeType);
         return $response;
     }

@@ -888,6 +888,10 @@ ul.icons {
     &:not(:last-child) {
       @include margin-right(7px !important);
     }
+
+    &.spinner {
+      @include margin-left(0 !important);
+    }
   }
 }
 
@@ -2454,7 +2458,7 @@ ul.tree,
   border-color: transparentize($inputColor, 0.2);
 }
 
-.status.green,
+.green,
 .status.on,
 .status.live,
 .status.active,
@@ -2464,14 +2468,14 @@ ul.tree,
 
 /* green */
 
-.status.orange,
+.orange,
 .status.pending {
   background-color: $yellow700;
 }
 
 /* orange */
 
-.status.red,
+.red,
 .status.off,
 .status.suspended,
 .status.expired {
@@ -2480,23 +2484,23 @@ ul.tree,
 
 /* red */
 
-.status.yellow {
-  background-color: $yellow400;
+.yellow {
+  background-color: $yellow300;
 }
 
-.status.pink {
+.pink {
   background-color: $pink400;
 }
 
-.status.purple {
+.purple {
   background-color: #9B59B6;
 }
 
-.status.blue {
+.blue {
   background-color: $blue600;
 }
 
-.status.turquoise {
+.turquoise {
   background-color: $teal300;
 }
 
@@ -2504,11 +2508,11 @@ ul.tree,
   background-color: $grey100;
 }
 
-.status.grey {
+.grey {
   background-color: $grey300;
 }
 
-.status.black {
+.black {
   background-color: $grey800;
 }
 
@@ -3702,6 +3706,35 @@ textarea.text.fullwidth {
 .field {
   position: relative;
   margin: 24px 0;
+
+  & > .status-badge {
+    position: absolute;
+    top: 2px;
+    @include left(-19px);
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 15px;
+    width: 15px;
+    text-align: center;
+    cursor: default;
+    border-radius: $smallBorderRadius;
+
+    &.modified {
+      background-color: $blue600;
+      color: $white;
+      @include light-on-dark-text;
+    }
+
+    &.outdated {
+      background-color: $yellow300;
+    }
+
+    &.conflicted {
+      background-color: $red600;
+      color: $white;
+      @include light-on-dark-text;
+    }
+  }
 
   & > .heading {
     margin-bottom: 5px;

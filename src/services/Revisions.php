@@ -194,7 +194,7 @@ class Revisions extends Component
                 ->siteId($source->siteId)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
-                ->offset($maxRevisions + 1)
+                ->offset($maxRevisions)
                 ->all();
 
             foreach ($extraRevisions as $extraRevision) {
