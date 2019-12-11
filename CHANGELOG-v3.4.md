@@ -191,6 +191,7 @@
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
 - Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
+- Deprecated `craft\services\ProjectConfig::$maxBackups`. `$maxDeltas` should be used instead.
 - Deprecated `craft\services\Search::indexElementFields()`.
 
 ### Removed
@@ -202,7 +203,6 @@
 - Removed `craft\models\GqlSchema::$dateCreated`.
 - Removed `craft\models\GqlSchema::$isTemporary`.
 - Removed `craft\models\GqlSchema::getIsPublic()`.
-- Removed `craft\services\ProjectConfig::$maxBackups`.
 
 ### Fixed
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
