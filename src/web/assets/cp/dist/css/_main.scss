@@ -1754,11 +1754,11 @@ table {
 }
 
 /* elements */
-$baseElementSidePadding: 7px;
-$elementInnerSpacing: 5px;
-$elementStatusPadding: 10px + $elementInnerSpacing;
 $smallThumbSize: 32px;
 $largeThumbSize: 120px;
+$statusSize: 10px;
+$baseElementSidePadding: 7px;
+$elementInnerSpacing: 5px;
 
 .element {
   position: relative;
@@ -1800,6 +1800,8 @@ $largeThumbSize: 120px;
     border-radius: 17px;
 
     &.hasstatus {
+      @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
+
       .status {
         position: absolute;
         @include left($baseElementSidePadding);
@@ -1807,36 +1809,27 @@ $largeThumbSize: 120px;
       }
     }
 
-    &.hasstatus:not(.hasthumb) {
-      @include padding-left($baseElementSidePadding + $elementStatusPadding);
-    }
-
     &.hasthumb {
+      @include padding-left(1px + $smallThumbSize + $elementInnerSpacing);
+
       .elementthumb {
         display: flex;
         align-items: center;
         justify-content: center;
         position: absolute;
         top: calc(50% - 16px);
+        @include left(1px);
         width: $smallThumbSize;
         height: $smallThumbSize;
         border-radius: 16px;
         overflow: hidden;
       }
 
-      &:not(.hasstatus) {
-        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing);
-
-        .elementthumb {
-          @include left(1px);
-        }
-      }
-
       &.hasstatus {
-        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing + $elementStatusPadding);
+        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing * 2 + $statusSize);
 
-        .elementthumb {
-          @include left(1px + $elementStatusPadding + $elementInnerSpacing);
+        .status {
+          @include left(1px + $smallThumbSize + $elementInnerSpacing);
         }
       }
     }
@@ -1850,10 +1843,11 @@ $largeThumbSize: 120px;
     border-radius: $smallBorderRadius;
 
     &.hasstatus {
-      @include padding-left($baseElementSidePadding + $elementStatusPadding + px);
+      @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
+
       .status {
         position: absolute;
-        @include left(0);
+        @include left($baseElementSidePadding);
         top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing + 6};
       }
     }
@@ -2025,20 +2019,6 @@ $checkboxPadding: $checkboxSize + 4;
           position: absolute;
           top: $baseElementSidePadding + $largeThumbSize + -$checkboxSize - 2px;
           @include left($baseElementSidePadding + 2px);
-        }
-
-        .element.large.hasthumb {
-          &:not(.hasstatus) {
-            @include padding-left($baseElementSidePadding);
-          }
-
-          &.hasstatus {
-            @include padding-left($baseElementSidePadding + $elementStatusPadding);
-
-            .status {
-              @include left($baseElementSidePadding);
-            }
-          }
         }
 
         @supports (backdrop-filter: blur(10px)) {
