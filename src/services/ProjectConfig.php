@@ -56,6 +56,7 @@ class ProjectConfig extends Component
 
     /**
      * Filename for base config delta files
+     *
      * @since 3.4.0
      */
     const CONFIG_DELTA_FILENAME = 'delta.yaml';
@@ -65,12 +66,14 @@ class ProjectConfig extends Component
 
     /**
      * Key to use for signaling ordered-to-associative array conversion
+     *
      * @since 3.4.0
      */
     const CONFIG_ASSOC_KEY = '__assoc__';
 
     /**
      * Key to use when memoizing the entire config array
+     *
      * @since 3.4.0
      */
     const CONFIG_ALL_KEY = '__all__';
@@ -277,6 +280,7 @@ class ProjectConfig extends Component
 
     /**
      * A running list of all the changes applied during this request
+     *
      * @var array
      */
     private $_appliedChanges = [];
@@ -641,8 +645,7 @@ class ProjectConfig extends Component
                 // Allow modification of the array being looped over.
                 $currentSet = $changeSet;
 
-                if (!empty($changeSet['added']))
-                {
+                if (!empty($changeSet['added'])) {
                     foreach ($currentSet['added'] as $key => $value) {
                         if (array_key_exists($key, $currentSet['removed'])) {
                             if (is_string($changeSet['removed'][$key])) {
@@ -653,9 +656,9 @@ class ProjectConfig extends Component
 
                             // Ensure types
                             if (is_bool($value)) {
-                                $changeSet['removed'][$key] = (bool) $changeSet['removed'][$key];
+                                $changeSet['removed'][$key] = (bool)$changeSet['removed'][$key];
                             } else if (is_int($value)) {
-                                $changeSet['removed'][$key] = (int) $changeSet['removed'][$key];
+                                $changeSet['removed'][$key] = (int)$changeSet['removed'][$key];
                             }
 
                             if ($changeSet['removed'][$key] === $value) {

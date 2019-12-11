@@ -226,7 +226,8 @@ class ProjectConfig
      * @param $result
      * @since 3.4.0
      */
-    public static function flattenConfigArray($array, $path, &$result) {
+    public static function flattenConfigArray($array, $path, &$result)
+    {
         foreach ($array as $key => $value) {
             $thisPath = ltrim($path . '.' . $key, '.');
 

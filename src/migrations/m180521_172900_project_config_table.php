@@ -2,18 +2,11 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
-use craft\models\GqlToken;
-use craft\services\Fields;
-use craft\services\Gql;
-use craft\services\Plugins;
-use craft\services\Volumes;
 
 /**
  * m180521172900_project_config_table migration.
@@ -43,7 +36,7 @@ class m180521_172900_project_config_table extends Migration
             if (!$config) {
                 $config = [];
             } else if ($config[0] === '{') {
-                $config =  Json::decode($config);
+                $config = Json::decode($config);
             } else {
                 $config = unserialize($config, ['allowed_classes' => false]);
             }
