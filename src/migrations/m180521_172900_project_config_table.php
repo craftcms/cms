@@ -7,6 +7,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
+use craft\helpers\StringHelper;
 
 /**
  * m180521172900_project_config_table migration.
@@ -35,10 +36,14 @@ class m180521_172900_project_config_table extends Migration
 
             if (!$config) {
                 $config = [];
-            } else if ($config[0] === '{') {
-                $config = Json::decode($config);
             } else {
-                $config = unserialize($config, ['allowed_classes' => false]);
+                // Try to decode it in case it contains any 4+ byte characters
+                $config = StringHelper::decdec($config);
+                if ($config[0] === '{') {
+                    $config = Json::decode($config);
+                } else {
+                    $config = unserialize($config, ['allowed_classes' => false]);
+                }
             }
 
             $flatConfigData = [];
@@ -47,9 +52,19 @@ class m180521_172900_project_config_table extends Migration
 
             $batch = [];
             $counter = 0;
+            $isMysql = $this->db->getIsMysql();
 
             // Batch by 100
             foreach ($flatConfigData as $key => $value) {
+                $value = Json::encode($value);
+
+                if (
+                    !mb_check_encoding($value, 'UTF-8') ||
+                    ($isMysql && StringHelper::containsMb4($value))
+                ) {
+                    $value = 'base64:' . base64_encode($value);
+                }
+
                 $batch[] = [$key, $value];
 
                 if (++$counter == 100) {

@@ -1437,10 +1437,14 @@ class ProjectConfig extends Component
 
                 if (!$config) {
                     $this->_memoizedConfig = [];
-                } else if (strpos($config, '{') === 0) {
-                    $this->_memoizedConfig = Json::decode($config);
                 } else {
-                    $this->_memoizedConfig = unserialize($config, ['allowed_classes' => false]);
+                    // Try to decode it in case it contains any 4+ byte characters
+                    $config = StringHelper::decdec($config);
+                    if (strpos($config, '{') === 0) {
+                        $this->_memoizedConfig = Json::decode($config);
+                    } else {
+                        $this->_memoizedConfig = unserialize($config, ['allowed_classes' => false]);
+                    }
                 }
             }
 
