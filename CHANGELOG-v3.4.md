@@ -30,6 +30,7 @@
 - Added a new “Expanded” element exporter type, which includes expanded custom field values, including Matrix and relational fields. ([#4484](https://github.com/craftcms/cms/issues/4484))
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
+- Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -88,6 +89,7 @@
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\events\TemplateEvent::$templateMode`.
 - Added `craft\gql\TypeManager`.
+- Added `craft\helpers\AdminTable`.
 - Added `craft\helpers\ArrayHelper::append()`.
 - Added `craft\helpers\ArrayHelper::prepend()`.
 - Added `craft\helpers\Db::parseDsn()`.
@@ -131,6 +133,7 @@
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\web\assets\admintable\AdminTableAsset`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\CsvResponseFormatter`.
 - Added `craft\web\User::guestRequired()`.
@@ -143,6 +146,7 @@
 - Added `craft\web\twig\nodes\RequireGuestNode`.
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
 - Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
+- Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
 - Added the Minify PHP package.
