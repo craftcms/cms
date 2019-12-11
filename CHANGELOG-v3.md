@@ -1,6 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.18.1 - 2019-12-10
+
+### Fixed
+- Fixed a JavaScript error that could occur if Craft didn’t have a license key yet.
+
+## 3.3.18 - 2019-12-10
 
 ### Added
 - Added `craft\queue\jobs\ApplyMatrixPropagationMethod`.
@@ -14,7 +19,7 @@
 - Deprecated `craft\services\Matrix::getSupportedSiteIdsForField()`. `getSupportedSiteIds()` should be used instead.
 
 ### Fixed
-- Fixed a bug where the page URL could change when interacting with element selection modals. ([#]5254](https://github.com/craftcms/cms/issues/5254))
+- Fixed a bug where the page URL could change when interacting with element selection modals. ([#5254](https://github.com/craftcms/cms/issues/5254))
 - Fixed a bug where entry draft changes could go unnoticed if they were made while another change was being saved. ([#5305](https://github.com/craftcms/cms/issues/5305))
 - Fixed an error that could occur when using the `|group` filter, if a function name was passed in (e.g. `date`).
 - Fixed a bug where `craft\helpers\FileHelper::writeToFile()` wasn’t waiting until a lock could be acquired before writing to the file.
