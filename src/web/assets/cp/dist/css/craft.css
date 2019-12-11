@@ -1863,7 +1863,7 @@ body.rtl #user-info { padding: 0 14px 0 7px; }
 /* main container */
 #main-container { position: relative; }
 
-#notifications { position: fixed; width: calc(100% - 225px); z-index: 13; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
+#notifications { position: fixed; width: calc(100% - 225px); z-index: 101; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
 #notifications .notification { padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; -webkit-box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); }
 #notifications .notification.notice { background-color: #127FBF; }
 #notifications .notification.error { background-color: #E5422B; }
