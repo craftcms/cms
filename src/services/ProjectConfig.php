@@ -1625,6 +1625,8 @@ class ProjectConfig extends Component
 
                 $appliedChanges['added'] = $flatData;
 
+                $batch = [];
+
                 foreach ($flatData as $key => $value) {
                     $value = Json::encode($value);
 
@@ -1640,9 +1642,11 @@ class ProjectConfig extends Component
                     $batch[] = [$key, $value];
                 }
 
-                $db->createCommand()
-                    ->batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false)
-                    ->execute();
+                if (!empty($batch)) {
+                    $db->createCommand()
+                        ->batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false)
+                        ->execute();
+                }
             }
 
             if ($message) {
