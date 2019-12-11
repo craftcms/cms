@@ -1428,7 +1428,7 @@ class ProjectConfig extends Component
      */
     private function _getInternalConfigValue(string $path = null)
     {
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
+        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             if (empty($this->_memoizedConfig)) {
                 $config = (new Query())
                     ->select(['config'])
@@ -1675,6 +1675,10 @@ class ProjectConfig extends Component
      */
     private function _loadInternalConfigData(string $path)
     {
+        if (!Craft::$app->getIsInstalled()) {
+            return null;
+        }
+
         if ($path == self::CONFIG_ALL_KEY) {
             $rows = $this->_createProjectConfigQuery()->all();
         } else {

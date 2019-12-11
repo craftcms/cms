@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a PHP error that occurred when saving a site group. ([#5328](https://github.com/craftcms/cms/pull/5328))
+- Fixed a bug which prevented Craft from being installed.
 
 ## 3.4.0-beta.1 - 2019-12-11
 
