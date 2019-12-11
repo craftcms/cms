@@ -392,6 +392,7 @@ ul.icons li a img, ul.icons li a svg { width: 40px; height: 40px; position: abso
 /* ----------------------------------------*/
 .toolbar { position: relative; margin-bottom: 14px; min-height: 34px; }
 .toolbar .flex { -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
+.toolbar .text { border-radius: 5px !important; -webkit-box-shadow: none !important; box-shadow: none !important; }
 
 .flex { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-line-pack: stretch; align-content: stretch; }
 .flex:not(.flex-nowrap) { -ms-flex-wrap: wrap; flex-wrap: wrap; }
@@ -453,8 +454,8 @@ body.rtl .btn[data-icon-after]:not(:empty):after, body.rtl .menubtn:not(:empty):
 .btngroup.fullwidth .btn { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 .btngroup.disabled .btn { cursor: default; }
 .btngroup .btn.active { cursor: default; }
-body.ltr .btngroup .btn:not(:last-child) { margin-right: 1px; }
-body.rtl .btngroup .btn:not(:last-child) { margin-left: 1px; }
+body.ltr .btngroup .btn:not(.dashed):not(:last-child) { margin-right: 1px; }
+body.rtl .btngroup .btn:not(.dashed):not(:last-child) { margin-left: 1px; }
 body.ltr .btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 body.ltr .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 body.rtl .btngroup .btn:not(:first-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
@@ -519,8 +520,11 @@ div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
 
 /* dashed buttons */
-.btn.dashed { border: 1px dashed rgba(81, 95, 108, 0.25); background-color: transparent !important; -webkit-box-shadow: none !important; box-shadow: none !important; }
-
+.btn.dashed { border: 1px dashed rgba(81, 95, 108, 0.25); background-color: transparent !important; }
+body.ltr .btngroup .btn.dashed:not(:last-child) { border-right: 1px solid transparent; }
+body.rtl .btngroup .btn.dashed:not(:last-child) { border-left: 1px solid transparent; }
+body.ltr .btngroup .btn.dashed:not(:last-child) { margin-right: -1px; }
+body.rtl .btngroup .btn.dashed:not(:last-child) { margin-left: -1px; }
 .btn.dashed:not(.disabled):active, .btn.dashed:not(.disabled).active { background-color: rgba(205, 216, 228, 0.25) !important; }
 
 /* color inputs */
@@ -696,7 +700,7 @@ body.rtl .element.small.hasthumb.hasstatus .elementthumb, body.rtl .element.larg
 .element.large.hasthumb { display: block; padding: 132px 7px 7px; width: 134px; -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 3px; }
 body.ltr .element.large.hasthumb.hasstatus { padding-left: 22pxpx; }
 body.rtl .element.large.hasthumb.hasstatus { padding-right: 22pxpx; }
-.element.large.hasthumb.hasstatus .status { position: absolute; top: 130px; }
+.element.large.hasthumb.hasstatus .status { position: absolute; top: 138px; }
 body.ltr .element.large.hasthumb.hasstatus .status { left: 0; }
 body.rtl .element.large.hasthumb.hasstatus .status { right: 0; }
 .element.large.hasthumb .elementthumb { position: absolute; top: 7px; overflow: hidden; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; justify-content: center; -ms-flex-pack: center; -webkit-box-align: center; align-items: center; -ms-flex-align: center; width: 120px; height: 120px; border-radius: 5px; }
