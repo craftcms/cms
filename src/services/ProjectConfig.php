@@ -342,7 +342,7 @@ class ProjectConfig extends Component
      * $value = Craft::$app->projectConfig->get('foo.bar');
      * ```
      *
-     * @param string $path The config item path
+     * @param string|null $path The config item path, or `null` if the entire config should be returned
      * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
@@ -1446,6 +1446,10 @@ class ProjectConfig extends Component
                         $this->_memoizedConfig = unserialize($config, ['allowed_classes' => false]);
                     }
                 }
+            }
+
+            if ($path === null) {
+                return $this->_memoizedConfig;
             }
 
             return $this->_traverseDataArray($this->_memoizedConfig, $path);
