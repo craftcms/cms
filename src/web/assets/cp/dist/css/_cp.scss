@@ -552,7 +552,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #notifications {
   position: fixed;
   width: calc(100% - #{$sidebarWidth});
-  z-index: 13;
+  z-index: 101;
   display: flex;
   justify-content: center;
   align-items: flex-start;
