@@ -291,7 +291,7 @@ class Fields extends Component
             $group->uid = Db::uidById(Table::FIELDGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, $configData);
+        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, $configData, "Save field group “{$group->name}”");
 
         if ($isNewGroup) {
             $group->id = Db::idByUid(Table::FIELDGROUPS, $group->uid);
@@ -428,7 +428,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” field group");
         return true;
     }
 
@@ -778,7 +778,7 @@ class Fields extends Component
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = self::CONFIG_FIELDS_KEY . '.' . $field->uid;
-            Craft::$app->getProjectConfig()->set($configPath, $configData);
+            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
         } else {
             // Otherwise just save it to the DB
             $this->applyFieldSave($field->uid, $configData, $field->context);
@@ -875,7 +875,7 @@ class Fields extends Component
         }
 
         if ($field->context === 'global') {
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid, "Delete the “{$field->handle}” field");
         } else {
             $this->applyFieldDelete($field->uid);
         }

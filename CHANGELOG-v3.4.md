@@ -93,6 +93,7 @@
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
+- Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\GqlToken`.
@@ -117,7 +118,19 @@
 - Added `craft\services\Gql::handleChangedSchema()`.
 - Added `craft\services\Gql::handleDeletedSchema()`.
 - Added `craft\services\Gql::saveToken()`.
+- Added `craft\services\Path::getConfigDeltaPath()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
+- Added `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Added `craft\services\ProjectConfig::CONFIG_ASSOC_KEY`.
+- Added `craft\services\ProjectConfig::$maxDeltas`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\CsvResponseFormatter`.
 - Added `craft\web\User::guestRequired()`.
@@ -159,10 +172,14 @@
 - Renamed the`QueryParameter` GraphQL type to `QueryArgument`.
 - If any elements are selected while exporting, only the selected elements will be included in the export. ([#5130](https://github.com/craftcms/cms/issues/5130))
 - Project config now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
+- The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
 - Active record classes now normalize attribute values right when they are set.
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\ProjectConfig::processConfigChanges()` now has a `$message` argument to specify the reason for config changes.
+- `craft\services\ProjectConfig::remove()` now has a `$message` argument to specify the reason for config changes.
+- `craft\services\ProjectConfig::set()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
@@ -175,6 +192,7 @@
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
 - Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
+- Deprecated `craft\services\ProjectConfig::$maxBackups`. `$maxDeltas` should be used instead.
 - Deprecated `craft\services\Search::indexElementFields()`.
 
 ### Removed

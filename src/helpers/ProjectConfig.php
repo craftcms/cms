@@ -14,7 +14,6 @@ use craft\services\Sites;
 use craft\services\UserGroups;
 use yii\base\InvalidConfigException;
 
-
 /**
  * Class ProjectConfig
  *
@@ -216,5 +215,26 @@ class ProjectConfig
         }
 
         return $array;
+    }
+
+    /**
+     * Flatten a config array to a dot.based.key array.
+     *
+     * @param $array
+     * @param $path
+     * @param $result
+     * @since 3.4.0
+     */
+    public static function flattenConfigArray($array, $path, &$result)
+    {
+        foreach ($array as $key => $value) {
+            $thisPath = ltrim($path . '.' . $key, '.');
+
+            if (is_array($value)) {
+                self::flattenConfigArray($value, $thisPath, $result);
+            } else {
+                $result[$thisPath] = $value;
+            }
+        }
     }
 }

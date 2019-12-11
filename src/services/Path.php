@@ -126,7 +126,7 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/configs/` directory.
+     * Returns the path to the `storage/config-backups/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
@@ -136,6 +136,26 @@ class Path extends Component
     public function getConfigBackupPath(bool $create = true): string
     {
         $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the `storage/config-deltas/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     * @since 3.4.0
+     */
+    public function getConfigDeltaPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-deltas';
 
         if ($create) {
             FileHelper::createDirectory($path);

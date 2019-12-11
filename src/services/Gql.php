@@ -690,7 +690,7 @@ class Gql extends Component
         ];
 
         $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         return true;
     }
@@ -774,7 +774,7 @@ class Gql extends Component
      */
     public function deleteSchema(GqlSchema $scope): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $scope->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $scope->uid, "Delete the “{$scope->name}” GraphQL schema");
         return true;
     }
 
