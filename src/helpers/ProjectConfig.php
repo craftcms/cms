@@ -14,7 +14,6 @@ use craft\services\Sites;
 use craft\services\UserGroups;
 use yii\base\InvalidConfigException;
 
-
 /**
  * Class ProjectConfig
  *
