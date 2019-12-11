@@ -947,6 +947,10 @@ ul.icons {
   color: $textColor;
   background-color: transparentize($inputColor, 0.75);
 
+  &.rounded {
+    border-radius: 17px;
+  }
+
   &:focus,
   &:hover {
     background-color: transparentize($inputColor, 0.65);
@@ -4604,7 +4608,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     width: calc(100% + 28px);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
-    @include padding(5px, 70px, 5px, 33px);
+    @include padding(5px, 70px, 5px, 35px);
     border-bottom: 1px solid $hairlineColor;
     background-color: $grey050;
     color: $lightTextColor;

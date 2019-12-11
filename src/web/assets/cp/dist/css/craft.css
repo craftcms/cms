@@ -415,6 +415,7 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 .footer > .buttons { margin: 0; }
 
 .btn { display: inline-block; border-radius: 5px; padding: 7px 14px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; outline: none; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); }
+.btn.rounded { border-radius: 17px; }
 .btn:focus, .btn:hover { background-color: rgba(96, 125, 159, 0.35); }
 .btn:active, .btn.active { background-color: rgba(96, 125, 159, 0.5); }
 .btn[type='color'] { padding: 6px !important; width: 36px; }
@@ -1619,8 +1620,8 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 
 .matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
 .matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 33px; }
-body.rtl .matrixblock > .titlebar { padding: 5px 33px 5px 70px; }
+body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 35px; }
+body.rtl .matrixblock > .titlebar { padding: 5px 35px 5px 70px; }
 .matrixblock > .titlebar > .blocktype { display: inline; color: #7b8793; }
 .matrixblock > .titlebar > .preview { display: inline; opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 body.ltr .matrixblock > .titlebar > .preview { margin-left: 7px; }
