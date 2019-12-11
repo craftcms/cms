@@ -46,12 +46,12 @@ class AdminTableAsset extends AssetBundle
 
         if ($this->useDevServer) {
             $this->js = [
-                $this->devServerBaseUrl.'app.js',
+                $this->devServerBaseUrl . 'app.js',
             ];
         } else {
             $this->css = [
-                 'chunk-vendors.css',
-                 'app.css',
+                'chunk-vendors.css',
+                'app.css',
             ];
 
             $this->js = [

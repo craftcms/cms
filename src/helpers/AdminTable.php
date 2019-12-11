@@ -7,15 +7,13 @@
 
 namespace craft\helpers;
 
-use Craft;
-
 /**
  * Admin Table helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4
+ * @since 3.4.0
  */
-class AdminTable
+abstract class AdminTable
 {
     // Public Methods
     // =========================================================================
