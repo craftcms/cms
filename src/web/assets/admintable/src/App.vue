@@ -241,7 +241,9 @@
 
                 this.$nextTick(() => {
                     this.selectAll = this.$refs.vuetable.$el.querySelector('.selectallcontainer');
-                    this.selectAll.addEventListener('click', this.handleSelectAll);
+                    if (this.selectAll) {
+                        this.selectAll.addEventListener('click', this.handleSelectAll);
+                    }
                 });
 
                 this.isLoading = false;
