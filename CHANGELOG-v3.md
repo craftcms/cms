@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that occurred when saving a site group. ([#5328](https://github.com/craftcms/cms/pull/5328))
+
 ## 3.4.0-beta.1 - 2019-12-11
 
 > {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
