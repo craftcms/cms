@@ -56,6 +56,11 @@ class Craft extends Yii
      */
     private static $_baseCookieConfig;
 
+    /**
+     * @var array Field info for autoload()
+     */
+    private static $_fields;
+
     // Public Methods
     // =========================================================================
 
@@ -173,59 +178,43 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
-            return;
+        switch ($className) {
+            case ContentBehavior::class:
+                self::_autoloadContentBehavior();
+                break;
+            case ElementQueryBehavior::class:
+                self::_autoloadElementQueryBehavior();
+                break;
         }
+    }
 
+    /**
+     * Autoloads (and possibly generates) ContentBehavior.php
+     */
+    private static function _autoloadContentBehavior()
+    {
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
+        $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
 
-        $contentBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
-        $elementQueryBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php';
-
-        $isContentBehaviorFileValid = self::_loadFieldAttributesFile($contentBehaviorFile, $storedFieldVersion);
-        $isElementQueryBehaviorFileValid = self::_loadFieldAttributesFile($elementQueryBehaviorFile, $storedFieldVersion);
-
-        if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
+        if (self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
             return;
         }
 
-        if (self::$app->getIsInstalled()) {
-            // Properties are case-sensitive, so get all the binary-unique field handles
-            if (self::$app->getDb()->getIsMysql()) {
-                $handleColumn = new Expression('binary [[handle]] as [[handle]]');
-            } else {
-                $handleColumn = 'handle';
-            }
+        $fields = self::_fields();
 
-            // Create an array of field handles and their types
-            $fields = (new Query())
-                ->from([Table::FIELDS])
-                ->select([$handleColumn, 'type'])
-                ->all();
+        if (empty($fields)) {
+            self::_generateContentBehavior([], $filePath, $storedFieldVersion, true, true);
         } else {
-            $fields = [];
-        }
-
-        $fieldHandles = [];
-
-        foreach ($fields as $field) {
-            $fieldHandles[$field['handle']]['mixed'] = true;
-        }
-
-        if (!$isContentBehaviorFileValid) {
-            // First generate ContentBehavior and autoload it without loading the fields
-            self::_generateContentBehavior($fieldHandles, $contentBehaviorFile, $storedFieldVersion, true);
-        }
-
-        if (!$isElementQueryBehaviorFileValid) {
-            self::_generateElementQueryBehavior($fieldHandles, $elementQueryBehaviorFile, $storedFieldVersion);
-        }
-
-        if (!$isContentBehaviorFileValid && !empty($fields)) {
-            // Now generate ContentBehavior again, this time with the correct field value types
+            // First generate a basic version without real field value types, and load it into memory
             $fieldHandles = [];
+            foreach ($fields as $field) {
+                $fieldHandles[$field['handle']]['mixed'] = true;
+            }
+            self::_generateContentBehavior($fieldHandles, $filePath, $storedFieldVersion, false, true);
 
+            // Now generate it again, this time with the correct field value types
+            $fieldHandles = [];
             foreach ($fields as $field) {
                 /** @var FieldInterface|string $fieldClass */
                 $fieldClass = $field['type'];
@@ -243,8 +232,7 @@ class Craft extends Yii
                     $fieldHandles[$field['handle']][$type] = true;
                 }
             }
-
-            self::_generateContentBehavior($fieldHandles, $contentBehaviorFile, $storedFieldVersion, false);
+            self::_generateContentBehavior($fieldHandles, $filePath, $storedFieldVersion, true, false);
         }
     }
 
@@ -252,10 +240,11 @@ class Craft extends Yii
      * @param array $fieldHandles
      * @param string $contentBehaviorFile
      * @param string $storedFieldVersion
+     * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateContentBehavior(array $fieldHandles, string $contentBehaviorFile, string $storedFieldVersion, bool $load)
+    private static function _generateContentBehavior(array $fieldHandles, string $contentBehaviorFile, string $storedFieldVersion, bool $write, bool $load)
     {
         $handles = [];
         $properties = [];
@@ -285,24 +274,29 @@ EOD;
             ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
             [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
             $contentBehaviorFile,
-            !$load,
+            $write,
             $load
         );
     }
 
     /**
-     * @param array $fieldHandles
-     * @param string $elementQueryBehaviorFile
-     * @param string $storedFieldVersion
-     * @throws \yii\base\ErrorException
+     * Autoloads (and possibly generates) ElementQueryBehaviorBehavior.php
      */
-    private static function _generateElementQueryBehavior(array $fieldHandles, string $elementQueryBehaviorFile, string $storedFieldVersion)
+    private static function _autoloadElementQueryBehavior()
     {
+        $storedFieldVersion = static::$app->getInfo()->fieldVersion;
+        $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
+        $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php';
+
+        if (self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
+            return;
+        }
+
         $methods = [];
 
-        foreach (array_keys($fieldHandles) as $handle) {
+        foreach (self::_fields() as $field) {
             $methods[] = <<<EOD
- * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
+ * @method self {$field['handle']}(mixed \$value) Sets the [[{$field['handle']}]] property
 EOD;
         }
 
@@ -310,10 +304,37 @@ EOD;
             static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
             ['{VERSION}', '{METHOD_DOCS}'],
             [$storedFieldVersion, implode("\n", $methods)],
-            $elementQueryBehaviorFile,
+            $filePath,
             true,
             true
         );
+    }
+
+    /**
+     * @return array
+     */
+    private static function _fields(): array
+    {
+        if (self::$_fields !== null) {
+            return self::$_fields;
+        }
+
+        if (!static::$app->getIsInstalled()) {
+            return [];
+        }
+
+        // Properties are case-sensitive, so get all the binary-unique field handles
+        if (static::$app->getDb()->getIsMysql()) {
+            $handleColumn = new Expression('binary [[handle]] as [[handle]]');
+        } else {
+            $handleColumn = 'handle';
+        }
+
+        // Create an array of field handles and their types
+        return self::$_fields = (new Query())
+            ->from([Table::FIELDS])
+            ->select([$handleColumn, 'type'])
+            ->all();
     }
 
     /**
@@ -327,12 +348,12 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . self::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = self::$app->getConfig()->getConfigFromFile('guzzle');
+        $guzzleConfig = static::$app->getConfig()->getConfigFromFile('guzzle');
 
         // Merge default into guzzle config.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
@@ -375,21 +396,21 @@ EOD;
      * @param string $templatePath
      * @param string[] $search
      * @param string[] $replace
-     * @param string $destinationPath
+     * @param string $filePath
      * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateBehavior(string $templatePath, array $search, array $replace, string $destinationPath, bool $write, bool $load)
+    private static function _generateBehavior(string $templatePath, array $search, array $replace, string $filePath, bool $write, bool $load)
     {
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
 
         if ($write) {
-            FileHelper::writeToFile($destinationPath, $fileContents);
-            clearstatcache(true, $destinationPath);
+            FileHelper::writeToFile($filePath, $fileContents);
+            clearstatcache(true, $filePath);
             if ($load) {
-                include $destinationPath;
+                include $filePath;
             }
         } else if ($load) {
             // Just evaluate the code
