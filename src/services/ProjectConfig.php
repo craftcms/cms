@@ -378,7 +378,7 @@ class ProjectConfig extends Component
      * @throws Exception
      * @throws ServerErrorHttpException
      */
-    public function set(string $path, $value, string $message = '')
+    public function set(string $path, $value, $message = '')
     {
         if (\is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
@@ -560,7 +560,7 @@ class ProjectConfig extends Component
      * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
      * @param string|null $message The message describing changes, if modifications are made.
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false, string $message = null)
+    public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null)
     {
         if (!empty($this->_parsedChanges[$path])) {
             return;
