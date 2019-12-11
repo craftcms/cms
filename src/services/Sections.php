@@ -1421,9 +1421,6 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
             }
 
-            // Move the entry type to the last position before soft deleting
-            $entryTypeRecord->moveLast();
-
             // Delete the entry type.
             Craft::$app->getDb()->createCommand()
                 ->softDelete(Table::ENTRYTYPES, ['id' => $entryTypeRecord->id])
