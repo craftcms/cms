@@ -1626,15 +1626,14 @@ class ProjectConfig extends Component
                 $appliedChanges['added'] = $flatData;
 
                 $batch = [];
+                $isMysql = $db->getIsMysql();
 
                 foreach ($flatData as $key => $value) {
                     $value = Json::encode($value);
 
                     if (
-                        is_string($value) && (
-                            !mb_check_encoding($value, 'UTF-8') ||
-                            (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($value))
-                        )
+                        !mb_check_encoding($value, 'UTF-8') ||
+                        ($isMysql && StringHelper::containsMb4($value))
                     ) {
                         $value = 'base64:' . base64_encode($value);
                     }
@@ -1690,7 +1689,7 @@ class ProjectConfig extends Component
             // Get rid of a preceding dot, if any.
             $relativePath = StringHelper::removeLeft($relativePath, '.');
 
-            $row['value'] = Json::decodeIfJson(is_string($row['value']) ? StringHelper::decdec($row['value']) : $row['value']);
+            $row['value'] = Json::decode(StringHelper::decdec($row['value']));
 
             // If relative path is empty, this is a direct value
             if (empty($relativePath)) {
