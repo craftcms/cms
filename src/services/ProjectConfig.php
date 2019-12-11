@@ -507,7 +507,7 @@ class ProjectConfig extends Component
     public function areChangesPending(string $path = null): bool
     {
         // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.3', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             return false;
         }
 
@@ -1415,7 +1415,7 @@ class ProjectConfig extends Component
      */
     private function _getInternalConfigValue(string $path = null)
     {
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.3', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             if (empty($this->_memoizedConfig)) {
                 $config = (new Query())
                     ->select(['config'])
