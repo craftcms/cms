@@ -865,6 +865,11 @@ ul.icons {
   .flex {
     align-items: flex-start;
   }
+
+  .text {
+    border-radius: $largeBorderRadius !important;
+    box-shadow: none !important;
+  }
 }
 
 .flex {
@@ -1244,12 +1249,6 @@ div.btn.submit input {
     &:active,
     &.active {
       background-color: transparentize($grey200, 0.75) !important;
-
-      //.btngroup & + .btn.dashed {
-      //  body.ltr & {
-      //    box-shadow: inset 1px 0 0 red;
-      //  }
-      //}
     }
   }
 }

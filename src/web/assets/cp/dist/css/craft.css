@@ -392,6 +392,7 @@ ul.icons li a img, ul.icons li a svg { width: 40px; height: 40px; position: abso
 /* ----------------------------------------*/
 .toolbar { position: relative; margin-bottom: 14px; min-height: 34px; }
 .toolbar .flex { -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
+.toolbar .text { border-radius: 5px !important; -webkit-box-shadow: none !important; box-shadow: none !important; }
 
 .flex { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-line-pack: stretch; align-content: stretch; }
 .flex:not(.flex-nowrap) { -ms-flex-wrap: wrap; flex-wrap: wrap; }
