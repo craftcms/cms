@@ -35,7 +35,6 @@ use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use craft\models\MatrixBlockType;
 use craft\queue\jobs\ApplyMatrixPropagationMethod;
-use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;

@@ -8,9 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\MatrixBlock;
 use craft\events\BatchElementActionEvent;
 use craft\fields\Matrix;

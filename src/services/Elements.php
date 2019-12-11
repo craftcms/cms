@@ -1701,9 +1701,9 @@ class Elements extends Component
 
                 // Figure out the path mapping wants a custom order
                 $useCustomOrder = !$getCount && (
-                    !empty($pathCriteria['orderBy']) ||
-                    !empty($pathCriteria['order'])
-                );
+                        !empty($pathCriteria['orderBy']) ||
+                        !empty($pathCriteria['order'])
+                    );
 
                 // Make sure we haven't already eager-loaded this target path
                 if ($getCount || !isset($elementsByPath[$targetPath])) {

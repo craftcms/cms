@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\exporters\Raw;
 use craft\helpers\ElementHelper;
