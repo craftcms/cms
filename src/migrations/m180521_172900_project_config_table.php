@@ -20,11 +20,10 @@ class m180521_172900_project_config_table extends Migration
     public function safeUp()
     {
         $this->createTable(Table::PROJECTCONFIG, [
-            'path' => $this->string(),
-            'value' => $this->text(),
+            'path' => $this->string()->notNull(),
+            'value' => $this->text()->notNull(),
+            'PRIMARY KEY([[path]])',
         ]);
-
-        $this->createIndex(null, Table::PROJECTCONFIG, ['path'], true);
 
         // If this column exists, this means this migration is running on a site where you already have project config
         if ($this->db->columnExists(Table::INFO, 'config')) {

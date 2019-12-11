@@ -464,8 +464,9 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::PROJECTCONFIG, [
-            'path' => $this->string(),
-            'value' => $this->text(),
+            'path' => $this->string()->notNull(),
+            'value' => $this->text()->notNull(),
+            'PRIMARY KEY([[path]])',
         ]);
         $this->createTable(Table::QUEUE, [
             'id' => $this->primaryKey(),
@@ -817,7 +818,6 @@ class Install extends Migration
         $this->createIndex(null, Table::MIGRATIONS, ['pluginId'], false);
         $this->createIndex(null, Table::MIGRATIONS, ['type', 'pluginId'], false);
         $this->createIndex(null, Table::PLUGINS, ['handle'], true);
-        $this->createIndex(null, Table::PROJECTCONFIG, ['path'], true);
         $this->createIndex(null, Table::QUEUE, ['fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, Table::QUEUE, ['fail', 'timeUpdated', 'delay']);
         $this->createIndex(null, Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], true);
