@@ -114,9 +114,11 @@ class SystemSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $request = Craft::$app->getRequest();
 
-        $projectConfig->set('system.name', $request->getBodyParam('name'));
-        $projectConfig->set('system.live', (bool)$request->getBodyParam('live'));
-        $projectConfig->set('system.timeZone', $request->getBodyParam('timeZone'));
+        $systemSettings = $projectConfig->get('system');
+        $systemSettings['name'] = $request->getBodyParam('name');
+        $systemSettings['live'] = (bool)$request->getBodyParam('live');
+        $systemSettings['timeZone'] = $request->getBodyParam('timeZone');
+        $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
         return $this->redirectToPostedUrl();
@@ -219,7 +221,7 @@ class SystemSettingsController extends Controller
             return null;
         }
 
-        Craft::$app->getProjectConfig()->set('email', $settings->toArray());
+        Craft::$app->getProjectConfig()->set('email', $settings->toArray(), 'Update email settings.');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
         return $this->redirectToPostedUrl();

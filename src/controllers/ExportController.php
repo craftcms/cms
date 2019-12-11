@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\exporters\Raw;
 use craft\helpers\ElementHelper;
-use craft\helpers\FileHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -45,11 +45,12 @@ class ExportController extends Controller
      * @param string $elementType
      * @param string $sourceKey
      * @param array $criteria
+     * @param string $exporter
      * @param string $format
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $format = 'csv'): Response
+    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $exporter = Raw::class, string $format = 'csv'): Response
     {
         $this->requireToken();
 
@@ -74,14 +75,25 @@ class ExportController extends Controller
             Craft::configure($query, $criteria);
         }
 
-        $results = $query->asArray()->all();
-        $filename = $elementType::pluralLowerDisplayName() . '.' . $format;
-        $mimeType = FileHelper::getMimeTypeByExtension($filename);
+        $exporter = Craft::$app->getElements()->createExporter($exporter);
+        $exporter->setElementType($elementType);
 
         $response = Craft::$app->getResponse();
-        $response->data = $results;
+        $response->data = $exporter->export($query);
         $response->format = $format;
-        $response->setDownloadHeaders($filename, $mimeType);
+        $response->setDownloadHeaders($exporter->getFilename() . ".{$format}");
+
+        switch ($format) {
+            case Response::FORMAT_JSON:
+                $response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                break;
+            case Response::FORMAT_XML:
+                Craft::$app->language = 'en-US';
+                $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                $response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
+                break;
+        }
+
         return $response;
     }
 }

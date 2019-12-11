@@ -1058,7 +1058,7 @@ class Users extends Component
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();
 
-        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
+        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
@@ -1123,7 +1123,7 @@ class Users extends Component
             foreach ($fieldLayouts as $layoutUid => $layout) {
                 if (!empty($layout['tabs'])) {
                     foreach ($layout['tabs'] as $tabUid => $tab) {
-                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                     }
                 }
             }

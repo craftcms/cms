@@ -330,7 +330,7 @@ class Volumes extends Component
 
 
         $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
             $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
@@ -455,7 +455,7 @@ class Volumes extends Component
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
                 $volumeUid = $uidsByIds[$volumeId];
-                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1);
+                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
             }
         }
 
@@ -599,7 +599,7 @@ class Volumes extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
         return true;
     }
 
@@ -699,7 +699,7 @@ class Volumes extends Component
                     foreach ($volume['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

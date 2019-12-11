@@ -55,14 +55,30 @@ class ProjectConfig extends Component
     // Filename for base config file
     const CONFIG_FILENAME = 'project.yaml';
 
+    /**
+     * Filename for base config delta files
+     *
+     * @since 3.4.0
+     */
+    const CONFIG_DELTA_FILENAME = 'delta.yaml';
+
     // Key to use for schema version storage.
     const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
 
-    // Key to use for signaling ordered-to-associative array conversion
+    /**
+     * Key to use for signaling ordered-to-associative array conversion
+     *
+     * @since 3.4.0
+     */
     const CONFIG_ASSOC_KEY = '__assoc__';
 
-    // TODO move this to UID validator class
-    // TODO update StringHelper::isUUID() to use that
+    /**
+     * Key to use when memoizing the entire config array
+     *
+     * @since 3.4.0
+     */
+    const CONFIG_ALL_KEY = '__all__';
+
     // Regexp patterns
     // -------------------------------------------------------------------------
 
@@ -151,9 +167,10 @@ class ProjectConfig extends Component
     // =========================================================================
 
     /**
-     * @var int The maximum number of project.yaml backups to store in storage/config-backups/
+     * @var int The maximum number of project.yaml deltas to store in storage/config-backups/
+     * @since 3.4.0
      */
-    public $maxBackups = 50;
+    public $maxDeltas = 50;
 
     /**
      * @var int The maximum number of times deferred events can be re-deferred before we give up on them
@@ -179,15 +196,16 @@ class ProjectConfig extends Component
     public $forceUpdate = false;
 
     /**
-     * @var array Current config as stored in database.
+     * @var array Currently memopized config.
+     * @since 3.4.0
      */
-    private $_storedConfig;
+    private $_memoizedConfig = [];
 
     /**
-     * @var array The currently-loaded config, possibly with pending changes
-     * that will be stored in the database & project.yaml at the end of the request
+     * @var array Keeps track of memoization dependencies
+     * @since 3.4.0
      */
-    private $_loadedConfig;
+    private $_memoizationDependencies = [];
 
     /**
      * @var array A list of already parsed change paths
@@ -195,7 +213,7 @@ class ProjectConfig extends Component
     private $_parsedChanges = [];
 
     /**
-     * @var array An array of paths to data structures used as intermediate storage.
+     * @var array An array of already parsed Yaml files
      */
     private $_parsedConfigs = [];
 
@@ -221,7 +239,7 @@ class ProjectConfig extends Component
     private $_updateConfigMap = false;
 
     /**
-     * @var bool Whether to update the config on request end
+     * @var bool Whether the config should be saved to yaml file at the end of request
      */
     private $_updateConfig = false;
 
@@ -261,8 +279,29 @@ class ProjectConfig extends Component
      */
     private $_deferredEvents = [];
 
+    /**
+     * A running list of all the changes applied during this request
+     *
+     * @var array
+     */
+    private $_appliedChanges = [];
+
+
     // Public methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (isset($config['maxBackups'])) {
+            $config['maxDeltas'] = ArrayHelper::remove($config, 'maxBackups');
+            Craft::$app->getDeprecator()->log(__CLASS__ . '::maxBackups', __CLASS__ . '::maxBackups has been deprecated. Use \'maxDeltas\' instead.');
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -270,12 +309,6 @@ class ProjectConfig extends Component
     public function init()
     {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData'], null, false);
-
-        // If we're not using the project config file, load the stored config to emulate config files.
-        // This is needed so we can make comparisons between the existing config and the modified config, as we're firing events.
-        if (!$this->_useConfigFile()) {
-            $this->_getConfigurationFromYaml();
-        }
 
         parent::init();
     }
@@ -287,10 +320,7 @@ class ProjectConfig extends Component
      */
     public function reset()
     {
-        $this->_storedConfig = null;
-        $this->_loadedConfig = null;
-        $this->_parsedChanges = [];
-        $this->_parsedConfigs = [];
+        $this->_memoizedConfig = [];
         $this->_configFileList = [];
         $this->_modifiedYamlFiles = [];
         $this->_configMap = null;
@@ -320,15 +350,15 @@ class ProjectConfig extends Component
     {
         if ($getFromYaml) {
             $source = $this->_changesBeingApplied ?? $this->_getConfigurationFromYaml();
+
+            if ($path === null) {
+                return $source;
+            }
+
+            return $this->_traverseDataArray($source, $path);
         } else {
-            $source = $this->_getLoadedConfig();
+            return $this->_getInternalConfigValue($path);
         }
-
-        if ($path === null) {
-            return $source;
-        }
-
-        return $this->_traverseDataArray($source, $path);
     }
 
     /**
@@ -342,13 +372,13 @@ class ProjectConfig extends Component
      *
      * @param string $path The config item path
      * @param mixed $value The config item value
+     * @param string|null $message The message describing changes.
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ErrorException
      * @throws Exception
      * @throws ServerErrorHttpException
-     * @todo make sure $value is serializable and unserialable
      */
-    public function set(string $path, $value)
+    public function set(string $path, $value, string $message = '')
     {
         if (\is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
@@ -366,7 +396,7 @@ class ProjectConfig extends Component
 
             if (!$this->_timestampUpdated) {
                 $this->_timestampUpdated = true;
-                $this->set('dateModified', DateTimeHelper::currentTimeStamp());
+                $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
             }
         }
 
@@ -390,13 +420,12 @@ class ProjectConfig extends Component
         }
 
         $this->_traverseDataArray($config, $path, $value, $value === null);
-
         $this->_saveConfig($config, $targetFilePath);
 
-        // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
 
-        $this->processConfigChanges($path, true);
+        $this->processConfigChanges($path, true, $message);
+        $this->_invalidateMemoizedData($path);
     }
 
     /**
@@ -408,10 +437,11 @@ class ProjectConfig extends Component
      * ```
      *
      * @param string $path The config item path
+     * @param string|null $message The message describing changes.
      */
-    public function remove(string $path)
+    public function remove(string $path, string $message = null)
     {
-        $this->set($path, null);
+        $this->set($path, null, $message);
     }
 
     /**
@@ -419,7 +449,7 @@ class ProjectConfig extends Component
      */
     public function regenerateYamlFromConfig()
     {
-        $loadedConfig = $this->_getLoadedConfig();
+        $loadedConfig = $this->_getInternalConfigValue();
         $baseFile = Craft::$app->getPath()->getProjectConfigFilePath();
         $this->_saveConfig($loadedConfig, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
@@ -490,7 +520,7 @@ class ProjectConfig extends Component
     public function areChangesPending(string $path = null): bool
     {
         // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             return false;
         }
 
@@ -505,8 +535,7 @@ class ProjectConfig extends Component
         }
 
         if ($path !== null) {
-            $storedConfig = $this->_getStoredConfig();
-            $oldValue = $this->_traverseDataArray($storedConfig, $path);
+            $oldValue = $this->_getInternalConfigValue($path);
             $newValue = $this->get($path, true);
             return Json::encode($oldValue) !== Json::encode($newValue);
         }
@@ -529,8 +558,9 @@ class ProjectConfig extends Component
      *
      * @param string $path The config item path
      * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
+     * @param string|null $message The message describing changes, if modifications are made.
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false)
+    public function processConfigChanges(string $path, bool $triggerUpdate = false, string $message = null)
     {
         if (!empty($this->_parsedChanges[$path])) {
             return;
@@ -538,8 +568,7 @@ class ProjectConfig extends Component
 
         $this->_parsedChanges[$path] = true;
 
-        $storedConfig = $this->_getStoredConfig();
-        $oldValue = $this->_traverseDataArray($storedConfig, $path);
+        $oldValue = $this->get($path);
         $newValue = $this->get($path, true);
 
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
@@ -567,9 +596,7 @@ class ProjectConfig extends Component
         }
 
         // Memoize the new config data
-        $currentLoadedConfig = $this->_getLoadedConfig();
-        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue, $newValue === null);
-        $this->_loadedConfig = $currentLoadedConfig;
+        $this->_updateInternalConfig($path, $newValue, $message);
 
         $this->updateStoredConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();
@@ -615,23 +642,70 @@ class ProjectConfig extends Component
     public function saveModifiedConfigData()
     {
         if (!empty($this->_modifiedYamlFiles) && $this->_useConfigFile()) {
-            // Save modified yaml files
-
-            foreach (array_keys($this->_modifiedYamlFiles) as $filePath) {
-                $data = $this->_parsedConfigs[$filePath];
-                $data = ProjectConfigHelper::cleanupConfig($data);
-                ksort($data);
-                FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
-            }
+            $this->_writeYamlFiles();
         }
 
         if (!$this->_updateConfig && !($this->_updateConfigMap && $this->_useConfigFile())) {
             return;
         }
 
-        $previousConfig = $this->_getStoredConfig();
-        $value = ProjectConfigHelper::cleanupConfig($previousConfig);
-        $this->_storeYamlHistory($value);
+        if (!empty($this->_appliedChanges)) {
+            $deltaEntry = [
+                'dateApplied' => date('Y-m-d H:i:s'),
+                'changes' => []
+            ];
+
+            foreach ($this->_appliedChanges as $changeSet) {
+                // Allow modification of the array being looped over.
+                $currentSet = $changeSet;
+
+                if (!empty($changeSet['added'])) {
+                    foreach ($currentSet['added'] as $key => $value) {
+                        if (array_key_exists($key, $currentSet['removed'])) {
+                            if (is_string($changeSet['removed'][$key])) {
+                                $changeSet['removed'][$key] = StringHelper::decdec($changeSet['removed'][$key]);
+                            }
+
+                            $changeSet['removed'][$key] = Json::decodeIfJson($changeSet['removed'][$key]);
+
+                            // Ensure types
+                            if (is_bool($value)) {
+                                $changeSet['removed'][$key] = (bool)$changeSet['removed'][$key];
+                            } else if (is_int($value)) {
+                                $changeSet['removed'][$key] = (int)$changeSet['removed'][$key];
+                            }
+
+                            if ($changeSet['removed'][$key] === $value) {
+                                unset($changeSet['removed'][$key], $changeSet['added'][$key]);
+                            } elseif (array_key_exists($key, $changeSet['removed'])) {
+                                $changeSet['changed'][$key] = [
+                                    'from' => $changeSet['removed'][$key],
+                                    'to' => $changeSet['added'][$key],
+                                ];
+
+                                unset($changeSet['removed'][$key], $changeSet['added'][$key]);
+                            }
+                        }
+                    }
+                }
+
+                if (empty($changeSet['added'])) {
+                    unset($changeSet['added']);
+                }
+
+                if (empty($changeSet['removed'])) {
+                    unset($changeSet['removed']);
+                }
+
+                if (!empty($changeSet['added']) || !empty($changeSet['removed']) || !empty($changeSet['changed'])) {
+                    $deltaEntry['changes'][] = $changeSet;
+                }
+            }
+
+            if (!empty($deltaEntry['changes'])) {
+                $this->_storeYamlHistory($deltaEntry);
+            }
+        }
 
         $info = Craft::$app->getInfo();
 
@@ -643,10 +717,6 @@ class ProjectConfig extends Component
             }
 
             $info->configMap = Json::encode($configMap);
-        }
-
-        if ($this->_updateConfig) {
-            $info->config = Json::encode($this->_getConfigurationFromYaml());
         }
 
         Craft::$app->saveInfoAfterRequest();
@@ -886,10 +956,8 @@ class ProjectConfig extends Component
      */
     public function rebuild()
     {
-        // Create a backup of current config.
         $this->reset();
-        $currentConfig = $this->_getStoredConfig();
-        $this->_storeYamlHistory($currentConfig);
+        $currentConfig = $this->get();
 
         // Gather everything that we can about the current state of affairs
         $configData = $this->_getCurrentStateData();
@@ -917,7 +985,7 @@ class ProjectConfig extends Component
         $this->readOnly = false;
 
         foreach ($configData as $path => $value) {
-            $this->set($path, $value);
+            $this->set($path, $value, 'Project config rebuild');
         }
 
         $this->readOnly = $readOnly;
@@ -1036,7 +1104,7 @@ class ProjectConfig extends Component
             $generatedConfig = array_merge(...$fileConfigs);
         } else {
             if (empty($this->_parsedConfigs[self::CONFIG_KEY])) {
-                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getLoadedConfig();
+                $this->_parsedConfigs[self::CONFIG_KEY] = $this->get();
             }
             $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
         }
@@ -1101,43 +1169,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns the loaded config.
-     *
-     * @return array
-     */
-    private function _getLoadedConfig(): array
-    {
-        // _loadedConfig will be set if we've made any changes in this request
-        if ($this->_loadedConfig !== null) {
-            return $this->_loadedConfig;
-        }
-
-        // Otherwise just return whatever's in the DB
-        return $this->_getStoredConfig();
-    }
-
-    /**
-     * Returns the stored config.
-     *
-     * @return array
-     */
-    private function _getStoredConfig(): array
-    {
-        if ($this->_storedConfig !== null) {
-            return $this->_storedConfig;
-        }
-
-        $info = Craft::$app->getInfo();
-        if (!$info->config) {
-            return $this->_storedConfig = [];
-        }
-        if ($info->config[0] === '{') {
-            return $this->_storedConfig = Json::decode($info->config);
-        }
-        return $this->_storedConfig = unserialize($info->config, ['allowed_classes' => false]);
-    }
-
-    /**
      * Return a nested array for pending config changes
      *
      * @param array $configData config data to use. If null, config is fetched from `config/project.yaml`
@@ -1152,7 +1183,7 @@ class ProjectConfig extends Component
             $configData = $this->_getConfigurationFromYaml();
         }
 
-        $currentConfig = $this->_getLoadedConfig();
+        $currentConfig = $this->_getInternalConfigValue();
 
         $flatConfig = [];
         $flatCurrent = [];
@@ -1160,21 +1191,8 @@ class ProjectConfig extends Component
         unset($configData['dateModified'], $currentConfig['dateModified'], $configData['imports'], $currentConfig['imports']);
 
         // flatten both configs so we can compare them.
-
-        $flatten = function($array, $path, &$result) use (&$flatten) {
-            foreach ($array as $key => $value) {
-                $thisPath = ltrim($path . '.' . $key, '.');
-
-                if (is_array($value)) {
-                    $flatten($value, $thisPath, $result);
-                } else {
-                    $result[$thisPath] = $value;
-                }
-            }
-        };
-
-        $flatten($configData, '', $flatConfig);
-        $flatten($currentConfig, '', $flatCurrent);
+        ProjectConfigHelper::flattenConfigArray($configData, '', $flatConfig);
+        ProjectConfigHelper::flattenConfigArray($currentConfig, '', $flatCurrent);
 
         // Compare and if something is different, mark the immediate parent as changed.
         foreach ($flatConfig as $key => $value) {
@@ -1385,15 +1403,13 @@ class ProjectConfig extends Component
      */
     private function _storeYamlHistory(array $configData)
     {
-        // Add a `dateApplied` key for audit purposes.
-        $configData['dateApplied'] = date('Y-m-d H:i:s');
-        $basePath = Craft::$app->getPath()->getConfigBackupPath() . '/' . self::CONFIG_FILENAME;
+        $basePath = Craft::$app->getPath()->getConfigDeltaPath() . '/' . self::CONFIG_DELTA_FILENAME;
 
         // Go through all of them and move them forward.
-        for ($i = $this->maxBackups; $i > 0; $i--) {
+        for ($i = $this->maxDeltas; $i > 0; $i--) {
             $thisFile = $basePath . ($i == 1 ? '' : '.' . ($i - 1));
             if (file_exists($thisFile)) {
-                if ($i === $this->maxBackups) {
+                if ($i === $this->maxDeltas) {
                     @unlink($thisFile);
                 } else {
                     @rename($thisFile, "$basePath.$i");
@@ -1402,6 +1418,310 @@ class ProjectConfig extends Component
         }
 
         file_put_contents($basePath, Yaml::dump($configData, 20, 2));
+    }
+
+    /**
+     * Return the value of a path stored in the internal project config.
+     *
+     * @param string|null $path path where the data is located.
+     * @return mixed|null the value stored in internal config
+     */
+    private function _getInternalConfigValue(string $path = null)
+    {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
+            if (empty($this->_memoizedConfig)) {
+                $config = (new Query())
+                    ->select(['config'])
+                    ->from([Table::INFO])
+                    ->scalar();
+
+                if (!$config) {
+                    $this->_memoizedConfig = [];
+                } else {
+                    // Try to decode it in case it contains any 4+ byte characters
+                    $config = StringHelper::decdec($config);
+                    if (strpos($config, '{') === 0) {
+                        $this->_memoizedConfig = Json::decode($config);
+                    } else {
+                        $this->_memoizedConfig = unserialize($config, ['allowed_classes' => false]);
+                    }
+                }
+            }
+
+            return $this->_traverseDataArray($this->_memoizedConfig, $path);
+        }
+
+        if ($path === null) {
+            $path = self::CONFIG_ALL_KEY;
+        }
+
+        return $this->_getInternalConfigData($path);
+    }
+
+    /**
+     * Get the memoized value. If not found by exact path, keeps looking further up
+     * the memoized tree.
+     *
+     * @param string $path
+     * @return mixed|null
+     */
+    private function _getMemoizedValue(string $path)
+    {
+        if (array_key_exists($path, $this->_memoizedConfig)) {
+            return $this->_memoizedConfig[$path];
+        }
+
+        // Got nothing for you, buddy
+        if ($path == self::CONFIG_ALL_KEY) {
+            return null;
+        }
+
+        if (StringHelper::countSubstrings($path, '.') > 0) {
+            $subPath = pathinfo($path, PATHINFO_EXTENSION);
+            $path = pathinfo($path, PATHINFO_FILENAME);
+        } else {
+            $subPath = $path;
+            $path = self::CONFIG_ALL_KEY;
+        }
+
+        $parentMemoizedValue = $this->_getMemoizedValue($path);
+
+        if (empty($parentMemoizedValue[$subPath])) {
+            return null;
+        }
+
+        return $parentMemoizedValue[$subPath];
+    }
+
+    /**
+     * Invalidate the memoized data for a given, along with any dependencies.
+     *
+     * @param string|null $path
+     */
+    private function _invalidateMemoizedData(string $path = null)
+    {
+        unset($this->_memoizedConfig[$path]);
+
+        if (array_key_exists($path, $this->_memoizationDependencies)) {
+
+            $dependencies = $this->_memoizationDependencies[$path];
+
+            foreach ($dependencies as $index => $dependency) {
+                // Prevent circular loops
+                unset($this->_memoizationDependencies[$path][$index]);
+                $this->_invalidateMemoizedData($dependency);
+            }
+            if (empty($this->_memoizationDependencies[$path])) {
+                unset($this->_memoizationDependencies[$path]);
+            }
+        }
+    }
+
+    /**
+     * Get the internal config value by checking if it's memoized. If it's not, then load it
+     * from the internal storage instead.
+     *
+     * @param $path
+     * @return mixed|null
+     */
+    private function _getInternalConfigData($path)
+    {
+        if ($data = $this->_getMemoizedValue($path)) {
+            return $data;
+        }
+
+        $data = $this->_loadInternalConfigData($path);
+        $this->_memoize($path, $data);
+
+        return $data;
+    }
+
+    /**
+     * Create a Query object ready to retrieve internal project config values.
+     *
+     * @return Query
+     */
+    private function _createProjectConfigQuery(): Query
+    {
+        return (new Query())
+            ->select(['path', 'value'])
+            ->from([Table::PROJECTCONFIG]);
+    }
+
+    /**
+     * Memoize a value for a given path and register all the dependency paths.
+     *
+     * @param string $path
+     * @param mixed $data
+     */
+    private function _memoize(string $path, $data)
+    {
+        $this->_memoizedConfig[$path] = $data;
+        $dependencyPath = $path;
+
+        while (StringHelper::countSubstrings($dependencyPath, '.') > 0) {
+            $dependencyPath = pathinfo($dependencyPath, PATHINFO_FILENAME);
+            $this->_memoizationDependencies[$dependencyPath][] = $path;
+            $this->_memoizationDependencies[$path][] = $dependencyPath;
+        }
+
+        $this->_memoizationDependencies[$dependencyPath][] = $path;
+        $this->_memoizationDependencies[$path][] = $dependencyPath;
+
+        unset($this->_memoizedConfig[self::CONFIG_ALL_KEY]);
+    }
+
+    /**
+     * Write the config Yaml file(s) with the buffered changes.
+     *
+     * @throws ErrorException
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function _writeYamlFiles()
+    {
+        foreach (array_keys($this->_modifiedYamlFiles) as $filePath) {
+            $data = $this->_parsedConfigs[$filePath];
+            $data = ProjectConfigHelper::cleanupConfig($data);
+            ksort($data);
+            FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
+        }
+    }
+
+    /**
+     * Update Craft's internal config store for a path with the new value. If the value
+     * is null, it will be removed instead.
+     *
+     * @param string $path
+     * @param mixed|null $newValue
+     * @param string|null $message message describing the changes made.
+     * @throws \Throwable
+     */
+    private function _updateInternalConfig(string $path, $newValue, string $message = null)
+    {
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        $appliedChanges = [];
+
+        try {
+            $appliedChanges['removed'] = $this->_createProjectConfigQuery()
+                ->where(['like', 'path', $path . '.%', false])
+                ->orWhere(['path' => $path])
+                ->pairs();
+
+            $db = Craft::$app->getDb();
+            $db->createCommand()
+                ->delete(Table::PROJECTCONFIG, ['like', 'path', $path . '.%', false])
+                ->execute();
+            $db->createCommand()
+                ->delete(Table::PROJECTCONFIG, ['path' => $path])
+                ->execute();
+
+            if ($newValue) {
+                if (!is_scalar($newValue)) {
+                    $flatData = [];
+                    ProjectConfigHelper::flattenConfigArray($newValue, $path, $flatData);
+                } else {
+                    $flatData = [$path => $newValue];
+                }
+
+                $appliedChanges['added'] = $flatData;
+
+                $batch = [];
+                $isMysql = $db->getIsMysql();
+
+                foreach ($flatData as $key => $value) {
+                    $value = Json::encode($value);
+
+                    if (
+                        !mb_check_encoding($value, 'UTF-8') ||
+                        ($isMysql && StringHelper::containsMb4($value))
+                    ) {
+                        $value = 'base64:' . base64_encode($value);
+                    }
+
+                    $batch[] = [$key, $value];
+                }
+
+                if (!empty($batch)) {
+                    $db->createCommand()
+                        ->batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false)
+                        ->execute();
+                }
+            }
+
+            if ($message) {
+                $appliedChanges['message'] = $message;
+            }
+
+            $this->_appliedChanges[] = $appliedChanges;
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        $this->_invalidateMemoizedData($path);
+    }
+
+    /**
+     * Load internal config data by a given path.
+     *
+     * @param string $path
+     * @param array $current
+     * @return mixed
+     */
+    private function _loadInternalConfigData(string $path)
+    {
+        if ($path == self::CONFIG_ALL_KEY) {
+            $rows = $this->_createProjectConfigQuery()->all();
+        } else {
+            $rows = $this->_createProjectConfigQuery()
+                ->where(['path' => $path])
+                ->orWhere(['like', 'path', $path . '.%', false])
+                ->all();
+        }
+
+        $data = $rows ? [] : null;
+
+        // For all rows returned
+        foreach ($rows as $row) {
+            $relativePath = StringHelper::removeLeft($row['path'], $path);
+
+            // Get rid of a preceding dot, if any.
+            $relativePath = StringHelper::removeLeft($relativePath, '.');
+
+            $row['value'] = Json::decode(StringHelper::decdec($row['value']));
+
+            // If relative path is empty, this is a direct value
+            if (empty($relativePath)) {
+                $data = $row['value'];
+                break;
+            }
+
+            // Get ready to iterate the relative path
+            $pathParts = explode('.', $relativePath);
+            $current =& $data;
+            $count = count($pathParts);
+
+            for ($i = 0; $i < $count; $i++) {
+                $pathPart = $pathParts[$i];
+
+                // If this is the final part, then this is the value
+                if ($i == $count - 1) {
+                    $current[$pathPart] = $row['value'];
+                    // otherwise keep building the array
+                } else if (!array_key_exists($pathPart, $current)) {
+                    $current[$pathPart] = [];
+                }
+
+                $current =& $current[$pathPart];
+            }
+        }
+
+        if (is_array($data)) {
+            $data = ProjectConfigHelper::cleanupConfig($data);
+        }
+
+        return $data;
     }
 
     // Private methods for rebuilding project config
@@ -1678,6 +1998,11 @@ class ProjectConfig extends Component
         // Massage the data and index by UID
         foreach ($fieldRows as $fieldRow) {
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
+
+            if (is_array($fieldRow['settings'])) {
+                $fieldRow['settings'] = ProjectConfigHelper::packAssociativeArray($fieldRow['settings']);
+            }
+
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
 
@@ -1761,6 +2086,11 @@ class ProjectConfig extends Component
         // Massage the data and index by UID
         foreach ($matrixSubfieldRows as $matrixSubfieldRow) {
             $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
+
+            if (is_array($matrixSubfieldRow['settings'])) {
+                $matrixSubfieldRow['settings'] = ProjectConfigHelper::packAssociativeArray($matrixSubfieldRow['settings']);
+            }
+
             $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);
             $matrixSubfieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
             list (, $blockTypeUid) = explode(':', $matrixSubfieldRow['context']);

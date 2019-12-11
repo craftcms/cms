@@ -365,7 +365,7 @@ class Globals extends Component
         }
 
         $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
             $globalSet->id = Db::idByUid(Table::GLOBALSETS, $globalSet->uid);
@@ -488,7 +488,7 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
         return true;
     }
 
@@ -553,7 +553,7 @@ class Globals extends Component
                     foreach ($globalSet['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;

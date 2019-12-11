@@ -403,7 +403,7 @@ class Plugins extends Component
         }
 
         // Enable the plugin in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true, "Enable plugin “{$handle}”");
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -448,7 +448,7 @@ class Plugins extends Component
         }
 
         // Disable the plugin in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', false);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', false, "Disable plugin “{$handle}”");
 
         unset($this->_enabledPluginInfo[$handle]);
         $this->_unregisterPlugin($plugin);
@@ -545,9 +545,13 @@ class Plugins extends Component
 
         // Add the plugin to the project config
         if (!$projectConfig->get($configKey, true)) {
-            $projectConfig->set($configKey . '.edition', $edition);
-            $projectConfig->set($configKey . '.enabled', true);
-            $projectConfig->set($configKey . '.schemaVersion', $plugin->schemaVersion);
+            $pluginData = [
+                'edition' => $edition,
+                'enabled' => true,
+                'schemaVersion' => $plugin->schemaVersion
+            ];
+
+            $projectConfig->set($configKey, $pluginData, "Install plugin “{$handle}”");
         }
 
         $this->_enabledPluginInfo[$handle] = $info;
@@ -623,7 +627,7 @@ class Plugins extends Component
         // Remove the plugin from the project config
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true)) {
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle, "Uninstall the “{$handle}” plugin");
         }
 
         $this->_unregisterPlugin($plugin);
@@ -660,7 +664,7 @@ class Plugins extends Component
         }
 
         // Update the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.edition', $edition);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.edition', $edition, "Switch edition for plugin “{$handle}”");
 
         if (isset($this->_enabledPluginInfo[$handle])) {
             $this->_enabledPluginInfo[$handle]['edition'] = $edition;
@@ -708,7 +712,7 @@ class Plugins extends Component
         // Update the plugin's settings in the project config
         $pluginSettings = $plugin->getSettings();
         $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArray($pluginSettings->toArray()) : [];
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $pluginSettings);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
 
         $plugin->afterSaveSettings();
 
@@ -1146,7 +1150,7 @@ class Plugins extends Component
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
         // Set the plugin's license key in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
 
         // Update our cache of it
         if (isset($this->_enabledPluginInfo[$handle])) {

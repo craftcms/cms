@@ -7,6 +7,7 @@
 
 namespace craft\web;
 
+use craft\helpers\Json;
 use yii\base\Component;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
@@ -79,6 +80,14 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
         }
 
         foreach ($data as $row) {
+            foreach ($row as &$field) {
+                if (is_scalar($field)) {
+                    $field = (string)$field;
+                } else {
+                    $field = Json::encode($field);
+                }
+            }
+            unset($field);
             fputcsv($fp, $row, $this->delimiter, $this->enclosure, $this->escapeChar);
         }
 

@@ -15,11 +15,14 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\exporters\Expanded;
+use craft\elements\exporters\Raw;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
+use craft\events\RegisterElementExportersEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
@@ -140,6 +143,12 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
      */
     const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
+     * @event RegisterElementExportersEvent The event that is triggered when registering the available exporters for the element type.
+     * @since 3.4.0
+     */
+    const EVENT_REGISTER_EXPORTERS = 'registerExporters';
 
     /**
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
@@ -483,6 +492,23 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function exporters(string $source): array
+    {
+        $exporters = static::defineExporters($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementExportersEvent([
+            'source' => $source,
+            'exporters' => $exporters
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
+
+        return $event->exporters;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function searchableAttributes(): array
     {
         $attributes = static::defineSearchableAttributes();
@@ -519,6 +545,22 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineActions(string $source = null): array
     {
         return [];
+    }
+
+    /**
+     * Defines the available element exporters for a given source.
+     *
+     * @param string|null $source The selected source’s key
+     * @return array The available element exporters
+     * @see exporters()
+     * @since 3.4.0
+     */
+    protected static function defineExporters(string $source): array
+    {
+        return [
+            Raw::class,
+            Expanded::class,
+        ];
     }
 
     /**
@@ -1993,14 +2035,18 @@ abstract class Element extends Component implements ElementInterface
             return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
         }
         if ($outdated && !$modified) {
-            return [self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         if ($outdated && $modified) {
-            return [self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         return null;
     }
@@ -2116,14 +2162,18 @@ abstract class Element extends Component implements ElementInterface
             return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
         }
         if ($outdated && !$modified) {
-            return [self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         if ($outdated && $modified) {
-            return [self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                'type' => static::lowerDisplayName(),
-            ])];
+            return [
+                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])
+            ];
         }
         return null;
     }

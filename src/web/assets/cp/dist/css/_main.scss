@@ -865,6 +865,11 @@ ul.icons {
   .flex {
     align-items: flex-start;
   }
+
+  .text {
+    border-radius: $largeBorderRadius !important;
+    box-shadow: none !important;
+  }
 }
 
 .flex {
@@ -1065,7 +1070,7 @@ ul.icons {
       cursor: default;
     }
 
-    &:not(:last-child) {
+    &:not(.dashed):not(:last-child) {
       @include margin-right(1px);
     }
 
@@ -1234,12 +1239,18 @@ div.btn.submit input {
 .btn.dashed {
   border: 1px dashed $mediumHairlineColor;
   background-color: transparent !important;
-  box-shadow: none !important;
-}
 
-.btn.dashed:not(.disabled):active,
-.btn.dashed:not(.disabled).active {
-  background-color: transparentize($grey200, 0.75) !important;
+  .btngroup &:not(:last-child) {
+    @include border-right(1px solid transparent);
+    @include margin-right(-1px);
+  }
+
+  &:not(.disabled) {
+    &:active,
+    &.active {
+      background-color: transparentize($grey200, 0.75) !important;
+    }
+  }
 }
 
 /* color inputs */
@@ -1843,7 +1854,7 @@ $largeThumbSize: 120px;
       .status {
         position: absolute;
         @include left(0);
-        top: 130px;
+        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing + 6};
       }
     }
 

@@ -27,6 +27,9 @@
 - It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager-loading criteria. 
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
 - GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
+- Added a new “Expanded” element exporter type, which includes expanded custom field values, including Matrix and relational fields. ([#4484](https://github.com/craftcms/cms/issues/4484))
+- It’s now possible to export elements as CSV, JSON, or XML files.
+- Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -37,6 +40,11 @@
 - Added `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Added `craft\base\Element::ATTR_STATUS_MODIFIED`.
 - Added `craft\base\Element::ATTR_STATUS_OUTDATED`.
+- Added `craft\base\Element::EVENT_REGISTER_EXPORTERS`.
+- Added `craft\base\Element::defineExporters()`.
+- Added `craft\base\ElementExporterInterface`.
+- Added `craft\base\ElementExporter`.
+- Added `craft\base\ElementInterface::exporters()`
 - Added `craft\base\ElementInterface::getAttributeStatus()`.
 - Added `craft\base\ElementInterface::getDirtyAttributes()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
@@ -70,10 +78,13 @@
 - Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\elements\db\ElementQuery::clearCachedResult()`.
 - Added `craft\elements\db\MatrixBlockQuery::field()`.
+- Added `craft\elements\exporters\Expanded`.
+- Added `craft\elements\exporters\Raw`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\ExecuteGqlQueryEvent::$schemaId`.
+- Added `craft\events\RegisterElementExportersEvent`.
 - Added `craft\events\RegisterGqlPermissionsEvent`.
 - Added `craft\events\TemplateEvent::$templateMode`.
 - Added `craft\gql\TypeManager`.
@@ -82,6 +93,7 @@
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
+- Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\GqlToken`.
@@ -92,6 +104,7 @@
 - Added `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::mergeSourceChanges()`.
+- Added `craft\services\Elements::createExporter()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
 - Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::deleteSchema()`.
@@ -105,7 +118,19 @@
 - Added `craft\services\Gql::handleChangedSchema()`.
 - Added `craft\services\Gql::handleDeletedSchema()`.
 - Added `craft\services\Gql::saveToken()`.
+- Added `craft\services\Path::getConfigDeltaPath()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
+- Added `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Added `craft\services\ProjectConfig::CONFIG_ASSOC_KEY`.
+- Added `craft\services\ProjectConfig::$maxDeltas`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\CsvResponseFormatter`.
 - Added `craft\web\User::guestRequired()`.
@@ -145,11 +170,16 @@
 - Plugins can now modify the GraphQL schema via `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS`.
 - Plugins can now modify the GraphQL permissions via `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Renamed the`QueryParameter` GraphQL type to `QueryArgument`.
-- Project config now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
+- If any elements are selected while exporting, only the selected elements will be included in the export. ([#5130](https://github.com/craftcms/cms/issues/5130))
+- Craft now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
+- The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
 - Active record classes now normalize attribute values right when they are set.
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\ProjectConfig::processConfigChanges()` now has a `$message` argument to specify the reason for config changes.
+- `craft\services\ProjectConfig::remove()` now has a `$message` argument to specify the reason for config changes.
+- `craft\services\ProjectConfig::set()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
@@ -162,6 +192,7 @@
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
 - Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
+- Deprecated `craft\services\ProjectConfig::$maxBackups`. `$maxDeltas` should be used instead.
 - Deprecated `craft\services\Search::indexElementFields()`.
 
 ### Removed
