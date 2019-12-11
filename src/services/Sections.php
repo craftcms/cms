@@ -1567,7 +1567,7 @@ class Sections extends Component
         // (Re)save it with an updated title, slug, and URI format.
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getElements()->saveElement($entry)) {
-            throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI');
+            throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI: ' . $section->name);
         }
 
         // Delete any other entries in the section
