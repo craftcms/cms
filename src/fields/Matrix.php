@@ -32,7 +32,9 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\i18n\Locale;
 use craft\models\MatrixBlockType;
+use craft\queue\jobs\ApplyMatrixPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
@@ -482,7 +484,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         $query = MatrixBlock::find();
+        $this->_populateQuery($query, $element);
 
+        // Set the initially matched elements if $value is already set, which is the case if there was a validation
+        // error or we're loading an entry revision.
+        if ($value === '') {
+            $query->setCachedResult([]);
+        } else if ($element && is_array($value)) {
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Populates the field’s [[MatrixBlockQuery]] value based on the owner element.
+     *
+     * @param MatrixBlockQuery $query
+     * @param ElementInterface|null $element
+     * @since 3.4.0
+     */
+    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null)
+    {
         // Existing element?
         /** @var Element|null $element */
         if ($element && $element->id) {
@@ -494,16 +517,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $query
             ->fieldId($this->id)
             ->siteId($element->siteId ?? null);
-
-        // Set the initially matched elements if $value is already set, which is the case if there was a validation
-        // error or we're loading an entry revision.
-        if ($value === '') {
-            $query->setCachedResult([]);
-        } else if ($element && is_array($value)) {
-            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
-        }
-
-        return $query;
     }
 
     /**
@@ -569,6 +582,36 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        /** @var Element|null $element */
+        if (!$element) {
+            return null;
+        }
+
+        switch ($this->propagationMethod) {
+            case self::PROPAGATION_METHOD_NONE:
+                return Craft::t('app', 'Blocks will only be saved in the {site} site.', [
+                    'site' => Craft::t('site', $element->getSite()->name),
+                ]);
+            case self::PROPAGATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'Blocks will be saved across all sites in the {group} site group.', [
+                    'group' => Craft::t('site', $element->getSite()->getGroup()->name),
+                ]);
+            case self::PROPAGATION_METHOD_LANGUAGE:
+                $language = (new Locale($element->getSite()->language))
+                    ->getDisplayName(Craft::$app->language);
+                return Craft::t('app', 'Blocks will be saved across all {language}-language sites.', [
+                    'language' => $language,
+                ]);
+            default:
+                return null;
+        }
     }
 
     /**
@@ -876,15 +919,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'elementType' => MatrixBlock::class,
-                'criteria' => [
-                    'fieldId' => $this->id,
-                    'siteId' => '*',
-                    'unique' => true,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
+            Craft::$app->getQueue()->push(new ApplyMatrixPropagationMethod([
+                'fieldId' => $this->id,
+                'oldPropagationMethod' => $this->_oldPropagationMethod,
+                'newPropagationMethod' => $this->propagationMethod,
             ]));
             $this->_oldPropagationMethod = null;
         }
@@ -915,9 +953,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $matrixService->saveField($this, $element);
         }
 
-        // Reset the field value if this is a new element
+        // Repopulate the Matrix block query if this is a new element
         if ($element->duplicateOf || $isNew) {
-            $element->setFieldValue($this->handle, null);
+            /** @var MatrixBlockQuery $query */
+            $query = $element->getFieldValue($this->handle);
+            $this->_populateQuery($query, $element);
+            $query->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);

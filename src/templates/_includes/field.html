@@ -9,17 +9,6 @@
 {% set translatable = field.getIsTranslatable(element) %}
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
 
-{% if translatable %}
-    {% switch field.translationMethod %}
-    {% case 'site' %}
-        {% set translationDescription = 'This field is translated for each site.'|t('app') %}
-    {% case 'siteGroup' %}
-        {% set translationDescription = 'This field is translated for each site group.'|t('app') %}
-    {% case 'language' %}
-        {% set translationDescription = 'This field is translated for each language.'|t('app') %}
-    {% endswitch %}
-{% endif %}
-
 {% if not static %}
     {% set isDeltaRegistrationActive = view.getIsDeltaRegistrationActive() %}
     {% set registerDeltas = isDeltaRegistrationActive and (registerDeltas ?? false) %}
@@ -33,9 +22,10 @@
 
 {% if instructions or input %}
     {{ field({
+        status: element ? element.getFieldStatus(field.handle),
         label: field.name|t('site')|e,
         translatable: translatable,
-        translationDescription: translationDescription ?? null,
+        translationDescription: field.getTranslationDescription(element),
         siteId: siteId,
         required: (not static ? required : false),
         instructions: instructions|e,

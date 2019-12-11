@@ -301,7 +301,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             /** @var ElementInterface|string $elementType */
             $elementType = static::elementType();
             $element->addError($this->handle, Craft::t('app', 'Fix validation errors on the related {type}.', [
-                'type' => mb_strtolower($errorCount === 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+                'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
             ]));
         }
     }
@@ -729,7 +729,7 @@ JS;
             return null;
         }
 
-        $type = mb_strtolower(static::displayName());
+        $type = $class::lowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
 
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
@@ -815,7 +815,8 @@ JS;
 
         return [
             'field' => $this,
-            'pluralElementType' => $elementType::pluralDisplayName(),
+            'elementType' => $elementType::lowerDisplayName(),
+            'pluralElementType' => $elementType::pluralLowerDisplayName(),
         ];
     }
 

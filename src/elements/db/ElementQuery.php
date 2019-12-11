@@ -1615,6 +1615,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Clears the cached result.
+     *
+     * @see getCachedResult()
+     * @see setCachedResult()
+     * @since 3.4.0
+     */
+    public function clearCachedResult()
+    {
+        $this->_result = $this->_resultCriteria = null;
+    }
+
+    /**
      * Returns an array of the current criteria attribute values.
      *
      * @return array
@@ -1783,6 +1795,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                 'draftName' => ArrayHelper::remove($row, 'draftName'),
                 'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+                'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
+                'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
             ]);
         }
 
@@ -2421,6 +2435,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'drafts.name as draftName',
                     'drafts.notes as draftNotes',
                 ]);
+
+            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+            if (version_compare($schemaVersion, '3.4.3', '>=')) {
+                $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
+                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
+            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);

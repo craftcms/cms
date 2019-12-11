@@ -170,7 +170,7 @@
                 let options = []
 
                 for (let iso in this.countries) {
-                    if (this.countries.hasOwnProperty(iso)) {
+                    if (Object.prototype.hasOwnProperty.call(this.countries, iso)) {
                         options.push({
                             label: this.countries[iso].name,
                             value: iso,

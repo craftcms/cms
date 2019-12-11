@@ -35,7 +35,8 @@
         name: 'schema',
         id: 'schema',
         options: schemaOptions,
-        value: token.schemaId
+        value: token.schemaId,
+        warning: not schemaOptions|length ? 'No Schemas exist yet to assign to this token.'|t('app') : null
     }) }}
 
     <hr>

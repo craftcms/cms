@@ -1,4 +1,4 @@
-/*!   - 2019-12-03 */
+/*!   - 2019-12-10 */
 (function($){
 
 /** global: Craft */
@@ -1970,6 +1970,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $selectAllContainer: null,
         $selectAllCheckbox: null,
         showingActionTriggers: false,
+        exporters: null,
         _$detachedToolbarItems: null,
         _$triggers: null,
 
@@ -2172,9 +2173,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Default to whatever page is in the URL
-            if (this.settings.context === 'index') {
-                this.setPage(Craft.pageNum);
-            }
+            this.setPage(Craft.pageNum);
 
             this.updateElements(true);
         },
@@ -2414,6 +2413,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          * Sets the page number.
          */
         setPage: function(page) {
+            if (this.settings.context !== 'index') {
+                return;
+            }
+
             page = Math.max(page, 1);
             this.page = page;
 
@@ -3486,6 +3489,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$selectAllContainer.remove();
             }
 
+            // Exporters setup
+            // -------------------------------------------------------------
+
+            this.exporters = response.exporters;
+
+            if (this.exporters && this.exporters.length) {
+                this.$exportBtn.removeClass('hidden');
+            } else {
+                this.$exportBtn.addClass('hidden');
+            }
+
             // Create the view
             // -------------------------------------------------------------
 
@@ -3598,12 +3612,37 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 'class': 'export-form'
             });
 
-            var $limitField = Craft.ui.createTextField({
-                label: Craft.t('app', 'Limit'),
-                placeholder: Craft.t('app', 'No limit'),
-                type: 'number',
-                min: 1
+            var typeOptions = [];
+            for (var i = 0; i < this.exporters.length; i++) {
+                typeOptions.push({ label: this.exporters[i].name, value: this.exporters[i].type });
+            }
+            var $typeField = Craft.ui.createSelectField({
+                label: Craft.t('app', 'Export Type'),
+                options: typeOptions,
+                'class': 'fullwidth',
             }).appendTo($form);
+
+            var $formatField = Craft.ui.createSelectField({
+                label: Craft.t('app', 'Format'),
+                options: [
+                    { label: 'CSV', value: 'csv' },
+                    { label: 'JSON', value: 'json' },
+                    { label: 'XML', value: 'xml' },
+                ],
+                'class': 'fullwidth',
+            }).appendTo($form);
+
+            // Only show the Limit field if there aren't any selected elements
+            var selectedElementIds = this.view.getSelectedElementIds();
+
+            if (!selectedElementIds.length) {
+                var $limitField = Craft.ui.createTextField({
+                    label: Craft.t('app', 'Limit'),
+                    placeholder: Craft.t('app', 'No limit'),
+                    type: 'number',
+                    min: 1
+                }).appendTo($form);
+            }
 
             $('<input/>', {
                 type: 'submit',
@@ -3635,9 +3674,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 var params = this.getViewParams();
                 delete params.criteria.limit;
 
-                var limit = parseInt($limitField.find('input').val());
-                if (limit && !isNaN(limit)) {
-                    params.criteria.limit = limit;
+                params.type = $typeField.find('select').val();
+                params.format = $formatField.find('select').val();
+
+                if (selectedElementIds.length) {
+                    params.criteria.id = selectedElementIds;
+                } else {
+                    var limit = parseInt($limitField.find('input').val());
+                    if (limit && !isNaN(limit)) {
+                        params.criteria.limit = limit;
+                    }
                 }
 
                 Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
@@ -13262,7 +13308,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         timeout: null,
         saving: false,
         saveXhr: null,
-        checkFormAfterUpdate: false,
+        queue: null,
         submittingForm: false,
 
         duplicatedElements: null,
@@ -13273,6 +13319,8 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         init: function(settings) {
             this.setSettings(settings, Craft.DraftEditor.defaults);
+
+            this.queue = [];
 
             this.duplicatedElements = {};
 
@@ -13339,7 +13387,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             // Create the edit draft button
             this.createEditMetaBtn();
 
-            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+            this.addListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
                     return;
                 }
@@ -13355,6 +13403,34 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
+
+            this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
+        },
+
+        mergeChanges: function() {
+            // Make sure there aren't any unsaved changes
+            this.checkForm(true);
+
+            // Make sure we aren't currently saving something
+            if (this.saving) {
+                this.queue.push(this.mergeChanges.bind(this));
+                return;
+            }
+
+            this.saving = true;
+            $('#merge-changes-spinner').removeClass('hidden');
+
+            Craft.postActionRequest('drafts/merge-source-changes', {
+                elementType: this.settings.elementType,
+                draftId: this.settings.draftId,
+                siteId: this.settings.siteId,
+            }, function(response, textStatus) {
+                if (textStatus === 'success') {
+                    window.location.reload();
+                } else {
+                    $('#merge-changes-spinner').addClass('hidden');
+                }
+            });
         },
 
         showStatusHud: function(target) {
@@ -13533,7 +13609,10 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (force || (data !== this.lastSerializedValue)) {
+            if (
+                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
+                (force || (data !== this.lastSerializedValue))
+            ) {
                 this.saveDraft(data);
             }
         },
@@ -13561,7 +13640,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.lastSerializedValue = data;
 
                 if (this.saving) {
-                    this.checkFormAfterUpdate = true;
+                    this.queue.push(function() {
+                        this.checkForm(true)
+                    }.bind(this));
                     return;
                 }
 
@@ -13636,7 +13717,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                             $saveBtnContainer.replaceWith($('<input/>', {
                                 type: 'submit',
                                 'class': 'btn submit',
-                                value: Craft.t('app', 'Update {type}', {type: this.settings.elementTypeDisplayName})
+                                value: Craft.t('app', 'Publish changes')
                             }));
                         }
 
@@ -13780,13 +13861,12 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.trigger('update');
 
-            if (this.checkFormAfterUpdate) {
-                this.checkFormAfterUpdate = false;
+            this.nextInQueue();
+        },
 
-                // Only actually check the form if there's no active timeout for it
-                if (!this.timeout) {
-                    this.checkForm();
-                }
+        nextInQueue: function() {
+            if (this.queue.length) {
+                this.queue.shift()();
             }
         },
 
@@ -21376,7 +21456,7 @@ Craft.UriFormatGenerator = Craft.BaseInputGenerator.extend(
             // Get the "words"
             var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
-            var uriFormat = words.join('-');
+            var uriFormat = words.join(Craft.slugWordSeparator);
 
             if (uriFormat && this.settings.suffix) {
                 uriFormat += this.settings.suffix;

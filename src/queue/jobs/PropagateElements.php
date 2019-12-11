@@ -87,7 +87,7 @@ class PropagateElements extends BaseJob
         $elementType = $query->elementType;
         $total = $query->count();
         return Craft::t('app', 'Propagating {type}', [
-            'type' => mb_strtolower($total == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            'type' => $total == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
         ]);
     }
 
