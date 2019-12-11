@@ -392,7 +392,6 @@ class Install extends Migration
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'config' => $this->mediumText()->null(),
             'configMap' => $this->mediumText()->null(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -443,6 +442,10 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::PROJECTCONFIG, [
+            'path' => $this->string(),
+            'value' => $this->text(),
         ]);
         $this->createTable(Table::QUEUE, [
             'id' => $this->primaryKey(),
@@ -792,6 +795,7 @@ class Install extends Migration
         $this->createIndex(null, Table::MIGRATIONS, ['pluginId'], false);
         $this->createIndex(null, Table::MIGRATIONS, ['type', 'pluginId'], false);
         $this->createIndex(null, Table::PLUGINS, ['handle'], true);
+        $this->createIndex(null, Table::PROJECTCONFIG, ['path'], true);
         $this->createIndex(null, Table::QUEUE, ['fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, Table::QUEUE, ['fail', 'timeUpdated', 'delay']);
         $this->createIndex(null, Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], true);

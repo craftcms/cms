@@ -56,6 +56,7 @@
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
+- Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\GqlToken`.
@@ -76,7 +77,19 @@
 - Added `craft\services\Gql::handleChangedSchema()`.
 - Added `craft\services\Gql::handleDeletedSchema()`.
 - Added `craft\services\Gql::saveToken()`.
+- Added `craft\services\Path::getConfigDeltaPath()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
+- Added `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Added `craft\services\ProjectConfig::CONFIG_ASSOC_KEY`.
+- Added `craft\services\ProjectConfig::$maxDeltas`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\twig\nodes\RequireGuestNode`.
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
@@ -117,6 +130,9 @@
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\ProjectConfig::processConfigChanges()` now has a `$message` argument to specify the reason for config changes.
+- `craft\services\ProjectConfig::remove()` now has a `$message` argument to specify the reason for config changes.
+- `craft\services\ProjectConfig::set()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
@@ -140,6 +156,7 @@
 - Removed `craft\models\GqlSchema::$dateCreated`.
 - Removed `craft\models\GqlSchema::$isTemporary`.
 - Removed `craft\models\GqlSchema::getIsPublic()`.
+- Removed `craft\services\ProjectConfig::$maxBackups`.
 
 ### Fixed
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))

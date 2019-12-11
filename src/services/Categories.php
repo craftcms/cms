@@ -312,7 +312,7 @@ class Categories extends Component
         }
 
         $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save category group “{$group->handle}”");
 
         if ($isNewCategoryGroup) {
             $group->id = Db::idByUid(Table::CATEGORYGROUPS, $group->uid);
@@ -557,7 +557,7 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, "Delete category group “{$group->handle}”");
         return true;
     }
 
@@ -672,7 +672,7 @@ class Categories extends Component
                     foreach ($categoryGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -702,7 +702,7 @@ class Categories extends Component
         // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid);
+                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid, 'Prune deleted site settings');
             }
         }
     }

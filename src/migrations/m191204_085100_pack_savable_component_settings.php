@@ -31,7 +31,7 @@ class m191204_085100_pack_savable_component_settings extends Migration
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
         // Pack the settings to protect them from being sorted, in case the order matters
-        if (version_compare($schemaVersion, '3.4.2', '<')) {
+        if (version_compare($schemaVersion, '3.4.3', '<')) {
             $projectConfig->muteEvents = true;
 
             // Fields

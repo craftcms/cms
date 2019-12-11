@@ -220,7 +220,7 @@ class AssetTransforms extends Component
         ];
 
         $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
             $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid);
@@ -341,7 +341,7 @@ class AssetTransforms extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
         return true;
     }
 
