@@ -22,7 +22,7 @@ class AdminTableAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = true;
+    private $useDevServer = false;
 
     /**
      * @var bool
@@ -50,13 +50,13 @@ class AdminTableAsset extends AssetBundle
             ];
         } else {
             $this->css = [
-                'chunk-vendors.css',
-                'app.css',
+                'css/chunk-vendors.css',
+                'css/app.css',
             ];
 
             $this->js = [
-                'chunk-vendors.js',
-                'app.js',
+                'js/chunk-vendors.js',
+                'js/app.js',
             ];
         }
 
