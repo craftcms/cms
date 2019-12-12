@@ -5279,6 +5279,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         mouseMoveEvent: null,
         croppingConstraint: false,
         constraintOrientation: 'landscape',
+        showingCustomConstraint: false,
 
         // Rendering proxy functions
         renderImage: null,
@@ -5823,6 +5824,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.addListener($('.constraint-buttons .btn.constraint', this.$container), 'click', this._handleConstraintClick);
             this.addListener($('.constraint-buttons .btn.orientation input', this.$container), 'click', this._handleOrientationClick);
+            this.addListener($('.constraint-buttons .custom-input input', this.$container), 'keydown', this._applyCustomOrientation);
         },
 
         /**
@@ -5832,15 +5834,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         _handleConstraintClick: function (ev) {
             var $constraint = $(ev.currentTarget).data('constraint');
+            $(ev.currentTarget).siblings().removeClass('active');
+            $(ev.currentTarget).addClass('active');
 
             if ($constraint == 'custom') {
-
+                this._showCustomConstraint();
+                return;
             }
+
+            this._hideCustomConstraint();
+
             this.setCroppingConstraint($constraint);
             this.enforceCroppingConstraint();
 
-            $(ev.currentTarget).siblings().removeClass('active');
-            $(ev.currentTarget).addClass('active');
         },
 
         /**
@@ -5864,6 +5870,34 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
 
             $constraints.filter('.active').click();
+        },
+
+        _applyCustomOrientation: function (ev) {
+            if (ev.keyCode == Garnish.RETURN_KEY) {
+                var w = parseFloat($('.custom-constraint-w').val());
+                var h = parseFloat($('.custom-constraint-h').val());
+
+                if (w > 0 && h > 0) {
+                    this.setCroppingConstraint(w / h);
+                    this.enforceCroppingConstraint();
+                }
+            }
+        },
+
+        _hideCustomConstraint: function () {
+            this.showingCustomConstraint = false;
+            $('.constraint.custom .custom-input', this.$container).addClass('hidden');
+            $('.constraint.custom .custom-label', this.$container).removeClass('hidden');
+        },
+
+        _showCustomConstraint: function () {
+            if (this.showingCustomConstraint) {
+                return;
+            }
+
+            this.showingCustomConstraint = true;
+            $('.constraint.custom .custom-input', this.$container).removeClass('hidden');
+            $('.constraint.custom .custom-label', this.$container).addClass('hidden');
         },
 
         /**
