@@ -70,6 +70,14 @@
     </div>
 
     {{ forms.checkboxField({
+        label: 'Show unpermitted volumes'|t('app'),
+        instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+        id: 'showUnpermittedVolumes',
+        name: 'showUnpermittedVolumes',
+        checked: field.showUnpermittedVolumes,
+    }) }}
+
+    {{ forms.checkboxField({
         label: "Restrict allowed file types?"|t('app'),
         class: 'restrictFiles',
         id: 'restrictFiles',

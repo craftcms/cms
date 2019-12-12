@@ -3,7 +3,9 @@
 ## Unreleased
 
 ### Added
+- Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+- Added `craft\fields\Assets::$showUnpermittedVolumes`.
 
 ## 3.4.0-beta.3 - 2019-12-11
 
