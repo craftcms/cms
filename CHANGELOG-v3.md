@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.0-beta.3 - 2019-12-11
 
 ### Fixed
 - Fixed a bug which prevented Craft from being installed.
