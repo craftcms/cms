@@ -1,4 +1,4 @@
-/*!   - 2019-12-11 */
+/*!   - 2019-12-12 */
 (function($){
 
 /** global: Craft */
@@ -4821,7 +4821,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             hideOnSelect: true,
             onCancel: $.noop,
             onSelect: $.noop,
-            hideIndexSidebar: false
+            hideSidebar: false
         }
     });
 
