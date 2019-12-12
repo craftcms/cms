@@ -1109,7 +1109,7 @@ class ProjectConfig extends Component
             $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
         }
 
-        return $generatedConfig;
+        return $generatedConfig ?? [];
     }
 
     /**
@@ -1180,10 +1180,10 @@ class ProjectConfig extends Component
         $changedItems = [];
 
         if ($configData === null) {
-            $configData = $this->_getConfigurationFromYaml();
+            $configData = $this->_getConfigurationFromYaml() ?? [];
         }
 
-        $currentConfig = $this->_getInternalConfigValue();
+        $currentConfig = $this->_getInternalConfigValue() ?? [];
 
         $flatConfig = [];
         $flatCurrent = [];
