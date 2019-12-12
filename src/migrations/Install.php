@@ -1030,7 +1030,6 @@ class Install extends Migration
             'schemaVersion' => Craft::$app->schemaVersion,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
-            'config' => serialize([]),
             'configMap' => Json::encode([]),
         ]));
         echo "done\n";
