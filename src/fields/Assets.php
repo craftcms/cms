@@ -78,9 +78,9 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var bool|null Whether related assets should be limited to a single folder
+     * @var bool Whether related assets should be limited to a single folder
      */
-    public $useSingleFolder;
+    public $useSingleFolder = false;
 
     /**
      * @var string|null Where files should be uploaded to by default, in format
@@ -154,6 +154,8 @@ class Assets extends BaseRelationField
     public function init()
     {
         parent::init();
+
+        $this->useSingleFolder = (bool)$this->useSingleFolder;
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -584,7 +586,7 @@ class Assets extends BaseRelationField
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
-        $variables['hideSidebar'] = (int)$this->useSingleFolder;
+        $variables['hideSidebar'] = $this->useSingleFolder;
         $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
 
         return $variables;
