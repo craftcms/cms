@@ -1443,7 +1443,7 @@ class AssetTransforms extends Component
                 } else {
                     $position = $transform->position;
                 }
-                $image->scaleAndCrop($transform->width, $transform->height, true, $position);
+                $image->scaleAndCrop($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
         }
 
         if ($image instanceof Raster) {

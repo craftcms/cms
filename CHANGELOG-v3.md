@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+
 ## 3.4.0-beta.3 - 2019-12-11
 
 ### Fixed

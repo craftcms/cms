@@ -858,6 +858,10 @@ class GeneralConfig extends BaseObject
      */
     public $trustedHosts = ['any'];
     /**
+     * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     */
+    public $upscaleImages = true;
+    /**
      * @var bool Whether Craft should use compressed JavaScript files whenever possible.
      */
     public $useCompressedJs = true;
