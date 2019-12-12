@@ -58,12 +58,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         scaleFactor: 1,
         flipData: {},
         focalPointState: false,
-        croppingConstraint: false,
         spinnerInterval: null,
         maxImageSize: null,
         lastLoadedDimensions: null,
         imageIsLoading: false,
         mouseMoveEvent: null,
+        croppingConstraint: false,
+        constraintOrientation: 'landscape',
 
         // Rendering proxy functions
         renderImage: null,
@@ -606,15 +607,49 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
             });
 
-            // Cropper constraint menu
-            var constraintMenu = new Garnish.MenuBtn($('.crop .menubtn', this.$container), {
-                onOptionSelect: function (option) {
-                    $('.constraint', this.$container).html($(option).html());
-                    this.setCroppingConstraint($(option).data('constraint'));
-                    this.enforceCroppingConstraint();
-                }.bind(this)
-            });
-            constraintMenu.menu.$container.addClass('dark');
+            this.addListener($('.constraint-buttons .btn.constraint', this.$container), 'click', this._handleConstraintClick);
+            this.addListener($('.constraint-buttons .btn.orientation input', this.$container), 'click', this._handleOrientationClick);
+        },
+
+        /**
+         * Handle a constraint button click.
+         *
+         * @param ev
+         */
+        _handleConstraintClick: function (ev) {
+            var $constraint = $(ev.currentTarget).data('constraint');
+
+            if ($constraint == 'custom') {
+
+            }
+            this.setCroppingConstraint($constraint);
+            this.enforceCroppingConstraint();
+
+            $(ev.currentTarget).siblings().removeClass('active');
+            $(ev.currentTarget).addClass('active');
+        },
+
+        /**
+         * Handle an orientation switch click.
+         *
+         * @param ev
+         */
+        _handleOrientationClick: function (ev) {
+
+            if (ev.currentTarget.value === this.constraintOrientation) {
+                return;
+            }
+            this.constraintOrientation = ev.currentTarget.value;
+
+            var $constraints = $('.constraint.flip', this.$container);
+
+            for (var i = 0; i < $constraints.length; i++) {
+                var $constraint = $($constraints[i]);
+                $constraint.data('constraint', 1 / $constraint.data('constraint'));
+                $constraint.html($constraint.html().split(':').reverse().join(':'));
+            }
+
+            $constraints.filter('.active').click();
         },
 
         /**
@@ -1940,23 +1975,25 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             switch (constraint) {
                 case 'none':
-                    constraint = false;
+                    this.croppingConstraint = false;
                     break;
 
                 case 'original':
-                    constraint = this.originalWidth / this.originalHeight;
+                    this.croppingConstraint = this.originalWidth / this.originalHeight;
                     break;
 
                 case 'current':
-                    constraint = this.clipper.width / this.clipper.height;
+                    this.croppingConstraint = this.clipper.width / this.clipper.height;
                     break;
 
+                case 'custom':
+
+                    break;
                 default:
-                    constraint = parseFloat(constraint);
+                    this.croppingConstraint = parseFloat(constraint);
+
                     break;
             }
-
-            this.croppingConstraint = constraint;
         },
 
         /**
