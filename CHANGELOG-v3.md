@@ -7,6 +7,9 @@
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
 - Added `craft\fields\Assets::$showUnpermittedVolumes`.
 
+### Changed
+- Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+
 ## 3.4.0-beta.3 - 2019-12-11
 
 ### Fixed
