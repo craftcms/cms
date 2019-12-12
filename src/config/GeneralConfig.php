@@ -859,6 +859,7 @@ class GeneralConfig extends BaseObject
     public $trustedHosts = ['any'];
     /**
      * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     * @since 3.4.0
      */
     public $upscaleImages = true;
     /**
