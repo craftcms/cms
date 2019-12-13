@@ -78,9 +78,9 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var bool|null Whether related assets should be limited to a single folder
+     * @var bool Whether related assets should be limited to a single folder
      */
-    public $useSingleFolder;
+    public $useSingleFolder = false;
 
     /**
      * @var string|null Where files should be uploaded to by default, in format
@@ -121,6 +121,12 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
+     * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
+     * @since 3.4.0
+     */
+    public $showUnpermittedVolumes = false;
+
+    /**
      * @inheritdoc
      */
     protected $allowLargeThumbsView = true;
@@ -151,9 +157,25 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public function __construct(array $config = [])
+    {
+        // Default showUnpermittedVolumes to true for existing Assets fields
+        if (isset($config['id']) && !isset($config['showUnpermittedVolumes'])) {
+            $config['showUnpermittedVolumes'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
+
+        $this->useSingleFolder = (bool)$this->useSingleFolder;
+        $this->showUnpermittedVolumes = (bool)$this->showUnpermittedVolumes;
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -544,8 +566,21 @@ class Assets extends BaseRelationField
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
 
+        $assetsService = Craft::$app->getAssets();
+
         if ($this->useSingleFolder) {
-            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            if (!$this->showUnpermittedVolumes) {
+                // Make sure they have permission to view the volume
+                // (Use singleUploadLocationSource here because the actual folder could belong to a temp volume)
+                $volumeId = $this->_volumeIdBySourceKey($this->singleUploadLocationSource);
+                /** @var Volume|null $volume */
+                $volume = $volumeId ? Craft::$app->getVolumes()->getVolumeById($volumeId) : null;
+                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:{$volume->uid}")) {
+                    return [];
+                }
+            }
+
+            $folder = $assetsService->getFolderById($folderId);
             $folderPath = 'folder:' . $folder->uid;
 
             // Construct the path
@@ -570,9 +605,28 @@ class Assets extends BaseRelationField
                 }
             }
         } else {
-            if ($this->sources === '*') {
-                $sources = '*';
+            foreach (Craft::$app->getElementIndexes()->getSources(Asset::class) as $source) {
+                if (isset($source['key'])) {
+                    $sources[] = $source['key'];
+                }
             }
+        }
+
+        // Now enforce the showUnpermittedVolumes setting
+        if (!$this->showUnpermittedVolumes && !empty($sources)) {
+            $userService = Craft::$app->getUser();
+            $permittedSources = [];
+            foreach ($sources as $i => $source) {
+                if (strpos($source, 'folder:') === 0) {
+                    $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
+                    /** @var Volume $volume */
+                    $volume = $folder ? $folder->getVolume() : null;
+                    if ($volume && $userService->checkPermission("viewVolume:{$volume->uid}")) {
+                        $permittedSources[] = $source;
+                    }
+                }
+            }
+            return $permittedSources;
         }
 
         return $sources;
@@ -584,7 +638,7 @@ class Assets extends BaseRelationField
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
-        $variables['hideSidebar'] = (int)$this->useSingleFolder;
+        $variables['hideSidebar'] = $this->useSingleFolder;
         $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
 
         return $variables;

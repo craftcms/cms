@@ -678,6 +678,10 @@
                         window.draftEditor.checkForm();
                     }
                 }, this));
+
+                this.matrix.trigger('blockDeleted', {
+                    $block: this.$container,
+                });
             }
         });
 })(jQuery);

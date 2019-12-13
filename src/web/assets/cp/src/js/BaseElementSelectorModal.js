@@ -222,6 +222,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             hideOnSelect: true,
             onCancel: $.noop,
             onSelect: $.noop,
-            hideIndexSidebar: false
+            hideSidebar: false
         }
     });
