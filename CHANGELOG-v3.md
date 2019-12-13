@@ -5,6 +5,9 @@
 ### Added
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
 
+### Fixed
+- Fixed an image editor bug where selecting a cropper ratio would not immediately save cropper settings.
+
 ## 3.4.0-beta.3 - 2019-12-11
 
 ### Fixed

@@ -7310,6 +7310,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this._redrawCropperElements();
                     this.animationInProgress = false;
                     this.renderCropper();
+                    this.storeCropperState();
                 }.bind(this)
             });
         },
