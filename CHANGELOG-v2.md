@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft now requires PHP 5.4 or later.
+
 ## 2.7.10 - 2019-07-24
 
 ### Security
