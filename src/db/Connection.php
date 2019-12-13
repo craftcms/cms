@@ -273,27 +273,6 @@ class Connection extends \yii\db\Connection
         if ($backupCommand === null) {
             $schema = $this->getSchema();
             $backupCommand = $schema->getDefaultBackupCommand();
-            $maxBackups = Craft::$app->getConfig()->getGeneral()->maxBackups;
-
-            if ($maxBackups > 0) {
-                $backupPath = Craft::$app->getPath()->getDbBackupPath();
-
-                // Grab all .sql files in the backup folder.
-                $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
-
-                // Sort them by file modified time descending (newest first).
-                usort($files, static function($a, $b) {
-                    return filemtime($a) < filemtime($b);
-                });
-
-                if (count($files) >= $maxBackups) {
-                    $backupsToDelete = array_slice($files, $maxBackups);
-
-                    foreach ($backupsToDelete as $backupToDelete) {
-                        FileHelper::unlink($backupToDelete);
-                    }
-                }
-            }
         }
 
         if ($backupCommand === false) {
@@ -318,6 +297,28 @@ class Connection extends \yii\db\Connection
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
                 'file' => $filePath
             ]));
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->maxBackups) {
+            $backupPath = Craft::$app->getPath()->getDbBackupPath();
+
+            // Grab all .sql files in the backup folder.
+            $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
+
+            // Sort them by file modified time descending (newest first).
+            usort($files, static function($a, $b) {
+                return filemtime($a) < filemtime($b);
+            });
+
+            if (count($files) >= $generalConfig->maxBackups) {
+                $backupsToDelete = array_slice($files, $generalConfig->maxBackups);
+
+                foreach ($backupsToDelete as $backupToDelete) {
+                    FileHelper::unlink($backupToDelete);
+                }
+            }
         }
     }
 

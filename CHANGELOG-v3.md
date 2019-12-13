@@ -14,6 +14,7 @@
 
 ### Fixed
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
+- Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
 
 ## 3.4.0-beta.3 - 2019-12-11
 
