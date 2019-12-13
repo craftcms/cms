@@ -2276,6 +2276,12 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 .modal.imageeditor .footer { position: absolute; background-color: transparent; bottom: 0; left: 0; width: 100%; border-top: 1px solid #000; }
 
+.modal.imageeditor .body .views .crop .constraint-buttons { -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; text-align: center; }
+.modal.imageeditor .body .views .crop .constraint-buttons .btn { display: -webkit-box; display: -ms-flexbox; display: flex; border-radius: 0; margin-right: 0; margin-bottom: 1px; }
+.modal.imageeditor .body .views .crop .constraint-buttons .btn:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
+.modal.imageeditor .body .views .crop .constraint-buttons .btn:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+.modal.imageeditor .body .views .crop .orientation input { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 30px; height: 30px; background: center center no-repeat url(../images/image-editor/orientation-landscape-checked.svg); }
+
 /* Vertical */
 .vertical.imageeditor .body { -webkit-box-orient: vertical; -webkit-box-direction: reverse; -ms-flex-direction: column-reverse; flex-direction: column-reverse; }
 

@@ -203,6 +203,42 @@ html.noscroll, html.noscroll body {
   border-top: 1px solid #000;
 }
 
+.modal.imageeditor .body .views .crop {
+  .constraint-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+
+    .btn {
+      display: flex;
+      border-radius: 0;
+      margin-right: 0;
+      margin-bottom: 1px;
+
+      &:first-child {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+      }
+    }
+  }
+
+  .orientation {
+    input {
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      appearance:none;
+      width: 30px;
+      height: 30px;
+      background: center center no-repeat url(../images/image-editor/orientation-landscape-checked.svg);
+    }
+  }
+}
+
 /* Vertical */
 
 .vertical.imageeditor .body {
