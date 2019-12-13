@@ -214,13 +214,13 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns the raw database table names that should be ignored by default.
+     * Returns the core table names whose data should be excluded from database backups.
      *
      * @return string[]
      */
     public function getIgnoredBackupTables(): array
     {
-        $tables = [
+        return [
             Table::ASSETINDEXDATA,
             Table::ASSETTRANSFORMINDEX,
             Table::SESSIONS,
@@ -230,14 +230,6 @@ class Connection extends \yii\db\Connection
             '{{%cache}}',
             '{{%templatecachecriteria}}',
         ];
-
-        $schema = $this->getSchema();
-
-        foreach ($tables as $i => $table) {
-            $tables[$i] = $schema->getRawTableName($table);
-        }
-
-        return $tables;
     }
 
     /**
@@ -267,33 +259,18 @@ class Connection extends \yii\db\Connection
      */
     public function backupTo(string $filePath)
     {
+        // Fire a 'beforeCreateBackup' event
+        $event = new BackupEvent([
+            'file' => $filePath,
+            'ignoreTables' => $this->getIgnoredBackupTables(),
+        ]);
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
+
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         if ($backupCommand === null) {
-            $schema = $this->getSchema();
-            $backupCommand = $schema->getDefaultBackupCommand();
-            $maxBackups = Craft::$app->getConfig()->getGeneral()->maxBackups;
-
-            if ($maxBackups > 0) {
-                $backupPath = Craft::$app->getPath()->getDbBackupPath();
-
-                // Grab all .sql files in the backup folder.
-                $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
-
-                // Sort them by file modified time descending (newest first).
-                usort($files, static function($a, $b) {
-                    return filemtime($a) < filemtime($b);
-                });
-
-                if (count($files) >= $maxBackups) {
-                    $backupsToDelete = array_slice($files, $maxBackups);
-
-                    foreach ($backupsToDelete as $backupToDelete) {
-                        FileHelper::unlink($backupToDelete);
-                    }
-                }
-            }
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
         }
 
         if ($backupCommand === false) {
@@ -304,13 +281,6 @@ class Connection extends \yii\db\Connection
         $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
         $command = $this->_createShellCommand($backupCommand);
 
-        // Fire a 'beforeCreateBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath
-            ]));
-        }
-
         $this->_executeDatabaseShellCommand($command);
 
         // Fire an 'afterCreateBackup' event
@@ -318,6 +288,28 @@ class Connection extends \yii\db\Connection
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
                 'file' => $filePath
             ]));
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->maxBackups) {
+            $backupPath = Craft::$app->getPath()->getDbBackupPath();
+
+            // Grab all .sql files in the backup folder.
+            $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
+
+            // Sort them by file modified time descending (newest first).
+            usort($files, static function($a, $b) {
+                return filemtime($a) < filemtime($b);
+            });
+
+            if (count($files) >= $generalConfig->maxBackups) {
+                $backupsToDelete = array_slice($files, $generalConfig->maxBackups);
+
+                foreach ($backupsToDelete as $backupToDelete) {
+                    FileHelper::unlink($backupToDelete);
+                }
+            }
         }
     }
 
@@ -330,12 +322,18 @@ class Connection extends \yii\db\Connection
      */
     public function restore(string $filePath)
     {
+        // Fire a 'beforeRestoreBackup' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+                'file' => $filePath
+            ]));
+        }
+
         // Determine the command that should be executed
         $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
         if ($restoreCommand === null) {
-            $schema = $this->getSchema();
-            $restoreCommand = $schema->getDefaultRestoreCommand();
+            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
 
         if ($restoreCommand === false) {
@@ -345,13 +343,6 @@ class Connection extends \yii\db\Connection
         // Create the shell command
         $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
         $command = $this->_createShellCommand($restoreCommand);
-
-        // Fire a 'beforeRestoreBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-                'file' => $filePath
-            ]));
-        }
 
         $this->_executeDatabaseShellCommand($command);
 
