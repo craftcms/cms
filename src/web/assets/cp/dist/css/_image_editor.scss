@@ -203,7 +203,41 @@ html.noscroll, html.noscroll body {
   border-top: 1px solid #000;
 }
 
-.modal.imageeditor .body .views .crop {
+.modal.imageeditor.vertical .body .views .crop {
+  & > .btngroup:first-child {
+    justify-content: center;
+  }
+
+  .constraint-buttons-container {
+    display: flex;
+    justify-content: center;
+
+    .constraint-buttons {
+      overflow: auto;
+      margin-left: -24px;
+      margin-right: -24px;
+      margin-bottom: 12px;
+      padding-left: 24px;
+      padding-right: 24px;
+      padding-bottom: 12px;
+
+      .btn:last-child {
+        position: relative;
+
+        &:after {
+          content: "";
+          display: block;
+          position: absolute;
+          right: -24px;
+          width: 24px;
+          height: 1px;
+        }
+      }
+    }
+  }
+}
+
+.modal.imageeditor:not(.vertical) .body .views .crop {
   .constraint-buttons {
     flex-direction: column;
     align-items: stretch;
@@ -226,15 +260,46 @@ html.noscroll, html.noscroll body {
       }
     }
   }
+}
 
+.modal.imageeditor .body .views .crop {
   .orientation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     input {
       -webkit-appearance:none;
       -moz-appearance:none;
       appearance:none;
-      width: 30px;
-      height: 30px;
-      background: center center no-repeat url(../images/image-editor/orientation-landscape-checked.svg);
+      background-position: center center;
+      background-repeat: no-repeat;
+      margin: 0 4px;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
+
+      &[value="landscape"] {
+        width: 30px;
+        height: 20px;
+        background-image: url(../images/image-editor/orientation-landscape-unchecked.svg);
+
+        &:checked {
+          background-image: url(../images/image-editor/orientation-landscape-checked.svg);
+        }
+      }
+
+      &[value="portrait"] {
+        width: 20px;
+        height: 30px;
+        background-image: url(../images/image-editor/orientation-portrait-unchecked.svg);
+
+        &:checked {
+          background-image: url(../images/image-editor/orientation-portrait-checked.svg);
+        }
+      }
     }
   }
 }
