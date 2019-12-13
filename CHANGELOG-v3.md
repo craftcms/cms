@@ -4,15 +4,16 @@
 
 ### Added
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
+- It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
+- It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
-- Added `craft\fields\Assets::$showUnpermittedVolumes`.
 - Added `craft\fields\Assets::$showUnpermittedVolumes`.
 
 ### Changed
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
 
 ### Fixed
-- Fixed an image editor bug where selecting a cropper ratio would not immediately save cropper settings.
+- Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
 
 ## 3.4.0-beta.3 - 2019-12-11
 
