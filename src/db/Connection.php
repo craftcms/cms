@@ -214,13 +214,13 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns the raw database table names that should be ignored by default.
+     * Returns the core table names whose data should be excluded from database backups.
      *
      * @return string[]
      */
     public function getIgnoredBackupTables(): array
     {
-        $tables = [
+        return [
             Table::ASSETINDEXDATA,
             Table::ASSETTRANSFORMINDEX,
             Table::SESSIONS,
@@ -230,14 +230,6 @@ class Connection extends \yii\db\Connection
             '{{%cache}}',
             '{{%templatecachecriteria}}',
         ];
-
-        $schema = $this->getSchema();
-
-        foreach ($tables as $i => $table) {
-            $tables[$i] = $schema->getRawTableName($table);
-        }
-
-        return $tables;
     }
 
     /**
@@ -268,17 +260,17 @@ class Connection extends \yii\db\Connection
     public function backupTo(string $filePath)
     {
         // Fire a 'beforeCreateBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath
-            ]));
-        }
+        $event = new BackupEvent([
+            'file' => $filePath,
+            'ignoreTables' => $this->getIgnoredBackupTables(),
+        ]);
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
 
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         if ($backupCommand === null) {
-            $backupCommand = $this->getSchema()->getDefaultBackupCommand();
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
         }
 
         if ($backupCommand === false) {

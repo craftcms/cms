@@ -24,4 +24,10 @@ class BackupEvent extends Event
      * @var string|null The file path to the backup.
      */
     public $file;
+
+    /**
+     * @var string[] The table names whose data should be excluded from the backup.
+     * @since 3.4.0
+     */
+    public $ignoreTables;
 }

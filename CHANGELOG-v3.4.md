@@ -86,6 +86,7 @@
 - Added `craft\elements\exporters\Expanded`.
 - Added `craft\elements\exporters\Raw`.
 - Added `craft\events\AssetPreviewEvent`.
+- Added `craft\events\BackupEvent::$ignoreTables`. ([#5330](https://github.com/craftcms/cms/issues/5330))
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
 - Added `craft\events\DefineGqlValidationRulesEvent`.
 - Added `craft\events\ExecuteGqlQueryEvent::$schemaId`.
