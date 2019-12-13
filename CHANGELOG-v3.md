@@ -14,6 +14,7 @@
 
 ### Fixed
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
+- Fixed a bug where changes to entry types would not be synced when using project config. ([#5332](https://github.com/craftcms/cms/issues/5332))
 
 ## 3.4.0-beta.3 - 2019-12-11
 
