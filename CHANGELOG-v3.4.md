@@ -32,6 +32,7 @@
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
+- It’s now possible to change orientation for cropping aspect ratio as well as set a custom aspect ration when cropping inthe image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.

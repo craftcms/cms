@@ -610,7 +610,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.addListener($('.constraint-buttons .constraint', this.$container), 'click', this._handleConstraintClick);
             this.addListener($('.orientation input', this.$container), 'click', this._handleOrientationClick);
-            this.addListener($('.constraint-buttons .custom-input input', this.$container), 'keydown', this._applyCustomOrientation);
+            this.addListener($('.constraint-buttons .custom-input input', this.$container), 'keyup', this._applyCustomConstraint);
         },
 
         /**
@@ -619,18 +619,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleConstraintClick: function (ev) {
-            var $constraint = $(ev.currentTarget).data('constraint');
-            $(ev.currentTarget).siblings().removeClass('active');
-            $(ev.currentTarget).addClass('active');
+            var constraint = $(ev.currentTarget).data('constraint');
+            $target = $(ev.currentTarget);
+            $target.siblings().removeClass('active');
+            $target.addClass('active');
 
-            if ($constraint == 'custom') {
+            if (constraint == 'custom') {
                 this._showCustomConstraint();
+                this._applyCustomConstraint();
                 return;
             }
 
             this._hideCustomConstraint();
 
-            this.setCroppingConstraint($constraint);
+            this.setCroppingConstraint(constraint);
             this.enforceCroppingConstraint();
 
         },
@@ -658,24 +660,56 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             $constraints.filter('.active').click();
         },
 
-        _applyCustomOrientation: function (ev) {
-            if (ev.keyCode == Garnish.RETURN_KEY) {
-                var w = parseFloat($('.custom-constraint-w').val());
-                var h = parseFloat($('.custom-constraint-h').val());
+        /**
+         * Apply the custom ratio set in the inputs
+         */
+        _applyCustomConstraint: function () {
+            var constraint = this._getCustomConstraint();
 
-                if (w > 0 && h > 0) {
-                    this.setCroppingConstraint(w / h);
-                    this.enforceCroppingConstraint();
-                }
+            if (constraint.w > 0 && constraint.h > 0) {
+                this.setCroppingConstraint(constraint.w / constraint.h);
+                this.enforceCroppingConstraint();
             }
         },
 
+        /**
+         * Get the custom constraint.
+         *
+         * @returns {{w: *, h: *}}
+         */
+        _getCustomConstraint: function () {
+            var w = parseFloat($('.custom-constraint-w').val());
+            var h = parseFloat($('.custom-constraint-h').val());
+            return {
+                w: isNaN(w) ? 0 : w,
+                h: isNaN(h) ? 0 : h,
+            }
+        },
+
+        /**
+         * Set the custom constraint.
+         *
+         * @param w
+         * @param h
+         */
+        _setCustomConstraint: function (w, h) {
+            $('.custom-constraint-w').val(parseFloat(w));
+            $('.custom-constraint-h').val(parseFloat(h));
+        },
+
+        /**
+         * Hide the custom constraint inputs.
+         */
         _hideCustomConstraint: function () {
             this.showingCustomConstraint = false;
             $('.constraint.custom .custom-input', this.$container).addClass('hidden');
             $('.constraint.custom .custom-label', this.$container).removeClass('hidden');
+            $('.orientation', this.$container).removeClass('hidden');
         },
 
+        /**
+         * Show the custom constraint inputs.
+         */
         _showCustomConstraint: function () {
             if (this.showingCustomConstraint) {
                 return;
@@ -684,6 +718,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.showingCustomConstraint = true;
             $('.constraint.custom .custom-input', this.$container).removeClass('hidden');
             $('.constraint.custom .custom-label', this.$container).addClass('hidden');
+            $('.orientation', this.$container).addClass('hidden');
         },
 
         /**

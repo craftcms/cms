@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+- It’s now possible to change orientation for cropping aspect ratio as well as set a custom aspect ration when cropping inthe image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 
 ### Fixed
 - Fixed an image editor bug where selecting a cropper ratio would not immediately save cropper settings.
