@@ -1,4 +1,4 @@
-/*!   - 2019-12-12 */
+/*!   - 2019-12-13 */
 (function($){
 
 /** global: Craft */
@@ -5822,7 +5822,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
             });
 
-            this.addListener($('.constraint-buttons .btn.constraint', this.$container), 'click', this._handleConstraintClick);
+            this.addListener($('.constraint-buttons .constraint', this.$container), 'click', this._handleConstraintClick);
             this.addListener($('.orientation input', this.$container), 'click', this._handleOrientationClick);
             this.addListener($('.constraint-buttons .custom-input input', this.$container), 'keydown', this._applyCustomOrientation);
         },

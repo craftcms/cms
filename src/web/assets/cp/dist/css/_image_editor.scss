@@ -203,65 +203,6 @@ html.noscroll, html.noscroll body {
   border-top: 1px solid #000;
 }
 
-.modal.imageeditor.vertical .body .views .crop {
-  & > .btngroup:first-child {
-    justify-content: center;
-  }
-
-  .constraint-buttons-container {
-    display: flex;
-    justify-content: center;
-
-    .constraint-buttons {
-      overflow: auto;
-      margin-left: -24px;
-      margin-right: -24px;
-      margin-bottom: 12px;
-      padding-left: 24px;
-      padding-right: 24px;
-      padding-bottom: 12px;
-
-      .btn:last-child {
-        position: relative;
-
-        &:after {
-          content: "";
-          display: block;
-          position: absolute;
-          right: -24px;
-          width: 24px;
-          height: 1px;
-        }
-      }
-    }
-  }
-}
-
-.modal.imageeditor:not(.vertical) .body .views .crop {
-  .constraint-buttons {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-
-    .btn {
-      display: flex;
-      border-radius: 0;
-      margin-right: 0;
-      margin-bottom: 1px;
-
-      &:first-child {
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-      }
-
-      &:last-child {
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-      }
-    }
-  }
-}
-
 .modal.imageeditor .body .views .crop {
   .orientation {
     display: flex;
@@ -299,6 +240,74 @@ html.noscroll, html.noscroll body {
         &:checked {
           background-image: url(../images/image-editor/orientation-portrait-checked.svg);
         }
+      }
+    }
+  }
+}
+
+.modal.imageeditor.vertical .body .views .crop {
+  & > .btngroup:first-child {
+    justify-content: center;
+  }
+
+  .constraint-buttons-container {
+    display: flex;
+    justify-content: center;
+
+    .constraint-buttons {
+      overflow: auto;
+      margin-left: -24px;
+      margin-right: -24px;
+      margin-bottom: 12px;
+      padding-left: 24px;
+      padding-right: 24px;
+      padding-bottom: 12px;
+
+      .constraint {
+        padding: 4px 12px;
+
+        &:hover {
+          cursor: pointer;
+        }
+
+        &.active {
+          color: #fff;
+          background: $darkSelColor;
+          border-radius: 1rem;
+        }
+      }
+
+      .constraint:last-child {
+        position: relative;
+
+        &:after {
+          content: "";
+          display: block;
+          position: absolute;
+          right: -24px;
+          width: 24px;
+          height: 1px;
+        }
+      }
+    }
+  }
+}
+
+.modal.imageeditor:not(.vertical) .body .views .crop {
+  .constraint-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+
+    .constraint {
+      text-align: left;
+      padding: 4px 0 4px 24px;
+      cursor: pointer;
+
+      &.active {
+        background-position: left center;
+        background-repeat: no-repeat;
+        background-image: url(../images/image-editor/check.svg);
       }
     }
   }
