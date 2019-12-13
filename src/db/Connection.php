@@ -267,12 +267,18 @@ class Connection extends \yii\db\Connection
      */
     public function backupTo(string $filePath)
     {
+        // Fire a 'beforeCreateBackup' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
+                'file' => $filePath
+            ]));
+        }
+
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         if ($backupCommand === null) {
-            $schema = $this->getSchema();
-            $backupCommand = $schema->getDefaultBackupCommand();
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand();
         }
 
         if ($backupCommand === false) {
@@ -282,13 +288,6 @@ class Connection extends \yii\db\Connection
         // Create the shell command
         $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
         $command = $this->_createShellCommand($backupCommand);
-
-        // Fire a 'beforeCreateBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath
-            ]));
-        }
 
         $this->_executeDatabaseShellCommand($command);
 
@@ -331,12 +330,18 @@ class Connection extends \yii\db\Connection
      */
     public function restore(string $filePath)
     {
+        // Fire a 'beforeRestoreBackup' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+                'file' => $filePath
+            ]));
+        }
+
         // Determine the command that should be executed
         $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
         if ($restoreCommand === null) {
-            $schema = $this->getSchema();
-            $restoreCommand = $schema->getDefaultRestoreCommand();
+            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
 
         if ($restoreCommand === false) {
@@ -346,13 +351,6 @@ class Connection extends \yii\db\Connection
         // Create the shell command
         $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
         $command = $this->_createShellCommand($restoreCommand);
-
-        // Fire a 'beforeRestoreBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-                'file' => $filePath
-            ]));
-        }
 
         $this->_executeDatabaseShellCommand($command);
 
