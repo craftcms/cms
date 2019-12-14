@@ -20,7 +20,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class User extends ObjectType
+class User extends Element
 {
     /**
      * @inheritdoc
@@ -47,7 +47,6 @@ class User extends ObjectType
             return Json::encode($source->getPreferences());
         }
 
-        return $source->$fieldName;
+        return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
-
 }

@@ -20,7 +20,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class Asset extends ObjectType
+class Asset extends Element
 {
     /**
      * @inheritdoc
@@ -58,6 +58,6 @@ class Asset extends ObjectType
             return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
         }
 
-        return $source->$fieldName;
+        return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 }

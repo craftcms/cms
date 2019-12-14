@@ -6,6 +6,7 @@
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
+- Added support for 
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
 - Added `craft\events\BackupEvent::$ignoreTables`. ([#5330](https://github.com/craftcms/cms/issues/5330))
 - Added `craft\fields\Assets::$showUnpermittedVolumes`.
@@ -17,6 +18,7 @@
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
 - Fixed a bug where changes to entry types would not be synced when using project config. ([#5332](https://github.com/craftcms/cms/issues/5332))
+- Fix a php error where some GraphQL objects weren't extending the parent objects correctly.
 
 ## 3.4.0-beta.3 - 2019-12-11
 
