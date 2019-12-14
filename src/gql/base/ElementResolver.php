@@ -70,9 +70,9 @@ abstract class ElementResolver extends Resolver
             }
 
             if (empty($parameters)) {
-                $eagerLoadConditions[$element] = $element;
+                $eagerLoadConditions[] = $element;
             } else {
-                $eagerLoadConditions[$element] = [$element, $parameters];
+                $eagerLoadConditions[] = [$element, $parameters];
             }
         }
 
