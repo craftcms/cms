@@ -184,8 +184,13 @@ abstract class Resolver
                             }
                         }
 
-                        if ($nodeName == Gql::GRAPHQL_COUNT_FIELD && !empty($subNode->alias) && !empty($subNode->alias->value)) {
-                            $nodeName = $subNode->alias->value . '@' . $nodeName;
+                        if ($nodeName == Gql::GRAPHQL_COUNT_FIELD) {
+                            if (!empty($subNode->alias) && !empty($subNode->alias->value)) {
+                                $nodeName = $subNode->alias->value . '@' . $nodeName;
+                            } else {
+                                // Just re-use the node name, then.
+                                $nodeName .= '@' . $nodeName;
+                            }
                         }
 
                         // Add it all to the list
