@@ -19,6 +19,7 @@
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
 - Fixed a bug where changes to entry types would not be synced when using project config. ([#5332](https://github.com/craftcms/cms/issues/5332))
 - Fix a php error where some GraphQL objects weren't extending the parent objects correctly.
+- Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 
 ## 3.4.0-beta.3 - 2019-12-11
 

@@ -184,7 +184,11 @@ abstract class Resolver
                         }
 
                         // Add it all to the list
-                        $eagerLoadNodes[$prefix . $nodeName] = $arguments;
+                        if (array_key_exists($prefix . $nodeName, $eagerLoadNodes)) {
+                            $eagerLoadNodes[$prefix . $nodeName] = array_merge_recursive($eagerLoadNodes[$prefix . $nodeName], $arguments);
+                        } else {
+                            $eagerLoadNodes[$prefix . $nodeName] = $arguments;
+                        }
 
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {
