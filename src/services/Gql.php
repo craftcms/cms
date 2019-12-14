@@ -226,6 +226,13 @@ class Gql extends Component
     const CONFIG_GQL_SCHEMAS_KEY = 'graphql.schemas';
 
     /**
+     * The field name to use when fetching count of related elements
+     *
+     * @since 3.4.0
+     */
+    const GRAPHQL_COUNT_FIELD = '__count';
+
+    /**
      * @var Schema Currently loaded schema definition
      */
     private $_schemaDef;

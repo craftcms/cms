@@ -8,6 +8,8 @@
 namespace craft\gql\base;
 
 use craft\elements\db\ElementQuery;
+use craft\helpers\StringHelper;
+use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -47,12 +49,30 @@ abstract class ElementResolver extends Resolver
         $preloadNodes = self::extractEagerLoadCondition($resolveInfo);
         $eagerLoadConditions = [];
 
+        $relationCountFields = [];
+
         // Set up the preload con
         foreach ($preloadNodes as $element => $parameters) {
+            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
+                if (isset($parameters['field'])) {
+                    $relationCountFields[$parameters['field']] = true;
+                }
+            }
+        }
+
+        foreach ($preloadNodes as $element => $parameters) {
+            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
+                continue;
+            }
+
+            if (!empty($relationCountFields[$element])) {
+                $parameters['count'] = true;
+            }
+
             if (empty($parameters)) {
-                $eagerLoadConditions[] = $element;
+                $eagerLoadConditions[$element] = $element;
             } else {
-                $eagerLoadConditions[] = [$element, $parameters];
+                $eagerLoadConditions[$element] = [$element, $parameters];
             }
         }
 

@@ -35,6 +35,7 @@
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
+- Added the `__count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -115,6 +116,7 @@
 - Added `craft\services\Elements::createExporter()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
 - Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
+- Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
 - Added `craft\services\Gql::deleteSchema()`.
 - Added `craft\services\Gql::deleteTokenById()`.
 - Added `craft\services\Gql::getSchemaByUid()`.

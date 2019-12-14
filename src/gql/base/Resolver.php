@@ -12,6 +12,7 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\helpers\StringHelper;
+use craft\services\Gql;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
@@ -129,7 +130,7 @@ abstract class Resolver
                     $field = $eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                     // That is a Craft field that can be eager-loaded or is the special `children` property
-                    if ($field || $subNode->name->value === 'children') {
+                    if ($field || $nodeName === 'children' || $nodeName === Gql::GRAPHQL_COUNT_FIELD) {
                         $arguments = [];
 
                         // Any arguments?
@@ -181,6 +182,10 @@ abstract class Resolver
                                     }
                                 }
                             }
+                        }
+
+                        if ($nodeName == Gql::GRAPHQL_COUNT_FIELD && !empty($subNode->alias) && !empty($subNode->alias->value)) {
+                            $nodeName = $subNode->alias->value . '@' . $nodeName;
                         }
 
                         // Add it all to the list
