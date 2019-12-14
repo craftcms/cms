@@ -185,6 +185,12 @@ GQL;
                 ],
             ],
             [
+                '{ entries { __count(field: "assetField") assetField { filename }}}',
+                [
+                    ['assetField', ['volumeId' => [5, 7], 'count' => true]]
+                ],
+            ],
+            [
                 '{ entries { assetField { filename }}}',
                 [
                     ['assetField', ['volumeId' => [5, 7]]]
