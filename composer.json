@@ -26,9 +26,14 @@
             "url": "https://github.com/pixelandtonic/pclzip"
         }
     ],
+    "config": {
+        "platform": {
+            "php":  "5.5.0"
+        }
+    },
     "require": {
         "guzzle/guzzle": "3.9.3.1",
-        "twig/twig": "1.38.4.1",
+        "twig/twig": "1.42.4.1",
         "simplepie/simplepie": "1.5.1.1",
         "phpmailer/phpmailer": "v5.2.27",
         "pixelandtonic/imagine": "v0.7.1.3",
