@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 2.x
 
-## Unreleased
+## 2.8.0 - 2019-12-14
 
 ### Added
 - Added PHP 7.4 compatibility.
