@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added PHP 7.4 compatibility.
+
 ### Changed
-- Craft now requires PHP 5.4 or later.
+- Craft now requires PHP 5.5 or later.
+- Updated Twig to 1.42.4. 
 
 ## 2.7.10 - 2019-07-24
 
