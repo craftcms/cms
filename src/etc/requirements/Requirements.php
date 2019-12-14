@@ -361,7 +361,7 @@ class PhpVersionRequirement extends Requirement
 	// Constants
 	// =========================================================================
 
-	const REQUIRED_PHP_VERSION = '5.4.0';
+	const REQUIRED_PHP_VERSION = '5.5.0';
 
 	// Protected Methods
 	// =========================================================================
@@ -384,14 +384,7 @@ class PhpVersionRequirement extends Requirement
 	 */
 	public function getNotes()
 	{
-		if ($this->_isBadPhpVersion())
-		{
-			return 'PHP '.PHP_VERSION.' has a known <a href="http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on">security vulnerability</a>. You should probably upgrade.';
-		}
-		else
-		{
-			return 'PHP '.static::REQUIRED_PHP_VERSION.' or higher is required.';
-		}
+		return 'PHP '.static::REQUIRED_PHP_VERSION.' or higher is required.';
 	}
 
 	// Protected Methods
@@ -406,16 +399,7 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_doesMinVersionPass())
 		{
-			// If it's < 5.4.2, still issue a warning, due to the PHP hijack bug:
-			// http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on/
-			if ($this->_isBadPhpVersion())
-			{
-				return RequirementResult::Warning;
-			}
-			else
-			{
-				return RequirementResult::Success;
-			}
+			return RequirementResult::Success;
 		}
 		else
 		{
@@ -434,16 +418,6 @@ class PhpVersionRequirement extends Requirement
 	private function _doesMinVersionPass()
 	{
 		return version_compare(PHP_VERSION, static::REQUIRED_PHP_VERSION, '>=');
-	}
-
-	/**
-	 * Returns whether this is one of the bad PHP versions.
-	 *
-	 * @return bool
-	 */
-	private function _isBadPhpVersion()
-	{
-		return PHP_VERSION_ID < 50402;
 	}
 }
 
