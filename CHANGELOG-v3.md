@@ -23,6 +23,7 @@
 - Fix a php error where some GraphQL objects weren't extending the parent objects correctly.
 - Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 - Fixed an error that occurred when renaming a site group. ([#5337](https://github.com/craftcms/cms/issues/5337))
+- Fixed a bug where section names on the Settings → Sections page were linking to their entry type indexes. ([#5339](https://github.com/craftcms/cms/issues/5339))
 
 ## 3.4.0-beta.3 - 2019-12-11
 
