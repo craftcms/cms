@@ -257,7 +257,7 @@ class Sites extends Component
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData, "Save the “$group->name” site group");
+        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData, "Save the “{$group->name}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
