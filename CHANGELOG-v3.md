@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.3.18.2 - 2019-12-15
 
 ### Changed
 - Autosuggest inputs now restore focus to the input field when an alias is chosen. ([#5338](https://github.com/craftcms/cms/issues/5338))
