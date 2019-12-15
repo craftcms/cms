@@ -115,6 +115,13 @@ new Vue({
         },
         onSelected(option) {
             this.selected = option.item;
+
+            // Bring focus back to the input if they selected an alias
+            if (option.item.name[0] == '@') {
+                var input = this.$el.querySelector('input');
+                input.focus();
+                input.selectionStart = input.selectionEnd = input.value.length;
+            }
         },
         getSuggestionValue(suggestion) {
             return suggestion.item.name || suggestion.item;
