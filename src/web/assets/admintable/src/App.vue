@@ -70,7 +70,7 @@
                         </template>
                         <template slot="menu" slot-scope="props">
                             <template v-if="props.rowData.menu.showItems">
-                                <a :href="props.rowData.url">{{props.rowData.menu.label}} ({{props.rowData.menu.items.length}})</a>
+                                <a :href="props.rowData.menu.url">{{props.rowData.menu.label}} ({{props.rowData.menu.items.length}})</a>
                                 <a class="menubtn" :title="props.rowData.menu.label"></a>
                                 <div class="menu">
                                     <ul>
