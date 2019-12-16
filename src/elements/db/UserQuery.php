@@ -26,6 +26,11 @@ use yii\db\Connection;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @supports-status-param
+ * @replace {element} user
+ * @replace {elements} users
+ * @replace {twig-method} craft.users()
+ * @replace {myElement} myUser
+ * @replace {element-class} \craft\elements\User
  */
 class UserQuery extends ElementQuery
 {
@@ -231,7 +236,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
@@ -242,14 +247,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo user group #}
+     * {# Fetch users in the Foo user group #}
      * {% set {elements-var} = {twig-method}
      *     .group('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo user group
+     * // Fetch users in the Foo user group
      * ${elements-var} = {php-method}
      *     ->group('foo')
      *     ->all();
@@ -281,7 +286,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
@@ -291,14 +296,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in a group with an ID of 1 #}
+     * {# Fetch users in a group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .groupId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in a group with an ID of 1
+     * // Fetch users in a group with an ID of 1
      * ${elements-var} = {php-method}
      *     ->groupId(1)
      *     ->all();
@@ -319,7 +324,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'foo@bar.baz'` | with an email of `foo@bar.baz`.
      * | `'not foo@bar.baz'` | not with an email of `foo@bar.baz`.
@@ -356,7 +361,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'foo'` | with a username of `foo`.
      * | `'not foo'` | not with a username of `foo`.
@@ -398,7 +403,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'Jane'` | with a first name of `Jane`.
      * | `'not Jane'` | not with a first name of `Jane`.
@@ -434,7 +439,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'Doe'` | with a last name of `Doe`.
      * | `'not Doe'` | not with a last name of `Doe`.
@@ -470,7 +475,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
      * | `'< 2018-05-01'` | that last logged-in before 2018-05-01
@@ -479,7 +484,7 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} that logged in recently #}
+     * {# Fetch users that logged in recently #}
      * {% set aWeekAgo = date('7 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
@@ -488,7 +493,7 @@ class UserQuery extends ElementQuery
      * ```
      *
      * ```php
-     * // Fetch {elements} that logged in recently
+     * // Fetch users that logged in recently
      * $aWeekAgo = (new \DateTime('7 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
@@ -507,11 +512,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the {elements}’ statuses.
+     * Narrows the query results based on the users’ statuses.
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'active'` _(default)_ | with active accounts.
      * | `'suspended'` | with suspended accounts.
@@ -522,14 +527,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch active and locked {elements} #}
+     * {# Fetch active and locked users #}
      * {% set {elements-var} = {twig-method}
      *     .status(['active', 'locked'])
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch active and locked {elements}
+     * // Fetch active and locked users
      * ${elements-var} = {element-class}::find()
      *     ->status(['active', 'locked'])
      *     ->all();
