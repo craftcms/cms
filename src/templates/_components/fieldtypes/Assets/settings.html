@@ -27,9 +27,6 @@
 	</table>
 {% endmacro %}
 
-{% from _self import uploadLocationInput %}
-
-
 {% block fieldSettings %}
 	{% block uploadLocationFields %}
 		{{ forms.checkboxField({
@@ -72,7 +69,7 @@
 				label: "Default Upload Location"|t,
 				instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ uploadLocationNote,
 				errors: settings.getErrors('defaultUploadLocationSubpath')
-			}, uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
+			}, _self.uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
 		</div>
 
 		<div id="single-folder-settings"{% if not settings.useSingleFolder %} class="hidden"{% endif %}>
@@ -80,7 +77,7 @@
 				label: "Upload Location"|t,
 				instructions: uploadLocationNote,
 				errors: settings.getErrors('singleUploadLocationSubpath')
-			}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
+			}, _self.uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
 		</div>
 	{% endblock %}
 
