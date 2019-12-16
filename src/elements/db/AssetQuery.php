@@ -217,7 +217,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches categories…
+     * | Value | Fetches assets…
      * | - | -
      * | `'foo'` | in a volume with a handle of `foo`.
      * | `'not foo'` | not in a volume with a handle of `foo`.
@@ -228,14 +228,14 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo volume #}
+     * {# Fetch assets in the Foo volume #}
      * {% set {elements-var} = {twig-method}
      *     .volume('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo group
+     * // Fetch assets in the Foo group
      * ${elements-var} = {php-method}
      *     ->volume('foo')
      *     ->all();
@@ -282,7 +282,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches categories…
+     * | Value | Fetches assets…
      * | - | -
      * | `1` | in a volume with an ID of 1.
      * | `'not 1'` | not in a volume with an ID of 1.
@@ -292,14 +292,14 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the volume with an ID of 1 #}
+     * {# Fetch assets in the volume with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .volumeId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch categories in the volume with an ID of 1
+     * // Fetch assets in the volume with an ID of 1
      * ${elements-var} = {php-method}
      *     ->volumeId(1)
      *     ->all();
@@ -334,7 +334,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches categories…
+     * | Value | Fetches assets…
      * | - | -
      * | `1` | in a folder with an ID of 1.
      * | `'not 1'` | not in a folder with an ID of 1.
@@ -344,14 +344,14 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the folder with an ID of 1 #}
+     * {# Fetch assets in the folder with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .folderId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch categories in the folder with an ID of 1
+     * // Fetch assets in the folder with an ID of 1
      * ${elements-var} = {php-method}
      *     ->folderId(1)
      *     ->all();
@@ -378,7 +378,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `'foo.jpg'` | with a filename of `foo.jpg`.
      * | `'foo*'` | with a filename that begins with `foo`.
@@ -440,7 +440,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `'image'` | with a file kind of `image`.
      * | `'not image'` | not with a file kind of `image`..
@@ -478,7 +478,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `100` | with a width of 100.
      * | `'>= 100'` | with a width of at least 100.
@@ -517,7 +517,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `100` | with a height of 100.
      * | `'>= 100'` | with a height of at least 100.
@@ -556,7 +556,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `1000` | with a size of 1,000 bytes (1KB).
      * | `'< 1000000'` | with a size of less than 1,000,000 bytes (1MB).
@@ -593,7 +593,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `'>= 2018-04-01'` | that were modified on or after 2018-04-01.
      * | `'< 2018-05-01'` | that were modified before 2018-05-01
@@ -602,7 +602,7 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} modified in the last month #}
+     * {# Fetch assets modified in the last month #}
      * {% set start = date('30 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
@@ -611,7 +611,7 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * ```php
-     * // Fetch {elements} modified in the last month
+     * // Fetch assets modified in the last month
      * $start = (new \DateTime('30 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
@@ -635,7 +635,7 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the folder with an ID of 1 (including its subfolders) #}
+     * {# Fetch assets in the folder with an ID of 1 (including its subfolders) #}
      * {% set {elements-var} = {twig-method}
      *     .folderId(1)
      *     .includeSubfolders()
@@ -643,7 +643,7 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * ```php
-     * // Fetch categories in the folder with an ID of 1 (including its subfolders)
+     * // Fetch assets in the folder with an ID of 1 (including its subfolders)
      * ${elements-var} = {php-method}
      *     ->folderId(1)
      *     ->includeSubfolders()
@@ -667,7 +667,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Causes the query to return matching {elements} eager-loaded with image transform indexes.
+     * Causes the query to return matching assets eager-loaded with image transform indexes.
      *
      * This can improve performance when displaying several image transforms at once, if the transforms
      * have already been generated.
@@ -675,7 +675,7 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} with the 'thumbnail' and 'hiResThumbnail' transform data preloaded #}
+     * {# Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded #}
      * {% set {elements-var} = {twig-method}
      *     .kind('image')
      *     .withTransforms(['thumbnail', 'hiResThumbnail'])
@@ -683,7 +683,7 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * ```php
-     * // Fetch {elements} with the 'thumbnail' and 'hiResThumbnail' transform data preloaded
+     * // Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded
      * ${elements-var} = {php-method}
      *     ->kind('image')
      *     ->withTransforms(['thumbnail', 'hiResThumbnail'])

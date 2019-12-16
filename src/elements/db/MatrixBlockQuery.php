@@ -192,7 +192,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | in a field with an ID of 1.
      * | `'not 1'` | not in a field with an ID of 1.
@@ -202,14 +202,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the field with an ID of 1 #}
+     * {# Fetch Matrix blocks in the field with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .fieldId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the field with an ID of 1
+     * // Fetch Matrix blocks in the field with an ID of 1
      * ${elements-var} = {php-method}
      *     ->fieldId(1)
      *     ->all();
@@ -230,7 +230,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | created for an element with an ID of 1.
      * | `'not 1'` | not created for an element with an ID of 1.
@@ -240,14 +240,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} created for an element with an ID of 1 #}
+     * {# Fetch Matrix blocks created for an element with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .ownerId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} created for an element with an ID of 1
+     * // Fetch Matrix blocks created for an element with an ID of 1
      * ${elements-var} = {php-method}
      *     ->ownerId(1)
      *     ->all();
@@ -299,14 +299,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} created for this entry #}
+     * {# Fetch Matrix blocks created for this entry #}
      * {% set {elements-var} = {twig-method}
      *     .owner(myEntry)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} created for this entry
+     * // Fetch Matrix blocks created for this entry
      * ${elements-var} = {php-method}
      *     ->owner($myEntry)
      *     ->all();
@@ -329,7 +329,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `true` | which can belong to a draft.
      * | `false` | which cannot belong to a draft.
@@ -350,7 +350,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `true` | which can belong to a revision.
      * | `false` | which cannot belong to a revision.
@@ -371,7 +371,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `'foo'` | of a type with a handle of `foo`.
      * | `'not foo'` | not of a type with a handle of `foo`.
@@ -382,14 +382,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} with a Foo block type #}
+     * {# Fetch Matrix blocks with a Foo block type #}
      * {% set {elements-var} = myEntry.myMatrixField
      *     .type('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} with a Foo block type
+     * // Fetch Matrix blocks with a Foo block type
      * ${elements-var} = $myEntry->myMatrixField
      *     ->type('foo')
      *     ->all();
@@ -421,7 +421,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | of a type with an ID of 1.
      * | `'not 1'` | not of a type with an ID of 1.
@@ -431,14 +431,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} of the block type with an ID of 1 #}
+     * {# Fetch Matrix blocks of the block type with an ID of 1 #}
      * {% set {elements-var} = myEntry.myMatrixField
      *     .typeId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} of the block type with an ID of 1
+     * // Fetch Matrix blocks of the block type with an ID of 1
      * ${elements-var} = $myEntry->myMatrixField
      *     ->typeId(1)
      *     ->all();
