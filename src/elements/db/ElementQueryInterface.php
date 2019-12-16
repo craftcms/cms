@@ -182,7 +182,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches drafts…
      * | - | -
      * | `1` | created by the user with an ID of 1.
-     * | a [[User]] object | by the user represented by the object.
+     * | a [[User]] object | created by the user represented by the object.
      *
      * ---
      *
@@ -304,7 +304,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches revisions…
      * | - | -
      * | `1` | created by the user with an ID of 1.
-     * | a [[User]] object | by the user represented by the object.
+     * | a [[User]] object | created by the user represented by the object.
      *
      * ---
      *
