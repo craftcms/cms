@@ -16,6 +16,9 @@
 - Entry drafts now show which fields and attributes have changed within the draft, and which are outdated.
 - If an entry draft contains outdated field and attribute values, it’s now possible to merge the latest source entry values into the draft manually, and they will be automatically merged in when the draft is published. ([#4642](https://github.com/craftcms/cms/issues/4642))
 - It’s now possible to see all of the elements selected by relation fields from element indexes. ([#3030](https://github.com/craftcms/cms/issues/3030))
+- Assets now keep track of which user account was logged-in when the asset was uploaded. ([#3553](https://github.com/craftcms/cms/issues/3553))
+- Asset indexes can now have an “Uploaded by” column.
+- It’s now possible to eager-load assets with their `uploader` value.
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
 - It’s now possible to download multiple assets at once as a zip file. ([#5259](https://github.com/craftcms/cms/issues/5259))
 - It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
@@ -81,7 +84,12 @@
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
+- Added `craft\elements\Asset::$uploaderId`.
+- Added `craft\elements\Asset::getUploader()`.
+- Added `craft\elements\Asset::setUploader()`.
 - Added `craft\elements\MatrixBlock::$dirty`.
+- Added `craft\elements\db\AssetQuery::$uploaderId`.
+- Added `craft\elements\db\AssetQuery::uploader()`.
 - Added `craft\elements\db\ElementQuery::clearCachedResult()`.
 - Added `craft\elements\db\MatrixBlockQuery::field()`.
 - Added `craft\elements\exporters\Expanded`.
@@ -107,6 +115,7 @@
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\GqlToken`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\records\Asset::getUploader()`.
 - Added `craft\records\GqlToken`.
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
 - Added `craft\services\Assets::getAssetPreview()`.

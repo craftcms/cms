@@ -115,6 +115,7 @@ class AssetsController extends Controller
             $asset->newFolderId = $folder->id;
             $asset->volumeId = $folder->volumeId;
             $asset->avoidFilenameConflicts = true;
+            $asset->uploaderId = Craft::$app->getUser()->getId();
             $asset->setScenario(Asset::SCENARIO_CREATE);
 
             $result = Craft::$app->getElements()->saveElement($asset);

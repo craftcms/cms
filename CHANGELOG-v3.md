@@ -3,14 +3,23 @@
 ## Unreleased
 
 ### Added
+- Assets now keep track of which user account was logged-in when the asset was uploaded. ([#3553](https://github.com/craftcms/cms/issues/3553))
+- Asset indexes can now have an “Uploaded by” column.
+- It’s now possible to eager-load assets with their `uploader` value.
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
 - Added the `__count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+- Added `craft\elements\Asset::$uploaderId`.
+- Added `craft\elements\Asset::getUploader()`.
+- Added `craft\elements\Asset::setUploader()`.
+- Added `craft\elements\db\AssetQuery::$uploaderId`.
+- Added `craft\elements\db\AssetQuery::uploader()`.
 - Added `craft\events\BackupEvent::$ignoreTables`. ([#5330](https://github.com/craftcms/cms/issues/5330))
 - Added `craft\fields\Assets::$showUnpermittedVolumes`.
+- Added `craft\records\Asset::getUploader()`.
 - Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
 
 ### Changed

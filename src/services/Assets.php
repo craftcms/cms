@@ -176,6 +176,7 @@ class Assets extends Component
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->avoidFilenameConflicts = true;
+        $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->setScenario(Asset::SCENARIO_REPLACE);
 
         Craft::$app->getElements()->saveElement($asset);

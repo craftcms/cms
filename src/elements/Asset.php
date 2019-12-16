@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
@@ -28,6 +29,7 @@ use craft\errors\AssetTransformException;
 use craft\errors\FileException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -194,6 +196,45 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.4.0
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    {
+        if ($handle === 'uploader') {
+            // Get the source element IDs
+            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+            $map = (new Query())
+                ->select(['id as source', 'uploaderId as target'])
+                ->from([Table::ASSETS])
+                ->where(['and', ['id' => $sourceElementIds], ['not', ['uploaderId' => null]]])
+                ->all();
+
+            return [
+                'elementType' => User::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle === 'uploader') {
+            $uploader = $elements[0] ?? null;
+            $this->setUploader($uploader);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function gqlTypeNameByContext($context): string
@@ -351,7 +392,7 @@ class Asset extends Element
      */
     protected static function defineTableAttributes(): array
     {
-        return [
+        $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
@@ -365,7 +406,15 @@ class Asset extends Element
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'uploader' => ['label' => Craft::t('app', 'Uploaded by')],
         ];
+
+        // Hide Author from Craft Solo
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            unset($attributes['uploader']);
+        }
+
+        return $attributes;
     }
 
     /**
@@ -377,7 +426,20 @@ class Asset extends Element
             'filename',
             'size',
             'dateModified',
+            'uploader',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    {
+        if ($attribute === 'uploader') {
+            $elementQuery->andWith('uploader');
+        } else {
+            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
     }
 
     /**
@@ -443,6 +505,11 @@ class Asset extends Element
      * @var int|null Folder ID
      */
     public $folderId;
+
+    /**
+     * @var int|null The ID of the user who first added this asset (if known)
+     */
+    public $uploaderId;
 
     /**
      * @var string|null Folder path
@@ -558,6 +625,11 @@ class Asset extends Element
      * @var VolumeInterface|null
      */
     private $_volume;
+
+    /**
+     * @var User|null
+     */
+    private $_uploader;
 
     // Public Methods
     // =========================================================================
@@ -754,6 +826,41 @@ class Asset extends Element
         }
 
         return $this->_volume = $volume;
+    }
+
+    /**
+     * Returns the user that uploaded the asset, if known.
+     *
+     * @return User|null
+     * @since 3.4.0
+     */
+    public function getUploader()
+    {
+        if ($this->_uploader !== null) {
+            return $this->_uploader;
+        }
+
+        if ($this->uploaderId === null) {
+            return null;
+        }
+
+        if (($this->_uploader = Craft::$app->getUsers()->getUserById($this->uploaderId)) === null) {
+            // The uploader is probably soft-deleted. Just pretend no uploader is set
+            return null;
+        }
+
+        return $this->_uploader;
+    }
+
+    /**
+     * Sets the asset's uploader.
+     *
+     * @param User|null $uploader
+     * @since 3.4.0
+     */
+    public function setUploader(User $uploader = null)
+    {
+        $this->_uploader = $uploader;
     }
 
     /**
@@ -1112,6 +1219,10 @@ class Asset extends Element
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'uploader':
+                $uploader = $this->getUploader();
+                return $uploader ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $uploader]) : '';
+
             case 'filename':
                 return Html::encodeParams('<span style="word-wrap: break-word;;">{filename}</span>', [
                     'filename' => $this->filename,
@@ -1356,6 +1467,7 @@ class Asset extends Element
             $record->filename = $this->filename;
             $record->volumeId = (int)$this->volumeId ?: null;
             $record->folderId = (int)$this->folderId;
+            $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
