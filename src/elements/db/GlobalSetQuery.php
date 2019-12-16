@@ -74,7 +74,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches global sets…
      * | - | -
      * | `'foo'` | with a handle of `foo`.
      * | `'not foo'` | not with a handle of `foo`.
@@ -84,14 +84,14 @@ class GlobalSetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch the {element} with a handle of 'foo' #}
+     * {# Fetch the global set with a handle of 'foo' #}
      * {% set {element-var} = {twig-method}
      *     .handle('foo')
      *     .one() %}
      * ```
      *
      * ```php
-     * // Fetch the {element} with a handle of 'foo'
+     * // Fetch the global set with a handle of 'foo'
      * ${element-var} = {php-method}
      *     ->handle('foo')
      *     ->one();
