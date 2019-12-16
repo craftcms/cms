@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 2.x
 
-## Unreleased
+## 2.8.0.1 - 2019-12-16
 
 ### Fixed
 - Fixed an error that occurred when editing a custom field. ([#5343](https://github.com/craftcms/cms/issues/5343))
