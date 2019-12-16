@@ -37,6 +37,8 @@ use yii\db\Connection;
  * @supports-slug-param
  * @supports-status-param
  * @supports-uri-param
+ * @supports-draft-params
+ * @supports-revision-params
  * @replace {element} entry
  * @replace {elements} entries
  * @replace {twig-method} craft.entries()
