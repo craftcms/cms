@@ -190,50 +190,60 @@ class Craft extends Yii
 
     /**
      * Autoloads (and possibly generates) ContentBehavior.php
+     *
+     * @param bool $write
+     * @param bool $load
+     * @return bool Whether the file was written/loaded
      */
-    private static function _autoloadContentBehavior()
+    private static function _autoloadContentBehavior(bool $write = true, bool $load = true)
     {
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
         $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
 
         if (self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
-            return;
+            return false;
         }
 
         $fields = self::_fields();
 
         if (empty($fields)) {
-            self::_generateContentBehavior([], $filePath, $storedFieldVersion, true, true);
+            self::_generateContentBehavior([], $filePath, $storedFieldVersion, $write, $load);
         } else {
-            // First generate a basic version without real field value types, and load it into memory
-            $fieldHandles = [];
-            foreach ($fields as $field) {
-                $fieldHandles[$field['handle']]['mixed'] = true;
+            if ($load) {
+                // First generate a basic version without real field value types, and load it into memory
+                $fieldHandles = [];
+                foreach ($fields as $field) {
+                    $fieldHandles[$field['handle']]['mixed'] = true;
+                }
+                self::_generateContentBehavior($fieldHandles, $filePath, $storedFieldVersion, false, true);
             }
-            self::_generateContentBehavior($fieldHandles, $filePath, $storedFieldVersion, false, true);
 
-            // Now generate it again, this time with the correct field value types
-            $fieldHandles = [];
-            foreach ($fields as $field) {
-                /** @var FieldInterface|string $fieldClass */
-                $fieldClass = $field['type'];
-                if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
-                    $types = explode('|', $fieldClass::valueType());
-                } else {
-                    $types = ['mixed'];
-                }
-                foreach ($types as $type) {
-                    $type = trim($type, ' \\');
-                    // Add a leading `\` if there is a namespace
-                    if (strpos($type, '\\') !== false) {
-                        $type = '\\' . $type;
+            if ($write) {
+                // Now generate it again, this time with the correct field value types
+                $fieldHandles = [];
+                foreach ($fields as $field) {
+                    /** @var FieldInterface|string $fieldClass */
+                    $fieldClass = $field['type'];
+                    if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
+                        $types = explode('|', $fieldClass::valueType());
+                    } else {
+                        $types = ['mixed'];
                     }
-                    $fieldHandles[$field['handle']][$type] = true;
+                    foreach ($types as $type) {
+                        $type = trim($type, ' \\');
+                        // Add a leading `\` if there is a namespace
+                        if (strpos($type, '\\') !== false) {
+                            $type = '\\' . $type;
+                        }
+                        $fieldHandles[$field['handle']][$type] = true;
+                    }
                 }
+                self::_generateContentBehavior($fieldHandles, $filePath, $storedFieldVersion, true, false);
             }
-            self::_generateContentBehavior($fieldHandles, $filePath, $storedFieldVersion, true, false);
         }
+
+        return true;
     }
 
     /**
@@ -284,30 +294,39 @@ EOD;
      */
     private static function _autoloadElementQueryBehavior()
     {
+        // Make sure ContentBehavior is autoloaded first
+        $generatedContentBehavior = (
+            !class_exists(ContentBehavior::class, false) &&
+            self::_autoloadContentBehavior(false, true)
+        );
+
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
         $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php';
 
-        if (self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
-            return;
-        }
+        if (!self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
+            $methods = [];
 
-        $methods = [];
-
-        foreach (self::_fields() as $field) {
-            $methods[] = <<<EOD
+            foreach (self::_fields() as $field) {
+                $methods[] = <<<EOD
  * @method self {$field['handle']}(mixed \$value) Sets the [[{$field['handle']}]] property
 EOD;
+            }
+
+            self::_generateBehavior(
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
+                ['{VERSION}', '{METHOD_DOCS}'],
+                [$storedFieldVersion, implode("\n", $methods)],
+                $filePath,
+                true,
+                true
+            );
         }
 
-        self::_generateBehavior(
-            static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
-            ['{VERSION}', '{METHOD_DOCS}'],
-            [$storedFieldVersion, implode("\n", $methods)],
-            $filePath,
-            true,
-            true
-        );
+        if ($generatedContentBehavior) {
+            // Now write ContentBehavior.php, now that
+            self::_autoloadContentBehavior(true, false);
+        }
     }
 
     /**
