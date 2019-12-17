@@ -7,7 +7,9 @@
 
 namespace craft\gql\base;
 
+use craft\fields\Matrix;
 use craft\gql\types\QueryArgument;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -37,5 +39,44 @@ abstract class Arguments
                 'description' => 'Narrows the query results based on the elements’ UIDs.'
             ],
         ];
+    }
+
+    /**
+     * Returns arguments defined by the content fields.
+     *
+     * @return array
+     */
+    public static function getContentArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * Return the content arguments based on a list of contexts and an element class.
+     *
+     * @param array $contexts
+     * @param string $elementClass
+     * @return array
+     */
+    protected static function buildContentArguments(array $contexts, string $elementClass)
+    {
+        $contentArguments = [];
+
+        foreach ($contexts as $context) {
+            if (!Gql::isSchemaAwareOf($elementClass::gqlScopesByContext($context))) {
+                continue;
+            }
+
+            foreach ($context->getFields() as $contentField) {
+                if (!$contentField instanceof Matrix) {
+                    $contentArguments[$contentField->handle] = [
+                        'name' => $contentField->handle,
+                        'type' => Type::listOf(QueryArgument::getType()),
+                    ];
+                }
+            }
+        }
+
+        return $contentArguments;
     }
 }

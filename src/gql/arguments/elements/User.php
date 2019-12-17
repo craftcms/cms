@@ -7,7 +7,11 @@
 
 namespace craft\gql\arguments\elements;
 
+use Craft;
+use craft\elements\User as UserElement;
+use craft\fields\Matrix;
 use craft\gql\base\ElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -23,7 +27,7 @@ class User extends ElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'email' => [
                 'name' => 'email',
                 'type' => Type::listOf(Type::string()),
@@ -45,5 +49,25 @@ class User extends ElementArguments
                 'description' => 'Narrows the query results based on the users’ last names.'
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getContentArguments(): array
+    {
+        $contentArguments = [];
+        $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
+
+        foreach ($contentFields as $contentField) {
+            if (!$contentField instanceof Matrix) {
+                $contentArguments[$contentField->handle] = [
+                    'name' => $contentField->handle,
+                    'type' => Type::listOf(QueryArgument::getType()),
+                ];
+            }
+        }
+
+        return array_merge(parent::getContentArguments(), $contentArguments);
     }
 }

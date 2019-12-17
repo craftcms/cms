@@ -7,6 +7,8 @@
 
 namespace craft\gql\arguments\elements;
 
+use Craft;
+use craft\elements\Category as CategoryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
@@ -24,7 +26,7 @@ class Category extends StructureElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'editable' => [
                 'name' => 'editable',
                 'type' => Type::boolean(),
@@ -41,5 +43,14 @@ class Category extends StructureElementArguments
                 'description' => 'Narrows the query results based on the category groups the categories belong to, per the groups’ IDs.'
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getContentArguments(): array
+    {
+        $categoryGroupFieldArguments = static::buildContentArguments(Craft::$app->getCategories()->getAllGroups(), CategoryElement::class);
+        return array_merge(parent::getContentArguments(), $categoryGroupFieldArguments);
     }
 }
