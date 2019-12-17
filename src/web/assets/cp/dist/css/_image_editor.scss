@@ -13,7 +13,7 @@ html.noscroll, html.noscroll body {
   background-color: $grey900;
   color: $white;
   @include light-on-dark-text;
-  opacity: 1;
+  opacity: 0;
   user-select: none;
 }
 

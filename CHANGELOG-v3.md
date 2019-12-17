@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Assets now have their own dedicated edit pages in the control panel. ([#1249](https://github.com/craftcms/cms/issues/1249))
+- Asset volumes’ field layouts can now define multiple tabs.
 - Assets now keep track of which user account was logged-in when the asset was uploaded. ([#3553](https://github.com/craftcms/cms/issues/3553))
 - Asset indexes can now have an “Uploaded by” column.
 - It’s now possible to eager-load assets with their `uploader` value.
@@ -13,18 +15,29 @@
 - It’s now possible to query for elements using GraphQL by custom field values.([#5208](https://github.com/craftcms/cms/issues/5208)
 - Added the `__count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+- Added `craft\controllers\AssetsController::actionEditAsset()`.
+- Added `craft\controllers\AssetsController::actionSaveAsset()`.
 - Added `craft\elements\Asset::$uploaderId`.
+- Added `craft\elements\Asset::getDimensions()`.
+- Added `craft\elements\Asset::getFormattedSize()`.
+- Added `craft\elements\Asset::getFormattedSizeInBytes()`.
+- Added `craft\elements\Asset::getPreviewThumbImg()`.
 - Added `craft\elements\Asset::getUploader()`.
 - Added `craft\elements\Asset::setUploader()`.
 - Added `craft\elements\db\AssetQuery::$uploaderId`.
 - Added `craft\elements\db\AssetQuery::uploader()`.
 - Added `craft\events\BackupEvent::$ignoreTables`. ([#5330](https://github.com/craftcms/cms/issues/5330))
 - Added `craft\fields\Assets::$showUnpermittedVolumes`.
+- Added `craft\models\FieldLayoutTab::elementHasErrors()`.
 - Added `craft\records\Asset::getUploader()`.
 - Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
+- The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 
 ### Changed
+- The Assets index page now updates the URL when the selected volume changes.
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+- The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
+- `craft\i18n\Formatter::asShortSize()` now capitalizes the size unit.
 
 ### Fixed
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.

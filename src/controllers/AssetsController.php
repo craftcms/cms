@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\assetpreviews\NoPreview;
 use craft\base\AssetPreview;
+use craft\base\Element;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
@@ -20,13 +22,17 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
+use craft\i18n\Formatter;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -57,12 +63,180 @@ class AssetsController extends Controller
     // =========================================================================
 
     /**
+     * Edits an asset.
+     *
+     * @param int $assetId The asset ID
+     * @param Asset|null $asset The asset being edited, if there were any validation errors.
+     * @return Response
+     * @throws BadRequestHttpException if `$assetId` is invalid
+     * @throws ForbiddenHttpException if the user isn't permitted to save the asset
+     * @since 3.4.0
+     */
+    public function actionEditAsset(int $assetId, Asset $asset = null): Response
+    {
+        if ($asset === null) {
+            $asset = Asset::findOne($assetId);
+            if ($asset === null) {
+                throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+            }
+        }
+
+        /** @var Volume $volume */
+        $volume = $asset->getVolume();
+        $this->requirePermission("saveAssetInVolume:{$volume->uid}");
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Assets'),
+                'url' => UrlHelper::url('assets')
+            ],
+            [
+                'label' => Craft::t('site', $volume->name),
+                'url' => UrlHelper::url("assets/{$volume->handle}")
+            ],
+        ];
+
+        // See if we can show a thumbnail
+        try {
+            // Is the image editable, and is the user allowed to edit?
+            $userSession = Craft::$app->getUser();
+
+            $editable = (
+                $asset->getSupportsImageEditor() &&
+                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
+            );
+
+            $previewHml = '<div id="preview-thumb-container" class="preview-thumb-container">' .
+                '<div class="preview-thumb">' .
+                $asset->getPreviewThumbImg(350, 190) .
+                '</div>' .
+                '<div class="buttons">';
+
+            $previewer = Craft::$app->getAssets()->getAssetPreview($asset);
+            if (!$previewer instanceof NoPreview) {
+                $previewHml .= '<div class="btn" id="preview-btn">' . Craft::t('app', 'Preview') . '</div>';
+            }
+
+            if ($editable) {
+                $previewHml .= '<div class="btn" id="edit-btn">' . Craft::t('app', 'Edit') . '</div>';
+            }
+
+            $previewHml .= '</div></div>';
+        } catch (NotSupportedException $e) {
+            // NBD
+            $previewHml = '';
+        }
+
+        return $this->renderTemplate('assets/_edit', [
+            'element' => $asset,
+            'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
+            'crumbs' => $crumbs,
+            'previewHtml' => $previewHml,
+            'formattedSize' => $asset->getFormattedSize(0),
+            'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
+            'dimensions' => $asset->getDimensions(),
+        ]);
+    }
+
+    /**
+     * Returns an updated preview image for an asset.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.4.0
+     */
+    public function actionPreviewThumb(): Response
+    {
+        $this->requireCpRequest();
+        $request = Craft::$app->getRequest();
+        $assetId = $request->getRequiredParam('assetId');
+        $width = $request->getRequiredParam('width');
+        $height = $request->getRequiredParam('height');
+
+        $asset = Asset::findOne($assetId);
+        if ($asset === null) {
+            throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+        }
+
+        return $this->asJson([
+            'img' => $asset->getPreviewThumbImg($width, $height),
+        ]);
+    }
+
+    /**
+     * Saves an asset.
+     *
+     * @return Response
+     * @since 3.4.0
+     */
+    public function actionSaveAsset(): Response
+    {
+        if (UploadedFile::getInstanceByName('assets-upload') !== null) {
+            Craft::$app->getDeprecator()->log(__METHOD__, 'Uploading new files via assets/save-asset has been deprecated. Use assets/upload instead.');
+            return $this->runAction('upload');
+        }
+
+        $request = Craft::$app->getRequest();
+        $assetId = $request->getRequiredParam('assetId');
+        $asset = Asset::findOne($assetId);
+        if ($asset === null) {
+            throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+        }
+
+        /** @var Volume $volume */
+        $volume = $asset->getVolume();
+        $this->requirePermission("saveAssetInVolume:{$volume->uid}");
+
+        $asset->title = $request->getParam('title') ?? $asset->title;
+        $asset->newFilename = $request->getParam('filename');
+
+        $fieldsLocation = $request->getParam('fieldsLocation') ?? 'fields';
+        $asset->setFieldValuesFromRequest($fieldsLocation);
+
+        // Save the asset
+        $asset->setScenario(Element::SCENARIO_LIVE);
+
+        if (!Craft::$app->getElements()->saveElement($asset)) {
+            if ($request->getAcceptsJson()) {
+                return $this->asJson([
+                    'success' => false,
+                    'errors' => $asset->getErrors(),
+                ]);
+            }
+
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save asset.'));
+
+            // Send the asset back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'asset' => $asset
+            ]);
+
+            return null;
+        }
+
+        if ($request->getAcceptsJson()) {
+            return $this->asJson([
+                'success' => true,
+                'id' => $asset->id,
+                'title' => $asset->title,
+                'url' => $asset->getUrl(),
+                'cpEditUrl' => $asset->getCpEditUrl()
+            ]);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset saved.'));
+
+        return $this->redirectToPostedUrl($asset);
+    }
+
+    /**
      * Upload a file
      *
      * @return Response
      * @throws BadRequestHttpException for reasons
+     * @since 3.4.0
      */
-    public function actionSaveAsset(): Response
+    public function actionUpload(): Response
     {
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
@@ -237,7 +411,15 @@ class AssetsController extends Controller
             return $this->asErrorJson($e->getMessage());
         }
 
-        return $this->asJson(['success' => true, 'assetId' => $assetId]);
+        return $this->asJson([
+            'success' => true,
+            'assetId' => $assetId,
+            'filename' => $assetToReplace->filename,
+            'formattedSize' => $assetToReplace->getFormattedSize(0),
+            'formattedSizeInBytes' => $assetToReplace->getFormattedSizeInBytes(false),
+            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($assetToReplace->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'dimensions' => $assetToReplace->getDimensions(),
+        ]);
     }
 
     /**

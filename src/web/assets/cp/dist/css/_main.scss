@@ -425,6 +425,10 @@ strong, b, i em {
   white-space: nowrap;
 }
 
+.break-word {
+  word-wrap: break-word;
+}
+
 .light {
   color: $mediumTextColor !important;
   font-weight: normal;
@@ -3113,6 +3117,91 @@ ul.tree,
   }
 }
 
+/* inline asset previews */
+
+.preview-thumb-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 190px;
+  background-color: $grey900;
+
+  &.loading {
+    &:after {
+      content: '.';
+      font-size: 0;
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: transparentize($grey900, 0.2) no-repeat 50% 50% url(../images/spinner_dark.gif);
+    }
+  }
+
+  #details & {
+    margin-bottom: 14px;
+    border-radius: $largeBorderRadius;
+    overflow: hidden;
+  }
+
+  .preview-thumb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+    img {
+      display: block;
+      max-width: 100%;
+      max-height: 190px;
+    }
+  }
+
+  &.editable {
+    cursor: pointer;
+  }
+
+  .buttons {
+    opacity: 0;
+    position: absolute;
+    top: 10px;
+    @include right(10px);
+    margin: 0;
+    transition: opacity linear 100ms;
+
+    .btn {
+      background-color: $grey600;
+      color: $white;
+      @include light-on-dark-text;
+
+      @supports (backdrop-filter: blur(10px)) {
+        & {
+          background-color: transparentize($grey600, 0.6);
+          backdrop-filter: blur(10px);
+          transition: opacity linear 100ms, backdrop-filter linear 100ms;
+        }
+      }
+    }
+  }
+
+  &:hover .buttons {
+    opacity: 1;
+  }
+
+  &:not(.editable) .buttons .btn:hover {
+    background-color: $grey500;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        background-color: transparentize($grey500, 0.3);
+      }
+    }
+  }
+}
+
 /* element editor HUDs */
 
 @media (min-width: 440px) {
@@ -3132,54 +3221,8 @@ ul.tree,
     padding: 8px 0;
 
     .meta {
-      .image-preview-container {
-        position: relative;
+      .preview-thumb-container {
         margin: -8px 0 8px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        height: 190px;
-        background-color: $grey900;
-
-        .image-preview {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 100%;
-
-          img {
-            display: block;
-            max-width: 100%;
-            max-height: 190px;
-          }
-        }
-
-        &.editable {
-          cursor: pointer;
-
-          .btn {
-            opacity: 0;
-            position: absolute;
-            top: 10px;
-            @include right(10px);
-            background-color: $grey600;
-            color: $white;
-            @include light-on-dark-text;
-            transition: opacity linear 100ms;
-
-            @supports (backdrop-filter: blur(10px)) {
-              & {
-                background-color: transparentize($grey600, 0.6);
-                backdrop-filter: blur(10px);
-                transition: opacity linear 100ms, backdrop-filter linear 100ms;
-              }
-            }
-          }
-
-          &:hover .btn {
-            opacity: 1;
-          }
-        }
       }
 
       .field {
@@ -4883,6 +4926,11 @@ only screen and (min-resolution: 1.5dppx) {
   .sel .element.loading:after,
   .element.loading.sel:after {
     background-image: url(../images/spinner_element_2x.gif);
+    background-size: 20px;
+  }
+
+  .preview-thumb-container.loading:after {
+    background-image: url(../images/spinner_dark_2x.gif);
     background-size: 20px;
   }
 

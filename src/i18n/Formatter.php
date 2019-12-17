@@ -292,6 +292,15 @@ class Formatter extends \yii\i18n\Formatter
         return parent::asText($value);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function asShortSize($value, $decimals = null, $options = [], $textOptions = [])
+    {
+        return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
+    }
+
     // Private Methods
     // =========================================================================
 

@@ -230,6 +230,8 @@ body.rtl .rightalign { text-align: left; }
 
 .nowrap { white-space: nowrap; }
 
+.break-word { word-wrap: break-word; }
+
 .light { color: #7b8793 !important; font-weight: normal; }
 
 .extralight { color: #9aa5b1 !important; }
@@ -1075,20 +1077,28 @@ body.rtl .modal .resizehandle { background-image: url(../images/resizehandle_rtl
 .hud .body ::-webkit-scrollbar-thumb { border-radius: 8px; border: 2px solid transparent; background-color: rgba(0, 0, 0, 0.5); background-clip: content-box; }
 .hud .body ::-webkit-scrollbar-track { background-color: #f3f7fc; }
 
+/* inline asset previews */
+.preview-thumb-container { position: relative; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; height: 190px; background-color: #1f2933; }
+.preview-thumb-container.loading:after { content: '.'; font-size: 0; display: block; position: absolute; width: 100%; height: 100%; left: 0; top: 0; background: rgba(31, 41, 51, 0.8) no-repeat 50% 50% url(../images/spinner_dark.gif); }
+#details .preview-thumb-container { margin-bottom: 14px; border-radius: 5px; overflow: hidden; }
+.preview-thumb-container .preview-thumb { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: center; -ms-flex-align: center; align-items: center; width: 100%; }
+.preview-thumb-container .preview-thumb img { display: block; max-width: 100%; max-height: 190px; }
+.preview-thumb-container.editable { cursor: pointer; }
+.preview-thumb-container .buttons { opacity: 0; position: absolute; top: 10px; margin: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
+body.ltr .preview-thumb-container .buttons { right: 10px; }
+body.rtl .preview-thumb-container .buttons { left: 10px; }
+.preview-thumb-container .buttons .btn { background-color: #515f6c; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
+@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .preview-thumb-container .buttons .btn { background-color: rgba(81, 95, 108, 0.4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transition: opacity linear 100ms, -webkit-backdrop-filter linear 100ms; transition: opacity linear 100ms, -webkit-backdrop-filter linear 100ms; transition: opacity linear 100ms, backdrop-filter linear 100ms; transition: opacity linear 100ms, backdrop-filter linear 100ms, -webkit-backdrop-filter linear 100ms; } }
+.preview-thumb-container:hover .buttons { opacity: 1; }
+.preview-thumb-container:not(.editable) .buttons .btn:hover { background-color: #606d7b; }
+@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .preview-thumb-container:not(.editable) .buttons .btn:hover { background-color: rgba(96, 109, 123, 0.7); } }
+
 /* element editor HUDs */
 @media (min-width: 440px) { .hud .elementeditor { min-width: 380px; } }
 .hud .elementeditor { max-width: 600px; }
 .hud .elementeditor .hud-header { text-align: center; }
 .hud .elementeditor .main { padding: 8px 0; }
-.hud .elementeditor .main .meta .image-preview-container { position: relative; margin: -8px 0 8px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; height: 190px; background-color: #1f2933; }
-.hud .elementeditor .main .meta .image-preview-container .image-preview { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: center; -ms-flex-align: center; align-items: center; width: 100%; }
-.hud .elementeditor .main .meta .image-preview-container .image-preview img { display: block; max-width: 100%; max-height: 190px; }
-.hud .elementeditor .main .meta .image-preview-container.editable { cursor: pointer; }
-.hud .elementeditor .main .meta .image-preview-container.editable .btn { opacity: 0; position: absolute; top: 10px; background-color: #515f6c; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
-body.ltr .hud .elementeditor .main .meta .image-preview-container.editable .btn { right: 10px; }
-body.rtl .hud .elementeditor .main .meta .image-preview-container.editable .btn { left: 10px; }
-@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .hud .elementeditor .main .meta .image-preview-container.editable .btn { background-color: rgba(81, 95, 108, 0.4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-transition: opacity linear 100ms, -webkit-backdrop-filter linear 100ms; transition: opacity linear 100ms, -webkit-backdrop-filter linear 100ms; transition: opacity linear 100ms, backdrop-filter linear 100ms; transition: opacity linear 100ms, backdrop-filter linear 100ms, -webkit-backdrop-filter linear 100ms; } }
-.hud .elementeditor .main .meta .image-preview-container.editable:hover .btn { opacity: 1; }
+.hud .elementeditor .main .meta .preview-thumb-container { margin: -8px 0 8px; }
 .hud .elementeditor .main .meta .field { padding-left: 24px; padding-right: 24px; }
 
 /* element selector modals */
@@ -1708,6 +1718,7 @@ body.rtl .sitepicker-group li a:after { left: 12px; }
   .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_2x.gif); }
   .secondary-buttons .btn.icon.add.loading.submit:after, .btn.secondary.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary_2x.gif); }
   .sel .element.loading:after, .element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
+  .preview-thumb-container.loading:after { background-image: url(../images/spinner_dark_2x.gif); background-size: 20px; }
   .structure ul li { background-size: 40px; }
   body.ltr .structure ul li { background-image: url(../images/branch_2x.png); }
   body.rtl .structure ul li { background-image: url(../images/branch_rtl_2x.png); }
@@ -2198,7 +2209,7 @@ body.rtl .fld-field .icon { float: left; }
 html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 /* Image Editor */
-.modal.imageeditor { background-color: #1f2933; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; opacity: 1; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.modal.imageeditor { background-color: #1f2933; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; opacity: 0; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
 .modal.imageeditor.modal { border-radius: 0; }
 

@@ -16,6 +16,8 @@
 - Entry drafts now show which fields and attributes have changed within the draft, and which are outdated.
 - If an entry draft contains outdated field and attribute values, it’s now possible to merge the latest source entry values into the draft manually, and they will be automatically merged in when the draft is published. ([#4642](https://github.com/craftcms/cms/issues/4642))
 - It’s now possible to see all of the elements selected by relation fields from element indexes. ([#3030](https://github.com/craftcms/cms/issues/3030))
+- Assets now have their own dedicated edit pages in the control panel. ([#1249](https://github.com/craftcms/cms/issues/1249))
+- Asset volumes’ field layouts can now define multiple tabs.
 - Assets now keep track of which user account was logged-in when the asset was uploaded. ([#3553](https://github.com/craftcms/cms/issues/3553))
 - Asset indexes can now have an “Uploaded by” column.
 - It’s now possible to eager-load assets with their `uploader` value.
@@ -76,6 +78,8 @@
 - Added `craft\behaviors\DraftBehavior::isAttributeOutdated()`.
 - Added `craft\behaviors\DraftBehavior::isFieldModified()`.
 - Added `craft\behaviors\DraftBehavior::isFieldOutdated()`.
+- Added `craft\controllers\AssetsController::actionEditAsset()`.
+- Added `craft\controllers\AssetsController::actionSaveAsset()`.
 - Added `craft\controllers\DraftsController`.
 - Added `craft\controllers\GraphqlController::actionDeleteToken()`.
 - Added `craft\controllers\GraphqlController::actionEditPublicSchema()`.
@@ -86,6 +90,10 @@
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
 - Added `craft\elements\Asset::$uploaderId`.
+- Added `craft\elements\Asset::getDimensions()`.
+- Added `craft\elements\Asset::getFormattedSize()`.
+- Added `craft\elements\Asset::getFormattedSizeInBytes()`.
+- Added `craft\elements\Asset::getPreviewThumbImg()`.
 - Added `craft\elements\Asset::getUploader()`.
 - Added `craft\elements\Asset::setUploader()`.
 - Added `craft\elements\MatrixBlock::$dirty`.
@@ -114,6 +122,7 @@
 - Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
+- Added `craft\models\FieldLayoutTab::elementHasErrors()`.
 - Added `craft\models\GqlToken`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\records\Asset::getUploader()`.
@@ -166,12 +175,14 @@
 - Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
+- The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
 - Added the Minify PHP package.
 
 ### Changed
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
 - The control panel no longer shows the tab bar on pages with only one tab. ([#2915](https://github.com/craftcms/cms/issues/2915))
+- The Assets index page now updates the URL when the selected volume changes.
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
 - Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
@@ -196,6 +207,8 @@
 - Craft now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
 - Active record classes now normalize attribute values right when they are set.
+- The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
+- `craft\i18n\Formatter::asShortSize()` now capitalizes the size unit.
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))

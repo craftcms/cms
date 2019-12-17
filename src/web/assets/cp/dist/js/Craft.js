@@ -1,4 +1,4 @@
-/*!   - 2019-12-13 */
+/*!   - 2019-12-17 */
 (function($){
 
 /** global: Craft */
@@ -5178,7 +5178,7 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
             this.base(response);
 
             if (this.$element.data('id')) {
-                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .image-preview-container.editable');
+                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .preview-thumb-container.editable');
 
                 if ($imageEditorTrigger.length) {
                     this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
@@ -8531,6 +8531,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         /**
+         * Returns the root level source for a source.
+         *
+         * @param $source
+         * @returns {*}
+         * @private
+         */
+        _getRootSource: function($source) {
+            var $parent;
+            while (($parent = this._getParentSource($source)) && $parent.length) {
+                $source = $parent;
+            }
+            return $source;
+        },
+
+        /**
          * Get parent source for a source.
          *
          * @param $source
@@ -8578,7 +8593,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.progressBar = new Craft.ProgressBar(this.$main, true);
 
             var options = {
-                url: Craft.getActionUrl('assets/save-asset'),
+                url: Craft.getActionUrl('assets/upload'),
                 fileInput: this.$uploadInput,
                 dropZone: this.$container
             };
@@ -8609,6 +8624,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
+        getDefaultSourceKey: function() {
+            // Did they request a specific volume in the URL?
+            if (this.settings.context === 'index' && typeof defaultVolumeHandle !== 'undefined') {
+                for (var i = 0; i < this.$sources.length; i++) {
+                    var $source = $(this.$sources[i]);
+                    if ($source.data('volume-handle') === defaultVolumeHandle) {
+                        return $source.data('key');
+                    }
+                }
+            }
+
+            return this.base();
+        },
+
         onSelectSource: function() {
             var $source = this._getSourceByKey(this.sourceKey);
             var folderId = $source.data('folder-id');
@@ -8620,6 +8649,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 this.$uploadButton.removeClass('disabled');
             } else {
                 this.$uploadButton.addClass('disabled');
+            }
+
+            // Update the URL if we're on the Assets index
+            // ---------------------------------------------------------------------
+
+            if (this.settings.context === 'index' && typeof history !== 'undefined') {
+                var uri = 'assets';
+                var $rootSource = this._getRootSource($source);
+                if ($rootSource && $rootSource.data('volume-handle')) {
+                    uri += '/' + $rootSource.data('volume-handle');
+                }
+                history.replaceState({}, '', Craft.getUrl(uri));
             }
 
             this.base();
@@ -8768,7 +8809,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         /**
          * Update the elements after an upload, setting sort to dateModified descending, if not using index.
-         * 
+         *
          * @private
          */
         _updateAfterUpload: function () {
@@ -9422,7 +9463,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
             var options = {
-                url: Craft.getActionUrl('assets/save-asset'),
+                url: Craft.getActionUrl('assets/upload'),
                 dropZone: this.$container,
                 formData: {
                     fieldId: this.settings.fieldId,
@@ -18335,7 +18376,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
          */
         _onHide: function () {
             Craft.PreviewFileModal.openInstance = null;
-            this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+            if (this.elementSelect) {
+                this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+            }
 
             this.$shade.remove();
 

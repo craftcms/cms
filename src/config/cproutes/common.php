@@ -3,6 +3,8 @@
 use craft\helpers\StringHelper;
 
 return [
+    'assets/<volumeHandle:{handle}>' => ['template' => 'assets'],
+    'assets/<volumeHandle:{handle}>/<assetId:\d+><filename:(?:-[^\/]*)?>' => 'assets/edit-asset',
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
     'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',

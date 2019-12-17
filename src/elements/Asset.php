@@ -397,7 +397,7 @@ class Asset extends Element
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
-            'imageSize' => ['label' => Craft::t('app', 'Image Size')],
+            'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -471,6 +471,15 @@ class Asset extends Element
     {
         /** @var Volume $volume */
         $volume = $folder->getVolume();
+
+        if ($volume instanceof Temp) {
+            $volumeHandle = 'temp';
+        } else if (!$folder->parentId) {
+            $volumeHandle = $volume->handle ?? false;
+        } else {
+            $volumeHandle = false;
+        }
+
         $source = [
             'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
@@ -478,6 +487,7 @@ class Asset extends Element
             'criteria' => ['folderId' => $folder->id],
             'defaultSort' => ['dateCreated', 'desc'],
             'data' => [
+                'volume-handle' => $volumeHandle,
                 'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $volume->uid),
                 'folder-id' => $folder->id
             ]
@@ -751,6 +761,38 @@ class Asset extends Element
     }
 
     /**
+     * @inheritdoc
+     * ---
+     * ```php
+     * $url = $asset->cpEditUrl;
+     * ```
+     * ```twig{2}
+     * {% if asset.isEditable %}
+     *     <a href="{{ asset.cpEditUrl }}">Edit</a>
+     * {% endif %}
+     * ```
+     * @since 3.4.0
+     */
+    public function getCpEditUrl()
+    {
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+        if ($volume instanceof Temp) {
+            return null;
+        }
+
+        $filename = $this->getFilename(false);
+        $path = "assets/{$volume->handle}/{$this->id}-{$filename}";
+
+        $params = [];
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($path, $params);
+    }
+
+    /**
      * Returns an `<img>` tag based on this asset.
      *
      * @return Markup|null
@@ -930,6 +972,35 @@ class Asset extends Element
     }
 
     /**
+     * Returns preview thumb image HTML.
+     *
+     * @param int $width
+     * @param int $height
+     * @return string
+     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
+     * @since 3.4.0
+     */
+    public function getPreviewThumbImg(int $width, int $height): string
+    {
+        $assetsService = Craft::$app->getAssets();
+        $srcsets = [];
+        $thumbSizes = [
+            [$width, $height],
+            [$width * 2, $height * 2],
+        ];
+        foreach ($thumbSizes as list($width, $height)) {
+            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
+            $srcsets[] = $thumbUrl . ' ' . $width . 'w';
+        }
+
+        return Html::tag('img', '', [
+            'sizes' => "{$thumbSizes[0][0]}px",
+            'srcset' => implode(', ', $srcsets),
+            'alt' => $this->title,
+        ]);
+    }
+
+    /**
      * Returns the file name, with or without the extension.
      *
      * @param bool $withExtension
@@ -1006,6 +1077,60 @@ class Asset extends Element
     public function setWidth($width)
     {
         $this->_width = $width;
+    }
+
+    /**
+     * Returns the formatted file size, if known.
+     *
+     * @param int|null $decimals the number of digits after the decimal point
+     * @param bool $short whether the size should be returned in short form (“kB” instead of “kilobytes”)
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getFormattedSize(int $decimals = null, bool $short = true)
+    {
+        if ($this->size === null) {
+            return null;
+        }
+        if ($short) {
+            return Craft::$app->getFormatter()->asShortSize($this->size, $decimals);
+        }
+        return Craft::$app->getFormatter()->asSize($this->size, $decimals);
+    }
+
+    /**
+     * Returns the formatted file size in bytes, if known.
+     *
+     * @param bool $short whether the size should be returned in short form (“B” instead of “bytes”)
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getFormattedSizeInBytes(bool $short = true)
+    {
+        $params = [
+            'n' => $this->size,
+            'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
+        ];
+        if ($short) {
+            return Craft::t('yii', '{nFormatted} B', $params);
+        }
+        return Craft::t('yii', '{nFormatted} {n, plural, =1{byte} other{bytes}}', $params);
+    }
+
+    /**
+     * Returns the image dimensions.
+     *
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getDimensions()
+    {
+        $width = $this->getWidth();
+        $height = $this->getHeight();
+        if (!$width || !$height) {
+            return null;
+        }
+        return "{$width}×{$height}";
     }
 
     /**
@@ -1224,23 +1349,27 @@ class Asset extends Element
                 return $uploader ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $uploader]) : '';
 
             case 'filename':
-                return Html::encodeParams('<span style="word-wrap: break-word;;">{filename}</span>', [
-                    'filename' => $this->filename,
+                return Html::tag('span', Html::encode($this->filename), [
+                    'class' => 'break-word',
                 ]);
 
             case 'kind':
                 return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
-                return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';
+                if ($this->size === null) {
+                    return '';
+                }
+                return Html::tag('span', $this->getFormattedSize(0), [
+                    'title' => $this->getFormattedSizeInBytes(false),
+                ]);
 
             case 'imageSize':
-                return (($width = $this->getWidth()) && ($height = $this->getHeight())) ? "{$width} × {$height}" : '';
+                return $this->getDimensions() ?? '';
 
             case 'width':
             case 'height':
                 $size = $this->$attribute;
-
                 return ($size ? $size . 'px' : '');
         }
 
@@ -1262,17 +1391,6 @@ class Asset extends Element
 
         // See if we can show a thumbnail
         try {
-            $assetsService = Craft::$app->getAssets();
-            $srcsets = [];
-            $thumbSizes = [
-                [380, 190],
-                [760, 380],
-            ];
-            foreach ($thumbSizes as list($width, $height)) {
-                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
-                $srcsets[] = $thumbUrl . ' ' . $width . 'w';
-            }
-
             // Is the image editable, and is the user allowed to edit?
             $userSession = Craft::$app->getUser();
 
@@ -1284,13 +1402,13 @@ class Asset extends Element
                 $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
             );
 
-            $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
-                '<div class="image-preview">' .
-                '<img sizes="' . $thumbSizes[0][0] . 'px" srcset="' . implode(', ', $srcsets) . '" alt="">' .
+            $html .= '<div class="preview-thumb-container' . ($editable ? ' editable' : '') . '">' .
+                '<div class="preview-thumb">' .
+                $this->getPreviewThumbImg(380, 190) .
                 '</div>';
 
             if ($editable) {
-                $html .= '<div class="btn">' . Craft::t('app', 'Edit') . '</div>';
+                $html .= '<div class="buttons"><div class="btn">' . Craft::t('app', 'Edit') . '</div></div>';
             }
 
             $html .= '</div>';

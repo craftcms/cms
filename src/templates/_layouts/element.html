@@ -48,6 +48,7 @@
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
 {% set deleteSourceAction = deleteSourceAction ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
+{% set saveDraftAction = saveDraftAction ?? null %}
 
 {% if not isRevision %}
     {% set fullPageForm = true %}
@@ -73,6 +74,19 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
+{% if tabs is not defined %}
+    {% set tabs = [] %}
+    {% for tab in element.fieldLayout.tabs ?? [] %}
+        {% set tabs = tabs|merge([{
+            label: tab.name|t('site'),
+            url: '#' ~ tab.getHtmlId(),
+            class: tab.elementHasErrors(element) ? 'error',
+        }]) %}
+    {% endfor %}
+{% endif %}
+
+{% set settingsHtml = (block('settings') ?? '')|trim %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
@@ -88,12 +102,12 @@
             </div>
         {% endif %}
 
-        {% if isCurrent %}
+        {% if isCurrent and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <div id="save-draft-btn" class="btn">{{ 'Save as a Draft'|t('app') }}</div>
+                    <div id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</div>
                 {% else %}
-                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a draft'|t('app') }}">
                 {% endif %}
             </div>
         {% endif %}
@@ -103,7 +117,9 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% include "_includes/revisionmenu" %}
+    {% if saveDraftAction or element.find().revisionOf(element).exists() %}
+        {% include "_includes/revisionmenu" %}
+    {% endif %}
 {% endblock %}
 
 {% block actionButton %}
@@ -194,43 +210,36 @@
     {{ parent() }}
 {% endblock %}
 
-{% block details %}
-    <div id="settings" class="meta">
-        {% block settings %}
-            {% if showStatusToggles %}
-                {{ forms.lightswitchField({
-                    status: element.getAttributeStatus('enabled'),
-                    label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
-                    id: 'enabled',
-                    name: 'enabled',
-                    on: element.enabled,
-                    disabled: isRevision,
-                    toggle: 'enabledForSite-field'
-                }) }}
-
-                {% if isMultiSiteElement %}
-                    {{ forms.lightswitchField({
-                        status: element.getAttributeStatus('enabledForSite'),
-                        fieldClass: not element.enabled ? 'hidden',
-                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
-                        id: 'enabledForSite',
-                        name: 'enabledForSite',
-                        on: element.enabledForSite,
-                        disabled: isRevision
-                    }) }}
-                {% endif %}
-            {% endif %}
-        {% endblock %}
+{% block content %}
+    <div id="fields">
+        {% for tab in element.fieldLayout.tabs ?? [] %}
+            <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
+                {% include "_includes/fields" with {
+                    fields:  tab.getFields(),
+                    element: element,
+                    static:  isRevision,
+                    registerDeltas: true,
+                } only %}
+            </div>
+        {% endfor %}
     </div>
-    <div class="meta read-only">
+{% endblock %}
+
+{% block details %}
+    {% if settingsHtml %}
+        <div id="settings" class="meta">
+            {{ settingsHtml|raw }}
+        </div>
+    {% endif %}
+    <div id="meta-details" class="meta read-only">
         {% block meta %}
             <div class="data">
                 <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                <div class="value">{{ element.dateCreated|datetime('short') }}</div>
+                <div id="date-created-value" class="value">{{ element.dateCreated|datetime('short') }}</div>
             </div>
             <div class="data">
                 <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                <div class="value">{{ element.dateUpdated|datetime('short') }}</div>
+                <div id="date-updated-value" class="value">{{ element.dateUpdated|datetime('short') }}</div>
             </div>
             {% if isRevision %}
                 {% set revisionNotes = element.revisionNotes %}
@@ -267,6 +276,32 @@
     {% endif %}
 {% endblock %}
 
+{% block settings %}
+    {% if showStatusToggles %}
+        {{ forms.lightswitchField({
+            status: element.getAttributeStatus('enabled'),
+            label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: element.enabled,
+            disabled: isRevision,
+            toggle: 'enabledForSite-field'
+        }) }}
+
+        {% if isMultiSiteElement %}
+            {{ forms.lightswitchField({
+                status: element.getAttributeStatus('enabledForSite'),
+                fieldClass: not element.enabled ? 'hidden',
+                label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
+                id: 'enabledForSite',
+                name: 'enabledForSite',
+                on: element.enabledForSite,
+                disabled: isRevision
+            }) }}
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
 {% set settings = {
     elementType: className(element),
     elementTypeDisplayName: element.displayName(),
@@ -283,8 +318,8 @@
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,
-    deleteDraftAction: deleteDraftAction,
-    applyDraftAction: applyDraftAction,
+    deleteDraftAction: deleteDraftAction ?? null,
+    applyDraftAction: applyDraftAction ?? null,
     enablePreview: enablePreview,
     previewTargets: previewTargets,
 } %}
