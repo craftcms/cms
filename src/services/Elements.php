@@ -309,6 +309,10 @@ class Elements extends Component
             }
         }
 
+        if (!class_exists($elementType)) {
+            return null;
+        }
+
         /** @var Element $elementType */
         /** @var ElementQuery $query */
         $query = $elementType::find();
