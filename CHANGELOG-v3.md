@@ -12,7 +12,7 @@
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
-- It’s now possible to query for elements using GraphQL by custom field values.([#5208](https://github.com/craftcms/cms/issues/5208)
+- It’s now possible to query for elements by their custom field values via GraphQL.([#5208](https://github.com/craftcms/cms/issues/5208)
 - Added the `__count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
 - Added `craft\controllers\AssetsController::actionEditAsset()`.
@@ -47,7 +47,7 @@
 - Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 - Fixed an error that occurred when renaming a site group. ([#5337](https://github.com/craftcms/cms/issues/5337))
 - Fixed a bug where section names on the Settings → Sections page were linking to their entry type indexes. ([#5339](https://github.com/craftcms/cms/issues/5339))
-- Fixed a bug where it was impossible to save a user group. ([#5348](https://github.com/craftcms/cms/issues/5348))
+- Fixed an error that occurred when saving a user group. ([#5348](https://github.com/craftcms/cms/issues/5348))
 
 ## 3.4.0-beta.3 - 2019-12-11
 
