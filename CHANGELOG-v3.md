@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where “Updating search indexes” jobs would show inaccurate progress bars. ([#5358](https://github.com/craftcms/cms/pull/5358))
+
 ## 3.3.18.3 - 2019-12-17
 
 ### Changed
