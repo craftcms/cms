@@ -29,6 +29,8 @@ html.noscroll body {
 }
 
 body {
+  width: 100vw;
+  overflow-x: hidden;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;

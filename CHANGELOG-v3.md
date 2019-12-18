@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
 - Fixed a bug where asset preview modals weren’t getting sized correctly from Edit Asset pages.
+- Fixed a bug where the control panel could have horizontal scrollbars. ([#5347](https://github.com/craftcms/cms/issues/5347))
 
 ## 3.4.0-beta.4 - 2019-12-17
 

@@ -32,7 +32,7 @@ body, html { background-color: #e4edf6; }
 
 html.noscroll, html.noscroll body { overflow: hidden; }
 
-body { font-size: 14px; line-height: 20px; color: #3f4d5a; -webkit-font-smoothing: subpixel-antialiased; }
+body { width: 100vw; overflow-x: hidden; font-size: 14px; line-height: 20px; color: #3f4d5a; -webkit-font-smoothing: subpixel-antialiased; }
 
 body.rtl { direction: rtl; }
 
