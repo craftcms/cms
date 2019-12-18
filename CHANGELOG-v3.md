@@ -6,11 +6,11 @@
 - Added `craft\gql\types\Number`.
 
 ### Changed
-- Number fields now return the `Number` type when queried over GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
+- Number fields now return the `Number` type when queried via GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
 
 ### Fixed
-- Fixed a bug where image preview dimensions would not be set correctly during Asset editing.
-- Fixed a bug where Lightswitch field would not return a boolean value when queried over GraphQL if used in a table. ([#5344](https://github.com/craftcms/cms/issues/5344))
+- Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
+- Fixed a bug where asset preview modals weren’t getting sized correctly from Edit Asset pages.
 
 ## 3.4.0-beta.4 - 2019-12-17
 
