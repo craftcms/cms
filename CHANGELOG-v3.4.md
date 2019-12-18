@@ -113,6 +113,7 @@
 - Added `craft\events\TemplateEvent::$templateMode`.
 - Added `craft\fields\Assets::$showUnpermittedVolumes`.
 - Added `craft\gql\TypeManager`.
+- Added `craft\gql\types\Number`.
 - Added `craft\helpers\AdminTable`.
 - Added `craft\helpers\ArrayHelper::append()`.
 - Added `craft\helpers\ArrayHelper::prepend()`.
@@ -219,6 +220,7 @@
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+- Number fields now return the `Number` type when queried over GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
 
 ### Deprecated
 - Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.

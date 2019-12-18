@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\gql\types\Number`.
+
+### Changed
+- Number fields now return the `Number` type when queried over GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
+
 ### Fixed
 - Fixed a bug where image preview dimensions would not be set correctly during Asset editing.
 

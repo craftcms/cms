@@ -43,6 +43,7 @@ use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
+use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Db;
@@ -919,6 +920,7 @@ class Gql extends Component
         $typeList = [
             // Scalars
             DateTime::class,
+            Number::class,
             QueryArgument::class,
 
             // Interfaces
