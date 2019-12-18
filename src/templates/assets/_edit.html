@@ -181,7 +181,15 @@
         });
     });
 
+    var settings = {};
+
+    {% if dimensions %}
+        {% set previewDimensions = dimensions|split('×') %}
+        settings.startingWidth = {{ previewDimensions[0] }};
+        settings.startingHeight = {{ previewDimensions[1] }};
+    {% endif %}
+
     $('#preview-btn').on('click', function() {
-        new Craft.PreviewFileModal(assetId);
+        new Craft.PreviewFileModal(assetId, null, settings);
     });
 {% endjs %}

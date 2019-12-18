@@ -106,32 +106,33 @@ class AssetsController extends Controller
                 $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
             );
 
-            $previewHml = '<div id="preview-thumb-container" class="preview-thumb-container">' .
+            $previewHtml = '<div id="preview-thumb-container" class="preview-thumb-container">' .
                 '<div class="preview-thumb">' .
                 $asset->getPreviewThumbImg(350, 190) .
                 '</div>' .
                 '<div class="buttons">';
 
             $previewer = Craft::$app->getAssets()->getAssetPreview($asset);
+
             if (!$previewer instanceof NoPreview) {
-                $previewHml .= '<div class="btn" id="preview-btn">' . Craft::t('app', 'Preview') . '</div>';
+                $previewHtml .= '<div class="btn" id="preview-btn">' . Craft::t('app', 'Preview') . '</div>';
             }
 
             if ($editable) {
-                $previewHml .= '<div class="btn" id="edit-btn">' . Craft::t('app', 'Edit') . '</div>';
+                $previewHtml .= '<div class="btn" id="edit-btn">' . Craft::t('app', 'Edit') . '</div>';
             }
 
-            $previewHml .= '</div></div>';
+            $previewHtml .= '</div></div>';
         } catch (NotSupportedException $e) {
             // NBD
-            $previewHml = '';
+            $previewHtml = '';
         }
 
         return $this->renderTemplate('assets/_edit', [
             'element' => $asset,
             'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
-            'previewHtml' => $previewHml,
+            'previewHtml' => $previewHtml,
             'formattedSize' => $asset->getFormattedSize(0),
             'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
             'dimensions' => $asset->getDimensions(),

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where image preview dimensions would not be set correctly during Asset editing.
+
 ## 3.4.0-beta.4 - 2019-12-17
 
 ### Added
