@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where image preview dimensions would not be set correctly during Asset editing.
+- Fixed a bug where Lightswitch field would not return a boolean value when queried over GraphQL if used in a table. ([#5344](https://github.com/craftcms/cms/issues/5344))
 
 ## 3.4.0-beta.4 - 2019-12-17
 

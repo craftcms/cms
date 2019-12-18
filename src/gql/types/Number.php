@@ -62,8 +62,19 @@ class Number extends ScalarType
      */
     public function serialize($value)
     {
-        // Trust the value to be the right format.
+        if (is_string($value) && is_numeric($value)) {
+            if ((int)$value == $value) {
+                return (int)$value;
+            }
+            if ((float)$value == $value) {
+                return (float)$value;
+            }
+        }
 
+        if (empty($value)) {
+            return null;
+        }
+        
         return $value;
     }
 
