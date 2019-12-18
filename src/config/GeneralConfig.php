@@ -391,6 +391,8 @@ class GeneralConfig extends BaseObject
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON
      *   rather than HTML by default for front-end requests.
+     * - The [[loginPath]], [[logoutPath]], [[setPasswordPath]], and
+     *   [[verifyEmailPath]] settings will be ignored.
      *
      * @since 3.3.0
      */

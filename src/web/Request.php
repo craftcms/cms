@@ -1271,18 +1271,21 @@ class Request extends \yii\web\Request
             $firstSegment = $this->getSegment(1);
 
             // Is this an action request?
+            $checkSpecialPaths = false;
+            $loginPath = $logoutPath = $setPasswordPath = $verifyEmailPath = $updatePath = null;
             if ($this->_isCpRequest) {
+                $checkSpecialPaths = true;
                 $loginPath = self::CP_PATH_LOGIN;
                 $logoutPath = self::CP_PATH_LOGOUT;
                 $setPasswordPath = self::CP_PATH_SET_PASSWORD;
                 $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
                 $updatePath = self::CP_PATH_UPDATE;
-            } else {
+            } else if (!$generalConfig->headlessMode) {
+                $checkSpecialPaths = true;
                 $loginPath = trim($generalConfig->getLoginPath(), '/');
                 $logoutPath = trim($generalConfig->getLogoutPath(), '/');
                 $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
                 $verifyEmailPath = trim($generalConfig->getVerifyEmailPath(), '/');
-                $updatePath = null;
             }
 
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
@@ -1292,7 +1295,7 @@ class Request extends \yii\web\Request
                 $actionParam = $this->getQueryParam('action');
             }
             $hasActionParam = $actionParam !== null;
-            $hasSpecialPath = in_array($this->_path, [
+            $hasSpecialPath = $checkSpecialPaths && in_array($this->_path, [
                 $loginPath,
                 $logoutPath,
                 $setPasswordPath,
