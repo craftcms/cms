@@ -1,4 +1,4 @@
-/*!   - 2019-12-17 */
+/*!   - 2019-12-19 */
 (function($){
 
 /** global: Craft */
@@ -9920,7 +9920,7 @@ Craft.AuthManager = Garnish.Base.extend(
          */
         checkRemainingSessionTime: function(extendSession) {
             $.ajax({
-                url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
+                url: Craft.getActionUrl('users/session-info', (extendSession ? null : 'dontExtendSession=1')),
                 type: 'GET',
                 dataType: 'json',
                 complete: $.proxy(function(jqXHR, textStatus) {
@@ -9946,7 +9946,7 @@ Craft.AuthManager = Garnish.Base.extend(
             this.remainingSessionTime = parseInt(remainingSessionTime);
 
             // Are we within the warning window?
-            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessiotTime) {
+            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessintTime) {
                 // Is there still time to renew the session?
                 if (this.remainingSessionTime) {
                     if (!this.showingLogoutWarningModal) {
@@ -9982,9 +9982,9 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.hideLogoutWarningModal();
                 this.hideLoginModal();
 
-                // Will be be within the minSafeSessiotTime before the next update?
-                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessiotTime + Craft.AuthManager.checkInterval)) {
-                    this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessiotTime + 1);
+                // Will be be within the minSafeSessionTime before the next update?
+                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessintTime + Craft.AuthManager.checkInterval)) {
+                    this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessintTime + 1);
                 }
                 else {
                     this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
@@ -10270,7 +10270,7 @@ Craft.AuthManager = Garnish.Base.extend(
     },
     {
         checkInterval: 60,
-        minSafeSessiotTime: 120
+        minSafeSessionTime: 120
     });
 
 /** global: Craft */

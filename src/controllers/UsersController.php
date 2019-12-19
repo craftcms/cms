@@ -219,15 +219,42 @@ class UsersController extends Controller
      * Returns how many seconds are left in the current user session.
      *
      * @return Response
+     * @deprecated in 3.4.0. Use [[actionSessionInfo()]] instead.
      */
     public function actionGetRemainingSessionTime(): Response
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The users/get-remaining-session-time action is deprecated. Use users/session-info instead.');
+        return $this->runAction('session-info');
+    }
+
+    /**
+     * Returns information about the current user session, if any.
+     *
+     * @return Response
+     * @since 3.4.0
+     */
+    public function actionSessionInfo(): Response
+    {
         $this->requireAcceptsJson();
 
-        $return = ['timeout' => Craft::$app->getUser()->getRemainingSessionTime()];
+        $userService = Craft::$app->getUser();
+        /** @var User|null $user */
+        $user = $userService->getIdentity();
+
+        $return = [
+            'isGuest' => $user === null,
+        ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
+        }
+
+        if ($user !== null) {
+            $return['timeout'] = $userService->getRemainingSessionTime();
+            $return['id'] = $user->id;
+            $return['uid'] = $user->uid;
+            $return['username'] = $user->username;
+            $return['email'] = $user->email;
         }
 
         return $this->asJson($return);

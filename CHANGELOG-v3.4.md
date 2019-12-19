@@ -87,6 +87,7 @@
 - Added `craft\controllers\GraphqlController::actionEditToken()`.
 - Added `craft\controllers\GraphqlController::actionSaveToken()`.
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
+- Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
 - Added `craft\elements\Asset::$uploaderId`.
@@ -228,6 +229,7 @@
 - Deprecated `craft\config\DbConfig::DRIVER_MYSQL`.
 - Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.
+- Deprecated `craft\controllers\UsersController::actionGetRemainingSessionTime()`. `actionSessionInfo()` should be used instead.
 - Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
 - Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
 - Deprecated `craft\services\ProjectConfig::$maxBackups`. `$maxDeltas` should be used instead.

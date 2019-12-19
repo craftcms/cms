@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
 - Added `craft\gql\types\Number`.
 
 ### Changed
@@ -10,6 +11,8 @@
 - The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode. ([#5352](https://github.com/craftcms/cms/issues/5352))
 - The `__count` field when querying Elements using GraphQL has been renamed to `_count`.
 
+### Deprecated
+- Deprecated `craft\controllers\UsersController::actionGetRemainingSessionTime()`. `actionSessionInfo()` should be used instead.
 
 ### Fixed
 - Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
