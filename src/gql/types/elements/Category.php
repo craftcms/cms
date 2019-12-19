@@ -28,7 +28,6 @@ class Category extends Element
     {
         $config['interfaces'] = [
             CategoryInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);

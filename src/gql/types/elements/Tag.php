@@ -28,7 +28,6 @@ class Tag extends Element
     {
         $config['interfaces'] = [
             TagInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);

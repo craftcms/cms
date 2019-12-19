@@ -29,7 +29,6 @@ class Asset extends Element
     {
         $config['interfaces'] = [
             AssetInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);

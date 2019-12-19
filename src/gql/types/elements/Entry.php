@@ -28,7 +28,6 @@ class Entry extends Element
     {
         $config['interfaces'] = [
             EntryInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);

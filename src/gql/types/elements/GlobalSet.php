@@ -26,7 +26,6 @@ class GlobalSet extends Element
     {
         $config['interfaces'] = [
             GlobalSetInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);

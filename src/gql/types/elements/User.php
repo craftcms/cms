@@ -29,7 +29,6 @@ class User extends Element
     {
         $config['interfaces'] = [
             UserInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);

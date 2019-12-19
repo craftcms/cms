@@ -28,7 +28,6 @@ class MatrixBlock extends Element
     {
         $config['interfaces'] = [
             MatrixBlockInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);
