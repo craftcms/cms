@@ -122,6 +122,12 @@ The handle column is used for displaying handle for items these are wrapped in `
 
 The menu column allows the output of a dropdown link menu within the column cell.
 
+#### Detail
+
+The detail column shows a clickable attribute to allow the toggling of a detail row. This is a row that shows underneath its "parent" row, giving the ability to show more information.
+
+In the data definition the detail column should be an object with two attriubtes `handle` this is the HTML to click for toggling and `content` the HTML to show in the detail row.
+
 #### Special Column Examples
 
 ```javascript
@@ -138,6 +144,10 @@ var data = [
       label: Craft.t('site', 'Edit Settings'),
       url: '/settings/1',
       items: null
+    },
+    detail: {
+      handle: '<span data-icon="info"></span>',
+      content: '<p>Extra information to show under the main row</p>'
     }
   },
   {
@@ -168,7 +178,8 @@ var data = [
 var columns = [
   { name: '__slot:title', title: Craft.t('app', 'Title') },
   { name: '__slot:handle', title: Craft.t('app', 'Handle') },
-  { name: '__slot:menu', title: Craft.t('site', 'Sub Options') }
+  { name: '__slot:menu', title: Craft.t('site', 'Sub Options') },
+  { name: '__slot:detail', title: '' }
 ];
 
 new Craft.VueAdminTable({
@@ -201,7 +212,7 @@ var columns = [
     title: Craft.t('site', 'My Column'),
     callback: function(value) {
       if (value) {
-        return '<span class="check"></span>';
+        return '<span data-icon="check" title="'+Craft.t('app', 'Yes')+'"></span>';
       }
       
       return '';
@@ -215,9 +226,13 @@ new Craft.VueAdminTable({
 });
 ```
 
-## Action buttons spec
+## Action buttons
 
-Action buttons are provided as an array of objects.
+Action buttons can be used in conjunction with checkboxes to all bulk actions e.g. bulk enabling/disabling a set of records.
+
+Action buttons are provided as an array of objects. 
+
+### Top level button
 
 | Name            | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
@@ -225,7 +240,7 @@ Action buttons are provided as an array of objects.
 | icon (optional) | icon to show in the top level button                         |
 | actions         | array of actions for use in the dropdown when the button is clicked (spec below) |
 
-###Actions spec
+###Sub buttons
 
 | Name   | Type   | Description                                                  |
 | ------ | ------ | ------------------------------------------------------------ |
@@ -233,13 +248,37 @@ Action buttons are provided as an array of objects.
 | action | String | action uri to post data to                                   |
 | param  | String | name of the post data parameter                              |
 | value  | String | value of the post data, used with param to post as a key pair |
-| Ajax   | Bool   | whether this action should be posted via ajax                |
+| ajax   | Bool   | whether this action should be posted via ajax                |
+| status | string | status icon to pass to the button                            |
 
+### Example
 
+```js
+var actions = [
+    {
+        label: Craft.t('app', 'Set Status'),
+        actions: [
+            {
+                label: Craft.t('app', 'Enabled'),
+                action: 'controller/update-status',
+                param: 'status',
+                value: 'enabled',
+                status: 'enabled'
+            },
+            {
+                label: Craft.t('app', 'Disabled'),
+                action: 'controller/update-status',
+                param: 'status',
+                value: 'disabled',
+                status: 'disabled'
+            }
+        ]
+    }
+];
 
-**TODO**
-
-- Action buttons 
-- API endpoint
-  - searching
-  - sorting
+new Craft.VueAdminTable({
+  ...
+  actions: actions,
+  ...
+});
+```
