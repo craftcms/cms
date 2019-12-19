@@ -1458,7 +1458,7 @@ return [
     '{first}-{last} of {total}' => '{first}-{last} از {total}',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} از {total, number} {item}',
     'Preview' => 'پیش نمایش',
-    'Text that should be shown before the input.' => 'متنی که باید قبل از ورودی نمایش داده شود.',
+    'Text that should be shown before the input.' => 'متنی که باید بعد از ورودی نمایش داده شود.',
     'Next Page' => 'صفحه بعدی',
     'Entry reverted to past revision.' => 'محتوا به بازبینی قبلی برگشت داده شد.',
     'The `@web` alias is not recommended if it is determined automatically.' => 'نام مستعار `@web` در صورتی که به صورت خودکار تشخیص داده شده است توصیه نمی گردد.',
@@ -1510,7 +1510,7 @@ return [
     'View category group - {categoryGroup}' => 'مشاهده گروه دسته بندی - {categoryGroup}',
     'Delete them' => 'حذف آنها',
     'Keep them' => 'نگهداشتن آنها',
-    'View tag group - {tagGroup}' => 'نمایش گروه برچسب - {tagGroup}',
+    'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}',
     'Single' => 'مجزا',
     'Channel' => 'کانال'
 ];
