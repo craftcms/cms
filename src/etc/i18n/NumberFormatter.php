@@ -41,18 +41,26 @@ class NumberFormatter extends \CNumberFormatter
 		$formatCounter += 1;
 
 		// Find the starting decimal position in the value.
-		for ($valueCounter = strlen($value) - 1; $valueCounter >= 0; $valueCounter--)
+		if (!is_int($value))
 		{
-			if (!is_numeric($value[$valueCounter]))
+			$value = (string)$value;
+			for ($valueCounter = strlen($value) - 1; $valueCounter >= 0; $valueCounter--)
 			{
-				break;
+				if (!is_numeric($value[$valueCounter]))
+				{
+					break;
+				}
 			}
+
+			$valueCounter += 1;
+
+			// Calculate how many decimals we're using.
+			$decimalLength = strlen($value) - $valueCounter;
 		}
-
-		$valueCounter += 1;
-
-		// Calculate how many decimals we're using.
-		$decimalLength = strlen($value) - $valueCounter;
+		else
+		{
+			$decimalLength = 0;
+		}
 
 		// Adjust the format for the number of decimals.
 		for ($finalCounter = $formatCounter; $finalCounter <= $decimalLength + $formatCounter; $finalCounter++)

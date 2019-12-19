@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## 2.8.0.2 - 2019-12-19
+
+### Fixed
+- Fixed a PHP error that occurred when editing an element with a Matrix field that had a nested Number field on PHP 7.4. ([#5353](https://github.com/craftcms/cms/issues/5353))
+
 ## 2.8.0.1 - 2019-12-16
 
 ### Fixed
