@@ -74,7 +74,7 @@ class Number extends ScalarType
         if (empty($value)) {
             return null;
         }
-        
+
         return $value;
     }
 
