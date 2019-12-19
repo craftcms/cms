@@ -483,10 +483,13 @@ class User extends \yii\web\User
             $this->authTimeout = null;
             $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
             $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
+            $autoRenewCookie = $this->autoRenewCookie;
+            $this->autoRenewCookie = false;
             parent::renewAuthStatus();
             $this->authTimeout = $this->absoluteAuthTimeout;
             $this->absoluteAuthTimeout = null;
             $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
+            $this->autoRenewCookie = $autoRenewCookie;
         } else {
             parent::renewAuthStatus();
         }

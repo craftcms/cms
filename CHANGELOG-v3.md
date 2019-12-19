@@ -5,6 +5,9 @@
 ### Fixed
 - Fixed a bug where “Updating search indexes” jobs would show inaccurate progress bars. ([#5358](https://github.com/craftcms/cms/pull/5358))
 
+### Security
+- Fixed a bug where Craft was renewing the identity cookie each time it checked on the user’s remaining session time. ([#3951](https://github.com/craftcms/cms/issues/3951))
+
 ## 3.3.18.3 - 2019-12-17
 
 ### Changed
