@@ -40,13 +40,14 @@
                 <div class="tablepane vue-admin-tablepane">
                     <vuetable
                             ref="vuetable"
-                            :per-page="perPage"
-                            :css="tableCss"
-                            :fields="fields"
-                            :api-url="apiUrl"
-                            :api-mode="apiUrl ? true : false"
-                            :data="tableData"
                             :append-params="appendParams"
+                            :api-mode="apiUrl ? true : false"
+                            :api-url="apiUrl"
+                            :css="tableCss"
+                            :data="tableData"
+                            :detail-row-component="detailRow"
+                            :fields="fields"
+                            :per-page="perPage"
                             pagination-path="pagination"
                             @vuetable:loaded="init"
                             @vuetable:loading="loading"
@@ -84,6 +85,9 @@
                                 <a :href="props.rowData.menu.url">{{props.rowData.menu.label}}</a>
                             </template>
                         </template>
+                        <template slot="detail" slot-scope="props">
+                            <div style="cursor: pointer;" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content" v-html="props.rowData.detail.handle"></div>
+                        </template>
                         <template slot="reorder" slot-scope="props">
                             <i class="move icon vue-table-move-handle" :class="{disabled: !canReorder}" :data-id="props.rowData.id"></i>
                         </template>
@@ -118,6 +122,7 @@
     import AdminTableDeleteButton from './js/components/AdminTableDeleteButton';
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
+    import AdminTableDetailRow from './js/components/AdminTableDetailRow';
     import Sortable from 'sortablejs'
     import {debounce, map} from 'lodash'
 
@@ -216,6 +221,7 @@
             return {
                 checks: [],
                 currentPage: 1,
+                detailRow: AdminTableDetailRow,
                 isEmpty: false,
                 isLoading: true,
                 searchClearTitle: Craft.t('app', 'Clear'),
@@ -302,6 +308,10 @@
                 } else {
                     this.checks = [];
                 }
+            },
+
+            handleDetailRow(id) {
+                this.$refs.vuetable.toggleDetailRow(id);
             },
 
             deselectAll() {
