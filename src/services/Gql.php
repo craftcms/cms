@@ -231,7 +231,7 @@ class Gql extends Component
      *
      * @since 3.4.0
      */
-    const GRAPHQL_COUNT_FIELD = '__count';
+    const GRAPHQL_COUNT_FIELD = '_count';
 
     /**
      * @var Schema Currently loaded schema definition
