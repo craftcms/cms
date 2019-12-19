@@ -948,7 +948,7 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
-     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
+     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {

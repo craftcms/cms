@@ -10,7 +10,7 @@ return [
         'name' => 'A global set',
         'handle' => 'aGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => 'There is some information here',
+        'field:plainTextField' => 'There is some information here',
         'uid' => 'globalset-1000-------------------uid',
     ],
 
@@ -18,7 +18,7 @@ return [
         'name' => 'A different global set',
         'handle' => 'aDifferentGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => 'No more information to give.',
+        'field:plainTextField' => 'No more information to give.',
         'uid' => 'globalset-1001-------------------uid',
     ],
 
@@ -26,7 +26,7 @@ return [
         'name' => 'A third global set',
         'handle' => 'aThirdGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => 'No more information to give.',
+        'field:plainTextField' => 'No more information to give.',
         'uid' => 'globalset-1002-------------------uid',
     ],
 

@@ -31,7 +31,7 @@ class FormatDateTime extends Directive
      */
     public static function create(): GqlDirective
     {
-        if ($type = GqlEntityRegistry::getEntity(self::class)) {
+        if ($type = GqlEntityRegistry::getEntity(self::name())) {
             return $type;
         }
 

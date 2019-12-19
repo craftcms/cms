@@ -4,41 +4,52 @@ import axios from 'axios'
 
 export default {
     /**
+     * Checkout.
+     */
+    checkout(data) {
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('POST', 'payments', {
+                    data,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
+    },
+
+    /**
      * Create cart.
      */
     createCart(data) {
-        return axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
-                headers: {
-                    'X-CSRF-Token': Craft.csrfTokenValue,
-                }
-            })
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('POST', 'carts', {
+                    data,
+                })
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
     },
 
     /**
-     * Update cart.
+     * Get cart.
      */
-    updateCart(orderNumber, data) {
-        data.orderNumber = orderNumber
-
-        return axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
-                headers: {
-                    'X-CSRF-Token': Craft.csrfTokenValue,
-                }
-            })
-    },
-
-    /**
-     * Reset order number.
-     */
-    resetOrderNumber() {
-        localStorage.removeItem('orderNumber')
-    },
-
-    /**
-     * Save order number
-     */
-    saveOrderNumber(orderNumber) {
-        localStorage.setItem('orderNumber', orderNumber)
+    getCart(orderNumber) {
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('GET', 'carts/' + orderNumber)
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
     },
 
     /**
@@ -51,25 +62,17 @@ export default {
     },
 
     /**
-     * Get cart.
+     * Reset order number.
      */
-    getCart(orderNumber) {
-        const data = {
-            orderNumber
-        }
-
-        return axios.get(Craft.getActionUrl('plugin-store/get-cart', data))
+    resetOrderNumber() {
+        localStorage.removeItem('orderNumber')
     },
 
     /**
-     * Checkout.
+     * Save order number.
      */
-    checkout(data) {
-        return axios.post(Craft.getActionUrl('plugin-store/checkout'), data, {
-            headers: {
-                'X-CSRF-Token': Craft.csrfTokenValue,
-            }
-        })
+    saveOrderNumber(orderNumber) {
+        localStorage.setItem('orderNumber', orderNumber)
     },
 
     /**
@@ -80,6 +83,21 @@ export default {
             headers: {
                 'X-CSRF-Token': Craft.csrfTokenValue,
             }
+        })
+    },
+
+    /**
+     * Update cart.
+     */
+    updateCart(orderNumber, data) {
+        return new Promise((resolve, reject) => {
+            Craft.sendApiRequest('POST', 'carts/' + orderNumber, {data})
+                .then((responseData) => {
+                    resolve(responseData)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
         })
     },
 }

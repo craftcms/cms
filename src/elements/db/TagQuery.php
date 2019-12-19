@@ -85,7 +85,7 @@ class TagQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches tags…
      * | - | -
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
@@ -96,14 +96,14 @@ class TagQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo group #}
+     * {# Fetch tags in the Foo group #}
      * {% set {elements-var} = {twig-method}
      *     .group('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo group
+     * // Fetch tags in the Foo group
      * ${elements-var} = {php-method}
      *     ->group('foo')
      *     ->all();
@@ -135,7 +135,7 @@ class TagQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches tags…
      * | - | -
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
@@ -145,14 +145,14 @@ class TagQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the group with an ID of 1 #}
+     * {# Fetch tags in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .groupId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the group with an ID of 1
+     * // Fetch tags in the group with an ID of 1
      * ${elements-var} = {php-method}
      *     ->groupId(1)
      *     ->all();

@@ -152,6 +152,20 @@ trait ApplicationTrait
     public $env;
 
     /**
+     * @var string The base Craftnet API URL to use.
+     * @since 3.3.16
+     * @internal
+     */
+    public $baseApiUrl = 'https://api.craftcms.com/v1/';
+
+    /**
+     * @var string[]|null Query params that should be appended to Craftnet API requests.
+     * @since 3.3.16
+     * @internal
+     */
+    public $apiParams;
+
+    /**
      * @var
      */
     private $_isInstalled;
@@ -506,7 +520,7 @@ trait ApplicationTrait
      * Returns whether the system is currently live.
      *
      * @return bool
-     * @deprecated in 3.1. Use [[getIsLive()]] instead.
+     * @deprecated in 3.1.0. Use [[getIsLive()]] instead.
      */
     public function getIsSystemOn(): bool
     {
@@ -957,7 +971,7 @@ trait ApplicationTrait
      * Returns the entry revisions service.
      *
      * @return \craft\services\EntryRevisions The entry revisions service
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0.
      */
     public function getEntryRevisions()
     {
@@ -1462,6 +1476,7 @@ trait ApplicationTrait
         $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
         $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
+        $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
     }
 
     /**

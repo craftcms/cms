@@ -6,11 +6,9 @@
 
 <script>
     export default {
-
         props: ['name', 'block', 'big'],
 
         computed: {
-
             cssClass() {
                 const cssClasses = {}
 
@@ -24,7 +22,6 @@
 
                 return cssClasses
             }
-
         }
     }
 </script>

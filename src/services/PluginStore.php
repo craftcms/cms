@@ -67,49 +67,6 @@ class PluginStore extends Component
     // =========================================================================
 
     /**
-     * Returns the Craft ID account.
-     *
-     * @return array|null
-     * @throws \Exception
-     */
-    public function getCraftIdAccount()
-    {
-        $craftIdToken = $this->getToken();
-
-        if (!$craftIdToken) {
-            return null;
-        }
-
-        $client = Craft::$app->getApi()->client;
-        $options = $this->getApiRequestOptions();
-        $craftIdAccountResponse = $client->get('account', $options);
-        $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-        if (isset($craftIdAccount['error'])) {
-            throw new \Exception("Couldn’t get Craft ID account: " . $craftIdAccount['error']);
-        }
-
-        return $craftIdAccount;
-    }
-
-    /**
-     * Returns the options for authenticated API requests.
-     *
-     * @return array
-     */
-    public function getApiRequestOptions(): array
-    {
-        $options = [];
-
-        $token = $this->getToken();
-        if ($token && $token->accessToken !== null) {
-            $options['headers']['Authorization'] = 'Bearer ' . $token->accessToken;
-        }
-
-        return $options;
-    }
-
-    /**
      * Saves the OAuth token.
      *
      * @param array $tokenArray

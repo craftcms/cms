@@ -840,7 +840,7 @@ class Locale extends BaseObject
      * Returns the locale ID.
      *
      * @return string
-     * @deprecated in 3.0. Use id instead.
+     * @deprecated in 3.0.0. Use id instead.
      */
     public function getId(): string
     {
@@ -854,7 +854,7 @@ class Locale extends BaseObject
      *
      * @param string|null $targetLocaleId
      * @return string|null
-     * @deprecated in 3.0. Use getDisplayName() instead.
+     * @deprecated in 3.0.0. Use getDisplayName() instead.
      */
     public function getName(string $targetLocaleId = null)
     {
@@ -872,7 +872,7 @@ class Locale extends BaseObject
      * Returns the locale name in its own language.
      *
      * @return string|false
-     * @deprecated in 3.0. Use getDisplayName() instead.
+     * @deprecated in 3.0.0. Use getDisplayName() instead.
      */
     public function getNativeName()
     {
@@ -954,15 +954,10 @@ class Locale extends BaseObject
             $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
             $pattern = $formatter->getPattern();
 
-            // Use 4-digit year, and no leading zeroes on days/months
+            // Use 4-digit years
             return strtr($pattern, [
                 'yyyy' => 'yyyy',
                 'yy' => 'yyyy',
-                'MMMMM' => 'MMMMM',
-                'MMMM' => 'MMMM',
-                'MMM' => 'MMM',
-                'MM' => 'M',
-                'dd' => 'd',
             ]);
         }
 

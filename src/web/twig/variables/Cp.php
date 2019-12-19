@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -44,20 +43,6 @@ class Cp extends Component
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns the Craft ID account.
-     *
-     * @return array|null
-     */
-    public function craftIdAccount()
-    {
-        try {
-            return Craft::$app->getPluginStore()->getCraftIdAccount();
-        } catch (ServerException $e) {
-            return null;
-        }
-    }
 
     /**
      * Returns the Craft ID account URL.

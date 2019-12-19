@@ -71,7 +71,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
      * @see __construct()
-     * @deprecated since 3.0.0-beta.23
+     * @deprecated in 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
 
@@ -191,7 +191,7 @@ class CraftVariable extends ServiceLocator
      * Gets the current language in use.
      *
      * @return string
-     * @deprecated in 3.0
+     * @deprecated in 3.0.0
      */
     public function locale(): string
     {
@@ -203,7 +203,7 @@ class CraftVariable extends ServiceLocator
      * Returns whether this site has multiple locales.
      *
      * @return bool
-     * @deprecated in 3.0. Use craft.app.isMultiSite instead
+     * @deprecated in 3.0.0. Use craft.app.isMultiSite instead
      */
     public function isLocalized(): bool
     {

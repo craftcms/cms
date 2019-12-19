@@ -1,10 +1,6 @@
-<p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
+<a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="247" height="60" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a>
 
-<p align="center">
-<a href="https://travis-ci.com/craftcms/cms"><img src="https://img.shields.io/travis/com/craftcms/cms/develop.svg?label=build" alt="Build Status"></a>
-<a href="https://packagist.org/packages/craftcms/cms"><img src="https://img.shields.io/packagist/dt/craftcms/cms.svg?label=downloads" alt="Total Packagist Downloads"></a>
-<a href="https://github.com/craftcms/cms/releases"><img src="https://img.shields.io/github/tag/craftcms/cms.svg?label=stable" alt="Latest Stable Version"></a>
-</p>
+<br>
 
 ## About Craft CMS
 
@@ -34,3 +30,11 @@ Craft is a self-hosted PHP 7 application, built on [Yii 2](https://www.yiiframew
 - **[CraftQuest](https://craftquest.io/)** – Watch unlimited video lessons and courses.
 - **[Craft Link List](http://craftlinklist.com/)** – Stay in-the-know.
 - **[nystudio107 Blog](https://nystudio107.com/blog)** – Learn Craft and modern web development.
+
+---
+
+<p>
+<a href="https://travis-ci.com/craftcms/cms"><img src="https://img.shields.io/travis/com/craftcms/cms/develop.svg?label=build" alt="Build Status"></a>
+<a href="https://packagist.org/packages/craftcms/cms"><img src="https://img.shields.io/packagist/dt/craftcms/cms.svg?label=downloads" alt="Total Packagist Downloads"></a>
+<a href="https://github.com/craftcms/cms/releases"><img src="https://img.shields.io/github/tag/craftcms/cms.svg?label=stable" alt="Latest Stable Version"></a>
+</p>

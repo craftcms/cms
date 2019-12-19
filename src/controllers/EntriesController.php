@@ -40,7 +40,7 @@ class EntriesController extends BaseEntriesController
 
     /**
      * @event ElementEvent The event that is triggered when an entry’s template is rendered for Live Preview.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     const EVENT_PREVIEW_ENTRY = 'previewEntry';
 

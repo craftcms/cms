@@ -6,9 +6,7 @@
 
 <script>
     export default {
-
         props: ['status', 'description']
-
     }
 </script>
 

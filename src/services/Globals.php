@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\GlobalSet;
+use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
@@ -438,7 +439,10 @@ class Globals extends Component
             $element->name = $globalSetRecord->name;
             $element->handle = $globalSetRecord->handle;
             $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
-            $elementsService->saveElement($element, false);
+
+            if (!$elementsService->saveElement($element, false)) {
+                throw new ElementNotFoundException('Unable to save the element required for global set.');
+            }
 
             // Save the volume
             $globalSetRecord->id = $element->id;

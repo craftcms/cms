@@ -531,8 +531,8 @@ class AssetTransforms extends Component
             'volumeId' => $asset->volumeId,
             'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
-            'fileExists' => 0,
-            'inProgress' => 0
+            'fileExists' => false,
+            'inProgress' => false
         ]);
 
         return $this->storeTransformIndexData($transformIndex);
@@ -681,7 +681,7 @@ class AssetTransforms extends Component
                     'and',
                     [
                         'assetId' => $asset->id,
-                        'fileExists' => 1,
+                        'fileExists' => true,
                         'location' => $possibleLocations,
                         'format' => $index->detectedFormat,
                     ],
@@ -1495,5 +1495,4 @@ class AssetTransforms extends Component
     {
         return AssetTransformRecord::findOne(['uid' => $uid]) ?? new AssetTransformRecord();
     }
-
 }

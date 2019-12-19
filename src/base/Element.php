@@ -79,7 +79,7 @@ use yii\validators\Validator;
  * @property Element|null $prevSibling The element’s previous sibling
  * @property string|null $ref The reference string to this element
  * @property mixed $route The route that should be used when the element’s URI is requested
- * @property string|null $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property array $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property ElementQueryInterface $siblings All of the element’s siblings
  * @property Site $site Site the element is associated with
  * @property string|null $status The element’s status
@@ -318,9 +318,33 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Element');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return StringHelper::toLowerCase(static::displayName());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Elements');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return StringHelper::toLowerCase(static::pluralDisplayName());
     }
 
     /**
@@ -470,11 +494,12 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines the available element actions for a given source (if one is provided).
+     * Defines the available element actions for a given source.
      *
      * @param string|null $source The selected source’s key, if any.
      * @return array The available element actions.
      * @see actions()
+     * @todo this shouldn't allow null in Craft 4
      */
     protected static function defineActions(string $source = null): array
     {
@@ -1522,7 +1547,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri) {
             $previewTargets[] = [
                 'label' => Craft::t('app', 'Primary {type} page', [
-                    'type' => StringHelper::toLowerCase(static::displayName()),
+                    'type' => static::lowerDisplayName(),
                 ]),
                 'url' => $this->getIsHomepage() ? '' : $this->uri
             ];
@@ -2451,8 +2476,35 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
+     * This method can be used to completely customize what actually shows up within the table’s body for a given
+     * attribute, rather than simply showing the attribute’s raw value.
+     *
+     * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
+     * getTableAttributesHtml() method could do this:
+     *
+     * ```php
+     * switch ($attribute) {
+     *     case 'email':
+     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
+     *     // ...
+     * }
+     * return parent::tableAttributeHtml($attribute);
+     * ```
+     *
+     * ::: warning
+     * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
+     * :::
+     *
+     * By default the following will be returned:
+     *
+     * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
+     * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
+     * - If the attribute value is a [[DateTime]] object, the date will be formatted with a localized date format.
+     * - For anything else, it will output the attribute value as a string.
+     *
      * @param string $attribute The attribute name.
      * @return string The HTML that should be shown for a given attribute in Table View.
+     * @throws InvalidConfigException
      * @see getTableAttributeHtml()
      */
     protected function tableAttributeHtml(string $attribute): string

@@ -348,6 +348,15 @@ $.extend(Craft,
                 data = {};
             }
 
+            options = options || {};
+
+            if (options.contentType && options.contentType.match(/\bjson\b/)) {
+                if (typeof data === 'object') {
+                    data = JSON.stringify(data);
+                }
+                options.contentType = 'application/json; charset=utf-8';
+            }
+
             var headers = {
                 'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
                 'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
@@ -384,7 +393,7 @@ $.extend(Craft,
             }, options));
 
             // Call the 'send' callback
-            if (options && typeof options.send === 'function') {
+            if (typeof options.send === 'function') {
                 options.send(jqXHR);
             }
 
@@ -429,6 +438,38 @@ $.extend(Craft,
                     Craft._waitingOnAjax = false;
                 }
             }, args[3]);
+        },
+
+        sendApiRequest: function(method, uri, options) {
+            return new Promise(function(resolve, reject) {
+                // Get the latest headers
+                this.postActionRequest('app/api-headers', function(headers, textStatus) {
+                    if (textStatus !== 'success') {
+                        reject();
+                        return;
+                    }
+
+                    options = options || {};
+                    headers = $.extend(headers, options.headers || {});
+                    var params = $.extend(Craft.apiParams || {}, options.params || {});
+
+                    axios.request($.extend({}, options, {
+                            url: uri,
+                            method: method,
+                            baseURL: Craft.baseApiUrl,
+                            headers: headers,
+                            params: params,
+                        }))
+                        .then(function(response) {
+                            Craft.postActionRequest('app/process-api-response-headers', {
+                                headers: response.headers,
+                            }, function() {
+                                resolve(response.data);
+                            });
+                        })
+                        .catch(reject);
+                }.bind(this));
+            }.bind(this));
         },
 
         /**

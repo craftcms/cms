@@ -352,6 +352,11 @@ class ProjectConfig extends Component
 
         if ($value !== $this->get($path)) {
             if ($this->readOnly) {
+                // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
+                if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
+                    return;
+                }
+
                 throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
             }
 
@@ -905,11 +910,14 @@ class ProjectConfig extends Component
         ], $event->config);
 
         $this->muteEvents = true;
+        $readOnly = $this->readOnly;
+        $this->readOnly = false;
 
         foreach ($configData as $path => $value) {
             $this->set($path, $value);
         }
 
+        $this->readOnly = $readOnly;
         $this->muteEvents = false;
     }
 
@@ -1506,6 +1514,7 @@ class ProjectConfig extends Component
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.propagationMethod',
+                'sections.previewTargets',
                 'sections.uid',
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
@@ -1536,6 +1545,7 @@ class ProjectConfig extends Component
             $sectionData[$uid] = $section;
             $sectionData[$uid]['entryTypes'] = [];
             $sectionData[$uid]['siteSettings'] = [];
+            $sectionData[$uid]['previewTargets'] = Json::decodeIfJson($section['previewTargets']);
         }
 
         $sectionSiteRows = (new Query())
