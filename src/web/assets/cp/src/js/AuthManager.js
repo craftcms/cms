@@ -73,7 +73,7 @@ Craft.AuthManager = Garnish.Base.extend(
             this.remainingSessionTime = parseInt(remainingSessionTime);
 
             // Are we within the warning window?
-            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessintTime) {
+            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessionTime) {
                 // Is there still time to renew the session?
                 if (this.remainingSessionTime) {
                     if (!this.showingLogoutWarningModal) {
@@ -110,8 +110,8 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.hideLoginModal();
 
                 // Will be be within the minSafeSessionTime before the next update?
-                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessintTime + Craft.AuthManager.checkInterval)) {
-                    this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessintTime + 1);
+                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessionTime + Craft.AuthManager.checkInterval)) {
+                    this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessionTime + 1);
                 }
                 else {
                     this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
