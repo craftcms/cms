@@ -46,7 +46,7 @@ body.rtl .ltr .text, body.rtl .ltr table.editable textarea { text-align: left !i
 body.ltr .rtl .text, body.ltr .rtl table.editable textarea { text-align: right !important; direction: rtl !important; }
 
 /* icons */
-.icon:before, .menu ul.padded li a.sel:before, .texticon:before, .element:before, #help:before, .secure:before, .insecure:before, .go:after, .menubtn:after, .required:after, #preview-btn:before, #share-btn:before, .toggle:before, a.fieldtoggle:before, [data-icon]:before, [data-icon-after]:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; }
+.icon:before, .menu ul.padded li a.sel:before, .menu .flex.padded.sel:before, .texticon:before, .element:before, #help:before, .secure:before, .insecure:before, .go:after, .menubtn:after, .required:after, #preview-btn:before, #share-btn:before, .toggle:before, a.fieldtoggle:before, [data-icon]:before, [data-icon-after]:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; }
 
 .secure:before, .insecure:before { margin-top: -3px; font-size: 14px; }
 
@@ -1185,6 +1185,14 @@ body.ltr .menu ul li a .shortcut { float: right; }
 body.rtl .menu ul li a .shortcut { float: left; }
 body.ltr .menu ul li a .shortcut { margin-left: 14px; }
 body.rtl .menu ul li a .shortcut { margin-right: 14px; }
+.menu .flex { margin-top: 10px; margin-bottom: 10px; position: relative; }
+body.ltr .menu .flex.padded { margin-left: -14px; }
+body.rtl .menu .flex.padded { margin-right: -14px; }
+body.ltr .menu .flex.padded { padding-left: 24px; }
+body.rtl .menu .flex.padded { padding-right: 24px; }
+.menu .flex.padded.sel:before { position: absolute; top: 36px; content: 'check'; font-size: 14px; color: #9aa5b1; }
+body.ltr .menu .flex.padded.sel:before { left: 7px; }
+body.rtl .menu .flex.padded.sel:before { right: 7px; }
 .menu hr { margin: 5px -14px; }
 
 .menubtn span.icon, .menu span.icon { display: inline-block; margin-top: -1px; width: 10px; text-align: center; font-size: 14px; color: #9aa5b1; }
@@ -1264,6 +1272,7 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 .chars-left.negative-chars-left { color: #EF4E4E; }
 
 .field { position: relative; margin: 24px 0; }
+.flex > .field { margin-top: 0; margin-bottom: 0; }
 .field > .status-badge { position: absolute; top: 2px; font-size: 9px; font-weight: bold; line-height: 15px; width: 15px; text-align: center; cursor: default; border-radius: 3px; }
 body.ltr .field > .status-badge { left: -19px; }
 body.rtl .field > .status-badge { right: -19px; }

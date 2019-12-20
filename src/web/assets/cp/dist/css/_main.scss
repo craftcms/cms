@@ -69,6 +69,7 @@ table.editable textarea {
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
+.menu .flex.padded.sel:before,
 .texticon:before,
 .element:before,
 #help:before,
@@ -3491,6 +3492,28 @@ ul.tree,
     }
   }
 
+  .flex {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    position: relative;
+
+    &.padded {
+      @include margin-left(-14px);
+      @include padding-left(24px);
+
+      &.sel {
+        &:before {
+          position: absolute;
+          top: 36px;
+          @include left(7px);
+          content: 'check';
+          font-size: 14px;
+          color: $lightTextColor;
+        }
+      }
+    }
+  }
+
   hr {
     margin: 5px -14px;
   }
@@ -3746,6 +3769,11 @@ textarea.text.fullwidth {
 .field {
   position: relative;
   margin: 24px 0;
+
+  .flex > & {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 
   & > .status-badge {
     position: absolute;

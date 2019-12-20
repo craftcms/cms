@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
 - Added `craft\gql\types\Number`.
+- Added the `Craft.ui.createDateRangeInput()` JavaScript method.
 
 ### Changed
 - Number fields now return the `Number` type when queried via GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
