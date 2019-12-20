@@ -36,7 +36,7 @@
                 <p>{{ emptyMessage }}</p>
             </div>
 
-            <div class="tableview" :class="{ loading: isLoading }" v-if="!this.isEmpty">
+            <div class="tableview" :class="{ loading: isLoading, hidden: this.isEmpty }">
                 <div class="tablepane vue-admin-tablepane">
                     <vuetable
                             ref="vuetable"
@@ -298,6 +298,10 @@
             },
 
             handleSearch: debounce(function() {
+                if (this.$refs.vuetable) {
+                    this.$refs.vuetable.gotoPage(1);
+                }
+
                 this.reload();
             }, 350),
 
