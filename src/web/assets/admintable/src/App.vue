@@ -246,9 +246,11 @@
                 this.isEmpty = (this.$refs.vuetable.tableData.length) ? false : true;
 
                 this.$nextTick(() => {
-                    this.selectAll = this.$refs.vuetable.$el.querySelector('.selectallcontainer');
-                    if (this.selectAll) {
-                        this.selectAll.addEventListener('click', this.handleSelectAll);
+                    if (this.$refs.vuetable) {
+                        this.selectAll = this.$refs.vuetable.$el.querySelector('.selectallcontainer');
+                        if (this.selectAll) {
+                            this.selectAll.addEventListener('click', this.handleSelectAll);
+                        }
                     }
                 });
 
