@@ -445,12 +445,16 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The URI Craft should use for user login on the front-end.
      *
+     * This can be set to `false` to disable front-end login.
+     *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
      * @var mixed The URI Craft should use for user logout on the front-end.
+     *
+     * This can be set to `false` to disable front-end logout.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLogoutPath()
@@ -1144,10 +1148,10 @@ class GeneralConfig extends BaseObject
      * Returns the localized Login Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return mixed
      * @see loginPath
      */
-    public function getLoginPath(string $siteHandle = null): string
+    public function getLoginPath(string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
     }
@@ -1156,10 +1160,10 @@ class GeneralConfig extends BaseObject
      * Returns the localized Logout Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return mixed
      * @see logoutPath
      */
-    public function getLogoutPath(string $siteHandle = null): string
+    public function getLogoutPath(string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
     }

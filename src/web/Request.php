@@ -1282,8 +1282,12 @@ class Request extends \yii\web\Request
                 $updatePath = self::CP_PATH_UPDATE;
             } else if (!$generalConfig->headlessMode) {
                 $checkSpecialPaths = true;
-                $loginPath = trim($generalConfig->getLoginPath(), '/');
-                $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                if (is_string($loginPath = $generalConfig->getLoginPath())) {
+                    $loginPath = trim($loginPath, '/');
+                }
+                if (is_string($logoutPath = $generalConfig->getLogoutPath())) {
+                    $logoutPath = trim($logoutPath, '/');
+                }
                 $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
                 $verifyEmailPath = trim($generalConfig->getVerifyEmailPath(), '/');
             }

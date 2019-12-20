@@ -194,7 +194,8 @@
 - Local asset volumes now ensure that their folder exists on save, and if it doesn’t, a `.gitignore` file will be added automatically to it, excluding the directory from Git. ([#5237](https://github.com/craftcms/cms/issues/5237))
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))
 - Craft now uses the `slugWordSeparator` when generating URI formats. ([#5315](https://github.com/craftcms/cms/pull/5315))
-- The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode. ([#5352](https://github.com/craftcms/cms/issues/5352))
+- The `loginPath` and `logoutPath` config setings can now be set to `false` to disable front-end login/logout. ([#5352](https://github.com/craftcms/cms/issues/5352))
+- The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.
 - CSS registered with `craft\web\View::registerCss()` or the `{% css %}` tag is now minified by default. ([#5183](https://github.com/craftcms/cms/issues/5183))
 - JavaScript code registered with `craft\web\registerJs()` or the `{% js %}` tag is now minified per the `useCompressedJs` config setting. ([#5183](https://github.com/craftcms/cms/issues/5183))
 - `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
@@ -213,6 +214,7 @@
 - The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
 - Active record classes now normalize attribute values right when they are set.
 - The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
+- `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
 - `craft\i18n\Formatter::asShortSize()` now capitalizes the size unit.
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))

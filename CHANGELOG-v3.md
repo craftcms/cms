@@ -9,8 +9,10 @@
 
 ### Changed
 - Number fields now return the `Number` type when queried via GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
-- The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode. ([#5352](https://github.com/craftcms/cms/issues/5352))
+- The `loginPath` and `logoutPath` config setings can now be set to `false` to disable front-end login/logout. ([#5352](https://github.com/craftcms/cms/issues/5352))
+- The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.
 - The `__count` field when querying Elements using GraphQL has been renamed to `_count`.
+- `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
 - Updated Garnish to 0.1.32.
 
 ### Deprecated
