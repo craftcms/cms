@@ -223,6 +223,7 @@
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+- Updated Garnish to 0.1.32.
 
 ### Deprecated
 - Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
