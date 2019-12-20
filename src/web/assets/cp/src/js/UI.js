@@ -540,6 +540,7 @@ Craft.ui =
                 onOptionSelect: function(option) {
                     var $option = $(option);
                     $btn.text($option.text());
+                    menu.setPositionRelativeToAnchor();
                     $menu.find('.sel').removeClass('sel');
                     $option.addClass('sel');
 
@@ -587,6 +588,7 @@ Craft.ui =
                     } else {
                         $btn.text(Craft.t('app', 'To {date}', {date: $endDate.val()}));
                     }
+                    menu.setPositionRelativeToAnchor();
 
                     config.onChange(startDate, endDate);
                 }
