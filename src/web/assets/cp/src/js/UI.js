@@ -419,7 +419,7 @@ Craft.ui =
             return this.createField(this.createDateInput(config), config);
         },
 
-        createDateRangeInput: function(config) {
+        createDateRangePicker: function(config) {
             var now = new Date();
             var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             config = $.extend({
