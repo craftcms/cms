@@ -158,7 +158,7 @@ class Updates extends Component
         $key = Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion';
 
         if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
-            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle”}");
+            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
         }
 
         return (bool)$affectedRows;

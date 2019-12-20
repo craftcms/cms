@@ -243,6 +243,7 @@ class UsersController extends Controller
 
         $return = [
             'isGuest' => $user === null,
+            'timeout' => $userService->getRemainingSessionTime(),
         ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -250,7 +251,6 @@ class UsersController extends Controller
         }
 
         if ($user !== null) {
-            $return['timeout'] = $userService->getRemainingSessionTime();
             $return['id'] = $user->id;
             $return['uid'] = $user->uid;
             $return['username'] = $user->username;

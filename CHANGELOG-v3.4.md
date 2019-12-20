@@ -175,6 +175,7 @@
 - Added `craft\web\twig\nodes\RequireGuestNode`.
 - Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
 - Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
+- Added the `Craft.ui.createDateRangeInput()` JavaScript method.
 - Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
@@ -223,6 +224,7 @@
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+- Updated Garnish to 0.1.32.
 
 ### Deprecated
 - Deprecated the `url`, `driver`, `database`, `server`, `port`, and `unixSocket` database config settings. `dsn` should be used instead.
