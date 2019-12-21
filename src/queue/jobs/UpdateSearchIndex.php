@@ -51,7 +51,7 @@ class UpdateSearchIndex extends BaseJob
         $searchService = Craft::$app->getSearch();
 
         foreach ($elements as $i => $element) {
-            $this->setProgress($queue, $i + 1 / $total);
+            $this->setProgress($queue, ($i + 1) / $total);
             $searchService->indexElementAttributes($element);
         }
     }
