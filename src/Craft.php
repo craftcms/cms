@@ -201,7 +201,7 @@ class Craft extends Yii
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
         $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
 
-        if (self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
+        if ($load && self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
             return false;
         }
 

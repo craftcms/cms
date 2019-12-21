@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where “Updating search indexes” jobs would show inaccurate progress bars. ([#5358](https://github.com/craftcms/cms/pull/5358))
 - Fixed a PHP error that could occur when using the `|attr` filter on an HTML element that had an existing attribute with an empty value. ([#5364](https://github.com/craftcms/cms/issues/5364))
+- Fixed a race condition that could result in a PHP error when generating `ElementQueryBehavior.php`. ([#5361](https://github.com/craftcms/cms/issues/5361))
 
 ### Security
 - Fixed a bug where Craft was renewing the identity cookie each time it checked on the user’s remaining session time. ([#3951](https://github.com/craftcms/cms/issues/3951))
