@@ -296,6 +296,16 @@
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 
+## 3.3.18.4 - 2019-12-21
+
+### Fixed
+- Fixed a bug where “Updating search indexes” jobs would show inaccurate progress bars. ([#5358](https://github.com/craftcms/cms/pull/5358))
+- Fixed a PHP error that could occur when using the `|attr` filter on an HTML element that had an existing attribute with an empty value. ([#5364](https://github.com/craftcms/cms/issues/5364))
+- Fixed a race condition that could result in a PHP error when generating `ElementQueryBehavior.php`. ([#5361](https://github.com/craftcms/cms/issues/5361))
+
+### Security
+- Fixed a bug where Craft was renewing the identity cookie each time it checked on the user’s remaining session time. ([#3951](https://github.com/craftcms/cms/issues/3951))
+
 ## 3.3.18.3 - 2019-12-17
 
 ### Changed

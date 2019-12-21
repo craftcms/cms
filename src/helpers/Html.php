@@ -270,7 +270,7 @@ class Html extends \yii\helpers\Html
 
             // Does the tag have a value?
             if (preg_match('/=(?:(["\'])(.*?)\1|([^ >]+))/A', $tag, $match, 0, $anchor)) {
-                $value = $match[2] ?: $match[3];
+                $value = $match[3] ?? $match[2];
                 $anchor += strlen($match[0]);
             } else {
                 $value = true;
