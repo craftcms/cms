@@ -324,7 +324,7 @@ EOD;
         }
 
         if ($generatedContentBehavior) {
-            // Now write ContentBehavior.php, now that
+            // Now write ContentBehavior.php, now that ElementQueryBehavior.php is written
             self::_autoloadContentBehavior(true, false);
         }
     }
