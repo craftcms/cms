@@ -14,9 +14,11 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\ElementRelationParamParser;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
@@ -426,6 +428,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
+        if ($value === null) {
+            return null;
+        }
+
         /** @var ElementQuery $query */
         if ($value === 'not :empty:') {
             $value = ':notempty:';
@@ -440,8 +446,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 "(select count([[{$alias}.id]]) from {{%relations}} {{{$alias}}} where [[{$alias}.sourceId]] = [[elements.id]] and [[{$alias}.fieldId]] = {$paramHandle}) {$operator} 0",
                 [$paramHandle => $this->id]
             );
-        } else if ($value !== null) {
-            return false;
+        } else {
+            $parser = new ElementRelationParamParser([
+                'fields' => [
+                    $this->handle => $this,
+                ],
+            ]);
+            $condition = $parser->parse([
+                'targetElement' => $value,
+                'field' => $this->handle,
+            ]);
+
+            if ($condition === false) {
+                return false;
+            }
+
+            $query->subQuery->andWhere($condition);
         }
 
         return null;

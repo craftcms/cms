@@ -34,6 +34,29 @@ class ElementRelationParamParser extends BaseObject
     const DIR_FORWARD = 0;
     const DIR_REVERSE = 1;
 
+    // Static
+    // =========================================================================
+
+    /**
+     * @var int
+     */
+    private static $_relateSourceMatrixBlocksCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateTargetMatrixBlocksCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateSourcesCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateTargetsCount = 0;
+
     // Properties
     // =========================================================================
 
@@ -41,26 +64,6 @@ class ElementRelationParamParser extends BaseObject
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
     public $fields;
-
-    /**
-     * @var int
-     */
-    private $_relateSourceMatrixBlocksCount = 0;
-
-    /**
-     * @var int
-     */
-    private $_relateTargetMatrixBlocksCount = 0;
-
-    /**
-     * @var int
-     */
-    private $_relateSourcesCount = 0;
-
-    /**
-     * @var int
-     */
-    private $_relateTargetsCount = 0;
 
     // Public Methods
     // =========================================================================
@@ -312,12 +315,12 @@ class ElementRelationParamParser extends BaseObject
                     }
 
                     if ($dir === self::DIR_FORWARD) {
-                        $this->_relateSourcesCount++;
-                        $this->_relateTargetMatrixBlocksCount++;
+                        self::$_relateSourcesCount++;
+                        self::$_relateTargetMatrixBlocksCount++;
 
-                        $sourcesAlias = 'sources' . $this->_relateSourcesCount;
-                        $targetMatrixBlocksAlias = 'target_matrixblocks' . $this->_relateTargetMatrixBlocksCount;
-                        $targetMatrixElementsAlias = 'target_matrixelements' . $this->_relateTargetMatrixBlocksCount;
+                        $sourcesAlias = 'sources' . self::$_relateSourcesCount;
+                        $targetMatrixBlocksAlias = 'target_matrixblocks' . self::$_relateTargetMatrixBlocksCount;
+                        $targetMatrixElementsAlias = 'target_matrixelements' . self::$_relateTargetMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourcesAlias . '.targetId'])
@@ -342,10 +345,10 @@ class ElementRelationParamParser extends BaseObject
                             $subQuery->andWhere([$sourcesAlias . '.fieldId' => $blockTypeFieldIds]);
                         }
                     } else {
-                        $this->_relateSourceMatrixBlocksCount++;
-                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . $this->_relateSourceMatrixBlocksCount;
-                        $sourceMatrixElementsAlias = 'source_matrixelements' . $this->_relateSourceMatrixBlocksCount;
-                        $matrixBlockTargetsAlias = 'matrixblock_targets' . $this->_relateSourceMatrixBlocksCount;
+                        self::$_relateSourceMatrixBlocksCount++;
+                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . self::$_relateSourceMatrixBlocksCount;
+                        $sourceMatrixElementsAlias = 'source_matrixelements' . self::$_relateSourceMatrixBlocksCount;
+                        $matrixBlockTargetsAlias = 'matrixblock_targets' . self::$_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourceMatrixBlocksAlias . '.ownerId'])
@@ -385,13 +388,13 @@ class ElementRelationParamParser extends BaseObject
         // run this code if the rel criteria wasn't exclusively for Matrix.)
         if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
             if ($dir === self::DIR_FORWARD) {
-                $this->_relateSourcesCount++;
-                $relTableAlias = 'sources' . $this->_relateSourcesCount;
+                self::$_relateSourcesCount++;
+                $relTableAlias = 'sources' . self::$_relateSourcesCount;
                 $relConditionColumn = 'sourceId';
                 $relElementColumn = 'targetId';
             } else {
-                $this->_relateTargetsCount++;
-                $relTableAlias = 'targets' . $this->_relateTargetsCount;
+                self::$_relateTargetsCount++;
+                $relTableAlias = 'targets' . self::$_relateTargetsCount;
                 $relConditionColumn = 'targetId';
                 $relElementColumn = 'sourceId';
             }

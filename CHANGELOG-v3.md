@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to filter element query results by their related elements using relational fields’ element query params (e.g. `publisher(100)` rather than `relatedTo({targetElement: 100, field: 'publisher'})`).
 - Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
 - Added `craft\gql\types\Number`.
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
