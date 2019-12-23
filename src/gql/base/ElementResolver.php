@@ -51,7 +51,7 @@ abstract class ElementResolver extends Resolver
 
         $relationCountFields = [];
 
-        // Set up the preload con
+        // Set up the preload count
         foreach ($preloadNodes as $element => $parameters) {
             if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
                 if (isset($parameters['field'])) {
