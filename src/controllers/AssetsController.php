@@ -131,6 +131,13 @@ class AssetsController extends Controller
             $previewHtml = '';
         }
 
+        // See if the user is allowed to replace the file
+        $userSession = Craft::$app->getUser();
+        $canReplaceFile = (
+            $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}") &&
+            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}"))
+        );
+
         return $this->renderTemplate('assets/_edit', [
             'element' => $asset,
             'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
@@ -139,6 +146,7 @@ class AssetsController extends Controller
             'formattedSize' => $asset->getFormattedSize(0),
             'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
             'dimensions' => $asset->getDimensions(),
+            'canReplaceFile' => $canReplaceFile,
         ]);
     }
 
