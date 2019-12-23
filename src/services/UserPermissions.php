@@ -605,6 +605,20 @@ class UserPermissions extends Component
                     ],
                     "editImagesInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Edit images'),
+                    ],
+                    "viewPeerFilesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'View files uploaded by someone else'),
+                        'nested' => [
+                            "editPeerFilesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Edit files uploaded by someone else'),
+                            ],
+                            "deletePeerFilesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Remove files uploaded by someone else'),
+                            ],
+                            "editPeerImagesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Edit images uploaded by someone else'),
+                            ],
+                        ]
                     ]
                 ]
             ]

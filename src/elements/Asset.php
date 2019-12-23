@@ -270,7 +270,7 @@ class Asset extends Element
 
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
 
-        $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
+        $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
 
         // Add the Temporary Uploads location, if that's not set to a real volume
         if (
@@ -300,47 +300,35 @@ class Asset extends Element
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => PreviewAsset::class,
-                    'label' => Craft::t('app', 'Preview file'),
-                ]
-            );
+            $actions[] = [
+                'type' => PreviewAsset::class,
+                'label' => Craft::t('app', 'Preview file'),
+            ];
 
             // Download
             $actions[] = DownloadAssetFile::class;
 
             // Edit
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => Edit::class,
-                    'label' => Craft::t('app', 'Edit asset'),
-                ]
-            );
+            $actions[] = [
+                'type' => Edit::class,
+                'label' => Craft::t('app', 'Edit asset'),
+            ];
 
             $userSession = Craft::$app->getUser();
-            $canDeleteAndSave = (
-                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
-            );
-
-            // Rename File
-            if ($canDeleteAndSave) {
+            if (
+                $userSession->checkPermission("saveAssetInVolume:{$volume->uid}") &&
+                $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}")
+            ) {
+                // Rename/Replace File
                 $actions[] = RenameFile::class;
-            }
-
-            // Replace File
-            if ($userSession->checkPermission('saveAssetInVolume:' . $volume->uid)) {
                 $actions[] = ReplaceFile::class;
             }
 
             // Copy Reference Tag
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => CopyReferenceTag::class,
-                    'elementType' => static::class,
-                ]
-            );
+            $actions[] = [
+                'type' => CopyReferenceTag::class,
+                'elementType' => static::class,
+            ];
 
             // Edit Image
             if ($userSession->checkPermission('editImagesInVolume:' . $volume->uid)) {
@@ -447,14 +435,15 @@ class Asset extends Element
      *
      * @param array $folders
      * @param bool $includeNestedFolders
+     * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true): array
+    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true, User $user = null): array
     {
         $sources = [];
 
         foreach ($folders as $folder) {
-            $sources[] = self::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
+            $sources[] = self::_assembleSourceInfoForFolder($folder, $includeNestedFolders, $user);
         }
 
         return $sources;
@@ -465,9 +454,10 @@ class Asset extends Element
      *
      * @param VolumeFolder $folder
      * @param bool $includeNestedFolders
+     * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true, User $user = null): array
     {
         /** @var Volume $volume */
         $volume = $folder->getVolume();
@@ -493,11 +483,12 @@ class Asset extends Element
             ]
         ];
 
+        if ($user && !$user->can("viewPeerFilesInVolume:{$volume->uid}")) {
+            $source['criteria']['uploaderId'] = $user->id;
+        }
+
         if ($includeNestedFolders) {
-            $source['nested'] = self::_assembleSourceList(
-                $folder->getChildren(),
-                true
-            );
+            $source['nested'] = self::_assembleSourceList($folder->getChildren(), true, $user);
         }
 
         return $source;
@@ -755,8 +746,10 @@ class Asset extends Element
     {
         /** @var Volume $volume */
         $volume = $this->getVolume();
-        return Craft::$app->getUser()->checkPermission(
-            'saveAssetInVolume:' . $volume->uid
+        $userSession = Craft::$app->getUser();
+        return (
+            $userSession->checkPermission("saveAssetInVolume:{$volume->uid}") &&
+            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}"))
         );
     }
 
@@ -1399,7 +1392,8 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
+                $userSession->checkPermission("editImagesInVolume:{$volume->uid}") &&
+                ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
             );
 
             $html .= '<div class="preview-thumb-container' . ($editable ? ' editable' : '') . '">' .
@@ -1657,14 +1651,35 @@ class Asset extends Element
     {
         $attributes = [];
 
-        // Eligible for the image editor?
-        if ($context === 'index' && $this->getSupportsImageEditor()) {
-            $attributes['data-editable-image'] = null;
-        }
-
         if ($this->kind === self::KIND_IMAGE) {
             $attributes['data-image-width'] = $this->width;
             $attributes['data-image-height'] = $this->height;
+        }
+
+        $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
+
+        $userSession = Craft::$app->getUser();
+        if ($userSession->getId() == $this->uploaderId) {
+            $movable = true;
+        } else {
+            /** @var Volume $volume */
+            $volume = $this->getVolume();
+            $movable = (
+                $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
+                $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+            );
+            $imageEditable = (
+                $imageEditable &&
+                ($userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
+            );
+        }
+
+        if ($movable) {
+            $attributes['data-movable'] = true;
+        }
+
+        if ($imageEditable) {
+            $attributes['data-editable-image'] = null;
         }
 
         return $attributes;
@@ -1672,6 +1687,26 @@ class Asset extends Element
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns whether the current user can move/rename the asset.
+     *
+     * @return bool
+     */
+    private function _isMovable(): bool
+    {
+        $userSession = Craft::$app->getUser();
+        if ($userSession->getId() == $this->uploaderId) {
+            return true;
+        }
+
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+        return (
+            $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
+            $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+        );
+    }
 
     /**
      * Return a dimension of the image.
