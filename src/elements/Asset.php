@@ -1675,7 +1675,7 @@ class Asset extends Element
         }
 
         if ($movable) {
-            $attributes['data-movable'] = true;
+            $attributes['data-movable'] = null;
         }
 
         if ($imageEditable) {
