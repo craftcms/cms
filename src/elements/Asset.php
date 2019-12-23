@@ -470,6 +470,15 @@ class Asset extends Element
             $volumeHandle = false;
         }
 
+        $userSession = Craft::$app->getUser();
+        $canUpload = $userSession->checkPermission("saveAssetInVolume:{$volume->uid}");
+        $canMoveTo = $canUpload && $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}");
+        $canMovePeerFilesTo = (
+            $canMoveTo &&
+            $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
+            $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+        );
+
         $source = [
             'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
@@ -478,13 +487,17 @@ class Asset extends Element
             'defaultSort' => ['dateCreated', 'desc'],
             'data' => [
                 'volume-handle' => $volumeHandle,
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $volume->uid),
-                'folder-id' => $folder->id
+                'folder-id' => $folder->id,
+                'can-upload' => $folder->volumeId === null || $canUpload,
+                'can-move-to' => $canMoveTo,
+                'can-move-peer-files-to' => $canMovePeerFilesTo,
             ]
         ];
 
-        if ($user && !$user->can("viewPeerFilesInVolume:{$volume->uid}")) {
-            $source['criteria']['uploaderId'] = $user->id;
+        if ($user) {
+            if (!$user->can("viewPeerFilesInVolume:{$volume->uid}")) {
+                $source['criteria']['uploaderId'] = $user->id;
+            }
         }
 
         if ($includeNestedFolders) {
@@ -1660,8 +1673,10 @@ class Asset extends Element
 
         $userSession = Craft::$app->getUser();
         if ($userSession->getId() == $this->uploaderId) {
+            $attributes['data-own-file'] = null;
             $movable = true;
         } else {
+            $attributes['data-peer-file'] = null;
             /** @var Volume $volume */
             $volume = $this->getVolume();
             $movable = (
