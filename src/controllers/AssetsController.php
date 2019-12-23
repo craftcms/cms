@@ -81,9 +81,10 @@ class AssetsController extends Controller
             }
         }
 
+        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
+
         /** @var Volume $volume */
         $volume = $asset->getVolume();
-        $this->requirePermission("saveAssetInVolume:{$volume->uid}");
 
         $crumbs = [
             [
@@ -184,9 +185,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
         }
 
-        /** @var Volume $volume */
-        $volume = $asset->getVolume();
-        $this->requirePermission("saveAssetInVolume:{$volume->uid}");
+        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
 
         $asset->title = $request->getParam('title') ?? $asset->title;
         $asset->newFilename = $request->getParam('filename');
