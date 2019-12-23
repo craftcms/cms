@@ -2002,6 +2002,8 @@ JS;
 
         $html = '<div';
 
+        // todo: swap this with Html::renderTagAttributse in 4.0
+        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
         foreach ($htmlAttributes as $attribute => $value) {
             $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
         }
