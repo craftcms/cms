@@ -2035,7 +2035,12 @@ JS;
 
         $encodedLabel = HtmlHelper::encode($label);
 
-        if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+        if (
+            $context['context'] === 'index' &&
+            !$element->trashed &&
+            ($cpEditUrl = $element->getCpEditUrl()) &&
+            $element->getIsEditable()
+        ) {
             if ($element->getIsDraft()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
             } else if ($element->getIsRevision()) {
