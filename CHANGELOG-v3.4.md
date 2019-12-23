@@ -21,9 +21,9 @@
 - Assets now keep track of which user account was logged-in when the asset was uploaded. ([#3553](https://github.com/craftcms/cms/issues/3553))
 - Asset indexes can now have an “Uploaded by” column.
 - It’s now possible to eager-load assets with their `uploader` value.
-- Added new “View files uploaded by someone else”, “Edit files uploaded by someone else”, “Remove files uploaded by someone else”, and “Edit images uploaded by someone else” user permissions.
+- Added new “View files uploaded by other users”, “Edit files uploaded by other users”, “Remove files uploaded by other users”, and “Edit images uploaded by other users” user permissions.
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
-- Assets fields now have a “Show unpermitted files setting, which determines whether the field should show files that the user doesn’t have permission to view per the new “View files uploaded by someone else” permission.
+- Assets fields now have a “Show unpermitted files setting, which determines whether the field should show files that the user doesn’t have permission to view per the new “View files uploaded by other users” permission.
 - It’s now possible to download multiple assets at once as a zip file. ([#5259](https://github.com/craftcms/cms/issues/5259))
 - It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))

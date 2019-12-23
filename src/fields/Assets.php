@@ -128,7 +128,7 @@ class Assets extends BaseRelationField
 
     /**
      * @var bool Whether to show files the user doesn’t have permission to view, per the
-     * “View files uploaded by someone else” permission.
+     * “View files uploaded by other users” permission.
      * @since 3.4.0
      */
     public $showUnpermittedFiles = false;
