@@ -45,7 +45,7 @@ class ReplaceFile extends ElementAction
         batch: false,
         validateSelection: function(\$selectedItems)
         {
-            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-movable');
+            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable');
         },
         activate: function(\$selectedItems)
         {

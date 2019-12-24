@@ -1669,12 +1669,12 @@ class Asset extends Element
             $attributes['data-image-height'] = $this->height;
         }
 
+        $userSession = Craft::$app->getUser();
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
-        $userSession = Craft::$app->getUser();
         if ($userSession->getId() == $this->uploaderId) {
             $attributes['data-own-file'] = null;
-            $movable = true;
+            $movable = $replaceable = true;
         } else {
             $attributes['data-peer-file'] = null;
             /** @var Volume $volume */
@@ -1683,6 +1683,7 @@ class Asset extends Element
                 $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
                 $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
             );
+            $replaceable = $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}");
             $imageEditable = (
                 $imageEditable &&
                 ($userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
@@ -1691,6 +1692,10 @@ class Asset extends Element
 
         if ($movable) {
             $attributes['data-movable'] = null;
+        }
+
+        if ($replaceable) {
+            $attributes['data-replaceable'] = null;
         }
 
         if ($imageEditable) {

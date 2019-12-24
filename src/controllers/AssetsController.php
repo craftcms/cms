@@ -377,8 +377,7 @@ class AssetsController extends Controller
 
         $this->_requirePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
         $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace ?: $sourceAsset);
-        $this->_requirePeerPermissionByAsset('editPeerFilesInVolume', $assetToReplace ?: $sourceAsset);
-        $this->_requirePeerPermissionByAsset('deletePeerFilesInVolume', $assetToReplace ?: $sourceAsset);
+        $this->_requirePeerPermissionByAsset('replacePeerFilesInVolume', $assetToReplace ?: $sourceAsset);
 
         try {
             // Handle the Element Action
@@ -1270,4 +1269,3 @@ class AssetsController extends Controller
         return $tempPath;
     }
 }
-

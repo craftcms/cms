@@ -27,7 +27,7 @@ class m191222_002848_peer_asset_permissions extends Migration
             $newPermissions += [
                 "viewvolume{$suffix}" => "viewpeerfilesinvolume{$suffix}",
                 "saveassetinvolume{$suffix}" => "editpeerfilesinvolume{$suffix}",
-                "deletefilesandfoldersinvolume{$suffix}" => "deletepeerfilesinvolume{$suffix}",
+                "deletefilesandfoldersinvolume{$suffix}" => ["deletepeerfilesinvolume{$suffix}", "replacepeerfilesinvolume{$suffix}"],
                 "editimagesinvolume{$suffix}" => "editpeerimagesinvolume{$suffix}",
             ];
         }
@@ -41,13 +41,15 @@ class m191222_002848_peer_asset_permissions extends Migration
                 ->where(['up.name' => $oldPermission])
                 ->column($this->db);
             if (!empty($userIds)) {
-                $this->insert(Table::USERPERMISSIONS, [
-                    'name' => $newPermission,
-                ]);
-                $newPermissionId = $this->db->getLastInsertID(Table::USERPERMISSIONS);
                 $insert = [];
-                foreach ($userIds as $userId) {
-                    $insert[] = [$newPermissionId, $userId];
+                foreach ((array)$newPermission as $name) {
+                    $this->insert(Table::USERPERMISSIONS, [
+                        'name' => $name,
+                    ]);
+                    $newPermissionId = $this->db->getLastInsertID(Table::USERPERMISSIONS);
+                    foreach ($userIds as $userId) {
+                        $insert[] = [$newPermissionId, $userId];
+                    }
                 }
                 $this->batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $insert);
             }
@@ -62,7 +64,9 @@ class m191222_002848_peer_asset_permissions extends Migration
                 $changed = false;
                 foreach ($newPermissions as $oldPermission => $newPermission) {
                     if (isset($groupPermissions[$oldPermission])) {
-                        $groupPermissions[$newPermission] = true;
+                        foreach ((array)$newPermission as $name) {
+                            $groupPermissions[$name] = true;
+                        }
                         $changed = true;
                     }
                 }

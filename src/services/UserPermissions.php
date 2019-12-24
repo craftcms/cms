@@ -612,6 +612,10 @@ class UserPermissions extends Component
                             "editPeerFilesInVolume{$suffix}" => [
                                 'label' => Craft::t('app', 'Edit files uploaded by other users'),
                             ],
+                            "replacePeerFilesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Replace files uploaded by other users'),
+                                'warning' => Craft::t('app', 'When someone replaces a file, the record of who uploaded the file will be updated as well.'),
+                            ],
                             "deletePeerFilesInVolume{$suffix}" => [
                                 'label' => Craft::t('app', 'Remove files uploaded by other users'),
                             ],
