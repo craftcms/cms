@@ -285,7 +285,15 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsMb4(string $str): bool
     {
-        return max(array_map('ord', str_split($str))) >= 240;
+        $length = strlen($str);
+
+        for ($i = 0; $i < $length; $i++) {
+            if (ord($str[$i]) >= 240) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
