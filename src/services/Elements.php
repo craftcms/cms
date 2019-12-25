@@ -761,7 +761,7 @@ class Elements extends Component
         $mainClone->clearErrors('uri');
 
         if ($mainClone->hasErrors()) {
-            throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated because it doens\'t validate.');
+            throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
