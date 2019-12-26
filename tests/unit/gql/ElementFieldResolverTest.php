@@ -230,7 +230,7 @@ class ElementFieldResolverTest extends Unit
             $this->assertEquals($element->$propertyName, $resolve());
             $this->assertNotNull($element->$propertyName);
         } else {
-            $this->tester->expectException(GqlException::class, $resolve);
+            $this->tester->expectThrowable(GqlException::class, $resolve);
         }
     }
 

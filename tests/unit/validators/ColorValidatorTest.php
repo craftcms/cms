@@ -73,7 +73,7 @@ class ColorValidatorTest extends Unit
      */
     public function testColorNormalizationException()
     {
-        $this->tester->expectException(ErrorException::class, function() {
+        $this->tester->expectThrowable(ErrorException::class, function() {
             ColorValidator::normalizeColor('');
         });
     }
