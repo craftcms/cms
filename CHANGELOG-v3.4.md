@@ -35,7 +35,7 @@
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
-- It’s now possible to filter element query results by their related elements using relational fields’ element query params (e.g. `publisher(100)` rather than `relatedTo({targetElement: 100, field: 'publisher'})`).
+- It’s now possible to filter element query results by their related elements using relational fields’ element query params (e.g. `publisher(100)` rather than `relatedTo({targetElement: 100, field: 'publisher'})`). ([#5200](https://github.com/craftcms/cms/issues/5200))
 - It’s now possible to query for elements by their custom field values via GraphQL. ([#5208](https://github.com/craftcms/cms/issues/5208))
 - It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager-loading criteria. 
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
