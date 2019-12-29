@@ -1511,6 +1511,6 @@ Si no estabas esperando este correo electrónico, ignóralo.',
     'Delete them' => 'Eliminarlos',
     'Keep them' => 'Conservarlos',
     'View tag group - {tagGroup}' => 'Ver grupo de etiquetas - {tagGroup}',
-    'Single' => 'Single',
-    'Channel' => 'Channel'
+    'Single' => 'Simple',
+    'Channel' => 'Canal'
 ];
