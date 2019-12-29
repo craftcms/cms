@@ -113,7 +113,7 @@ return [
     'Assets deleted.' => 'アセットを削除しました。',
     'Assets in this volume have public URLs' => 'このボリュームのアセットにはパブリック URL が含まれます',
     'Assign user groups' => 'ユーザーグループの割り当て',
-    'Assign user permissions' => 'ユーザー権限を割り当てる',
+    'Assign user permissions' => 'ユーザー権限の割り当て',
     'Assign users to “{group}”' => 'ユーザーを「{group}」に割り当てる',
     'At least one currently-enabled site must remain enabled.' => '現在有効なサイトを 1 つ以上有効にしておく必要があります。',
     'Attach a database backup?' => 'データベースのパックアップを添付しますか？',
