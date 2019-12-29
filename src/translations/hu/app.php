@@ -507,7 +507,7 @@ return [
     'Image Transforms' => 'Kép transzformációk',
     'Image Width' => 'Képszélesség',
     'Include your template files?' => 'Tartalmazza a sablon fájljaidat?',
-    'Incorrect current password.' => 'Nem megfelelő jellenlegi jelszó.',
+    'Incorrect current password.' => 'Nem megfelelő jelenlegi jelszó.',
     'Incorrect password.' => 'Nem megfelelő jelszó.',
     'Initial Rows' => 'Sorok száma',
     'Insert the button label for adding a new row to the table.' => 'Illessze be a gombcímkét egy új sor táblához adásához.',
