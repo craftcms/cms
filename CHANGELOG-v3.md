@@ -13,6 +13,7 @@
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
 
 ### Changed
+- The `users/login` action no longer sets a “Logged in.” flash notice. ([#5383](https://github.com/craftcms/cms/issues/5383))
 - Number fields now return the `Number` type when queried via GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
 - The `loginPath` and `logoutPath` config settings can now be set to `false` to disable front-end login/logout. ([#5352](https://github.com/craftcms/cms/issues/5352))
 - The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.

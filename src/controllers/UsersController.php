@@ -130,7 +130,7 @@ class UsersController extends Controller
     {
         if (!Craft::$app->getUser()->getIsGuest()) {
             // Too easy.
-            return $this->_handleSuccessfulLogin(false);
+            return $this->_handleSuccessfulLogin();
         }
 
         if (!Craft::$app->getRequest()->getIsPost()) {
@@ -172,7 +172,7 @@ class UsersController extends Controller
             return $this->_handleLoginFailure(null, $user);
         }
 
-        return $this->_handleSuccessfulLogin(true);
+        return $this->_handleSuccessfulLogin();
     }
 
     /**
@@ -211,9 +211,7 @@ class UsersController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Logged in.'));
-
-        return $this->_handleSuccessfulLogin(true);
+        return $this->_handleSuccessfulLogin();
     }
 
     /**
@@ -1637,10 +1635,9 @@ class UsersController extends Controller
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
-     * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
      * @return Response
      */
-    private function _handleSuccessfulLogin(bool $setNotice): Response
+    private function _handleSuccessfulLogin(): Response
     {
         // Get the return URL
         $userSession = Craft::$app->getUser();
@@ -1662,10 +1659,6 @@ class UsersController extends Controller
             }
 
             return $this->asJson($return);
-        }
-
-        if ($setNotice) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
