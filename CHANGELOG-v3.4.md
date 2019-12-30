@@ -45,6 +45,7 @@
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
 - Added the `_count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
+- It’s now possible to filter users by user groups when querying for them using GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.

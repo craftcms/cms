@@ -48,6 +48,16 @@ class User extends ElementArguments
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the users’ last names.'
             ],
+            'groupId' => [
+                'name' => 'groupId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the user group the users belong to, per the groups’ IDs.'
+            ],
+            'group' => [
+                'name' => 'group',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the user group the users belong to.'
+            ],
         ]);
     }
 
