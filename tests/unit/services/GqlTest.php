@@ -211,7 +211,7 @@ class GqlTest extends Unit
         Craft::$app->getGql()->flushCaches();
 
         $this->assertFalse(GqlEntityRegistry::getEntity($typeName));
-        $this->tester->expectException(GqlException::class, function () use ($typeName) {
+        $this->tester->expectThrowable(GqlException::class, function () use ($typeName) {
             TypeLoader::loadType($typeName);
         });
     }
@@ -324,7 +324,7 @@ class GqlTest extends Unit
         $this->assertNotEmpty($allSchemas);
 
         // Test public token doesn't exists
-        $this->tester->expectException(InvalidArgumentException::class, function () use ($gql) {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () use ($gql) {
             $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
         });
 

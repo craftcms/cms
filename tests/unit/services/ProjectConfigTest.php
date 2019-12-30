@@ -54,7 +54,7 @@ class ProjectConfigTest extends Unit
         };
 
         // Must trigger exception
-        $this->tester->expectException(NotSupportedException::class, $failToSet);
+        $this->tester->expectThrowable(NotSupportedException::class, $failToSet);
 
         // Must not trigger exception
         $projectConfig->rebuild();

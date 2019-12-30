@@ -6,7 +6,9 @@
 
 {% block actionButton %}
     <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
-    <div id="replace-btn" class="btn" role="button" data-icon="upload">{{ 'Replace file'|t('app') }}</div>
+    {% if canReplaceFile %}
+        <div id="replace-btn" class="btn" role="button" data-icon="upload">{{ 'Replace file'|t('app') }}</div>
+    {% endif %}
 
     {{ parent() }}
 {% endblock %}

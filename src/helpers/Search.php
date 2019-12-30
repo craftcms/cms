@@ -48,11 +48,9 @@ class Search
         // Normalize to lowercase
         $str = mb_strtolower($str);
 
-        // Remove punctuation
-        $str = str_replace(self::_getPunctuation(), '', $str);
-
         if ($processCharMap) {
             // Remove punctuation and diacritics
+            $str = str_replace(self::_getPunctuation(), '', $str);
             $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
         }
 

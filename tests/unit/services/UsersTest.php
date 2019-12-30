@@ -482,14 +482,14 @@ class UsersTest extends TestCase
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'actions/users/set-password&code='.$string.''
+            'set-password&code='.$string
         );
 
         $this->pendingUser->password = 'some_password';
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'actions/users/verify-email&code='.$string.''
+            'verify-email&code='.$string
         );
         $this->pendingUser->password = null;
 
@@ -497,14 +497,14 @@ class UsersTest extends TestCase
         $this->users->sendNewEmailVerifyEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'verify_new_email',
-            'actions/users/verify-email&code='.$string.''
+            'verify-email&code='.$string
         );
 
         // Test password reset email
         $this->users->sendPasswordResetEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'forgot_password',
-            'actions/users/set-password&code='.$string.''
+            'set-password&code='.$string
         );
     }
 

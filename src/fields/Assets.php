@@ -127,6 +127,13 @@ class Assets extends BaseRelationField
     public $showUnpermittedVolumes = false;
 
     /**
+     * @var bool Whether to show files the user doesn’t have permission to view, per the
+     * “View files uploaded by other users” permission.
+     * @since 3.4.0
+     */
+    public $showUnpermittedFiles = false;
+
+    /**
      * @inheritdoc
      */
     protected $allowLargeThumbsView = true;
@@ -176,6 +183,7 @@ class Assets extends BaseRelationField
 
         $this->useSingleFolder = (bool)$this->useSingleFolder;
         $this->showUnpermittedVolumes = (bool)$this->showUnpermittedVolumes;
+        $this->showUnpermittedFiles = (bool)$this->showUnpermittedFiles;
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -644,15 +652,20 @@ class Assets extends BaseRelationField
         return $variables;
     }
 
-
     /**
      * @inheritdoc
      */
     protected function inputSelectionCriteria(): array
     {
-        return [
+        $criteria = [
             'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
         ];
+
+        if ($this->showUnpermittedFiles) {
+            $criteria['uploaderId'] = null;
+        }
+
+        return $criteria;
     }
 
     // Private Methods

@@ -75,60 +75,60 @@ class RoutesTest extends Unit
         return [
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriPattern' => '',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 [], '_test'
             ],
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriParts' => ['test1', 'test2'],
                     'uriPattern' => 'test1test2',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 ['test1', 'test2'], '_test'
             ],
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriParts' => [['validHandle', 'date'], ['someHandle', 'slug']],
                     'uriPattern' => '<validHandle:date><someHandle:slug>',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 [['validHandle', 'date'], ['someHandle', 'slug']], '_test'
             ],
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriParts' => [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'], ['validHandle', '!@#$%^&*(']],
                     'uriPattern' => '<validHandle:date><any:validHandle><validHandle2:!@#$%^&*(>',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'], ['validHandle', '!@#$%^&*(']], '_test'
             ],
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriParts' => [['validHandle', 'date', 'extraParamThatIsntUsed'], ['!@#$%^&*(', 'validHandle']],
                     'uriPattern' => '<validHandle:date><any:validHandle>',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 [['validHandle', 'date', 'extraParamThatIsntUsed'], ['!@#$%^&*(', 'validHandle']], '_test'
             ],
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriParts' => [['validHandle', 'date'], 'noArray'],
                     'uriPattern' => '<validHandle:date>noArray',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 [['validHandle', 'date'], 'noArray'], '_test'
             ],
@@ -136,11 +136,11 @@ class RoutesTest extends Unit
             // TODO: Well more a question. Shouldn't emojis (UTF-8) be allowed in routes?
             [
                 [
+                    'siteUid' => null,
+                    'sortOrder' => 1,
                     'template' => '_test',
                     'uriParts' => [['😎', 'date'], ['😎', 'emoji']],
                     'uriPattern' => '<any:date><any2:emoji>',
-                    'sortOrder' => 1,
-                    'siteUid' => null
                 ],
                 [['😎', 'date'], ['😎', 'emoji']], '_test'
             ],

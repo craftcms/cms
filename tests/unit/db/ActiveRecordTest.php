@@ -141,7 +141,7 @@ class ActiveRecordTest extends Unit
             ['{"name":"name"}', $jsonableClass],
             ['{"JsonArray":"SomeArray"}', $jsonableArray],
             ['Serialized data', $serializable],
-            [false, false],
+            ['', ''],
         ];
     }
 

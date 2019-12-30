@@ -13,7 +13,7 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Html as HtmlHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
@@ -35,7 +35,6 @@ use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
-use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
 use yii\web\Response as WebResponse;
 
@@ -2003,8 +2002,10 @@ JS;
 
         $html = '<div';
 
+        // todo: swap this with Html::renderTagAttributse in 4.0
+        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
         foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . HtmlHelper::encode($value) . '"' : '');
+            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
         }
 
         if (ElementHelper::isElementEditable($element)) {
@@ -2033,16 +2034,21 @@ JS;
 
         $html .= '<span class="title">';
 
-        $encodedLabel = HtmlHelper::encode($label);
+        $encodedLabel = Html::encode($label);
 
-        if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+        if (
+            $context['context'] === 'index' &&
+            !$element->trashed &&
+            ($cpEditUrl = $element->getCpEditUrl()) &&
+            $element->getIsEditable()
+        ) {
             if ($element->getIsDraft()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
             } else if ($element->getIsRevision()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
             }
 
-            $cpEditUrl = HtmlHelper::encode($cpEditUrl);
+            $cpEditUrl = Html::encode($cpEditUrl);
             $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
         } else {
             $html .= $encodedLabel;
