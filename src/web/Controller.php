@@ -403,9 +403,7 @@ abstract class Controller extends \yii\web\Controller
             } else {
                 $url = Craft::$app->getRequest()->getPathInfo();
             }
-        }
-
-        if ($object) {
+        } else if ($object) {
             $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
         }
 
