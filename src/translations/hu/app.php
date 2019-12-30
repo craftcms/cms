@@ -1567,7 +1567,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Copied to clipboard.' => 'Copied to clipboard.',
     'Matrix blocks' => 'Matrix blocks',
     'The asset you’re trying to download does not exist.' => 'The asset you’re trying to download does not exist.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'This plugin isn’t compatible with your version of Craft.' => 'This plugin isn’t compatible with your version of Craft.',
     'Recent {type} changes merged.' => 'Recent {type} changes merged.',
     'Edit GraphQL Token' => 'Edit GraphQL Token',
