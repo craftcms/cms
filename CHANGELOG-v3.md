@@ -6,6 +6,9 @@
 - Improved the performance of `craft\helpers\StringHelper::containsMb4()`. ([#5366](https://github.com/craftcms/cms/issues/5366))
 - Updated Yii to 2.0.31.
 
+### Security
+- Fixed an information exposure vulnerability.
+
 ## 3.3.18.4 - 2019-12-21
 
 ### Fixed
