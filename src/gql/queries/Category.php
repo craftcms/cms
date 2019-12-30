@@ -38,6 +38,12 @@ class Category extends Query
                 'resolve' => CategoryResolver::class . '::resolve',
                 'description' => 'This query is used to query for categories.'
             ],
+            'category' => [
+                'type' => CategoryInterface::getType(),
+                'args' => CategoryArguments::getArguments(),
+                'resolve' => CategoryResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for a single category.'
+            ],
         ];
     }
 }

@@ -38,6 +38,12 @@ class User extends Query
                 'resolve' => UserResolver::class . '::resolve',
                 'description' => 'This query is used to query for users.'
             ],
+            'user' => [
+                'type' => UserInterface::getType(),
+                'args' => UserArguments::getArguments(),
+                'resolve' => UserResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for a single user.'
+            ],
         ];
     }
 }
