@@ -1409,7 +1409,7 @@ return [
     'The URL/URI to use for this target.' => 'URL/URI для использования с этой целью.',
     'Licensed' => 'Лицензировано',
     'The maximum length (in bytes) the field can hold.' => 'Максимальная длина информации (байт), которая может содержаться в данном поле.',
-    'Find an official Craft Partner' => 'Найти официального Craft-партнера',
+    'Find an official Craft Partner' => 'Найти официального Craft-партнера',
     'Less' => 'Меньше',
     'Resaving {type}' => 'Пересохранить {type}',
     'Meet the Craft community' => 'Знакомьтесь с сообществом Craft',
