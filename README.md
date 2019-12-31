@@ -8,17 +8,20 @@ Craft is a flexible, user-friendly CMS for creating custom digital experiences o
 
 It features:
 
-- An intuitive, user-friendly Control Panel for content creation and administrative tasks.
-- A clean-slate approach to content modeling and [front-end development](https://docs.craftcms.com/v3/dev/) that doesn’t make any assumptions about your content or how it should be consumed.
-- A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/), all just a click away.
+- An intuitive, user-friendly control panel for content creation and administrative tasks.
+- A clean-slate approach to content modeling that doesn’t make any assumptions about the content you need to manage.
+- An auto-generated [GraphQL API](https://docs.craftcms.com/v3/graphql.html) that can be consumed for building headless applications.
+- A fast and flexible [templating system](https://docs.craftcms.com/v3/dev/) based on Twig for building traditional websites.
+- A powerful [ecommerce platform](https://craftcms.com/commerce) for building bespoke ecommerce experiences.
+- A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/).
 - A robust framework for [module and plugin development](https://docs.craftcms.com/v3/extend/).
 - An active, vibrant [community](https://craftcms.com/community).
 
-You can learn all about it at [craftcms.com](https://craftcms.com), and documentation is available at [docs.craftcms.com](https://docs.craftcms.com/v3/).
+You can learn more about it at [craftcms.com](https://craftcms.com), and documentation is available at [docs.craftcms.com](https://docs.craftcms.com/v3/).
 
 ## Tech Specs
 
-Craft is a self-hosted PHP 7 application, built on [Yii 2](https://www.yiiframework.com/). It can connect to MySQL and PostgreSQL for content storage. Templating is powered by [Twig](https://twig.symfony.com).
+Craft is a self-hosted PHP 7 application. It can connect to MySQL and PostgreSQL for content storage. See [Server Requirements](https://docs.craftcms.com/v3/requirements.html) for more details.
 
 ## Popular Resources
 
