@@ -28,7 +28,7 @@ use yii\web\NotFoundHttpException;
  * @property array $segments The segments of the requested path.
  * @property int $pageNum The requested page number.
  * @property string $token The token submitted with the request, if there is one.
- * @property bool $isCpRequest Whether the Control Panel was requested.
+ * @property bool $isCpRequest Whether the control panel was requested.
  * @property bool $isSiteRequest Whether the front end site was requested.
  * @property bool $isActionRequest Whether a specific controller action was requested.
  * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
@@ -427,12 +427,12 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the Control Panel was requested.
+     * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
      * [[\craft\config\GeneralConfig::cpTrigger|CP trigger]].
      *
-     * @return bool Whether the current request should be routed to the Control Panel.
+     * @return bool Whether the current request should be routed to the control panel.
      */
     public function getIsCpRequest(): bool
     {

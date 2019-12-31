@@ -1204,7 +1204,7 @@ class Users extends Component
      *
      * @param User $user The user that should get the new Password Reset URL
      * @param string $fePath The path to use if we end up linking to the front end
-     * @param string $cpPath The path to use if we end up linking to the Control Panel
+     * @param string $cpPath The path to use if we end up linking to the control panel
      * @return string
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()

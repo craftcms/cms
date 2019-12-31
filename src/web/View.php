@@ -766,7 +766,7 @@ class View extends \yii\web\View
      * - templates/SiteHandle/...
      * - templates/...
      *
-     * And finally, if this is a Control Panel request _and_ the template name includes multiple segments _and_ the first
+     * And finally, if this is a control panel request _and_ the template name includes multiple segments _and_ the first
      * segment of the template name matches a plugin’s handle, then Craft will look for a template named with the
      * remaining segments within that plugin’s templates/ subfolder.
      *
@@ -784,7 +784,7 @@ class View extends \yii\web\View
      *     - templates/foo/bar.twig
      *     - templates/foo/bar/index.html
      *     - templates/foo/bar/index.twig
-     * - Control Panel requests:
+     * - Control panel requests:
      *     - vendor/craftcms/cms/src/templates/foo/bar
      *     - vendor/craftcms/cms/src/templates/foo/bar.html
      *     - vendor/craftcms/cms/src/templates/foo/bar.twig
@@ -1129,7 +1129,7 @@ class View extends \yii\web\View
 
     /**
      * Translates messages for a given translation category, so they will be
-     * available for `Craft.t()` calls in the Control Panel.
+     * available for `Craft.t()` calls in the control panel.
      * Note this should always be called *before* any JavaScript is registered
      * that will need to use the translations, unless the JavaScript is
      * registered at [[self::POS_READY]].

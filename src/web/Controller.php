@@ -168,7 +168,7 @@ abstract class Controller extends \yii\web\Controller
                 $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {
                     $error = $request->getIsCpRequest()
-                        ? Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.')
+                        ? Craft::t('app', 'Your account doesn’t have permission to access the control panel when the system is offline.')
                         : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                     throw new ServiceUnavailableHttpException($error);
                 }
@@ -375,7 +375,7 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Throws a 400 error if the current request isn’t a Control Panel request.
+     * Throws a 400 error if the current request isn’t a control panel request.
      *
      * @throws BadRequestHttpException if the request is not a CP request
      * @since 3.1.0
@@ -383,7 +383,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireCpRequest()
     {
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            throw new BadRequestHttpException('Request must be a Control Panel request');
+            throw new BadRequestHttpException('Request must be a control panel request');
         }
     }
 

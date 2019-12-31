@@ -208,14 +208,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the Control Panel #}
+     * {# Fetch users that can access the control panel #}
      * {% set {elements-var} = {twig-method}
      *     .can('accessCp')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the Control Panel
+     * // Fetch users that can access the control panel
      * ${elements-var} = {element-class}::find()
      *     ->can('accessCp')
      *     ->all();

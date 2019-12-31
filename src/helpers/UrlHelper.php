@@ -453,7 +453,7 @@ class UrlHelper
     }
 
     /**
-     * Returns the Control Panel’s base URL (with a trailing slash) (sans-CP trigger).
+     * Returns the control panel’s base URL (with a trailing slash) (sans-CP trigger).
      *
      * @return string
      */
@@ -507,7 +507,7 @@ class UrlHelper
     }
 
     /**
-     * Returns the Control Panel's host.
+     * Returns the control panel's host.
      *
      * @return string
      */

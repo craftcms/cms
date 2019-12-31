@@ -64,7 +64,7 @@ const getters = {
                     },
                     {
                         name: "System branding",
-                        description: "Personalize the Control Panel for your brand.",
+                        description: "Personalize the control panel for your brand.",
                     },
                     {
                         name: "Basic developer support",

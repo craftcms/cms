@@ -894,7 +894,7 @@ class UsersController extends Controller
      * - A normal user with user-administration permissions registering a new user account.
      * - A normal user with user-administration permissions editing an existing user account.
      * - A guest registering a new user account ("public registration").
-     * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
+     * This action behaves the same regardless of whether it was requested from the control panel or the front-end site.
      *
      * @return Response|null
      * @throws NotFoundHttpException if the requested user cannot be found
@@ -1962,7 +1962,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Redirects a user to the `postCpLoginRedirect` location, if they have access to the Control Panel.
+     * Redirects a user to the `postCpLoginRedirect` location, if they have access to the control panel.
      *
      * @param User $user The user to redirect
      * @return Response|null

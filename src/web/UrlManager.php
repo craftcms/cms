@@ -29,7 +29,7 @@ class UrlManager extends \yii\web\UrlManager
 
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
-     * URL rules for the Control Panel.
+     * URL rules for the control panel.
      *
      * ::: warning
      * This event gets called during class initialization, so you should always

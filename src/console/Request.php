@@ -52,7 +52,7 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether the Control Panel was requested. (Narrator: It wasn't.)
+     * Returns whether the control panel was requested. (Narrator: It wasn't.)
      *
      * @return bool
      */

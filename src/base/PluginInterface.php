@@ -122,7 +122,7 @@ interface PluginInterface
      * ];
      * ```
      *
-     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     * Control panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
      *
      * ```twig
      * {% set selectedSubnavItem = 'orders' %}

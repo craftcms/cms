@@ -9,7 +9,7 @@ namespace craft\base;
 
 /**
  * PreviewableFieldInterface defines the common interface to be implemented by field classes
- * that wish to be previewable on element indexes in the Control Panel.
+ * that wish to be previewable on element indexes in the control panel.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

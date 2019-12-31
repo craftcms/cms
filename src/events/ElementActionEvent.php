@@ -32,7 +32,7 @@ class ElementActionEvent extends CancelableEvent
     public $criteria;
 
     /**
-     * @var string|null The message that should be displayed in the Control Panel if [[$isValid]] is false
+     * @var string|null The message that should be displayed in the control panel if [[$isValid]] is false
      */
     public $message;
 }

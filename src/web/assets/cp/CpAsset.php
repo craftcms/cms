@@ -36,7 +36,7 @@ use craft\web\View;
 use yii\web\JqueryAsset;
 
 /**
- * Asset bundle for the Control Panel
+ * Asset bundle for the control panel
  */
 class CpAsset extends AssetBundle
 {

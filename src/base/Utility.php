@@ -8,7 +8,7 @@
 namespace craft\base;
 
 /**
- * Utility is the base class for classes representing Control Panel utilities.
+ * Utility is the base class for classes representing control panel utilities.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

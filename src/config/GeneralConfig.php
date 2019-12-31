@@ -41,7 +41,7 @@ class GeneralConfig extends BaseObject
      */
     public $actionTrigger = 'actions';
     /**
-     * @var mixed The URI that users without access to the Control Panel should be redirected to after activating their account.
+     * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getActivateAccountSuccessPath()
@@ -72,7 +72,7 @@ class GeneralConfig extends BaseObject
      */
     public $allowAdminChanges = true;
     /**
-     * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+     * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
      * This setting will automatically be disabled if [[allowAdminChanges]] is disabled.
      */
@@ -119,7 +119,7 @@ class GeneralConfig extends BaseObject
      */
     public $backupCommand;
     /**
-     * @var string|null The base URL that Craft should use when generating Control Panel URLs.
+     * @var string|null The base URL that Craft should use when generating control panel URLs.
      *
      * It will be determined automatically if left blank.
      *
@@ -166,7 +166,7 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should route to the Control Panel rather than
+     * @var string The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      */
     public $cpTrigger = 'admin';
@@ -197,7 +197,7 @@ class GeneralConfig extends BaseObject
      */
     public $defaultCookieDomain = '';
     /**
-     * @var string|null The default language the Control Panel should use for users who haven’t set a preferred language yet.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      */
     public $defaultCpLanguage;
     /**
@@ -381,7 +381,7 @@ class GeneralConfig extends BaseObject
     public $generateTransformsBeforePageLoad = false;
     /**
      * @var bool bool Whether the system should run in Headless Mode, which
-     * optimizes the system and Control Panel for headless CMS implementations.
+     * optimizes the system and control panel for headless CMS implementations.
      *
      * When this is enabled, the following changes will take place:
      *
@@ -555,7 +555,7 @@ class GeneralConfig extends BaseObject
      */
     public $phpSessionName = 'CraftSessionId';
     /**
-     * @var mixed The path that users should be redirected to after logging in from the Control Panel.
+     * @var mixed The path that users should be redirected to after logging in from the control panel.
      *
      * This setting will also come into effect if the user visits the CP’s Login page (`/admin/login`)
      * or the CP’s root URL (/admin) when they are already logged in.
@@ -614,7 +614,7 @@ class GeneralConfig extends BaseObject
      */
     public $privateTemplateTrigger = '_';
     /**
-     * @var bool When set to `false` and you go through the "forgot password" workflow on the Control Panel login page, for example,
+     * @var bool When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
      * you get distinct messages saying if the username/email didn't exist or the email was successfully sent and to check
      * your email for further instructions. This can allow for username/email enumeration based on the response. If set
      * `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
@@ -947,7 +947,7 @@ class GeneralConfig extends BaseObject
      */
     public $verifyEmailPath = 'verifyemail';
     /**
-     * @var mixed The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
+     * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getVerifyEmailSuccessPath()

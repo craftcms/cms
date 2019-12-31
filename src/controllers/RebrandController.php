@@ -36,7 +36,7 @@ class RebrandController extends Controller
     // =========================================================================
 
     /**
-     * Handles Control Panel logo and site icon uploads.
+     * Handles control panel logo and site icon uploads.
      *
      * @return Response
      */
@@ -84,7 +84,7 @@ class RebrandController extends Controller
     }
 
     /**
-     * Deletes Control Panel logo and site icon images.
+     * Deletes control panel logo and site icon images.
      *
      * @return Response
      */

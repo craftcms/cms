@@ -31,12 +31,12 @@ class Cp extends Component
     // =========================================================================
 
     /**
-     * @event RegisterCpNavItemsEvent The event that is triggered when registering Control Panel nav items.
+     * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
      */
     const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
 
     /**
-     * @event RegisterCpSettingsEvent The event that is triggered when registering Control Panel nav items.
+     * @event RegisterCpSettingsEvent The event that is triggered when registering control panel nav items.
      * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
@@ -55,7 +55,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns the Control Panel nav items.
+     * Returns the control panel nav items.
      *
      * Each CP nav item should be defined by an array with the following keys:
      *
@@ -85,7 +85,7 @@ class Cp extends Component
      * ]
      * ```
      *
-     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     * Control panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
      *
      * ```twig
      * {% set selectedSubnavItem = 'orders' %}
