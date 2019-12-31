@@ -303,6 +303,15 @@
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 
+## 3.3.19 - 2019-12-30
+
+### Changed
+- Improved the performance of `craft\helpers\StringHelper::containsMb4()`. ([#5366](https://github.com/craftcms/cms/issues/5366))
+- Updated Yii to 2.0.31.
+
+### Security
+- Fixed an information exposure vulnerability.
+
 ## 3.3.18.4 - 2019-12-21
 
 ### Fixed
