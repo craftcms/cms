@@ -92,9 +92,9 @@ interface PluginInterface
     public function getSettingsResponse();
 
     /**
-     * Returns the CP nav item definition for this plugin’s CP section, if it has one.
+     * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.
      *
-     * The CP nav item definition should be an array with the following keys:
+     * The returned array should contain the following keys:
      *
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to

@@ -62,7 +62,7 @@ use yii\validators\Validator;
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
  * @property string $contentTable The name of the table this element’s content is stored in
- * @property string|null $cpEditUrl The element’s CP edit URL
+ * @property string|null $cpEditUrl The element’s edit URL in the control panel
  * @property ElementQueryInterface $descendants The element’s descendants
  * @property string $editorHtml The HTML for the element’s editor HUD
  * @property string $fieldColumnPrefix The field column prefix this element’s content uses

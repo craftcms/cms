@@ -628,7 +628,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the CP thumbnail URL for a given asset.
+     * Returns the control panel thumbnail URL for a given asset.
      *
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
@@ -672,7 +672,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the CP thumbnail path for a given asset.
+     * Returns the control panel thumbnail path for a given asset.
      *
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb

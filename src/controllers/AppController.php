@@ -307,7 +307,7 @@ class AppController extends Controller
     }
 
     /**
-     * Loads any CP alerts.
+     * Returns any alerts that should be displayed in the control panel.
      *
      * @return Response
      */
@@ -325,7 +325,7 @@ class AppController extends Controller
     }
 
     /**
-     * Shuns a CP alert for 24 hours.
+     * Shuns a control panel alert for 24 hours.
      *
      * @return Response
      */

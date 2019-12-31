@@ -63,7 +63,7 @@ abstract class BaseUpdaterController extends Controller
 
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a CP request
+     * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
     public function beforeAction($action)

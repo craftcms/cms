@@ -1,6 +1,6 @@
 # Vue Admin Tables
 
-The following notes describe how to get Vue based admin tables running in the Craft CP.
+The following notes describe how to get Vue-based admin tables running in the Craft control panel.
 
 ## Asset Bundle
 

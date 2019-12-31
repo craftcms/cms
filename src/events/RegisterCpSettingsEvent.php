@@ -21,7 +21,7 @@ class RegisterCpSettingsEvent extends Event
     // =========================================================================
 
     /**
-     * @var array The registered CP settings
+     * @var array The registered control panel settings
      */
     public $settings = [];
 }

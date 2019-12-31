@@ -209,7 +209,7 @@ trait ApplicationTrait
      * Sets the target application language.
      *
      * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
-     * If null, it will be based on whether it's a CP or console request.
+     * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
     public function updateTargetLanguage(bool $useUserLanguage = null)
     {

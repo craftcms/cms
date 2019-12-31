@@ -124,7 +124,7 @@ class GeneralConfig extends BaseObject
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base CP URL should **not** include the [[cpTrigger|CP trigger word]] (e.g. `/admin`).
+     * The base control panel URL should **not** include the [[cpTrigger|control panel trigger word]] (e.g. `/admin`).
      * :::
      */
     public $baseCpUrl;
@@ -557,8 +557,8 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The path that users should be redirected to after logging in from the control panel.
      *
-     * This setting will also come into effect if the user visits the CP’s Login page (`/admin/login`)
-     * or the CP’s root URL (/admin) when they are already logged in.
+     * This setting will also come into effect if a user visits the control panel’s Login page (`/admin/login`)
+     * or the control panel’s root URL (/admin) when they are already logged in.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -651,7 +651,7 @@ class GeneralConfig extends BaseObject
      */
     public $purgeUnsavedDraftsDuration = 2592000;
     /**
-     * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
+     * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
      *
@@ -676,11 +676,11 @@ class GeneralConfig extends BaseObject
      */
     public $requireUserAgentAndIpForSession = true;
     /**
-     * @var string The path to the root directory that should store published CP resources.
+     * @var string The path to the root directory that should store published control panel resources.
      */
     public $resourceBasePath = '@webroot/cpresources';
     /**
-     * @var string The URL to the root directory that should store published CP resources.
+     * @var string The URL to the root directory that should store published control panel resources.
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
@@ -1169,7 +1169,7 @@ class GeneralConfig extends BaseObject
     }
 
     /**
-     * Returns the localized Post-CP Login Redirect path.
+     * Returns the localized Post-Login Redirect path for the control panel.
      *
      * @return string
      * @see postCpLoginRedirect

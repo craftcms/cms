@@ -138,7 +138,7 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * Test that CP Urls are created. We do some hand modification work to construct an 'expected' result based on the cp trigger
+     * Test that control panel URLs are created. We do some hand modification work to construct an 'expected' result based on the cp trigger
      * config variable. We cant do this (yet)(https://github.com/Codeception/Codeception/issues/4087) as the Craft::$app var and thus
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *

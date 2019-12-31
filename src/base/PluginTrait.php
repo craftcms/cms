@@ -103,12 +103,12 @@ trait PluginTrait
     public $sourceLanguage = 'en-US';
 
     /**
-     * @var bool Whether the plugin has a settings page in the CP
+     * @var bool Whether the plugin has a settings page in the control panel
      */
     public $hasCpSettings = false;
 
     /**
-     * @var bool Whether the plugin has its own section in the CP
+     * @var bool Whether the plugin has its own section in the control panel
      */
     public $hasCpSection = false;
 

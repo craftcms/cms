@@ -20,7 +20,7 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 
 /**
- * CP functions
+ * Control panel functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -57,7 +57,7 @@ class Cp extends Component
     /**
      * Returns the control panel nav items.
      *
-     * Each CP nav item should be defined by an array with the following keys:
+     * Each control panel nav item should be defined by an array with the following keys:
      *
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
@@ -353,7 +353,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns whether the CP alerts are cached.
+     * Returns whether the control panel alerts are cached.
      *
      * @return bool
      */
@@ -364,7 +364,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns an array of alerts to display in the CP.
+     * Returns an array of alerts to display in the control panel.
      *
      * @return array
      */

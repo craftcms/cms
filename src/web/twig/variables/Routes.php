@@ -23,7 +23,7 @@ class Routes
     // =========================================================================
 
     /**
-     * Returns the routes defined in the CP.
+     * Returns the routes defined in the control panel.
      *
      * @return array
      */

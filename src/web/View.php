@@ -43,7 +43,7 @@ use yii\web\Response as WebResponse;
  * @property string $templateMode the current template mode (either `site` or `cp`)
  * @property string $templatesPath the base path that templates should be found in
  * @property string|null $namespace the active namespace
- * @property-read array $cpTemplateRoots any registered CP template roots
+ * @property-read array $cpTemplateRoots any registered control panel template roots
  * @property-read array $siteTemplateRoots any registered site template roots
  * @property-read bool $isRenderingPageTemplate whether a page template is currently being rendered
  * @property-read bool $isRenderingTemplate whether a template is currently being rendered
@@ -61,7 +61,7 @@ class View extends \yii\web\View
     // =========================================================================
 
     /**
-     * @event RegisterTemplateRootsEvent The event that is triggered when registering CP template roots
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
     const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
@@ -121,7 +121,7 @@ class View extends \yii\web\View
     private static $_elementThumbSizes = [32, 64, 120, 240];
 
     /**
-     * @var Environment|null The Twig environment instance used for CP templates
+     * @var Environment|null The Twig environment instance used for control panel templates
      */
     private $_cpTwig;
 
@@ -896,7 +896,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns any registered CP template roots.
+     * Returns any registered control panel template roots.
      *
      * @return array
      */
@@ -1917,7 +1917,7 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the CP.
+     * Returns the HTML for an element in the control panel.
      *
      * @param array &$context
      * @return string|null

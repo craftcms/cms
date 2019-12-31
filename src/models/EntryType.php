@@ -152,7 +152,7 @@ class EntryType extends Model
     }
 
     /**
-     * Returns the entry’s CP edit URL.
+     * Returns the entry’s edit URL in the control panel.
      *
      * @return string
      */

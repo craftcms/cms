@@ -597,7 +597,7 @@ interface ElementInterface extends ComponentInterface
     public function getIsEditable(): bool;
 
     /**
-     * Returns the element’s CP edit URL.
+     * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
      */

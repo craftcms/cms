@@ -423,7 +423,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Returns the path to the SVG icon that should be used in the plugin’s CP nav item.
+     * Returns the path to the SVG icon that should be used in the plugin’s nav item in the control panel.
      *
      * @return string|null
      * @see getCpNavItem()

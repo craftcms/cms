@@ -84,7 +84,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with CP access #}
+     * {# fetch users with control panel access #}
      * {% set admins = craft.users()
      *     .can('accessCp')
      *     .all() %}

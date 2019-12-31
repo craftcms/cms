@@ -25,7 +25,7 @@ class Cp
     // =========================================================================
 
     /**
-     * @event RegisterCpAlertsEvent The event that is triggered when registering CP alerts.
+     * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     const EVENT_REGISTER_ALERTS = 'registerAlerts';
 

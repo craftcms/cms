@@ -377,7 +377,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if the current request isn’t a control panel request.
      *
-     * @throws BadRequestHttpException if the request is not a CP request
+     * @throws BadRequestHttpException if this is not a control panel request
      * @since 3.1.0
      */
     public function requireCpRequest()

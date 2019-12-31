@@ -23,8 +23,8 @@ use yii\web\NotFoundHttpException;
 
 /**
  * @inheritdoc
- * @property string $fullPath The full requested path, including the CP trigger and pagination info.
- * @property string $path The requested path, sans CP trigger and pagination info.
+ * @property string $fullPath The full requested path, including the control panel trigger and pagination info.
+ * @property string $path The requested path, sans control panel trigger and pagination info.
  * @property array $segments The segments of the requested path.
  * @property int $pageNum The requested page number.
  * @property string $token The token submitted with the request, if there is one.
@@ -309,7 +309,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the requested path, sans CP trigger and pagination info.
+     * Returns the requested path, sans control panel trigger and pagination info.
      *
      * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
      *
@@ -332,8 +332,8 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [[\craft\config\GeneralConfig::cpTrigger|CP trigger]]
-     * if it’s a CP request, or the [[\craft\config\GeneralConfig::pageTrigger|page trigger]] or page
+     * Note that the segments will not include the [[\craft\config\GeneralConfig::cpTrigger|control panel trigger]]
+     * if it’s a control panel request, or the [[\craft\config\GeneralConfig::pageTrigger|page trigger]] or page
      * number if it’s a paginated request.
      * :::
      *
@@ -430,7 +430,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [[\craft\config\GeneralConfig::cpTrigger|CP trigger]].
+     * [[\craft\config\GeneralConfig::cpTrigger|control panel trigger]].
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
