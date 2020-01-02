@@ -180,7 +180,7 @@ return [
     'Clear Caches' => '清除缓存',
     'Clear all' => '全部清除',
     'Close' => '关闭',
-    'Close Live Preview' => '关闭实时预览',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => '云存储集成',
     'Collapse' => '折叠',
     'Color' => '颜色',
