@@ -180,7 +180,7 @@ return [
     'Clear Caches' => 'مسح التخزين المؤقت',
     'Clear all' => 'مسح الكل',
     'Close' => 'إغلاق',
-    'Close Live Preview' => 'إغلاق المعاينة المباشرة',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => 'دمج التخزين السحابي',
     'Collapse' => 'طي',
     'Color' => 'اللون',
