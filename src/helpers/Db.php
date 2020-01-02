@@ -142,16 +142,15 @@ class Db
     {
         $date = DateTimeHelper::toDateTime($date);
 
-        if ($date !== false) {
-            $timezone = $date->getTimezone();
-            $date->setTimezone(new \DateTimeZone('UTC'));
-            $formattedDate = $date->format('Y-m-d H:i:s');
-            $date->setTimezone($timezone);
-
-            return $formattedDate;
+        if ($date === false) {
+            return null;
         }
 
-        return null;
+        $timezone = $date->getTimezone();
+        $date->setTimezone(new \DateTimeZone('UTC'));
+        $formattedDate = $date->format('Y-m-d H:i:s');
+        $date->setTimezone($timezone);
+        return $formattedDate;
     }
 
     /**
