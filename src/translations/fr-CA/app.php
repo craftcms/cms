@@ -180,7 +180,7 @@ return [
     'Clear Caches' => 'Vider la mémoire cache',
     'Clear all' => 'Tout effacer',
     'Close' => 'Fermer',
-    'Close Live Preview' => 'Fermer l’aperçu en direct',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => 'Intégration du stockage en nuage',
     'Collapse' => 'Réduire',
     'Color' => 'Couleur',
