@@ -180,7 +180,7 @@ return [
     'Clear Caches' => 'Очистить кэш',
     'Clear all' => 'Очистить все',
     'Close' => 'Закрыть',
-    'Close Live Preview' => 'Закрыть динамический просмотр',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => 'Интеграция облачного хранилища данных',
     'Collapse' => 'Свернуть',
     'Color' => 'Цвет',
