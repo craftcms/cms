@@ -186,13 +186,6 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        // Enabled sites
-        // ---------------------------------------------------------------------
-
-        if (Craft::$app->getIsMultiSite()) {
-            $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement($entry->id);
-        }
-
         // Other variables
         // ---------------------------------------------------------------------
 

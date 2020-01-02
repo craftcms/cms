@@ -26,7 +26,8 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
+{% set supportedSiteIds = (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
+{% set isMultiSiteElement = craft.app.isMultiSite and supportedSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set isRevision = element.getIsRevision() %}
@@ -117,8 +118,10 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% if saveDraftAction or element.find().revisionOf(element).exists() %}
-        {% include "_includes/revisionmenu" %}
+    {% if isMultiSiteElement or saveDraftAction or element.find().revisionOf(element).exists() %}
+        {% include "_includes/revisionmenu" with {
+            canHaveDrafts: saveDraftAction is not empty,
+        } %}
     {% endif %}
 {% endblock %}
 

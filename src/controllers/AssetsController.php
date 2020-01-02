@@ -67,15 +67,37 @@ class AssetsController extends Controller
      *
      * @param int $assetId The asset ID
      * @param Asset|null $asset The asset being edited, if there were any validation errors.
+     * @param string|null $site The site handle, if specified.
      * @return Response
      * @throws BadRequestHttpException if `$assetId` is invalid
-     * @throws ForbiddenHttpException if the user isn't permitted to save the asset
+     * @throws ForbiddenHttpException if the user isn't permitted to edit the asset
      * @since 3.4.0
      */
-    public function actionEditAsset(int $assetId, Asset $asset = null): Response
+    public function actionEditAsset(int $assetId, Asset $asset = null, string $site = null): Response
     {
+        $sitesService = Craft::$app->getSites();
+        $editableSiteIds = $sitesService->getEditableSiteIds();
+        if ($site !== null) {
+            $siteHandle = $site;
+            $site = $sitesService->getSiteByHandle($siteHandle);
+            if (!$site) {
+                throw new BadRequestHttpException("Invalid site handle: {$siteHandle}");
+            }
+            if (!in_array($site->id, $editableSiteIds, false)) {
+                throw new ForbiddenHttpException('User not permitted to edit content in this site');
+            }
+        } else {
+            $site = $sitesService->getCurrentSite();
+            if (!in_array($site->id, $editableSiteIds, false)) {
+                $site = $sitesService->getSiteById($editableSiteIds[0]);
+            }
+        }
+
         if ($asset === null) {
-            $asset = Asset::findOne($assetId);
+            $asset = Asset::find()
+                ->id($assetId)
+                ->siteId($site->id)
+                ->one();
             if ($asset === null) {
                 throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
             }
