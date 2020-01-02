@@ -146,11 +146,9 @@ class Db
             return null;
         }
 
-        $timezone = $date->getTimezone();
+        $date = clone $date;
         $date->setTimezone(new \DateTimeZone('UTC'));
-        $formattedDate = $date->format('Y-m-d H:i:s');
-        $date->setTimezone($timezone);
-        return $formattedDate;
+        return $date->format('Y-m-d H:i:s');
     }
 
     /**
