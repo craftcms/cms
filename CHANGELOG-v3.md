@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.0-beta.5 - 2020-01-02
 
 ### Added
 - Added new “View files uploaded by other users”, “Edit files uploaded by other users”, “Replace files uploaded by other users”, “Remove files uploaded by other users”, and “Edit images uploaded by other users” user permissions.
