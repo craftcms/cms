@@ -180,7 +180,7 @@ return [
     'Clear Caches' => 'Rensa cache',
     'Clear all' => 'Rensa alla',
     'Close' => 'Stäng',
-    'Close Live Preview' => 'Stäng live förhandsgranskning',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => 'Integrering av molnlagring',
     'Collapse' => 'Minimera',
     'Color' => 'Färg',
