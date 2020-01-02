@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where entry revision menus could list sites that the entry didn’t support. ([#5387](https://github.com/craftcms/cms/issues/5387))
+
 ## 3.3.19 - 2019-12-30
 
 ### Changed
