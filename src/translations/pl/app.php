@@ -180,7 +180,7 @@ return [
     'Clear Caches' => 'Wyczyść pamięć podręczną',
     'Clear all' => 'Wyczyść wszystko',
     'Close' => 'Zamknij',
-    'Close Live Preview' => 'Zamknij podgląd na żywo',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => 'Integracja przestrzeni dyskowej w chmurze',
     'Collapse' => 'Zwiń',
     'Color' => 'Kolor',
