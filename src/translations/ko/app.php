@@ -180,7 +180,7 @@ return [
     'Clear Caches' => '캐시 지우기',
     'Clear all' => '모두 지우기',
     'Close' => '닫기',
-    'Close Live Preview' => '실시간 미리보기 닫기',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => '클라우드 스토리지 통합',
     'Collapse' => '축소',
     'Color' => '색상',
