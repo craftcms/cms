@@ -136,9 +136,10 @@ class Db
      * Prepares a date to be sent to the database.
      *
      * @param mixed $date The date to be prepared
+     * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
      */
-    public static function prepareDateForDb($date)
+    public static function prepareDateForDb($date, bool $stripSeconds = false)
     {
         $date = DateTimeHelper::toDateTime($date);
 
@@ -148,6 +149,9 @@ class Db
 
         $date = clone $date;
         $date->setTimezone(new \DateTimeZone('UTC'));
+        if ($stripSeconds) {
+            return $date->format('Y-m-d H:i') . ':00';
+        }
         return $date->format('Y-m-d H:i:s');
     }
 

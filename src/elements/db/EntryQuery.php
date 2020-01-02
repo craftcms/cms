@@ -827,7 +827,7 @@ class EntryQuery extends ElementQuery
      */
     protected function statusCondition(string $status)
     {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime(), true);
 
         switch ($status) {
             case Entry::STATUS_LIVE:

@@ -20,7 +20,9 @@
 - The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.
 - The `__count` field when querying Elements using GraphQL has been renamed to `_count`.
 - Element index pages no longer link to elements’ edit pages if `getIsEditable()` returns `false`.
+- Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
 - `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
+- `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).
 - Updated Garnish to 0.1.32.
 
 ### Deprecated
