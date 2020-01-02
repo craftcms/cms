@@ -180,7 +180,7 @@ return [
     'Clear Caches' => 'پاک کردن حافظه های نهان',
     'Clear all' => 'پاک کردن همه',
     'Close' => 'بستن',
-    'Close Live Preview' => 'بستن پیش نمایش زنده',
+    'Close Preview' => 'Close Preview',
     'Cloud Storage Integration' => 'یکپارچگی با حافظه ابری',
     'Collapse' => 'باز شدن',
     'Color' => 'رنگ',
