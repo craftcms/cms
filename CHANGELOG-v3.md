@@ -303,6 +303,11 @@
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 
+## Unreleased (3.3)
+
+### Fixed
+- Fixed a bug where entry revision menus could list sites that the entry didn’t support. ([#5387](https://github.com/craftcms/cms/issues/5387))
+
 ## 3.3.19 - 2019-12-30
 
 ### Changed
