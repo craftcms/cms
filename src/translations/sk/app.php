@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'Vymazať Cache',
     'Clear all' => 'Vymazať Všetko',
     'Close' => 'Zavrieť',
-    'Close Live Preview' => 'Zatvoriť ukážku naživo',
     'Cloud Storage Integration' => 'Integrácia cloudového úložiska',
     'Collapse' => 'Zabaliť',
     'Color' => 'Farba',

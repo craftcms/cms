@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'ניקוי מטמונים',
     'Clear all' => 'נקה הכל',
     'Close' => 'סגור',
-    'Close Live Preview' => 'סגורה תצוגה מקדימה חיה',
     'Cloud Storage Integration' => 'שילוב אחסון ענן',
     'Collapse' => 'כווץ',
     'Color' => 'צבע',

@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'キャッシュをクリア',
     'Clear all' => 'すべてクリア',
     'Close' => '閉じる',
-    'Close Live Preview' => 'ライブプレビューを閉じる',
     'Cloud Storage Integration' => 'クラウドストレージ統合',
     'Collapse' => '折りたたむ',
     'Color' => '色',

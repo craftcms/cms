@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'Tøm snøggbuffera',
     'Clear all' => 'Fjern alt',
     'Close' => 'Lukk',
-    'Close Live Preview' => 'Avslutt live førehandsvising',
     'Cloud Storage Integration' => 'Integrert skylagring',
     'Collapse' => 'Lukk',
     'Color' => 'Fargeveljar',

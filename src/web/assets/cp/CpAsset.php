@@ -118,7 +118,7 @@ JS;
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
-            'Close Live Preview',
+            'Close Preview',
             'Close',
             'Continue',
             'Couldn’t delete “{name}”.',

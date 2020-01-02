@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'Önbellekleri Temizle',
     'Clear all' => 'Hepsini Temizle',
     'Close' => 'Kapat',
-    'Close Live Preview' => 'Canlı Önizlemeyi Kapat',
     'Cloud Storage Integration' => 'Bulut Depolama Entegrasyonu',
     'Collapse' => 'Daralt',
     'Color' => 'Renk',

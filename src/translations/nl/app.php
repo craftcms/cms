@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'Caches wissen',
     'Clear all' => 'Alles wissen',
     'Close' => 'Sluiten',
-    'Close Live Preview' => 'Live preview sluiten',
     'Cloud Storage Integration' => 'Cloud-opslagintegratie',
     'Collapse' => 'Inklappen',
     'Color' => 'Kleur',

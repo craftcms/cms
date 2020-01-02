@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'Gyorsítótárak tisztítása',
     'Clear all' => 'Minden törlése',
     'Close' => 'Bezárás',
-    'Close Live Preview' => 'Élő Megtekintés Bezárása',
     'Cloud Storage Integration' => 'Felhőtár integráció',
     'Collapse' => 'Bezárás',
     'Color' => 'Szín',

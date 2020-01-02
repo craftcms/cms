@@ -180,7 +180,6 @@ return [
     'Clear Caches' => 'Ryd cache',
     'Clear all' => 'Ryd Alt',
     'Close' => 'Luk',
-    'Close Live Preview' => 'Luk Forhåndsvisning',
     'Cloud Storage Integration' => 'Skylagerintegration',
     'Collapse' => 'Minimer',
     'Color' => 'Farve',
