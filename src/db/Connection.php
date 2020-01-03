@@ -620,7 +620,7 @@ class Connection extends \yii\db\Connection
             return (new Query())
                 ->select(['siteName'])
                 ->from([Table::INFO])
-                ->column()[0];
+                ->scalar($this) ?: 'CraftCMS';
         }
 
         return Craft::$app->getSystemName();
