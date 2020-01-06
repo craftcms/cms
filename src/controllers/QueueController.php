@@ -11,11 +11,11 @@ use Craft;
 use craft\helpers\App;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
+use yii\db\Exception as YiiDbException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
-use yii\db\Exception as YiiDbException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -136,6 +136,7 @@ class QueueController extends Controller
      * @throws BadRequestHttpException
      * @throws YiiDbException
      * @throws ForbiddenHttpException
+     * @since 3.4.0
      */
     public function actionReleaseAll(): Response
     {
@@ -156,8 +157,9 @@ class QueueController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
+     * @since 3.4.0
      */
-    public function actionRetryAll() : Response
+    public function actionRetryAll(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -174,8 +176,9 @@ class QueueController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
+     * @since 3.4.0
      */
-    public function actionGetJobDetails() : Response
+    public function actionGetJobDetails(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('utility:queue-manager');

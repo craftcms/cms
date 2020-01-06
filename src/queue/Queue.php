@@ -18,8 +18,6 @@ use yii\db\Query;
 use yii\queue\cli\Signal;
 use yii\queue\ExecEvent;
 use yii\web\Response;
-use yii\db\Exception as YiiDbException;
-use Exception as BasePhpException;
 
 /**
  * Craft Queue
@@ -190,9 +188,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * Re-adds all failed jobs to the queue
-     *
-     * @since 3.1.21
+     * @inheritdoc
      */
     public function retryAll()
     {
@@ -230,18 +226,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * Releases all jobs from the Queue.
-     *
-     * @return bool
-     * @throws YiiDbException
+     * @inheritdoc
      */
-    public function releaseAll() : bool
+    public function releaseAll()
     {
         Craft::$app->getDb()->createCommand()
             ->delete(Table::QUEUE, [])
             ->execute();
-
-        return true;
     }
 
     /**
@@ -338,17 +329,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * Returns all specific details about a job including the raw data form the `job` collumn
-     *
-     * @param int $jobId
-     * @return array|mixed
-     * @throws BasePhpException
+     * @inheritdoc
      */
-    public function getJobDetails(int $jobId)
+    public function getJobDetails(string $id): array
     {
         $job = (new Query())
             ->from(Table::QUEUE)
-            ->where(['id' => $jobId])
+            ->where(['id' => $id])
             ->one();
 
         $result = [

@@ -30,14 +30,14 @@ interface QueueInterface
     /**
      * Retries all jobs
      *
-     * @return mixed
+     * @since 3.4.0
      */
     public function retryAll();
 
     /**
      * Releases all jobs
      *
-     * @return mixed
+     * @since 3.4.0
      */
     public function releaseAll();
 
@@ -98,9 +98,9 @@ interface QueueInterface
      *
      * Any other key value pairs are allowed and will be displayed on the details page.
      *
-     * @param int $jobId
-     *
-     * @return mixed
+     * @param string $id
+     * @return array
+     * @since 3.4.0
      */
-    public function getJobDetails(int $jobId);
+    public function getJobDetails(string $id): array;
 }

@@ -17,7 +17,7 @@ use craft\web\assets\vue\VueAsset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.4.0
  */
 class QueueManagerAsset extends AssetBundle
 {
@@ -33,7 +33,7 @@ class QueueManagerAsset extends AssetBundle
 
         $this->depends = [
             CpAsset::class,
-            VueAsset::class
+            VueAsset::class,
         ];
 
         // TODO: Once Transpilation is setup we can use $this->dotJs()

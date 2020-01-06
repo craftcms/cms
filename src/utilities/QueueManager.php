@@ -16,7 +16,7 @@ use craft\web\assets\queuemanager\QueueManagerAsset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.4.0
  */
 class QueueManager extends Utility
 {

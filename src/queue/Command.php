@@ -127,6 +127,7 @@ class Command extends \yii\queue\cli\Command
      * @param $job
      * @return int
      * @throws YiiDbException
+     * @since 3.4.0
      */
     public function actionRelease($job): int
     {
