@@ -44,7 +44,7 @@ class QueueManager extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/clock.svg');
+        return Craft::getAlias('@app/icons/play.svg');
     }
 
     /**
