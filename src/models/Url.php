@@ -42,9 +42,9 @@ class Url extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['url'], 'required'];
         $rules[] = [['url'], 'url'];
         return $rules;

@@ -85,9 +85,9 @@ class MailSettings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fromEmail', 'fromName', 'transportType'], 'required'];
         $rules[] = [['fromEmail'], 'email'];
         $rules[] = [['template'], TemplateValidator::class];

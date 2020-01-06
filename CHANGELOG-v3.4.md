@@ -73,6 +73,7 @@
 - Added `craft\base\ElementInterface::setEagerLoadedElementCount()`.
 - Added `craft\base\ElementInterface::trackChanges()`.
 - Added `craft\base\FieldInterface::getTranslationDescription()`.
+- Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 - Added `craft\behaviors\DraftBehavior::$dateLastMerged`.
 - Added `craft\behaviors\DraftBehavior::$mergingChanges`.
 - Added `craft\behaviors\DraftBehavior::$trackChanges`.

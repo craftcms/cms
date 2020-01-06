@@ -87,9 +87,9 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true];
         return $rules;
     }

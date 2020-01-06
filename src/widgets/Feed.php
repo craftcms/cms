@@ -75,9 +75,9 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['url', 'title'], 'required'];
         $rules[] = [['url'], 'url'];
         $rules[] = [['limit'], 'integer', 'min' => 1];

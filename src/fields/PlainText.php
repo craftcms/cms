@@ -119,9 +119,9 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['initialRows', 'charLimit', 'byteLimit'], 'integer', 'min' => 1];
         $rules[] = [['charLimit', 'byteLimit'], 'validateFieldLimit'];
         return $rules;

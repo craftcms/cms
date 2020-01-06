@@ -77,9 +77,9 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
         return $rules;
     }

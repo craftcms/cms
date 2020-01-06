@@ -65,9 +65,9 @@ class VolumeFolder extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true];
         return $rules;
     }

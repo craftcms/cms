@@ -91,9 +91,9 @@ class DeprecationError extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'line'], 'number', 'integerOnly' => true];
         $rules[] = [['lastOccurrence'], DateTimeValidator::class];
         return $rules;

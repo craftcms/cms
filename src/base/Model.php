@@ -86,10 +86,31 @@ abstract class Model extends \yii\base\Model
      */
     public function rules()
     {
-        // Fire a 'defineRules' event
-        $event = new DefineRulesEvent();
+        $rules = $this->defineRules();
+
+        // Give plugins a chance to modify them
+        $event = new DefineRulesEvent([
+            'rules' => $rules,
+        ]);
         $this->trigger(self::EVENT_DEFINE_RULES, $event);
+
         return $event->rules;
+    }
+
+    /**
+     * Returns the validation rules for attributes.
+     *
+     * See [[rules()]] for details about what should be returned.
+     *
+     * Models should override this method instead of [[rules()]] so [[EVENT_DEFINE_RULES]] handlers can modify the
+     * class-defined rules.
+     *
+     * @return array
+     * @since 3.4.0
+     */
+    protected function defineRules(): array
+    {
+        return [];
     }
 
     /**

@@ -70,9 +70,9 @@ class GqlSchema extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['name'], 'required'];
         $rules[] = [
             ['name'],

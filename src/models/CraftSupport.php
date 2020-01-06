@@ -69,9 +69,9 @@ class CraftSupport extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fromEmail', 'message'], 'required'];
         $rules[] = [['fromEmail'], 'email'];
         $rules[] = [['fromEmail'], 'string', 'min' => 5, 'max' => 255];

@@ -61,9 +61,9 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['maxLength'], 'required'];
         $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
         return $rules;

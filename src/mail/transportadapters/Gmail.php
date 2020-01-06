@@ -81,9 +81,9 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['username', 'password'], 'trim'];
         $rules[] = [['username', 'password', 'timeout'], 'required'];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];

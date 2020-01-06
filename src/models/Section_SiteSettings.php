@@ -141,9 +141,9 @@ class Section_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
         $rules[] = [['siteId'], SiteIdValidator::class];
         $rules[] = [['template'], 'string', 'max' => 500];

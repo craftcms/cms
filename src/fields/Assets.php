@@ -198,9 +198,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         $rules[] = [
             ['allowedKinds'], 'required', 'when' => function(self $field): bool {

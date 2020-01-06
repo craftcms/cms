@@ -178,9 +178,9 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }

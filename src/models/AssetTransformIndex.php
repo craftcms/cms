@@ -105,9 +105,9 @@ class AssetTransformIndex extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true];
         $rules[] = [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class];
         return $rules;
