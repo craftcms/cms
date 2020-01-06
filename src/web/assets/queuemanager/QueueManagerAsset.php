@@ -36,9 +36,8 @@ class QueueManagerAsset extends AssetBundle
             VueAsset::class,
         ];
 
-        // TODO: Once Transpilation is setup we can use $this->dotJs()
         $this->js = [
-            'queue-manager.js',
+            'queue-manager' . $this->dotJs(),
         ];
 
         parent::init();
