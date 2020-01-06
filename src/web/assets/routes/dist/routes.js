@@ -189,7 +189,7 @@
 
                     for (i = 0; i < Craft.sites.length; i++) {
                         var siteInfo = Craft.sites[i];
-                        containerHtml += '<option value="' + siteInfo.uid + '">' + siteInfo.name + '</option>';
+                        containerHtml += '<option value="' + siteInfo.uid + '">' + Craft.escapeHtml(siteInfo.name) + '</option>';
                     }
 
                     containerHtml +=

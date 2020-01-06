@@ -7,7 +7,7 @@
 - Fixed a PHP warning that occurred when creating a new database backup. ([#5393](https://github.com/craftcms/cms/issues/5393))
 
 ### Security
-- Fixed an XSS vulnerability.
+- Fixed XSS vulnerabilities.
 
 ## 3.3.19 - 2019-12-30
 

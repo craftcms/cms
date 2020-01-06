@@ -246,7 +246,7 @@
 
                 for (var i = 0; i < Craft.sites.length; i++) {
                     if (Craft.sites[i].id != id) {
-                        this.$transferSelect.append('<option value="' + Craft.sites[i].id + '">' + Craft.sites[i].name + '</option>');
+                        this.$transferSelect.append('<option value="' + Craft.sites[i].id + '">' + Craft.escapeHtml(Craft.sites[i].name) + '</option>');
                     }
                 }
 
