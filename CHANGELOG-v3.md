@@ -6,6 +6,9 @@
 - Fixed a bug where entry revision menus could list sites that the entry didn’t support. ([#5387](https://github.com/craftcms/cms/issues/5387))
 - Fixed a PHP warning that occurred when creating a new database backup. ([#5393](https://github.com/craftcms/cms/issues/5393))
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.3.19 - 2019-12-30
 
 ### Changed
