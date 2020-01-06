@@ -27,7 +27,8 @@ use yii\web\Response;
  * BaseUpdaterController provides the base class for Craft/plugin installation/updating/removal.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 abstract class BaseUpdaterController extends Controller
 {
@@ -62,7 +63,7 @@ abstract class BaseUpdaterController extends Controller
 
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a CP request
+     * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
     public function beforeAction($action)

@@ -5,78 +5,48 @@ import api from '../../api/pluginstore'
  */
 const state = {
     categories: [],
+    cmsEditions: null,
     developer: null,
+    expiryDateOptions: [],
     featuredPlugins: [],
+    featuredSection: null,
+    featuredSections: [],
     plugin: null,
     pluginChangelog: null,
+
+    // plugin index
     plugins: [],
-    expiryDateOptions: [],
 }
 
 /**
  * Getters
  */
 const getters = {
-    getFeaturedPlugin(state) {
-        return id => {
-            return state.featuredPlugins.find(g => g.id == id)
-        }
-    },
-
     getCategoryById(state) {
         return id => {
             return state.categories.find(c => c.id == id)
         }
     },
 
-    getPluginById(state) {
-        return id => {
-                return state.plugins.find(p => p.id == id)
-        }
-    },
-
-    getPluginsByIds(state) {
-        return ids => {
-            let plugins = [];
-
-            ids.forEach(function(id) {
-                const plugin = state.plugins.find(p => p.id === id)
-                plugins.push(plugin)
-            })
-
-            return plugins;
-        }
-    },
-
-    getPluginsByCategory(state) {
-        return categoryId => {
-            return state.plugins.filter(p => {
-                return p.categoryIds.find(c => c == categoryId)
-            })
-        }
-    },
-
-    getPluginsByDeveloperId(state) {
-        return developerId => {
-            return state.plugins.filter(p => p.developerId == developerId)
-        }
-    },
-
-    getPluginByHandle(state) {
-        return handle => {
-            return state.plugins.find(plugin => plugin.handle === handle)
-        }
-    },
-
-    getPluginEdition(state, getters) {
-        return (pluginHandle, editionHandle) => {
-            const plugin = getters.getPluginByHandle(pluginHandle)
-
-            if (!plugin) {
-                return false
-            }
-
+    getPluginEdition() {
+        return (plugin, editionHandle) => {
             return plugin.editions.find(edition => edition.handle === editionHandle)
+        }
+    },
+
+    getPluginIndexParams() {
+        return context => {
+            const perPage = context.perPage ? context.perPage : null
+            const page = context.page ? context.page : 1
+            const orderBy = context.orderBy
+            const direction = context.direction
+
+            return {
+                perPage,
+                page,
+                orderBy,
+                direction,
+            }
         }
     },
 
@@ -91,28 +61,67 @@ const getters = {
  * Actions
  */
 const actions = {
-    getDeveloper({commit}, developerId) {
+    cancelRequests() {
+        return api.cancelRequests()
+    },
+
+    getCoreData({commit}) {
         return new Promise((resolve, reject) => {
-            api.getDeveloper(developerId)
-                .then(response => {
-                    commit('updateDeveloper', { developer: response.data })
-                    resolve(response)
+            api.getCoreData()
+                .then(responseData => {
+                    commit('updateCoreData', {responseData})
+                    resolve(responseData)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
     },
 
-    getPluginStoreData({commit}) {
+    getCmsEditions({commit}) {
         return new Promise((resolve, reject) => {
-            api.getPluginStoreData()
-                .then(response => {
-                    commit('updatePluginStoreData', {response})
-                    resolve(response)
+            api.getCmsEditions()
+                .then(responseData => {
+                    commit('updateCmsEditions', {responseData})
+                    resolve(responseData)
+
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
+                })
+        })
+    },
+
+    getDeveloper({commit}, developerId) {
+        return api.getDeveloper(developerId)
+            .then(responseData => {
+                commit('updateDeveloper', responseData)
+            })
+    },
+
+    getFeaturedSectionByHandle({commit}, featuredSectionHandle) {
+        return api.getFeaturedSectionByHandle(featuredSectionHandle)
+            .then(responseData => {
+                commit('updateFeaturedSection', responseData)
+            })
+    },
+
+    getFeaturedSections({commit}) {
+        return api.getFeaturedSections()
+            .then(responseData => {
+                commit('updateFeaturedSections', responseData)
+            })
+    },
+
+    getPluginChangelog({commit}, pluginId) {
+        return new Promise((resolve, reject) => {
+            api.getPluginChangelog(pluginId)
+                .then(responseData => {
+                    commit('updatePluginChangelog', responseData)
+                    resolve(responseData)
+                })
+                .catch(error => {
+                    reject(error)
                 })
         })
     },
@@ -120,27 +129,89 @@ const actions = {
     getPluginDetails({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginDetails(pluginId)
-                .then(response => {
-                    commit('updatePluginDetails', response.data)
-                    resolve(response)
+                .then(responseData => {
+                    commit('updatePluginDetails', responseData)
+                    resolve(responseData)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
     },
 
-    getPluginChangelog({commit}, pluginId) {
+    getPluginDetailsByHandle({commit}, pluginHandle) {
+        return api.getPluginDetailsByHandle(pluginHandle)
+            .then(responseData => {
+                commit('updatePluginDetails', responseData)
+            })
+    },
+
+    getPluginsByCategory({getters, dispatch}, context) {
         return new Promise((resolve, reject) => {
-            api.getPluginChangelog(pluginId)
-                .then(response => {
-                    commit('updatePluginChangelog', response.data)
-                    resolve(response)
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+
+            api.getPluginsByCategory(context.categoryId, pluginIndexParams)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
                 })
                 .catch(error => {
-                    reject(error.response)
+                    reject(error)
                 })
         })
+    },
+
+    getPluginsByDeveloperId({getters, dispatch}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+
+            api.getPluginsByDeveloperId(context.developerId, pluginIndexParams)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    getPluginsByFeaturedSectionHandle({getters, dispatch}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+            
+            return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    searchPlugins({getters, dispatch}, context) {
+        return new Promise((resolve, reject) => {
+            const pluginIndexParams = getters['getPluginIndexParams'](context)
+
+            api.searchPlugins(context.searchQuery, pluginIndexParams)
+                .then(responseData => {
+                    dispatch('updatePluginIndex', {context, responseData})
+                    resolve(responseData)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        })
+    },
+
+    updatePluginIndex({commit}, {context, responseData}) {
+        if (context.appendData && context.appendData === true) {
+            commit('appendPlugins', responseData.plugins)
+        } else {
+            commit('updatePlugins', responseData.plugins)
+        }
     },
 }
 
@@ -148,23 +219,42 @@ const actions = {
  * Mutations
  */
 const mutations = {
-    updateDeveloper(state, {developer}) {
+    appendPlugins(state, plugins) {
+        state.plugins = [...state.plugins, ...plugins]
+    },
+
+    updateCoreData(state, {responseData}) {
+        state.categories = responseData.categories
+        state.expiryDateOptions = responseData.expiryDateOptions
+        state.sortOptions = responseData.sortOptions
+    },
+
+    updateCmsEditions(state, {responseData}) {
+        state.cmsEditions = responseData.editions
+    },
+
+    updateDeveloper(state, developer) {
         state.developer = developer
     },
 
-    updatePluginStoreData(state, {response}) {
-        state.categories = response.data.categories
-        state.featuredPlugins = response.data.featuredPlugins
-        state.plugins = response.data.plugins
-        state.expiryDateOptions = response.data.expiryDateOptions
+    updateFeaturedSection(state, featuredSection) {
+        state.featuredSection = featuredSection
+    },
+
+    updateFeaturedSections(state, featuredSections) {
+        state.featuredSections = featuredSections
+    },
+
+    updatePluginChangelog(state, changelog) {
+        state.pluginChangelog = changelog
     },
 
     updatePluginDetails(state, pluginDetails) {
         state.plugin = pluginDetails
     },
 
-    updatePluginChangelog(state, changelog) {
-        state.pluginChangelog = changelog
+    updatePlugins(state, plugins) {
+        state.plugins = plugins
     },
 }
 

@@ -34,6 +34,7 @@
     "Continue as guest",
     "Continue",
     "Copy the package’s name for this plugin.",
+    "Couldn’t load active trials.",
     "Coupon Code",
     "CVC",
     "Descending",
@@ -67,6 +68,7 @@
     "More",
     "Multi-site Multi-lingual",
     "Name",
+    "Only up to {version} is compatible with your version of Craft.",
     "Package Name",
     "Page not found.",
     "Pay",
@@ -76,7 +78,6 @@
     "Plugin Store",
     "Popularity",
     "Price includes 1 year of updates.",
-    "Price",
     "Pro Rate Discount",
     "Reactivate",
     "Remove",
@@ -94,6 +95,7 @@
     "System Branding",
     "Thank You!",
     "The Plugin Store is not available, please try again later.",
+    "This plugin isn’t compatible with your version of Craft.",
     "Total Price",
     "Total",
     "Try for free",
@@ -120,6 +122,7 @@
     "Your license key is invalid.",
     "Critical",
     "Couldn’t add all items to the cart.",
+    "No results.",
 ]) %}
 
 {% block actionButton %}
@@ -137,7 +140,7 @@
                 <li>
                     <form method="post" id="disconnect">
                         {{ csrfInput() }}
-                        <input type="hidden" name="action" value="plugin-store/disconnect">
+                        {{ actionInput('plugin-store/disconnect') }}
                         <a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
                     </form>
                 </li>
@@ -146,7 +149,7 @@
 
         <form id="craftid-connect-form" method="post">
             {{ csrfInput() }}
-            <input type="hidden" name="action" value="plugin-store/connect">
+            {{ actionInput('plugin-store/connect') }}
             <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
                 <i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
             </div>

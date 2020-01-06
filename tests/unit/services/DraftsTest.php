@@ -102,7 +102,7 @@ class DraftsTest extends Unit
         // Have the props changed
         $this->assertEquals($entry->id, $newEntry->id);
         $this->assertSame('Not Pending', $newEntry->title);
-        $this->assertSame('not--pending', $newEntry->slug);
+        $this->assertSame('not-pending', $newEntry->slug);
 
         // Does the draft exist?
         $this->assertSame(

@@ -19,7 +19,8 @@ use yii\web\Response;
  * UpdaterController handles the Craft/plugin update workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 class UpdaterController extends BaseUpdaterController
 {

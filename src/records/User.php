@@ -43,7 +43,7 @@ use yii\db\ActiveQueryInterface;
  * @property Session[] $sessions Sessions
  * @property UserGroup[] $groups User groups
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends ActiveRecord
 {
@@ -68,7 +68,7 @@ class User extends ActiveRecord
             ->innerJoinWith(['element element']);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['element.dateDeleted' => null]);
         }

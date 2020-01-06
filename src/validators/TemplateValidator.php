@@ -15,7 +15,7 @@ use yii\validators\Validator;
  * Class TemplateValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class TemplateValidator extends Validator
 {
@@ -52,13 +52,7 @@ class TemplateValidator extends Validator
      */
     public function validateValue($value)
     {
-        $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode($this->templateMode);
-        $exists = $view->resolveTemplate($value) !== false;
-        $view->setTemplateMode($templateMode);
-
-        if (!$exists) {
+        if (Craft::$app->getView()->resolveTemplate($value, $this->templateMode) === false) {
             return [$this->message, []];
         }
 

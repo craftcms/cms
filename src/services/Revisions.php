@@ -13,11 +13,10 @@ use craft\base\ElementInterface;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
@@ -27,7 +26,7 @@ use yii\db\Exception;
  * An instance of the Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->revisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class Revisions extends Component
 {
@@ -88,24 +87,35 @@ class Revisions extends Component
         $num = ArrayHelper::remove($newAttributes, 'revisionNum');
 
         if (!$force || !$num) {
-            // Get the source's last revision, if it has one
-            /** @var Element|RevisionBehavior|null $lastRevision */
-            $lastRevision = $source::find()
-                ->revisionOf($source)
-                ->siteId($source->siteId)
-                ->anyStatus()
+            // Find the source's last revision number, if it has one
+            $lastRevisionNum = (new Query())
+                ->select(['num'])
+                ->from([Table::REVISIONS])
+                ->where(['sourceId' => $source->id])
                 ->orderBy(['num' => SORT_DESC])
-                ->one();
+                ->limit(1)
+                ->scalar();
 
-            // If the source hasn't been updated since the revision's creation date,
-            // there's no need to create a new one
-            if (!$force && $lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
-                $mutex->release($lockKey);
-                return $lastRevision;
+            if (!$force && $lastRevisionNum) {
+                // Get the revision, if it exists for the source's site
+                /** @var Element|RevisionBehavior|null $lastRevision */
+                $lastRevision = $source::find()
+                    ->revisionOf($source)
+                    ->siteId($source->siteId)
+                    ->anyStatus()
+                    ->andWhere(['revisions.num' => $lastRevisionNum])
+                    ->one();
+
+                // If the source hasn't been updated since the revision's creation date,
+                // there's no need to create a new one
+                if ($lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
+                    $mutex->release($lockKey);
+                    return $lastRevision;
+                }
             }
 
             // Get the next revision number for this element
-            $num = ($lastRevision->revisionNum ?? 0) + 1;
+            $num = ($lastRevisionNum ?: 0) + 1;
         }
 
         if ($creatorId === null) {
@@ -123,12 +133,6 @@ class Revisions extends Component
         $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
         $notes = $event->revisionNotes;
 
-        // Create the source snapshot
-        $snapshot = ArrayHelper::toArray(array_merge(
-            $source->toArray([], [], false),
-            $source->getSerializedFieldValues()
-        ));
-
         $elementsService = Craft::$app->getElements();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -141,7 +145,6 @@ class Revisions extends Component
                     'creatorId' => $creatorId,
                     'num' => $num,
                     'notes' => $notes,
-                    'snapshot' => Json::encode($snapshot),
                 ], false)
                 ->execute();
 
@@ -191,11 +194,11 @@ class Revisions extends Component
                 ->siteId($source->siteId)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
-                ->offset($maxRevisions + 1)
+                ->offset($maxRevisions)
                 ->all();
 
-            foreach ($extraRevisions as $revision) {
-                $elementsService->deleteElement($revision, true);
+            foreach ($extraRevisions as $extraRevision) {
+                $elementsService->deleteElement($extraRevision, true);
             }
         }
 
@@ -215,7 +218,7 @@ class Revisions extends Component
     {
         /** @var Element|RevisionBehavior $revision */
         /** @var Element $source */
-        $source = $revision->getSource();
+        $source = ElementHelper::sourceElement($revision);
 
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {

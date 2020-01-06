@@ -16,25 +16,12 @@ use Twig\Template as TwigTemplate;
  * Base Twig template class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @method int[] getDebugInfo()
+ * @deprecated in 3.3.0
  */
 abstract class Template extends TwigTemplate
 {
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function display(array $context, array $blocks = [])
-    {
-        $name = $this->getTemplateName();
-        Craft::beginProfile($name, __METHOD__);
-        parent::display($context, $blocks);
-        Craft::endProfile($name, __METHOD__);
-    }
-
     // Protected Methods
     // =========================================================================
 

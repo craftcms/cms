@@ -16,7 +16,7 @@ use craft\elements\db\ElementQueryInterface;
  * SetStatus represents a Set Status element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SetStatus extends ElementAction
 {
@@ -32,6 +32,8 @@ class SetStatus extends ElementAction
 
     /**
      * @var bool Whether to show the “Disabled for Site” status option.
+     *
+     * @since 3.0.30
      */
     public $allowDisabledForSite = false;
 
@@ -50,7 +52,8 @@ class SetStatus extends ElementAction
     {
         // Only allow the "Disabled for site" option if there are multiple sites and the element type is localized
         if ($this->allowDisabledForSite) {
-            $this->allowDisabledForSite = $this->elementType && $this->elementType::isLocalized() && Craft::$app->getIsMultiSite();
+            $elementType = $this->elementType;
+            $this->allowDisabledForSite = $elementType && $elementType::isLocalized() && Craft::$app->getIsMultiSite();
         }
 
         parent::init();
@@ -67,9 +70,9 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['status'], 'required'];
         $rules[] = [
             ['status'],

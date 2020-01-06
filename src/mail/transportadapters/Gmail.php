@@ -14,7 +14,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Gmail extends BaseTransportAdapter
 {
@@ -81,9 +81,9 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['username', 'password'], 'trim'];
         $rules[] = [['username', 'password', 'timeout'], 'required'];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];

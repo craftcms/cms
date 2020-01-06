@@ -17,7 +17,7 @@ use yii\validators\Validator;
  * Class SlugValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SlugValidator extends Validator
 {
@@ -36,6 +36,7 @@ class SlugValidator extends Validator
 
     /**
      * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
+     * @since 3.1.9
      */
     public $language;
 
@@ -64,7 +65,7 @@ class SlugValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         $slug = $originalSlug = (string)$model->$attribute;
-        $isTemp = strpos($slug, '__temp_') === 0;
+        $isTemp = ElementHelper::isTempSlug($slug);
         $isDraft = $model instanceof ElementInterface && $model->getIsDraft();
 
         // If this is a draft with a temp slug, leave it alone

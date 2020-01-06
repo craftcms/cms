@@ -1,7 +1,10 @@
+@charset "UTF-8";
+@import "../../../../../../lib/craftcms-sass/mixins";
+
 .tooltip {
   display: block !important;
   z-index: 10000;
-  background: #fff;
+  background: $white;
   box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);
   padding: 24px;
 

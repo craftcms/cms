@@ -15,7 +15,7 @@ use craft\web\UploadedFile;
  * Class CraftSupport model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftSupport extends Model
 {
@@ -69,9 +69,9 @@ class CraftSupport extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fromEmail', 'message'], 'required'];
         $rules[] = [['fromEmail'], 'email'];
         $rules[] = [['fromEmail'], 'string', 'min' => 5, 'max' => 255];

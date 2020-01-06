@@ -13,10 +13,18 @@ use yii\web\HttpException;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Response extends \yii\web\Response
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @since 3.4.0
+     */
+    const FORMAT_CSV = 'csv';
+
     // Properties
     // =========================================================================
 
@@ -46,6 +54,8 @@ class Response extends \yii\web\Response
                     return 'application/json';
                 case self::FORMAT_JSONP:
                     return 'application/javascript';
+                case self::FORMAT_CSV:
+                    return 'text/csv';
             }
         }
 
@@ -141,6 +151,9 @@ class Response extends \yii\web\Response
             return;
         }
 
+        // Get the active user before headers are sent
+        Craft::$app->getUser()->getIdentity();
+
         // Prevent the script from ending when the browser closes the connection
         ignore_user_abort(true);
 
@@ -174,44 +187,21 @@ class Response extends \yii\web\Response
         }
     }
 
-    /**
-     * @inheritdoc
-     * @internal this is an exact copy of yii\web\Response::sendContent(), except for the `@` before `set_time_limit(0)`
-     * @todo remove this if Yii ever merges https://github.com/yiisoft/yii2/pull/15679 or similar
-     */
-    protected function sendContent()
-    {
-        if ($this->stream === null) {
-            echo $this->content;
-
-            return;
-        }
-
-        @set_time_limit(0); // Reset time limit for big files
-        $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
-
-        if (is_array($this->stream)) {
-            list($handle, $begin, $end) = $this->stream;
-            fseek($handle, $begin);
-            while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
-                if ($pos + $chunkSize > $end) {
-                    $chunkSize = $end - $pos + 1;
-                }
-                echo fread($handle, $chunkSize);
-                flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
-            }
-            fclose($handle);
-        } else {
-            while (!feof($this->stream)) {
-                echo fread($this->stream, $chunkSize);
-                flush();
-            }
-            fclose($this->stream);
-        }
-    }
-
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    protected function defaultFormatters()
+    {
+        $formatters = parent::defaultFormatters();
+        $formatters[self::FORMAT_CSV] = [
+            'class' => CsvResponseFormatter::class,
+        ];
+        return $formatters;
+    }
 
     /**
      * @inheritdoc

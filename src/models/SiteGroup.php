@@ -17,7 +17,7 @@ use craft\validators\UniqueValidator;
  * SiteGroup model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SiteGroup extends Model
 {
@@ -55,9 +55,9 @@ class SiteGroup extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['name'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class];

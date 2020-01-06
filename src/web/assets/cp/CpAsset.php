@@ -18,6 +18,7 @@ use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
 use craft\web\AssetBundle;
+use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
@@ -35,7 +36,7 @@ use craft\web\View;
 use yii\web\JqueryAsset;
 
 /**
- * Asset bundle for the Control Panel
+ * Asset bundle for the control panel
  */
 class CpAsset extends AssetBundle
 {
@@ -50,6 +51,7 @@ class CpAsset extends AssetBundle
         $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
+            AxiosAsset::class,
             D3Asset::class,
             ElementResizeDetectorAsset::class,
             GarnishAsset::class,
@@ -103,7 +105,6 @@ JS;
         $view->registerTranslations('app', [
             '(blank)',
             '1 Available Update',
-            '{first}-{last} of {total}',
             'Actions',
             'All',
             'An unknown error occurred.',
@@ -114,22 +115,19 @@ JS;
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to transfer your license to this domain?',
             'Buy {name}',
-            'by {creator}',
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
-            'Close Live Preview',
+            'Close Preview',
             'Close',
             'Continue',
-            'Could not create a Live Preview token.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
-            'day',
-            'days',
             'Delete folder',
             'Delete heading',
             'Delete it',
+            'Delete them',
             'Delete user',
             'Delete users',
             'Delete',
@@ -138,28 +136,30 @@ JS;
             'Done',
             'Draft Name',
             'Drafts',
-            'Edit',
             'Edit draft settings',
+            'Edit',
             'Element',
             'Elements',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
+            'Export Type',
             'Export',
             'Export…',
             'Failed',
             'Format',
+            'From {date}',
+            'From',
             'Give your tab a name.',
             'Handle',
             'Heading',
             'Hide sidebar',
             'Hide',
-            'hour',
-            'hours',
             'Incorrect password.',
             'Instructions',
             'Keep both',
             'Keep me logged in',
+            'Keep them',
             'License transferred.',
             'Limit',
             'Log out now',
@@ -167,8 +167,6 @@ JS;
             'Make not required',
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
-            'minute',
-            'minutes',
             'More',
             'Move',
             'Name',
@@ -187,6 +185,8 @@ JS;
             'OK',
             'Options',
             'Password',
+            'Past year',
+            'Past {num} days',
             'Pay {price}',
             'Pending',
             'Previous Page',
@@ -199,12 +199,9 @@ JS;
             'Replace the folder (all existing files will be deleted)',
             'Save as a new asset',
             'Save',
-            'Saved',
             'Saving',
             'Score',
             'Search in subfolders',
-            'second',
-            'seconds',
             'Select transform',
             'Select',
             'Settings',
@@ -217,18 +214,37 @@ JS;
             'Structure',
             'Submit',
             'Table Columns',
+            'The draft could not be saved.',
+            'The draft has been saved.',
             'This can be left blank if you just want an unlabeled separator.',
+            'This month',
+            'This week',
+            'This year',
+            'To {date}',
+            'To',
+            'Today',
             'Transfer it to:',
             'Try again',
+            'Update {type}',
             'Upload failed for {filename}',
             'Upload files',
-            'week',
-            'weeks',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your session has ended.',
             'Your session will expire in {time}.',
+            'by {creator}',
+            'day',
+            'days',
+            'hour',
+            'hours',
+            'minute',
+            'minutes',
+            'second',
+            'seconds',
+            'week',
+            'weeks',
             '{ctrl}C to copy.',
+            '{first}-{last} of {total}',
             '{num} Available Updates',
             '“{name}” deleted.',
         ]);
@@ -250,22 +266,26 @@ JS;
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
+            'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
+            'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],
+            'deltaNames' => Craft::$app->getView()->getDeltaNames(),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'fileKinds' => Assets::getFileKinds(),
-            'forceConfirmUnload' => Craft::$app->getSession()->hasFlash('error'),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
+            'modifiedDeltaNames' => $request->getBodyParam('modifiedDeltaNames', []),
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
@@ -297,8 +317,8 @@ JS;
         ];
 
         if ($generalConfig->enableCsrfProtection) {
+            $data['csrfTokenName'] = $request->csrfParam;
             $data['csrfTokenValue'] = $request->getCsrfToken();
-            $data['csrfTokenName'] = $generalConfig->csrfTokenName;
         }
 
         return $data;

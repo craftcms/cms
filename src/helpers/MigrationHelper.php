@@ -16,7 +16,7 @@ use craft\db\TableSchema;
  * Migration utility methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrationHelper
 {
@@ -29,6 +29,7 @@ class MigrationHelper
      * @param string $tableName
      * @param string|string[] $columns
      * @return string|null The foreign key name, or null if it doesn't exist
+     * @since 3.0.27
      */
     public static function findForeignKey(string $tableName, $columns)
     {
@@ -596,7 +597,7 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param Migration|null $migration
-     * @deprecated in 3.1
+     * @deprecated in 3.1.0
      */
     public static function dropAllUniqueIndexesOnTable(string $tableName, Migration $migration = null)
     {
@@ -617,7 +618,7 @@ class MigrationHelper
      * @param string|string[] $columns
      * @param bool $unique
      * @param Migration|null $migration
-     * @deprecated in 3.1. Use [[dropIndexIfExists()]] instead.
+     * @deprecated in 3.1.0. Use [[dropIndexIfExists()]] instead.
      */
     public static function dropIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -631,7 +632,7 @@ class MigrationHelper
      * @param string|string[] $columns
      * @param bool $unique
      * @param Migration|null $migration
-     * @deprecated in 3.1.
+     * @deprecated in 3.1.0
      */
     public static function restoreIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -648,7 +649,7 @@ class MigrationHelper
      * @param string $onUpdate
      * @param string $onDelete
      * @param Migration|null $migration
-     * @deprecated in 3.1
+     * @deprecated in 3.1.0
      */
     public static function restoreForeignKey(string $tableName, $columns, string $refTable, $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {

@@ -12,7 +12,6 @@ use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
-use craft\test\Craft;
 use craft\test\mockclasses\serializable\Serializable;
 use craft\volumes\Local;
 use DateTime;
@@ -79,7 +78,7 @@ class ActiveRecordTest extends Unit
 
         // Save it again. Ensure dateUpdated is the same, as nothing has changed.
         $session->save();
-        $this->assertSame($session->dateUpdated, $oldDate->format('Y-m-d H:i:s'));
+        $this->tester->assertEqualDates($this, $session->dateUpdated, $oldDate->format('Y-m-d H:i:s'), 1);
 
         // Save it again with a new value. Ensure dateUpdated is now current.
         $date = new DateTime('now', $dateTimeZone);
@@ -87,7 +86,7 @@ class ActiveRecordTest extends Unit
 
         $session->token = 'test2';
         $session->save();
-        $this->assertSame($session->dateUpdated, $date->format('Y-m-d H:i:s'));
+        $this->tester->assertEqualDates($this, $session->dateUpdated, $date->format('Y-m-d H:i:s'), 1);
     }
 
     /**
@@ -142,7 +141,7 @@ class ActiveRecordTest extends Unit
             ['{"name":"name"}', $jsonableClass],
             ['{"JsonArray":"SomeArray"}', $jsonableArray],
             ['Serialized data', $serializable],
-            [false, false],
+            ['', ''],
         ];
     }
 

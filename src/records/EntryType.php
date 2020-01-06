@@ -27,7 +27,7 @@ use yii\db\ActiveQueryInterface;
  * @property Section $section Section
  * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EntryType extends ActiveRecord
 {

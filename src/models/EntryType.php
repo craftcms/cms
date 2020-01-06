@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  *
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EntryType extends Model
 {
@@ -106,9 +106,9 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
@@ -152,7 +152,7 @@ class EntryType extends Model
     }
 
     /**
-     * Returns the entry’s CP edit URL.
+     * Returns the entry’s edit URL in the control panel.
      *
      * @return string
      */

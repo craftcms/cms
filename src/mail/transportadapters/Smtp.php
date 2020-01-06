@@ -14,7 +14,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Smtp extends BaseTransportAdapter
 {
@@ -107,9 +107,9 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['host'], 'trim'];
         $rules[] = [['host', 'port', 'timeout'], 'required'];
         $rules[] = [

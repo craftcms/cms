@@ -14,7 +14,7 @@ use DateTime;
  * AssetIndexData model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexData extends Model
 {
@@ -82,9 +82,9 @@ class AssetIndexData extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'volumeId', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true];
         $rules[] = [['completed', 'inProgress'], 'boolean'];
         return $rules;

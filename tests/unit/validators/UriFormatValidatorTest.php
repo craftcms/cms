@@ -81,6 +81,11 @@ class UriFormatValidatorTest extends Unit
             [true, 'slug', true],
             [false, 'entry/{test}/test', true],
 
+            // https://github.com/craftcms/cms/issues/4154
+            [false, 'actions/{slug}', true],
+            [false, 'actions', false],
+            [false, 'adminustriggerus/foo', false],
+            [false, 'adminustriggerus', false],
         ];
     }
 

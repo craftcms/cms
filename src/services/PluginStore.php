@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Table;
-use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
@@ -22,7 +21,7 @@ use yii\base\Component;
  * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|`Craft::$app->pluginStore`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PluginStore extends Component
 {
@@ -66,49 +65,6 @@ class PluginStore extends Component
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns the Craft ID account.
-     *
-     * @return array|null
-     * @throws \Exception
-     */
-    public function getCraftIdAccount()
-    {
-        $craftIdToken = $this->getToken();
-
-        if (!$craftIdToken) {
-            return null;
-        }
-
-        $client = Craft::$app->getApi()->client;
-        $options = $this->getApiRequestOptions();
-        $craftIdAccountResponse = $client->get('account', $options);
-        $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-        if (isset($craftIdAccount['error'])) {
-            throw new \Exception("Couldn’t get Craft ID account: " . $craftIdAccount['error']);
-        }
-
-        return $craftIdAccount;
-    }
-
-    /**
-     * Returns the options for authenticated API requests.
-     *
-     * @return array
-     */
-    public function getApiRequestOptions(): array
-    {
-        $options = [];
-
-        $token = $this->getToken();
-        if ($token && $token->accessToken !== null) {
-            $options['headers']['Authorization'] = 'Bearer ' . $token->accessToken;
-        }
-
-        return $options;
-    }
 
     /**
      * Saves the OAuth token.

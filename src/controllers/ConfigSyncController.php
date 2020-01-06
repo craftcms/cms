@@ -20,7 +20,8 @@ use yii\web\Response;
  * ConfigSyncController handles the Project Config Sync workflow
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
+ * @internal
  */
 class ConfigSyncController extends BaseUpdaterController
 {

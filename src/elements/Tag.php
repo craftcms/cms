@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  *
  * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tag extends Element
 {
@@ -40,9 +40,25 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'tag');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Tags');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'tags');
     }
 
     /**
@@ -112,6 +128,26 @@ class Tag extends Element
         return $sources;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var TagGroup $context */
+        return $context->handle . '_Tag';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var TagGroup $context */
+        return ['taggroups.' . $context->uid];
+    }
+
     // Properties
     // =========================================================================
 
@@ -142,9 +178,9 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -184,6 +220,15 @@ class Tag extends Element
         return $group;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getGroup());
+    }
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
@@ -220,20 +265,22 @@ class Tag extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Get the tag record
-        if (!$isNew) {
-            $record = TagRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the tag record
+            if (!$isNew) {
+                $record = TagRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid tag ID: ' . $this->id);
+                if (!$record) {
+                    throw new Exception('Invalid tag ID: ' . $this->id);
+                }
+            } else {
+                $record = new TagRecord();
+                $record->id = (int)$this->id;
             }
-        } else {
-            $record = new TagRecord();
-            $record->id = $this->id;
-        }
 
-        $record->groupId = $this->groupId;
-        $record->save(false);
+            $record->groupId = (int)$this->groupId;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }

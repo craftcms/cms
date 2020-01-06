@@ -16,7 +16,7 @@ use yii\console\Exception;
 use yii\console\ExitCode;
 
 /**
- * Clear caches via the CLI
+ * Allows you to clear various Craft caches.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.37
@@ -56,7 +56,7 @@ class ClearCachesController extends Controller
     }
 
     /**
-     * Clear all caches
+     * Clear all caches.
      *
      * @return int
      * @throws InvalidRouteException

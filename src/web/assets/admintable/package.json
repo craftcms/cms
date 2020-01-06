@@ -1,0 +1,38 @@
+{
+  "name": "admin-table",
+  "version": "0.1.0",
+  "private": true,
+  "browserslist": [
+    "defaults",
+    "Edge >= 15",
+    "Chrome >= 29",
+    "Safari >= 9",
+    "ie >= 11",
+    "Firefox >= 28",
+    "iOS >= 9.1",
+    "Android >= 4.4"
+  ],
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@pixelandtonic/craftui": "~0.3.8",
+    "lodash": "^4.17.10",
+    "sortablejs": "^1.10.1",
+    "vue": "^2.5.17",
+    "vue-router": "^3.0.1",
+    "vuetable-2": "^1.7.5",
+    "vuex": "^3.0.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.0.3",
+    "@vue/cli-plugin-eslint": "^3.0.3",
+    "@vue/cli-service": "^3.0.3",
+    "node-sass": "^4.9.0",
+    "sass-loader": "^7.0.1",
+    "vue-template-compiler": "^2.5.17",
+    "webpack-manifest-plugin": "^2.0.4"
+  }
+}

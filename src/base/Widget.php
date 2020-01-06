@@ -13,7 +13,7 @@ use Craft;
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Widget extends SavableComponent implements WidgetInterface
 {
@@ -63,7 +63,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      * Returns the path to the widget’s SVG icon.
      *
      * @return string|null
-     * @deprecated in 3.2. Use [[icon()]] instead.
+     * @deprecated in 3.2.0. Use [[icon()]] instead.
      */
     public static function iconPath()
     {
@@ -76,9 +76,9 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         // Only validate the ID if it's not a new widget
         if (!$this->getIsNew()) {

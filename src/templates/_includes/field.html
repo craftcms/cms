@@ -1,5 +1,7 @@
-{% set static = static is defined ? static : false %}
-{% set element = element is defined ? element : null %}
+{% from '_includes/forms' import field %}
+
+{% set static = static ?? false %}
+{% set element = element ?? null %}
 
 {% set value = (element ? element.getFieldValue(field.handle) : field.normalizeValue(null)) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
@@ -7,36 +9,32 @@
 {% set translatable = field.getIsTranslatable(element) %}
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
 
-{% if translatable %}
-    {% switch field.translationMethod %}
-    {% case 'site' %}
-        {% set translationDescription = 'This field is translated for each site.'|t('app') %}
-    {% case 'siteGroup' %}
-        {% set translationDescription = 'This field is translated for each site group.'|t('app') %}
-    {% case 'language' %}
-        {% set translationDescription = 'This field is translated for each language.'|t('app') %}
-    {% endswitch %}
-{% endif %}
-
 {% if not static %}
+    {% set isDeltaRegistrationActive = view.getIsDeltaRegistrationActive() %}
+    {% set registerDeltas = isDeltaRegistrationActive and (registerDeltas ?? false) %}
+    {% do view.setIsDeltaRegistrationActive(registerDeltas) %}
+    {% do view.registerDeltaName(field.handle) %}
     {% set input = field.getInputHtml(value, element) %}
+    {% do view.setIsDeltaRegistrationActive(isDeltaRegistrationActive) %}
 {% else %}
     {% set input = field.getStaticHtml(value, element) %}
 {% endif %}
 
 {% if instructions or input %}
-    {% embed "_includes/forms/field" with {
+    {{ field({
+        status: element ? element.getFieldStatus(field.handle),
         label: field.name|t('site')|e,
         translatable: translatable,
-        translationDescription: translationDescription ?? null,
+        translationDescription: field.getTranslationDescription(element),
         siteId: siteId,
         required: (not static ? required : false),
         instructions: instructions|e,
         id: field.handle,
         errors: errors,
-        input: input,
-        fieldType: className(field)
-    } only %}
-        {% block attr %}data-type="{{ fieldType }}"{% endblock %}
-    {% endembed %}
+        fieldAttributes: {
+            data: {
+                type: className(field),
+            },
+        },
+    }, input) }}
 {% endif %}

@@ -3,8 +3,8 @@
 namespace myprojecttests;
 
 use Codeception\Test\Unit;
-use UnitTester;
 use Craft;
+use UnitTester;
 
 class ExampleUnitTest extends Unit
 {

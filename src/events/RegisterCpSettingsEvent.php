@@ -13,7 +13,7 @@ use yii\base\Event;
  * RegisterCpSettingsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class RegisterCpSettingsEvent extends Event
 {
@@ -21,7 +21,7 @@ class RegisterCpSettingsEvent extends Event
     // =========================================================================
 
     /**
-     * @var array The registered CP settings
+     * @var array The registered control panel settings
      */
     public $settings = [];
 }

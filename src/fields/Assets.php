@@ -11,24 +11,31 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Volume;
+use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
+use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
 /**
  * Assets represents an Assets field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets extends BaseRelationField
 {
@@ -71,9 +78,9 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var bool|null Whether related assets should be limited to a single folder
+     * @var bool Whether related assets should be limited to a single folder
      */
-    public $useSingleFolder;
+    public $useSingleFolder = false;
 
     /**
      * @var string|null Where files should be uploaded to by default, in format
@@ -114,6 +121,19 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
+     * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
+     * @since 3.4.0
+     */
+    public $showUnpermittedVolumes = false;
+
+    /**
+     * @var bool Whether to show files the user doesn’t have permission to view, per the
+     * “View files uploaded by other users” permission.
+     * @since 3.4.0
+     */
+    public $showUnpermittedFiles = false;
+
+    /**
      * @inheritdoc
      */
     protected $allowLargeThumbsView = true;
@@ -144,9 +164,26 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public function __construct(array $config = [])
+    {
+        // Default showUnpermittedVolumes to true for existing Assets fields
+        if (isset($config['id']) && !isset($config['showUnpermittedVolumes'])) {
+            $config['showUnpermittedVolumes'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
+
+        $this->useSingleFolder = (bool)$this->useSingleFolder;
+        $this->showUnpermittedVolumes = (bool)$this->showUnpermittedVolumes;
+        $this->showUnpermittedFiles = (bool)$this->showUnpermittedFiles;
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -161,9 +198,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         $rules[] = [
             ['allowedKinds'], 'required', 'when' => function(self $field): bool {
@@ -394,6 +431,20 @@ class Assets extends BaseRelationField
         return $this->_determineUploadFolderId($element, true);
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(AssetInterface::getType()),
+            'args' => AssetArguments::getArguments(),
+            'resolve' => AssetResolver::class . '::resolve',
+        ];
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -402,23 +453,21 @@ class Assets extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        // Everything has been handled for propagating fields already.
+        // Figure out what we're working with and set up some initial variables.
+        $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+        $query = $element->getFieldValue($this->handle);
+        $assetsService = Craft::$app->getAssets();
+
+        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+            static $targetFolderId;
+            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+        };
+
+        // Folder creation and file uploads have been handles for propagating elements already.
         /** @var Element $element */
         if (!$element->propagating) {
-            $assetsService = Craft::$app->getAssets();
-
-            // Figure out what we're working with
-            $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
-
-            $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
-                static $targetFolderId;
-                return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
-            };
-
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
-
-            $query = $element->getFieldValue($this->handle);
 
             if (!empty($uploadedFiles)) {
                 $targetFolderId = $getTargetFolderId();
@@ -460,40 +509,58 @@ class Assets extends BaseRelationField
                 // Make sure that all traces of processed files are removed.
                 $this->_uploadedDataFiles = null;
             }
+        }
 
-            // Are there any related assets?
-            /** @var AssetQuery $query */
-            /** @var Asset[] $assets */
-            $assets = $query->all();
+        // Are there any related assets?
+        /** @var AssetQuery $query */
+        /** @var Asset[] $assets */
+        $assets = $query->all();
 
-            if (!empty($assets)) {
-                // Only enforce the single upload folder setting if this isn't a draft or revision
-                if ($this->useSingleFolder && !$isDraftOrRevision) {
-                    $targetFolderId = $getTargetFolderId();
-                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
-                        return $asset->folderId != $targetFolderId;
-                    });
-                } else {
-                    // Find the files with temp sources and just move those.
-                    $assetsToMove = Asset::find()
-                        ->id(ArrayHelper::getColumn($assets, 'id'))
-                        ->volumeId(':empty:')
-                        ->all();
-                }
+        if (!empty($assets)) {
+            // Only enforce the single upload folder setting if this isn't a draft or revision
+            if ($this->useSingleFolder && !$isDraftOrRevision) {
+                $targetFolderId = $getTargetFolderId();
+                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                    return $asset->folderId != $targetFolderId;
+                });
+            } else {
+                // Find the files with temp sources and just move those.
+                $assetsToMove = Asset::find()
+                    ->id(ArrayHelper::getColumn($assets, 'id'))
+                    ->volumeId(':empty:')
+                    ->all();
+            }
 
-                if (!empty($assetsToMove)) {
-                    $folder = $assetsService->getFolderById($getTargetFolderId());
+            if (!empty($assetsToMove)) {
+                $folder = $assetsService->getFolderById($getTargetFolderId());
 
-                    // Resolve all conflicts by keeping both
-                    foreach ($assetsToMove as $asset) {
-                        $asset->avoidFilenameConflicts = true;
-                        $assetsService->moveAsset($asset, $folder);
-                    }
+                // Resolve all conflicts by keeping both
+                foreach ($assetsToMove as $asset) {
+                    $asset->avoidFilenameConflicts = true;
+                    $assetsService->moveAsset($asset, $folder);
                 }
             }
         }
 
         parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
+
+        if (empty($allowedVolumeUids)) {
+            return false;
+        }
+
+        $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
+
+        return ['volumeId' => array_values($volumeIds)];
     }
 
     // Protected Methods
@@ -507,8 +574,21 @@ class Assets extends BaseRelationField
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
 
+        $assetsService = Craft::$app->getAssets();
+
         if ($this->useSingleFolder) {
-            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            if (!$this->showUnpermittedVolumes) {
+                // Make sure they have permission to view the volume
+                // (Use singleUploadLocationSource here because the actual folder could belong to a temp volume)
+                $volumeId = $this->_volumeIdBySourceKey($this->singleUploadLocationSource);
+                /** @var Volume|null $volume */
+                $volume = $volumeId ? Craft::$app->getVolumes()->getVolumeById($volumeId) : null;
+                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:{$volume->uid}")) {
+                    return [];
+                }
+            }
+
+            $folder = $assetsService->getFolderById($folderId);
             $folderPath = 'folder:' . $folder->uid;
 
             // Construct the path
@@ -533,9 +613,28 @@ class Assets extends BaseRelationField
                 }
             }
         } else {
-            if ($this->sources === '*') {
-                $sources = '*';
+            foreach (Craft::$app->getElementIndexes()->getSources(Asset::class) as $source) {
+                if (isset($source['key'])) {
+                    $sources[] = $source['key'];
+                }
             }
+        }
+
+        // Now enforce the showUnpermittedVolumes setting
+        if (!$this->showUnpermittedVolumes && !empty($sources)) {
+            $userService = Craft::$app->getUser();
+            $permittedSources = [];
+            foreach ($sources as $i => $source) {
+                if (strpos($source, 'folder:') === 0) {
+                    $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
+                    /** @var Volume $volume */
+                    $volume = $folder ? $folder->getVolume() : null;
+                    if ($volume && $userService->checkPermission("viewVolume:{$volume->uid}")) {
+                        $permittedSources[] = $source;
+                    }
+                }
+            }
+            return $permittedSources;
         }
 
         return $sources;
@@ -547,21 +646,26 @@ class Assets extends BaseRelationField
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
-        $variables['hideSidebar'] = (int)$this->useSingleFolder;
+        $variables['hideSidebar'] = $this->useSingleFolder;
         $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
 
         return $variables;
     }
-
 
     /**
      * @inheritdoc
      */
     protected function inputSelectionCriteria(): array
     {
-        return [
+        $criteria = [
             'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
         ];
+
+        if ($this->showUnpermittedFiles) {
+            $criteria['uploaderId'] = null;
+        }
+
+        return $criteria;
     }
 
     // Private Methods
@@ -577,6 +681,10 @@ class Assets extends BaseRelationField
     {
         /** @var Element $element */
         $uploadedFiles = [];
+
+        if (ElementHelper::rootElement($element)->getIsRevision()) {
+            return $uploadedFiles;
+        }
 
         // Grab data strings
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
@@ -636,9 +744,9 @@ class Assets extends BaseRelationField
      * @param string $subpath
      * @param ElementInterface|null $element
      * @param bool $createDynamicFolders whether missing folders should be created in the process
-     * @throws InvalidVolumeException if the volume root folder doesn’t exist
-     * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
+     * @throws InvalidSubpathException if the subpath cannot be parsed in full
+     * @throws InvalidVolumeException if the volume root folder doesn’t exist
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {

@@ -19,6 +19,7 @@ use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
@@ -37,12 +38,15 @@ use yii\db\Exception as DbException;
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Connection extends \yii\db\Connection
 {
     // Constants
     // =========================================================================
+
+    const DRIVER_MYSQL = 'mysql';
+    const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @event BackupEvent The event that is triggered before the backup is created.
@@ -111,7 +115,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsMysql(): bool
     {
-        return $this->getDriverName() === DbConfig::DRIVER_MYSQL;
+        return $this->getDriverName() === Connection::DRIVER_MYSQL;
     }
 
     /**
@@ -121,7 +125,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsPgsql(): bool
     {
-        return $this->getDriverName() === DbConfig::DRIVER_PGSQL;
+        return $this->getDriverName() === Connection::DRIVER_PGSQL;
     }
 
     /**
@@ -198,6 +202,7 @@ class Connection extends \yii\db\Connection
      * Returns the path for a new backup file.
      *
      * @return string
+     * @since 3.0.38
      */
     public function getBackupFilePath(): string
     {
@@ -209,13 +214,13 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns the raw database table names that should be ignored by default.
+     * Returns the core table names whose data should be excluded from database backups.
      *
      * @return string[]
      */
     public function getIgnoredBackupTables(): array
     {
-        $tables = [
+        return [
             Table::ASSETINDEXDATA,
             Table::ASSETTRANSFORMINDEX,
             Table::SESSIONS,
@@ -225,14 +230,6 @@ class Connection extends \yii\db\Connection
             '{{%cache}}',
             '{{%templatecachecriteria}}',
         ];
-
-        $schema = $this->getSchema();
-
-        foreach ($tables as $i => $table) {
-            $tables[$i] = $schema->getRawTableName($table);
-        }
-
-        return $tables;
     }
 
     /**
@@ -262,12 +259,18 @@ class Connection extends \yii\db\Connection
      */
     public function backupTo(string $filePath)
     {
+        // Fire a 'beforeCreateBackup' event
+        $event = new BackupEvent([
+            'file' => $filePath,
+            'ignoreTables' => $this->getIgnoredBackupTables(),
+        ]);
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
+
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         if ($backupCommand === null) {
-            $schema = $this->getSchema();
-            $backupCommand = $schema->getDefaultBackupCommand();
+            $backupCommand = $this->getSchema()->getDefaultBackupCommand($event->ignoreTables);
         }
 
         if ($backupCommand === false) {
@@ -278,13 +281,6 @@ class Connection extends \yii\db\Connection
         $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
         $command = $this->_createShellCommand($backupCommand);
 
-        // Fire a 'beforeCreateBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath
-            ]));
-        }
-
         $this->_executeDatabaseShellCommand($command);
 
         // Fire an 'afterCreateBackup' event
@@ -292,6 +288,28 @@ class Connection extends \yii\db\Connection
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
                 'file' => $filePath
             ]));
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->maxBackups) {
+            $backupPath = Craft::$app->getPath()->getDbBackupPath();
+
+            // Grab all .sql files in the backup folder.
+            $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
+
+            // Sort them by file modified time descending (newest first).
+            usort($files, static function($a, $b) {
+                return filemtime($a) < filemtime($b);
+            });
+
+            if (count($files) >= $generalConfig->maxBackups) {
+                $backupsToDelete = array_slice($files, $generalConfig->maxBackups);
+
+                foreach ($backupsToDelete as $backupToDelete) {
+                    FileHelper::unlink($backupToDelete);
+                }
+            }
         }
     }
 
@@ -304,12 +322,18 @@ class Connection extends \yii\db\Connection
      */
     public function restore(string $filePath)
     {
+        // Fire a 'beforeRestoreBackup' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+                'file' => $filePath
+            ]));
+        }
+
         // Determine the command that should be executed
         $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
         if ($restoreCommand === null) {
-            $schema = $this->getSchema();
-            $restoreCommand = $schema->getDefaultRestoreCommand();
+            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
 
         if ($restoreCommand === false) {
@@ -319,13 +343,6 @@ class Connection extends \yii\db\Connection
         // Create the shell command
         $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
         $command = $this->_createShellCommand($restoreCommand);
-
-        // Fire a 'beforeRestoreBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-                'file' => $filePath
-            ]));
-        }
 
         $this->_executeDatabaseShellCommand($command);
 
@@ -520,15 +537,8 @@ class Connection extends \yii\db\Connection
      */
     private function _getTableNameWithoutPrefix(string $table): string
     {
-        $table = $this->getSchema()->getRawTableName($table);
-
-        if ($this->tablePrefix) {
-            if (strpos($table, $this->tablePrefix) === 0) {
-                $table = substr($table, strlen($this->tablePrefix));
-            }
-        }
-
-        return $table;
+        $table = str_replace('%', '', $table);
+        return $this->getSchema()->getRawTableName($table);
     }
 
     /**
@@ -560,15 +570,17 @@ class Connection extends \yii\db\Connection
      */
     private function _parseCommandTokens(string $command, $file): string
     {
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        $parsed = Db::parseDsn($this->dsn);
+        $username = $this->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->username;
+        $password = $this->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->password;
         $tokens = [
             '{file}' => $file,
-            '{port}' => $dbConfig->port,
-            '{server}' => $dbConfig->server,
-            '{user}' => $dbConfig->user,
-            '{password}' => addslashes(str_replace('$', '\\$', $dbConfig->password)),
-            '{database}' => $dbConfig->database,
-            '{schema}' => $dbConfig->schema,
+            '{port}' => $parsed['port'] ?? '',
+            '{server}' => $parsed['host'] ?? '',
+            '{user}' => $username,
+            '{password}' => addslashes(str_replace('$', '\\$', $password)),
+            '{database}' => $parsed['dbname'] ?? '',
+            '{schema}' => $this->getSchema()->defaultSchema ?? '',
         ];
 
         return str_replace(array_keys($tokens), $tokens, $command);
@@ -616,19 +628,19 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * TODO: remove this method after the next breakpoint and just use getInfo()->name directly.
+     * TODO: remove this method after the next breakpoint and just use `Craft::$app->getSystemName()` directly.
      *
      * @return string
      */
     private function _getFixedSystemName(): string
     {
-        try {
+        if ($this->columnExists(Table::INFO, 'siteName')) {
             return (new Query())
                 ->select(['siteName'])
                 ->from([Table::INFO])
-                ->column()[0];
-        } catch (\Throwable $e) {
-            return Craft::$app->getSystemName();
+                ->scalar($this) ?: 'CraftCMS';
         }
+
+        return Craft::$app->getSystemName();
     }
 }

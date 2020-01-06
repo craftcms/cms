@@ -12,7 +12,7 @@ namespace craft\base;
  * A class implementing this interface should also use [[SavableComponentTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface SavableComponentInterface extends ComponentInterface
 {
@@ -180,6 +180,8 @@ interface SavableComponentInterface extends ComponentInterface
 
     /**
      * Performs actions before a component delete is applied to the database.
+     *
+     * @since 3.1.0
      */
     public function beforeApplyDelete();
 

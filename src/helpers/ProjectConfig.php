@@ -9,16 +9,16 @@ namespace craft\helpers;
 
 use Craft;
 use craft\services\Fields;
+use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
 use yii\base\InvalidConfigException;
-
 
 /**
  * Class ProjectConfig
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class ProjectConfig
 {
@@ -113,12 +113,24 @@ class ProjectConfig
     }
 
     /**
+     * Resets the static memoization variables.
+     *
+     * @return void
+     */
+    public static function reset()
+    {
+        static::$_processedFields = false;
+        static::$_processedSites = false;
+        static::$_processedUserGroups = false;
+    }
+
+    /**
      * Traverse and clean a config array, removing empty values and sorting keys.
      *
      * @param array $config Config array to clean
-     *
      * @return array
      * @throws InvalidConfigException if config contains unexpected data.
+     * @since 3.1.14
      */
     public static function cleanupConfig(array $config): array
     {
@@ -144,6 +156,7 @@ class ProjectConfig
                 }
             }
         }
+
         unset($value);
 
         // Remove empty stuff
@@ -151,6 +164,77 @@ class ProjectConfig
             unset($config[$removeKey]);
         }
 
+        ksort($config);
+
         return $config;
+    }
+
+    /**
+     * Packs an associative array for storage in project config.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.4.0
+     */
+    public static function packAssociativeArray(array $array): array
+    {
+        foreach ($array as $setting => &$value) {
+            if (ArrayHelper::isAssociative($value)) {
+                $newValues = [];
+
+                foreach ($value as $key => $innerValue) {
+                    $newValues[] = [$key, $innerValue];
+                }
+
+                $value = [ProjectConfigService::CONFIG_ASSOC_KEY => $newValues];
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * Unpacks a packed associative array from project config storage.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.4.0
+     */
+    public static function unpackAssociativeArray(array $array): array
+    {
+        foreach ($array as $key => &$value) {
+            if (is_array($value) && !empty($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+                $associative = [];
+
+                foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                    $associative[$items[0]] = $items[1];
+                }
+
+                $value = $associative;
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * Flatten a config array to a dot.based.key array.
+     *
+     * @param $array
+     * @param $path
+     * @param $result
+     * @since 3.4.0
+     */
+    public static function flattenConfigArray($array, $path, &$result)
+    {
+        foreach ($array as $key => $value) {
+            $thisPath = ltrim($path . '.' . $key, '.');
+
+            if (is_array($value)) {
+                self::flattenConfigArray($value, $thisPath, $result);
+            } else {
+                $result[$thisPath] = $value;
+            }
+        }
     }
 }

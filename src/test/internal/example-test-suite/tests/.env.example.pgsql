@@ -1,11 +1,9 @@
 # Set in accordance to your environment
 
-DB_DRIVER="pgsql"
-DB_SERVER="localhost"
+DB_DSN="pgsql:host=localhost;port=5432;dbname=craft-test"
 DB_USER="postgres"
 DB_PASSWORD=""
-DB_DATABASE="craft-test"
 DB_SCHEMA="public"
-DB_TABLE_PREFIX=""
-DB_PORT="5432"
+DB_TABLE_PREFIX="craft"
+
 SECURITY_KEY="abcde12345"

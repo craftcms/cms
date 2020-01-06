@@ -22,7 +22,7 @@ use yii\di\Instance;
  * MigrationManager manages a set of migrations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrationManager extends Component
 {
@@ -84,10 +84,6 @@ class MigrationManager extends Component
 
         if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT], true)) {
             throw new InvalidConfigException('Invalid migration type: ' . $this->type);
-        }
-
-        if ($this->type == self::TYPE_PLUGIN && $this->pluginId === null) {
-            throw new InvalidConfigException('The plugin ID has not been set.');
         }
 
         if ($this->migrationPath === null) {
@@ -343,6 +339,8 @@ class MigrationManager extends Component
      */
     public function addMigrationHistory(string $name)
     {
+        $this->_validatePluginConfig();
+
         Craft::$app->getDb()->createCommand()
             ->insert(
                 $this->migrationTable,
@@ -362,6 +360,8 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory(string $name)
     {
+        $this->_validatePluginConfig();
+
         Craft::$app->getDb()->createCommand()
             ->delete(
                 $this->migrationTable,
@@ -375,9 +375,13 @@ class MigrationManager extends Component
 
     /**
      * Truncates the migration history.
+     *
+     * @since 3.0.32
      */
     public function truncateHistory()
     {
+        $this->_validatePluginConfig();
+
         Craft::$app->getDb()->createCommand()
             ->delete(
                 $this->migrationTable,
@@ -440,6 +444,22 @@ class MigrationManager extends Component
     // =========================================================================
 
     /**
+     * Ensures that [[pluginId]] is set properly.
+     *
+     * @throws InvalidConfigException
+     */
+    private function _validatePluginConfig()
+    {
+        if ($this->type === self::TYPE_PLUGIN) {
+            if ($this->pluginId === null) {
+                throw new InvalidConfigException('The plugin ID has not been set.');
+            }
+        } else {
+            $this->pluginId = null;
+        }
+    }
+
+    /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
@@ -465,6 +485,8 @@ class MigrationManager extends Component
      */
     private function _createMigrationQuery(): Query
     {
+        $this->_validatePluginConfig();
+
         // TODO: Remove after next breakpoint
         if (
             version_compare(Craft::$app->getInfo()->version, '3.0', '<') &&

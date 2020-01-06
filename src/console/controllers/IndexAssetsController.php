@@ -12,12 +12,15 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\MissingAssetException;
+use craft\errors\VolumeObjectNotFoundException;
 use yii\console\ExitCode;
+use yii\db\Exception;
 use yii\helpers\Console;
 
 /**
- * Re-indexes assets in volumes.
+ * Allows you to re-indexes assets in volumes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.2
@@ -73,6 +76,7 @@ class IndexAssetsController extends Controller
      * @param string $handle The handle of the volume to index
      * @param int $startAt
      * @return int
+     * @since 3.1.4
      */
     public function actionOne($handle, $startAt = 0): int
     {
@@ -101,6 +105,9 @@ class IndexAssetsController extends Controller
      * @param string $path the subfolder path
      * @param int $startAt
      * @return int
+     * @throws MissingAssetException
+     * @throws VolumeObjectNotFoundException
+     * @throws Exception
      */
     private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
     {
@@ -140,6 +147,9 @@ class IndexAssetsController extends Controller
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     $missingRecordsByFilename[$e->filename][] = $e;
+                    continue;
+                } catch (AssetDisallowedExtensionException $e) {
+                    $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 } catch (\Throwable $e) {
                     $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);

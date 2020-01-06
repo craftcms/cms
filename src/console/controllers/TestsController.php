@@ -16,12 +16,12 @@ use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
 /**
- * The TestsController provides various support resources for testing both Craft's
- * own services and your implementation of Craft within your project.
+ * Provides support resources for testing both Craft's own services and your
+ * implementation of Craft within your project.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class TestsController extends Controller
 {

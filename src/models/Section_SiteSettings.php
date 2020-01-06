@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
  * Section_SiteSettings model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Section_SiteSettings extends Model
 {
@@ -141,9 +141,9 @@ class Section_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
         $rules[] = [['siteId'], SiteIdValidator::class];
         $rules[] = [['template'], 'string', 'max' => 500];
@@ -154,7 +154,7 @@ class Section_SiteSettings extends Model
             $rules[] = ['uriFormat', UriFormatValidator::class];
         }
 
-        if ($this->hasUrls || $this->getSection()->type == Section::TYPE_SINGLE) {
+        if ($this->hasUrls) {
             $rules[] = [['uriFormat'], 'required'];
         }
 

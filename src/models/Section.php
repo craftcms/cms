@@ -11,7 +11,9 @@ use Craft;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -20,7 +22,7 @@ use craft\validators\UniqueValidator;
  * Section model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
@@ -86,19 +88,21 @@ class Section extends Model
      * - `siteGroup` – Save entries to other sites in the same site group
      * - `language` – Save entries to other sites with the same language
      * - `all` – Save entries to all sites enabled for this section
+     *
+     * @since 3.2.0
      */
     public $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
      * @var bool Propagate entries
-     * @deprecated in 3.2. Use [[$propagationMethod]] instead
+     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
 
     /**
      * @var array Preview targets
      */
-    public $previewTargets = [];
+    public $previewTargets = null;
 
     /**
      * @var string|null Section's UID
@@ -123,6 +127,17 @@ class Section extends Model
      */
     public function init()
     {
+        if ($this->previewTargets === null) {
+            $this->previewTargets = [
+                [
+                    'label' => Craft::t('app', 'Primary {type} page', [
+                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                    ]),
+                    'urlFormat' => '{url}',
+                ]
+            ];
+        }
+
         // todo: remove this in 4.0
         // Set propagateEntries in case anything is still checking it
         $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
@@ -145,9 +160,9 @@ class Section extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
@@ -317,6 +332,7 @@ class Section extends Model
      * Sets the section's entry types.
      *
      * @param EntryType[] $entryTypes
+     * @since 3.1.0
      */
     public function setEntryTypes(array $entryTypes)
     {
@@ -327,6 +343,7 @@ class Section extends Model
      * Returns whether entries in this section support multiple sites.
      *
      * @return bool
+     * @since 3.0.35
      */
     public function getHasMultiSiteEntries(): bool
     {

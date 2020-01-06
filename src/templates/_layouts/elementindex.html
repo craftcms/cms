@@ -30,35 +30,43 @@
         </nav>
 
         {% if customizableSources %}
-            <div class="heading"><span></span></div>
-            <a class="customize-sources settings icon" title="{{ 'Customize sources'|t }}"></a>
+            <a class="customize-sources">
+                <span class="settings icon"></span>
+                <span class="label">{{ 'Customize'|t('app') }}</span>
+            </a>
         {% endif %}
     {% endif %}
 {% endblock %}
 
 
+{% block toolbar %}
+    {% include '_elements/toolbar' with {
+        showSiteMenu: false,
+    } %}
+{% endblock %}
+
+
 {% block content %}
-    <div class="elementindex">
-        {% include "_elements/indexcontainer" with {
-            showSiteMenu: false
-        } %}
+    <div class="main">
+        <div class="elements"></div>
     </div>
 {% endblock %}
 
 
 {% block footer %}
     <div id="count-container" class="light flex-grow">&nbsp;</div>
-    <div id="export-btn" class="btn">{{ 'Export…'|t('app') }}</div>
+    <div id="export-btn" class="btn hidden">{{ 'Export…'|t('app') }}</div>
 {% endblock %}
 
 
 {% block initJs %}
-    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
+    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
         elementTypeName: '{{ elementInstance.displayName()|e("js") }}',
         elementTypePluralName: '{{ elementInstance.pluralDisplayName()|e("js") }}',
         context: '{{ context }}',
         storageKey: 'elementindex.{{ elementType|e("js") }}',
-        criteria: Craft.defaultIndexCriteria
+        criteria: Craft.defaultIndexCriteria,
+        toolbarSelector: '#toolbar'
     });
 {% endblock %}
 

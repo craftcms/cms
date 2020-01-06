@@ -17,7 +17,7 @@ use yii\base\Exception;
  * An instance of the Path service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPath()|`Craft::$app->path`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Path extends Component
 {
@@ -72,6 +72,7 @@ class Path extends Component
      * Returns the path to `config/project.yaml`.
      *
      * @return string
+     * @since 3.1.2
      */
     public function getProjectConfigFilePath(): string
     {
@@ -110,6 +111,7 @@ class Path extends Component
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
      * @throws Exception
+     * @since 3.0.38
      */
     public function getComposerBackupsPath(bool $create = true): string
     {
@@ -117,18 +119,19 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
     }
 
     /**
-     * Returns the path to the `storage/configs/` directory.
+     * Returns the path to the `storage/config-backups/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
      * @throws Exception
+     * @since 3.1.0
      */
     public function getConfigBackupPath(bool $create = true): string
     {
@@ -136,7 +139,27 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the `storage/config-deltas/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     * @since 3.4.0
+     */
+    public function getConfigDeltaPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-deltas';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -194,7 +217,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -509,24 +532,5 @@ class Path extends Component
     public function getLicenseKeyPath(): string
     {
         return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
-    }
-
-    /**
-     * Creates a .gitignore file in the given directory if it doesn’t exist yet
-     *
-     * @param string $path
-     */
-    private function _createGitignore(string $path)
-    {
-        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
-
-        if (is_file($gitignorePath)) {
-            return;
-        }
-
-        FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
-            // Prevent a segfault if this is called recursively
-            'lock' => false,
-        ]);
     }
 }

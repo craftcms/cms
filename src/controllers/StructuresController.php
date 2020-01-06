@@ -21,7 +21,7 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StructuresController extends Controller
 {
@@ -44,7 +44,7 @@ class StructuresController extends Controller
     /**
      * Initializes the application component.
      *
-     * @throws ForbiddenHttpException if this is not a Control Panel request
+     * @throws ForbiddenHttpException if this is not a control panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */
     public function init()
@@ -54,9 +54,9 @@ class StructuresController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        // This controller is only available to the Control Panel
+        // This controller is only available to the control panel
         if (!$request->getIsCpRequest()) {
-            throw new ForbiddenHttpException('Action only available from the Control Panel');
+            throw new ForbiddenHttpException('Action only available from the control panel');
         }
 
         $structureId = $request->getRequiredBodyParam('structureId');

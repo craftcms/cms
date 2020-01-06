@@ -137,7 +137,7 @@ class ControllerTest extends Unit
         // What happens when we pass in a param.
         Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
         $default = $this->controller->redirectToPostedUrl();
-        $this->assertSame($baseUrl . '?' . http_build_query(['p' => 'craft/do/stuff']), $default->headers->get('Location'));
+        $this->assertSame($baseUrl . '?' . urldecode(http_build_query(['p' => 'craft/do/stuff'])), $default->headers->get('Location'));
     }
 
     /**
@@ -147,7 +147,7 @@ class ControllerTest extends Unit
     {
         $baseUrl = $this->_getBaseUrlForRedirect();
         $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
-        $this->assertSame($baseUrl . '?' . http_build_query(['p' => 'craft/do/stuff']), $withDefault->headers->get('Location'));
+        $this->assertSame($baseUrl . '?' . urldecode(http_build_query(['p' => 'craft/do/stuff'])), $withDefault->headers->get('Location'));
     }
 
     /**
@@ -186,7 +186,7 @@ class ControllerTest extends Unit
     public function testRedirect()
     {
         $this->assertSame(
-            $this->_getBaseUrlForRedirect() . '?' . http_build_query(['p' => 'do/stuff']),
+            $this->_getBaseUrlForRedirect() . '?' . urldecode(http_build_query(['p' => 'do/stuff'])),
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
+use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\ArrayHelper;
@@ -24,6 +25,7 @@ use yii\helpers\Console;
 
 /**
  * Manages Craft and plugin migrations.
+ *
  * A migration means a set of persistent changes to the application environment that is shared among different
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
@@ -40,7 +42,7 @@ use yii\helpers\Console;
  * ~~~
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrateController extends BaseMigrateController
 {
@@ -150,9 +152,14 @@ class MigrateController extends BaseMigrateController
                 $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
                 return false;
             }
-            if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
-                $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
-                return false;
+            $pluginsService = Craft::$app->getPlugins();
+            if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
+                try {
+                    $plugin = $pluginsService->createPlugin($this->plugin);
+                } catch (InvalidPluginException $e) {
+                    $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
+                    return false;
+                }
             }
             $this->plugin = $plugin;
         }

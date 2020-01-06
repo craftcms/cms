@@ -23,7 +23,7 @@ use yii\db\Expression;
  * An instance of the Tokens service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTokens()|`Craft::$app->tokens`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tokens extends Component
 {
@@ -127,7 +127,7 @@ class Tokens extends Component
         // Might be JSON, might not be
         $route = Json::decodeIfJson($route);
 
-        return $route;
+        return (array)$route;
     }
 
     /**

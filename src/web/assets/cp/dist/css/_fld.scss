@@ -1,8 +1,8 @@
 @charset "UTF-8";
 @import "../../../../../../lib/craftcms-sass/mixins";
 
-$fldBgColor: #fff;
-$fldChalkColor: #2f1fb5;
+$fldBgColor: $white;
+$fldChalkColor: $blue900;
 $fldGuideColor: #f4f3fb;
 
 .fieldlayoutform,
@@ -202,12 +202,12 @@ $fldGuideColor: #f4f3fb;
 .fld-tab.draghelper .tabs .tab,
 .fld-tab.draghelper .fld-tabcontent,
 .fld-field.draghelper {
-  background: #fff;
-  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.25);
+  background: $white;
+  @include shadow;
 }
 
 .fld-tab.draghelper .tabs .tab {
-  border-bottom-color: #fff;
+  border-bottom-color: $white;
 }
 
 /* retina */

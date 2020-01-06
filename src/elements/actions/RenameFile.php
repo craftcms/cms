@@ -15,7 +15,7 @@ use craft\helpers\Json;
  * RenameFile represents a Rename File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RenameFile extends ElementAction
 {
@@ -44,6 +44,10 @@ class RenameFile extends ElementAction
     var trigger = new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-movable');
+        },
         activate: function(\$selectedItems)
         {
             var \$element = \$selectedItems.find('.element'),

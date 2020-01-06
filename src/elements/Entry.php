@@ -41,7 +41,7 @@ use yii\base\InvalidConfigException;
  * @property Section $section the entry's section
  * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Entry extends Element
 {
@@ -66,6 +66,14 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'entry');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Entries');
@@ -74,9 +82,25 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'entry';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function trackChanges(): bool
+    {
+        return true;
     }
 
     /**
@@ -353,7 +377,7 @@ class Entry extends Element
                         $newChildUrl = 'entries/' . $section->handle . '/new';
 
                         if (Craft::$app->getIsMultiSite()) {
-                            $newChildUrl .= '/' . $site->handle;
+                            $newChildUrl .= '?site=' . $site->handle;
                         }
 
                         $actions[] = $elementsService->createAction([
@@ -439,6 +463,7 @@ class Entry extends Element
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
@@ -495,6 +520,29 @@ class Entry extends Element
         }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var EntryType $context */
+        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var EntryType $context */
+        return [
+            'sections.' . $context->getSection()->uid,
+            'entrytypes.' . $context->uid,
+        ];
     }
 
     /**
@@ -606,6 +654,15 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public function __clone()
+    {
+        parent::__clone();
+        $this->_hasNewParent = null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function extraFields()
     {
         $names = parent::extraFields();
@@ -644,9 +701,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -742,7 +799,10 @@ class Entry extends Element
      */
     protected function previewTargets(): array
     {
-        return $this->getSection()->previewTargets;
+        return array_map(function($previewTarget) {
+            $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
+            return $previewTarget;
+        }, $this->getSection()->previewTargets);
     }
 
     /**
@@ -807,7 +867,7 @@ class Entry extends Element
      * ```
      *
      * @return EntryType
-     * @throws InvalidConfigException if [[typeId]] is missing or invalid
+     * @throws InvalidConfigException if the section has no entry types
      */
     public function getType(): EntryType
     {
@@ -817,8 +877,12 @@ class Entry extends Element
 
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
-        if (!isset($sectionEntryTypes[$this->typeId])) {
-            throw new InvalidConfigException('Invalid entry type ID: ' . $this->typeId);
+        if ($this->typeId === null || !isset($sectionEntryTypes[$this->typeId])) {
+            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+            if (empty($sectionEntryTypes)) {
+                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+            }
+            return reset($sectionEntryTypes);
         }
 
         return $sectionEntryTypes[$this->typeId];
@@ -849,7 +913,8 @@ class Entry extends Element
         }
 
         if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
-            throw new InvalidConfigException('Invalid author ID: ' . $this->authorId);
+            // The author is probably soft-deleted. Just no author is set
+            return null;
         }
 
         return $this->_author;
@@ -943,6 +1008,15 @@ class Entry extends Element
         }
 
         return UrlHelper::cpUrl($path, $params);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getType());
     }
 
     /**
@@ -1049,6 +1123,8 @@ EOD;
 
     /**
      * Updates the entry's title, if its entry type has a dynamic title format.
+     *
+     * @since 3.0.3
      */
     public function updateTitle()
     {
@@ -1155,39 +1231,47 @@ EOD;
      */
     public function afterSave(bool $isNew)
     {
-        $section = $this->getSection();
+        if (!$this->propagating) {
+            $section = $this->getSection();
 
-        // Get the entry record
-        if (!$isNew) {
-            $record = EntryRecord::findOne($this->id);
+            // Get the entry record
+            if (!$isNew) {
+                $record = EntryRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid entry ID: ' . $this->id);
-            }
-        } else {
-            $record = new EntryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->sectionId = $this->sectionId;
-        $record->typeId = $this->typeId;
-        $record->authorId = $this->authorId;
-        $record->postDate = $this->postDate;
-        $record->expiryDate = $this->expiryDate;
-        $record->save(false);
-
-        if ($section->type == Section::TYPE_STRUCTURE) {
-            // Has the parent changed?
-            if ($this->_hasNewParent()) {
-                if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
-                } else {
-                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                if (!$record) {
+                    throw new Exception('Invalid entry ID: ' . $this->id);
                 }
+            } else {
+                $record = new EntryRecord();
+                $record->id = (int)$this->id;
             }
 
-            // Update the entry's descendants, who may be using this entry's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            $record->sectionId = (int)$this->sectionId;
+            $record->typeId = (int)$this->typeId;
+            $record->authorId = (int)$this->authorId ?: null;
+            $record->postDate = $this->postDate;
+            $record->expiryDate = $this->expiryDate;
+
+            // Capture the dirty attributes from the record
+            $dirtyAttributes = array_keys($record->getDirtyAttributes());
+
+            $record->save(false);
+
+            if ($section->type == Section::TYPE_STRUCTURE) {
+                // Has the parent changed?
+                if ($this->_hasNewParent()) {
+                    if (!$this->newParentId) {
+                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                    } else {
+                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                    }
+                }
+
+                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            }
+
+            $this->setDirtyAttributes($dirtyAttributes);
         }
 
         parent::afterSave($isNew);
@@ -1198,12 +1282,12 @@ EOD;
      */
     public function afterPropagate(bool $isNew)
     {
-        // Save a new revision
+        parent::afterPropagate($isNew);
+
+        // Save a new revision?
         if ($this->_shouldSaveRevision()) {
             Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
         }
-
-        parent::afterPropagate($isNew);
     }
 
     /**

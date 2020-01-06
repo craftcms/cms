@@ -26,11 +26,11 @@ use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
 /**
- * Mailer actions.
+ * Allows for testing mailer settings via the CLI.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class MailerController extends Controller
 {
@@ -103,8 +103,9 @@ class MailerController extends Controller
         }
 
         // Otherwise we let the user decide....
+        $transportType = $settingsModel->transportType;
         $transportAdapters = array_unique([
-            $settingsModel->transportType::displayName() => $settingsModel->transportType,
+            $transportType::displayName() => $settingsModel->transportType,
             'Smtp' => Smtp::class,
             'Gmail' => Gmail::class,
             'Sendmail' => Sendmail::class,

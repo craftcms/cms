@@ -16,10 +16,9 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
-use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
+use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
-use craft\validators\SiteIdValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -30,7 +29,7 @@ use yii\base\InvalidConfigException;
  * @property ElementInterface $owner the owner
  * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MatrixBlock extends Element implements BlockElementInterface
 {
@@ -48,9 +47,25 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix block');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Matrix Blocks');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix blocks');
     }
 
     /**
@@ -131,6 +146,16 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $map;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var MatrixBlockTypeModel $context */
+        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
+    }
+
     // Properties
     // =========================================================================
 
@@ -146,6 +171,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @var int|null Owner site ID
+     * @deprecated in 3.2.0. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 
@@ -158,6 +184,13 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @var int|null Sort order
      */
     public $sortOrder;
+
+    /**
+     * @var bool Whether the block has changed.
+     * @internal
+     * @since 3.4.0
+     */
+    public $dirty = false;
 
     /**
      * @var bool Collapsed
@@ -186,6 +219,16 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'owner';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function extraFields()
     {
         $names = parent::extraFields();
@@ -197,11 +240,10 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        $rules[] = [['ownerSiteId'], SiteIdValidator::class];
         return $rules;
     }
 
@@ -210,31 +252,17 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getSupportedSites(): array
     {
-        // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
-        // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
-
-        if ($this->ownerSiteId !== null) {
-            return [$this->ownerSiteId];
-        }
-
         try {
             $owner = $this->getOwner();
         } catch (InvalidConfigException $e) {
-            $owner = null;
+            $owner = $this->duplicateOf;
         }
 
-        if ($owner || $this->duplicateOf) {
-            // Just send back an array of site IDs -- don't pass along enabledByDefault configs
-            $siteIds = [];
-
-            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
-                $siteIds[] = $siteInfo['siteId'];
-            }
-
-            return $siteIds;
+        if (!$owner) {
+            return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return [Craft::$app->getSites()->getPrimarySite()->id];
+        return Craft::$app->getMatrix()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
     }
 
     /**
@@ -300,7 +328,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getContentTable(): string
     {
-        return $this->_getField()->contentTable;
+        return $this->_field()->contentTable;
     }
 
     /**
@@ -365,17 +393,14 @@ class MatrixBlock extends Element implements BlockElementInterface
         }
     }
 
+
     /**
      * @inheritdoc
+     * @since 3.3.0
      */
-    public function getHasFreshContent(): bool
+    public function getGqlTypeName(): string
     {
-        // Defer to the owner element
-        try {
-            return $this->getOwner()->getHasFreshContent();
-        } catch (InvalidConfigException $e) {
-            return false;
-        }
+        return static::gqlTypeNameByContext($this->getType());
     }
 
     // Events
@@ -387,24 +412,25 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function afterSave(bool $isNew)
     {
-        // Get the block record
-        if (!$isNew) {
-            $record = MatrixBlockRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the block record
+            if (!$isNew) {
+                $record = MatrixBlockRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                if (!$record) {
+                    throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                }
+            } else {
+                $record = new MatrixBlockRecord();
+                $record->id = (int)$this->id;
             }
-        } else {
-            $record = new MatrixBlockRecord();
-            $record->id = $this->id;
-        }
 
-        $record->fieldId = $this->fieldId;
-        $record->ownerId = $this->ownerId;
-        $record->ownerSiteId = $this->ownerSiteId;
-        $record->typeId = $this->typeId;
-        $record->sortOrder = $this->sortOrder;
-        $record->save(false);
+            $record->fieldId = (int)$this->fieldId;
+            $record->ownerId = (int)$this->ownerId;
+            $record->typeId = (int)$this->typeId;
+            $record->sortOrder = (int)$this->sortOrder ?: null;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }
@@ -451,7 +477,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      *
      * @return Matrix
      */
-    private function _getField(): Matrix
+    private function _field(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

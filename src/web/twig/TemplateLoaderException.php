@@ -13,7 +13,7 @@ use Twig\Error\LoaderError;
  * Class TemplateLoaderException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class TemplateLoaderException extends LoaderError
 {

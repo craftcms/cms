@@ -11,14 +11,16 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 
@@ -27,7 +29,7 @@ use yii\db\Exception as DbException;
  * An instance of the Drafts service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class Drafts extends Component
 {
@@ -43,6 +45,18 @@ class Drafts extends Component
      * @event DraftEvent The event that is triggered after a draft is created.
      */
     const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
+
+    /**
+     * @event DraftEvent The event that is triggered before source changes are merged into a draft.
+     * @since 3.4.0
+     */
+    const EVENT_BEFORE_MERGE_SOURCE_CHANGES = 'beforeMergeSource';
+
+    /**
+     * @event DraftEvent The event that is triggered after source changes are merged into a draft.
+     * @since 3.4.0
+     */
+    const EVENT_AFTER_MERGE_SOURCE_CHANGES = 'afterMergeSource';
 
     /**
      * @event DraftEvent The event that is triggered before a draft is applied to its source element.
@@ -116,22 +130,22 @@ class Drafts extends Component
         $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
-            $totalDrafts = $source::find()
-                ->draftOf($source)
-                ->siteId($source->siteId)
-                ->anyStatus()
-                ->count();
-            $name = Craft::t('app', 'Draft {num}', ['num' => $totalDrafts + 1]);
+            $draftNames = (new Query())
+                ->select(['name'])
+                ->from([Table::DRAFTS])
+                ->where(['sourceId' => $source->id])
+                ->column();
+            $draftNames = array_flip($draftNames);
+            $num = count($draftNames);
+            do {
+                $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
+            } while (isset($draftNames[$name]));
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Create a new revision for the source element, or get the latest if nothing has changed since then
-            /** @var Element|RevisionBehavior $revision */
-            $revision = Craft::$app->getRevisions()->createRevision($source, $creatorId, 'Created automatically for draft');
-
             // Create the draft row
-            $draftId = $this->_insertDraftRow($source->id, $revision->revisionId, $creatorId, $name, $notes);
+            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes, $source::trackChanges());
 
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -140,6 +154,7 @@ class Drafts extends Component
                 'creatorId' => $creatorId,
                 'draftName' => $name,
                 'draftNotes' => $notes,
+                'trackChanges' => $source::trackChanges(),
             ];
 
             // Duplicate the element
@@ -183,7 +198,7 @@ class Drafts extends Component
         }
 
         // Create the draft row
-        $draftId = $this->_insertDraftRow(null, null, $creatorId, $name, $notes);
+        $draftId = $this->_insertDraftRow(null, $creatorId, $name, $notes);
 
         /** @var Element $element */
         $element->draftId = $draftId;
@@ -198,6 +213,135 @@ class Drafts extends Component
     }
 
     /**
+     * Merges recent source element changes into a draft.
+     *
+     * @param ElementInterface $draft The draft
+     * @since 3.4.0
+     */
+    public function mergeSourceChanges(ElementInterface $draft)
+    {
+        /** @var Element|DraftBehavior $draft */
+        /** @var DraftBehavior $behavior */
+        $behavior = $draft->getBehavior('draft');
+
+        if (!$behavior->trackChanges) {
+            return;
+        }
+
+        $sourceId = $draft->getSourceId();
+        if ($sourceId === $draft->id) {
+            return;
+        }
+
+        /** @var Element[] $sourceElements */
+        $sourceElements = $draft::find()
+            ->id($sourceId)
+            ->siteId('*')
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->indexBy('siteId')
+            ->all();
+
+        // Make sure a source element exists for the draft's current site ID
+        if (!isset($sourceElements[$draft->siteId])) {
+            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
+        }
+
+        // Make sure the draft actually supports its own site ID
+        $supportedSites = ElementHelper::supportedSitesForElement($draft);
+        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+        if (!in_array($draft->siteId, $supportedSiteIds, false)) {
+            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
+        }
+
+        // Fire a 'beforeMergeSource' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MERGE_SOURCE_CHANGES)) {
+            $this->trigger(self::EVENT_BEFORE_MERGE_SOURCE_CHANGES, new DraftEvent([
+                'source' => $sourceElements[$draft->siteId],
+                'creatorId' => $behavior->creatorId,
+                'draftName' => $behavior->draftName,
+                'draftNotes' => $behavior->draftNotes,
+                'draft' => $draft,
+            ]));
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Start with $draft's site
+            $this->_mergeSourceChangesInternal($sourceElements[$draft->siteId], $draft);
+
+            // Now the other sites
+            /** @var ElementInterface[]|Element[]|DraftBehavior[] $otherSiteDrafts */
+            $otherSiteDrafts = $draft::find()
+                ->drafts()
+                ->id($draft->id)
+                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $draft->id))
+                ->anyStatus()
+                ->all();
+
+            foreach ($otherSiteDrafts as $otherSiteDraft) {
+                if (!isset($sourceElements[$otherSiteDraft->siteId])) {
+                    continue;
+                }
+                $this->_mergeSourceChangesInternal($sourceElements[$otherSiteDraft->siteId], $otherSiteDraft);
+            }
+
+            // It's now fully duplicated and propagated
+            $behavior->dateLastMerged = new \DateTime();
+            $draft->afterPropagate(false);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Fire an 'afterMergeSource' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_SOURCE_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_SOURCE_CHANGES, new DraftEvent([
+                'source' => $sourceElements[$draft->siteId],
+                'creatorId' => $behavior->creatorId,
+                'draftName' => $behavior->draftName,
+                'draftNotes' => $behavior->draftNotes,
+                'draft' => $draft,
+            ]));
+        }
+    }
+
+    /**
+     * Merges recent source element changes into a draft for a given site
+     *
+     * @param ElementInterface $source The source element
+     * @param ElementInterface $draft The draft element
+     */
+    private function _mergeSourceChangesInternal(ElementInterface $source, ElementInterface $draft)
+    {
+        /** @var Element|DraftBehavior $draft */
+        /** @var DraftBehavior $behavior */
+        $behavior = $draft->getBehavior('draft');
+
+        foreach ($behavior->getOutdatedAttributes() as $attribute) {
+            if (!$behavior->isAttributeModified($attribute)) {
+                $draft->$attribute = $source->$attribute;
+            }
+        }
+
+        $outdatedFieldHandles = [];
+        foreach ($behavior->getOutdatedFields() as $fieldHandle) {
+            if (!$behavior->isFieldModified($fieldHandle)) {
+                $outdatedFieldHandles[] = $fieldHandle;
+            }
+        }
+        if (!empty($outdatedFieldHandles)) {
+            $draft->setFieldValues($source->getSerializedFieldValues($outdatedFieldHandles));
+        }
+
+        $behavior->mergingChanges = true;
+        Craft::$app->getElements()->saveElement($draft, false, false);
+        $behavior->mergingChanges = false;
+    }
+
+    /**
      * Applies a draft onto its source element.
      *
      * @param ElementInterface $draft The draft
@@ -209,8 +353,8 @@ class Drafts extends Component
         /** @var Element|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        /** @var Element|null $source */
-        $source = $behavior->getSource();
+        /** @var Element $source */
+        $source = ElementHelper::sourceElement($draft);
 
         // Fire a 'beforeApplyDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
@@ -227,7 +371,10 @@ class Drafts extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($source) {
+            if ($source !== $draft) {
+                // Merge in any attribute & field values that were updated in the source element, but not the draft
+                $this->mergeSourceChanges($draft);
+
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->duplicateElement($draft, [
                     'id' => $source->id,
@@ -236,35 +383,42 @@ class Drafts extends Component
                     'draftId' => null,
                     'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
-
-                // Now delete the draft
-                $elementsService->deleteElement($draft, true);
             } else {
-                // Delete the draftId from the elements table
-                $db = Craft::$app->getDb();
-                $db->createCommand()
-                    ->update(Table::ELEMENTS, ['draftId' => null], ['id' => $draft->id], [], false)
-                    ->execute();
+                // Detach the draft behavior
+                $behavior = $draft->detachBehavior('draft');
 
-                // Delete the row from the drafts table
-                $db->createCommand()
-                    ->delete(Table::DRAFTS, ['id' => $draft->draftId])
-                    ->execute();
-
-                // Resave the draft without its draftId
-                $draft->draftId = null;
-                $draft->detachBehavior('draft');
-                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!$elementsService->saveElement($draft)) {
-                    throw new InvalidElementException($draft, 'Couldn\'t save element.');
+                // Duplicate the draft as a new element
+                $e = null;
+                try {
+                    $newSource = $elementsService->duplicateElement($draft, [
+                        'draftId' => null,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Don't throw it just yet, until we reattach the draft behavior
                 }
 
-                $newSource = $draft;
+                // Now reattach the draft behavior to the draft
+                if ($behavior !== null) {
+                    $draft->attachBehavior('draft', $behavior);
+                }
+
+                if ($e !== null) {
+                    throw $e;
+                }
             }
+
+            // Now delete the draft
+            $elementsService->deleteElement($draft, true);
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+
+            if ($e instanceof InvalidElementException) {
+                // Add the errors from the duplicated element back onto the draft
+                $draft->addErrors($e->element->getErrors());
+            }
+
             throw $e;
         }
 
@@ -331,24 +485,24 @@ class Drafts extends Component
     /**
      * Creates a new row in the `drafts` table.
      *
+     * @param int|null $sourceId
      * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
-     * @param int|null $sourceId
-     * @param int|null $revisionId
+     * @param bool $trackChanges
      * @return int The new draft ID
      * @throws DbException
      */
-    private function _insertDraftRow(int $sourceId = null, int $revisionId = null, int $creatorId, string $name = null, string $notes = null): int
+    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
     {
         $db = Craft::$app->getDb();
         $db->createCommand()
             ->insert(Table::DRAFTS, [
                 'sourceId' => $sourceId,
-                'revisionId' => $revisionId,
                 'creatorId' => $creatorId,
                 'name' => $name,
                 'notes' => $notes,
+                'trackChanges' => $trackChanges,
             ], false)
             ->execute();
         return $db->getLastInsertID(Table::DRAFTS);

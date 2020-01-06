@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
  * ClearCaches represents a ClearCaches dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ClearCaches extends Utility
 {
@@ -125,7 +125,7 @@ class ClearCaches extends Utility
             ],
             [
                 'key' => 'cp-resources',
-                'label' => Craft::t('app', 'Control Panel resources'),
+                'label' => Craft::t('app', 'Control panel resources'),
                 'action' => function() {
                     $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
                     $request = Craft::$app->getRequest();
@@ -134,7 +134,7 @@ class ClearCaches extends Utility
                         $request->isWebrootAliasSetDynamically &&
                         strpos($basePath, '@webroot') === 0
                     ) {
-                        throw new \Exception('Unable to clear Control Panel resources because the location isn\'t known for console commands.');
+                        throw new \Exception('Unable to clear control panel resources because the location isn\'t known for console commands.');
                     }
 
                     FileHelper::clearDirectory(Craft::getAlias($basePath), [
@@ -169,6 +169,11 @@ class ClearCaches extends Utility
                 'key' => 'template-caches',
                 'label' => Craft::t('app', 'Template caches'),
                 'action' => [Craft::$app->getTemplateCaches(), 'deleteAllCaches']
+            ],
+            [
+                'key' => 'graphql-caches',
+                'label' => Craft::t('app', 'GraphQL caches'),
+                'action' => [Craft::$app->getGql(), 'invalidateCaches']
             ],
         ];
 

@@ -17,7 +17,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $sectionId Section ID
  * @property int $typeId Type ID
- * @property int $authorId Author ID
+ * @property int|null $authorId Author ID
  * @property \DateTime $postDate Post date
  * @property \DateTime $expiryDate Expiry date
  * @property Element $element Element
@@ -25,7 +25,7 @@ use yii\db\ActiveQueryInterface;
  * @property EntryType $type Type
  * @property User $author Author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Entry extends ActiveRecord
 {

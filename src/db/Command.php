@@ -15,7 +15,7 @@ use craft\helpers\StringHelper;
  * @inheritdoc
  * @property Connection $db Connection the DB connection that this command is associated with.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Command extends \yii\db\Command
 {
@@ -200,6 +200,7 @@ class Command extends \yii\db\Command
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
+     * @since 3.1.0
      */
     public function softDelete(string $table, $condition = '', array $params = []): Command
     {
@@ -216,6 +217,7 @@ class Command extends \yii\db\Command
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
+     * @since 3.1.0
      */
     public function restore(string $table, $condition = '', array $params = []): Command
     {

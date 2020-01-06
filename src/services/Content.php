@@ -15,7 +15,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -24,7 +23,7 @@ use yii\base\Exception;
  * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Content extends Component
 {
@@ -177,7 +176,10 @@ class Content extends Component
         if ($fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                if ($field::hasContentColumn()) {
+                if (
+                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
+                    $field::hasContentColumn()
+                ) {
                     $column = $this->fieldColumnPrefix . $field->handle;
                     $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
@@ -210,10 +212,6 @@ class Content extends Component
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
-        if ($fieldLayout && !$element->getIsDraft() && !$element->getIsRevision()) {
-            $this->_updateSearchIndexes($element, $fieldLayout);
-        }
-
         // Fire an 'afterSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
@@ -230,32 +228,6 @@ class Content extends Component
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Updates the search indexes based on the new content values.
-     *
-     * @param ElementInterface $element
-     * @param FieldLayout $fieldLayout
-     */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
-    {
-        /** @var Element $element */
-        $searchKeywordsBySiteId = [];
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            if ($field->searchable) {
-                // Set the keywords for the content's site
-                $fieldValue = $element->getFieldValue($field->handle);
-                $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-            }
-        }
-
-        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
-        }
-    }
 
     /**
      * Removes the column prefixes from a given row.

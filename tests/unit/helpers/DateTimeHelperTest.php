@@ -16,6 +16,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use UnitTester;
+use yii\base\ErrorException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -563,7 +564,7 @@ class DateTimeHelperTest extends Unit
         return [
             ['+00:00', 'UTC'],
             ['+00:00', 'GMT'],
-            ['-04:00', 'America/New_York'],
+            ['-05:00', 'America/New_York'],
             ['+09:00', 'Asia/Tokyo'],
             ['+09:00', '+09:00'],
         ];
@@ -801,12 +802,7 @@ class DateTimeHelperTest extends Unit
     public function timezoneAbbreviationDataProvider(): array
     {
         return [
-            ['JST', 'Asia/Tokyo'],
-            ['GMT+0900', '+0900'],
-            ['-03', 'America/Buenos_Aires'],
             ['GMT', 'Etc/GMT+0'],
-            ['+1245', 'NZ-CHAT'],
-            ['EST', 'Jamaica']
         ];
     }
 

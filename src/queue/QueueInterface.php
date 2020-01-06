@@ -11,7 +11,7 @@ namespace craft\queue;
  * QueueInterface defines the common interface to be implemented by queue classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface QueueInterface
 {

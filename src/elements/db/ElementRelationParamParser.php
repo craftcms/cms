@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use yii\base\BaseObject;
@@ -23,7 +24,7 @@ use yii\base\BaseObject;
  * Parses a relatedTo param on an ElementQuery.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementRelationParamParser extends BaseObject
 {
@@ -33,6 +34,29 @@ class ElementRelationParamParser extends BaseObject
     const DIR_FORWARD = 0;
     const DIR_REVERSE = 1;
 
+    // Static
+    // =========================================================================
+
+    /**
+     * @var int
+     */
+    private static $_relateSourceMatrixBlocksCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateTargetMatrixBlocksCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateSourcesCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateTargetsCount = 0;
+
     // Properties
     // =========================================================================
 
@@ -40,26 +64,6 @@ class ElementRelationParamParser extends BaseObject
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
     public $fields;
-
-    /**
-     * @var int
-     */
-    private $_relateSourceMatrixBlocksCount = 0;
-
-    /**
-     * @var int
-     */
-    private $_relateTargetMatrixBlocksCount = 0;
-
-    /**
-     * @var int
-     */
-    private $_relateSourcesCount = 0;
-
-    /**
-     * @var int
-     */
-    private $_relateTargetsCount = 0;
 
     // Public Methods
     // =========================================================================
@@ -179,6 +183,7 @@ class ElementRelationParamParser extends BaseObject
 
         // Get the element IDs, wherever they are
         $relElementIds = [];
+        $relSourceElementIds = [];
         $glue = 'or';
 
         $elementParams = ['element', 'sourceElement', 'targetElement'];
@@ -198,11 +203,23 @@ class ElementRelationParamParser extends BaseObject
                 foreach ($elements as $element) {
                     if (is_numeric($element)) {
                         $relElementIds[] = $element;
+                        if ($elementParam === 'element') {
+                            $relSourceElementIds[] = $element;
+                        }
                     } else if ($element instanceof ElementInterface) {
-                        $relElementIds[] = $element->id;
+                        if ($elementParam === 'targetElement') {
+                            $relElementIds[] = $element->getSourceId();
+                        } else {
+                            $relElementIds[] = $element->id;
+                            if ($elementParam === 'element') {
+                                $relSourceElementIds[] = $element->getSourceId();
+                            }
+                        }
                     } else if ($element instanceof ElementQueryInterface) {
-                        foreach ($element->ids() as $id) {
-                            $relElementIds[] = $id;
+                        $ids = $element->ids();
+                        ArrayHelper::append($relElementIds, ...$ids);
+                        if ($elementParam === 'element') {
+                            ArrayHelper::append($relSourceElementIds, ...$ids);
                         }
                     }
                 }
@@ -216,7 +233,7 @@ class ElementRelationParamParser extends BaseObject
         }
 
         // Going both ways?
-        if (isset($relCriteria['element'])) {
+        if ($elementParam === 'element') {
             array_unshift($relElementIds, $glue);
 
             return $this->parse([
@@ -226,14 +243,14 @@ class ElementRelationParamParser extends BaseObject
                     'field' => $relCriteria['field']
                 ],
                 [
-                    'targetElement' => $relElementIds,
+                    'targetElement' => $relSourceElementIds,
                     'field' => $relCriteria['field']
                 ]
             ]);
         }
 
         // Figure out which direction we’re going
-        if (isset($relCriteria['sourceElement'])) {
+        if ($elementParam === 'sourceElement') {
             $dir = self::DIR_FORWARD;
         } else {
             $dir = self::DIR_REVERSE;
@@ -298,12 +315,12 @@ class ElementRelationParamParser extends BaseObject
                     }
 
                     if ($dir === self::DIR_FORWARD) {
-                        $this->_relateSourcesCount++;
-                        $this->_relateTargetMatrixBlocksCount++;
+                        self::$_relateSourcesCount++;
+                        self::$_relateTargetMatrixBlocksCount++;
 
-                        $sourcesAlias = 'sources' . $this->_relateSourcesCount;
-                        $targetMatrixBlocksAlias = 'target_matrixblocks' . $this->_relateTargetMatrixBlocksCount;
-                        $targetMatrixElementsAlias = 'target_matrixelements' . $this->_relateTargetMatrixBlocksCount;
+                        $sourcesAlias = 'sources' . self::$_relateSourcesCount;
+                        $targetMatrixBlocksAlias = 'target_matrixblocks' . self::$_relateTargetMatrixBlocksCount;
+                        $targetMatrixElementsAlias = 'target_matrixelements' . self::$_relateTargetMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourcesAlias . '.targetId'])
@@ -328,10 +345,10 @@ class ElementRelationParamParser extends BaseObject
                             $subQuery->andWhere([$sourcesAlias . '.fieldId' => $blockTypeFieldIds]);
                         }
                     } else {
-                        $this->_relateSourceMatrixBlocksCount++;
-                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . $this->_relateSourceMatrixBlocksCount;
-                        $sourceMatrixElementsAlias = 'source_matrixelements' . $this->_relateSourceMatrixBlocksCount;
-                        $matrixBlockTargetsAlias = 'matrixblock_targets' . $this->_relateSourceMatrixBlocksCount;
+                        self::$_relateSourceMatrixBlocksCount++;
+                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . self::$_relateSourceMatrixBlocksCount;
+                        $sourceMatrixElementsAlias = 'source_matrixelements' . self::$_relateSourceMatrixBlocksCount;
+                        $matrixBlockTargetsAlias = 'matrixblock_targets' . self::$_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourceMatrixBlocksAlias . '.ownerId'])
@@ -371,13 +388,13 @@ class ElementRelationParamParser extends BaseObject
         // run this code if the rel criteria wasn't exclusively for Matrix.)
         if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
             if ($dir === self::DIR_FORWARD) {
-                $this->_relateSourcesCount++;
-                $relTableAlias = 'sources' . $this->_relateSourcesCount;
+                self::$_relateSourcesCount++;
+                $relTableAlias = 'sources' . self::$_relateSourcesCount;
                 $relConditionColumn = 'sourceId';
                 $relElementColumn = 'targetId';
             } else {
-                $this->_relateTargetsCount++;
-                $relTableAlias = 'targets' . $this->_relateTargetsCount;
+                self::$_relateTargetsCount++;
+                $relTableAlias = 'targets' . self::$_relateTargetsCount;
                 $relConditionColumn = 'targetId';
                 $relElementColumn = 'sourceId';
             }

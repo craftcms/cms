@@ -18,7 +18,7 @@ use craft\web\assets\recententries\RecentEntriesAsset;
  * RecentEntries represents a Recent Entries dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RecentEntries extends Widget
 {
@@ -77,9 +77,9 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
         return $rules;
     }

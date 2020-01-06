@@ -15,7 +15,7 @@ use craft\web\twig\variables\Cp;
  * A class implementing this interface should also use [[PluginTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface PluginInterface
 {
@@ -26,6 +26,7 @@ interface PluginInterface
      * Returns supported plugin editions (lowest to highest).
      *
      * @return string[]
+     * @since 3.1.0
      */
     public static function editions(): array;
 
@@ -91,9 +92,9 @@ interface PluginInterface
     public function getSettingsResponse();
 
     /**
-     * Returns the CP nav item definition for this plugin’s CP section, if it has one.
+     * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.
      *
-     * The CP nav item definition should be an array with the following keys:
+     * The returned array should contain the following keys:
      *
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
@@ -121,7 +122,7 @@ interface PluginInterface
      * ];
      * ```
      *
-     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     * Control panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
      *
      * ```twig
      * {% set selectedSubnavItem = 'orders' %}
@@ -140,11 +141,14 @@ interface PluginInterface
      * Performs actions before the plugin’s settings are saved.
      *
      * @return bool Whether the plugin’s settings should be saved.
+     * @since 3.0.16
      */
     public function beforeSaveSettings(): bool;
 
     /**
      * Performs actions after the plugin’s settings are saved.
+     *
+     * @since 3.0.16
      */
     public function afterSaveSettings();
 }

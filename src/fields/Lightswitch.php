@@ -12,13 +12,17 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
  * Lightswitch represents a Lightswitch field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
@@ -115,5 +119,28 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         }
 
         return (bool)$value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $column = 'content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle;
+        /** @var ElementQuery $query */
+        $query->subQuery->andWhere(Db::parseParam($column, $value, '=', false, Schema::TYPE_BOOLEAN));
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return Type::boolean();
     }
 }

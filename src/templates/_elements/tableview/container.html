@@ -1,9 +1,9 @@
-<div class="tableview">
+<div class="tableview{% if context == 'index' %} tablepane{% endif %}">
     <table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
         <thead>
         <tr>
             {% if showCheckboxes %}
-                <td class="checkbox-cell"></td>
+                <th class="checkbox-cell selectallcontainer orderable"></th>
             {% endif %}
             {% for attribute in attributes %}
                 {% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}

@@ -32,7 +32,7 @@ use yii\base\Exception;
  * @license http://craftcms.com/license Craft License Agreement
  * @see http://craftcms.com
  * @package craft.app.services
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexer extends Component
 {
@@ -332,7 +332,7 @@ class AssetIndexer extends Component
             ])
             ->column();
 
-        // Load the processed volume IDs for that sessions.
+        // Load the processed volume IDs for that session.
         $volumeIds = (new Query())
             ->select(['DISTINCT([[volumeId]])'])
             ->from([Table::ASSETINDEXDATA])
@@ -340,7 +340,7 @@ class AssetIndexer extends Component
             ->column();
 
         // What if there were no files at all?
-        if (empty($volumeIds)) {
+        if (empty($volumeIds) && !Craft::$app->getRequest()->getIsConsoleRequest()) {
             $volumeIds = Craft::$app->getSession()->get('assetsVolumesBeingIndexed');
         }
 

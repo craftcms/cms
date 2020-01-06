@@ -30,7 +30,7 @@ use yii\base\ErrorException;
  * Raster class is used for raster image manipulations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Raster extends Image
 {
@@ -241,6 +241,8 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
+        $scaleIfSmaller = $scaleIfSmaller && Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
@@ -256,90 +258,97 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
+        if ($scaleIfSmaller || ($this->getWidth() > $targetWidth && $this->getHeight() > $targetHeight)) {
             // Scale first.
             $factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $newHeight = round($this->getHeight() / $factor);
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-
-            if (is_array($cropPosition)) {
-                $centerX = $newWidth * $cropPosition['x'];
-                $centerY = $newHeight * $cropPosition['y'];
-                $x1 = $centerX - $targetWidth / 2;
-                $y1 = $centerY - $targetHeight / 2;
-                $x2 = $x1 + $targetWidth;
-                $y2 = $y1 + $targetHeight;
-
-                // Now see if we have to bump this around to make it fit the image.
-                if ($x1 < 0) {
-                    $x2 -= $x1;
-                    $x1 = 0;
-                }
-                if ($y1 < 0) {
-                    $y2 -= $y1;
-                    $y1 = 0;
-                }
-                if ($x2 > $newWidth) {
-                    $x1 -= ($x2 - $newWidth);
-                    $x2 = $newWidth;
-                }
-                if ($y2 > $newHeight) {
-                    $y1 -= ($y2 - $newHeight);
-                    $y2 = $newHeight;
-                }
-            } else {
-                list($verticalPosition, $horizontalPosition) = explode('-', $cropPosition);
-
-                // Now crop.
-                if ($newWidth - $targetWidth > 0) {
-
-                    switch ($horizontalPosition) {
-                        case 'left':
-                            $x1 = 0;
-                            $x2 = $x1 + $targetWidth;
-                            break;
-                        case 'right':
-                            $x2 = $newWidth;
-                            $x1 = $newWidth - $targetWidth;
-                            break;
-                        default:
-                            $x1 = round(($newWidth - $targetWidth) / 2);
-                            $x2 = $x1 + $targetWidth;
-                            break;
-                    }
-
-                    $y1 = 0;
-                    $y2 = $y1 + $targetHeight;
-                } else if ($newHeight - $targetHeight > 0) {
-                    switch ($verticalPosition) {
-                        case 'top':
-                            $y1 = 0;
-                            $y2 = $y1 + $targetHeight;
-                            break;
-                        case 'bottom':
-                            $y2 = $newHeight;
-                            $y1 = $newHeight - $targetHeight;
-                            break;
-                        default:
-                            $y1 = round(($newHeight - $targetHeight) / 2);
-                            $y2 = $y1 + $targetHeight;
-                            break;
-                    }
-
-                    $x1 = 0;
-                    $x2 = $x1 + $targetWidth;
-                } else {
-                    $x1 = round(($newWidth - $targetWidth) / 2);
-                    $x2 = $x1 + $targetWidth;
-                    $y1 = round(($newHeight - $targetHeight) / 2);
-                    $y2 = $y1 + $targetHeight;
-                }
-            }
-
-            $this->crop($x1, $x2, $y1, $y2);
+        } else if (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
+            // Figure the crop size reductions
+            $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
+            $newHeight = $this->getHeight();
+            $newWidth = $this->getWidth();
+            $targetHeight = round($targetHeight / $factor);
+            $targetWidth = round($targetWidth / $factor);
         }
+
+        if (is_array($cropPosition)) {
+            $centerX = $newWidth * $cropPosition['x'];
+            $centerY = $newHeight * $cropPosition['y'];
+            $x1 = $centerX - $targetWidth / 2;
+            $y1 = $centerY - $targetHeight / 2;
+            $x2 = $x1 + $targetWidth;
+            $y2 = $y1 + $targetHeight;
+
+            // Now see if we have to bump this around to make it fit the image.
+            if ($x1 < 0) {
+                $x2 -= $x1;
+                $x1 = 0;
+            }
+            if ($y1 < 0) {
+                $y2 -= $y1;
+                $y1 = 0;
+            }
+            if ($x2 > $newWidth) {
+                $x1 -= ($x2 - $newWidth);
+                $x2 = $newWidth;
+            }
+            if ($y2 > $newHeight) {
+                $y1 -= ($y2 - $newHeight);
+                $y2 = $newHeight;
+            }
+        } else {
+            list($verticalPosition, $horizontalPosition) = explode('-', $cropPosition);
+
+            // Now crop.
+            if ($newWidth - $targetWidth > 0) {
+
+                switch ($horizontalPosition) {
+                    case 'left':
+                        $x1 = 0;
+                        $x2 = $x1 + $targetWidth;
+                        break;
+                    case 'right':
+                        $x2 = $newWidth;
+                        $x1 = $newWidth - $targetWidth;
+                        break;
+                    default:
+                        $x1 = round(($newWidth - $targetWidth) / 2);
+                        $x2 = $x1 + $targetWidth;
+                        break;
+                }
+
+                $y1 = 0;
+                $y2 = $y1 + $targetHeight;
+            } else if ($newHeight - $targetHeight > 0) {
+                switch ($verticalPosition) {
+                    case 'top':
+                        $y1 = 0;
+                        $y2 = $y1 + $targetHeight;
+                        break;
+                    case 'bottom':
+                        $y2 = $newHeight;
+                        $y1 = $newHeight - $targetHeight;
+                        break;
+                    default:
+                        $y1 = round(($newHeight - $targetHeight) / 2);
+                        $y2 = $y1 + $targetHeight;
+                        break;
+                }
+
+                $x1 = 0;
+                $x2 = $x1 + $targetWidth;
+            } else {
+                $x1 = round(($newWidth - $targetWidth) / 2);
+                $x2 = $x1 + $targetWidth;
+                $y1 = round(($newHeight - $targetHeight) / 2);
+                $y2 = $y1 + $targetHeight;
+            }
+        }
+
+        $this->crop($x1, $x2, $y1, $y2);
 
         return $this;
     }
@@ -371,11 +380,9 @@ class Raster extends Image
             $this->_image = $gif;
         } else {
             if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
-                $config = Craft::$app->getConfig()->getGeneral();
-                $keepImageProfiles = $config->preserveImageColorProfiles;
-                $keepExifData = $config->preserveExifData;
+                $keepImageProfiles = Craft::$app->getConfig()->getGeneral()->preserveImageColorProfiles;
 
-                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, $keepExifData, $this->_quality);
+                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, true, $this->_quality);
             } else {
                 $this->_image->resize(new Box($targetWidth, $targetHeight), $this->_getResizeFilter());
             }
@@ -478,6 +485,9 @@ class Raster extends Image
                     Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": " . $e->getMessage(), __METHOD__);
                 }
             } else {
+                if (Craft::$app->getImages()->getIsImagick()) {
+                    ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+                }
                 $this->_image->save($targetPath, $options);
             }
         } catch (RuntimeException $e) {
@@ -609,6 +619,13 @@ class Raster extends Image
     {
         $this->_isAnimatedGif = false;
 
+        if ($this->_image->layers()->count() > 1) {
+            // Fetching the first layer returns the built-in Imagick object
+            // So cycle that through the loading phase to get one that sports the
+            // `smartResize` functionality.
+            $this->_image = $this->_instance->load((string)$this->_image->layers()->get(0));
+        }
+
         return $this;
     }
 
@@ -648,6 +665,10 @@ class Raster extends Image
             clearstatcache();
 
             // Generate one last time.
+            if (Craft::$app->getImages()->getIsImagick()) {
+                ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+            }
+
             $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 
             return $tempFileName;

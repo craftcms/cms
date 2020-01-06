@@ -11,11 +11,14 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
+use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -27,7 +30,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementIndexesController extends BaseElementsController
 {
@@ -60,6 +63,11 @@ class ElementIndexesController extends BaseElementsController
     protected $viewState;
 
     /**
+     * @var bool
+     */
+    protected $paginated = false;
+
+    /**
      * @var ElementQueryInterface|ElementQuery|null
      */
     protected $elementQuery;
@@ -68,6 +76,11 @@ class ElementIndexesController extends BaseElementsController
      * @var ElementActionInterface[]|null
      */
     protected $actions;
+
+    /**
+     * @var ElementExporterInterface[]|null
+     */
+    protected $exporters;
 
     // Public Methods
     // =========================================================================
@@ -81,15 +94,18 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
+        $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
-        $this->sourceKey = Craft::$app->getRequest()->getParam('source');
+        $this->sourceKey = $request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
+        $this->paginated = (bool)$request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
         if ($this->includeActions() && $this->sourceKey !== null) {
             $this->actions = $this->availableActions();
+            $this->exporters = $this->availableExporters();
         }
 
         return true;
@@ -267,18 +283,36 @@ class ElementIndexesController extends BaseElementsController
 
         $request = Craft::$app->getRequest();
 
+        // Find that exporter from the list of available exporters for the source
+        $exporterClass = $request->getBodyParam('type', Raw::class);
+        if (!empty($this->exporters)) {
+            foreach ($this->exporters as $availableExporter) {
+                /** @var ElementAction $availableExporter */
+                if ($exporterClass === get_class($availableExporter)) {
+                    $exporter = $availableExporter;
+                    break;
+                }
+            }
+        }
+
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        if (!isset($exporter)) {
+            throw new BadRequestHttpException('Element exporter is not supported by the element type');
+        }
+
         $token = Craft::$app->getTokens()->createToken([
             'export/export',
             [
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
                 'criteria' => $request->getBodyParam('criteria', []),
-                'format' => $request->getRequiredBodyParam('format'),
+                'exporter' => $exporterClass,
+                'format' => $request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+            throw new ServerErrorHttpException('Could not create an export token.');
         }
 
         return $this->asJson(compact('token'));
@@ -358,6 +392,10 @@ class ElementIndexesController extends BaseElementsController
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = (bool)$criteria['trashed'];
             }
+            if (ArrayHelper::remove($criteria, 'drafts')) {
+                $criteria['drafts'] = true;
+                $criteria['draftOf'] = false;
+            }
             Craft::configure($query, $criteria);
         }
 
@@ -365,7 +403,8 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            $descendantQuery = (clone $query)
+            $descendantQuery = clone $query;
+            $descendantQuery
                 ->offset(null)
                 ->limit(null)
                 ->orderBy(null)
@@ -375,7 +414,8 @@ class ElementIndexesController extends BaseElementsController
 
             // Get the actual elements
             /** @var Element[] $collapsedElements */
-            $collapsedElements = (clone $descendantQuery)
+            $collapsedElementsQuery = clone $descendantQuery;
+            $collapsedElements = $collapsedElementsQuery
                 ->id($collapsedElementIds)
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
@@ -389,7 +429,8 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $elementDescendantIds = (clone $descendantQuery)
+                    $elementDescendantsQuery = clone $descendantQuery;
+                    $elementDescendantIds = $elementDescendantsQuery
                         ->descendantOf($element)
                         ->ids();
 
@@ -416,10 +457,29 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
+        $count = (int)$this->elementQuery->count();
 
         $responseData = [
-            'count' => $this->elementQuery->count(),
+            'count' => $count,
         ];
+
+        if (!$this->paginated || !$this->elementQuery->limit || $count < $this->elementQuery->limit) {
+            $responseData['countLabel'] = Craft::t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', [
+                'total' => $count,
+                'item' => $elementType::lowerDisplayName(),
+                'items' => $elementType::pluralLowerDisplayName(),
+            ]);
+        } else {
+            $first = min(($this->elementQuery->offset ?: 0) + 1, $count);
+            $last = min($first + ($this->elementQuery->limit - 1), $count);
+            $responseData['countLabel'] = Craft::t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', [
+                'first' => $first,
+                'last' => $last,
+                'total' => $count,
+                'item' => $elementType::lowerDisplayName(),
+                'items' => $elementType::pluralLowerDisplayName(),
+            ]);
+        }
 
         $view = $this->getView();
 
@@ -428,23 +488,28 @@ class ElementIndexesController extends BaseElementsController
             $responseData['actions'] = $this->actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
             $responseData['actionsFootHtml'] = $view->getBodyHtml();
+            $responseData['exporters'] = $this->exporterData();
         }
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
 
-        $responseData['html'] = $elementType::indexHtml(
-            $this->elementQuery,
-            $disabledElementIds,
-            $this->viewState,
-            $this->sourceKey,
-            $this->context,
-            $includeContainer,
-            $showCheckboxes
-        );
+        if ($this->sourceKey) {
+            $responseData['html'] = $elementType::indexHtml(
+                $this->elementQuery,
+                $disabledElementIds,
+                $this->viewState,
+                $this->sourceKey,
+                $this->context,
+                $includeContainer,
+                $showCheckboxes
+            );
 
-        $responseData['headHtml'] = $view->getHeadHtml();
-        $responseData['footHtml'] = $view->getBodyHtml();
+            $responseData['headHtml'] = $view->getHeadHtml();
+            $responseData['footHtml'] = $view->getBodyHtml();
+        } else {
+            $responseData['html'] = '';
+        }
 
         return $responseData;
     }
@@ -493,6 +558,42 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Returns the available exporters for the current source.
+     *
+     * @return ElementExporterInterface[]|null
+     * @since 3.4.0
+     */
+    protected function availableExporters()
+    {
+        if (Craft::$app->getRequest()->isMobileBrowser()) {
+            return null;
+        }
+
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $exporters = $elementType::exporters($this->sourceKey);
+
+        foreach ($exporters as $i => $exporter) {
+            // $action could be a string or config array
+            if ($exporter instanceof ElementExporterInterface) {
+                $exporter->setElementType($elementType);
+            } else {
+                if (is_string($exporter)) {
+                    $exporter = ['type' => $exporter];
+                }
+                $exporter['elementType'] = $elementType;
+                $exporters[$i] = $exporter = Craft::$app->getElements()->createExporter($exporter);
+
+                if ($exporters[$i] === null) {
+                    unset($exporters[$i]);
+                }
+            }
+        }
+
+        return array_values($exporters);
+    }
+
+    /**
      * Returns the data for the available actions.
      *
      * @return array|null
@@ -517,5 +618,29 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $actionData;
+    }
+
+    /**
+     * Returns the data for the available exporters.
+     *
+     * @return array|null
+     * @since 3.4.0
+     */
+    protected function exporterData()
+    {
+        if (empty($this->exporters)) {
+            return null;
+        }
+
+        $exporterData = [];
+
+        foreach ($this->exporters as $exporter) {
+            $exporterData[] = [
+                'type' => get_class($exporter),
+                'name' => $exporter::displayName(),
+            ];
+        }
+
+        return $exporterData;
     }
 }

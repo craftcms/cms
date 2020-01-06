@@ -17,7 +17,7 @@ use yii\base\InvalidConfigException;
  * CategoryGroup_SiteSettings model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CategoryGroup_SiteSettings extends Model
 {
@@ -128,9 +128,9 @@ class CategoryGroup_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'groupId', 'siteId'], 'number', 'integerOnly' => true];
         $rules[] = [['siteId'], SiteIdValidator::class];
         $rules[] = [['template'], 'string', 'max' => 500];

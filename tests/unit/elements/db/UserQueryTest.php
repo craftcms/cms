@@ -175,7 +175,7 @@ class UserQueryTest extends TestCase
         }
         $this->assertCount(1, $results);
 
-        // @todo uncommit this when Craft bug is fixed
+        // @todo uncomment this when Craft bug is fixed
 //        Craft::$app->getUserPermissions()->saveGroupPermissions('1000', ['accessCp']);
 //        Craft::$app->getUsers()->assignUserToGroups($this->activeUser->id, ['1000']);
 //

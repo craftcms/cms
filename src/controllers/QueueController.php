@@ -23,7 +23,7 @@ use yii\db\Exception as YiiDbException;
  * The QueueController class is a controller that handles various queue-related operations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QueueController extends Controller
 {
@@ -95,6 +95,7 @@ class QueueController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @since 3.1.21
      */
     public function actionRetry(): Response
     {

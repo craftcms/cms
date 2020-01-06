@@ -9,14 +9,9 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\exporters\Raw;
 use craft\helpers\ElementHelper;
-use craft\helpers\FileHelper;
 use craft\web\Controller;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Csv;
-use PhpOffice\PhpSpreadsheet\Writer\Ods;
-use PhpOffice\PhpSpreadsheet\Writer\Xls;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -50,11 +45,12 @@ class ExportController extends Controller
      * @param string $elementType
      * @param string $sourceKey
      * @param array $criteria
+     * @param string $exporter
      * @param string $format
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $format): Response
+    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $exporter = Raw::class, string $format = 'csv'): Response
     {
         $this->requireToken();
 
@@ -79,53 +75,25 @@ class ExportController extends Controller
             Craft::configure($query, $criteria);
         }
 
-        /** @var array $results */
-        $results = $query->asArray()->all();
-        $columns = array_keys(reset($results));
-
-        foreach ($results as &$result) {
-            $result = array_values($result);
-        }
-        unset($result);
-
-        // Populate the spreadsheet
-        $spreadsheet = new Spreadsheet();
-        if (!empty($results)) {
-            $worksheet = $spreadsheet->setActiveSheetIndex(0);
-            $worksheet->fromArray($columns, null, 'A1');
-            $worksheet->fromArray($results, null, 'A2');
-        }
-
-        // Could use the writer factory with a $format <-> phpspreadsheet string map, but this is more simple for now.
-        switch ($format) {
-            case 'csv':
-                $writer = new Csv($spreadsheet);
-                break;
-            case 'xls':
-                $writer = new Xls($spreadsheet);
-                break;
-            case 'xlsx':
-                $writer = new Xlsx($spreadsheet);
-                break;
-            case 'ods':
-                $writer = new Ods($spreadsheet);
-                break;
-            default:
-                throw new BadRequestHttpException('Invalid export format: ' . $format);
-        }
-
-        $file = tempnam(sys_get_temp_dir(), 'export');
-        $writer->save($file);
-        $contents = file_get_contents($file);
-        unlink($file);
-
-        $filename = mb_strtolower($elementType::pluralDisplayName()) . '.' . $format;
-        $mimeType = FileHelper::getMimeTypeByExtension($filename);
+        $exporter = Craft::$app->getElements()->createExporter($exporter);
+        $exporter->setElementType($elementType);
 
         $response = Craft::$app->getResponse();
-        $response->content = $contents;
-        $response->format = Response::FORMAT_RAW;
-        $response->setDownloadHeaders($filename, $mimeType);
+        $response->data = $exporter->export($query);
+        $response->format = $format;
+        $response->setDownloadHeaders($exporter->getFilename() . ".{$format}");
+
+        switch ($format) {
+            case Response::FORMAT_JSON:
+                $response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                break;
+            case Response::FORMAT_XML:
+                Craft::$app->language = 'en-US';
+                $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                $response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
+                break;
+        }
+
         return $response;
     }
 }

@@ -16,6 +16,7 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
+use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\BatchElementActionEvent;
@@ -24,7 +25,7 @@ use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
- * Bulk-saves elements
+ * Allows you to bulk-saves elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15
@@ -67,6 +68,11 @@ class ResaveController extends Controller
     public $propagate = true;
 
     /**
+     * @var bool Whether to update the search indexes for the resaved elements.
+     */
+    public $updateSearchIndex = false;
+
+    /**
      * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
      */
     public $group;
@@ -77,7 +83,8 @@ class ResaveController extends Controller
     public $section;
 
     /**
-     * @var string|null The entry type handle(s) of the entries to resave.
+     * @var string|null The type handle(s) of the elements to resave.
+     * @since 3.1.16
      */
     public $type;
 
@@ -85,6 +92,11 @@ class ResaveController extends Controller
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
     public $volume;
+
+    /**
+     * @var string|null The field handle to save Matrix blocks for.
+     */
+    public $field;
 
     /**
      * @inheritdoc
@@ -99,11 +111,14 @@ class ResaveController extends Controller
         $options[] = 'offset';
         $options[] = 'limit';
         $options[] = 'propagate';
+        $options[] = 'updateSearchIndex';
 
         switch ($actionID) {
             case 'assets':
                 $options[] = 'volume';
                 break;
+            case 'tags':
+            case 'users':
             case 'categories':
                 $options[] = 'group';
                 break;
@@ -111,11 +126,9 @@ class ResaveController extends Controller
                 $options[] = 'section';
                 $options[] = 'type';
                 break;
-            case 'tags':
-                $options[] = 'group';
-                break;
-            case 'users':
-                $options[] = 'group';
+            case 'matrix-blocks':
+                $options[] = 'field';
+                $options[] = 'type';
                 break;
         }
 
@@ -168,6 +181,26 @@ class ResaveController extends Controller
     }
 
     /**
+     * Re-saves Matrix blocks.
+     *
+     * Note that you must supply the --field or --element-id argument for this to work properly.
+     *
+     * @return int
+     * @since 3.2.0
+     */
+    public function actionMatrixBlocks(): int
+    {
+        $query = MatrixBlock::find();
+        if ($this->field !== null) {
+            $query->field(explode(',', $this->field));
+        }
+        if ($this->type !== null) {
+            $query->type(explode(',', $this->type));
+        }
+        return $this->saveElements($query);
+    }
+
+    /**
      * Re-saves tags.
      *
      * @return int
@@ -198,14 +231,13 @@ class ResaveController extends Controller
     /**
      * @param ElementQueryInterface $query
      * @return int
+     * @since 3.2.0
      */
     public function saveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        $type = mb_strtolower($elementType::displayName());
-        $pType = mb_strtolower($elementType::pluralDisplayName());
 
         if ($this->elementId) {
             $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
@@ -236,11 +268,11 @@ class ResaveController extends Controller
         $count = (int)$query->count();
 
         if ($count === 0) {
-            $this->stdout("No {$pType} exist for that criteria." . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout('No ' . $elementType::pluralLowerDisplayName() . ' exist for that criteria.' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
-        $elementsText = $count === 1 ? $type : $pType;
+        $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
         $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
@@ -273,7 +305,7 @@ class ResaveController extends Controller
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $elementsService->resaveElements($query, true);
+        $elementsService->resaveElements($query, true, true, $this->updateSearchIndex);
 
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);

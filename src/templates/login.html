@@ -37,10 +37,11 @@
         class="has-logo" style="background-image: url(\'{{ logo.url|e('css')|e('js') }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
                 {%- endif %}>' +
             '{% if not hasLogo -%}<h1>{{ systemName }}</h1>{%- endif %}'+
+            '<div id="login-fields">' +
             "{{ forms.textField({ id: 'loginName', name: 'username', placeholder: usernamePlaceholder, value: username, autocomplete: 'username', type: usernameType })|e('js') }}" +
-
-            '<div id="login-fields" class="nested-fields">' +
             "{{ forms.passwordField({ id: 'password', name: 'password', placeholder: 'Password'|t('app'), autocomplete: 'current-password' })|e('js') }}" +
+            '</div>' +
+            '<div id="password-fields">' +
             '<a id="forgot-password">{{ "Forgot your password?"|t('app') }}</a>' +
             {% if craft.app.config.general.rememberedUserSessionDuration %}
             '{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t('app') })|e("js") }}' +
@@ -65,7 +66,7 @@
             document.write(
                 '<div class="message-container no-access">' +
                     '<div class="pane notice">' +
-                        '<p>{{ "Cookies must be enabled to access the Craft CMS Control Panel."|t('app') }}</p>' +
+                        '<p>{{ "Cookies must be enabled to access the Craft CMS control panel."|t('app') }}</p>' +
                     '</div>' +
                 '</div>'
             );

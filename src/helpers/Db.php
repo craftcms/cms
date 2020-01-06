@@ -13,6 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Schema;
 
@@ -20,7 +21,7 @@ use yii\db\Schema;
  * Class Db
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Db
 {
@@ -135,22 +136,23 @@ class Db
      * Prepares a date to be sent to the database.
      *
      * @param mixed $date The date to be prepared
+     * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
      */
-    public static function prepareDateForDb($date)
+    public static function prepareDateForDb($date, bool $stripSeconds = false)
     {
         $date = DateTimeHelper::toDateTime($date);
 
-        if ($date !== false) {
-            $timezone = $date->getTimezone();
-            $date->setTimezone(new \DateTimeZone('UTC'));
-            $formattedDate = $date->format('Y-m-d H:i:s');
-            $date->setTimezone($timezone);
-
-            return $formattedDate;
+        if ($date === false) {
+            return null;
         }
 
-        return null;
+        $date = clone $date;
+        $date->setTimezone(new \DateTimeZone('UTC'));
+        if ($stripSeconds) {
+            return $date->format('Y-m-d H:i') . ':00';
+        }
+        return $date->format('Y-m-d H:i:s');
     }
 
     /**
@@ -434,9 +436,10 @@ class Db
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
+     * @param string|null $columnType The database column type the param is targeting
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, string $columnType = null)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
@@ -474,6 +477,8 @@ class Db
             $caseInsensitive = false;
         }
 
+        $caseColumn = $caseInsensitive ? "lower([[{$column}]])" : $column;
+
         $inVals = [];
         $notInVals = [];
 
@@ -481,38 +486,34 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (is_string($val) && strtolower($val) === ':empty:') {
-                if ($operator === '=') {
-                    if ($isMysql) {
-                        $condition[] = [
-                            'or',
-                            [$column => null],
-                            [$column => '']
-                        ];
-                    } else {
-                        // Because PostgreSQL chokes if you do a string check on an int column
-                        $condition[] = [$column => null];
-                    }
-                } else {
-                    if ($isMysql) {
-                        $condition[] = [
-                            'not',
-                            [
-                                'or',
-                                [$column => null],
-                                [$column => '']
-                            ]
-                        ];
-                    } else {
-                        // Because PostgreSQL chokes if you do a string check on an int column
-                        $condition[] = [
-                            'not',
-                            [
-                                $column => null,
-                            ]
-                        ];
-                    }
+            if ($columnType === Schema::TYPE_BOOLEAN) {
+                // Convert val to a boolean
+                $val = ($val && $val !== ':empty:');
+                if ($operator === '!=') {
+                    $val = !$val;
                 }
+                $condition[] = $val ? [$column => true] : ['or', ['not', [$column => true]], [$column => null]];
+                continue;
+            }
+
+            if ($val === ':empty:') {
+                // If this is a textual column type, also check for empty strings
+                if (
+                    ($columnType === null && $isMysql) ||
+                    ($columnType !== null && static::isTextualColumnType($columnType))
+                ) {
+                    $valCondition = [
+                        'or',
+                        [$column => null],
+                        [$column => '']
+                    ];
+                } else {
+                    $valCondition = [$column => null];
+                }
+                if ($operator === '!=') {
+                    $valCondition = ['not', $valCondition];
+                }
+                $condition[] = $valCondition;
                 continue;
             }
 
@@ -558,27 +559,20 @@ class Db
                 continue;
             }
 
-            if ($caseInsensitive) {
-                $condition[] = [$operator, "lower([[{$column}]])", $val];
-            } else {
-                $condition[] = [$operator, $column, $val];
-            }
+            $condition[] = [$operator, $caseColumn, $val];
         }
 
         if (!empty($inVals)) {
-            if ($caseInsensitive) {
-                $condition[] = ['in', "lower([[{$column}]])", $inVals];
-            } else {
-                $condition[] = ['in', $column, $inVals];
-            }
+            $condition[] = self::_inCondition($caseColumn, $inVals);
         }
 
         if (!empty($notInVals)) {
-            if ($caseInsensitive) {
-                $condition[] = ['not in', "lower([[{$column}]])", $notInVals];
-            } else {
-                $condition[] = ['not in', $column, $notInVals];
-            }
+            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+        }
+
+        // Skip the glue if there's only one condition
+        if (count($condition) === 2) {
+            return $condition[1];
         }
 
         return $condition;
@@ -627,7 +621,7 @@ class Db
             $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
-        return static::parseParam($column, $normalizedValues);
+        return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
     }
 
     /**
@@ -660,6 +654,7 @@ class Db
      * @param Connection|null $db
      * @return int number of rows affected by the execution.
      * @throws \yii\db\Exception execution failed
+     * @since 3.0.12
      */
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
     {
@@ -687,6 +682,7 @@ class Db
      * @param string $table
      * @param string $uid
      * @return int|null
+     * @since 3.1.0
      */
     public static function idByUid(string $table, string $uid)
     {
@@ -705,6 +701,7 @@ class Db
      * @param string $table
      * @param string[] $uids
      * @return string[]
+     * @since 3.1.0
      */
     public static function idsByUids(string $table, array $uids): array
     {
@@ -721,6 +718,7 @@ class Db
      * @param string $table
      * @param int $id
      * @return string|null
+     * @since 3.1.0
      */
     public static function uidById(string $table, int $id)
     {
@@ -739,6 +737,7 @@ class Db
      * @param string $table
      * @param int[] $ids
      * @return string[]
+     * @since 3.1.0
      */
     public static function uidsByIds(string $table, array $ids): array
     {
@@ -747,6 +746,105 @@ class Db
             ->from([$table])
             ->where(['id' => $ids])
             ->pairs();
+    }
+
+    /**
+     * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
+     *
+     * @param string $dsn
+     * @param string|null $key The key that is needed from the DSN. If this is
+     * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
+     * doesn’t exist in the DSN string.
+     * @throws InvalidArgumentException if $dsn is invalid
+     * @since 3.4.0
+     */
+    public static function parseDsn(string $dsn, string $key = null)
+    {
+        if (($pos = strpos($dsn, ':')) === false) {
+            throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
+        }
+
+        $driver = strtolower(substr($dsn, 0, $pos));
+        if ($key === 'driver') {
+            return $driver;
+        }
+        if ($key === null) {
+            $parsed = [
+                'driver' => $driver,
+            ];
+        }
+
+        $params = substr($dsn, $pos + 1);
+        foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
+            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            if ($key === $n) {
+                return $v;
+            }
+            if ($key === null) {
+                $parsed[$n] = $v;
+            }
+        }
+        if ($key === null) {
+            return $parsed;
+        }
+        return false;
+    }
+
+    /**
+     * Generates a DB config from a database connection URL.
+     *
+     * This can be used from `config/db.php`:
+     * ---
+     * ```php
+     * $url = getenv('DB_URL');
+     * return craft\helpers\Db::url2config($url);
+     * ```
+     *
+     * @param string $url
+     * @return array
+     * @since 3.4.0
+     */
+    public static function url2config(string $url): array
+    {
+        $parsed = parse_url($url);
+
+        if (!isset($parsed['scheme'])) {
+            throw new InvalidArgumentException('Invalid URL: ' . $url);
+        }
+
+        $config = [];
+
+        // user & password
+        if (isset($parsed['user'])) {
+            $config['user'] = $parsed['user'];
+        }
+        if (isset($parsed['pass'])) {
+            $config['password'] = $parsed['pass'];
+        }
+
+        // URL scheme => driver
+        if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
+            $driver = Connection::DRIVER_PGSQL;
+        } else {
+            $driver = Connection::DRIVER_MYSQL;
+        }
+
+        // DSN params
+        $checkParams = [
+            'host' => 'host',
+            'port' => 'port',
+            'path' => 'dbname',
+        ];
+        $dsnParams = [];
+        foreach ($checkParams as $urlParam => $dsnParam) {
+            if (isset($parsed[$urlParam])) {
+                $dsnParams[] = "{$dsnParam}={$parsed[$urlParam]}";
+            }
+        }
+
+        $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
+
+        return $config;
     }
 
     // Private Methods
@@ -784,9 +882,7 @@ class Db
             }
 
             // Remove any empty elements and reset the keys
-            $value = array_merge(array_filter($value));
-
-            return $value;
+            return array_values(ArrayHelper::filterEmptyStringsFromArray($value));
         }
 
         return ArrayHelper::toArray($value);
@@ -801,7 +897,18 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (is_string($value) && strtolower($value) === ':notempty:') {
+            return;
+        }
+
+        if (!is_string($value) || $value === ':empty:' || $value === 'not :empty:') {
+            return;
+        }
+
+        $lower = strtolower($value);
+
+        if ($lower === ':empty:') {
+            $value = ':empty:';
+        } else if ($lower === ':notempty:' || $lower === 'not :empty:') {
             $value = 'not :empty:';
         }
     }
@@ -853,5 +960,17 @@ class Db
         }
 
         return $op;
+    }
+
+    /**
+     * @param string $column
+     * @param array $values
+     * @return array
+     */
+    private static function _inCondition(string $column, array $values): array
+    {
+        return [
+            $column => count($values) === 1 ? $values[0] : $values,
+        ];
     }
 }
