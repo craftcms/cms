@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Det uppstod ett fel när kategorin duplicerades.',
     'An error occurred when duplicating the entry.' => 'Det uppstod ett fel när posten duplicerades.',
     'An error occurred while processing your request.' => 'Ett fel uppstod vid behandlingen av din förfrågan.',
-    'An unknown error occurred.' => 'Ett okänt fel uppstod.',
     'Any changes will be lost if you leave this page.' => 'Ändringar kommer att gå förlorade om du lämnar sidan.',
     'Application Info' => 'Programinfo',
     'Applied' => 'Tillämpat',

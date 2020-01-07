@@ -86,7 +86,7 @@
                     }
                     else {
                         // Error
-                        var msg = Craft.t('An unknown error occurred.');
+                        var msg = Craft.t('A server error occurred.');
 
                         if (typeof(response) !== 'undefined' && response && typeof(response.error) !== 'undefined') {
                             msg = response.error;

@@ -243,7 +243,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (textStatus === 'success') {
                             // Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                         }
                     }
                 }, this));

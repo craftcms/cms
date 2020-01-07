@@ -384,7 +384,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
         showLoginError: function(error) {
             if (error === null || typeof error === 'undefined') {
-                error = Craft.t('app', 'An unknown error occurred.');
+                error = Craft.t('app', 'A server error occurred.');
             }
 
             this.$loginErrorPara.text(error);

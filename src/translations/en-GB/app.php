@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'An error occurred when duplicating the category.',
     'An error occurred when duplicating the entry.' => 'An error occurred when duplicating the entry.',
     'An error occurred while processing your request.' => 'An error occurred while processing your request.',
-    'An unknown error occurred.' => 'An unknown error occurred.',
     'Any changes will be lost if you leave this page.' => 'Any changes will be lost if you leave this page.',
     'Application Info' => 'Application Info',
     'Applied' => 'Applied',

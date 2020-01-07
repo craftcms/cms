@@ -105,9 +105,9 @@ JS;
         $view->registerTranslations('app', [
             '(blank)',
             '1 Available Update',
+            'A server error occurred.',
             'Actions',
             'All',
-            'An unknown error occurred.',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
             'Are you sure you want to delete this draft?',

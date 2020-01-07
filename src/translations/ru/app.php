@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'При дублировании категории произошла ошибка.',
     'An error occurred when duplicating the entry.' => 'При дублировании записи произошла ошибка.',
     'An error occurred while processing your request.' => 'Произошла ошибка при обработке запроса.',
-    'An unknown error occurred.' => 'Произошла неизвестная ошибка.',
     'Any changes will be lost if you leave this page.' => 'Любые изменения будут потеряны, если вы уйдете с этой страницы.',
     'Application Info' => 'О приложении',
     'Applied' => 'Применено',

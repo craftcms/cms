@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Kategori kopyalanırken bir hata oluştu.',
     'An error occurred when duplicating the entry.' => 'Giriş çoğaltılırken bir hata oluştu.',
     'An error occurred while processing your request.' => 'İsteğiniz işlenirken bir hata meydana geldi.',
-    'An unknown error occurred.' => 'Bilinmeyen bir hata meydana geldi.',
     'Any changes will be lost if you leave this page.' => 'Bu sayfadan çıkarsanız tüm değişiklikler kaybolacaktır.',
     'Application Info' => 'Uygulama Bilgileri',
     'Applied' => 'Uygulandı',

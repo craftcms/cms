@@ -109,6 +109,6 @@ class ElementIndexSettingsController extends BaseElementsController
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 }

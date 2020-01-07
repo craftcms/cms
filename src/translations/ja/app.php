@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'カテゴリの複製時にエラーが発生しました。',
     'An error occurred when duplicating the entry.' => 'エントリの複製時にエラーが発生しました。',
     'An error occurred while processing your request.' => 'リクエストの処理中にエラーが発生しました。',
-    'An unknown error occurred.' => '不明なエラーが発生しました。',
     'Any changes will be lost if you leave this page.' => 'このページから離れるとすべての変更が失われます。',
     'Application Info' => 'アプリケーション情報',
     'Applied' => '適用済み',

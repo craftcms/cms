@@ -346,7 +346,7 @@ class AppController extends Controller
             ]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 
     /**

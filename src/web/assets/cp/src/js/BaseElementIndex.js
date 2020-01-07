@@ -364,7 +364,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.initSources();
                     this.selectDefaultSource();
                 } else {
-                    Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
 
             }, this));
@@ -619,7 +619,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                     this._updateView(params, response);
                 } else {
-                    Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
 
             }, this));
@@ -1801,7 +1801,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
-                        Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                     }
 
                 }, this));

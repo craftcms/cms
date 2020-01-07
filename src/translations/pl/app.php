@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Podczas duplikowania kategorii wystąpił błąd.',
     'An error occurred when duplicating the entry.' => 'Podczas duplikowania pozycji wystąpił błąd.',
     'An error occurred while processing your request.' => 'Wystąpił błąd podczas przetwarzania żądania.',
-    'An unknown error occurred.' => 'Wystąpił nieznany błąd.',
     'Any changes will be lost if you leave this page.' => 'Wszelkie zmiany zostaną utracone, jeśli opuścisz tę stronę.',
     'Application Info' => 'Informacje o aplikacji',
     'Applied' => 'Zastosowano',

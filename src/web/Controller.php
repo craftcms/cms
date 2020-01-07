@@ -189,7 +189,7 @@ abstract class Controller extends \yii\web\Controller
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 if (!YII_DEBUG && !$e instanceof UserException) {
-                    $message = Craft::t('app', 'An unknown error occurred.');
+                    $message = Craft::t('app', 'A server error occurred.');
                 } else {
                     $message = $e->getMessage();
                 }

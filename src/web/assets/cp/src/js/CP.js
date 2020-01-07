@@ -525,7 +525,7 @@ Craft.CP = Garnish.Base.extend(
          */
         displayError: function(message) {
             if (!message) {
-                message = Craft.t('app', 'An unknown error occurred.');
+                message = Craft.t('app', 'A server error occurred.');
             }
 
             this.displayNotification('error', message);

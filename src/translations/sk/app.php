@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Pri duplikovaní kategórie došlo k chybe.',
     'An error occurred when duplicating the entry.' => 'Pri duplikovaní vstupu došlo k chybe.',
     'An error occurred while processing your request.' => 'Pri spracovaní požiadavky sa vyskytla chyba.',
-    'An unknown error occurred.' => 'Vyskytla sa neznáma chyba.',
     'Any changes will be lost if you leave this page.' => 'Všetky zmeny sa stratia, ak túto stránku opustíš.',
     'Application Info' => 'Informácie o aplikácii',
     'Applied' => 'Uplatnené',

@@ -379,7 +379,7 @@ $.extend(Craft,
                     if (typeof Craft.cp !== 'undefined') {
                         Craft.cp.displayError();
                     } else {
-                        alert(Craft.t('app', 'An unknown error occurred.'));
+                        alert(Craft.t('app', 'A server error occurred.'));
                     }
 
                     if (callback) {
@@ -2259,7 +2259,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.initSources();
                     this.selectDefaultSource();
                 } else {
-                    Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
 
             }, this));
@@ -2514,7 +2514,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                     this._updateView(params, response);
                 } else {
-                    Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
 
             }, this));
@@ -3696,7 +3696,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         var url = Craft.getCpUrl('', params);
                         document.location.href = url;
                     } else {
-                        Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                     }
 
                 }, this));
@@ -10266,7 +10266,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
         showLoginError: function(error) {
             if (error === null || typeof error === 'undefined') {
-                error = Craft.t('app', 'An unknown error occurred.');
+                error = Craft.t('app', 'A server error occurred.');
             }
 
             this.$loginErrorPara.text(error);
@@ -11970,7 +11970,7 @@ Craft.CP = Garnish.Base.extend(
          */
         displayError: function(message) {
             if (!message) {
-                message = Craft.t('app', 'An unknown error occurred.');
+                message = Craft.t('app', 'A server error occurred.');
             }
 
             this.displayNotification('error', message);
@@ -12743,7 +12743,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.hide();
                 }
                 else {
-                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
+                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'A server error occurred.'));
                     Craft.cp.displayError(error);
                 }
             }, this));
@@ -15049,7 +15049,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
         showPasswordError: function(error) {
             if (error === null || typeof error === 'undefined') {
-                error = Craft.t('app', 'An unknown error occurred.');
+                error = Craft.t('app', 'A server error occurred.');
             }
 
             this.$errorPara.text(error);
@@ -19619,7 +19619,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
                         if (!response.success) {
-                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                             this.tableView.elementIndex.updateElements();
                             return;
                         }
@@ -20523,7 +20523,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (textStatus === 'success') {
                             // Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                         }
                     }
                 }, this));

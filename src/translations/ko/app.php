@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => '카테고리를 복제하는 동안 오류가 발생했습니다.',
     'An error occurred when duplicating the entry.' => '항목을 복제하는 동안 오류가 발생했습니다.',
     'An error occurred while processing your request.' => '요청을 처리하는 중에 오류가 발생했습니다.',
-    'An unknown error occurred.' => '알 수 없는 오류가 발생했습니다.',
     'Any changes will be lost if you leave this page.' => '이 페이지를 나가면 모든 변경 사항이 손실됩니다.',
     'Application Info' => '응용 프로그램 정보',
     'Applied' => '적용됨',
