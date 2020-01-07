@@ -40,7 +40,7 @@
 
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set showRevisions = showRevisionLabel and not isUnsavedDraft %}
-{% set enableMenu = editableSiteIds|length or showRevisions %}
+{% set enableMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div id="revision-btngroup" class="btngroup">
     <div id="revision-btn" class="btn {% if enableMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
