@@ -31,7 +31,7 @@
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
-- Added the `queue/release` action.
+- Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `utils/prune-revisions` action. ([#4851](https://github.com/craftcms/cms/issues/4851))
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
@@ -204,6 +204,7 @@
 ### Changed
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
 - The control panel no longer shows the tab bar on pages with only one tab. ([#2915](https://github.com/craftcms/cms/issues/2915))
+- The queue info in the global sidebar no longer shows an HUD with job details when clicked; the user is now brought to the new Queue Manager utility, if they have permission to view it. ([#4040](https://github.com/craftcms/cms/issues/4040))
 - The Assets index page now updates the URL when the selected volume changes.
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
@@ -274,6 +275,7 @@
 
 ### Fixed
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
+- Fixed a bug where the control panel UI could come to a grinding halt if a large number of jobs were in the queue. ([#4533](https://github.com/craftcms/cms/issues/4533))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
