@@ -16,7 +16,7 @@ namespace craft\queue;
 interface QueueInterface
 {
     /**
-     * Runs all the queued-up jobs
+     * Runs all the queued-up jobs.
      */
     public function run();
 
@@ -28,14 +28,14 @@ interface QueueInterface
     public function retry(string $id);
 
     /**
-     * Retries all jobs
+     * Retries all failed jobs.
      *
      * @since 3.4.0
      */
     public function retryAll();
 
     /**
-     * Releases all jobs
+     * Releases all jobs.
      *
      * @since 3.4.0
      */
@@ -57,14 +57,14 @@ interface QueueInterface
     public function setProgress(int $progress, string $label = null);
 
     /**
-     * Returns whether there are any waiting jobs
+     * Returns whether there are any waiting jobs.
      *
      * @return bool
      */
     public function getHasWaitingJobs(): bool;
 
     /**
-     * Returns whether there are any reserved jobs
+     * Returns whether there are any reserved jobs.
      *
      * @return bool
      */
