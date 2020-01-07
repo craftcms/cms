@@ -7,6 +7,8 @@
 
 namespace craft\queue;
 
+use yii\base\InvalidArgumentException;
+
 /**
  * QueueInterface defines the common interface to be implemented by queue classes.
  *
@@ -71,6 +73,14 @@ interface QueueInterface
     public function getHasReservedJobs(): bool;
 
     /**
+     * Returns the total number of jobs in the queue.
+     *
+     * @return int|float
+     * @since 3.4.0
+     */
+    public function getTotalJobs();
+
+    /**
      * Returns info about the jobs in the queue.
      *
      * The response array should have sub-arrays with the following keys:
@@ -87,19 +97,22 @@ interface QueueInterface
     public function getJobInfo(int $limit = null): array;
 
     /**
-     * Returns all possible information on a single queue job.
+     * Returns detailed info about a single job.
      *
-     * In the QueueUtility this method is used to display details about your queue job.
-     * The key `job` will be displayed in a <code></code> tag and should return the raw debug data about your queue.
-     * The key `error` will be displayed in red indicating a problem with the job.
-     * The key `status` should return the status in accordance with `self::getJobInfo().
-     * The key `progress` should return the job progress (0-100).
-     * The key `description` should return the description of the job
+     * The response array can contain the following keys:
      *
-     * Any other key value pairs are allowed and will be displayed on the details page.
+     * - `status` – the job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)
+     * - `progress` – the job progress (0-100)
+     * - `description` – the job description
+     * - `ttr` – the job’s time-to-reserve, in seconds
+     * - `error` – the error message (if the job failed)
+     * - `job` – the deserialized job
+     *
+     * Any other key/value pairs are allowed and will be displayed on the details page.
      *
      * @param string $id
      * @return array
+     * @throws InvalidArgumentException if $id is an invalid job ID
      * @since 3.4.0
      */
     public function getJobDetails(string $id): array;

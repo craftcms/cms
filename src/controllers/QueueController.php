@@ -9,8 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\Json;
+use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception as YiiDbException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -171,6 +174,25 @@ class QueueController extends Controller
     }
 
     /**
+     * Returns info about all the jobs in the queue.
+     *
+     * @return Response
+     */
+    public function actionGetJobInfo(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePermission('accessCp');
+
+        $limit = Craft::$app->getRequest()->getParam('limit');
+        $queue = Craft::$app->getQueue();
+
+        return $this->asJson([
+            'total' => $queue->getTotalJobs(),
+            'jobs' => $queue->getJobInfo($limit),
+        ]);
+    }
+
+    /**
      * Returns the details for a particular job. This includes the `job` column containing a lot of raw data.
      *
      * @return Response
@@ -184,22 +206,27 @@ class QueueController extends Controller
         $this->requirePermission('utility:queue-manager');
 
         $jobId = Craft::$app->getRequest()->getRequiredParam('id');
+        $details = [
+            'id' => $jobId,
+        ];
 
-        return $this->asJson(Craft::$app->getQueue()->getJobDetails($jobId));
-    }
+        try {
+            $details += Craft::$app->getQueue()->getJobDetails($jobId);
+        } catch (InvalidArgumentException $e) {
+            $details += [
+                'description' => Craft::t('app', 'Completed job'),
+                'status' => Queue::STATUS_DONE,
+            ];
+        }
 
-    /**
-     * Returns info about all the jobs in the queue.
-     *
-     * @return Response
-     */
-    public function actionGetJobInfo(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
+        if (isset($details['job'])) {
+            try {
+                $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            } catch (InvalidArgumentException $e) {
+                // Just leave the message alone
+            }
+        }
 
-        $limit = Craft::$app->getRequest()->getParam('limit');
-
-        return $this->asJson(Craft::$app->getQueue()->getJobInfo($limit));
+        return $this->asJson($details);
     }
 }

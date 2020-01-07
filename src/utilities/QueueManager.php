@@ -28,7 +28,7 @@ class QueueManager extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Queue manager');
+        return Craft::t('app', 'Queue Manager');
     }
 
     /**
@@ -50,12 +50,26 @@ class QueueManager extends Utility
     /**
      * @inheritdoc
      */
+    public static function toolbarHtml(): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/toolbar');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function footerHtml(): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/footer');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
-
         $view->registerAssetBundle(QueueManagerAsset::class);
-
-        return $view->renderTemplate('_components/utilities/QueueManager');
+        return $view->renderTemplate('_components/utilities/QueueManager/content');
     }
 }

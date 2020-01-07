@@ -12,192 +12,385 @@
  * @since 3.2
  */
 new Vue({
-    el: "#queue-manager-utility",
+    el: "#main",
     delimiters: ['[[',']]'],
     data() {
         return {
-            loading: true,
+            loading: false,
+            indexTimeout: null,
             jobs: [],
+            totalJobs: null,
+            totalJobsFormatted: null,
+            activeJobId: null,
             activeJob: null,
             limit: 50
-        };
+        }
     },
 
     /**
      * Mounted function
      */
     mounted() {
-        this.reIndexJobs()
+        document.getElementById('queue-manager-utility').removeAttribute('class')
 
-        window.setInterval(this.reIndexJobs, 2500);
-    },
+        Craft.cp.on('setJobInfo', () => {
+            this.jobs = Craft.cp.jobInfo.slice(0)
+            this.totalJobs = Craft.cp.totalJobs
+            this.totalJobsFormatted = Craft.formatNumber(this.totalJobs)
+            if (!this.loading) {
+                this.refreshActiveJob()
+            }
+        })
 
-    filters: {
-        /**
-         * Capitalize a string
-         * @param string
-         * @returns {string}
-         */
-        capitalize(string) {
-            if (!string) return ''
-            string = string.toString()
-            return string.charAt(0).toUpperCase() + string.slice(1)
+        window.onpopstate = (event) => {
+            console.log('popstate', event.state)
+            if (event.state && event.state.jobId) {
+                this.setActiveJob(event.state.jobId, false)
+            } else {
+                this.clearActiveJob(false)
+            }
+        }
+
+        // Was a specific job requested?
+        let m = Craft.path.match(/utilities\/queue-manager\/([^\/]+)/)
+        if (m) {
+            let jobId = m[1]
+            history.replaceState({jobId: jobId}, '', this.url(jobId))
+            this.setActiveJob(jobId, false)
         }
     },
+
     methods: {
         /**
-         * Updates and sets the this.jobs.
+         * Force-updates the job progress.
          */
-        reIndexJobs() {
-            this.updateJobs().then(this.handleDataResponse)
+        updateJobProgress() {
+            Craft.cp.trackJobProgress(false, true)
         },
 
         /**
-         * Updates the this.jobs
-         * @returns {Promise<any>}
+         * Sets the active job that should be shown.
+         * @param {string} jobId
+         * @param {boolean} pushState
+         * @return {Promise}
          */
-        updateJobs() {
+        setActiveJob(jobId, pushState) {
             return new Promise((resolve, reject) => {
-                axios.get(Craft.getActionUrl('queue/get-job-info', {limit: this.limit})).then(response => {
-                    resolve(response)
+                window.clearTimeout(this.indexTimeout)
+                this.loading = true
+                this.activeJobId = jobId
+
+                if (pushState) {
+                    history.pushState({jobId: jobId}, '', this.url(jobId))
+                }
+
+                axios.get(Craft.getActionUrl('queue/get-job-details?id='+jobId+'', {})).then(response => {
+                    if (response.data.id != this.activeJobId) {
+                        resolve(false)
+                        return
+                    }
+                    this.activeJob = response.data
+                    this.loading = false
+                    resolve(true)
                 }, response => {
                     Craft.cp.displayError(response.response.data.error)
                     reject(response)
                 })
             })
+
         },
 
-        setActiveJob(job) {
-            this.loading = true
-            let $this = this
-
-            axios.get(Craft.getActionUrl('queue/get-job-details?id='+job.id+'', {})).then(response => {
-                $this.activeJob = response.data
-                $this.loading = false
-            }, response => {
-                Craft.cp.displayError(response.response.data.error)
-                reject(response)
+        /**
+         * Refreshes the active job
+         * @return {Promise}
+         */
+        refreshActiveJob() {
+            return new Promise((resolve, reject) => {
+                if (!this.activeJobId) {
+                    resolve(false)
+                    return
+                }
+                let oldJob = this.activeJob
+                this.setActiveJob(this.activeJobId, false).then((success) => {
+                    // If it's done now, the response is probably missing critical info about the job
+                    if (success && oldJob && this.activeJob.status == 3) {
+                        $.extend(oldJob, {
+                            progress: 100,
+                            status: 3,
+                        })
+                        delete oldJob.error
+                        this.activeJob = oldJob
+                    }
+                    resolve(success)
+                }).catch(reject)
             })
         },
 
         /**
-         * A setter for job response data
-         * @param response
-         */
-        handleDataResponse(response) {
-            this.jobs = response.data
-            this.loading = false
-        },
-
-        /**
-         * Retries all jobs
+         * Retries all jobs.
+         * @return {Promise}
          */
         retryAll() {
-            if (confirm('Are you sure?')) {
-                this.craftPost('queue/retry-all', {}).then(response => {
-                    Craft.cp.displayNotice('All jobs will be retried. They will soon show progress.')
-                })
-            }
+            return new Promise((resolve, reject) => {
+                window.clearTimeout(this.indexTimeout)
+                this.postActionRequest('queue/retry-all').then(response => {
+                    Craft.cp.displayNotice(Craft.t('app', 'Retrying all failed jobs.'))
+                    this.updateJobProgress()
+                    resolve()
+                }).catch(reject)
+            })
         },
 
         /**
-         * Releases all jobs
+         * Releases all jobs.
+         * @return {Promise}
          */
         releaseAll() {
-            if (confirm('Are you sure? This will delete all jobs in the Queue - not just those displayed below.')) {
-                this.craftPost('queue/release-all', {}).then(response => {
-                    this.jobs = []
-                    this.activeJob = null
-                    Craft.cp.displayNotice('All jobs released')
-                })
-            }
+            return new Promise((resolve, reject) => {
+                if (!confirm(Craft.t('app', 'Are you sure you want to release all jobs in the queue?'))) {
+                    resolve(false)
+                    return
+                }
+
+                this.postActionRequest('queue/release-all').then(response => {
+                    Craft.cp.displayNotice(Craft.t('app', 'All jobs released.'))
+                    this.clearActiveJob(true)
+                    this.updateJobProgress()
+                    resolve(true)
+                }).catch(reject)
+            })
         },
 
         /**
-         * Retries a specific job
-         * @param job
+         * Retries a specific job.
+         * @param {Object} job
+         * @return {Promise}
          */
         retryJob(job) {
-            if (confirm('Are you sure?')) {
-                this.craftPost('queue/retry', {id: job.id}).then(response => {
-                    this.activeJob = null
-                    Craft.cp.displayNotice('Job retried. It will be updated soon.')
-                })
-            }
+            return new Promise((resolve, reject) => {
+                // Only confirm if the job is currently reserved
+                if (job.status == 2) {
+                    let message = Craft.t('app', 'Are you sure you want to restart the job “{description}”? Any progress could be lost.', {
+                        description: job.description
+                    })
+                    if (!confirm(message)) {
+                        resolve(false)
+                        return
+                    }
+                }
+
+                window.clearTimeout(this.indexTimeout)
+
+                this.postActionRequest('queue/retry', {id: job.id}).then(response => {
+                    if (job.status == 2) {
+                        Craft.cp.displayNotice(Craft.t('app', 'Job restarted.'))
+                    } else {
+                        Craft.cp.displayNotice(Craft.t('app', 'Job retried.'))
+                    }
+
+                    this.updateJobProgress()
+                    resolve(true)
+                }).catch(reject)
+            })
         },
 
         /**
-         * Releases job
-         * @param job
+         * Retries the active job.
+         * @return {Promise}
+         */
+        retryActiveJob() {
+            return new Promise((resolve, reject) => {
+                this.retryJob(this.activeJob).then(resolve).catch(reject)
+            })
+        },
+
+        /**
+         * Releases a job.
+         * @param {Object} job
+         * @returns {Promise}
          */
         releaseJob(job) {
-            if (confirm('Are you sure?')) {
-                this.craftPost('queue/release', {id: job.id}).then(response => {
-                    this.quickRemoveJob(job.id)
-                    this.activeJob = null
-                    Craft.cp.displayNotice('Job released')
+            return new Promise((resolve, reject) => {
+                let message = Craft.t('app', 'Are you sure you want to release the job “{description}”?', {
+                    description: job.description
                 })
-            }
+                if (!confirm(message)) {
+                    resolve(false)
+                    return
+                }
+                this.postActionRequest('queue/release', {id: job.id}).then(response => {
+                    Craft.cp.displayNotice(Craft.t('app', 'Job released.'))
+                    this.updateJobProgress()
+                    resolve(true)
+                })
+            })
         },
 
         /**
-         * Removes a job from the local state (this.jobs)
-         * @param jobId
+         * Releases the active job.
+         * @returns {Promise}
          */
-        quickRemoveJob(jobId) {
-            let job = this.jobs.find(job => {
-                return job.id == jobId
+        releaseActiveJob() {
+            return new Promise((resolve, reject) => {
+                this.releaseJob(this.activeJob).then((released) => {
+                    if (released) {
+                        this.clearActiveJob(true)
+                    }
+                    resolve(released)
+                }).catch(reject)
             })
-
-            if (job) {
-                this.jobs.splice(
-                    this.jobs.indexOf(job),
-                    1
-                )
-            }
         },
 
         /**
          * Resets an active job so that the index screen is displayed.
+         * @param {boolean} pushState
          */
-        resetActiveJob() {
-            this.activeJob = null
-        },
+        clearActiveJob(pushState) {
+            if (!this.activeJob) {
+                return
+            }
 
-        /**
-         * Gets a job status code
-         *
-         * @param job
-         * @returns {string}
-         */
-        jobStatusDeterminer(job) {
-            switch (job.status.toString()) {
-                case '1':
-                    return 'Pending'
-                    break;
-                case '2':
-                    return 'Reserved'
-                    break;
-                case '3':
-                    return 'Done'
-                    break;
-                case '4':
-                    return 'Failed'
-                    break;
-                default:
-                    return 'Unkown status'
+            this.activeJob = null
+            this.activeJobId = null
+
+            if (pushState) {
+                history.pushState({}, '', this.url())
             }
         },
 
         /**
-         * Helper for Craft.postActionRequest that incorporates the Promise<> lib.
-         * @param action
-         * @param params
-         * @returns {Promise<any>}
+         * Returns a Queue Manager URL.
+         * @param {string|null} jobId
+         * @returns {string}
          */
-        craftPost(action, params) {
+        url(jobId) {
+            return Craft.getUrl('utilities/queue-manager' + (jobId ? '/' + jobId : ''))
+        },
+
+        /**
+         * Returns whether a job can be retried.
+         * @param {Object} job
+         * @returns {boolean}
+         */
+        isRetryable(job) {
+            return job.status == 2 || job.status == 4
+        },
+
+        /**
+         * Returns the class name a job's status cell should have.
+         * @param {number} status
+         * @returns {string}
+         */
+        jobStatusClass(status) {
+            if (status == 4) {
+                return 'error'
+            }
+            return ''
+        },
+
+        /**
+         * Returns a job status code.
+         * @param {number} status
+         * @returns {string}
+         */
+        jobStatusLabel(status) {
+            switch (status) {
+                case 1:
+                    return Craft.t('app', 'Pending')
+                    break
+                case 2:
+                    return Craft.t('app', 'Reserved')
+                    break
+                case 3:
+                    return Craft.t('app', 'Finished')
+                    break
+                case 4:
+                    return Craft.t('app', 'Failed')
+                    break
+                default:
+                    return ''
+            }
+        },
+
+        /**
+         * Returns a job status icon class.
+         * @param {number} status
+         * @returns {string}
+         */
+        jobStatusIconClass(status) {
+            let c = 'status'
+            switch (status) {
+                case 1:
+                    c += ' orange'
+                    break
+                case 2:
+                    c += ' green'
+                    break
+                case 4:
+                    c += ' red'
+                    break
+            }
+            return c
+        },
+
+        /**
+         * Returns a job attribute name.
+         * @param {string} name
+         * @returns {string}
+         */
+        jobAttributeName(name) {
+            switch (name) {
+                case 'id':
+                    return Craft.t('app', 'ID')
+                case 'status':
+                    return Craft.t('app', 'Status')
+                case 'progress':
+                    return Craft.t('app', 'Progress')
+                case 'description':
+                    return Craft.t('app', 'Description')
+                case 'ttr':
+                    return Craft.t('app', 'Time to reserve')
+                case 'error':
+                    return Craft.t('app', 'Error')
+                default:
+                    return name
+            }
+        },
+
+        /**
+         * Formats a job attribute value.
+         * @param {string} name
+         * @param {string} value
+         * @return {string}
+         */
+        jobAttributeValue(name, value) {
+            switch (name) {
+                case 'progress':
+                    return value + '%'
+                case 'ttr':
+                    return Craft.t('app', '{num} seconds', {
+                        num: Craft.formatNumber(value)
+                    })
+                default:
+                    return value
+            }
+        },
+
+        /**
+         * Promise wrapper for `Craft.postActionRequest()`.
+         * @param {string} action
+         * @param {Object} params
+         * @returns {Promise}
+         */
+        postActionRequest(action, params) {
             return new Promise((resolve, reject) => {
-                Craft.postActionRequest(action, params, resolve)
+                Craft.postActionRequest(action, params, (response, textStatus) => {
+                    if (textStatus !== 'success') {
+                        reject()
+                        return
+                    }
+                    resolve(response)
+                })
             })
         }
     }

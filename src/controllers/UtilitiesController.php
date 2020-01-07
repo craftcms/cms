@@ -86,6 +86,8 @@ class UtilitiesController extends Controller
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
+            'toolbarHtml' => $class::toolbarHtml(),
+            'footerHtml' => $class::footerHtml(),
             'utilities' => $this->_utilityInfo(),
         ]);
     }

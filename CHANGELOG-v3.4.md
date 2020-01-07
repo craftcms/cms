@@ -2,7 +2,7 @@
 
 > {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
 
-> {warning} Custom queues that implement `craft\queue\QueueInterface` must be updated to implement `getJobDetails()`, `retryAll()` and `releaseAll()`.
+> {warning} Custom queues that implement `craft\queue\QueueInterface` must be updated to implement `getTotalJobs()`, `getJobDetails()`, `retryAll()` and `releaseAll()`.
 
 > {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
 >
@@ -78,6 +78,8 @@
 - Added `craft\base\ElementInterface::trackChanges()`.
 - Added `craft\base\FieldInterface::getTranslationDescription()`.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
+- Added `craft\base\UtilityInterface::footerHtml()`.
+- Added `craft\base\UtilityInterface::toolbarHtml()`.
 - Added `craft\behaviors\DraftBehavior::$dateLastMerged`.
 - Added `craft\behaviors\DraftBehavior::$mergingChanges`.
 - Added `craft\behaviors\DraftBehavior::$trackChanges`.
@@ -138,6 +140,10 @@
 - Added `craft\models\GqlToken`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\queue\QueueInterface::getJobDetails()`.
+- Added `craft\queue\QueueInterface::getTotalJobs()`.
+- Added `craft\queue\QueueInterface::releaseAll()`.
+- Added `craft\queue\QueueInterface::retryAll()`.
 - Added `craft\records\Asset::getUploader()`.
 - Added `craft\records\GqlToken`.
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
@@ -234,7 +240,6 @@
 - `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).
 - `craft\i18n\Formatter::asShortSize()` now capitalizes the size unit.
 - `craft\models\GqlSchema::$scope` is now read-only.
-- `craft\queue\QueueInterface` now requires `getJobDetails()`, `retryAll()` and `releaseAll()` methods.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\ProjectConfig::processConfigChanges()` now has a `$message` argument to specify the reason for config changes.

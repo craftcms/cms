@@ -7,10 +7,12 @@
 
 namespace craft\web\assets\queuemanager;
 
+use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\momentjs\MomentJsAsset;
 use craft\web\assets\vue\VueAsset;
+use craft\web\View;
 
 /**
  * Asset bundle for the Queue manager
@@ -41,5 +43,37 @@ class QueueManagerAsset extends AssetBundle
         ];
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view)
+    {
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('app', [
+                'Pending',
+                'Reserved',
+                'Finished',
+                'Failed',
+                'Are you sure you want to release the job “{description}”?',
+                'Are you sure you want to restart the job “{description}”? Any progress could be lost.',
+                'Are you sure you want to release all jobs in the queue?',
+                'All jobs released.',
+                'Job retried.',
+                'Job restarted.',
+                'Job released.',
+                'Retrying all failed jobs.',
+                'ID',
+                '{num} seconds',
+                'Time to reserve',
+                'Status',
+                'Progress',
+                'Description',
+                'Error',
+            ]);
+        }
     }
 }

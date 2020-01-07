@@ -9,11 +9,13 @@ namespace craft\queue;
 
 use Craft;
 use craft\db\Table;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\db\Query;
 use yii\queue\cli\Signal;
 use yii\queue\ExecEvent;
@@ -333,35 +335,40 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function getJobDetails(string $id): array
     {
-        $job = (new Query())
+        $result = (new Query())
             ->from(Table::QUEUE)
             ->where(['id' => $id])
             ->one();
 
-        $result = [
-            'id' => $job['id'],
-            'description' => $job['description'],
-            'timePushed' => $job['timePushed']
-                ? DateTimeHelper::toDateTime($job['timePushed'])->format('Y-m-d H:i:s')
-                : 'No time',
+        if ($result === false) {
+            throw new InvalidArgumentException("Invalid job ID: $id");
+        }
 
-            'timeUpdated' => $job['timeUpdated']
-                ? DateTimeHelper::toDateTime($job['timeUpdated'])->format('Y-m-d H:i:s')
-                : 'No time',
+        $formatter = Craft::$app->getFormatter();
+        $job = is_resource($result['job']) ? stream_get_contents($result['job']) : $this->serializer->unserialize($result['job']);
 
-            'job' => is_resource($job['job'])
-                ? stream_get_contents($job['job'])
-                : $this->serializer->unserialize($job['job']),
-            'status' => $this->_status($job),
-            'ttr' => $job['ttr'],
-            'priority' => $job['priority'],
-            'progress' => $job['progress'],
-            'fail' => (bool)$job['fail'],
-            'dateFailed' => $job['dateFailed'],
-            'error' => $job['error'],
-        ];
+        return ArrayHelper::filterEmptyStringsFromArray([
+            'status' => $this->_status($result),
+            'error' => $result['error'] ?? '',
+            'progress' => $result['progress'],
+            'description' => $result['description'],
+            'job' => $job,
+            'ttr' => (int)$result['ttr'],
+            'Priority' => $result['priority'],
+            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed']) : '',
+            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated']) : '',
+            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed']) : '',
+        ]);
+    }
 
-        return $result;
+    /**
+     * @inheritdoc
+     */
+    public function getTotalJobs()
+    {
+        return $this->_createJobQuery()
+            ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
+            ->count();
     }
 
     /**
