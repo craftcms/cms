@@ -144,6 +144,13 @@
             on: category.enabled
         }) }}
 
+        {{ forms.lightswitchField({
+            label: "Enabled for {site}"|t('app', { site: category.site.name|t('site') }),
+            id: 'enabledForSite',
+            name: 'enabledForSite',
+            on:   category.enabledForSite,
+        }) }}
+
     </div>
 
     {% if category.id %}

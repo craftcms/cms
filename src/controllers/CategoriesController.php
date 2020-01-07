@@ -809,6 +809,7 @@ class CategoriesController extends Controller
         $request = Craft::$app->getRequest();
         $category->slug = $request->getBodyParam('slug', $category->slug);
         $category->enabled = (bool)$request->getBodyParam('enabled', $category->enabled);
+        $category->enabledForSite = (bool)Craft::$app->getRequest()->getBodyParam('enabledForSite', $category->enabledForSite);
 
         $category->title = $request->getBodyParam('title', $category->title);
 
