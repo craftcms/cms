@@ -985,6 +985,22 @@ ul.icons {
     outline: none;
   }
 
+  &:not(.small) {
+    &[data-icon]:before,
+    &.icon:before,
+    &.menubtn[data-icon]:before,
+    &.menubtn.icon:before {
+      margin-top: -3px;
+    }
+  }
+
+  &[data-icon]:not(:empty):before,
+  &.icon:not(:empty):before,
+  &.menubtn[data-icon]:empty:before,
+  &.menubtn.icon:empty:before {
+    @include margin-right(5px);
+  }
+
   div.checkbox {
     margin-top: 2px;
   }
@@ -1002,13 +1018,6 @@ ul.icons {
 .btn,
 .spinner {
   height: 34px;
-}
-
-.btn[data-icon]:not(:empty):before,
-.btn.icon:not(:empty):before,
-.btn.menubtn[data-icon]:empty:before,
-.btn.menubtn.icon:empty:before {
-  @include margin-right(5px);
 }
 
 .btn[data-icon-after]:not(:empty):after,

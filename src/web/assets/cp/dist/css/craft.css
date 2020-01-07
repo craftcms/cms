@@ -424,6 +424,9 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 .btn.active { cursor: default; }
 .btn:hover { text-decoration: none; }
 .btn:active { outline: none; }
+.btn:not(.small)[data-icon]:before, .btn:not(.small).icon:before, .btn:not(.small).menubtn[data-icon]:before, .btn:not(.small).menubtn.icon:before { margin-top: -3px; }
+body.ltr .btn[data-icon]:not(:empty):before, body.ltr .btn.icon:not(:empty):before, body.ltr .btn.menubtn[data-icon]:empty:before, body.ltr .btn.menubtn.icon:empty:before { margin-right: 5px; }
+body.rtl .btn[data-icon]:not(:empty):before, body.rtl .btn.icon:not(:empty):before, body.rtl .btn.menubtn[data-icon]:empty:before, body.rtl .btn.menubtn.icon:empty:before { margin-left: 5px; }
 .btn div.checkbox { margin-top: 2px; }
 
 .disabled { opacity: 0.25; }
@@ -431,9 +434,6 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 .disabled, .disabled .btn { cursor: default; }
 
 .btn, .spinner { height: 34px; }
-
-body.ltr .btn[data-icon]:not(:empty):before, body.ltr .btn.icon:not(:empty):before, body.ltr .btn.menubtn[data-icon]:empty:before, body.ltr .btn.menubtn.icon:empty:before { margin-right: 5px; }
-body.rtl .btn[data-icon]:not(:empty):before, body.rtl .btn.icon:not(:empty):before, body.rtl .btn.menubtn[data-icon]:empty:before, body.rtl .btn.menubtn.icon:empty:before { margin-left: 5px; }
 
 body.ltr .btn[data-icon-after]:not(:empty):after, body.ltr .menubtn:not(:empty):after, body.ltr .menubtn.icon:after { margin-left: 6px; }
 body.rtl .btn[data-icon-after]:not(:empty):after, body.rtl .menubtn:not(:empty):after, body.rtl .menubtn.icon:after { margin-right: 6px; }
