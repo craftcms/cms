@@ -697,13 +697,17 @@ trait ApplicationTrait
             unset($attributes['fieldVersion']);
         }
 
-        $db = $this->getDb();
-        $rowCount = $db->createCommand()
-            ->update(Table::INFO, $attributes, ['id' => 1])
-            ->execute();
+        $infoRowExists = (new Query())
+            ->from([Table::INFO])
+            ->where(['id' => 1])
+            ->exists();
 
-        if ($rowCount == 0) {
-            $db->createCommand()
+        if ($infoRowExists) {
+            $this->getDb()->createCommand()
+                ->update(Table::INFO, $attributes, ['id' => 1])
+                ->execute();
+        } else {
+            $this->getDb()->createCommand()
                 ->insert(Table::INFO, $attributes + ['id' => 1])
                 ->execute();
         }
