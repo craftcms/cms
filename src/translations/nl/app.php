@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld..',
+    '"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
     '"{filename}" is too large.' => '"{filename}" is te groot.',
     '(blank)' => '(leeg)',
     '/path/to/folder' => '/pad/naar/map',
@@ -22,6 +22,7 @@ return [
     'A folder with the name “{folderName}” already exists in the folder.' => 'Er bestaat al een map met de naam \'{folderName}\' in deze map.',
     'A folder with the name “{folderName}” already exists in the volume.' => 'Er bestaat al een map met de naam \'{folderName}\' in dit volume.',
     'A license key is required.' => 'Er is een licentiecode vereist.',
+    'A server error occurred.' => 'A server error occurred.',
     'A template name cannot contain NUL bytes.' => 'Een sjabloonnaam kan geen NUL-bytes bevatten.',
     'A verification email will be sent automatically.' => 'Er zal automatisch een bevestigingsmail worden verstuurd.',
     'Abort the update' => 'Update afbreken',
@@ -69,7 +70,6 @@ return [
     'An error occurred when duplicating the category.' => 'Er is een fout opgetreden bij het dupliceren van de categorie.',
     'An error occurred when duplicating the entry.' => 'Er is een fout opgetreden bij het dupliceren van de invoer.',
     'An error occurred while processing your request.' => 'Er trad een fout op bij het verwerken van uw aanvraag.',
-    'An unknown error occurred.' => 'Er deed zich een onbekende fout voor.',
     'Any changes will be lost if you leave this page.' => 'Aanpassingen zullen verloren gaan als u de pagina verlaat.',
     'Application Info' => 'Toepassingsgegevens',
     'Applied' => 'Toegepast',
