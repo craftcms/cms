@@ -272,6 +272,7 @@ JS;
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
+            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],

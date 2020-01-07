@@ -2,6 +2,8 @@
 
 > {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
 
+> {warning} Custom queues that implement `craft\queue\QueueInterface` must be updated to implement `getTotalJobs()`, `getJobDetails()`, `retryAll()` and `releaseAll()`.
+
 > {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
 >
 > ```bash
@@ -28,6 +30,8 @@
 - It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
+- Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
+- Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `utils/prune-revisions` action. ([#4851](https://github.com/craftcms/cms/issues/4851))
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
@@ -74,6 +78,8 @@
 - Added `craft\base\ElementInterface::trackChanges()`.
 - Added `craft\base\FieldInterface::getTranslationDescription()`.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
+- Added `craft\base\UtilityInterface::footerHtml()`.
+- Added `craft\base\UtilityInterface::toolbarHtml()`.
 - Added `craft\behaviors\DraftBehavior::$dateLastMerged`.
 - Added `craft\behaviors\DraftBehavior::$mergingChanges`.
 - Added `craft\behaviors\DraftBehavior::$trackChanges`.
@@ -132,7 +138,12 @@
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
 - Added `craft\models\FieldLayoutTab::elementHasErrors()`.
 - Added `craft\models\GqlToken`.
+- Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\queue\QueueInterface::getJobDetails()`.
+- Added `craft\queue\QueueInterface::getTotalJobs()`.
+- Added `craft\queue\QueueInterface::releaseAll()`.
+- Added `craft\queue\QueueInterface::retryAll()`.
 - Added `craft\records\Asset::getUploader()`.
 - Added `craft\records\GqlToken`.
 - Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
@@ -168,7 +179,9 @@
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
+- Added `craft\utilities\QueueManager`.
 - Added `craft\web\assets\admintable\AdminTableAsset`.
+- Added `craft\web\assets\queuemanager\QueueManagerAsset`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\CsvResponseFormatter`.
 - Added `craft\web\User::guestRequired()`.
@@ -191,6 +204,7 @@
 ### Changed
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
 - The control panel no longer shows the tab bar on pages with only one tab. ([#2915](https://github.com/craftcms/cms/issues/2915))
+- The queue info in the global sidebar no longer shows an HUD with job details when clicked; the user is now brought to the new Queue Manager utility, if they have permission to view it. ([#4040](https://github.com/craftcms/cms/issues/4040))
 - The Assets index page now updates the URL when the selected volume changes.
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
@@ -261,6 +275,7 @@
 
 ### Fixed
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
+- Fixed a bug where the control panel UI could come to a grinding halt if a large number of jobs were in the queue. ([#4533](https://github.com/craftcms/cms/issues/4533))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.

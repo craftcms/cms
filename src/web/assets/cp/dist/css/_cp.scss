@@ -55,24 +55,31 @@ $sidebarLinkSecondaryColor: $grey200;
     outline: none;
     transition: background-color linear 100ms;
 
-    &:hover,
-    &.active,
-    &:active {
-      color: $white;
-    }
+    &[href] {
+      &:hover,
+      &.active,
+      &:active {
+        color: $white;
+      }
 
-    &:hover {
-      background-color: darken($grey800, 5%);
-      transition: none;
+      &:hover {
+        background-color: darken($grey800, 5%);
+        transition: none;
 
-      .icon {
-        opacity: 1;
+        .icon {
+          opacity: 1;
+        }
+      }
+
+      &.active,
+      &:active {
+        background-color: darken($grey800, 10%);
       }
     }
 
-    &.active,
-    &:active {
-      background-color: darken($grey800, 10%);
+    &:not([href]) {
+      cursor: default;
+      background-color: transparent;
     }
 
     .icon {
@@ -185,7 +192,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     transition: color linear 100ms;
   }
 
-  &:hover {
+  &[href]:hover {
     .progressbar {
       border-color: $white;
     }
@@ -722,6 +729,10 @@ $toolbarIconColor: darken($inputColor, 10%);
       background-clip: border-box;
     }
   }
+
+  .spinner {
+    background-image: url(../images/spinner_toolbar.gif);
+  }
 }
 
 #main-content {
@@ -900,6 +911,10 @@ $toolbarIconColor: darken($inputColor, 10%);
   padding: 10px 24px;
   background-color: $grey050;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+
+  &:empty {
+    display: none;
+  }
 
   & > *,
   .flex > * {
@@ -1520,16 +1535,16 @@ only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-  #main-container {
-    #main {
-      #main-content {
-        #details {
-          .spinner {
-            background-image: url(../images/spinner_details_2x.gif);
-            background-size: 20px;
-          }
-        }
-      }
+  #details {
+    .spinner {
+      background-image: url(../images/spinner_details_2x.gif);
+      background-size: 20px;
+    }
+  }
+  #toolbar {
+    .spinner {
+      background-image: url(../images/spinner_toolbar_2x.gif);
+      background-size: 20px;
     }
   }
   #upgrademodal.loading {

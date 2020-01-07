@@ -34,4 +34,20 @@ abstract class Utility extends Component implements UtilityInterface
         // 0 = no badge
         return 0;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function toolbarHtml(): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function footerHtml(): string
+    {
+        return '';
+    }
 }
