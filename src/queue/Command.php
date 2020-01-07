@@ -124,7 +124,7 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * @param $job
+     * @param string $job The job ID to release. Pass `all` to release all jobs.
      * @return int
      * @throws YiiDbException
      * @since 3.4.0
@@ -132,10 +132,12 @@ class Command extends \yii\queue\cli\Command
     public function actionRelease($job): int
     {
         if (strtolower($job) === 'all') {
-            $this->stdout('Releasing all queue jobs' . PHP_EOL);
+            $this->stdout('Releasing all queue jobs ... ');
             $this->queue->releaseAll();
         } else {
-            $this->stdout('Releasing job' . PHP_EOL);
+            $this->stdout('Releasing job ');
+            $this->stdout($job, Console::FG_YELLOW);
+            $this->stdout(' ... ');
             $this->queue->release($job);
         }
 
