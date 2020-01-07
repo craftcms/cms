@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 
+### Fixed
+- Fix an error where it was impossible to update Craft if the previous version was from before Craft 3.1 ([#5391](https://github.com/craftcms/cms/issues/5391))
+
 ## 3.4.0-beta.5 - 2020-01-02
 
 ### Added

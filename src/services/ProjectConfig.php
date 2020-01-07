@@ -1428,6 +1428,10 @@ class ProjectConfig extends Component
      */
     private function _getInternalConfigValue(string $path = null)
     {
+        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.2', '<')) {
+            return null;
+        }
+
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             if (empty($this->_memoizedConfig)) {
                 $config = (new Query())
