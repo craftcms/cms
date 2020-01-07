@@ -697,11 +697,16 @@ trait ApplicationTrait
             unset($attributes['fieldVersion']);
         }
 
-        $this->getDb()->createCommand()
-            ->upsert(Table::INFO, [
-                'id' => 1,
-            ], $attributes)
+        $db = $this->getDb();
+        $rowCount = $db->createCommand()
+            ->update(Table::INFO, $attributes, ['id' => 1])
             ->execute();
+
+        if ($rowCount == 0) {
+            $db->createCommand()
+                ->insert(Table::INFO, $attributes + ['id' => 1])
+                ->execute();
+        }
 
         $this->setIsInstalled();
 
