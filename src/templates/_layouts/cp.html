@@ -91,7 +91,7 @@
     'accept-charset': 'UTF-8',
     'novalidate': true,
     'data': {
-        'saveshortcut': true,
+        'saveshortcut': saveShortcut ?? true,
         'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
         'confirm-unload': true,
         'delta': view.getIsDeltaRegistrationActive(),
