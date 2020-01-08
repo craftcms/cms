@@ -39,11 +39,11 @@
 
     {% set tableData = tableData|merge([{
         id: section.id,
-        name: section.name|t('site'),
-        title: section.name|t('site'),
+        name: section.name|t('site')|e,
+        title: section.name|t('site')|e,
         url: url('settings/sections/' ~ section.id),
         handle: section.handle,
-        type: section.type|title|t('app'),
+        type: section.type|title|t('app')|e,
         menu: {
             showItems: not isSingle,
             menuBtnTitle: 'Entry Types'|t('app'),
@@ -56,22 +56,10 @@
 
 {% js %}
     var columns = [
-        {
-            name: '__slot:title',
-            title: Craft.t('app', 'Name'),
-        },
-        {
-            name: '__slot:handle',
-            title: Craft.t('app', 'Handle'),
-        },
-        {
-            name: 'type',
-            title: Craft.t('app', 'Type')
-        },
-        {
-            name: '__slot:menu',
-            title: Craft.t('app', 'Entry Types'),
-        }
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+        { name: 'type', title: Craft.t('app', 'Type') },
+        { name: '__slot:menu', title: Craft.t('app', 'Entry Types') }
     ];
 
     new Craft.VueAdminTable({

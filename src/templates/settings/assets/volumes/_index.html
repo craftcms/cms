@@ -28,9 +28,9 @@
 
     {% set tableData = tableData|merge([{
         id: volume.id,
-        title: volume.name|t('site'),
+        title: volume.name|t('site')|e,
         url: url('settings/assets/volumes/' ~ volume.id),
-        name: volume.name|t('site'),
+        name: volume.name|t('site')|e,
         handle: volume.handle,
         type: {
             isMissing: volumeIsMissing,
@@ -41,24 +41,9 @@
 
 {% js %}
 var columns = [
-    {
-        name: '__slot:title',
-        title: Craft.t('app', 'Name'),
-        callback: function(value) {
-            return '<a href="'+value.url+'">' + value.label + '</a>';
-        }
-    },
-    {
-        name: '__slot:handle',
-        title: Craft.t('app', 'Handle'),
-        callback: function(value) {
-            return '<code>' + value + '</code>';
-        }
-    },
-    {
-        name: 'type',
-        title: Craft.t('app', 'Type'),
-        callback: function(value) {
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    { name: 'type', title: Craft.t('app', 'Type'), callback: function(value) {
             if (value.isMissing) {
                 return '<span class="error">' + value.label + '</span>'
             }

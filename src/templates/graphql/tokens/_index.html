@@ -40,7 +40,7 @@
         if (value.value) {
             return value.date;
         } else {
-            return '<span class="light">'+Craft.t('app', 'Never')+'</span>';
+            return '<span class="light">'+Craft.escapeHtml(Craft.t('app', 'Never'))+'</span>';
         }
     };
 

@@ -33,9 +33,9 @@
         url: url('settings/assets/transforms/' ~ transform.handle),
         handle: transform.handle,
         mode: mode ?? null,
-        dimensions: (transform.width ? transform.width : 'Auto'|t('app')) ~ " × " ~ (transform.height ? transform.height : 'Auto'|t('app')),
-        interlace: transform.interlace ? transform.interlace|capitalize : 'None'|t('app'),
-        format: transform.format ? transform.format|capitalize : 'Auto'|t('app'),
+        dimensions: (transform.width ? transform.width : 'Auto'|t('app')|e) ~ " × " ~ (transform.height ? transform.height : 'Auto'|t('app')|e),
+        interlace: transform.interlace ? transform.interlace|capitalize : 'None'|t('app')|e,
+        format: transform.format ? transform.format|capitalize : 'Auto'|t('app')|e,
     }]) %}
 {% endfor %}
 

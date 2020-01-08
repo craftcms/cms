@@ -92,7 +92,7 @@
 
     {% set tableData = tableData|merge([{
         id: field.id,
-        title: field.name|t('site'),
+        title: field.name|t('site')|e,
         url: url('settings/fields/edit/' ~ field.id),
         handle: field.handle,
         type: {
@@ -107,10 +107,7 @@
 {% js %}
     var columns = [
         { name: '__slot:title', title: Craft.t('app', 'Name') },
-        {
-            name: '__slot:handle',
-            title: Craft.t('app', 'Handle'),
-        },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
         {
             name: 'type',
             title: Craft.t('app', 'Type'),

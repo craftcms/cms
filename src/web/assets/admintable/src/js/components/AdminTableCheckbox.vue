@@ -3,10 +3,11 @@
       class="checkbox"
       :class="{ checked: isChecked }"
       v-on:click.prevent="handleClick"
-      :title="'Select'|t('app')"></div>
+      :title="title"></div>
 </template>
 
 <script>
+    /* global Craft */
     export default {
         name: 'AdminTableCheckbox',
         props: {
@@ -23,6 +24,9 @@
         computed: {
             isChecked() {
                 return this.checks.indexOf(this.id) !== -1
+            },
+            title() {
+                return Craft.escapeHtml(Craft.t('app', 'Select'));
             }
         },
 
