@@ -157,7 +157,7 @@ class AssetsController extends Controller
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
             $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}") &&
-            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}"))
+            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
         );
 
         return $this->renderTemplate('assets/_edit', [
