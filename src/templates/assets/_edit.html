@@ -1,7 +1,7 @@
 {% extends "_layouts/element" %}
 {% import "_includes/forms" as forms %}
 
-{% set canUpdateSource = true %}
+{% set canUpdateSource = canEdit %}
 {% set saveSourceAction = 'assets/save-asset' %}
 
 {% block actionButton %}
@@ -23,10 +23,11 @@
         id: 'title',
         name: 'title',
         value: element.title,
-        errors: element.getErrors('title'),
+        errors: canEdit and element.getErrors('title'),
         first: true,
         autofocus: true,
-        required: true,
+        required: canEdit,
+        disabled: not canEdit,
         maxlength: 255
     }) }}
 

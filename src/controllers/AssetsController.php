@@ -103,8 +103,8 @@ class AssetsController extends Controller
             }
         }
 
-        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-        $this->_requirePeerPermissionByAsset('editPeerFilesInVolume', $asset);
+        $this->_requirePermissionByAsset('viewVolume', $asset);
+        $this->_requirePeerPermissionByAsset('viewPeerFilesInVolume', $asset);
 
         /** @var Volume $volume */
         $volume = $asset->getVolume();
@@ -169,6 +169,7 @@ class AssetsController extends Controller
             'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
             'dimensions' => $asset->getDimensions(),
             'canReplaceFile' => $canReplaceFile,
+            'canEdit' => $asset->getIsEditable(),
         ]);
     }
 

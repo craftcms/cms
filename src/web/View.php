@@ -2039,8 +2039,7 @@ JS;
         if (
             $context['context'] === 'index' &&
             !$element->trashed &&
-            ($cpEditUrl = $element->getCpEditUrl()) &&
-            $element->getIsEditable()
+            ($cpEditUrl = $element->getCpEditUrl())
         ) {
             if ($element->getIsDraft()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
