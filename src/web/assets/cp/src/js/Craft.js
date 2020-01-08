@@ -376,7 +376,7 @@ $.extend(Craft,
                     if (typeof Craft.cp !== 'undefined') {
                         Craft.cp.displayError();
                     } else {
-                        alert(Craft.t('app', 'An unknown error occurred.'));
+                        alert(Craft.t('app', 'A server error occurred.'));
                     }
 
                     if (callback) {

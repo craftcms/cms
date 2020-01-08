@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Er is een fout opgetreden bij het dupliceren van de categorie.',
     'An error occurred when duplicating the entry.' => 'Er is een fout opgetreden bij het dupliceren van de invoer.',
     'An error occurred while processing your request.' => 'Er trad een fout op bij het verwerken van uw aanvraag.',
-    'An unknown error occurred.' => 'Er deed zich een onbekende fout voor.',
     'Any changes will be lost if you leave this page.' => 'Aanpassingen zullen verloren gaan als u de pagina verlaat.',
     'Application Info' => 'Toepassingsgegevens',
     'Applied' => 'Toegepast',

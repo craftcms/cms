@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'حدث خطأ عند عمل نسخة مماثلة من الفئة.',
     'An error occurred when duplicating the entry.' => 'حدث خطأ عند عمل نسخة مماثلة من الإدخال.',
     'An error occurred while processing your request.' => 'حدث خطأ أثناء معالجة طلبك.',
-    'An unknown error occurred.' => 'حدث خطأ غير معروف.',
     'Any changes will be lost if you leave this page.' => 'سيتم فقدان أي تغييرات إذا غادرت هذه الصفحة.',
     'Application Info' => 'معلومات التطبيق',
     'Applied' => 'مُطبق',

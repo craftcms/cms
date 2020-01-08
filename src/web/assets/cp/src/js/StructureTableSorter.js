@@ -299,7 +299,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
                         if (!response.success) {
-                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                             this.tableView.elementIndex.updateElements();
                             return;
                         }

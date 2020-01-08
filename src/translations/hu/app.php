@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Hiba történt a kategória többszörözése közben.',
     'An error occurred when duplicating the entry.' => 'Hiba történt a bejegyzés többszörözése közben.',
     'An error occurred while processing your request.' => 'Hiba történt a kérés feldolgozásakor.',
-    'An unknown error occurred.' => 'Egy ismeretlen hiba történt.',
     'Any changes will be lost if you leave this page.' => 'Minden módosítás el fog veszni, ha elhagyod ezt az oldalt.',
     'Application Info' => 'Az alkalmazás adatai',
     'Applied' => 'Alkalmazva',

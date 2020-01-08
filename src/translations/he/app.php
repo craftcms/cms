@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'אירעה שגיאה בעת שכפול הקטגוריה.',
     'An error occurred when duplicating the entry.' => 'אירעה שגיאה בעת שכפול הערך.',
     'An error occurred while processing your request.' => 'אירעה שגיאה בעת עיבוד הבקשה שלך.',
-    'An unknown error occurred.' => 'שגיאה לא ידועה התרחשה.',
     'Any changes will be lost if you leave this page.' => 'אם תעזוב את דף זה תאבד את כל השינויים.',
     'Application Info' => 'מידע על האפליקציה',
     'Applied' => 'הוחל',

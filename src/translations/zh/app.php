@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => '复制类别时出错。',
     'An error occurred when duplicating the entry.' => '复制条目时出错。',
     'An error occurred while processing your request.' => '处理您的请求时出错。',
-    'An unknown error occurred.' => '发生未知错误。',
     'Any changes will be lost if you leave this page.' => '如果离开该页，所有变更均将丢失。',
     'Application Info' => '应用信息',
     'Applied' => '已应用',

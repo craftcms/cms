@@ -13936,7 +13936,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -13945,7 +13945,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function formatError(error) {
   !error ? (0, _invariant.default)(0, 'Received null or undefined error.') : void 0;
-  var message = error.message || 'An unknown error occurred.';
+  var message = error.message || 'A server error occurred.';
   var locations = error.locations;
   var path = error.path;
   var extensions = error.extensions;
@@ -14024,7 +14024,7 @@ var _GraphQLError = require("./GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -14058,7 +14058,7 @@ var _location = require("../language/location");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -14206,7 +14206,7 @@ var _GraphQLError = require("./GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -15146,7 +15146,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -15375,7 +15375,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function graphql(argsOrSchema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver) {
   var _arguments = arguments;
@@ -16574,7 +16574,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16606,7 +16606,7 @@ exports.default = defineToStringTag;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16784,7 +16784,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16831,7 +16831,7 @@ exports.default = invariant;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function invariant(condition, message) {
   var booleanCondition = Boolean(condition);
@@ -16856,7 +16856,7 @@ exports.default = isInvalid;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16880,7 +16880,7 @@ exports.default = isNullish;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16904,7 +16904,7 @@ exports.default = isPromise;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16930,7 +16930,7 @@ exports.default = keyMap;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -16977,7 +16977,7 @@ exports.default = keyValMap;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17022,7 +17022,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17074,7 +17074,7 @@ exports.default = memoize3;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17133,7 +17133,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 var nodejsCustomInspectSymbol = typeof Symbol === 'function' ? Symbol.for('nodejs.util.inspect.custom') : undefined;
 var _default = nodejsCustomInspectSymbol;
@@ -17157,7 +17157,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 var MAX_LENGTH = 5;
 /**
@@ -17194,7 +17194,7 @@ exports.default = promiseForObject;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17235,7 +17235,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17271,7 +17271,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17297,7 +17297,7 @@ exports.default = suggestionList;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17397,7 +17397,7 @@ exports.printBlockString = printBlockString;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17511,7 +17511,7 @@ exports.DirectiveLocation = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17729,7 +17729,7 @@ exports.Kind = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -17822,7 +17822,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -18485,7 +18485,7 @@ exports.getLocation = getLocation;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -18548,7 +18548,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -20067,7 +20067,7 @@ var _kinds = require("./kinds");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function isDefinitionNode(node) {
   return isExecutableDefinitionNode(node) || isTypeSystemDefinitionNode(node) || isTypeSystemExtensionNode(node);
@@ -20123,7 +20123,7 @@ var _blockString = require("./blockString");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -20444,7 +20444,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -20492,7 +20492,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 var QueryDocumentKeys = {
   Name: [],
@@ -20935,7 +20935,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* eslint-disable no-redeclare */
@@ -20968,7 +20968,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* eslint-disable no-redeclare */
@@ -21008,7 +21008,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* eslint-disable no-redeclare */
@@ -21034,7 +21034,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* eslint-disable no-redeclare */
@@ -21060,7 +21060,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* eslint-disable no-redeclare */
@@ -21088,7 +21088,7 @@ exports.default = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* eslint-disable no-redeclare */
@@ -21241,7 +21241,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function subscribe(argsOrSchema, document, rootValue, contextValue, variableValues, operationName, fieldResolver, subscribeFieldResolver) {
   /* eslint-enable no-redeclare */
@@ -23051,7 +23051,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 var __Schema = new _definition.GraphQLObjectType({
   name: '__Schema',
@@ -24260,7 +24260,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -25020,7 +25020,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -25369,7 +25369,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 var NAME_RX = /^[_a-zA-Z][_a-zA-Z0-9]*$/;
 /**
@@ -25667,7 +25667,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -26157,7 +26157,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -26677,7 +26677,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -27140,7 +27140,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 var BreakingChangeType = {
   FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND',
@@ -28344,7 +28344,7 @@ var _TypeInfo = require("./TypeInfo");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -28400,7 +28400,7 @@ var _kinds = require("../language/kinds");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -28449,7 +28449,7 @@ var _GraphQLError = require("../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -28780,7 +28780,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -28814,7 +28814,7 @@ exports.introspectionQuery = void 0;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function getIntrospectionQuery(options) {
   var descriptions = !(options && options.descriptions === false);
@@ -28846,7 +28846,7 @@ var _coerceValue = require("./coerceValue");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /* istanbul ignore file */
@@ -28889,7 +28889,7 @@ var _ValidationContext = require("../validation/ValidationContext");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -29132,7 +29132,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -29428,7 +29428,7 @@ var _visitor = require("../language/visitor");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -29537,7 +29537,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -29673,7 +29673,7 @@ var _definition = require("../type/definition");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -29808,7 +29808,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function typeFromAST(schema, typeNode) {
   /* eslint-enable no-redeclare */
@@ -29862,7 +29862,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -30070,7 +30070,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -30631,7 +30631,7 @@ var _predicates = require("../../language/predicates");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function nonExecutableDefinitionMessage(defName) {
   return "The ".concat(defName, " definition is not executable.");
@@ -30704,7 +30704,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function undefinedFieldMessage(fieldName, type, suggestedTypeNames, suggestedFieldNames) {
   var message = "Cannot query field \"".concat(fieldName, "\" on type \"").concat(type, "\".");
@@ -30870,7 +30870,7 @@ var _typeFromAST = require("../../utilities/typeFromAST");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function inlineFragmentOnNonCompositeErrorMessage(type) {
   return "Fragment cannot condition on non composite type \"".concat(type, "\".");
@@ -31109,7 +31109,7 @@ var _directives = require("../../type/directives");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function unknownDirectiveMessage(directiveName) {
   return "Unknown directive \"".concat(directiveName, "\".");
@@ -31297,7 +31297,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function unknownFragmentMessage(fragName) {
   return "Unknown fragment \"".concat(fragName, "\".");
@@ -31350,7 +31350,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function unknownTypeMessage(typeName, suggestedTypes) {
   var message = "Unknown type \"".concat(typeName, "\".");
@@ -31451,7 +31451,7 @@ var _kinds = require("../../language/kinds");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function anonOperationNotAloneMessage() {
   return 'This anonymous operation must be the only defined operation.';
@@ -31498,7 +31498,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function schemaDefinitionNotAloneMessage() {
   return 'Must provide only one schema definition.';
@@ -31551,7 +31551,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function cycleErrorMessage(fragName, spreadNames) {
   var via = spreadNames.length ? ' via ' + spreadNames.join(', ') : '';
@@ -31637,7 +31637,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function undefinedVarMessage(varName, opName) {
   return opName ? "Variable \"$".concat(varName, "\" is not defined by operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is not defined.");
@@ -31712,7 +31712,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function unusedFragMessage(fragName) {
   return "Fragment \"".concat(fragName, "\" is never used.");
@@ -31798,7 +31798,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function unusedVariableMessage(varName, opName) {
   return opName ? "Variable \"$".concat(varName, "\" is never used in operation \"").concat(opName, "\".") : "Variable \"$".concat(varName, "\" is never used.");
@@ -31896,7 +31896,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function fieldsConflictMessage(responseName, reason) {
   return "Fields \"".concat(responseName, "\" conflict because ").concat(reasonMessage(reason), ". ") + 'Use different aliases on the fields to fetch both if this was intentional.';
@@ -32515,7 +32515,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function typeIncompatibleSpreadMessage(fragName, parentType, fragType) {
   return "Fragment \"".concat(fragName, "\" cannot be spread here as objects of ") + "type \"".concat(parentType, "\" can never be of type \"").concat(fragType, "\".");
@@ -32936,7 +32936,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function noSubselectionAllowedMessage(fieldName, type) {
   return "Field \"".concat(fieldName, "\" must not have a selection since ") + "type \"".concat(type, "\" has no subfields.");
@@ -32989,7 +32989,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function singleFieldOnlyMessage(name) {
   return (name ? "Subscription \"".concat(name, "\" ") : 'Anonymous Subscription ') + 'must select only one top level field.';
@@ -33030,7 +33030,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateArgMessage(argName) {
   return "There can be only one argument named \"".concat(argName, "\".");
@@ -33084,7 +33084,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateDirectiveNameMessage(directiveName) {
   return "There can be only one directive named \"".concat(directiveName, "\".");
@@ -33140,7 +33140,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateDirectiveMessage(directiveName) {
   return "The directive \"".concat(directiveName, "\" can only be used once at ") + 'this location.';
@@ -33219,7 +33219,7 @@ var _definition = require("../../type/definition");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateEnumValueNameMessage(typeName, valueName) {
   return "Enum value \"".concat(typeName, ".").concat(valueName, "\" can only be defined once.");
@@ -33311,7 +33311,7 @@ var _definition = require("../../type/definition");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateFieldDefinitionNameMessage(typeName, fieldName) {
   return "Field \"".concat(typeName, ".").concat(fieldName, "\" can only be defined once.");
@@ -33411,7 +33411,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateFragmentNameMessage(fragName) {
   return "There can be only one fragment named \"".concat(fragName, "\".");
@@ -33460,7 +33460,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateInputFieldMessage(fieldName) {
   return "There can be only one input field named \"".concat(fieldName, "\".");
@@ -33515,7 +33515,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateOperationNameMessage(operationName) {
   return "There can be only one operation named \"".concat(operationName, "\".");
@@ -33567,7 +33567,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateOperationTypeMessage(operation) {
   return "There can be only one ".concat(operation, " type in schema.");
@@ -33654,7 +33654,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateTypeNameMessage(typeName) {
   return "There can be only one type named \"".concat(typeName, "\".");
@@ -33717,7 +33717,7 @@ var _GraphQLError = require("../../error/GraphQLError");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function duplicateVariableMessage(variableName) {
   return "There can be only one variable named \"".concat(variableName, "\".");
@@ -33784,7 +33784,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function badValueMessage(typeName, valueName, message) {
   return "Expected type ".concat(typeName, ", found ").concat(valueName) + (message ? "; ".concat(message) : '.');
@@ -33970,7 +33970,7 @@ var _typeFromAST = require("../../utilities/typeFromAST");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function nonInputTypeOnVarMessage(variableName, typeName) {
   return "Variable \"$".concat(variableName, "\" cannot be non-input type \"").concat(typeName, "\".");
@@ -34025,7 +34025,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 function badVarPosMessage(varName, varType, expectedType) {
   return "Variable \"$".concat(varName, "\" of type \"").concat(varType, "\" used in ") + "position expecting type \"".concat(expectedType, "\".");
@@ -34195,7 +34195,7 @@ var _PossibleTypeExtensions = require("./rules/PossibleTypeExtensions");
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 // Spec Section: "Executable Definitions"
 // Spec Section: "Operation Name Uniqueness"
@@ -34267,7 +34267,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * 
+ *
  */
 
 /**
@@ -45546,9 +45546,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
  *  This source code is licensed under the BSD-style license found in the
  *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 
 /**
@@ -52467,9 +52467,9 @@ exports.default = find;
  *
  *  This source code is licensed under the MIT license found in the
  *  LICENSE file in the root directory of this source tree.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 function find(list, predicate) {
   for (var i = 0; i < list.length; i++) {
@@ -53281,7 +53281,7 @@ var _introspection = require("graphql/type/introspection");
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 // Utility for returning the state representing the Definition this token state
 // is within, if any.
@@ -54246,7 +54246,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 var SEVERITY = {
   ERROR: 1,
@@ -54382,7 +54382,7 @@ var _graphql = require("graphql");
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 
 /**
@@ -54807,7 +54807,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 
 /**
@@ -55020,7 +55020,7 @@ exports.p = p;
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 // These functions help build matching rules for ParseRules.
 // An optional rule.
@@ -55094,7 +55094,7 @@ var _RuleHelpers = require("./RuleHelpers");
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 
 /**
@@ -55693,7 +55693,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 var Range =
 /*#__PURE__*/
@@ -55808,7 +55808,7 @@ var _graphql = require("graphql");
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 function getASTNodeAtPosition(query, ast, point) {
   var offset = pointToOffset(query, point);
@@ -55911,7 +55911,7 @@ var _graphql = require("graphql");
  *  This source code is licensed under the license found in the
  *  LICENSE file in the root directory of this source tree.
  *
- *  
+ *
  */
 
 /**

@@ -3,7 +3,24 @@
 ## Unreleased
 
 ### Added
+- Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
+- Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
+- Added `craft\base\UtilityInterface::footerHtml()`.
+- Added `craft\base\UtilityInterface::toolbarHtml()`.
+- Added `craft\queue\Command::actionRelease()`.
+- Added `craft\queue\QueueInterface::getJobDetails()`.
+- Added `craft\queue\QueueInterface::getTotalJobs()`.
+- Added `craft\queue\QueueInterface::releaseAll()`.
+- Added `craft\queue\QueueInterface::retryAll()`.
+- Added `craft\utilities\QueueManager`.
+- Added `craft\web\assets\queuemanager\QueueManagerAsset`.
+
+### Changed
+- The queue info in the global sidebar no longer shows an HUD with job details when clicked; the user is now brought to the new Queue Manager utility, if they have permission to view it. ([#4040](https://github.com/craftcms/cms/issues/4040))
+
+### Fixed
+- Fixed a bug where the control panel UI could come to a grinding halt if a large number of jobs were in the queue. ([#4533](https://github.com/craftcms/cms/issues/4533))
 
 ### Fixed
 - Fixed an error that occurred when updating from Craft 3.0. ([#5391](https://github.com/craftcms/cms/issues/5391))

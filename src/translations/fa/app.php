@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'یک خطا در هنگام کپی کردن دسته بندی رخ داد.',
     'An error occurred when duplicating the entry.' => 'یک خطا در هنگام کپی کردن محتوا رخ داد.',
     'An error occurred while processing your request.' => 'یک خطا در هنگام پردازش درخواست شما رخ داد.',
-    'An unknown error occurred.' => 'یک خطای غیر منتظره رخ داد.',
     'Any changes will be lost if you leave this page.' => 'در صورت ترک این صفحه تمامی تغییرات از بین خواهد رفت.',
     'Application Info' => 'اطلاعات برنامه',
     'Applied' => 'اعمال شد',

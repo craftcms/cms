@@ -173,7 +173,7 @@
 
             showError: function(error) {
                 if (!error) {
-                    error = Craft.t('app', 'An unknown error occurred.');
+                    error = Craft.t('app', 'A server error occurred.');
                 }
 
                 this.$error = $('<p class="error" style="display:none">' + error + '</p>').insertAfter($('.buttons', this.$form));

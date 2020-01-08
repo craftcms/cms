@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Si è verificato un errore durante il tentativo di duplicare la categoria.',
     'An error occurred when duplicating the entry.' => 'Si è verificato un errore durante il tentativo di duplicare la voce.',
     'An error occurred while processing your request.' => 'Si è verificato un errore durante l\'elaborazione della tua richiesta.',
-    'An unknown error occurred.' => 'Si è verificato un errore sconosciuto.',
     'Any changes will be lost if you leave this page.' => 'Eventuali modifiche andranno perse se si lascia questa pagina.',
     'Application Info' => 'Info applicazione',
     'Applied' => 'Applicato',

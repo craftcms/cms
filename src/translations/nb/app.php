@@ -69,7 +69,6 @@ return [
     'An error occurred when duplicating the category.' => 'Det oppsto en feil da kategorien skulle dupliseres.',
     'An error occurred when duplicating the entry.' => 'Det oppsto en feil da oppføringen skulle dupliseres.',
     'An error occurred while processing your request.' => 'Det oppsto en feil da forespørselen din skulle behandles.',
-    'An unknown error occurred.' => 'En ukjent feil har oppstått.',
     'Any changes will be lost if you leave this page.' => 'Alle endringer vil gå tapt dersom du forlater denne siden.',
     'Application Info' => 'Informasjon om app',
     'Applied' => 'Brukt',
