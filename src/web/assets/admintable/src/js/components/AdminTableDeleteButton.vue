@@ -31,7 +31,7 @@
 
         computed: {
             success() {
-                return this.successMessage !== undefined ? Craft.t('site', this.successMessage, {name: this.name}) : Craft.t('app', '“{name}” deleted.', {name: this.name});
+                return this.successMessage !== undefined ? Craft.t('site', this.successMessage, {name: this.name}) : Craft.escapeHtml(Craft.t('app', '“{name}” deleted.', {name: this.name}));
             },
             confirm() {
                 return this.confirmationMessage !== undefined ? Craft.t('site', this.confirmationMessage, {name: this.name}) : Craft.t('app', 'Are you sure you want to delete “{name}”?', {name: this.name});

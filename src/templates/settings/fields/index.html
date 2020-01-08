@@ -87,7 +87,7 @@
     {% endif %}
 
     {% if groupId is not defined %}
-        {% set group = field.group.name|t('site') %}
+        {% set group = field.group.name|t('site')|e %}
     {% endif %}
 
     {% set tableData = tableData|merge([{
