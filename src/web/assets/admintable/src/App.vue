@@ -32,7 +32,7 @@
         </div>
 
         <div :class="{ 'content-pane': fullPage }">
-            <div v-if="this.isEmpty">
+            <div v-if="this.isEmpty" class="zilch">
                 <p>{{ emptyMessage }}</p>
             </div>
 

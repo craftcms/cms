@@ -238,6 +238,8 @@ body.rtl .rightalign { text-align: left; }
 
 .smalltext { font-size: 12px; }
 
+.zilch { padding: 100px 0 76px; text-align: center; font-size: 20px; line-height: 24px; color: #9aa5b1; }
+
 input.checkbox + label.smalltext { padding-top: 2px; }
 
 .required:after { content: 'asterisk'; font-size: 7px; color: #EF4E4E; }
@@ -1797,7 +1799,7 @@ body.ltr #nav li a .icon { margin: 0 22px 0 0 ; }
 body.rtl #nav li a .icon { margin: 0 0 0 22px ; }
 #nav li a .icon.icon-mask svg rect, #nav li a .icon.icon-mask svg circle, #nav li a .icon.icon-mask svg ellipse, #nav li a .icon.icon-mask svg line, #nav li a .icon.icon-mask svg polyline, #nav li a .icon.icon-mask svg polygon, #nav li a .icon.icon-mask svg path, #nav li a .icon.icon-mask svg text { fill: #fff; stroke-width: 0; }
 #nav li a .icon.icon-mask span[data-icon] { color: #fff; }
-#nav li a .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#nav li a .label, #nav li a .label span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #nav li a .badge { background-color: rgba(255, 255, 255, 0.5); color: #33404d; }
 body.ltr #nav li a .badge { margin-right: 0; }
 body.rtl #nav li a .badge { margin-left: 0; }
@@ -2033,18 +2035,6 @@ body.rtl #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
   #tabs ul li a { padding-left: 14px; padding-right: 14px; }
   body.ltr #tabs ul li + li { margin-left: -7px; }
   body.rtl #tabs ul li + li { margin-right: -7px; } }
-#queue-hud { padding: 0; overflow: auto; }
-#queue-hud .job { padding: 14px 24px; }
-#queue-hud .job + .job { border-top: 1px solid rgba(51, 64, 77, 0.1); }
-#queue-hud .job .flex { -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
-#queue-hud .job .flex > * { margin-bottom: 0; }
-#queue-hud .job .job-status { width: 100px; color: #9aa5b1; text-align: center; }
-body.ltr #queue-hud .job .job-status { margin-left: 7px; }
-body.rtl #queue-hud .job .job-status { margin-right: 7px; }
-#queue-hud .job .job-status .progressbar { position: static; width: auto; }
-body.ltr #queue-hud .job .job-status .menubtn { margin-right: -22px; }
-body.rtl #queue-hud .job .job-status .menubtn { margin-left: -22px; }
-
 body.ltr #settingsmenu ul li a { padding-left: 46px; }
 body.rtl #settingsmenu ul li a { padding-right: 46px; }
 #settingsmenu ul li a:before { font-size: 15px; }
@@ -2118,6 +2108,10 @@ body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
 .sidebar nav li .toggle { position: absolute; top: 7px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
+
+#job-icon { -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
+#job-icon .icon { margin-top: 2px !important; }
+#job-icon .progress-label { display: block; color: #9aa5b1; font-size: 11px; line-height: 1.5; }
 
 body.ltr .content.has-sidebar:not(.hiding-sidebar) { margin-left: 225px; }
 body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 225px; }

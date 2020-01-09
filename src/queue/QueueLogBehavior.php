@@ -9,7 +9,6 @@ namespace craft\queue;
 
 use Craft;
 use craft\log\FileTarget;
-use yii\queue\ErrorEvent;
 use yii\queue\ExecEvent;
 
 /**
@@ -62,7 +61,7 @@ class QueueLogBehavior extends VerboseBehavior
     }
 
     /**
-     * @param ExecEvent $event
+     * @inheritdoc
      */
     public function afterExec(ExecEvent $event)
     {
@@ -71,9 +70,9 @@ class QueueLogBehavior extends VerboseBehavior
     }
 
     /**
-     * @param ErrorEvent $event
+     * @inheritdoc
      */
-    public function afterError(ErrorEvent $event)
+    public function afterError(ExecEvent $event)
     {
         $duration = $this->_formattedDuration();
         $error = $event->error->getMessage();

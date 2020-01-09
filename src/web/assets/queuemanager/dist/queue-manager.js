@@ -119,6 +119,7 @@ new Vue({
                             status: 3,
                         })
                         delete oldJob.error
+                        delete oldJob.progressLabel
                         this.activeJob = oldJob
                     }
                     resolve(success)
@@ -358,22 +359,14 @@ new Vue({
         },
 
         /**
-         * Formats a job attribute value.
-         * @param {string} name
+         * Formats a TTR value.
          * @param {string} value
          * @return {string}
          */
-        jobAttributeValue(name, value) {
-            switch (name) {
-                case 'progress':
-                    return value + '%'
-                case 'ttr':
-                    return Craft.t('app', '{num} seconds', {
-                        num: Craft.formatNumber(value)
-                    })
-                default:
-                    return value
-            }
+        ttrValue(value) {
+            return Craft.t('app', '{num} seconds', {
+                num: Craft.formatNumber(value)
+            })
         },
 
         /**

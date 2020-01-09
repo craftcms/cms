@@ -4,14 +4,21 @@
 
         <table class="data fullwidth fixed-layout">
             <tbody>
-            <tr v-for="(value, name) in activeJob" v-if="name !== 'job' && name !== 'description'">
+            <tr v-for="(value, name) in activeJob" v-if="!Craft.inArray(name, ['description', 'progressLabel', 'job'])">
                 <th class="light">[[jobAttributeName(name)]]</th>
                 <td :class="(name == 'status' || name == 'error') ? jobStatusClass(activeJob.status) : null">
-                    <div v-if="name == 'status'">
+                    <template v-if="name == 'status'">
                         <span :class="jobStatusIconClass(value)"></span>[[jobStatusLabel(value)]]
-                    </div>
+                    </template>
+                    <template v-else-if="name == 'progress'">
+                        [[activeJob.progress]]%
+                        <span v-if="activeJob.progressLabel" class="light">([[activeJob.progressLabel]])</span>
+                    </template>
+                    <template v-else-if="name == 'ttr'">
+                        [[ttrValue(value)]]
+                    </template>
                     <template v-else>
-                        [[jobAttributeValue(name, value)]]
+                        [[value]]
                     </template>
                 </td>
             </tr>
@@ -44,7 +51,10 @@
                                 <span :class="jobStatusIconClass(job.status)"></span>[[jobStatusLabel(job.status)]]
                             </td>
                             <td>
-                                <template v-if="job.status == 2">[[job.progress]]%</template>
+                                <template v-if="job.status == 2">
+                                    [[job.progress]]%
+                                    <span v-if="job.progressLabel" class="light">([[job.progressLabel]])</span>
+                                </template>
                             </td>
                             <td>
                                 <a v-if="isRetryable(job)" class="btn small" data-icon="play" role="button" @click="retryJob(job)">
@@ -60,8 +70,8 @@
                 </table>
             </div>
         </template>
-        <p v-else>
-            {{ 'No pending jobs.'|t('app') }}
-        </p>
+        <div v-else class="zilch">
+            <p>{{ 'No pending jobs.'|t('app') }}</p>
+        </div>
     </template>
 </div>

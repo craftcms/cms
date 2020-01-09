@@ -445,6 +445,14 @@ strong, b, i em {
   font-size: 12px;
 }
 
+.zilch {
+  padding: 100px 0 76px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 24px;
+  color: $lightTextColor;
+}
+
 input.checkbox + label.smalltext {
   padding-top: 2px;
 }

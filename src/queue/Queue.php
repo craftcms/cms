@@ -10,7 +10,6 @@ namespace craft\queue;
 use Craft;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -351,6 +350,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
+            'progressLabel' => $result['progressLabel'],
             'description' => $result['description'],
             'job' => $job,
             'ttr' => (int)$result['ttr'],
@@ -405,15 +405,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function handleError($id, $job, $ttr, $attempt, $error)
+    public function handleError(ExecEvent $event)
     {
-        /** @var \Throwable $error */
         $this->_executingJobId = null;
 
-        if (parent::handleError($id, $job, $ttr, $attempt, $error)) {
-            // Log the exception
-            Craft::$app->getErrorHandler()->logException($error);
-
+        // Have we given up?
+        if (parent::handleError($event)) {
             // Mark the job as failed
             Craft::$app->getDb()->createCommand()
                 ->update(
@@ -421,9 +418,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     [
                         'fail' => true,
                         'dateFailed' => Db::prepareDateForDb(new \DateTime()),
-                        'error' => $error->getMessage(),
+                        'error' => $event->error ? $event->error->getMessage() : null,
                     ],
-                    ['id' => $id],
+                    ['id' => $event->id],
                     [],
                     false
                 )

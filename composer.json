@@ -51,10 +51,10 @@
     "yii2tech/ar-softdelete": "^1.0.2",
     "yiisoft/yii2": "~2.0.31.0",
     "yiisoft/yii2-debug": "^2.1.0",
-    "yiisoft/yii2-queue": "2.1.0",
+    "yiisoft/yii2-queue": "~2.3.0",
     "yiisoft/yii2-shell": "^2.0.2",
     "yiisoft/yii2-swiftmailer": "^2.1.0",
-    "zendframework/zend-feed": "^2.8.0"
+    "laminas/laminas-feed": "^2.12.0"
   },
   "require-dev": {
     "codeception/codeception": "^3.1.0",
