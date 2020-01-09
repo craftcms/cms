@@ -2,7 +2,7 @@
 
 > {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
 
-> {warning} Custom queues that implement `craft\queue\QueueInterface` must be updated to implement `getTotalJobs()`, `getJobDetails()`, `retryAll()` and `releaseAll()`.
+> {warning} Custom queue drivers need to be updated to support yii2-queue 2.3, and those that implement `craft\queue\QueueInterface` must be updated to implement `getTotalJobs()`, `getJobDetails()`, `retryAll()` and `releaseAll()`.
 
 > {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
 >
@@ -249,6 +249,7 @@
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+- Updated yii2-queue to 2.3.
 - Updated Garnish to 0.1.32.
 
 ### Deprecated
