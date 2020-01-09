@@ -7,6 +7,7 @@
 - Fixed a PHP warning that occurred when creating a new database backup. ([#5393](https://github.com/craftcms/cms/issues/5393))
 - Fixed an error that could occur when saving a Table field. ([#5398](https://github.com/craftcms/cms/issues/5398))
 - Fixed a bug where an unknown error was displayed when attempting to create an Asset folder without proper permissions. ([#5223](https://github.com/craftcms/cms/issues/5223))
+- Fixed a PHP warning that occurred sometimes when Craft was attempting to list resized versions of asset images. ([#5399](https://github.com/craftcms/cms/issues/5399))
 
 ### Security
 - Fixed XSS vulnerabilities.
