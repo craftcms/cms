@@ -11,12 +11,12 @@ use Craft;
 use craft\errors\MissingComponentException;
 use craft\helpers\ConfigHelper;
 use craft\models\Url;
+use Laminas\Feed\Reader\Entry\EntryInterface;
+use Laminas\Feed\Reader\Exception\RuntimeException;
+use Laminas\Feed\Reader\Feed\FeedInterface;
+use Laminas\Feed\Reader\Reader;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use Zend\Feed\Reader\Entry\EntryInterface;
-use Zend\Feed\Reader\Exception\RuntimeException;
-use Zend\Feed\Reader\Feed\FeedInterface;
-use Zend\Feed\Reader\Reader;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
