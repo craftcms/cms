@@ -24,23 +24,17 @@
 {% for entryType in entryTypes %}
     {% set tableData = tableData|merge([{
         id: entryType.id,
-        title: entryType.name|t('site'),
+        title: entryType.name|t('site')|e,
         url: url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id),
-        name: entryType.name|t('site'),
+        name: entryType.name|t('site')|e,
         handle: entryType.handle,
     }]) %}
 {% endfor %}
 
 {% js %}
 var columns = [
-    {
-        name: '__slot:title',
-        title: Craft.t('app', 'Name'),
-    },
-    {
-        name: '__slot:handle',
-        title: Craft.t('app', 'Handle'),
-    },
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
 ];
 
 new Craft.VueAdminTable({
@@ -49,6 +43,6 @@ new Craft.VueAdminTable({
     deleteAction: '{{ section.type != 'single' ? 'sections/delete-entry-type' : '' }}',
     reorderAction: '{{ section.type != 'single' ? 'sections/reorder-entry-types' : '' }}',
     tableData: {{ tableData|json_encode|raw }},
-    minItems: 1,
+    minItems: 1
 });
 {% endjs %}

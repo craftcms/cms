@@ -26,9 +26,9 @@
 {% for group in groups %}
     {% set tableData = tableData|merge([{
         id: group.id,
-        title: group.name|t('site'),
+        title: group.name|t('site')|e,
         url: url('settings/users/groups/' ~ group.id),
-        name: group.name|t('site'),
+        name: group.name|t('site')|e,
         handle: group.handle,
     }]) %}
 {% endfor %}

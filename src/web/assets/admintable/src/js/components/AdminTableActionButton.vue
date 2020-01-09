@@ -52,7 +52,7 @@
 
                     Craft.postActionRequest(action, data, response => {
                         if (response.success) {
-                            Craft.cp.displayNotice(Craft.t('app', 'Updated.'));
+                            Craft.cp.displayNotice(Craft.escapeHtml(Craft.t('app', 'Updated.')));
                         }
 
                         this.$emit('reload');

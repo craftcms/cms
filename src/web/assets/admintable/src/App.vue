@@ -21,7 +21,7 @@
                         class="text fullwidth"
                         type="text"
                         autocomplete="off"
-                        :placeholder="searchPlaceholder"
+                        :placeholder="searchPlaceholderText"
                         v-model="searchTerm"
                         @input="handleSearch"
                     >
@@ -224,7 +224,7 @@
                 detailRow: AdminTableDetailRow,
                 isEmpty: false,
                 isLoading: true,
-                searchClearTitle: Craft.t('app', 'Clear'),
+                searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
                 searchTerm: null,
                 selectAll: null,
                 sortable: null,
@@ -276,11 +276,11 @@
 
                     Craft.postActionRequest(this.reorderAction, data, response => {
                         if (response && response.success) {
-                            Craft.cp.displayNotice(this.reorderSuccessMessage);
+                            Craft.cp.displayNotice(Craft.escapeHtml(this.reorderSuccessMessage));
                         }
                     });
                 } else {
-                    Craft.cp.displayError(this.reorderFailMessage);
+                    Craft.cp.displayError(Craft.escapeHtml(this.reorderFailMessage));
                 }
             },
 
@@ -405,8 +405,10 @@
                     // Do not allow sorting for if you can manually reorder items
                     if (this.reorderAction && item.hasOwnProperty('sortField')) {
                         delete item.sortField;
-                        return item;
                     }
+
+                    // Escape Title
+                    item.title = Craft.escapeHtml(item.title);
 
                     return item;
                 });
@@ -429,6 +431,10 @@
                 }
 
                 return columns;
+            },
+
+            searchPlaceholderText() {
+              return Craft.escapeHtml(this.searchPlaceholder);
             },
 
             showCheckboxes() {

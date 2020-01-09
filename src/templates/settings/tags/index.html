@@ -25,23 +25,17 @@
 {% for tagGroup in tagGroups %}
     {% set tableData = tableData|merge([{
         id: tagGroup.id,
-        title: tagGroup.name|t('site'),
+        title: tagGroup.name|t('site')|e,
         url: url('settings/tags/' ~ tagGroup.id),
-        name: tagGroup.name|t('site'),
+        name: tagGroup.name|t('site')|e,
         handle: tagGroup.handle,
     }]) %}
 {% endfor %}
 
 {% js %}
     var columns = [
-        {
-            name: '__slot:title',
-            title: Craft.t('app', 'Name'),
-        },
-        {
-            name: '__slot:handle',
-            title: Craft.t('app', 'Handle'),
-        },
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
     ];
 
     new Craft.VueAdminTable({
