@@ -265,6 +265,7 @@
 - Deprecated `craft\services\Search::indexElementFields()`.
 
 ### Removed
+- Removed `craft\events\SetStatusEvent`.
 - Removed `craft\models\GqlSchema::PUBLIC_TOKEN`.
 - Removed `craft\models\GqlSchema::$accessToken`.
 - Removed `craft\models\GqlSchema::$enabled`.

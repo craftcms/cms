@@ -23,6 +23,9 @@
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
 - Updated yii2-queue to 2.3.
 
+### Removed
+- Removed `craft\events\SetStatusEvent`.
+
 ### Fixed
 - Fixed a bug where the control panel UI could come to a grinding halt if a large number of jobs were in the queue. ([#4533](https://github.com/craftcms/cms/issues/4533))
 
