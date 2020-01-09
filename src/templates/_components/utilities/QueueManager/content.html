@@ -70,8 +70,8 @@
                 </table>
             </div>
         </template>
-        <p v-else>
-            {{ 'No pending jobs.'|t('app') }}
-        </p>
+        <div v-else class="zilch">
+            <p>{{ 'No pending jobs.'|t('app') }}</p>
+        </div>
     </template>
 </div>
