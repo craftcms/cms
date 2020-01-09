@@ -24,7 +24,7 @@
 {% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
 {% set editableSiteIds = supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
-{% set canEditMultilpeSites = editableSiteIds|length > 1 %}
+{% set canEditMultipleSites = editableSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set showSiteLabel = showSiteLabel ?? isMultiSiteElement %}
@@ -63,7 +63,7 @@
 
     {% if enableMenu %}
         <div class="menu">
-            {% if canEditMultilpeSites %}
+            {% if canEditMultipleSites %}
                 {% set enabledSiteIds = craft.app.elements.getEnabledSiteIdsForElement(element.id) %}
                 {% set siteGroups = craft.app.sites.getAllGroups() %}
                 {% for group in siteGroups %}
@@ -92,7 +92,7 @@
                 {% endfor %}
             {% endif %}
 
-            {% if canEditMultilpeSites and showRevisions %}<hr>{% endif %}
+            {% if canEditMultipleSites and showRevisions %}<hr>{% endif %}
 
             {% if showRevisions %}
                 <ul class="padded revision-group-current">
