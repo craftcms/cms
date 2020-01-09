@@ -256,9 +256,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       }
 
       .label {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        &,
+        & span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
 
       .badge {
@@ -1186,43 +1189,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 @media print {
 }
 
-#queue-hud {
-  padding: 0;
-  overflow: auto;
-
-  .job {
-    padding: 14px 24px;
-
-    & + .job {
-      border-top: 1px solid $hairlineColor;
-    }
-
-    .flex {
-      align-items: center;
-
-      & > * {
-        margin-bottom: 0;
-      }
-    }
-
-    .job-status {
-      @include margin-left(7px);
-      width: 100px;
-      color: $lightTextColor;
-      text-align: center;
-
-      .progressbar {
-        position: static;
-        width: auto;
-      }
-
-      .menubtn {
-        @include margin-right(-22px);
-      }
-    }
-  }
-}
-
 #settingsmenu ul li a {
   @include padding-left(46px);
 
@@ -1502,6 +1468,21 @@ $toolbarIconColor: darken($inputColor, 10%);
         display: block;
       }
     }
+  }
+}
+
+#job-icon {
+  align-items: flex-start;
+
+  .icon {
+    margin-top: 2px !important;
+  }
+
+  .progress-label {
+    display: block;
+    color: $grey300;
+    font-size: 11px;
+    line-height: 1.5;
   }
 }
 

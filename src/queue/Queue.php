@@ -350,6 +350,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
+            'progressLabel' => $result['progressLabel'],
             'description' => $result['description'],
             'job' => $job,
             'ttr' => (int)$result['ttr'],
