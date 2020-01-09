@@ -20,6 +20,7 @@
 - The queue info in the global sidebar no longer shows an HUD with job details when clicked; the user is now brought to the new Queue Manager utility, if they have permission to view it. ([#4040](https://github.com/craftcms/cms/issues/4040))
 - Element index pages once again link to elements’ edit pages even if `getIsEditable()` returns `false`.
 - “Edit” Asset pages now have a read-only mode for assets that the user is allowed to view but not modify.
+- Unsaved entries’ URIs are now updated on each autosave. ([#4581](https://github.com/craftcms/cms/issues/4581))
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
 - Updated yii2-queue to 2.3.
 
