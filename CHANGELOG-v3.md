@@ -9,6 +9,7 @@
 - Fixed a bug where an unknown error was displayed when attempting to create an Asset folder without proper permissions. ([#5223](https://github.com/craftcms/cms/issues/5223))
 - Fixed a PHP warning that occurred sometimes when Craft was attempting to list resized versions of asset images. ([#5399](https://github.com/craftcms/cms/issues/5399))
 - Fixed a bug where preview target URLs weren’t getting generated correctly if they contained an anchor. ([#5404](https://github.com/craftcms/cms/issues/5404))
+- Fixed a bug where preview iframes could lose their scroll positions between refreshes. ([#5404](https://github.com/craftcms/cms/issues/5404))
 - Fixed a bug where Matrix blocks weren’t getting updated correctly when their field’s Propagation Method setting was changed via `project.yaml`. ([#5295](https://github.com/craftcms/cms/issues/5295))
 
 ### Security
