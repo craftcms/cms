@@ -11,6 +11,7 @@
 - Fixed a bug where preview target URLs weren’t getting generated correctly if they contained an anchor. ([#5404](https://github.com/craftcms/cms/issues/5404))
 - Fixed a bug where preview iframes could lose their scroll positions between refreshes. ([#5404](https://github.com/craftcms/cms/issues/5404))
 - Fixed a bug where Matrix blocks weren’t getting updated correctly when their field’s Propagation Method setting was changed via `project.yaml`. ([#5295](https://github.com/craftcms/cms/issues/5295))
+- Fixed an error that could occur when syncing the project config if a Matrix field had been changed to something else. ([#5419](https://github.com/craftcms/cms/issues/5419))
 
 ### Security
 - Fixed XSS vulnerabilities.
