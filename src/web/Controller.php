@@ -44,13 +44,13 @@ abstract class Controller extends \yii\web\Controller
     // =========================================================================
 
     /**
-     * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
+     * @var int|false|int[]|string[] Whether this controller’s actions can be accessed anonymously.
      *
      * This can be set to any of the following:
      *
      * - `false` or `self::ALLOW_ANONYMOUS_NEVER` (default) – indicates that all controller actions should never be
      *   accessed anonymously
-     * - `true` or `self::ALLOW_ANONYMOUS_LIVE` – indicates that all controller actions can be accessed anonymously when
+     * - `self::ALLOW_ANONYMOUS_LIVE` – indicates that all controller actions can be accessed anonymously when
      *    the system is live
      * - `self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be accessed anonymously when the
      *    system is offline
