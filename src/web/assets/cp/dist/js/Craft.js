@@ -1,4 +1,4 @@
-/*!   - 2020-01-09 */
+/*!   - 2020-01-10 */
 (function($){
 
 /** global: Craft */
@@ -1472,6 +1472,10 @@ $.extend($.fn,
 
                     if (Garnish.hasAttr(this, 'data-value')) {
                         thisSettings.value = $(this).attr('data-value');
+                    }
+
+                    if (Garnish.hasAttr(this, 'data-indeterminate-value')) {
+                        thisSettings.indeterminateValue = $(this).attr('data-indeterminate-value');
                     }
 
                     if (!$.data(this, 'lightswitch')) {
@@ -16929,7 +16933,7 @@ Craft.LightSwitch = Garnish.Base.extend(
         $innerContainer: null,
         $input: null,
         small: false,
-        on: null,
+        on: false,
         indeterminate: false,
         dragger: null,
 
@@ -16959,6 +16963,7 @@ Craft.LightSwitch = Garnish.Base.extend(
             }
 
             this.on = this.$outerContainer.hasClass('on');
+            this.indeterminate = this.$outerContainer.hasClass('indeterminate');
 
             this.$outerContainer.attr({
                 role: 'checkbox',
@@ -17149,7 +17154,7 @@ Craft.LightSwitch = Garnish.Base.extend(
         },
 
         _getOffMargin: function() {
-            return (this.small ? -9 : -11);
+            return (this.small ? -10 : -12);
         }
 
     }, {

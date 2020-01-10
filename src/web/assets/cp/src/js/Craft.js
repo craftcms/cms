@@ -1471,6 +1471,10 @@ $.extend($.fn,
                         thisSettings.value = $(this).attr('data-value');
                     }
 
+                    if (Garnish.hasAttr(this, 'data-indeterminate-value')) {
+                        thisSettings.indeterminateValue = $(this).attr('data-indeterminate-value');
+                    }
+
                     if (!$.data(this, 'lightswitch')) {
                         new Craft.LightSwitch(this, thisSettings);
                     }

@@ -545,26 +545,30 @@ body.rtl .color .color-preview { right: 0; }
 .colorhex { display: inline-block; margin-left: 5px; vertical-align: middle; color: #7b8793; }
 
 /* lightswitch */
-.lightswitch { position: relative; border: none !important; overflow: hidden; cursor: pointer; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; background-color: #9aa5b1; -webkit-transition: background-color linear 100ms; transition: background-color linear 100ms; }
-.lightswitch.on { background-color: #27AB83; }
-.lightswitch.indeterminate { background-color: #F0B429; }
+.lightswitch { position: relative; border: none !important; overflow: hidden; cursor: pointer; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; background-image: -webkit-gradient(linear, left top, right top, from(#9aa5b1), to(#9aa5b1)); background-image: linear-gradient(to right, #9aa5b1, #9aa5b1); -webkit-transition: background-image linear 100ms; transition: background-image linear 100ms; }
+.lightswitch.on { background-image: -webkit-gradient(linear, left top, right top, from(#27AB83), to(#27AB83)); background-image: linear-gradient(to right, #27AB83, #27AB83); }
+.lightswitch.indeterminate { background-image: -webkit-gradient(linear, left top, right top, from(#27AB83), to(#9aa5b1)); background-image: linear-gradient(to right, #27AB83, #9aa5b1); }
 .lightswitch .lightswitch-container { position: relative; height: 100%; }
 .lightswitch .lightswitch-container .handle { position: absolute; top: 1px; background-color: #fff; }
-.lightswitch:not(.small) { border-radius: 11px; width: 33px; height: 22px; }
-.lightswitch:not(.small) .lightswitch-container { width: 44px; }
-body.ltr .lightswitch:not(.small) .lightswitch-container { margin-left: -11px; }
-body.rtl .lightswitch:not(.small) .lightswitch-container { margin-right: -11px; }
+.lightswitch:not(.small) { border-radius: 11px; width: 34px; height: 22px; }
+.lightswitch:not(.small) .lightswitch-container { width: 46px; }
+body.ltr .lightswitch:not(.small) .lightswitch-container { margin-left: -12px; }
+body.rtl .lightswitch:not(.small) .lightswitch-container { margin-right: -12px; }
 .lightswitch:not(.small) .lightswitch-container .handle { border-radius: 10px; width: 20px; height: 20px; left: calc(50% - 10px); }
-.lightswitch.small { border-radius: 9px; width: 27px; height: 18px; }
-.lightswitch.small .lightswitch-container { width: 36px; }
-body.ltr .lightswitch.small .lightswitch-container { margin-left: -9px; }
-body.rtl .lightswitch.small .lightswitch-container { margin-right: -9px; }
+.lightswitch.small { border-radius: 9px; width: 28px; height: 18px; }
+.lightswitch.small .lightswitch-container { width: 38px; }
+body.ltr .lightswitch.small .lightswitch-container { margin-left: -10px; }
+body.rtl .lightswitch.small .lightswitch-container { margin-right: -10px; }
 .lightswitch.small .lightswitch-container .handle { border-radius: 8px; width: 16px; height: 16px; left: calc(50% - 8px); }
 table .lightswitch { display: inline-block; margin-bottom: -5px; }
 .lightswitch:focus { outline: none; }
 .lightswitch:focus .lightswitch-container .handle { background-color: #cdd8e4; }
 body.ltr .lightswitch.on .lightswitch-container { margin-left: 0; }
 body.rtl .lightswitch.on .lightswitch-container { margin-right: 0; }
+body.ltr .lightswitch.indeterminate:not(.small) .lightswitch-container { margin-left: -6px; }
+body.rtl .lightswitch.indeterminate:not(.small) .lightswitch-container { margin-right: -6px; }
+body.ltr .lightswitch.indeterminate.small .lightswitch-container { margin-left: -5px; }
+body.rtl .lightswitch.indeterminate.small .lightswitch-container { margin-right: -5px; }
 
 /* pagination */
 table.data + .pagination { margin-top: 24px; }

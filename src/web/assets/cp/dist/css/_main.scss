@@ -1330,15 +1330,15 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  background-color: $grey300;
-  transition: background-color linear 100ms;
+  background-image: linear-gradient(to right, $grey300, $grey300);
+  transition: background-image linear 100ms;
 
   &.on {
-    background-color: $successColor;
+    background-image: linear-gradient(to right, $successColor, $successColor);
   }
 
   &.indeterminate {
-    background-color: $yellow500;
+    background-image: linear-gradient(to right, $successColor, $grey300);
   }
 
   .lightswitch-container {
@@ -1354,12 +1354,12 @@ div.btn.submit input {
 
   &:not(.small) {
     border-radius: 11px;
-    width: 33px;
+    width: 34px;
     height: 22px;
 
     .lightswitch-container {
-      @include margin-left(-11px);
-      width: 44px;
+      @include margin-left(-12px);
+      width: 46px;
 
       .handle {
         border-radius: 10px;
@@ -1372,12 +1372,12 @@ div.btn.submit input {
 
   &.small {
     border-radius: 9px;
-    width: 27px;
+    width: 28px;
     height: 18px;
 
     .lightswitch-container {
-      @include margin-left(-9px);
-      width: 36px;
+      @include margin-left(-10px);
+      width: 38px;
 
       .handle {
         border-radius: 8px;
@@ -1406,6 +1406,19 @@ div.btn.submit input {
   &.on {
     .lightswitch-container {
       @include margin-left(0);
+    }
+  }
+
+  &.indeterminate {
+    &:not(.small) {
+      .lightswitch-container {
+        @include margin-left(-12px / 2);
+      }
+    }
+    &.small {
+      .lightswitch-container {
+        @include margin-left(-10px / 2);
+      }
     }
   }
 }
