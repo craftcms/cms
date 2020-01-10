@@ -1330,7 +1330,27 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  transition: box-shadow linear 100ms;
+  background-color: $grey300;
+  transition: background-color linear 100ms;
+
+  &.on {
+    background-color: $successColor;
+  }
+
+  &.indeterminate {
+    background-color: $yellow500;
+  }
+
+  .lightswitch-container {
+    position: relative;
+    height: 100%;
+
+    .handle {
+      position: absolute;
+      top: 1px;
+      background-color: $white;
+    }
+  }
 
   &:not(.small) {
     border-radius: 11px;
@@ -1340,25 +1360,13 @@ div.btn.submit input {
     .lightswitch-container {
       @include margin-left(-11px);
       width: 44px;
-    }
 
-    .label {
-      width: 22px;
-      height: 22px;
-
-      &.on {
-        @include border-radius(11px, 0, 0, 11px);
+      .handle {
+        border-radius: 10px;
+        width: 20px;
+        height: 20px;
+        left: calc(50% - 10px);
       }
-      &.off {
-        @include border-radius(0, 11px, 11px, 0);
-      }
-    }
-
-    .handle {
-      border-radius: 10px;
-      margin: 1px -10px;
-      width: 20px;
-      height: 20px;
     }
   }
 
@@ -1370,25 +1378,13 @@ div.btn.submit input {
     .lightswitch-container {
       @include margin-left(-9px);
       width: 36px;
-    }
 
-    .label {
-      width: 18px;
-      height: 18px;
-
-      &.on {
-        @include border-radius(9px, 0, 0, 9px);
+      .handle {
+        border-radius: 8px;
+        width: 16px;
+        height: 16px;
+        left: calc(50% - 8px);
       }
-      &.off {
-        @include border-radius(0, 9px, 9px, 0);
-      }
-    }
-
-    .handle {
-      border-radius: 8px;
-      margin: 1px -8px;
-      width: 16px;
-      height: 16px;
     }
   }
 
@@ -1400,8 +1396,10 @@ div.btn.submit input {
   &:focus {
     outline: none;
 
-    .handle {
-      background-color: $lightSelColor;
+    .lightswitch-container {
+      .handle {
+        background-color: $lightSelColor;
+      }
     }
   }
 
@@ -1409,28 +1407,6 @@ div.btn.submit input {
     .lightswitch-container {
       @include margin-left(0);
     }
-  }
-
-  .label {
-    @include floatleft;
-    box-shadow: inset 0 0 0 1px transparentize($black, 0.9);
-  }
-
-  .label.on,
-  &:not(.dragging).on .label.off {
-    background-color: $successColor;
-  }
-
-  .label.off,
-  &:not(.dragging):not(.on) .label.on {
-    background-color: $grey300;
-  }
-
-  .handle {
-    position: relative;
-    @include floatleft;
-    background-color: $white;
-    box-shadow: 0 0 0 1px transparentize($black, 0.9);
   }
 }
 

@@ -307,9 +307,7 @@ Craft.ui =
 
             $(
                 '<div class="lightswitch-container">' +
-                '<div class="label on"></div>' +
                 '<div class="handle"></div>' +
-                '<div class="label off"></div>' +
                 '</div>'
             ).appendTo($container);
 

@@ -545,40 +545,26 @@ body.rtl .color .color-preview { right: 0; }
 .colorhex { display: inline-block; margin-left: 5px; vertical-align: middle; color: #7b8793; }
 
 /* lightswitch */
-.lightswitch { position: relative; border: none !important; overflow: hidden; cursor: pointer; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; }
+.lightswitch { position: relative; border: none !important; overflow: hidden; cursor: pointer; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; background-color: #9aa5b1; -webkit-transition: background-color linear 100ms; transition: background-color linear 100ms; }
+.lightswitch.on { background-color: #27AB83; }
+.lightswitch.indeterminate { background-color: #F0B429; }
+.lightswitch .lightswitch-container { position: relative; height: 100%; }
+.lightswitch .lightswitch-container .handle { position: absolute; top: 1px; background-color: #fff; }
 .lightswitch:not(.small) { border-radius: 11px; width: 33px; height: 22px; }
 .lightswitch:not(.small) .lightswitch-container { width: 44px; }
 body.ltr .lightswitch:not(.small) .lightswitch-container { margin-left: -11px; }
 body.rtl .lightswitch:not(.small) .lightswitch-container { margin-right: -11px; }
-.lightswitch:not(.small) .label { width: 22px; height: 22px; }
-body.ltr .lightswitch:not(.small) .label.on { border-radius: 11px 0 0 11px; }
-body.rtl .lightswitch:not(.small) .label.on { border-radius: 0 11px 11px 0; }
-body.ltr .lightswitch:not(.small) .label.off { border-radius: 0 11px 11px 0; }
-body.rtl .lightswitch:not(.small) .label.off { border-radius: 11px 0 0 11px; }
-.lightswitch:not(.small) .handle { border-radius: 10px; margin: 1px -10px; width: 20px; height: 20px; }
+.lightswitch:not(.small) .lightswitch-container .handle { border-radius: 10px; width: 20px; height: 20px; left: calc(50% - 10px); }
 .lightswitch.small { border-radius: 9px; width: 27px; height: 18px; }
 .lightswitch.small .lightswitch-container { width: 36px; }
 body.ltr .lightswitch.small .lightswitch-container { margin-left: -9px; }
 body.rtl .lightswitch.small .lightswitch-container { margin-right: -9px; }
-.lightswitch.small .label { width: 18px; height: 18px; }
-body.ltr .lightswitch.small .label.on { border-radius: 9px 0 0 9px; }
-body.rtl .lightswitch.small .label.on { border-radius: 0 9px 9px 0; }
-body.ltr .lightswitch.small .label.off { border-radius: 0 9px 9px 0; }
-body.rtl .lightswitch.small .label.off { border-radius: 9px 0 0 9px; }
-.lightswitch.small .handle { border-radius: 8px; margin: 1px -8px; width: 16px; height: 16px; }
+.lightswitch.small .lightswitch-container .handle { border-radius: 8px; width: 16px; height: 16px; left: calc(50% - 8px); }
 table .lightswitch { display: inline-block; margin-bottom: -5px; }
 .lightswitch:focus { outline: none; }
-.lightswitch:focus .handle { background-color: #cdd8e4; }
+.lightswitch:focus .lightswitch-container .handle { background-color: #cdd8e4; }
 body.ltr .lightswitch.on .lightswitch-container { margin-left: 0; }
 body.rtl .lightswitch.on .lightswitch-container { margin-right: 0; }
-.lightswitch .label { -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }
-body.ltr .lightswitch .label { float: left; }
-body.rtl .lightswitch .label { float: right; }
-.lightswitch .label.on, .lightswitch:not(.dragging).on .label.off { background-color: #27AB83; }
-.lightswitch .label.off, .lightswitch:not(.dragging):not(.on) .label.on { background-color: #9aa5b1; }
-.lightswitch .handle { position: relative; background-color: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); }
-body.ltr .lightswitch .handle { float: left; }
-body.rtl .lightswitch .handle { float: right; }
 
 /* pagination */
 table.data + .pagination { margin-top: 24px; }

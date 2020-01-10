@@ -12,9 +12,7 @@
     {%- if reverseToggle %} data-reverse-target="{{ reverseToggle }}"{% endif %}
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <div class="lightswitch-container">
-        <div class="label on"></div>
         <div class="handle"></div>
-        <div class="label off"></div>
     </div>
     {% if name is defined -%}
         {{ hiddenInput(name, on ? value : '', {disabled: disabled}) }}
