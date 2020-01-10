@@ -838,7 +838,7 @@ class Db
         $dsnParams = [];
         foreach ($checkParams as $urlParam => $dsnParam) {
             if (isset($parsed[$urlParam])) {
-                $dsnParams[] = "{$dsnParam}={$parsed[$urlParam]}";
+                $dsnParams[] = $dsnParam . '=' . trim($parsed[$urlParam], '/');
             }
         }
 

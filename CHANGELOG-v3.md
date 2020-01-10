@@ -32,8 +32,7 @@
 
 ### Fixed
 - Fixed a bug where the control panel UI could come to a grinding halt if a large number of jobs were in the queue. ([#4533](https://github.com/craftcms/cms/issues/4533))
-
-### Fixed
+- Fixed a bug where forward slashes weren’t being trimmed from database URLs’ `path` params when building the connection DSN string.
 - Fixed an error that occurred when updating from Craft 3.0. ([#5391](https://github.com/craftcms/cms/issues/5391))
 - Fixed an error that occurred when updating from Craft 2. ([#5402](https://github.com/craftcms/cms/issues/5402))
 
