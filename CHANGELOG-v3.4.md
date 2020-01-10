@@ -202,6 +202,7 @@
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
 - Added the Minify PHP package.
+- Added support for the `CRAFT_EPHEMERAL` PHP constant to help with Craft is isntalled on ephemeral file systems.
 
 ### Changed
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.

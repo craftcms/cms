@@ -136,7 +136,7 @@ if (!defined('CRAFT_LICENSE_KEY')) {
     }
 }
 
-if (!defined('CRAFT_EPHEMERMAL')) {
+if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
     $ensureFolderIsReadable($storagePath, true);
 
     // Create the storage/runtime/ folder if it doesn't already exist

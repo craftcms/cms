@@ -246,11 +246,13 @@ class InstallController extends Controller
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
 
-            $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
-            $configService->setDotEnvVar('DB_USER', $dbConfig->user);
-            $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
-            $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
+                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+                $configService->setDotEnvVar('DB_USER', $dbConfig->user);
+                $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
+                $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
+                $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            }
 
             // Update the db component based on new values
             /** @var Connection $db */
@@ -274,8 +276,10 @@ class InstallController extends Controller
         // if it's not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
             try {
-                $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
-                $siteUrl = '$DEFAULT_SITE_URL';
+                if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
+                    $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                    $siteUrl = '$DEFAULT_SITE_URL';
+                }
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL
             }
