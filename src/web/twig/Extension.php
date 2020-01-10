@@ -213,6 +213,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
+            new TwigFilter('contains', [ArrayHelper::class, 'contains']),
             new TwigFilter('currency', [$formatter, 'asCurrency']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),

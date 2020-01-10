@@ -5,9 +5,11 @@
 ### Added
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
 - Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
+- Added the `|contains` Twig filter.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 - Added `craft\base\UtilityInterface::footerHtml()`.
 - Added `craft\base\UtilityInterface::toolbarHtml()`.
+- Added `craft\helpers\ArrayHelper::contains()`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\QueueInterface::getJobDetails()`.
 - Added `craft\queue\QueueInterface::getTotalJobs()`.
