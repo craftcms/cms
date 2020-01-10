@@ -64,7 +64,7 @@
                 {% endif %}
                 {% set siteRows = siteRows|merge({
                     (site.handle): {
-                        heading: site.name|t('site'),
+                        heading: site.name|t('site')|e,
                         uriFormat: {
                             value: siteSettings.uriFormat ?? null,
                             hasErrors: siteSettings.hasErrors('uriFormat') ?? false

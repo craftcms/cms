@@ -1197,13 +1197,22 @@ class AssetTransforms extends Component
         ];
 
         foreach ($dirs as $dir) {
-            $files = glob($dir . '/[0-9]*/' . $asset->id . '.[a-z]*');
-            foreach ($files as $path) {
-                try {
-                    FileHelper::unlink($path);
-                } catch (ErrorException $e) {
-                    Craft::warning('Unable to delete asset thumbnails: ' . $e->getMessage(), __METHOD__);
+            if (file_exists($dir)) {
+                $files = glob($dir . '/[0-9]*/' . $asset->id . '.[a-z]*');
+
+                if (!is_array($files)) {
+                    Craft::warning('Could not list files in ' . $dir . ' when deleting resized asset versions.');
+                    continue;
                 }
+
+                foreach ($files as $path) {
+                    try {
+                        FileHelper::unlink($path);
+                    } catch (ErrorException $e) {
+                        Craft::warning('Unable to delete asset thumbnails: ' . $e->getMessage(), __METHOD__);
+                    }
+                }
+
             }
         }
     }

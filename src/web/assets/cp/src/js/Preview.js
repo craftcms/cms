@@ -17,6 +17,7 @@ Craft.Preview = Garnish.Base.extend(
         $targetBtn: null,
         $targetMenu: null,
         $iframe: null,
+        iframeLoaded: false,
         $tempInput: null,
         $fieldPlaceholder: null,
 
@@ -300,12 +301,14 @@ Craft.Preview = Garnish.Base.extend(
                     this.scrolllTop = 0;
                 } else {
                     sameHost = Craft.isSameHost(url);
-                    if (sameHost && this.$iframe && this.$iframe[0].contentWindow) {
+                    if (sameHost && this.iframeLoaded && this.$iframe && this.$iframe[0].contentWindow) {
                         var $doc = $(this.$iframe[0].contentWindow.document);
                         this.scrollLeft = $doc.scrollLeft();
                         this.scrollTop = $doc.scrollTop();
                     }
                 }
+
+                this.iframeLoaded = false;
 
                 var $iframe = $('<iframe/>', {
                     'class': 'lp-preview',
@@ -313,13 +316,14 @@ Craft.Preview = Garnish.Base.extend(
                     src: url,
                 });
 
-                if (!resetScroll && sameHost) {
-                    $iframe.on('load', function() {
+                $iframe.on('load', function() {
+                    this.iframeLoaded = true;
+                    if (!resetScroll && sameHost) {
                         var $doc = $($iframe[0].contentWindow.document);
                         $doc.scrollLeft(this.scrollLeft);
                         $doc.scrollTop(this.scrollTop);
-                    }.bind(this));
-                }
+                    }
+                }.bind(this));
 
                 if (this.$iframe) {
                     this.$iframe.replaceWith($iframe);

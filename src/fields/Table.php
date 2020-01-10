@@ -107,6 +107,12 @@ class Table extends Field
             $this->columns = [];
         } else {
             foreach ($this->columns as $colId => &$column) {
+                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                if (!isset($column['type'])) {
+                    unset($this->columns[$colId]);
+                    continue;
+                }
+
                 if ($column['type'] === 'select') {
                     if (!isset($column['options'])) {
                         $column['options'] = [];

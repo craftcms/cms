@@ -296,7 +296,7 @@
             {{ forms.lightswitchField({
                 status: element.getAttributeStatus('enabledForSite'),
                 fieldClass: not element.enabled ? 'hidden',
-                label: "Enabled for {site}"|t('app', { site: element.site.name|t('site')|e('js') }),
+                label: "Enabled for {site}"|t('app', { site: element.site.name|t('site')|e }),
                 id: 'enabledForSite',
                 name: 'enabledForSite',
                 on: element.enabledForSite,

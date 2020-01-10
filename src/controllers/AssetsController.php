@@ -479,11 +479,11 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The parent folder cannot be found');
         }
 
-        // Check if it's possible to create subfolders in target Volume.
-        $this->_requirePermissionByFolder('createFoldersInVolume',
-            $parentFolder);
-
         try {
+
+            // Check if it's possible to create subfolders in target Volume.
+            $this->_requirePermissionByFolder('createFoldersInVolume', $parentFolder);
+
             $folderModel = new VolumeFolder();
             $folderModel->name = $folderName;
             $folderModel->parentId = $parentId;
@@ -499,6 +499,8 @@ class AssetsController extends Controller
                 'folderId' => $folderModel->id
             ]);
         } catch (AssetException $exception) {
+            return $this->asErrorJson($exception->getMessage());
+        } catch (ForbiddenHttpException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }
