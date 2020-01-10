@@ -162,24 +162,6 @@ class Cp extends Component
             }
         }
 
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
-
-        if (!empty($utilities)) {
-            $badgeCount = 0;
-
-            foreach ($utilities as $class) {
-                /** @var UtilityInterface $class */
-                $badgeCount += $class::badgeCount();
-            }
-
-            $navItems[] = [
-                'url' => 'utilities',
-                'label' => Craft::t('app', 'Utilities'),
-                'fontIcon' => 'tool',
-                'badgeCount' => $badgeCount
-            ];
-        }
-
         if ($isAdmin) {
             if ($craftPro && $generalConfig->enableGql) {
                 $subNavItems = [
@@ -208,7 +190,27 @@ class Cp extends Component
                     'subnav' => $subNavItems
                 ];
             }
+        }
 
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+
+        if (!empty($utilities)) {
+            $badgeCount = 0;
+
+            foreach ($utilities as $class) {
+                /** @var UtilityInterface $class */
+                $badgeCount += $class::badgeCount();
+            }
+
+            $navItems[] = [
+                'url' => 'utilities',
+                'label' => Craft::t('app', 'Utilities'),
+                'fontIcon' => 'tool',
+                'badgeCount' => $badgeCount
+            ];
+        }
+
+        if ($isAdmin) {
             if ($generalConfig->allowAdminChanges) {
                 $navItems[] = [
                     'url' => 'settings',
