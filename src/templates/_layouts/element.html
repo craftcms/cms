@@ -237,6 +237,21 @@
     {% endif %}
     <div id="meta-details" class="meta read-only">
         {% block meta %}
+            {% if element.hasStatuses() %}
+                {% if isUnsavedDraft %}
+                    {% set statusColor = 'white' %}
+                    {% set statusLabel = 'Draft'|t('app') %}
+                {% else %}
+                    {% set status = element.getStatus() %}
+                    {% set statusDef = element.statuses()[status] ?? null %}
+                    {% set statusColor = statusDef.color ?? status %}
+                    {% set statusLabel = statusDef.label ?? statusDef ?? status|ucfirst %}
+                {% endif %}
+                <div class="data">
+                    <h5 class="heading">{{ 'Status'|t('app') }}</h5>
+                    <div id="status-value" class="value"><span class="status {{ statusColor }}"></span>{{ statusLabel }}</div>
+                </div>
+            {% endif %}
             <div class="data">
                 <h5 class="heading">{{ "Created at"|t('app') }}</h5>
                 <div id="date-created-value" class="value">{{ element.dateCreated|datetime('short') }}</div>
