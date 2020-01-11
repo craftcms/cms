@@ -627,6 +627,28 @@ interface ElementInterface extends ComponentInterface
     public function getThumbUrl(int $size);
 
     /**
+     * Returns whether the element is enabled for the current site.
+     *
+     * This can also be set to an array of site ID/site-enabled mappings.
+     *
+     * @param int|null $siteId The ID of the site to return for. If `null`, the current site status will be returned.
+     * @return bool|null Whether the element is enabled for the given site. `null` will be returned if a `$siteId` was
+     * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
+     * @since 3.4.0
+     */
+    public function getEnabledForSite(int $siteId = null);
+
+    /**
+     * Sets whether the element is enabled for the current site.
+     *
+     * This can also be set to an array of site ID/site-enabled mappings.
+     *
+     * @param bool|bool[] $enabledForSite
+     * @since 3.4.0
+     */
+    public function setEnabledForSite($enabledForSite);
+
+    /**
      * Returns the element’s status.
      *
      * @return string|null

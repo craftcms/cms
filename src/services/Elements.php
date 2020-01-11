@@ -2087,8 +2087,9 @@ class Elements extends Component
             $siteSettingsRecord->uri = $element->uri;
 
             // Avoid `enabled` getting marked as dirty if it's not really changing
-            if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $element->enabledForSite) {
-                $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
+            $enabledForSite = $element->getEnabledForSite();
+            if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
+                $siteSettingsRecord->enabled = $enabledForSite;
             }
 
             // Update our list of dirty attributes
@@ -2276,6 +2277,12 @@ class Elements extends Component
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;
+        }
+
+        // Does the main site's element specify a status for this site?
+        $enabledForSite = $element->getEnabledForSite($siteElement->siteId);
+        if ($enabledForSite !== null) {
+            $siteElement->setEnabledForSite($enabledForSite);
         }
 
         // Copy any non-translatable field values

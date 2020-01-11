@@ -8,6 +8,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         $revisionBtn: null,
         $revisionLabel: null,
         $spinner: null,
+        $expandSiteStatusesBtn: null,
         $statusIcon: null,
 
         $editMetaBtn: null,
@@ -39,7 +40,12 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.$revisionBtn = $('#revision-btn');
             this.$revisionLabel = $('#revision-label');
             this.$spinner = $('#revision-spinner');
+            this.$expandSiteStatusesBtn = $('#expand-status-btn');
             this.$statusIcon = $('#revision-status');
+
+            if (this.settings.canEditMultipleSites) {
+                this.addListener(this.$expandSiteStatusesBtn, 'click', 'expandSiteStatuses');
+            }
 
             if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
@@ -143,6 +149,121 @@ Craft.DraftEditor = Garnish.Base.extend(
                     $('#merge-changes-spinner').addClass('hidden');
                 }
             });
+        },
+
+        expandSiteStatuses: function() {
+            this.removeListener(this.$expandSiteStatusesBtn, 'click');
+            this.$expandSiteStatusesBtn.velocity({opacity: 0}, 'fast', function() {
+                this.$expandSiteStatusesBtn.remove();
+            }.bind(this));
+
+            var $enabledForSiteField = $(`#enabledForSite-${this.settings.siteId}-field`);
+            var $siteStatusPane = $enabledForSiteField.parent();
+            var $newFields = $();
+
+            if (!this.settings.revisionId) {
+                $enabledForSiteField.addClass('nested');
+                var $globalField = Craft.ui.createLightswitchField({
+                    id: 'enabled',
+                    label: Craft.t('app', 'Enabled everywhere'),
+                    name: 'enabled',
+                }).insertBefore($enabledForSiteField);
+                $globalField.find('label').css('font-weight', 'bold');
+                $newFields = $newFields.add($globalField);
+                var $globalLightswitch = $globalField.find('.lightswitch');
+
+                // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
+                var originalEnabledValue = (this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses))
+                    ? '1'
+                    : (this.settings.enabledForSite ? '-' : '');
+                var originalSerializedStatus = encodeURIComponent(`enabledForSite[${this.settings.siteId}]`) +
+                    '=' + (this.settings.enabledForSite ? '1' : '');
+                var serializedStatuses = `enabled=${originalEnabledValue}&${originalSerializedStatus}`;
+            }
+
+            var site, $siteField, $siteLightswitch;
+            var $siteFields = $().add($enabledForSiteField);
+            var $siteLightswitches = $enabledForSiteField.find('.lightswitch');
+
+            for (var i = 0; i < Craft.sites.length; i++) {
+                site = Craft.sites[i];
+                if (site.id != this.settings.siteId && this.settings.siteStatuses.hasOwnProperty(site.id)) {
+                    $siteField = Craft.ui.createLightswitchField({
+                        id: `enabledForSite-${site.id}`,
+                        label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
+                        name: `enabledForSite[${site.id}]`,
+                        on: this.settings.siteStatuses[site.id],
+                        disabled: !!this.settings.revisionId,
+                    });
+                    if (!this.settings.revisionId) {
+                        $siteField.addClass('nested')
+                    }
+                    $siteField.appendTo($siteStatusPane);
+                    $siteFields = $siteFields.add($siteField);
+                    $newFields = $newFields.add($siteField);
+                    $siteLightswitch = $siteField.find('.lightswitch');
+                    $siteLightswitches = $siteLightswitches.add($siteLightswitch);
+                    serializedStatuses += '&' + encodeURIComponent(`enabledForSite[${site.id}]`) +
+                        '=' + $siteLightswitch.data('lightswitch').$input.val();
+                }
+            }
+
+            if (this.settings.revisionId) {
+                return;
+            }
+
+            Craft.cp.$primaryForm.data('initialSerializedValue',
+                Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses));
+
+            $newFields.each(function() {
+                var $field = $(this);
+                var height = $field.height();
+                $field
+                    .css('overflow', 'hidden')
+                    .height(0)
+                    .velocity({height: height}, 'fast', function() {
+                        $field.css({
+                            overflow: '',
+                            height: '',
+                        });
+                    });
+            });
+
+            $globalLightswitch.on('change', function() {
+                var enabled = $globalLightswitch.data('lightswitch').on;
+                $siteLightswitches.each(function() {
+                    if (enabled) {
+                        $(this).data('lightswitch').turnOn(true);
+                    } else {
+                        $(this).data('lightswitch').turnOff(true);
+                    }
+                })
+            });
+
+            var updateGlobalStatus = function() {
+                var allEnabled = true, allDisabled = true;
+                $siteLightswitches.each(function() {
+                    var enabled = $(this).data('lightswitch').on;
+                    if (enabled) {
+                        allDisabled = false;
+                    } else {
+                        allEnabled = false;
+                    }
+                    if (!allEnabled && !allDisabled) {
+                        return false;
+                    }
+                });
+                if (allEnabled) {
+                    $globalLightswitch.data('lightswitch').turnOn(true);
+                } else if (allDisabled) {
+                    $globalLightswitch.data('lightswitch').turnOff(true);
+                } else {
+                    $globalLightswitch.data('lightswitch').turnIndeterminate(true);
+                }
+            };
+
+            updateGlobalStatus();
+            $siteLightswitches.on('change', updateGlobalStatus);
         },
 
         showStatusHud: function(target) {
@@ -762,6 +883,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             sourceId: null,
             siteId: null,
             isLive: false,
+            siteStatuses: null,
+            enabledGlobally: null,
             cpEditUrl: null,
             draftId: null,
             revisionId: null,

@@ -3,10 +3,14 @@
 ## Unreleased
 
 ### Added
+- “Set Status” element actions no longer have the option to disable multi-site elements globally; only for the currently selected site. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
+- Multi-site entries’ edit pages no longer have the option to set the entry’s global status. Instead, only the current site’s status is shown by default, and that setting can be expanded to show all sites that the user has permission to edit, for bulk-editing the entry’s status across multiple sites. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
 - Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
+- Added `craft\base\ElementInterface::getEnabledForSite()`.
+- Added `craft\base\ElementInterface::setEnabledForSite()`.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 - Added `craft\base\UtilityInterface::footerHtml()`.
 - Added `craft\base\UtilityInterface::toolbarHtml()`.

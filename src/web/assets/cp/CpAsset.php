@@ -140,6 +140,8 @@ JS;
             'Edit',
             'Element',
             'Elements',
+            'Enabled everywhere',
+            'Enabled for {site}',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',

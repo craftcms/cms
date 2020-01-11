@@ -59,7 +59,7 @@ Craft.LightSwitch = Garnish.Base.extend(
             });
         },
 
-        turnOn: function() {
+        turnOn: function(muteEvent) {
             var changed = !this.on;
 
             this.on = true;
@@ -75,12 +75,12 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$outerContainer.removeClass('indeterminate');
             this.$outerContainer.attr('aria-checked', 'true');
 
-            if (changed) {
+            if (changed && muteEvent !== true) {
                 this.onChange();
             }
         },
 
-        turnOff: function() {
+        turnOff: function(muteEvent) {
             var changed = this.on || this.indeterminate;
 
             this.on = false;
@@ -96,12 +96,12 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$outerContainer.removeClass('indeterminate');
             this.$outerContainer.attr('aria-checked', 'false');
 
-            if (changed) {
+            if (changed && muteEvent !== true) {
                 this.onChange();
             }
         },
 
-        turnIndeterminate: function() {
+        turnIndeterminate: function(muteEvent) {
             var changed = !this.indeterminate;
 
             this.on = false;
@@ -117,7 +117,7 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$outerContainer.addClass('indeterminate');
             this.$outerContainer.attr('aria-checked', 'mixed');
 
-            if (changed) {
+            if (changed && muteEvent !== true) {
                 this.onChange();
             }
         },

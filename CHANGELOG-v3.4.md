@@ -17,6 +17,8 @@
 - Elements now track which field values have changed since the element was first loaded. ([#4149](https://github.com/craftcms/cms/issues/4149))
 - Entry drafts now show which fields and attributes have changed within the draft, and which are outdated.
 - If an entry draft contains outdated field and attribute values, it’s now possible to merge the latest source entry values into the draft manually, and they will be automatically merged in when the draft is published. ([#4642](https://github.com/craftcms/cms/issues/4642))
+- “Set Status” element actions no longer have the option to disable multi-site elements globally; only for the currently selected site. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
+- Multi-site entries’ edit pages no longer have the option to set the entry’s global status. Instead, only the current site’s status is shown by default, and that setting can be expanded to show all sites that the user has permission to edit, for bulk-editing the entry’s status across multiple sites. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
 - It’s now possible to see all of the elements selected by relation fields from element indexes. ([#3030](https://github.com/craftcms/cms/issues/3030))
 - Assets now have their own dedicated edit pages in the control panel. ([#1249](https://github.com/craftcms/cms/issues/1249))
 - Asset volumes’ field layouts can now define multiple tabs.
@@ -72,11 +74,13 @@
 - Added `craft\base\ElementInterface::getDirtyAttributes()`.
 - Added `craft\base\ElementInterface::getDirtyFields()`.
 - Added `craft\base\ElementInterface::getEagerLoadedElementCount()`.
+- Added `craft\base\ElementInterface::getEnabledForSite()`.
 - Added `craft\base\ElementInterface::getFieldStatus()`.
 - Added `craft\base\ElementInterface::isFieldDirty()`.
 - Added `craft\base\ElementInterface::markAsClean()`.
 - Added `craft\base\ElementInterface::setAttributeStatus()`.
 - Added `craft\base\ElementInterface::setEagerLoadedElementCount()`.
+- Added `craft\base\ElementInterface::setEnabledForSite()`.
 - Added `craft\base\ElementInterface::trackChanges()`.
 - Added `craft\base\FieldInterface::getTranslationDescription()`.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.

@@ -2714,6 +2714,11 @@ ul.tree,
     flex-wrap: wrap;
     margin: 0 !important;
     padding: 0 24px;
+    transition: padding-left linear 100ms, padding-right linear 100ms;
+
+    &.nested {
+      @include padding-left(38px);
+    }
 
     & > .heading {
       flex: 0 0 105px;
@@ -3879,6 +3884,20 @@ textarea.text.fullwidth {
 
   li + li {
     margin-top: 0.25em;
+  }
+}
+
+#expand-status-btn {
+  margin-left: 5px;
+  width: 30px;
+  height: 17px;
+  padding: 0;
+  line-height: 16px;
+  border-radius: $smallBorderRadius;
+  color: $mediumDarkTextColor;
+
+  &:before {
+    margin: 0;
   }
 }
 

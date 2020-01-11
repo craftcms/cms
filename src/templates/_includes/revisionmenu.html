@@ -22,7 +22,7 @@
 
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
 {% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
-{% set editableSiteIds = supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
+{% set editableSiteIds = editableSiteIds ?? supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
 {% set canEditMultipleSites = editableSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}

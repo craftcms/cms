@@ -851,6 +851,9 @@ $.extend(Craft,
          * @return boolean
          */
         inArray: function(elem, arr) {
+            if ($.isPlainObject(arr)) {
+                arr = Object.values(arr);
+            }
             return ($.inArray(elem, arr) !== -1);
         },
 

@@ -78,11 +78,6 @@ trait ElementTrait
     public $siteId;
 
     /**
-     * @var bool Whether the element is enabled for this site.
-     */
-    public $enabledForSite = true;
-
-    /**
      * @var string|null The element’s title
      */
     public $title;

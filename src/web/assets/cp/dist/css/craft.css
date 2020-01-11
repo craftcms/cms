@@ -958,7 +958,9 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
-.meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; padding: 0 24px; }
+.meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; padding: 0 24px; -webkit-transition: padding-left linear 100ms, padding-right linear 100ms; transition: padding-left linear 100ms, padding-right linear 100ms; }
+body.ltr .meta > .field.nested, body.ltr .meta > .data.nested { padding-left: 38px; }
+body.rtl .meta > .field.nested, body.rtl .meta > .data.nested { padding-right: 38px; }
 .meta > .field > .heading, .meta > .data > .heading { -webkit-box-flex: 0; -ms-flex: 0 0 105px; flex: 0 0 105px; margin-bottom: 0; line-height: 18px; }
 .meta > .field.lightswitch-field > .heading, .meta > .data.lightswitch-field > .heading { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 .meta > .field > .input .flex, .meta > .data > .input .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; }
@@ -1292,6 +1294,9 @@ body.ltr .field > .heading > .instructions ul, body.ltr .field > .heading > .ins
 body.rtl .field > .heading > .instructions ul, body.rtl .field > .heading > .instructions ol, body.rtl .checkboxfield.has-instructions .instructions ul, body.rtl .checkboxfield.has-instructions .instructions ol { padding-right: 2em; }
 .field > .heading > .instructions ul li, .checkboxfield.has-instructions .instructions ul li { list-style-type: disc; }
 .field > .heading > .instructions li + li, .checkboxfield.has-instructions .instructions li + li { margin-top: 0.25em; }
+
+#expand-status-btn { margin-left: 5px; width: 30px; height: 17px; padding: 0; line-height: 16px; border-radius: 3px; color: #606d7b; }
+#expand-status-btn:before { margin: 0; }
 
 /* toggles and nested fields */
 .nested-fields { margin: -24px; padding: 24px 24px 0; }

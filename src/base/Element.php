@@ -65,6 +65,7 @@ use yii\validators\Validator;
  * @property string|null $cpEditUrl The element’s edit URL in the control panel
  * @property ElementQueryInterface $descendants The element’s descendants
  * @property string $editorHtml The HTML for the element’s editor HUD
+ * @property bool $enabledForSite Whether the element is enabled for this site
  * @property string $fieldColumnPrefix The field column prefix this element’s content uses
  * @property string $fieldContext The field context this element’s content uses
  * @property FieldLayout|null $fieldLayout The field layout used by this element
@@ -1033,6 +1034,13 @@ abstract class Element extends Component implements ElementInterface
      */
     private $_currentRevision;
 
+    /**
+     * @var bool|bool[]
+     * @see getEnabledForSite()
+     * @see setEnabledForSite()
+     */
+    private $_enabledForSite = true;
+
     // Public Methods
     // =========================================================================
 
@@ -1701,6 +1709,38 @@ abstract class Element extends Component implements ElementInterface
     public function getThumbUrl(int $size)
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEnabledForSite(int $siteId = null)
+    {
+        if ($siteId === null) {
+            $siteId = $this->siteId;
+        }
+        if (is_array($this->_enabledForSite)) {
+            return $this->_enabledForSite[$siteId] ?? ($siteId == $this->siteId ? true : null);
+        }
+        if ($siteId == $this->siteId) {
+            return is_bool($this->_enabledForSite) ? $this->_enabledForSite : true;
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEnabledForSite($enabledForSite)
+    {
+        if (is_array($enabledForSite)) {
+            foreach ($enabledForSite as &$value) {
+                $value = (bool)$value;
+            }
+        } else {
+            $enabledForSite = (bool)$enabledForSite;
+        }
+        $this->_enabledForSite = $enabledForSite;
     }
 
     /**

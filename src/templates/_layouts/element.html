@@ -27,7 +27,9 @@
 {% import '_includes/forms' as forms %}
 
 {% set supportedSiteIds = (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
+{% set editableSiteIds = supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = craft.app.isMultiSite and supportedSiteIds|length > 1 %}
+{% set canEditMultipleSites = isMultiSiteElement and editableSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set isRevision = element.getIsRevision() %}
@@ -235,6 +237,21 @@
             {{ settingsHtml|raw }}
         </div>
     {% endif %}
+
+    {% if showStatusToggles and isMultiSiteElement %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                status: element.getAttributeStatus('enabled'),
+                label: 'Enabled for {site}'|t('app', { site: element.site.name|t('site')|e }) ~
+                    (canEditMultipleSites ? '<a id="expand-status-btn" data-icon="ellipsis" class="btn" role="button"></a>'),
+                id: "enabledForSite-#{element.siteId}",
+                name: "enabledForSite[#{element.siteId}]",
+                on: element.enabled and element.enabledForSite,
+                disabled: isRevision,
+            }) }}
+        </div>
+    {% endif %}
+
     <div id="meta-details" class="meta read-only">
         {% block meta %}
             {% if element.hasStatuses() %}
@@ -296,30 +313,44 @@
 {% endblock %}
 
 {% block settings %}
-    {% if showStatusToggles %}
+    {% if showStatusToggles and not isMultiSiteElement %}
         {{ forms.lightswitchField({
             status: element.getAttributeStatus('enabled'),
-            label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+            label: 'Enabled'|t('app'),
             id: 'enabled',
             name: 'enabled',
             on: element.enabled,
             disabled: isRevision,
-            toggle: 'enabledForSite-field'
         }) }}
-
-        {% if isMultiSiteElement %}
-            {{ forms.lightswitchField({
-                status: element.getAttributeStatus('enabledForSite'),
-                fieldClass: not element.enabled ? 'hidden',
-                label: "Enabled for {site}"|t('app', { site: element.site.name|t('site')|e }),
-                id: 'enabledForSite',
-                name: 'enabledForSite',
-                on: element.enabledForSite,
-                disabled: isRevision
-            }) }}
-        {% endif %}
     {% endif %}
 {% endblock %}
+
+{% if canEditMultipleSites and element.enabled %}
+    {# get the element's statuses across all sites #}
+    {% set siteStatusesQuery = element.find()
+        .select(['elements_sites.siteId', 'elements_sites.enabled'])
+        .id(element.id)
+        .siteId(editableSiteIds)
+        .anyStatus()
+        .asArray() %}
+    {% if isDraft %}
+        {% do siteStatusesQuery.drafts() %}
+    {% elseif isRevision %}
+        {% do siteStatusesQuery.revisions() %}
+    {% endif %}
+    {% set siteStatuses = siteStatusesQuery
+        .pairs()|map(s => s ? true : false) %}
+{% elseif canEditMultipleSites %}
+    {% set siteStatusValues = {} %}
+    {% for siteId in editableSiteIds %}
+        {% set siteStatusValues = siteStatusValues|merge([false]) %}
+    {% endfor %}
+    {% set siteStatuses = combine(editableSiteIds, siteStatusValues) %}
+{% else %}
+    {% set siteStatuses = {
+        ("#{element.siteId}"): element.enabled ? true : false
+    } %}
+{% endif %}
 
 {% set settings = {
     elementType: className(element),
@@ -327,6 +358,9 @@
     sourceId: element.getSourceId(),
     siteId: element.siteId,
     isUnsavedDraft: isUnsavedDraft,
+    siteStatuses: siteStatuses,
+    enabled: element.enabled ? true : false,
+    enabledForSite: element.enabled and element.enabledForSite,
     isLive: isCurrent and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
     hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
@@ -334,6 +368,7 @@
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,
     draftNotes: isDraft ? element.draftNotes : null,
+    canEditMultipleSites: canEditMultipleSites,
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,

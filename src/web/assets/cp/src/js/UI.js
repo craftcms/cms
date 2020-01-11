@@ -282,11 +282,13 @@ Craft.ui =
 
         createLightswitch: function(config) {
             var value = config.value || '1';
+            var indeterminateValue = config.indeterminateValue || '-';
 
             var $container = $('<div/>', {
                 'class': 'lightswitch',
                 tabindex: '0',
                 'data-value': value,
+                'data-indeterminate-value': indeterminateValue,
                 id: config.id,
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,
@@ -295,6 +297,8 @@ Craft.ui =
 
             if (config.on) {
                 $container.addClass('on');
+            } else if (config.indeterminate) {
+                $container.addClass('indeterminate');
             }
 
             if (config.small) {
@@ -315,7 +319,7 @@ Craft.ui =
                 $('<input/>', {
                     type: 'hidden',
                     name: config.name,
-                    value: (config.on ? value : ''),
+                    value: config.on ? value : (config.indeterminate ? indeterminateValue : ''),
                     disabled: config.disabled
                 }).appendTo($container);
             }
@@ -329,7 +333,8 @@ Craft.ui =
         },
 
         createLightswitchField: function(config) {
-            return this.createField(this.createLightswitch(config), config);
+            return this.createField(this.createLightswitch(config), config)
+                .addClass('lightswitch-field');
         },
 
         createColorInput: function(config) {

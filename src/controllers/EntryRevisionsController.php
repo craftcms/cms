@@ -479,8 +479,15 @@ class EntryRevisionsController extends BaseEntriesController
         if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
             $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
-        $draft->enabled = (bool)$request->getBodyParam('enabled');
-        $draft->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $draft->enabledForSite);
+
+        $enabledForSite = $this->enabledForSiteValue();
+        if (is_array($enabledForSite)) {
+            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+            $draft->enabled = in_array(true, $enabledForSite, false) || $draft->enabled;
+        } else {
+            $draft->enabled = (bool)$request->getBodyParam('enabled', $draft->enabled);
+        }
+        $draft->setEnabledForSite($enabledForSite ?? $draft->getEnabledForSite());
         $draft->title = $request->getBodyParam('title');
 
         if (!$draft->typeId) {
