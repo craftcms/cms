@@ -1,4 +1,4 @@
-/*!   - 2020-01-11 */
+/*!   - 2020-01-12 */
 (function($){
 
 /** global: Craft */
@@ -17171,11 +17171,11 @@ Craft.LightSwitch = Garnish.Base.extend(
             }
         },
 
-        toggle: function(event) {
-            if (this.indeterminate || this.on) {
-                this.turnOff();
-            } else {
+        toggle: function() {
+            if (this.indeterminate || !this.on) {
                 this.turnOn();
+            } else {
+                this.turnOff();
             }
         },
 
