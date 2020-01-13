@@ -88,6 +88,7 @@
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 - Added `craft\base\UtilityInterface::footerHtml()`.
 - Added `craft\base\UtilityInterface::toolbarHtml()`.
+- Added `craft\base\WidgetInterface::getSubtitle()`.
 - Added `craft\behaviors\DraftBehavior::$dateLastMerged`.
 - Added `craft\behaviors\DraftBehavior::$mergingChanges`.
 - Added `craft\behaviors\DraftBehavior::$trackChanges`.

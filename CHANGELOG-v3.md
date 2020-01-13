@@ -13,6 +13,7 @@
 - Added the `|contains` Twig filter.
 - Added `craft\base\ElementInterface::getEnabledForSite()`.
 - Added `craft\base\ElementInterface::setEnabledForSite()`.
+- Added `craft\base\WidgetInterface::getSubtitle()`.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 - Added `craft\base\UtilityInterface::footerHtml()`.
 - Added `craft\base\UtilityInterface::toolbarHtml()`.

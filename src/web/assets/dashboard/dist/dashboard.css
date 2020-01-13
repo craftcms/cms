@@ -39,7 +39,9 @@ body.rtl .widget > .front > .pane > .icon.settings { margin-right: 7px; }
 
 .widget:not(.flipped) > .front > .pane > .icon.settings:hover { opacity: 1; }
 
-.widget h2 { margin-top: 0; }
+.widget .heading { margin-bottom: 15px; }
+.widget .heading h2 { margin-bottom: 3px; }
+.widget .heading h5 { margin-top: 0; }
 
 .widget form + .errors { margin-top: 15px; }
 

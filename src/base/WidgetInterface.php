@@ -46,6 +46,14 @@ interface WidgetInterface extends SavableComponentInterface
     public function getTitle(): string;
 
     /**
+     * Returns the widget’s subtitle.
+     *
+     * @return string|null The widget’s subtitle
+     * @since 3.4.0
+     */
+    public function getSubtitle();
+
+    /**
      * Returns the widget's body HTML.
      *
      * @return string|false The widget’s body HTML, or `false` if the widget

@@ -86,8 +86,15 @@
   opacity: 1;
 }
 
-.widget h2 {
-  margin-top: 0;
+.widget .heading {
+  margin-bottom: 15px;
+
+  h2 {
+    margin-bottom: 3px;
+  }
+  h5 {
+    margin-top: 0;
+  }
 }
 
 .widget form + .errors {
