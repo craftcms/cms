@@ -56,6 +56,7 @@
 - It’s now possible to filter users by user groups when querying for them using GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
 - Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch a single element using the GraphQL API. ([#5363](https://github.com/craftcms/cms/issues/5363))
 - The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
+- Improved the cropper behavior when dragging along the edges in the image editor.
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
