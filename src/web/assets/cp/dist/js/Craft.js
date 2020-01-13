@@ -1,4 +1,4 @@
-/*!   - 2020-01-12 */
+/*!   - 2020-01-13 */
 (function($){
 
 /** global: Craft */
@@ -5263,6 +5263,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         cropperHandles: null,
         cropperGrid: null,
         croppingShade: null,
+        croppingAreaText: null,
 
         // Image state attributes
         imageStraightenAngle: 0,
@@ -6752,15 +6753,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             var viewportProperties = {};
 
+            this._hideCropper();
+            var imageDimensions = this.getScaledImageDimensions();
+            var targetZoom = this.getZoomToCoverRatio(imageDimensions) * this.scaleFactor;
+            var inverseZoomFactor = targetZoom / this.zoomRatio;
+            this.zoomRatio = targetZoom;
+
             var imageProperties = {
+                width: imageDimensions.width * this.zoomRatio,
+                height: imageDimensions.height * this.zoomRatio,
                 left: this.editorWidth / 2,
                 top: this.editorHeight / 2
             };
-
-            this._hideCropper();
-            var targetZoom = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
-            var inverseZoomFactor = targetZoom / this.zoomRatio;
-            this.zoomRatio = targetZoom;
 
             var offsetX = this.clipper.left - this.image.left;
             var offsetY = this.clipper.top - this.image.top;
@@ -6887,6 +6891,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.croppingCanvas.remove(this.cropperHandles);
                 this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
+                this.croppingCanvas.remove(this.croppingAreaText);
 
                 this.croppingCanvas = null;
                 this.renderCropper = null;
@@ -6979,6 +6984,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.croppingCanvas.remove(this.cropperHandles);
                 this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
+                this.croppingCanvas.remove(this.croppingAreaText);
             }
             this._redrawCropperElements._.lineOptions = {
                 strokeWidth: 4,
@@ -7033,9 +7039,32 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
             );
 
+            this._redrawCropperElements._.cropTextTop = this.croppingRectangle.top + (this.clipper.height / 2) + 12;
+            this._redrawCropperElements._.cropTextBackgroundColor = 'rgba(0,0,0,0)';
+
+            if (this._redrawCropperElements._.cropTextTop + 12 > this.editorHeight - 2) {
+                this._redrawCropperElements._.cropTextTop -= 24;
+                this._redrawCropperElements._.cropTextBackgroundColor = 'rgba(0,0,0,0.5)';
+            }
+
+            this.croppingAreaText = new fabric.Textbox(Math.round(this.clipper.width) + ' x ' + Math.round(this.clipper.height), {
+                left: this.croppingRectangle.left,
+                top: this._redrawCropperElements._.cropTextTop,
+                fontSize: 13,
+                fill: 'rgb(200,200,200)',
+                backgroundColor: this._redrawCropperElements._.cropTextBackgroundColor,
+                font: 'Craft',
+                width: 70,
+                height: 15,
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center'
+            });
+
             this.croppingCanvas.add(this.cropperHandles);
             this.croppingCanvas.add(this.cropperGrid);
             this.croppingCanvas.add(this.croppingRectangle);
+            this.croppingCanvas.add(this.croppingAreaText);
         },
 
         /**
@@ -7200,7 +7229,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this._handleCropperDrag._.deltaY = ev.pageY - this.previousMouseY;
 
             if (this._handleCropperDrag._.deltaX === 0 && this._handleCropperDrag._.deltaY === 0) {
-                return;
+                return false;
             }
 
             this._handleCropperDrag._.rectangle = {
@@ -7212,16 +7241,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.deltaX, this._handleCropperDrag._.deltaY);
 
-            // Just make sure that the cropper stays inside the image
+            // If this would drag it outside of the image
             if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
-                return;
+                // Try to find the furthest point in the same general direction where we can drag it
+
+                // Delta iterator setup
+                this._handleCropperDrag._.dxi = 0;
+                this._handleCropperDrag._.dyi = 0;
+                this._handleCropperDrag._.xStep = this._handleCropperDrag._.deltaX > 0 ? -1 : 1;
+                this._handleCropperDrag._.yStep = this._handleCropperDrag._.deltaY > 0 ? -1 : 1;
+
+                // The furthest we can move
+                this._handleCropperDrag._.furthest = 0;
+                this._handleCropperDrag._.furthestDeltas = {};
+
+                // Loop through every combination of dragging it not so far
+                for (this._handleCropperDrag._.dxi = Math.min(Math.abs(this._handleCropperDrag._.deltaX), 10); this._handleCropperDrag._.dxi >= 0; this._handleCropperDrag._.dxi--) {
+                    for (this._handleCropperDrag._.dyi = Math.min(Math.abs(this._handleCropperDrag._.deltaY), 10); this._handleCropperDrag._.dyi >= 0; this._handleCropperDrag._.dyi--) {
+                        this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.dxi * (this._handleCropperDrag._.deltaX > 0 ? 1 : -1), this._handleCropperDrag._.dyi * (this._handleCropperDrag._.deltaY > 0 ? 1 : -1));
+
+                        if (this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
+                            if (this._handleCropperDrag._.dxi + this._handleCropperDrag._.dyi > this._handleCropperDrag._.furthest) {
+                                this._handleCropperDrag._.furthest = this._handleCropperDrag._.dxi + this._handleCropperDrag._.dyi;
+                                this._handleCropperDrag._.furthestDeltas = {
+                                    x: this._handleCropperDrag._.dxi * (this._handleCropperDrag._.deltaX > 0 ? 1 : -1),
+                                    y: this._handleCropperDrag._.dyi * (this._handleCropperDrag._.deltaY > 0 ? 1 : -1)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // REALLY can't drag along the cursor movement
+                if (this._handleCropperDrag._.furthest == 0) {
+                    return;
+                } else {
+                    this._handleCropperDrag._.deltaX = this._handleCropperDrag._.furthestDeltas.x;
+                    this._handleCropperDrag._.deltaY = this._handleCropperDrag._.furthestDeltas.y;
+                }
             }
 
             this.clipper.set({
                 left: this.clipper.left + this._handleCropperDrag._.deltaX,
                 top: this.clipper.top + this._handleCropperDrag._.deltaY
             });
-
         },
 
         /**
@@ -7423,16 +7486,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this._handleCropperResize._.change = -this._handleCropperResize._.deltaX;
                         break;
                     case 'tr':
-                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY + this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? -this._handleCropperResize._.deltaY : this._handleCropperResize._.deltaX;
                         break;
                     case 'tl':
-                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY - this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? -this._handleCropperResize._.deltaY : -this._handleCropperResize._.deltaX;
                         break;
                     case 'br':
-                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY + this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? this._handleCropperResize._.deltaY : this._handleCropperResize._.deltaX;
                         break;
                     case 'bl':
-                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY - this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? this._handleCropperResize._.deltaY : -this._handleCropperResize._.deltaX;
                         break;
                 }
 

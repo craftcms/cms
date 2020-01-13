@@ -55,6 +55,8 @@
 - Added the `_count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - It’s now possible to filter users by user groups when querying for them using GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
 - Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch a single element using the GraphQL API. ([#5363](https://github.com/craftcms/cms/issues/5363))
+- The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
+- Improved the cropper behavior when dragging along the edges in the image editor.
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -293,3 +295,4 @@
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
 - Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 - Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
+- Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
