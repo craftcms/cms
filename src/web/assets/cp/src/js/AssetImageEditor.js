@@ -1522,15 +1522,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             var viewportProperties = {};
 
+            this._hideCropper();
+            var imageDimensions = this.getScaledImageDimensions();
+            var targetZoom = this.getZoomToCoverRatio(imageDimensions) * this.scaleFactor;
+            var inverseZoomFactor = targetZoom / this.zoomRatio;
+            this.zoomRatio = targetZoom;
+
             var imageProperties = {
+                width: imageDimensions.width * this.zoomRatio,
+                height: imageDimensions.height * this.zoomRatio,
                 left: this.editorWidth / 2,
                 top: this.editorHeight / 2
             };
-
-            this._hideCropper();
-            var targetZoom = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
-            var inverseZoomFactor = targetZoom / this.zoomRatio;
-            this.zoomRatio = targetZoom;
 
             var offsetX = this.clipper.left - this.image.left;
             var offsetY = this.clipper.top - this.image.top;

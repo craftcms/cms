@@ -41,6 +41,7 @@
 - Fixed a bug where forward slashes weren’t being trimmed from database URLs’ `path` params when building the connection DSN string.
 - Fixed an error that occurred when updating from Craft 3.0. ([#5391](https://github.com/craftcms/cms/issues/5391))
 - Fixed an error that occurred when updating from Craft 2. ([#5402](https://github.com/craftcms/cms/issues/5402))
+- Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
 
 ## 3.4.0-beta.5 - 2020-01-02
 
