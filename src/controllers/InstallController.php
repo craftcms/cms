@@ -325,6 +325,7 @@ class InstallController extends Controller
     private function _canControlDbConfig(): bool
     {
         // If the .env file doesn't exist, we definitely can't do anyting about it
+        // If the .env file doesn't exist, we definitely can't do anything about it
         if (!file_exists(Craft::$app->getConfig()->getDotEnvPath())) {
             return false;
         }
