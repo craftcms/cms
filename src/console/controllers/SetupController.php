@@ -390,7 +390,7 @@ EOD;
      * @return int
      * @since 3.4.0
      */
-    public function actionCreateSessionTable(): int
+    public function actionPhpSessionTable(): int
     {
         if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
             $this->stdout('The `phpsessions` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
