@@ -57,6 +57,7 @@
 - Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch a single element using the GraphQL API. ([#5363](https://github.com/craftcms/cms/issues/5363))
 - The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
 - Improved the cropper behavior when dragging along the edges in the image editor.
+- Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
@@ -137,6 +138,7 @@
 - Added `craft\gql\TypeManager`.
 - Added `craft\gql\types\Number`.
 - Added `craft\helpers\AdminTable`.
+- Added `craft\helpers\App::isEphemeral()`.
 - Added `craft\helpers\ArrayHelper::append()`.
 - Added `craft\helpers\ArrayHelper::contains()`.
 - Added `craft\helpers\ArrayHelper::prepend()`.
@@ -211,7 +213,6 @@
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
 - Added the Minify PHP package.
-- Added support for the `CRAFT_EPHEMERAL` PHP constant to help with Craft is isntalled on ephemeral file systems.
 
 ### Changed
 - Control panel requests are now always set to the primary site, regardless of the URL they were accessed from.
