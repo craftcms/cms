@@ -206,6 +206,7 @@
 - Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
 - Added the `Craft.VueAdminTable` JavaScript class.
+- Added the `beforeUpdateIframe` and `switchTarget` events to the `Craft.Preview` JavaScript class. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
@@ -219,6 +220,7 @@
 - The Assets index page now updates the URL when the selected volume changes.
 - Sections’ entry URI format settings are now shown when running Craft in headless mode. ([#4934](https://github.com/craftcms/cms/issues/4934))
 - The “Primary entry page” preview target is now user-customizable alongside all other preview targets in sections’ settings. ([#4520](https://github.com/craftcms/cms/issues/4520))
+- Sections’ “Preview Targets” setting now has a “Refresh” checkbox column, which can be unchecked to prevent preview frames from being refreshed automatically when content changes. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - Unsaved entries’ URIs are now updated on each autosave. ([#4581](https://github.com/craftcms/cms/issues/4581))
 - Edit Entry pages now show the entry’s status in the meta pane.
 - Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
@@ -249,6 +251,7 @@
 - Active record classes now normalize attribute values right when they are set.
 - Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
 - Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
+- Preview targets can now opt out of being automatically refreshed when content changes, by setting `refresh` to `false` on their target definition. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
 - `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
 - `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).
@@ -263,6 +266,7 @@
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
+- The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
 - Updated yii2-queue to 2.3.
 - Updated Garnish to 0.1.32.

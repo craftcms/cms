@@ -205,7 +205,16 @@
                     heading: 'URL Format'|t('app'),
                     info: 'The URL/URI to use for this target.'|t('app'),
                     code: true,
+                },
+                refresh: {
+                    type: 'checkbox',
+                    heading: 'Refresh'|t('app'),
+                    info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
+                    thin: true,
                 }
+            },
+            defaultValues: {
+                refresh: true,
             },
             rows: section.previewTargets,
             errors: section.getErrors('previewTargets')

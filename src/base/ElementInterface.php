@@ -606,7 +606,11 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
-     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     * Each target should be represented by a sub-array with the following keys:
+     *
+     * - `label` – What the preview target will be called in the control panel.
+     * - `url` – The URL that the preview target should open.
+     * - `refresh` – Whether preview frames should be automatically refreshed when content changes (`true` by default).
      *
      * ::: tip
      * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
