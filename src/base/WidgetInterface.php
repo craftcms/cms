@@ -41,6 +41,7 @@ interface WidgetInterface extends SavableComponentInterface
      * Returns the widget’s title.
      *
      * @return string The widget’s title.
+     * @todo allow this to return null in Craft 4
      */
     public function getTitle(): string;
 
