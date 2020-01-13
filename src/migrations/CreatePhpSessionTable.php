@@ -18,14 +18,6 @@ use craft\db\Table;
  */
 class CreatePhpSessionTable extends Migration
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var string|null The table name
-     */
-    public $tableName;
-
     // Public Methods
     // =========================================================================
 
