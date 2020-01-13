@@ -1995,7 +1995,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this._handleCropperDrag._.deltaY = ev.pageY - this.previousMouseY;
 
             if (this._handleCropperDrag._.deltaX === 0 && this._handleCropperDrag._.deltaY === 0) {
-                return;
+                return false;
             }
 
             this._handleCropperDrag._.rectangle = {
@@ -2007,16 +2007,27 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.deltaX, this._handleCropperDrag._.deltaY);
 
-            // Just make sure that the cropper stays inside the image
+            // If this would drag it outside of the image
             if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
-                return;
+                // Try again, but only drag horizontally
+                this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.deltaX, 0);
+                if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
+                    // Well, maybe we can drag vertically then
+                    this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, 0, this._handleCropperDrag._.deltaY);
+                    if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
+                        return;
+                    } else {
+                        this._handleCropperDrag._.deltaX = 0;
+                    }
+                } else {
+                    this._handleCropperDrag._.deltaY = 0;
+                }
             }
 
             this.clipper.set({
                 left: this.clipper.left + this._handleCropperDrag._.deltaX,
                 top: this.clipper.top + this._handleCropperDrag._.deltaY
             });
-
         },
 
         /**
