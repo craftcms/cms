@@ -1695,9 +1695,14 @@ abstract class Element extends Component implements ElementInterface
                     unset($previewTarget['urlFormat']);
                 }
             }
-            if (isset($previewTarget['url'])) {
-                $normalized[] = $previewTarget;
+            if (!isset($previewTarget['url'])) {
+                // No URL, no preview target
+                continue;
             }
+            if (!isset($previewTarget['refresh'])) {
+                $previewTarget['refresh'];
+            }
+            $normalized[] = $previewTarget;
         }
 
         return $normalized;

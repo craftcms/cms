@@ -246,13 +246,11 @@ class InstallController extends Controller
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
 
-            if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
-                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
-                $configService->setDotEnvVar('DB_USER', $dbConfig->user);
-                $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
-                $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
-                $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
-            }
+            $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+            $configService->setDotEnvVar('DB_USER', $dbConfig->user);
+            $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
+            $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
+            $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
 
             // Update the db component based on new values
             /** @var Connection $db */
@@ -274,12 +272,10 @@ class InstallController extends Controller
 
         // Try to save the site URL to a DEFAULT_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
-        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
+        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
-                if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
-                    $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
-                    $siteUrl = '$DEFAULT_SITE_URL';
-                }
+                $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                $siteUrl = '$DEFAULT_SITE_URL';
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL
             }
@@ -324,7 +320,12 @@ class InstallController extends Controller
      */
     private function _canControlDbConfig(): bool
     {
-        // If the .env file doesn't exist, we definitely can't do anyting about it
+        // If this is ephemeral storage, then we can't be writing to a .env file
+        if (App::isEphemeral()) {
+            return false;
+        }
+
+        // If the .env file doesn't exist, we definitely can't do anything about it
         if (!file_exists(Craft::$app->getConfig()->getDotEnvPath())) {
             return false;
         }

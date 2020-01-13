@@ -347,6 +347,17 @@ class App
         return $trace;
     }
 
+    /**
+     * Returns whether Craft is running on an environment with ephemeral storage.
+     *
+     * @return bool
+     * @since 3.4.0
+     */
+    public static function isEphemeral(): bool
+    {
+        return defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true;
+    }
+
     // App component configs
     // -------------------------------------------------------------------------
 

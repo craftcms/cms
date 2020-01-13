@@ -100,6 +100,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
+    public function getSubtitle()
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getBodyHtml()
     {
         $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');

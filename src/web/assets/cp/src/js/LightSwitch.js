@@ -122,11 +122,11 @@ Craft.LightSwitch = Garnish.Base.extend(
             }
         },
 
-        toggle: function(event) {
-            if (this.indeterminate || this.on) {
-                this.turnOff();
-            } else {
+        toggle: function() {
+            if (this.indeterminate || !this.on) {
                 this.turnOn();
+            } else {
+                this.turnOff();
             }
         },
 

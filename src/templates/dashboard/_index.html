@@ -33,7 +33,16 @@
                         <div class="pane">
                             <div class="spinner body-loading"></div>
                             <div class="settings icon hidden"></div>
-                            <h2>{{ widget.title }}</h2>
+                            {% if widget.title or widget.subtitle %}
+                                <div class="heading">
+                                    {% if widget.title %}
+                                        <h2>{{ widget.title }}</h2>
+                                    {% endif %}
+                                    {% if widget.subtitle %}
+                                        <h5>{{ widget.subtitle }}</h5>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                             <div class="body">
                                 {{ widget.bodyHtml|raw }}
                             </div>

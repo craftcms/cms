@@ -5,15 +5,20 @@
 ### Added
 - “Set Status” element actions no longer have the option to disable multi-site elements globally; only for the currently selected site. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
 - Multi-site entries’ edit pages no longer have the option to set the entry’s global status. Instead, only the current site’s status is shown by default, and that setting can be expanded to show all sites that the user has permission to edit, for bulk-editing the entry’s status across multiple sites. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
+- The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
+- Improved the cropper behavior when dragging along the edges in the image editor.
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
 - Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
+- Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added `craft\base\ElementInterface::getEnabledForSite()`.
 - Added `craft\base\ElementInterface::setEnabledForSite()`.
+- Added `craft\base\WidgetInterface::getSubtitle()`.
 - Added `craft\base\Model::defineRules()`. Models that define a `rules()` method should use `defineRules()` instead, so `EVENT_DEFINE_RULES` event handlers have a chance to modify them.
 - Added `craft\base\UtilityInterface::footerHtml()`.
 - Added `craft\base\UtilityInterface::toolbarHtml()`.
+- Added `craft\helpers\App::isEphemeral()`.
 - Added `craft\helpers\ArrayHelper::contains()`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\QueueInterface::getJobDetails()`.
@@ -22,6 +27,7 @@
 - Added `craft\queue\QueueInterface::retryAll()`.
 - Added `craft\utilities\QueueManager`.
 - Added `craft\web\assets\queuemanager\QueueManagerAsset`.
+- Added the `beforeUpdateIframe` and `switchTarget` events to the `Craft.Preview` JavaScript class. ([#5359](https://github.com/craftcms/cms/issues/5359))
 
 ### Changed
 - The queue info in the global sidebar no longer shows an HUD with job details when clicked; the user is now brought to the new Queue Manager utility, if they have permission to view it. ([#4040](https://github.com/craftcms/cms/issues/4040))
@@ -29,6 +35,10 @@
 - Edit Entry pages now show the entry’s status in the meta pane.
 - “Edit” Asset pages now have a read-only mode for assets that the user is allowed to view but not modify.
 - Unsaved entries’ URIs are now updated on each autosave. ([#4581](https://github.com/craftcms/cms/issues/4581))
+- Sections’ “Preview Targets” setting now has a “Refresh” checkbox column, which can be unchecked to prevent preview frames from being refreshed automatically when content changes. ([#5359](https://github.com/craftcms/cms/issues/5359))
+- Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
+- Preview targets can now opt out of being automatically refreshed when content changes, by setting `refresh` to `false` on their target definition. ([#5359](https://github.com/craftcms/cms/issues/5359))
+- The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
 - Updated yii2-queue to 2.3.
 
@@ -40,6 +50,7 @@
 - Fixed a bug where forward slashes weren’t being trimmed from database URLs’ `path` params when building the connection DSN string.
 - Fixed an error that occurred when updating from Craft 3.0. ([#5391](https://github.com/craftcms/cms/issues/5391))
 - Fixed an error that occurred when updating from Craft 2. ([#5402](https://github.com/craftcms/cms/issues/5402))
+- Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
 
 ## 3.4.0-beta.5 - 2020-01-02
 

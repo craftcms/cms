@@ -367,12 +367,13 @@ class Application extends \yii\web\Application
      */
     protected function ensureResourcePathExists()
     {
-        if (defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true) {
-            // skip the resource path creation
+        $generalConfig = $this->getConfig()->getGeneral();
+
+        if ($generalConfig->resourceBasePath === false) {
             return;
         }
 
-        $resourceBasePath = Craft::getAlias($this->getConfig()->getGeneral()->resourceBasePath);
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
