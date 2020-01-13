@@ -227,6 +227,7 @@
 - Plain Text fields can now specify a maximum size in bytes. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Plain Text fields’ Column Type settings now have an “Automatic” option, which is selected by default for new fields. ([#5099](https://github.com/craftcms/cms/issues/5099))
 - Matrix fields now show an accurate description of their propagation behavior in the translation icon tooltip. ([#5304](https://github.com/craftcms/cms/issues/5304))
+- The Clear Caches utility now has info icons next to most cache options with more details about what the cache option refers to. ([#5418](https://github.com/craftcms/cms/issues/5418))
 - The `users/login` action no longer sets a “Logged in.” flash notice. ([#5383](https://github.com/craftcms/cms/issues/5383))
 - Local asset volumes now ensure that their folder exists on save, and if it doesn’t, a `.gitignore` file will be added automatically to it, excluding the directory from Git. ([#5237](https://github.com/craftcms/cms/issues/5237))
 - Set Password and Verify Email links now use the `setPasswordPath` and `verifyEmailPath` config settings. ([#4925](https://github.com/craftcms/cms/issues/4925))

@@ -36,6 +36,7 @@
 - “Edit” Asset pages now have a read-only mode for assets that the user is allowed to view but not modify.
 - Unsaved entries’ URIs are now updated on each autosave. ([#4581](https://github.com/craftcms/cms/issues/4581))
 - Sections’ “Preview Targets” setting now has a “Refresh” checkbox column, which can be unchecked to prevent preview frames from being refreshed automatically when content changes. ([#5359](https://github.com/craftcms/cms/issues/5359))
+- The Clear Caches utility now has info icons next to most cache options with more details about what the cache option refers to. ([#5418](https://github.com/craftcms/cms/issues/5418))
 - Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
 - Preview targets can now opt out of being automatically refreshed when content changes, by setting `refresh` to `false` on their target definition. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
