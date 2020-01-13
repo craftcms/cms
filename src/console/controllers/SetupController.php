@@ -387,7 +387,7 @@ EOD;
      * Creates a database table for storing PHP session information.
      * @return int
      */
-    public function actionDbPhpSessionTable(): int
+    public function actionPhpSessionTable(): int
     {
         $migration = new CreatePhpSessionTable();
         $migration->up();
