@@ -1552,6 +1552,7 @@ table {
 
       &.checkbox-cell {
         width: $checkboxSize !important;
+        min-width: $checkboxSize;
         box-sizing: content-box;
         position: relative;
 
