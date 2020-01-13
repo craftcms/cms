@@ -44,6 +44,6 @@ class CreatePhpSessionTable extends Migration
      */
     public function safeDown()
     {
-        return false;
+        $this->dropTableIfExists(Table::PHPSESSIONS);
     }
 }
