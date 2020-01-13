@@ -7256,8 +7256,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this._handleCropperDrag._.furthestDeltas = {};
 
                 // Loop through every combination of dragging it not so far
-                for (this._handleCropperDrag._.dxi = Math.abs(this._handleCropperDrag._.deltaX); this._handleCropperDrag._.dxi >= 0; this._handleCropperDrag._.dxi--) {
-                    for (this._handleCropperDrag._.dyi = Math.abs(this._handleCropperDrag._.deltaY); this._handleCropperDrag._.dyi >= 0; this._handleCropperDrag._.dyi--) {
+                for (this._handleCropperDrag._.dxi = Math.min(Math.abs(this._handleCropperDrag._.deltaX), 10); this._handleCropperDrag._.dxi >= 0; this._handleCropperDrag._.dxi--) {
+                    for (this._handleCropperDrag._.dyi = Math.min(Math.abs(this._handleCropperDrag._.deltaY), 10); this._handleCropperDrag._.dyi >= 0; this._handleCropperDrag._.dyi--) {
                         this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.dxi * (this._handleCropperDrag._.deltaX > 0 ? 1 : -1), this._handleCropperDrag._.dyi * (this._handleCropperDrag._.deltaY > 0 ? 1 : -1));
 
                         if (this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
