@@ -17,6 +17,7 @@ use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\migrations\CreatePhpSessionTable;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -380,6 +381,16 @@ EOD;
     public function actionDb(): int
     {
         return $this->actionDbCreds();
+    }
+
+    /**
+     * Creates a database table for storing PHP session information.
+     * @return int
+     */
+    public function actionDbPhpSessionTable(): int
+    {
+        $migration = new CreatePhpSessionTable();
+        $migration->up();
     }
 
     // Private Methods

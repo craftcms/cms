@@ -53,6 +53,7 @@ abstract class Table
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
     const MIGRATIONS = '{{%migrations}}';
+    const PHPSESSIONS = '{{%phpsessions}}';
     const PLUGINS = '{{%plugins}}';
     const PROJECTCONFIG = '{{%projectconfig}}';
     const QUEUE = '{{%queue}}';
