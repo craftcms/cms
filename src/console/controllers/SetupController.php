@@ -12,11 +12,13 @@ use Craft;
 use craft\config\DbConfig;
 use craft\console\Controller;
 use craft\db\Connection;
+use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\migrations\CreatePhpSessionTable;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -380,6 +382,29 @@ EOD;
     public function actionDb(): int
     {
         return $this->actionDbCreds();
+    }
+
+    /**
+     * Creates a database table for storing PHP session information.
+     *
+     * @return int
+     * @since 3.4.0
+     */
+    public function actionCreateSessionTable(): int
+    {
+        if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
+            $this->stdout('The `phpsessions` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $migration = new CreatePhpSessionTable();
+        if ($migration->up() === false) {
+            $this->stderr('An error occurred while creating the `phpsessions` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('The `phpsessions` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 
     // Private Methods
