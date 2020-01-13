@@ -248,6 +248,7 @@
 - The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
 - Active record classes now normalize attribute values right when they are set.
 - Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
+- Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
 - The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
 - `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
 - `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).

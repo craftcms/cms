@@ -32,6 +32,7 @@
 - Edit Entry pages now show the entry’s status in the meta pane.
 - “Edit” Asset pages now have a read-only mode for assets that the user is allowed to view but not modify.
 - Unsaved entries’ URIs are now updated on each autosave. ([#4581](https://github.com/craftcms/cms/issues/4581))
+- Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
 - Updated yii2-queue to 2.3.
 

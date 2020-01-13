@@ -52,7 +52,7 @@
         {% for rowId, row in rows %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
-                    {% set cell = row[colId] ?? null %}
+                    {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
                     {% set value = cell.value is defined ? cell.value : cell %}
                     {% if col.type == 'heading' %}
                         <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</th>
