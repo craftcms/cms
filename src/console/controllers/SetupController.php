@@ -390,7 +390,11 @@ EOD;
     public function actionPhpSession(): int
     {
         $migration = new CreatePhpSessionTable();
-        $migration->up();
+        if (!$migration->up()) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        return ExitCode::OK;
     }
 
     // Private Methods
