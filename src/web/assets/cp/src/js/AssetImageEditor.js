@@ -32,6 +32,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         cropperHandles: null,
         cropperGrid: null,
         croppingShade: null,
+        croppingAreaText: null,
 
         // Image state attributes
         imageStraightenAngle: 0,
@@ -1656,6 +1657,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.croppingCanvas.remove(this.cropperHandles);
                 this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
+                this.croppingCanvas.remove(this.croppingAreaText);
 
                 this.croppingCanvas = null;
                 this.renderCropper = null;
@@ -1748,6 +1750,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.croppingCanvas.remove(this.cropperHandles);
                 this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
+                this.croppingCanvas.remove(this.croppingAreaText);
             }
             this._redrawCropperElements._.lineOptions = {
                 strokeWidth: 4,
@@ -1802,9 +1805,32 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
             );
 
+            this._redrawCropperElements._.cropTextTop = this.croppingRectangle.top + (this.clipper.height / 2) + 12;
+            this._redrawCropperElements._.cropTextBackgroundColor = 'rgba(0,0,0,0)';
+
+            if (this._redrawCropperElements._.cropTextTop + 12 > this.editorHeight - 2) {
+                this._redrawCropperElements._.cropTextTop -= 24;
+                this._redrawCropperElements._.cropTextBackgroundColor = 'rgba(0,0,0,0.5)';
+            }
+
+            this.croppingAreaText = new fabric.Textbox(Math.round(this.clipper.width) + ' x ' + Math.round(this.clipper.height), {
+                left: this.croppingRectangle.left,
+                top: this._redrawCropperElements._.cropTextTop,
+                fontSize: 13,
+                fill: 'rgb(200,200,200)',
+                backgroundColor: this._redrawCropperElements._.cropTextBackgroundColor,
+                font: 'Craft',
+                width: 70,
+                height: 15,
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center'
+            });
+
             this.croppingCanvas.add(this.cropperHandles);
             this.croppingCanvas.add(this.cropperGrid);
             this.croppingCanvas.add(this.croppingRectangle);
+            this.croppingCanvas.add(this.croppingAreaText);
         },
 
         /**
