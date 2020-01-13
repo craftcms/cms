@@ -13327,6 +13327,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         $saveMetaBtn: null,
 
         lastSerializedValue: null,
+        listeningForChanges: false,
         timeout: null,
         saving: false,
         saveXhr: null,
@@ -13410,9 +13411,12 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
         },
 
-        initForDraft: function() {
-            // Create the edit draft button
-            this.createEditMetaBtn();
+        listenForChanges: function() {
+            if (this.listeningForChanges) {
+                return;
+            }
+
+            this.listeningForChanges = true;
 
             this.addListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
@@ -13426,12 +13430,25 @@ Craft.DraftEditor = Garnish.Base.extend(
                     this.checkForm();
                 }
             });
+        },
+
+        stopListeningForChanges: function() {
+            this.removeListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup');
+            clearTimeout(this.timeout);
+            this.listeningForChanges = false;
+        },
+
+        initForDraft: function() {
+            // Create the edit draft button
+            this.createEditMetaBtn();
 
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
 
             this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
+
+            this.listenForChanges();
         },
 
         mergeChanges: function() {
@@ -13696,13 +13713,23 @@ Craft.DraftEditor = Garnish.Base.extend(
         getPreview: function() {
             if (!this.preview) {
                 this.preview = new Craft.Preview(this);
+                this.preview.on('open', function() {
+                    if (!this.settings.draftId) {
+                        this.listenForChanges();
+                    }
+                }.bind(this));
+                this.preview.on('close', function() {
+                    if (!this.settings.draftId) {
+                        this.stopListeningForChanges();
+                    }
+                }.bind(this));
             }
             return this.preview;
         },
 
         openPreview: function() {
             return new Promise(function(resolve, reject) {
-                this.ensureIsDraftOrRevision()
+                this.ensureIsDraftOrRevision(true)
                     .then(function() {
                         this.getPreview().open();
                         resolve();
@@ -13711,9 +13738,17 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this))
         },
 
-        ensureIsDraftOrRevision: function() {
+        ensureIsDraftOrRevision: function(onlyIfChanged) {
             return new Promise(function(resolve, reject) {
                 if (!this.settings.draftId && !this.settings.revisionId) {
+                    if (
+                        onlyIfChanged &&
+                        this.serializeForm(true) === Craft.cp.$primaryForm.data('initialSerializedValue')
+                    ) {
+                        resolve();
+                        return;
+                    }
+
                     this.createDraft()
                         .then(resolve)
                         .catch(reject);
@@ -13741,10 +13776,14 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         checkForm: function(force) {
-            // If this isn't a draft, then there's nothing to check
-            if (!this.settings.draftId) {
+            // If this isn't a draft and there's no active preview, then there's nothing to check
+            if (
+                this.settings.revisionId ||
+                (!this.settings.draftId && !this.isPreviewActive())
+            ) {
                 return;
             }
+            console.log('check form');
 
             clearTimeout(this.timeout);
             this.timeout = null;
