@@ -2012,18 +2012,41 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // If this would drag it outside of the image
             if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
-                // Try again, but only drag horizontally
-                this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.deltaX, 0);
-                if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
-                    // Well, maybe we can drag vertically then
-                    this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, 0, this._handleCropperDrag._.deltaY);
-                    if (!this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
-                        return;
-                    } else {
-                        this._handleCropperDrag._.deltaX = 0;
+                // Try to find the furthest point in the same general direction where we can drag it
+
+                // Delta iterator setup
+                this._handleCropperDrag._.dxi = 0;
+                this._handleCropperDrag._.dyi = 0;
+                this._handleCropperDrag._.xStep = this._handleCropperDrag._.deltaX > 0 ? -1 : 1;
+                this._handleCropperDrag._.yStep = this._handleCropperDrag._.deltaY > 0 ? -1 : 1;
+
+                // The furthest we can move
+                this._handleCropperDrag._.furthest = 0;
+                this._handleCropperDrag._.furthestDeltas = {};
+
+                // Loop through every combination of dragging it not so far
+                for (this._handleCropperDrag._.dxi = Math.abs(this._handleCropperDrag._.deltaX); this._handleCropperDrag._.dxi >= 0; this._handleCropperDrag._.dxi--) {
+                    for (this._handleCropperDrag._.dyi = Math.abs(this._handleCropperDrag._.deltaY); this._handleCropperDrag._.dyi >= 0; this._handleCropperDrag._.dyi--) {
+                        this._handleCropperDrag._.vertices = this._getRectangleVertices(this._handleCropperDrag._.rectangle, this._handleCropperDrag._.dxi * (this._handleCropperDrag._.deltaX > 0 ? 1 : -1), this._handleCropperDrag._.dyi * (this._handleCropperDrag._.deltaY > 0 ? 1 : -1));
+
+                        if (this.arePointsInsideRectangle(this._handleCropperDrag._.vertices, this.imageVerticeCoords)) {
+                            if (this._handleCropperDrag._.dxi + this._handleCropperDrag._.dyi > this._handleCropperDrag._.furthest) {
+                                this._handleCropperDrag._.furthest = this._handleCropperDrag._.dxi + this._handleCropperDrag._.dyi;
+                                this._handleCropperDrag._.furthestDeltas = {
+                                    x: this._handleCropperDrag._.dxi * (this._handleCropperDrag._.deltaX > 0 ? 1 : -1),
+                                    y: this._handleCropperDrag._.dyi * (this._handleCropperDrag._.deltaY > 0 ? 1 : -1)
+                                }
+                            }
+                        }
                     }
+                }
+
+                // REALLY can't drag along the cursor movement
+                if (this._handleCropperDrag._.furthest == 0) {
+                    return;
                 } else {
-                    this._handleCropperDrag._.deltaY = 0;
+                    this._handleCropperDrag._.deltaX = this._handleCropperDrag._.furthestDeltas.x;
+                    this._handleCropperDrag._.deltaY = this._handleCropperDrag._.furthestDeltas.y;
                 }
             }
 
