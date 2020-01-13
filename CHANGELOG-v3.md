@@ -12,6 +12,7 @@
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
+- Added the `setup/php-session` console command for creating a database table to store PHP sessions.
 - Added `craft\base\ElementInterface::getEnabledForSite()`.
 - Added `craft\base\ElementInterface::setEnabledForSite()`.
 - Added `craft\base\WidgetInterface::getSubtitle()`.
@@ -20,6 +21,7 @@
 - Added `craft\base\UtilityInterface::toolbarHtml()`.
 - Added `craft\helpers\App::isEphemeral()`.
 - Added `craft\helpers\ArrayHelper::contains()`.
+- Added `craft\migrations\CreatePhpSessionTable`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\QueueInterface::getJobDetails()`.
 - Added `craft\queue\QueueInterface::getTotalJobs()`.
