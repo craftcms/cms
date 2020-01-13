@@ -2218,16 +2218,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this._handleCropperResize._.change = -this._handleCropperResize._.deltaX;
                         break;
                     case 'tr':
-                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY + this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? -this._handleCropperResize._.deltaY : this._handleCropperResize._.deltaX;
                         break;
                     case 'tl':
-                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY - this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? -this._handleCropperResize._.deltaY : -this._handleCropperResize._.deltaX;
                         break;
                     case 'br':
-                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY + this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? this._handleCropperResize._.deltaY : this._handleCropperResize._.deltaX;
                         break;
                     case 'bl':
-                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY - this._handleCropperResize._.deltaX;
+                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? this._handleCropperResize._.deltaY : -this._handleCropperResize._.deltaX;
                         break;
                 }
 
