@@ -144,7 +144,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         mergeChanges: function() {
             // Make sure there aren't any unsaved changes
-            this.checkForm(true);
+            this.checkForm();
 
             // Make sure we aren't currently saving something
             if (this.saving) {
@@ -474,17 +474,12 @@ Craft.DraftEditor = Garnish.Base.extend(
             ) {
                 return;
             }
-            console.log('check form');
-
             clearTimeout(this.timeout);
             this.timeout = null;
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (
-                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
-                (force || (data !== this.lastSerializedValue))
-            ) {
+            if (force || data !== this.lastSerializedValue) {
                 this.saveDraft(data);
             }
         },
@@ -509,15 +504,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                     return;
                 }
 
-                this.lastSerializedValue = data;
-
                 if (this.saving) {
                     this.queue.push(function() {
-                        this.checkForm(true)
+                        this.checkForm()
                     }.bind(this));
                     return;
                 }
 
+                this.lastSerializedValue = data;
                 this.saving = true;
                 var $spinners = this.spinners().removeClass('hidden');
                 var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');

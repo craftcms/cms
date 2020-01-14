@@ -1714,6 +1714,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
                     this.hud.$hud.data('elementEditor', this);
 
+                    // Disable browser input validation
+                    this.hud.$body.attr('novalidate', '');
+
                     this.hud.on('hide', $.proxy(function() {
                         delete this.hud;
                     }, this));
@@ -13477,7 +13480,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         mergeChanges: function() {
             // Make sure there aren't any unsaved changes
-            this.checkForm(true);
+            this.checkForm();
 
             // Make sure we aren't currently saving something
             if (this.saving) {
@@ -13807,17 +13810,12 @@ Craft.DraftEditor = Garnish.Base.extend(
             ) {
                 return;
             }
-            console.log('check form');
-
             clearTimeout(this.timeout);
             this.timeout = null;
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (
-                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
-                (force || (data !== this.lastSerializedValue))
-            ) {
+            if (force || data !== this.lastSerializedValue) {
                 this.saveDraft(data);
             }
         },
@@ -13842,15 +13840,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                     return;
                 }
 
-                this.lastSerializedValue = data;
-
                 if (this.saving) {
                     this.queue.push(function() {
-                        this.checkForm(true)
+                        this.checkForm()
                     }.bind(this));
                     return;
                 }
 
+                this.lastSerializedValue = data;
                 this.saving = true;
                 var $spinners = this.spinners().removeClass('hidden');
                 var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
@@ -18049,8 +18046,8 @@ Craft.Preview = Garnish.Base.extend(
         url: null,
         fields: null,
 
-        scrollLeft: 0,
-        scrollTop: 0,
+        scrollLeft: null,
+        scrollTop: null,
 
         dragger: null,
         dragStartEditorWidth: null,
@@ -18342,8 +18339,8 @@ Craft.Preview = Garnish.Base.extend(
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {
-                    this.scrollLeft = 0;
-                    this.scrolllTop = 0;
+                    this.scrollLeft = null;
+                    this.scrolllTop = null;
                 } else {
                     sameHost = Craft.isSameHost(url);
                     if (sameHost && this.iframeLoaded && this.$iframe && this.$iframe[0].contentWindow) {
@@ -18363,7 +18360,7 @@ Craft.Preview = Garnish.Base.extend(
 
                 $iframe.on('load', function() {
                     this.iframeLoaded = true;
-                    if (!resetScroll && sameHost) {
+                    if (!resetScroll && sameHost && this.scrollLeft !== null) {
                         var $doc = $($iframe[0].contentWindow.document);
                         $doc.scrollLeft(this.scrollLeft);
                         $doc.scrollTop(this.scrollTop);
