@@ -4,6 +4,7 @@
 
 ### Changed
 - The control panel will now display an alert if `useProjectConfigFile` is enabled, but the `project.yaml` file isn’t writable. ([#4319](https://github.com/craftcms/cms/issues/4319))
+- Browser-based form validation is now disabled for element editor HUDs. ([#5433](https://github.com/craftcms/cms/issues/5433))
 
 ### Fixed
 - Fixed a bug where entry revision menus could list sites that the entry didn’t support. ([#5387](https://github.com/craftcms/cms/issues/5387))
