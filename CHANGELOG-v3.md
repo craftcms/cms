@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The control panel will now display an alert if `useProjectConfigFile` is enabled, but the `project.yaml` file isn’t writable. ([#4319](https://github.com/craftcms/cms/issues/4319))
+
 ### Fixed
 - Fixed a bug where entry revision menus could list sites that the entry didn’t support. ([#5387](https://github.com/craftcms/cms/issues/5387))
 - Fixed a PHP warning that occurred when creating a new database backup. ([#5393](https://github.com/craftcms/cms/issues/5393))
