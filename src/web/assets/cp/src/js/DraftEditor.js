@@ -290,10 +290,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (
-                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
-                (force || (data !== this.lastSerializedValue))
-            ) {
+            if (force || data !== this.lastSerializedValue) {
                 this.saveDraft(data);
             }
         },
@@ -318,13 +315,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                     return;
                 }
 
-                this.lastSerializedValue = data;
-
                 if (this.saving) {
                     this.checkFormAfterUpdate = true;
                     return;
                 }
 
+                this.lastSerializedValue = data;
                 this.saving = true;
                 var $spinners = this.spinners().removeClass('hidden');
                 var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
@@ -515,7 +511,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             if (this.checkFormAfterUpdate) {
                 this.checkFormAfterUpdate = false;
-                this.checkForm(true);
+                this.checkForm();
             }
         },
 

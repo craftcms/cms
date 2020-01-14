@@ -15,6 +15,7 @@
 - Fixed couple bugs related to entry preview frames maintaining their scroll position between refreshes. ([#5404](https://github.com/craftcms/cms/issues/5404))
 - Fixed a bug where Matrix blocks weren’t getting updated correctly when their field’s Propagation Method setting was changed via `project.yaml`. ([#5295](https://github.com/craftcms/cms/issues/5295))
 - Fixed an error that could occur when syncing the project config if a Matrix field had been changed to something else. ([#5419](https://github.com/craftcms/cms/issues/5419))
+- Fixed a bug where changes to an entry draft’s name or notes weren’t getting saved until the next draft autosave. ([#5432](https://github.com/craftcms/cms/issues/5432))
 
 ### Security
 - Fixed XSS vulnerabilities.
