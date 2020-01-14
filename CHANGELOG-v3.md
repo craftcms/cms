@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.3.20.1 - 2020-01-14
+
+### Fixed
+- Fixed a PHP error that would occur when running console commands. ([#5436](https://github.com/craftcms/cms/issues/5436))
+
 ## 3.3.20 - 2020-01-14
 
 ### Changed
