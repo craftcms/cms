@@ -1,4 +1,4 @@
-/*!   - 2020-01-13 */
+/*!   - 2020-01-14 */
 (function($){
 
 /** global: Craft */
@@ -7444,10 +7444,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this._handleCropperResize._.deltaX = ev.pageX - this.previousMouseX;
             this._handleCropperResize._.deltaY = ev.pageY - this.previousMouseY;
 
-            // Center deltas
-            this._handleCropperResize._.topDelta = 0;
-            this._handleCropperResize._.leftDelta = 0;
-
             if (this.scalingCropper === 'b' || this.scalingCropper === 't') {
                 this._handleCropperResize._.deltaX = 0;
             }
@@ -7460,115 +7456,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 return;
             }
 
-            this._handleCropperResize._.rectangle = {
+            // Translate from center-center origin to absolute coords
+            this._handleCropperResize._.startingRectangle = {
                 left: this.clipper.left - this.clipper.width / 2,
                 top: this.clipper.top - this.clipper.height / 2,
                 width: this.clipper.width,
                 height: this.clipper.height
-            };
-
-            // Lock the aspect ratio if needed
-            if (this.croppingConstraint) {
-                this._handleCropperResize._.change = 0;
-
-                // Take into account the mouse direction and figure out the "real" change in cropper size
-                switch (this.scalingCropper) {
-                    case 't':
-                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaY;
-                        break;
-                    case 'b':
-                        this._handleCropperResize._.change = this._handleCropperResize._.deltaY;
-                        break;
-                    case 'r':
-                        this._handleCropperResize._.change = this._handleCropperResize._.deltaX;
-                        break;
-                    case 'l':
-                        this._handleCropperResize._.change = -this._handleCropperResize._.deltaX;
-                        break;
-                    case 'tr':
-                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? -this._handleCropperResize._.deltaY : this._handleCropperResize._.deltaX;
-                        break;
-                    case 'tl':
-                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? -this._handleCropperResize._.deltaY : -this._handleCropperResize._.deltaX;
-                        break;
-                    case 'br':
-                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? this._handleCropperResize._.deltaY : this._handleCropperResize._.deltaX;
-                        break;
-                    case 'bl':
-                        this._handleCropperResize._.change = Math.abs(this._handleCropperResize._.deltaY) > Math.abs(this._handleCropperResize._.deltaX) ? this._handleCropperResize._.deltaY : -this._handleCropperResize._.deltaX;
-                        break;
-                }
-
-                if (this.croppingConstraint > 1) {
-                    this._handleCropperResize._.deltaX = this._handleCropperResize._.change;
-                    this._handleCropperResize._.deltaY = this._handleCropperResize._.deltaX / this.croppingConstraint;
-                } else {
-                    this._handleCropperResize._.deltaY = this._handleCropperResize._.change;
-                    this._handleCropperResize._.deltaX = this._handleCropperResize._.deltaY * this.croppingConstraint;
-                }
-
-                this._handleCropperResize._.rectangle.height += this._handleCropperResize._.deltaY;
-                this._handleCropperResize._.rectangle.width += this._handleCropperResize._.deltaX;
-
-                // Make the cropper compress/expand relative to the correct edge to make it feel "right"
-                if (this.scalingCropper.match(/t/)) {
-                    this._handleCropperResize._.rectangle.top -= this._handleCropperResize._.deltaY;
-                    this._handleCropperResize._.rectangle.left -= this._handleCropperResize._.deltaX / 2;
-                    this._handleCropperResize._.topDelta = -this._handleCropperResize._.deltaY/2;
-                }
-
-                if (this.scalingCropper.match(/b/)) {
-                    this._handleCropperResize._.rectangle.left += -this._handleCropperResize._.deltaX / 2;
-                    this._handleCropperResize._.topDelta = this._handleCropperResize._.deltaY/2;
-                }
-
-                if (this.scalingCropper.match(/r/)) {
-                    this._handleCropperResize._.rectangle.top += -this._handleCropperResize._.deltaY / 2;
-                    this._handleCropperResize._.leftDelta = this._handleCropperResize._.deltaX/2;
-                }
-
-                if (this.scalingCropper.match(/l/)) {
-                    this._handleCropperResize._.rectangle.top -= this._handleCropperResize._.deltaY / 2;
-                    this._handleCropperResize._.rectangle.left -= this._handleCropperResize._.deltaX;
-                    this._handleCropperResize._.leftDelta = -this._handleCropperResize._.deltaX/2;
-                }
-            } else {
-
-                // Lock the aspect ratio
-                if (this.shiftKeyHeld &&
-                    (this.scalingCropper === 'tl' || this.scalingCropper === 'tr' ||
-                    this.scalingCropper === 'bl' || this.scalingCropper === 'br')
-                ) {
-                    this._handleCropperResize._.ratio;
-                    if (Math.abs(this._handleCropperResize._.deltaX) > Math.abs(this._handleCropperResize._.deltaY)) {
-                        this._handleCropperResize._.ratio = this.clipper.width / this.clipper.height;
-                        this._handleCropperResize._.deltaY = this._handleCropperResize._.deltaX / this._handleCropperResize._.ratio;
-                        this._handleCropperResize._.deltaY *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
-                    } else {
-                        this._handleCropperResize._.ratio = this.clipper.width / this.clipper.height;
-                        this._handleCropperResize._.deltaX = this._handleCropperResize._.deltaY * this._handleCropperResize._.ratio;
-                        this._handleCropperResize._.deltaX *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
-                    }
-                }
-
-                if (this.scalingCropper.match(/t/)) {
-                    this._handleCropperResize._.rectangle.top += this._handleCropperResize._.deltaY;
-                    this._handleCropperResize._.rectangle.height -= this._handleCropperResize._.deltaY;
-                }
-                if (this.scalingCropper.match(/b/)) {
-                    this._handleCropperResize._.rectangle.height += this._handleCropperResize._.deltaY;
-                }
-                if (this.scalingCropper.match(/r/)) {
-                    this._handleCropperResize._.rectangle.width += this._handleCropperResize._.deltaX;
-                }
-                if (this.scalingCropper.match(/l/)) {
-                    this._handleCropperResize._.rectangle.left += this._handleCropperResize._.deltaX;
-                    this._handleCropperResize._.rectangle.width -= this._handleCropperResize._.deltaX;
-                }
-
-                this._handleCropperResize._.topDelta = this._handleCropperResize._.deltaY/2;
-                this._handleCropperResize._.leftDelta = this._handleCropperResize._.deltaX/2;
             }
+            this._handleCropperResize._.rectangle = this._calculateNewCropperSizeByDeltas(this._handleCropperResize._.startingRectangle, this._handleCropperResize._.deltaX, this._handleCropperResize._.deltaY);
 
             if (this._handleCropperResize._.rectangle.height < 30 || this._handleCropperResize._.rectangle.width < 30) {
                 return;
@@ -7578,9 +7473,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 return;
             }
 
+            // Translate back to center-center origin.
             this.clipper.set({
-                top: this.clipper.top + this._handleCropperResize._.topDelta,
-                left: this.clipper.left + this._handleCropperResize._.leftDelta,
+                top: this._handleCropperResize._.rectangle.top + this._handleCropperResize._.rectangle.height / 2,
+                left: this._handleCropperResize._.rectangle.left + this._handleCropperResize._.rectangle.width / 2,
                 width: this._handleCropperResize._.rectangle.width,
                 height: this._handleCropperResize._.rectangle.height
             });
@@ -7588,6 +7484,132 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this._redrawCropperElements();
         },
 
+        _calculateNewCropperSizeByDeltas: function (startingRectangle, deltaX, deltaY) {
+            if (typeof this._calculateNewCropperSizeByDeltas._ === 'undefined') {
+                this._calculateNewCropperSizeByDeltas._ = {};
+            }
+
+            // Center deltas
+            this._calculateNewCropperSizeByDeltas._.topDelta = 0;
+            this._calculateNewCropperSizeByDeltas._.leftDelta = 0;
+
+            this._calculateNewCropperSizeByDeltas._.rectangle = startingRectangle;
+            this._calculateNewCropperSizeByDeltas._.deltaX = deltaX;
+            this._calculateNewCropperSizeByDeltas._.deltaY = deltaY;
+
+            // Lock the aspect ratio if needed
+            if (this.croppingConstraint) {
+                this._calculateNewCropperSizeByDeltas._.change = 0;
+
+                // Take into account the mouse direction and figure out the "real" change in cropper size
+                switch (this.scalingCropper) {
+                    case 't':
+                        this._calculateNewCropperSizeByDeltas._.change = -this._calculateNewCropperSizeByDeltas._.deltaY;
+                        break;
+                    case 'b':
+                        this._calculateNewCropperSizeByDeltas._.change = this._calculateNewCropperSizeByDeltas._.deltaY;
+                        break;
+                    case 'r':
+                        this._calculateNewCropperSizeByDeltas._.change = this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'l':
+                        this._calculateNewCropperSizeByDeltas._.change = -this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'tr':
+                        this._calculateNewCropperSizeByDeltas._.change = Math.abs(this._calculateNewCropperSizeByDeltas._.deltaY) > Math.abs(this._calculateNewCropperSizeByDeltas._.deltaX) ? -this._calculateNewCropperSizeByDeltas._.deltaY : this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'tl':
+                        this._calculateNewCropperSizeByDeltas._.change = Math.abs(this._calculateNewCropperSizeByDeltas._.deltaY) > Math.abs(this._calculateNewCropperSizeByDeltas._.deltaX) ? -this._calculateNewCropperSizeByDeltas._.deltaY : -this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'br':
+                        this._calculateNewCropperSizeByDeltas._.change = Math.abs(this._calculateNewCropperSizeByDeltas._.deltaY) > Math.abs(this._calculateNewCropperSizeByDeltas._.deltaX) ? this._calculateNewCropperSizeByDeltas._.deltaY : this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'bl':
+                        this._calculateNewCropperSizeByDeltas._.change = Math.abs(this._calculateNewCropperSizeByDeltas._.deltaY) > Math.abs(this._calculateNewCropperSizeByDeltas._.deltaX) ? this._calculateNewCropperSizeByDeltas._.deltaY : -this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                }
+
+                if (this.croppingConstraint > 1) {
+                    this._calculateNewCropperSizeByDeltas._.deltaX = this._calculateNewCropperSizeByDeltas._.change;
+                    this._calculateNewCropperSizeByDeltas._.deltaY = this._calculateNewCropperSizeByDeltas._.deltaX / this.croppingConstraint;
+                } else {
+                    this._calculateNewCropperSizeByDeltas._.deltaY = this._calculateNewCropperSizeByDeltas._.change;
+                    this._calculateNewCropperSizeByDeltas._.deltaX = this._calculateNewCropperSizeByDeltas._.deltaY * this.croppingConstraint;
+                }
+
+                this._calculateNewCropperSizeByDeltas._.rectangle.height += this._calculateNewCropperSizeByDeltas._.deltaY;
+                this._calculateNewCropperSizeByDeltas._.rectangle.width += this._calculateNewCropperSizeByDeltas._.deltaX;
+
+                // Make the cropper compress/expand relative to the correct edge to make it feel "right"
+                switch (this.scalingCropper) {
+                    case 't':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.top -= this._calculateNewCropperSizeByDeltas._.deltaY;
+                        this._calculateNewCropperSizeByDeltas._.rectangle.left -= this._calculateNewCropperSizeByDeltas._.deltaX / 2;
+                        break;
+                    case 'b':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.left += -this._calculateNewCropperSizeByDeltas._.deltaX / 2;
+                        break;
+                    case 'r':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.top += -this._calculateNewCropperSizeByDeltas._.deltaY / 2;
+                        break;
+                    case 'l':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.top -= this._calculateNewCropperSizeByDeltas._.deltaY / 2;
+                        this._calculateNewCropperSizeByDeltas._.rectangle.left -= this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'tr':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.top -= this._calculateNewCropperSizeByDeltas._.deltaY;
+                        break;
+                    case 'tl':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.top -= this._calculateNewCropperSizeByDeltas._.deltaY;
+                        this._calculateNewCropperSizeByDeltas._.rectangle.left -= this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                    case 'bl':
+                        this._calculateNewCropperSizeByDeltas._.rectangle.left -= this._calculateNewCropperSizeByDeltas._.deltaX;
+                        break;
+                }
+            } else {
+
+                // Lock the aspect ratio
+                if (this.shiftKeyHeld &&
+                    (this.scalingCropper === 'tl' || this.scalingCropper === 'tr' ||
+                        this.scalingCropper === 'bl' || this.scalingCropper === 'br')
+                ) {
+                    this._calculateNewCropperSizeByDeltas._.ratio;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        this._calculateNewCropperSizeByDeltas._.ratio = startingRectangle.width / startingRectangle.height;
+                        this._calculateNewCropperSizeByDeltas._.deltaY = this._calculateNewCropperSizeByDeltas._.deltaX / this._calculateNewCropperSizeByDeltas._.ratio;
+                        this._calculateNewCropperSizeByDeltas._.deltaY *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
+                    } else {
+                        this._calculateNewCropperSizeByDeltas._.ratio = startingRectangler.width / startingRectangle.height;
+                        this._calculateNewCropperSizeByDeltas._.deltaX = this._calculateNewCropperSizeByDeltas._.deltaY * this._calculateNewCropperSizeByDeltas._.ratio;
+                        this._calculateNewCropperSizeByDeltas._.deltaX *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
+                    }
+                }
+
+                if (this.scalingCropper.match(/t/)) {
+                    this._calculateNewCropperSizeByDeltas._.rectangle.top += this._calculateNewCropperSizeByDeltas._.deltaY;
+                    this._calculateNewCropperSizeByDeltas._.rectangle.height -= this._calculateNewCropperSizeByDeltas._.deltaY;
+                }
+                if (this.scalingCropper.match(/b/)) {
+                    this._calculateNewCropperSizeByDeltas._.rectangle.height += this._calculateNewCropperSizeByDeltas._.deltaY;
+                }
+                if (this.scalingCropper.match(/r/)) {
+                    this._calculateNewCropperSizeByDeltas._.rectangle.width += this._calculateNewCropperSizeByDeltas._.deltaX;
+                }
+                if (this.scalingCropper.match(/l/)) {
+                    this._calculateNewCropperSizeByDeltas._.rectangle.left += this._calculateNewCropperSizeByDeltas._.deltaX;
+                    this._calculateNewCropperSizeByDeltas._.rectangle.width -= this._calculateNewCropperSizeByDeltas._.deltaX;
+                }
+            }
+
+            this._calculateNewCropperSizeByDeltas._.rectangle.top = this._calculateNewCropperSizeByDeltas._.rectangle.top;
+            this._calculateNewCropperSizeByDeltas._.rectangle.left = this._calculateNewCropperSizeByDeltas._.rectangle.left;
+            this._calculateNewCropperSizeByDeltas._.rectangle.width = this._calculateNewCropperSizeByDeltas._.rectangle.width;
+            this._calculateNewCropperSizeByDeltas._.rectangle.height = this._calculateNewCropperSizeByDeltas._.rectangle.height;
+
+            return this._calculateNewCropperSizeByDeltas._.rectangle;
+        },
+        
         /**
          * Set mouse cursor by it's position over cropper.
          *
