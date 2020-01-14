@@ -364,6 +364,11 @@
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 
+## 3.3.20.1 - 2020-01-14
+
+### Fixed
+- Fixed a PHP error that would occur when running console commands. ([#5436](https://github.com/craftcms/cms/issues/5436))
+
 ## 3.3.20 - 2020-01-14
 
 ### Changed
