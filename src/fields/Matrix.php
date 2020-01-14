@@ -145,11 +145,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     private $_blockTypeFields;
 
-    /**
-     * @var string The old propagation method for this field
-     */
-    private $_oldPropagationMethod;
-
     // Public Methods
     // =========================================================================
 
@@ -853,12 +848,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        // Set the content table name and remember the original propagation method
+        // Set the content table name
         if ($this->id) {
             $oldField = $fieldsService->getFieldById($this->id);
             if ($oldField instanceof self) {
                 $this->contentTable = $oldField->contentTable;
-                $this->_oldPropagationMethod = $oldField->propagationMethod;
             }
         }
 
@@ -875,13 +869,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         Craft::$app->getMatrix()->saveSettings($this, false);
 
         // If the propagation method just changed, resave all the Matrix blocks
-        if ($this->_oldPropagationMethod && $this->propagationMethod !== $this->_oldPropagationMethod) {
-            Craft::$app->getQueue()->push(new ApplyMatrixPropagationMethod([
-                'fieldId' => $this->id,
-                'oldPropagationMethod' => $this->_oldPropagationMethod,
-                'newPropagationMethod' => $this->propagationMethod,
-            ]));
-            $this->_oldPropagationMethod = null;
+        if ($this->oldSettings !== null) {
+            $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
+            if ($this->propagationMethod !== $oldPropagationMethod) {
+                Craft::$app->getQueue()->push(new ApplyMatrixPropagationMethod([
+                    'fieldId' => $this->id,
+                    'oldPropagationMethod' => $oldPropagationMethod,
+                    'newPropagationMethod' => $this->propagationMethod,
+                ]));
+            }
         }
 
         parent::afterSave($isNew);

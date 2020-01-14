@@ -610,19 +610,19 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * TODO: remove this method after the next breakpoint and just use getInfo()->name directly.
+     * TODO: remove this method after the next breakpoint and just use `Craft::$app->getSystemName()` directly.
      *
      * @return string
      */
     private function _getFixedSystemName(): string
     {
-        try {
+        if ($this->columnExists(Table::INFO, 'siteName')) {
             return (new Query())
                 ->select(['siteName'])
                 ->from([Table::INFO])
-                ->column()[0];
-        } catch (\Throwable $e) {
-            return Craft::$app->getSystemName();
+                ->scalar($this) ?: 'CraftCMS';
         }
+
+        return Craft::$app->getSystemName();
     }
 }

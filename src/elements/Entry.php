@@ -25,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -1038,7 +1039,7 @@ class Entry extends Element
                 return $author ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $author]) : '';
 
             case 'section':
-                return Craft::t('site', $this->getSection()->name);
+                return Html::encode(Craft::t('site', $this->getSection()->name));
 
             case 'type':
                 try {

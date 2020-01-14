@@ -210,7 +210,7 @@
                 {% if isMultiSiteElement %}
                     {{ forms.lightswitchField({
                         fieldClass: not element.enabled ? 'hidden',
-                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
+                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site')|e }),
                         id: 'enabledForSite',
                         name: 'enabledForSite',
                         on: element.enabledForSite,

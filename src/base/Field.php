@@ -390,7 +390,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $value = (string)$value;
 
-        return StringHelper::stripHtml($value);
+        return Html::encode(StringHelper::stripHtml($value));
     }
 
     /**

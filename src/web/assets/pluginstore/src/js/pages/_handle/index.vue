@@ -211,8 +211,8 @@
             licenseIssue(errorCode) {
                 switch (errorCode) {
                     case 'wrong_edition': {
-                        const currentEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.edition)
-                        const licensedEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                        const currentEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.edition)
+                        const licensedEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
 
                         return this.$options.filters.t('Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.', 'app', {
                             currentEdition: currentEdition.name,

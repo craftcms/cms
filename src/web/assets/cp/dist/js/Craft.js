@@ -1,4 +1,4 @@
-/*!   - 2019-12-05 */
+/*!   - 2020-01-14 */
 (function($){
 
 /** global: Craft */
@@ -191,6 +191,16 @@ $.extend(Craft,
                 params = Craft.trim(params, '&?');
             }
 
+            // Was there already an anchor on the path?
+            var apos = path.indexOf('#');
+            if (apos !== -1) {
+                // Only keep it if the params didn't specify a new anchor
+                if (!anchor) {
+                    anchor = path.substr(apos + 1);
+                }
+                path = path.substr(0, apos);
+            }
+
             // Were there already any query string params in the path?
             var qpos = path.indexOf('?');
             if (qpos !== -1) {
@@ -200,7 +210,7 @@ $.extend(Craft,
 
             // Return path if it appears to be an absolute URL.
             if (path.search('://') !== -1 || path[0] === '/') {
-                return path + (params ? '?' + params : '');
+                return path + (params ? '?' + params : '') + (anchor ? '#' + anchor : '');
             }
 
             path = Craft.trim(path, '/');
@@ -1615,6 +1625,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     });
 
                     this.hud.$hud.data('elementEditor', this);
+
+                    // Disable browser input validation
+                    this.hud.$body.attr('novalidate', '');
 
                     this.hud.on('hide', $.proxy(function() {
                         delete this.hud;
@@ -13395,10 +13408,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (
-                (data !== Craft.cp.$primaryForm.data('initialSerializedValue')) &&
-                (force || (data !== this.lastSerializedValue))
-            ) {
+            if (force || data !== this.lastSerializedValue) {
                 this.saveDraft(data);
             }
         },
@@ -13423,13 +13433,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                     return;
                 }
 
-                this.lastSerializedValue = data;
-
                 if (this.saving) {
                     this.checkFormAfterUpdate = true;
                     return;
                 }
 
+                this.lastSerializedValue = data;
                 this.saving = true;
                 var $spinners = this.spinners().removeClass('hidden');
                 var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
@@ -13620,7 +13629,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             if (this.checkFormAfterUpdate) {
                 this.checkFormAfterUpdate = false;
-                this.checkForm(true);
+                this.checkForm();
             }
         },
 
@@ -17568,6 +17577,7 @@ Craft.Preview = Garnish.Base.extend(
         $targetBtn: null,
         $targetMenu: null,
         $iframe: null,
+        iframeLoaded: false,
         $tempInput: null,
         $fieldPlaceholder: null,
 
@@ -17576,8 +17586,8 @@ Craft.Preview = Garnish.Base.extend(
         url: null,
         fields: null,
 
-        scrollLeft: 0,
-        scrollTop: 0,
+        scrollLeft: null,
+        scrollTop: null,
 
         dragger: null,
         dragStartEditorWidth: null,
@@ -17847,16 +17857,18 @@ Craft.Preview = Garnish.Base.extend(
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {
-                    this.scrollLeft = 0;
-                    this.scrolllTop = 0;
+                    this.scrollLeft = null;
+                    this.scrolllTop = null;
                 } else {
                     sameHost = Craft.isSameHost(url);
-                    if (sameHost && this.$iframe && this.$iframe[0].contentWindow) {
+                    if (sameHost && this.iframeLoaded && this.$iframe && this.$iframe[0].contentWindow) {
                         var $doc = $(this.$iframe[0].contentWindow.document);
                         this.scrollLeft = $doc.scrollLeft();
                         this.scrollTop = $doc.scrollTop();
                     }
                 }
+
+                this.iframeLoaded = false;
 
                 var $iframe = $('<iframe/>', {
                     'class': 'lp-preview',
@@ -17864,13 +17876,14 @@ Craft.Preview = Garnish.Base.extend(
                     src: url,
                 });
 
-                if (!resetScroll && sameHost) {
-                    $iframe.on('load', function() {
+                $iframe.on('load', function() {
+                    this.iframeLoaded = true;
+                    if (!resetScroll && sameHost && this.scrollLeft !== null) {
                         var $doc = $($iframe[0].contentWindow.document);
                         $doc.scrollLeft(this.scrollLeft);
                         $doc.scrollTop(this.scrollTop);
-                    }.bind(this));
-                }
+                    }
+                }.bind(this));
 
                 if (this.$iframe) {
                     this.$iframe.replaceWith($iframe);

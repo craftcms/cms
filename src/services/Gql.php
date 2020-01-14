@@ -96,9 +96,9 @@ class Gql extends Component
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      *
-     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlQueriesEvent $event) {
+     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
      *     // Add my GraphQL queries
-     *     $even->queries['queryPluginData'] =
+     *     $event->queries['queryPluginData'] =
      *     [
      *         'type' => Type::listOf(MyType::getType())),
      *         'args' => MyArguments::getArguments(),
@@ -122,8 +122,8 @@ class Gql extends Component
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
-     *     Gql::EVENT_REGISTER_GQL_TYPES,
-     *     function(RegisterGqlModelEvent $event) {
+     *     Gql::EVENT_REGISTER_GQL_DIRECTIVES,
+     *     function(RegisterGqlDirectivesEvent $event) {
      *         $event->directives[] = MyDirective::class;
      *     }
      * );
