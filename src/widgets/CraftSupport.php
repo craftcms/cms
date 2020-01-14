@@ -62,6 +62,14 @@ class CraftSupport extends Widget
     // =========================================================================
 
     /**
+     * @inheritDoc
+     */
+    public function getTitle(): string
+    {
+        return '';
+    }
+
+    /**
      * @inheritdoc
      */
     public function getBodyHtml()

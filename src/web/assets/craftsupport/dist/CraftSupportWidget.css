@@ -1,5 +1,4 @@
 .widget.craft\\widgets\\craftsupport .front .pane { padding: 0; overflow: hidden; }
-.widget.craft\\widgets\\craftsupport .front .pane > h2 { display: none; }
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen { position: relative; -webkit-box-sizing: border-box; box-sizing: border-box; }
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen:not(:first-child) { display: none; opacity: 0; }
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen .cs-opt-icon svg { display: block; margin: 0 auto 14px; width: 50px; height: 50px; }
