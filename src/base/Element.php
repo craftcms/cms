@@ -1700,7 +1700,7 @@ abstract class Element extends Component implements ElementInterface
                 continue;
             }
             if (!isset($previewTarget['refresh'])) {
-                $previewTarget['refresh'];
+                $previewTarget['refresh'] = true;
             }
             $normalized[] = $previewTarget;
         }
