@@ -71,11 +71,12 @@
 
 .widget > .front > .pane > .icon.settings {
   display: block;
-  @include floatright;
   opacity: 0;
-  @include margin-left(7px);
   cursor: pointer;
+  @include right(24px);
+  top: 24px;
   transition: opacity linear 200ms;
+  position: absolute;
 }
 
 .widget:not(.flipped):hover > .front > .pane > .icon.settings {

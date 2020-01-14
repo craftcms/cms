@@ -32,7 +32,6 @@
                     <div class="front">
                         <div class="pane">
                             <div class="spinner body-loading"></div>
-                            <div class="settings icon hidden"></div>
                             {% if widget.title or widget.subtitle %}
                                 <div class="heading">
                                     {% if widget.title %}
@@ -46,6 +45,7 @@
                             <div class="body">
                                 {{ widget.bodyHtml|raw }}
                             </div>
+                            <div class="settings icon hidden"></div>
                         </div>
                     </div>
                     <div class="back">

@@ -29,11 +29,9 @@ body.rtl .widget.loading > .front > .pane > .spinner.body-loading { margin-right
 
 .widget.loading-new.new > .front > .pane > .spinner.body-loading { display: block; position: absolute; top: calc(50% - 15px); left: calc(50% - 12px); }
 
-.widget > .front > .pane > .icon.settings { display: block; opacity: 0; cursor: pointer; -webkit-transition: opacity linear 200ms; transition: opacity linear 200ms; }
-body.ltr .widget > .front > .pane > .icon.settings { float: right; }
-body.rtl .widget > .front > .pane > .icon.settings { float: left; }
-body.ltr .widget > .front > .pane > .icon.settings { margin-left: 7px; }
-body.rtl .widget > .front > .pane > .icon.settings { margin-right: 7px; }
+.widget > .front > .pane > .icon.settings { display: block; opacity: 0; cursor: pointer; top: 24px; -webkit-transition: opacity linear 200ms; transition: opacity linear 200ms; position: absolute; }
+body.ltr .widget > .front > .pane > .icon.settings { right: 24px; }
+body.rtl .widget > .front > .pane > .icon.settings { left: 24px; }
 
 .widget:not(.flipped):hover > .front > .pane > .icon.settings { opacity: 0.3; }
 
