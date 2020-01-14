@@ -438,8 +438,13 @@ Craft.CP = Garnish.Base.extend(
             // Have we scrolled passed the top of #main?
             if (this.$main.length && this.$headerContainer[0].getBoundingClientRect().top < 0) {
                 if (!this.fixedHeader) {
-                    // Hard-set the header container height
                     var headerHeight = this.$headerContainer.height();
+
+                    // Hard-set the minimum content container height
+                    this.$contentContainer.css('min-height', 'calc(100vh - ' + (headerHeight + 14 + 48 - 1) + 'px)');
+                    console.log(this.$contentContainer.css('min-height'), 'calc(100vh - ' + (headerHeight + 14 + 48 + 1) + 'px)');
+
+                    // Hard-set the header container height
                     this.$headerContainer.height(headerHeight);
                     Garnish.$bod.addClass('fixed-header');
 
@@ -450,18 +455,15 @@ Craft.CP = Garnish.Base.extend(
                         top: headerHeight + 'px',
                         'max-height': 'calc(100vh - ' + headerHeight + 'px)'
                     };
-                    if (this.$sidebar.outerHeight() < contentHeight) {
-                        this.$sidebar.addClass('fixed').css(css);
-                    }
-                    if (this.$details.outerHeight() < contentHeight) {
-                        this.$details.addClass('fixed').css(css);
-                    }
+                    this.$sidebar.addClass('fixed').css(css);
+                    this.$details.addClass('fixed').css(css);
                     this.fixedHeader = true;
                 }
             }
             else if (this.fixedHeader) {
                 this.$headerContainer.height('auto');
                 Garnish.$bod.removeClass('fixed-header');
+                this.$contentContainer.css('min-height', '');
                 this.$sidebar.removeClass('fixed').css({
                     top: '',
                     'max-height': ''

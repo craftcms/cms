@@ -55,6 +55,7 @@
 - Fixed an error that occurred when updating from Craft 3.0. ([#5391](https://github.com/craftcms/cms/issues/5391))
 - Fixed an error that occurred when updating from Craft 2. ([#5402](https://github.com/craftcms/cms/issues/5402))
 - Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
+- Fixed a bug where control panel page content could be scrolled out of view when its height was less than the viewport height. ([#5347](https://github.com/craftcms/cms/issues/5347))
 
 ## 3.4.0-beta.5 - 2020-01-02
 
