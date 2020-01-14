@@ -312,7 +312,7 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .clearafter:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
-.info { vertical-align: bottom; display: inline-block; width: 1em; height: 1.375em; text-align: center; cursor: pointer; overflow: hidden; }
+.info { vertical-align: bottom; display: inline-block; width: 1em; height: 16px; text-align: center; cursor: pointer; overflow: hidden; }
 .info:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; vertical-align: baseline; width: 100%; line-height: 1.375; color: #9aa5b1; }
 .info:not(.warning):before { content: 'info'; }
 .info:not(.warning):hover:before { color: #127FBF; }
