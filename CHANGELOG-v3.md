@@ -11,6 +11,7 @@
 - Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
+- Public registration forms can now customize the flash notice displayed on successful registration by passing a `userRegisteredNotice` param. ([#5213](https://github.com/craftcms/cms/issues/5213))
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
 - Added `craft\base\ElementInterface::getEnabledForSite()`.

@@ -42,6 +42,7 @@
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
 - Added the `|purify` Twig filter. ([#5184](https://github.com/craftcms/cms/issues/5184))
+- Public registration forms can now customize the flash notice displayed on successful registration by passing a `userRegisteredNotice` param. ([#5213](https://github.com/craftcms/cms/issues/5213))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
 - It’s now possible to filter element query results by their related elements using relational fields’ element query params (e.g. `publisher(100)` rather than `relatedTo({targetElement: 100, field: 'publisher'})`). ([#5200](https://github.com/craftcms/cms/issues/5200))
 - It’s now possible to query for elements by their custom field values via GraphQL. ([#5208](https://github.com/craftcms/cms/issues/5208))

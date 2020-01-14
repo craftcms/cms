@@ -1196,7 +1196,8 @@ class UsersController extends Controller
         }
 
         if ($isPublicRegistration) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
+            $message = $request->getParam('userRegisteredNotice') ?? Craft::t('app', 'User registered.');
+            Craft::$app->getSession()->setNotice($message);
         } else {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
         }
