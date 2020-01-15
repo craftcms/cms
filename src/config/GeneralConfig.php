@@ -932,6 +932,12 @@ class GeneralConfig extends BaseObject
     public $verifyEmailSuccessPath = '';
 
     /**
+     * @var string The sendmail command, used as alternative for the php.ini setting
+     * @since 3.3.22
+     */
+    public $sendmailPath;
+
+    /**
      * @var array Stores any custom config settings
      */
     private $_customSettings = [];

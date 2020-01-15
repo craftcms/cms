@@ -34,7 +34,11 @@ class Sendmail extends BaseTransportAdapter
      */
     public function defineTransport()
     {
-        $sendmailCommand = ini_get('sendmail_path');
+        $sendmailCommand = \Craft::$app->getConfig()->getGeneral()->sendmailPath;
+        if (empty($sendmailCommand)) {
+            $sendmailCommand = ini_get('sendmail_path');
+        }
+
         if (!empty($sendmailCommand)) {
 
             return [
