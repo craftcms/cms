@@ -581,8 +581,11 @@ EOD;
         if (is_resource($job)) {
             $job = stream_get_contents($job);
 
-            if (StringHelper::isHexadecimal($job)) {
-                $job = hex2bin(substr($job, 1));
+            if (is_string($job) && strpos($job, 'x') === 0) {
+                $hex = substr($job, 1);
+                if (StringHelper::isHexadecimal($hex)) {
+                    $job = hex2bin($hex);
+                }
             }
         }
 
