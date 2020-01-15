@@ -1920,13 +1920,17 @@ class Elements extends Component
         /** @var DraftBehavior|null $draftBehavior */
         $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
 
+        $db = Craft::$app->getDb();
+
         // Are we tracking changes?
+        // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
             !$isNewElement &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
             ($draftBehavior->trackChanges ?? true) &&
-            !($draftBehavior->mergingChanges ?? false)
+            !($draftBehavior->mergingChanges ?? false) &&
+            $db->tableExists(Table::CHANGEDATTRIBUTES)
         );
         $dirtyAttributes = [];
 
@@ -2197,7 +2201,6 @@ class Elements extends Component
 
         // Update the changed attributes & fields
         if ($trackChanges) {
-            $db = Craft::$app->getDb();
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(new \DateTime());
             ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
