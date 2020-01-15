@@ -57,9 +57,12 @@
                         '<div class="front">' +
                         '<div class="pane">' +
                         '<div class="spinner body-loading"/>' +
-                        '<div class="settings icon hidden"/>' +
+                        '<div class="heading">' +
                         '<h2/>' +
+                        '<h5/>' +
+                        '</div>' +
                         '<div class="body"/>' +
+                        '<div class="settings icon hidden"/>' +
                         '</div>' +
                         '</div>' +
                         '<div class="back">' +
@@ -205,6 +208,8 @@
             $front: null,
             $settingsBtn: null,
             $title: null,
+            $subtitle: null,
+            $heading: null,
             $bodyContainer: null,
 
             $back: null,
@@ -216,6 +221,7 @@
             id: null,
             type: null,
             title: null,
+            subtitle: null,
 
             totalCols: null,
             settingsHtml: null,
@@ -243,7 +249,9 @@
 
                 this.$front = this.$container.children('.front');
                 this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
-                this.$title = this.$front.find('> .pane > h2');
+                this.$heading = this.$front.find('> .pane > .heading');
+                this.$title = this.$front.find('> .pane > .heading > h2');
+                this.$subtitle = this.$front.find('> .pane > .heading > h5');
                 this.$bodyContainer = this.$front.find('> .pane > .body');
 
                 this.setSettingsHtml(settingsHtml, initSettingsFn);
@@ -370,6 +378,7 @@
 
             update: function(response) {
                 this.title = response.info.title;
+                this.subtitle = response.info.subtitle;
 
                 // Is this a new widget?
                 if (this.$container.hasClass('new')) {
@@ -397,7 +406,22 @@
                     }
                 }
 
-                this.$title.text(this.title);
+                if (!this.title && !this.subtitle) {
+                    this.$heading.remove();
+                } else {
+                    if (this.title) {
+                        this.$title.text(this.title);
+                    } else {
+                        this.$title.remove();
+                    }
+
+                    if (this.subtitle) {
+                        this.$subtitle.text(this.subtitle);
+                    } else {
+                        this.$subtitle.remove();
+                    }
+                }
+
                 this.$bodyContainer.html(response.info.bodyHtml);
 
                 // New colspan?
