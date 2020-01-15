@@ -64,16 +64,16 @@
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
 - Added `craft\assetpreviews\PdfPreview`.
+- Added `craft\base\AssetPreview`.
 - Added `craft\base\AssetPreviewInterface`.
 - Added `craft\base\AssetPreviewTrait`.
-- Added `craft\base\AssetPreview`.
 - Added `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Added `craft\base\Element::ATTR_STATUS_MODIFIED`.
 - Added `craft\base\Element::ATTR_STATUS_OUTDATED`.
-- Added `craft\base\Element::EVENT_REGISTER_EXPORTERS`.
 - Added `craft\base\Element::defineExporters()`.
-- Added `craft\base\ElementExporterInterface`.
+- Added `craft\base\Element::EVENT_REGISTER_EXPORTERS`.
 - Added `craft\base\ElementExporter`.
+- Added `craft\base\ElementExporterInterface`.
 - Added `craft\base\ElementInterface::exporters()`
 - Added `craft\base\ElementInterface::getAttributeStatus()`.
 - Added `craft\base\ElementInterface::getDirtyAttributes()`.
@@ -121,13 +121,13 @@
 - Added `craft\elements\Asset::getPreviewThumbImg()`.
 - Added `craft\elements\Asset::getUploader()`.
 - Added `craft\elements\Asset::setUploader()`.
-- Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\elements\db\AssetQuery::$uploaderId`.
 - Added `craft\elements\db\AssetQuery::uploader()`.
 - Added `craft\elements\db\ElementQuery::clearCachedResult()`.
 - Added `craft\elements\db\MatrixBlockQuery::field()`.
 - Added `craft\elements\exporters\Expanded`.
 - Added `craft\elements\exporters\Raw`.
+- Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\BackupEvent::$ignoreTables`. ([#5330](https://github.com/craftcms/cms/issues/5330))
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
@@ -168,24 +168,24 @@
 - Added `craft\services\Drafts::mergeSourceChanges()`.
 - Added `craft\services\Elements::createExporter()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
-- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
-- Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
 - Added `craft\services\Gql::deleteSchema()`.
 - Added `craft\services\Gql::deleteTokenById()`.
+- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::getSchemaByUid()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
 - Added `craft\services\Gql::getTokenByUid()`.
 - Added `craft\services\Gql::getTokens()`.
 - Added `craft\services\Gql::getValidationRules()`.
+- Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
 - Added `craft\services\Gql::handleChangedSchema()`.
 - Added `craft\services\Gql::handleDeletedSchema()`.
 - Added `craft\services\Gql::saveToken()`.
 - Added `craft\services\Path::getConfigDeltaPath()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
+- Added `craft\services\ProjectConfig::$maxDeltas`.
 - Added `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Added `craft\services\ProjectConfig::CONFIG_ASSOC_KEY`.
-- Added `craft\services\ProjectConfig::$maxDeltas`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
@@ -199,6 +199,9 @@
 - Added `craft\web\assets\queuemanager\QueueManagerAsset`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\CsvResponseFormatter`.
+- Added `craft\web\twig\nodes\RequireGuestNode`.
+- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
+- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added `craft\web\User::guestRequired()`.
 - Added `craft\web\View::$minifyCss`.
 - Added `craft\web\View::$minifyJs`.
@@ -206,9 +209,6 @@
 - Added `craft\web\View::getIsDeltaRegistrationActive()`.
 - Added `craft\web\View::registerDeltaName()`.
 - Added `craft\web\View::setIsDeltaRegistrationActive()`.
-- Added `craft\web\twig\nodes\RequireGuestNode`.
-- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
-- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
 - Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `beforeUpdateIframe` and `switchTarget` events to the `Craft.Preview` JavaScript class. ([#5359](https://github.com/craftcms/cms/issues/5359))
