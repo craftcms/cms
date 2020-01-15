@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.DbBackupUtility = Garnish.Base.extend(
         {
             $trigger: null,
@@ -86,7 +85,6 @@
             },
 
             onComplete: function(showAllDone) {
-
                 if (!this.$allDone) {
                     this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.$status);
                     this.$allDone.css('opacity', 0);
@@ -104,5 +102,4 @@
                 });
             }
         });
-
 })(jQuery);

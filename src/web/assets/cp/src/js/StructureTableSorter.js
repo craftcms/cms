@@ -1,7 +1,6 @@
 /** global: Craft */
 /** global: Garnish */
 Craft.StructureTableSorter = Garnish.DragSort.extend({
-
         tableView: null,
         structureId: null,
         maxLevels: null,
@@ -561,7 +560,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                     // Create its toggle
                     $('<span class="toggle expanded" title="' + Craft.t('app', 'Show/hide children') + '"></span>')
                         .insertAfter(this._updateAncestors._$ancestor.find('> td .move:first'));
-
                 }
             }
 

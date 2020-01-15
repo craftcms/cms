@@ -81,5 +81,4 @@ abstract class ObjectType extends GqlObjectType
     {
         return $source->{$resolveInfo->fieldName};
     }
-
 }

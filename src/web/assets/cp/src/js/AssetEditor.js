@@ -17,7 +17,6 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
                     this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
                 }
             }
-
         },
 
         showImageEditor: function()

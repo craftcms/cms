@@ -9,7 +9,6 @@ Vue.filter('t', t)
 
 Craft.VueAdminTable = Garnish.Base.extend({
     init: function(settings) {
-
         this.setSettings(settings, Craft.VueAdminTable.defaults);
 
         const props = this.settings;
@@ -28,7 +27,6 @@ Craft.VueAdminTable = Garnish.Base.extend({
             },
         }).$mount(this.settings.container);
     },
-
 },
 {
     defaults: {

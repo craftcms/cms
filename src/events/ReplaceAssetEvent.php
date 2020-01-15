@@ -24,5 +24,4 @@ class ReplaceAssetEvent extends AssetEvent
      * @var string|null the file name that will be used
      */
     public $filename;
-
 }

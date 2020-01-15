@@ -47,5 +47,4 @@ class MatrixBlock extends Element
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
-
 }

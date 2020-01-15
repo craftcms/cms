@@ -97,7 +97,6 @@ new Vue({
                     reject(response)
                 })
             })
-
         },
 
         /**

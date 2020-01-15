@@ -161,7 +161,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         this.searchMenu.show();
                     }
-
                 }, this));
             }
             else {

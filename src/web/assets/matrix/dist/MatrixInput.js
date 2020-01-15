@@ -162,7 +162,6 @@
                         }
                     }
                 }
-
             },
 
             canAddMoreBlocks: function() {

@@ -40,5 +40,4 @@ class ExampleArrayble implements Arrayable
             'extraField'
         ];
     }
-
 }

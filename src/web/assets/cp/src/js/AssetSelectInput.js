@@ -285,7 +285,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                     range.moveStart("character", startPos);
                     range.select();
                 }
-
             }, this));
         },
 

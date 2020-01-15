@@ -18,14 +18,11 @@ use craft\base\AssetPreview;
  */
 class PdfPreview extends AssetPreview
 {
-
-
     /**
      * @inheritDoc
      */
     public function getModalHtml(): string
     {
-
         $volume = $this->asset->getVolume();
 
         if ($volume->hasUrls) {

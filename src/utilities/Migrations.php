@@ -67,5 +67,4 @@ class Migrations extends Utility
             'newMigrations' => $newMigrations
         ]);
     }
-
 }

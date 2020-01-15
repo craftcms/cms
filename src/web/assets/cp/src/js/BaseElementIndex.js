@@ -232,7 +232,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.stopSearching();
 
                 this.updateElementsIfSearchTextChanged();
-
             }, this));
 
             // Auto-focus the Search box
@@ -360,7 +359,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 } else {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-
             }, this));
         },
 
@@ -615,7 +613,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 } else {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-
             }, this));
         },
 
@@ -703,7 +700,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         afterAction: function(action, params) {
-
             // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
@@ -1792,7 +1788,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                     }
-
                 }, this));
             });
         },

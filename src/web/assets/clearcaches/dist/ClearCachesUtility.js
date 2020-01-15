@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.ClearCachesUtility = Garnish.Base.extend(
         {
             $trigger: null,
@@ -47,12 +46,10 @@
                                         this.updateProgressBar();
 
                                         setTimeout($.proxy(this, 'onComplete'), 300);
-
                                     }, this),
                                     {
                                         complete: $.noop
                                     });
-
                             }, this)
                         });
 
@@ -85,5 +82,4 @@
                 });
             }
         });
-
 })(jQuery);

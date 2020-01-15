@@ -646,7 +646,6 @@ td.right {
 }
 
 .info-hud {
-
   table {
     max-width: 280px;
     table-layout: auto;
@@ -656,20 +655,15 @@ td.right {
     word-wrap: break-word;
     width: 100%;
   }
-
 }
 
 @media (max-width: 450px) {
-
   .info-hud {
-
     table {
       table-layout: fixed;
       width: 100%;
     }
-
   }
-
 }
 
 /* ----------------------------------------

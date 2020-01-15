@@ -1499,7 +1499,6 @@ class ProjectConfig extends Component
         unset($this->_memoizedConfig[$path]);
 
         if (array_key_exists($path, $this->_memoizationDependencies)) {
-
             $dependencies = $this->_memoizationDependencies[$path];
 
             foreach ($dependencies as $index => $dependency) {

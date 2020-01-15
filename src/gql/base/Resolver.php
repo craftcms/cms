@@ -126,7 +126,6 @@ abstract class Resolver
 
                 // If that's a GraphQL field
                 if ($subNode instanceof FieldNode) {
-
                     $field = $eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                     // That is a Craft field that can be eager-loaded or is the special `children` property

@@ -68,7 +68,6 @@ class DeleteStaleTemplateCaches extends BaseJob
         $deleteCacheIds = [];
 
         foreach ($query->each() as $row) {
-
             $this->setProgress($queue, $currentRow / $totalRows, Craft::t('app', '{step} of {total}', [
                 'step' => $currentRow + 1,
                 'total' => $totalRows,

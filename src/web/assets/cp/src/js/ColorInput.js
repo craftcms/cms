@@ -76,7 +76,6 @@ Craft.ColorInput = Garnish.Base.extend({
     {
         if (Craft.ColorInput._browserSupportsColorInputs === null)
         {
-
         }
 
         return Craft.ColorInput._browserSupportsColorInputs;

@@ -34,7 +34,6 @@ class FieldFixture extends Fixture
     public function load()
     {
         foreach ($this->getData() as $alias => $row) {
-
             if (isset($row['fieldType'])) {
                 $class = $row['fieldType'];
                 $field = new $class;

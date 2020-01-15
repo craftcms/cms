@@ -132,7 +132,6 @@
                     }
 
                     this.onSubmitResponse();
-
                 }, this));
             },
 
@@ -159,7 +158,6 @@
                     else {
                         this.onSubmitResponse();
                     }
-
                 }, this));
 
                 return false;

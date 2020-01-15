@@ -49,7 +49,6 @@ Craft.charts.DataTable = Garnish.Base.extend(
                         // do nothing
                     }
                 });
-
             }, this));
 
             this.columns = columns;
@@ -219,7 +218,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         },
 
         draw: function(dataTable, settings) {
-
             this.base(dataTable, settings);
 
             if (this.tip) {
@@ -530,7 +528,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                         // Show tip
 
                         this.tip.show();
-
                     }, this))
                     .on("mouseout", $.proxy(function(d, index) {
                         // Unexpand Plot
@@ -676,7 +673,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
  * Class Craft.charts.Utils
  */
 Craft.charts.utils = {
-
     getDuration: function(seconds) {
         var secondsNum = parseInt(seconds, 10);
 

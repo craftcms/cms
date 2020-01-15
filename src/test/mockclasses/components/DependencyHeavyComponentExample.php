@@ -46,5 +46,4 @@ class DependencyHeavyComponentExample implements ComponentInterface
     {
         return 'Dependency heavy component';
     }
-
 }

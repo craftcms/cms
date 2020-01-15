@@ -65,7 +65,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.$saveBtn.removeClass('disabled');
                     this.buildModal(response);
                 }
-
             }, this));
 
             this.addListener(this.$newHeadingBtn, 'click', 'handleNewHeadingBtnClick');

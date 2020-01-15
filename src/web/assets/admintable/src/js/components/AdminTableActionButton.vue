@@ -70,7 +70,6 @@
         },
 
         created() {
-
         },
 
         watch: {

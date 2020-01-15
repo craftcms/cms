@@ -358,7 +358,6 @@
                 this.$refs.vuetable.changePage(page)
                 this.deselectAll();
             },
-
         },
 
         computed: {
@@ -471,7 +470,6 @@
                     } else {
                         checkbox.classList.remove('checked');
                         checkbox.classList.remove('indeterminate');
-
                     }
                 }
             }

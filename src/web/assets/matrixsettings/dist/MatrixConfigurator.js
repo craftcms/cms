@@ -268,7 +268,6 @@
                     $errorList.hide();
                 }
             }
-
         });
 
 
@@ -441,7 +440,6 @@
                 this.configurator.blockTypes[this.id] = null;
                 delete this.configurator.blockTypes[this.id];
             }
-
         });
 
 
@@ -738,6 +736,5 @@
                 this.blockType.fields[this.id] = null;
                 delete this.blockType.fields[this.id];
             }
-
         });
 })(jQuery);

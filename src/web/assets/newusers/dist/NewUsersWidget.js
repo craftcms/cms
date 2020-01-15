@@ -95,7 +95,6 @@
                         this.$error.html(msg);
                         this.$error.removeClass('hidden');
                     }
-
                 }, this));
 
                 this.$widget.data('widget').on('destroy', $.proxy(this, 'destroy'));

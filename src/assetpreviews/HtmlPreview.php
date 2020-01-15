@@ -20,7 +20,6 @@ use craft\elements\Asset;
  */
 class HtmlPreview extends AssetPreview
 {
-
     private $template = '';
     private $foot = '';
 

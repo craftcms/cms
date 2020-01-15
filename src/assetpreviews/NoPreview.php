@@ -19,8 +19,6 @@ use craft\base\AssetPreview;
  */
 class NoPreview extends AssetPreview
 {
-
-
     /**
      * @inheritDoc
      */

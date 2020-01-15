@@ -75,5 +75,4 @@ class TableRowType implements GeneratorInterface
         /** @var TableField $context */
         return $context->handle . '_TableRow';
     }
-
 }

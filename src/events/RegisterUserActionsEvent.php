@@ -42,5 +42,4 @@ class RegisterUserActionsEvent extends Event
      * @var array Miscellaneous actions
      */
     public $miscActions = [];
-
 }

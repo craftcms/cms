@@ -233,7 +233,6 @@ Craft.LightSwitch = Garnish.Base.extend(
         _getOffMargin: function() {
             return (this.small ? -10 : -12);
         }
-
     }, {
         animationDuration: 100,
         defaults: {

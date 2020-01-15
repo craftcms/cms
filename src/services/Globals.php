@@ -569,5 +569,4 @@ class Globals extends Component
     {
         return GlobalSetRecord::findOne(['uid' => $uid]) ?? new GlobalSetRecord();
     }
-
 }

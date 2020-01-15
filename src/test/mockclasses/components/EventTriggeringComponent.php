@@ -45,6 +45,4 @@ class EventTriggeringComponent extends Component
 
         $this->trigger('event', $event);
     }
-
-
 }

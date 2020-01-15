@@ -58,7 +58,6 @@
                                 Craft.cp.displayError();
                             }
                         }
-
                     }, this));
                 }
             },
@@ -87,7 +86,6 @@
                                 Craft.cp.displayError();
                             }
                         }
-
                     }, this));
                 }
             },

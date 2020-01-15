@@ -233,7 +233,6 @@ class MigrateController extends BaseMigrateController
 
         // Anything to update?
         if (!empty($handles)) {
-
             // Enable maintenance mode
             Craft::$app->enableMaintenanceMode();
 

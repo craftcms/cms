@@ -16,7 +16,6 @@
                     this.messages.push(message);
                 }
             }
-
         });
 
 
@@ -53,7 +52,6 @@
                 this.$subject.text(subject);
                 this.$body.html(body);
             }
-
         });
 
 
@@ -118,7 +116,6 @@
                             this.$subjectInput.trigger('focus');
                         }, this), 100);
                     }
-
                 }, this));
             },
 
@@ -179,7 +176,6 @@
                             Craft.cp.displayError();
                         }
                     }
-
                 }, this));
             },
 
@@ -190,7 +186,6 @@
                     this.message.modal = null;
                 }
             }
-
         });
 
 

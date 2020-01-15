@@ -164,7 +164,6 @@ class UtilitiesController extends Controller
 
         // Initial request
         if (!empty($params['start'])) {
-
             $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
 
             $response = [

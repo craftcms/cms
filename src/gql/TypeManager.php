@@ -105,5 +105,4 @@ class TypeManager extends Component
 
         return $fields;
     }
-
 }

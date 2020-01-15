@@ -181,7 +181,6 @@
                             }
 
                             this.grid.resetItemOrder();
-
                         }, this),
                         onDeleteItem: $.proxy(function(id) {
                             var widget = this.widgets[id];

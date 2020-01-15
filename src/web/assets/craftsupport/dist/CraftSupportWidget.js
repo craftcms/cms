@@ -583,5 +583,4 @@
                 return result.title;
             }
         });
-
 })(jQuery);

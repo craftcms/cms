@@ -1777,7 +1777,6 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
 
             for (var i = 0; i < $instructions.length; i++) {
-
                 $instructions.eq(i)
                     .replaceWith($('<span/>', {
                         'class': 'info',
@@ -2147,7 +2146,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.stopSearching();
 
                 this.updateElementsIfSearchTextChanged();
-
             }, this));
 
             // Auto-focus the Search box
@@ -2275,7 +2273,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 } else {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-
             }, this));
         },
 
@@ -2530,7 +2527,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 } else {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-
             }, this));
         },
 
@@ -2618,7 +2614,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         afterAction: function(action, params) {
-
             // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
@@ -3707,7 +3702,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     } else {
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                     }
-
                 }, this));
             });
         },
@@ -4058,7 +4052,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
                     this.maybeLoadMore();
                 }
-
             }, this));
         },
 
@@ -4809,7 +4802,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         }
                     });
                 }
-
             }, this));
         }
     },
@@ -5034,7 +5026,6 @@ Craft.AdminTable = Garnish.Base.extend(
                         Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
                     }
                 }
-
             }, this));
         },
 
@@ -5189,7 +5180,6 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
                     this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
                 }
             }
-
         },
 
         showImageEditor: function()
@@ -5340,7 +5330,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param data
          */
         loadEditor: function(data) {
-
             if (!data.html) {
                 alert(Craft.t('app', 'Could not load the image editor.'));
             }
@@ -5380,7 +5369,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Load image and set up the initial properties
             fabric.Image.fromURL(imageUrl, $.proxy(function(imageObject) {
-
                 this.image = imageObject;
                 this.image.set({
                     originX: 'center',
@@ -5454,7 +5442,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Reload the image to better fit the current available image editor viewport.
          */
         _reloadImage: function () {
-
             if (this.imageIsLoading) {
                 return;
             }
@@ -5529,7 +5516,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Reposition the editor elements to accurately reflect the editor state with current dimensions
          */
         _repositionEditorElements: function() {
-
             // Remember what the dimensions were before the resize took place
             var previousEditorDimensions = {
                 width: this.editorWidth,
@@ -5624,7 +5610,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 if (this.currentView !== 'crop') {
                     deltaX = this.viewport.left - this.image.left;
                     deltaY = this.viewport.top - this.image.top;
-
                 } else {
                     // Unless we have a cropper showing, in which case drop it in the middle of the cropper
                     deltaX = this.clipper.left - this.image.left;
@@ -5685,7 +5670,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 } else {
                     // If this is the first initial reposition, no cropper state yet
                     if (this.cropperState) {
-
                         // Recall the state
                         var state = this.cropperState;
 
@@ -5781,7 +5765,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Set up listeners for the controls.
          */
         _addControlListeners: function() {
-
             // Tabs
             this.addListener(this.$tabs, 'click', this._handleTabClick);
 
@@ -5854,7 +5837,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.setCroppingConstraint(constraint);
             this.enforceCroppingConstraint();
-
         },
 
         /**
@@ -5863,7 +5845,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleOrientationClick: function (ev) {
-
             if (ev.currentTarget.value === this.constraintOrientation) {
                 return;
             }
@@ -6057,7 +6038,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         rotateImage: function(degrees) {
             if (!this.animationInProgress) {
-
                 // We're not that kind of an establishment, sir.
                 if (degrees !== 90 && degrees !== -90) {
                     return false;
@@ -6554,7 +6534,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param dimensions
          */
         getZoomToFitRatio: function(dimensions) {
-
             // Get the bounding box for a rotated image
             var boundingBox = this._getImageBoundingBox(dimensions);
 
@@ -6738,7 +6717,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Switch out of crop mode.
          */
         disableCropMode: function() {
-
             var viewportProperties = {};
 
             this._hideCropper();
@@ -6796,7 +6774,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @private
          */
         _editorModeTransition: function (callback, imageProperties, viewportProperties) {
-
             if (!this.animationInProgress) {
                 this.animationInProgress = true;
 
@@ -6838,7 +6815,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 context.translate(cW / 2, cH / 2);
                 context.rotate(Math.PI * 2 * rotation);
                 for (var i = 0; i < lines; i++) {
-
                     context.beginPath();
                     context.rotate(Math.PI * 2 / lines);
                     context.moveTo(cW / 10, 0);
@@ -7320,7 +7296,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param constraint
          */
         setCroppingConstraint: function(constraint) {
-
             // In case this caused the sidebar width to change.
             this.updateSizeAndPosition();
 
@@ -7962,7 +7937,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param dimensions
          */
         _getImageBoundingBox: function(dimensions) {
-
             var box = {};
 
             var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
@@ -8616,7 +8590,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         action: 'assets/move-asset',
                         params: fileMoveList[i]
                     });
-
                 }
                 this._performBatchRequests(parameterArray, function() {
                     moveCallback(folderDeleteList);
@@ -8957,7 +8930,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     else {
                         doFollowup(parameterArray, parameterIndex, callback);
                     }
-
                 }.bind(this);
 
                 if (parameterArray[parameterIndex].choice === 'replace') {
@@ -9340,7 +9312,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     if (textStatus === 'success' && data.error) {
                         alert(data.error);
                     }
-
                 }, this), 'json');
             }
         },
@@ -9432,7 +9403,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _performBatchRequests: function(parameterArray, finalCallback) {
-
             var responseArray = [];
 
             var doRequest = function (parameters) {
@@ -9457,7 +9427,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 doRequest(parameterArray[i]);
             }
         }
-
     });
 
 // Register it!
@@ -9750,7 +9719,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                     range.moveStart("character", startPos);
                     range.select();
                 }
-
             }, this));
         },
 
@@ -10350,7 +10318,6 @@ Craft.AuthManager = Garnish.Base.extend(
                 else {
                     this.showLoginError();
                 }
-
             }, this));
         },
 
@@ -10763,7 +10730,6 @@ Craft.charts.DataTable = Garnish.Base.extend(
                         // do nothing
                     }
                 });
-
             }, this));
 
             this.columns = columns;
@@ -10933,7 +10899,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         },
 
         draw: function(dataTable, settings) {
-
             this.base(dataTable, settings);
 
             if (this.tip) {
@@ -11244,7 +11209,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                         // Show tip
 
                         this.tip.show();
-
                     }, this))
                     .on("mouseout", $.proxy(function(d, index) {
                         // Unexpand Plot
@@ -11390,7 +11354,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
  * Class Craft.charts.Utils
  */
 Craft.charts.utils = {
-
     getDuration: function(seconds) {
         var secondsNum = parseInt(seconds, 10);
 
@@ -11526,7 +11489,6 @@ Craft.ColorInput = Garnish.Base.extend({
     {
         if (Craft.ColorInput._browserSupportsColorInputs === null)
         {
-
         }
 
         return Craft.ColorInput._browserSupportsColorInputs;
@@ -12116,9 +12078,7 @@ Craft.CP = Garnish.Base.extend(
                                 this.displayError(response.error);
                             }
                         }
-
                     }, this));
-
                 }, this));
             }
         },
@@ -12705,7 +12665,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.$saveBtn.removeClass('disabled');
                     this.buildModal(response);
                 }
-
             }, this));
 
             this.addListener(this.$newHeadingBtn, 'click', 'handleNewHeadingBtnClick');
@@ -13146,7 +13105,6 @@ Craft.DataTableSorter = Garnish.DragSort.extend(
 
             return $helper;
         }
-
     },
     {
         defaults: {
@@ -15303,7 +15261,6 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                 else {
                     this.showPasswordError();
                 }
-
             }, this));
         },
 
@@ -16706,7 +16663,6 @@ Craft.Grid = Garnish.Base.extend(
 
                     // If every item is at position 0, then let them lay out au naturel
                     if (this.isSimpleLayout()) {
-
                         this.$container.height('auto');
                         this.$items.css({
                             position: 'relative',
@@ -16942,7 +16898,6 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
 
             delete this._;
         }
-
     });
 
 /** global: Craft */
@@ -17048,7 +17003,6 @@ Craft.ImageUpload = Garnish.Base.extend(
                     }, this));
                 }
             }, this));
-
         },
 
         refreshImage: function(response) {
@@ -17390,7 +17344,6 @@ Craft.LightSwitch = Garnish.Base.extend(
         _getOffMargin: function() {
             return (this.small ? -10 : -12);
         }
-
     }, {
         animationDuration: 100,
         defaults: {
@@ -18707,7 +18660,6 @@ Craft.ProgressBar = Garnish.Base.extend(
  * File Manager.
  */
 Craft.PromptHandler = Garnish.Base.extend({
-
     modal: null,
     $modalContainerDiv: null,
     $prompt: null,
@@ -18858,7 +18810,6 @@ Craft.PromptHandler = Garnish.Base.extend({
         this.modal.show();
         this.modal.removeListener(Garnish.Modal.$shade, 'click');
         this.addListener(Garnish.Modal.$shade, 'click', '_cancelPrompt');
-
     },
 
     /**
@@ -18886,7 +18837,6 @@ Craft.PromptHandler = Garnish.Base.extend({
 /** global: Garnish */
 
 Craft.SlideRuleInput = Garnish.Base.extend({
-
     $container: null,
     $options: null,
     $selectedOption: null,
@@ -18974,7 +18924,6 @@ Craft.SlideRuleInput = Garnish.Base.extend({
         if (value < this.slideMin) {
             value = this.slideMin;
             left = this.valueToPosition(value);
-
         }
         else if (value > this.slideMax) {
             value = this.slideMax;
@@ -19177,7 +19126,6 @@ Craft.Structure = Garnish.Base.extend(
                 if (this.settings.storageKey) {
                     Craft.setLocalStorage(this.settings.storageKey, this.state);
                 }
-
             }, this));
         },
 
@@ -19414,7 +19362,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
                             // Position the insertion after the closest target
                             this.$insertion.insertAfter(this._.$closestTargetLi);
                         }
-
                     }
                     else {
                         if (!this.maxLevels || this.maxLevels >= (this._.closestTargetLevel + this.draggeeLevel)) {
@@ -19604,7 +19551,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
                         if (textStatus === 'success') {
                             Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
                         }
-
                     });
                 }
             }
@@ -19637,13 +19583,11 @@ Craft.StructureDrag = Garnish.Drag.extend(
                 this.setLevel($($childLis[i]), level + 1);
             }
         }
-
     });
 
 /** global: Craft */
 /** global: Garnish */
 Craft.StructureTableSorter = Garnish.DragSort.extend({
-
         tableView: null,
         structureId: null,
         maxLevels: null,
@@ -20203,7 +20147,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                     // Create its toggle
                     $('<span class="toggle expanded" title="' + Craft.t('app', 'Show/hide children') + '"></span>')
                         .insertAfter(this._updateAncestors._$ancestor.find('> td .move:first'));
-
                 }
             }
 
@@ -20509,7 +20452,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                             // Is there room to load more right now?
                             this.maybeLoadMore();
                         }
-
                     }, this));
                 }
             }
@@ -20750,7 +20692,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         this.searchMenu.show();
                     }
-
                 }, this));
             }
             else {
@@ -21720,7 +21661,6 @@ Craft.Uploader = Garnish.Base.extend(
                 var file = data.files[0];
                 var pass = true;
                 if (validateExtension) {
-
                     var matches = file.name.match(/\.([a-z0-4_]+)$/i);
                     var fileExtension = matches[1];
                     if ($.inArray(fileExtension.toLowerCase(), this._extensionList) === -1) {
@@ -21750,7 +21690,6 @@ Craft.Uploader = Garnish.Base.extend(
                     this._validFileCounter = 0;
                     this.processErrorMessages();
                 }
-
             }, this));
 
             return true;

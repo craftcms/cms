@@ -25,7 +25,6 @@
 
         data() {
             return {
-
             }
         },
 

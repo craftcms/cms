@@ -205,7 +205,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         }
                     });
                 }
-
             }, this));
         }
     },

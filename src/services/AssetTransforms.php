@@ -908,7 +908,6 @@ class AssetTransforms extends Component
         try {
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
-
                     // Delete it just in case it's a 0-byter
                     try {
                         FileHelper::unlink($imageSourcePath);
@@ -1025,7 +1024,6 @@ class AssetTransforms extends Component
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
-
             $image = Craft::$app->getImages()->loadImage($source);
 
             if ($image instanceof Raster) {
@@ -1203,7 +1201,6 @@ class AssetTransforms extends Component
                         Craft::warning('Unable to delete asset thumbnails: ' . $e->getMessage(), __METHOD__);
                     }
                 }
-
             }
         }
     }

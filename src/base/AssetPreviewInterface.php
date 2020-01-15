@@ -16,8 +16,6 @@ namespace craft\base;
  */
 interface AssetPreviewInterface
 {
-
-
     /**
      * Returns the preview's modal HTML.
      *

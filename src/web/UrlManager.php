@@ -375,7 +375,6 @@ class UrlManager extends \yii\web\UrlManager
             !$request->getIsSiteRequest() ||
             Craft::$app->getConfig()->getGeneral()->headlessMode
         ) {
-
             $this->setMatchedElement(false);
             return false;
         }
@@ -408,7 +407,6 @@ class UrlManager extends \yii\web\UrlManager
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var $rule YiiUrlRule */
         foreach ($this->rules as $rule) {
-
             $route = $rule->parseRequest($this, $request);
 
             if (YII_DEBUG) {

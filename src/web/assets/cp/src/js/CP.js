@@ -581,9 +581,7 @@ Craft.CP = Garnish.Base.extend(
                                 this.displayError(response.error);
                             }
                         }
-
                     }, this));
-
                 }, this));
             }
         },

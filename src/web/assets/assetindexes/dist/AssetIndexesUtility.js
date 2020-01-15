@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.AssetIndexesUtility = Garnish.Base.extend(
         {
             $trigger: null,
@@ -76,7 +75,6 @@
                                         } else {
                                             this.onComplete();
                                         }
-
                                     }
                                 }.bind(this));
                             }, this)
@@ -195,5 +193,4 @@
         {
             maxConcurrentActions: 3
         });
-
 })(jQuery);

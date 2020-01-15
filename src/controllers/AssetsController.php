@@ -474,7 +474,6 @@ class AssetsController extends Controller
         }
 
         try {
-
             // Check if it's possible to create subfolders in target Volume.
             $this->_requirePermissionByFolder('createFoldersInVolume', $parentFolder);
 

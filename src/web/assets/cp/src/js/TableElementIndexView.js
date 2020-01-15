@@ -283,7 +283,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                             // Is there room to load more right now?
                             this.maybeLoadMore();
                         }
-
                     }, this));
                 }
             }

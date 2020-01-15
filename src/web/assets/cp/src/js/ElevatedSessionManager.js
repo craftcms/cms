@@ -131,7 +131,6 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                 else {
                     this.showPasswordError();
                 }
-
             }, this));
         },
 

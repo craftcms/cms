@@ -398,7 +398,6 @@ class m160807_144858_sites extends Migration
             ->all($this->db);
 
         foreach ($fields as $field) {
-
             if ($field['settings'] === null) {
                 echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were null' . "\n";
                 $settings = [];

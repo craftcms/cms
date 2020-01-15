@@ -56,5 +56,4 @@ abstract class AssetPreview extends Component implements AssetPreviewInterface
     {
         return false;
     }
-
 }

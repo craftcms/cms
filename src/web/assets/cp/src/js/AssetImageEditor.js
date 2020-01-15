@@ -121,7 +121,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param data
          */
         loadEditor: function(data) {
-
             if (!data.html) {
                 alert(Craft.t('app', 'Could not load the image editor.'));
             }
@@ -161,7 +160,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Load image and set up the initial properties
             fabric.Image.fromURL(imageUrl, $.proxy(function(imageObject) {
-
                 this.image = imageObject;
                 this.image.set({
                     originX: 'center',
@@ -235,7 +233,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Reload the image to better fit the current available image editor viewport.
          */
         _reloadImage: function () {
-
             if (this.imageIsLoading) {
                 return;
             }
@@ -310,7 +307,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Reposition the editor elements to accurately reflect the editor state with current dimensions
          */
         _repositionEditorElements: function() {
-
             // Remember what the dimensions were before the resize took place
             var previousEditorDimensions = {
                 width: this.editorWidth,
@@ -405,7 +401,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 if (this.currentView !== 'crop') {
                     deltaX = this.viewport.left - this.image.left;
                     deltaY = this.viewport.top - this.image.top;
-
                 } else {
                     // Unless we have a cropper showing, in which case drop it in the middle of the cropper
                     deltaX = this.clipper.left - this.image.left;
@@ -466,7 +461,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 } else {
                     // If this is the first initial reposition, no cropper state yet
                     if (this.cropperState) {
-
                         // Recall the state
                         var state = this.cropperState;
 
@@ -562,7 +556,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Set up listeners for the controls.
          */
         _addControlListeners: function() {
-
             // Tabs
             this.addListener(this.$tabs, 'click', this._handleTabClick);
 
@@ -635,7 +628,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.setCroppingConstraint(constraint);
             this.enforceCroppingConstraint();
-
         },
 
         /**
@@ -644,7 +636,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleOrientationClick: function (ev) {
-
             if (ev.currentTarget.value === this.constraintOrientation) {
                 return;
             }
@@ -838,7 +829,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         rotateImage: function(degrees) {
             if (!this.animationInProgress) {
-
                 // We're not that kind of an establishment, sir.
                 if (degrees !== 90 && degrees !== -90) {
                     return false;
@@ -1335,7 +1325,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param dimensions
          */
         getZoomToFitRatio: function(dimensions) {
-
             // Get the bounding box for a rotated image
             var boundingBox = this._getImageBoundingBox(dimensions);
 
@@ -1519,7 +1508,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Switch out of crop mode.
          */
         disableCropMode: function() {
-
             var viewportProperties = {};
 
             this._hideCropper();
@@ -1577,7 +1565,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @private
          */
         _editorModeTransition: function (callback, imageProperties, viewportProperties) {
-
             if (!this.animationInProgress) {
                 this.animationInProgress = true;
 
@@ -1619,7 +1606,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 context.translate(cW / 2, cH / 2);
                 context.rotate(Math.PI * 2 * rotation);
                 for (var i = 0; i < lines; i++) {
-
                     context.beginPath();
                     context.rotate(Math.PI * 2 / lines);
                     context.moveTo(cW / 10, 0);
@@ -2101,7 +2087,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param constraint
          */
         setCroppingConstraint: function(constraint) {
-
             // In case this caused the sidebar width to change.
             this.updateSizeAndPosition();
 
@@ -2743,7 +2728,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param dimensions
          */
         _getImageBoundingBox: function(dimensions) {
-
             var box = {};
 
             var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);

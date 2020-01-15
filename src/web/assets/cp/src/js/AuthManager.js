@@ -378,7 +378,6 @@ Craft.AuthManager = Garnish.Base.extend(
                 else {
                     this.showLoginError();
                 }
-
             }, this));
         },
 

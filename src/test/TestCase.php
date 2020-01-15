@@ -22,7 +22,6 @@ use ReflectionObject;
  */
 class TestCase extends Unit
 {
-
     /**
      * Returns a callback/Closure that checks whether the passed in object is an instance of the $class param
      *

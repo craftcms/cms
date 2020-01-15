@@ -624,7 +624,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         action: 'assets/move-asset',
                         params: fileMoveList[i]
                     });
-
                 }
                 this._performBatchRequests(parameterArray, function() {
                     moveCallback(folderDeleteList);
@@ -965,7 +964,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     else {
                         doFollowup(parameterArray, parameterIndex, callback);
                     }
-
                 }.bind(this);
 
                 if (parameterArray[parameterIndex].choice === 'replace') {
@@ -1348,7 +1346,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     if (textStatus === 'success' && data.error) {
                         alert(data.error);
                     }
-
                 }, this), 'json');
             }
         },
@@ -1440,7 +1437,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _performBatchRequests: function(parameterArray, finalCallback) {
-
             var responseArray = [];
 
             var doRequest = function (parameters) {
@@ -1465,7 +1461,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 doRequest(parameterArray[i]);
             }
         }
-
     });
 
 // Register it!

@@ -83,6 +83,4 @@ class FormatDateTime extends Directive
 
         return $value;
     }
-
-
 }
