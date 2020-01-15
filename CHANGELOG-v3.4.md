@@ -112,6 +112,8 @@
 - Added `craft\controllers\GraphqlController::actionSaveToken()`.
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
+- Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
+- Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
 - Added `craft\elements\Asset::$uploaderId`.

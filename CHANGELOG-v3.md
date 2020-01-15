@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
+- Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
+
 ### Fixed
 - Fixed a SQL error that could occur when updating to Craft 3.4.
 
