@@ -1777,6 +1777,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $spinner.removeClass('hidden');
 
                 var params = this.getViewParams();
+                delete params.criteria.offset;
                 delete params.criteria.limit;
 
                 params.type = $typeField.find('select').val();
