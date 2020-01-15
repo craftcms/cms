@@ -12,6 +12,7 @@ use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -344,7 +345,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         }
 
         $formatter = Craft::$app->getFormatter();
-        $job = is_resource($result['job']) ? stream_get_contents($result['job']) : $this->serializer->unserialize($result['job']);
+        $job = $this->serializer->unserialize($this->_jobData($result['job']));
 
         return ArrayHelper::filterEmptyStringsFromArray([
             'status' => $this->_status($result),
@@ -559,8 +560,8 @@ EOD;
         $mutex->release(__CLASS__);
 
         // pgsql
-        if (is_array($payload) && is_resource($payload['job'])) {
-            $payload['job'] = stream_get_contents($payload['job']);
+        if (is_array($payload)) {
+            $payload['job'] = $this->_jobData($payload['job']);
         }
 
         return $payload;
@@ -568,6 +569,25 @@ EOD;
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Checks if $job is a resource and if so, convert it to a serialized format.
+     *
+     * @param string|resource $job
+     * @return string
+     */
+    private function _jobData($job)
+    {
+        if (is_resource($job)) {
+            $job = stream_get_contents($job);
+
+            if (StringHelper::isHexadecimal($job)) {
+                $job = hex2bin(substr($job, 1));
+            }
+        }
+
+        return $job;
+    }
 
     /**
      * Moves expired messages into waiting list.
