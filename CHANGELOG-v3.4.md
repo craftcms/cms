@@ -53,11 +53,11 @@
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
-- Added the `_count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
-- It’s now possible to filter users by user groups when querying for them using GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
-- Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch a single element using the GraphQL API. ([#5363](https://github.com/craftcms/cms/issues/5363))
-- The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
-- Improved the cropper behavior when dragging along the edges in the image editor.
+- Elements now have a `_count` field when queried via GraphQL, which returns the total number of related elements for a given relational field handle
+- It’s now possible to filter users by their groups when querying for them via GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
+- Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch single elements via GraphQL. ([#5363](https://github.com/craftcms/cms/issues/5363))
+- The Image Editor now displays the resulting image size when cropping. ([#4551](https://github.com/craftcms/cms/issues/4551))
+- Improved the crop behavior when dragging along the edges of an image in the Image Editor.
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
 - Added `craft\assetpreviews\HtmlPreview`.
@@ -305,6 +305,6 @@
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
-- Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
+- Fixed a bug where it wasn’t possible to use aliases for Matrix fields when querying via GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 - Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
-- Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
+- Fixed a bug where deactivating the Crop tool in the Image Editor would not set the image zoom correctly for straightened images.

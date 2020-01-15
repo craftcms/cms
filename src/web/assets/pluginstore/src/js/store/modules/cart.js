@@ -399,9 +399,15 @@ const actions = {
             cart.lineItems.forEach(lineItem => {
                 if (lineItem.purchasable.type === 'plugin-edition') {
                     if (rootGetters['craft/isPluginInstalled'](lineItem.purchasable.plugin.handle)) {
+                        let licenseKey = lineItem.options.licenseKey
+
+                        if (licenseKey.substr(0, 4) === 'new:') {
+                            licenseKey = licenseKey.substr(4)
+                        }
+
                         pluginLicenseKeys.push({
                             handle: lineItem.purchasable.plugin.handle,
-                            key: lineItem.options.licenseKey.substr(4)
+                            key: licenseKey,
                         })
                     }
                 }

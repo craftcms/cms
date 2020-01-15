@@ -144,6 +144,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
                     this.hud.$hud.data('elementEditor', this);
 
+                    // Disable browser input validation
+                    this.hud.$body.attr('novalidate', '');
+
                     this.hud.on('hide', $.proxy(function() {
                         delete this.hud;
                     }, this));
