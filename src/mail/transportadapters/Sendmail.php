@@ -34,6 +34,15 @@ class Sendmail extends BaseTransportAdapter
      */
     public function defineTransport()
     {
+        $sendmailCommand = ini_get('sendmail_path');
+        if (!empty($sendmailCommand)) {
+
+            return [
+                'class'   => \Swift_SendmailTransport::class,
+                'command' => $sendmailCommand,
+            ];
+        }
+
         return [
             'class' => \Swift_SendmailTransport::class,
         ];
