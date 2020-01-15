@@ -22,9 +22,6 @@ use craft\elements\Category;
  */
 abstract class CategoryFixture extends ElementFixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -34,9 +31,6 @@ abstract class CategoryFixture extends ElementFixture
      * @var array
      */
     protected $groupIds = [];
-
-    // Public methods
-    // =========================================================================
 
     /**
      * {@inheritdoc}
@@ -49,9 +43,6 @@ abstract class CategoryFixture extends ElementFixture
             $this->groupIds[$group->handle] = $group->id;
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

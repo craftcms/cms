@@ -21,9 +21,6 @@ use yii\base\Component;
  */
 class Entries extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns an entry by its ID.
      *

@@ -40,9 +40,6 @@ use yii\web\ServerErrorHttpException;
  */
 class ProjectConfig extends Component
 {
-    // Constants
-    // =========================================================================
-
     // Cache settings
     // -------------------------------------------------------------------------
 
@@ -162,9 +159,6 @@ class ProjectConfig extends Component
      * @since 3.1.20
      */
     const EVENT_REBUILD = 'rebuild';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int The maximum number of project.yaml deltas to store in storage/config-backups/
@@ -286,9 +280,6 @@ class ProjectConfig extends Component
      */
     private $_appliedChanges = [];
 
-
-    // Public methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -991,9 +982,6 @@ class ProjectConfig extends Component
         $this->readOnly = $readOnly;
         $this->muteEvents = false;
     }
-
-    // Private methods
-    // =========================================================================
 
     /**
      * Applies changes from a configuration array.
@@ -1735,9 +1723,6 @@ class ProjectConfig extends Component
 
         return $data;
     }
-
-    // Private methods for rebuilding project config
-    // =========================================================================
 
     /**
      * Return project config array.

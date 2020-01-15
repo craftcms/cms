@@ -16,9 +16,6 @@ namespace craft\base;
  */
 interface PreviewableFieldInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *

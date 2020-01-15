@@ -25,9 +25,6 @@ use yii\base\Response;
  */
 class ChartsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the data needed to display a New Users chart.
      *

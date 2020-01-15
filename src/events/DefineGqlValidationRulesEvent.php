@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DefineGqlValidationRulesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of GraphQL validation rules to use.
      */

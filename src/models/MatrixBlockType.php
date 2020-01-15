@@ -25,9 +25,6 @@ use yii\base\InvalidConfigException;
  */
 class MatrixBlockType extends Model implements GqlInlineFragmentInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
@@ -67,9 +64,6 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      * @var string|mixed
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -25,16 +25,10 @@ use yii\base\InvalidArgumentException;
  */
 class ClearCaches extends Utility
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterCacheOptionsEvent The event that is triggered when registering cache options.
      */
     const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc

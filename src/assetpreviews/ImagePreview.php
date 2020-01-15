@@ -29,9 +29,6 @@ class ImagePreview extends AssetPreview
      */
     private $footHtml = '';
 
-    // Public Methods
-    // =========================================================================
-
     public function init()
     {
         $volume = $this->asset->getVolume();

@@ -16,18 +16,12 @@ namespace craft\base;
  */
 interface SavableComponentInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether the component should be selectable in component Type selects.
      *
      * @return bool whether the component should be selectable in component Type selects.
      */
     public static function isSelectable(): bool;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the component is new (unsaved).

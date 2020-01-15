@@ -19,9 +19,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 class Restore extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The message that should be shown after the elements get restored
      */
@@ -36,9 +33,6 @@ class Restore extends ElementAction
      * @var string|null The message that should be shown if no elements get restored
      */
     public $failMessage;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

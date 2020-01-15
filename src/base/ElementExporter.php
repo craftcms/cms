@@ -15,16 +15,10 @@ namespace craft\base;
  */
 abstract class ElementExporter extends Component implements ElementExporterInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|ElementInterface
      */
     protected $elementType;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

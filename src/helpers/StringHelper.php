@@ -20,9 +20,6 @@ use yii\base\InvalidConfigException;
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
-    // Constants
-    // =========================================================================
-
     const UTF8 = 'UTF-8';
 
     /**
@@ -30,17 +27,11 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Character mappings
      * @see asciiCharMap()
      */
     private static $_asciiCharMaps;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Gets the substring after the first occurrence of a separator.

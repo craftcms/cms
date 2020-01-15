@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class NamespaceTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

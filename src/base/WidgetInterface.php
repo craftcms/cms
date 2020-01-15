@@ -16,9 +16,6 @@ namespace craft\base;
  */
 interface WidgetInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the path to the widget’s SVG icon, or the actual SVG contents.
      *
@@ -33,9 +30,6 @@ interface WidgetInterface extends SavableComponentInterface
      * @return int|null The widget’s maximum colspan, if it has one
      */
     public static function maxColspan();
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the widget’s title.

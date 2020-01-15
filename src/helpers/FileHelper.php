@@ -25,25 +25,16 @@ use yii\base\InvalidArgumentException;
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public static $mimeMagicFile = '@app/config/mimeTypes.php';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether file locks can be used when writing to files.
      * @see useFileLocks()
      */
     private static $_useFileLocks;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -19,9 +19,6 @@ use craft\base\AssetPreview;
 class PdfPreview extends AssetPreview
 {
 
-    // Public Methods
-    // =========================================================================
-
 
     /**
      * @inheritDoc

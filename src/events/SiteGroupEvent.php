@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class SiteGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var SiteGroup|null The site group associated with this event.
      */

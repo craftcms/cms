@@ -22,16 +22,10 @@ use yii\base\InvalidConfigException;
  */
 class DbConfig extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     /** @deprecated in 3.4.0 */
     const DRIVER_MYSQL = 'mysql';
     /** @deprecated in 3.4.0 */
     const DRIVER_PGSQL = 'pgsql';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
@@ -123,9 +117,6 @@ class DbConfig extends BaseObject
      * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
      */
     public $database;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

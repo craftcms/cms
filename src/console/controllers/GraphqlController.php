@@ -25,21 +25,12 @@ use yii\web\BadRequestHttpException;
  */
 class GraphqlController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     const GQL_SCHEMA_EXTENSION = ".graphql";
-
-    // Public Properties
-    // =========================================================================
 
     /**
      * @var string The token to look up to determine the appropriate GraphQL schema
      */
     public $token = null;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -93,9 +84,6 @@ class GraphqlController extends Controller
 
         return ExitCode::OK;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @return \craft\models\GqlSchema|null

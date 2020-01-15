@@ -31,9 +31,6 @@ use yii\web\Response;
  */
 class TemplateCaches extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SectionEvent The event that is triggered before template caches are deleted.
      * @since 3.0.2
@@ -45,9 +42,6 @@ class TemplateCaches extends Component
      * @since 3.0.2
      */
     const EVENT_AFTER_DELETE_CACHES = 'afterDeleteCaches';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The current request's path, as it will be stored in the templatecaches table.
@@ -78,9 +72,6 @@ class TemplateCaches extends Component
      * @var int[]|null Index of element IDs to clear caches for in the Delete Stale Template Caches job
      */
     private $_deleteCachesIndex;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a cached template by its key.
@@ -591,9 +582,6 @@ class TemplateCaches extends Component
         $this->_deletedAllCaches = true;
         return $success;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.

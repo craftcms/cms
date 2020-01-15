@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterCpSettingsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The registered control panel settings
      */

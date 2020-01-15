@@ -25,9 +25,6 @@ use yii\web\ForbiddenHttpException;
  */
 abstract class BaseEntriesController extends Controller
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Returns the editable site IDs for a section.
      *

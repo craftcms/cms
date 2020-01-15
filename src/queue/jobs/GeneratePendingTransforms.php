@@ -18,9 +18,6 @@ use craft\queue\BaseJob;
  */
 class GeneratePendingTransforms extends BaseJob
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,9 +44,6 @@ class GeneratePendingTransforms extends BaseJob
             }
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

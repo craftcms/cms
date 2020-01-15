@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class AssetTransformEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransform|null The asset transform model associated with the event.
      */

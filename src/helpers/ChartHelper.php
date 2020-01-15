@@ -21,9 +21,6 @@ use yii\base\Exception;
  */
 class ChartHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the data for a run chart, based on a given DB query, start/end dates, and the desired time interval unit.
      *

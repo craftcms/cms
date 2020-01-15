@@ -48,9 +48,6 @@ use yii\base\InvalidArgumentException;
  */
 class AssetTransforms extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is saved
      */
@@ -94,9 +91,6 @@ class AssetTransforms extends Component
 
     const CONFIG_TRANSFORM_KEY = 'imageTransforms';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransform[]
      */
@@ -116,9 +110,6 @@ class AssetTransforms extends Component
      * @var AssetTransformIndex|null
      */
     private $_activeTransformIndex;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all named asset transforms.
@@ -1285,9 +1276,6 @@ class AssetTransforms extends Component
         $this->_activeTransformIndex = $index;
     }
 
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving transform indexes.

@@ -20,9 +20,6 @@ use yii\base\Event;
  */
 class AssetPreviewEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Asset|null The asset Element associated with the event.
      */

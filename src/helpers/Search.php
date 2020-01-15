@@ -17,9 +17,6 @@ use Craft;
  */
 class Search
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Normalizes search keywords.
      *
@@ -72,9 +69,6 @@ class Search
 
         return $str;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the asciiPunctuation array.

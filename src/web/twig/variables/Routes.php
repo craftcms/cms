@@ -19,9 +19,6 @@ use craft\services\Routes as RoutesService;
  */
 class Routes
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the routes defined in the control panel.
      *

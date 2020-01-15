@@ -22,9 +22,6 @@ class Temp extends Local
      */
     public $hasUrls = false;
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -32,9 +29,6 @@ class Temp extends Local
     {
         return Craft::t('app', 'Temp Folder');
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

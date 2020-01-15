@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterCpNavItemsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The registered control panel nav items
      */

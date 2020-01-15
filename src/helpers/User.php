@@ -18,9 +18,6 @@ use craft\elements\User as UserElement;
  */
 class User
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param string|null $authError
      * @param UserElement|null $user

@@ -16,9 +16,6 @@ use yii\base\Behavior;
  */
 class ContentBehavior extends Behavior
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var string[] List of supported field handles.
      */
@@ -26,18 +23,12 @@ class ContentBehavior extends Behavior
 /* HANDLES */
     ];
 
-    // Properties
-    // =========================================================================
-
 /* PROPERTIES */
 
     /**
      * @var array Additional custom field values we don’t know about yet.
      */
     private $_customFieldValues = [];
-
-    // Magic Property Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

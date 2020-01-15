@@ -20,9 +20,6 @@ use craft\web\assets\queuemanager\QueueManagerAsset;
  */
 class QueueManager extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -31,13 +31,7 @@ use yii\db\Schema;
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
-    // Traits
-    // =========================================================================
-
     use FieldTrait;
-
-    // Constants
-    // =========================================================================
 
     // Events
     // -------------------------------------------------------------------------
@@ -92,9 +86,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -131,18 +122,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         return 'mixed';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
     private $_isFresh;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Use the translated field name as the string representation.
@@ -632,9 +617,6 @@ abstract class Field extends SavableComponent implements FieldInterface
         // No restrictions
         return [];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the field’s param name on the request.

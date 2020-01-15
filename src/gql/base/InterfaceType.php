@@ -15,13 +15,7 @@ namespace craft\gql\base;
  */
 abstract class InterfaceType
 {
-    // Traits
-    // =========================================================================
-
     use GqlTypeTrait;
-
-    // Public methods
-    // =========================================================================
 
     /**
      * Returns the schema object name

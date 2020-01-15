@@ -20,9 +20,6 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the published path of a file/directory path.
      *
@@ -71,9 +68,6 @@ class AssetManager extends \yii\web\AssetManager
 
         return $url;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

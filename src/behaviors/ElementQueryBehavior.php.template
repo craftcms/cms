@@ -16,9 +16,6 @@ namespace craft\behaviors;
  */
 class ElementQueryBehavior extends ContentBehavior
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

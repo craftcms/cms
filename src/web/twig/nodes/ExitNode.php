@@ -34,9 +34,6 @@ use yii\web\UnsupportedMediaTypeHttpException;
  */
 class ExitNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

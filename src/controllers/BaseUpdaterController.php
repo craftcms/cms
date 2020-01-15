@@ -32,9 +32,6 @@ use yii\web\Response;
  */
 abstract class BaseUpdaterController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_PRECHECK = 'precheck';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
@@ -45,9 +42,6 @@ abstract class BaseUpdaterController extends Controller
     const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -57,9 +51,6 @@ abstract class BaseUpdaterController extends Controller
      * @var array The data associated with the current update
      */
     protected $data = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -268,9 +259,6 @@ abstract class BaseUpdaterController extends Controller
             'returnUrl' => $this->returnUrl(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the page title
@@ -631,9 +619,6 @@ abstract class BaseUpdaterController extends Controller
 
         return [$success, $tempResponse, $errorDetails];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the hashed data for JS.

@@ -34,9 +34,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Asset extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

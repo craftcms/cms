@@ -32,9 +32,6 @@ use yii\db\ActiveQueryInterface;
  */
 class StructureElement extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -30,16 +30,10 @@ use yii\web\Response;
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @see isFailed()
      */
     const STATUS_FAILED = 4;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int timeout
@@ -70,9 +64,6 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * @var bool Whether we're already listening for the web response
      */
     private $_listeningForResponse = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -490,9 +481,6 @@ EOD;
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -566,9 +554,6 @@ EOD;
 
         return $payload;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Checks if $job is a resource and if so, convert it to a serialized format.

@@ -23,9 +23,6 @@ use yii\web\Response;
  */
 class ExportController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -35,9 +32,6 @@ class ExportController extends Controller
      * @inheritdoc
      */
     protected $allowAnonymous = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Exports element data.

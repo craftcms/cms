@@ -26,9 +26,6 @@ use League\Flysystem\FileNotFoundException;
  */
 class Local extends FlysystemVolume implements LocalVolumeInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -37,16 +34,10 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         return Craft::t('app', 'Local Folder');
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Path to the root of this sources local folder.
      */
     public $path;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -123,9 +114,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
             throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', ['path' => $path]));
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

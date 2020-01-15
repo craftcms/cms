@@ -18,9 +18,6 @@ use craft\behaviors\EnvAttributeParserBehavior;
  */
 class Smtp extends BaseTransportAdapter
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -28,9 +25,6 @@ class Smtp extends BaseTransportAdapter
     {
         return 'SMTP';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The host that should be used
@@ -66,9 +60,6 @@ class Smtp extends BaseTransportAdapter
      * @var string The timeout duration (in seconds)
      */
     public $timeout = 10;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

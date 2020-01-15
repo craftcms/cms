@@ -31,15 +31,9 @@ use yii\base\Exception;
  */
 class Images extends Component
 {
-    // Constants
-    // =========================================================================
-
     const DRIVER_GD = 'gd';
     const DRIVER_IMAGICK = 'imagick';
     const MINIMUM_IMAGICK_VERSION = '6.2.9';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array Image formats that can be manipulated.
@@ -55,9 +49,6 @@ class Images extends Component
      * @var string|null Imagick version being used, if any.
      */
     private $_imagickVersion;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Decide on the image driver being used.

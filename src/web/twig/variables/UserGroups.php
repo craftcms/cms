@@ -22,9 +22,6 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserGroups
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all user groups.
      *

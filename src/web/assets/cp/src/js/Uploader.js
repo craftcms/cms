@@ -224,10 +224,6 @@ Craft.Uploader = Garnish.Base.extend(
             this.base();
         }
     },
-
-// Static Properties
-// =============================================================================
-
     {
         defaults: {
             dropZone: null,

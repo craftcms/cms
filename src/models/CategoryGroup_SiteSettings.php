@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class CategoryGroup_SiteSettings extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -58,9 +55,6 @@ class CategoryGroup_SiteSettings extends Model
      * @var CategoryGroup|null
      */
     private $_group;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the group.

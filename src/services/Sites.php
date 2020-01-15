@@ -50,9 +50,6 @@ use yii\db\Exception as DbException;
  */
 class Sites extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SiteGroupEvent The event that is triggered before a site group is saved.
      */
@@ -125,9 +122,6 @@ class Sites extends Component
     const CONFIG_SITEGROUP_KEY = 'siteGroups';
     const CONFIG_SITES_KEY = 'sites';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var SiteGroup[]
      */
@@ -169,9 +163,6 @@ class Sites extends Component
      * @see getPrimarySite()
      */
     private $_primarySite;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1118,9 +1109,6 @@ class Sites extends Component
             ->execute();
         return (bool)$affectedRows;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Refresh the status of all sites based on the DB data.

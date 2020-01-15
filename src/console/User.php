@@ -21,16 +21,10 @@ use yii\web\IdentityInterface;
  */
 class User extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UserElement|IdentityInterface|false
      */
     private $_identity = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the current user is an admin.

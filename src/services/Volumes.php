@@ -40,9 +40,6 @@ use yii\base\UnknownPropertyException;
  */
 class Volumes extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
      *
@@ -93,9 +90,6 @@ class Volumes extends Component
 
     const CONFIG_VOLUME_KEY = 'volumes';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var VolumeInterface[]
      */
@@ -105,9 +99,6 @@ class Volumes extends Component
      * @var array|null Volume setting overrides
      */
     private $_overrides;
-
-    // Public Methods
-    // =========================================================================
 
     // Volumes
     // -------------------------------------------------------------------------
@@ -713,9 +704,6 @@ class Volumes extends Component
         // Allow events again
         $projectConfig->muteEvents = false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a DbCommand object prepped for retrieving volumes.

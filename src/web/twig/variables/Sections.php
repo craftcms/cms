@@ -20,9 +20,6 @@ use craft\models\Section;
  */
 class Sections
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all sections.
      *

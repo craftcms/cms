@@ -28,9 +28,6 @@ use yii\web\ServerErrorHttpException;
  */
 class SitesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

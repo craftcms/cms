@@ -26,9 +26,6 @@ use craft\validators\UniqueValidator;
  */
 class CategoryGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -68,9 +65,6 @@ class CategoryGroup extends Model
      * @var
      */
     private $_siteSettings;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

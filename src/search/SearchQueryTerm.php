@@ -18,9 +18,6 @@ use yii\base\BaseObject;
  */
 class SearchQueryTerm extends BaseObject
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */

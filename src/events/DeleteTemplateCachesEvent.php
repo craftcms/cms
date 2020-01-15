@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DeleteTemplateCachesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int[] Array of template cache IDs that are associated with this event
      */

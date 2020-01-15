@@ -21,9 +21,6 @@ use craft\validators\UniqueValidator;
  */
 class SiteGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -38,9 +35,6 @@ class SiteGroup extends Model
      * @var string|null UID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

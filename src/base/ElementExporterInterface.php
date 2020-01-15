@@ -17,9 +17,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 interface ElementExporterInterface extends ComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Sets the element type on the exporter.
      *

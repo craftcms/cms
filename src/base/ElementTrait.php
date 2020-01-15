@@ -17,9 +17,6 @@ use DateTime;
  */
 trait ElementTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The element’s ID
      */

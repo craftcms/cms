@@ -24,9 +24,6 @@ class HtmlPreview extends AssetPreview
     private $template = '';
     private $foot = '';
 
-    // Public Methods
-    // =========================================================================
-
     public function init()
     {
         $localCopy = $this->asset->getCopyOfFile();

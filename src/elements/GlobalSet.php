@@ -27,9 +27,6 @@ use craft\validators\UniqueValidator;
  */
 class GlobalSet extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -123,9 +120,6 @@ class GlobalSet extends Element
         return ['globalsets.' . $context->uid];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Name
      */
@@ -135,9 +129,6 @@ class GlobalSet extends Element
      * @var string|null Handle
      */
     public $handle;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Use the global set's name as its string representation.

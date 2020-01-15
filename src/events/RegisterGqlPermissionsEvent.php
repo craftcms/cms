@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterGqlPermissionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered GraphQL permissions.
      */

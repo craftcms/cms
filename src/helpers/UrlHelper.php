@@ -19,9 +19,6 @@ use yii\base\Exception;
  */
 class UrlHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a given string appears to be an absolute URL.
      *
@@ -574,9 +571,6 @@ class UrlHelper
         Craft::$app->getDeprecator()->log('UrlHelper::getProtocolForTokenizedUrl()', 'UrlHelper::getProtocolForTokenizedUrl() is deprecated. Use getSchemeForTokenizedUrl() instead.');
         return static::getSchemeForTokenizedUrl();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a URL.

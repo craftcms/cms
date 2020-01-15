@@ -60,9 +60,6 @@ use yii\base\NotSupportedException;
  */
 class Assets extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
      */
@@ -95,9 +92,6 @@ class Assets extends Component
      */
     const EVENT_GET_ASSET_PREVIEW = 'getAssetPreview';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
@@ -112,9 +106,6 @@ class Assets extends Component
      * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
      */
     private $_queuedGeneratePendingTransformsJob = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a file by its ID.
@@ -1076,9 +1067,6 @@ class Assets extends Component
                 return new NoPreview($asset);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a DbCommand object prepped for retrieving assets.

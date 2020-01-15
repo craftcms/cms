@@ -27,9 +27,6 @@ use yii\base\InvalidConfigException;
  */
 class Cp extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
      */
@@ -40,9 +37,6 @@ class Cp extends Component
      * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the Craft ID account URL.

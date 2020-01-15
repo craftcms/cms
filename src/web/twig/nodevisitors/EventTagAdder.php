@@ -22,16 +22,10 @@ use Twig\Node\TextNode;
  */
 class EventTagAdder extends BaseEventTagVisitor
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether we're in the middle of finding the `beginBody()` tag
      */
     private $_findingBeginBody = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -67,9 +61,6 @@ class EventTagAdder extends BaseEventTagVisitor
         // This needs to run after EventTagFinder
         return 1;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Processes a text node.

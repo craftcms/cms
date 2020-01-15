@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementExportersEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The selected source’s key
      */

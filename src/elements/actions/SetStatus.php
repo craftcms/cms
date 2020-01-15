@@ -20,9 +20,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 class SetStatus extends ElementAction
 {
-    // Constants
-    // =========================================================================
-
     const ENABLED = 'enabled';
     /**
      * @since 3.4.0
@@ -39,9 +36,6 @@ class SetStatus extends ElementAction
      */
     const DISABLED_FOR_SITE = 'disabled-for-site';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to show the “Disabled for Site” status option.
      *
@@ -54,9 +48,6 @@ class SetStatus extends ElementAction
      * @var string|null The status elements should be set to
      */
     public $status;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

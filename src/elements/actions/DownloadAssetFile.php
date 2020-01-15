@@ -19,9 +19,6 @@ use craft\helpers\Json;
  */
 class DownloadAssetFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

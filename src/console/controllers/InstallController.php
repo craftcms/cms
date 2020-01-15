@@ -26,9 +26,6 @@ use yii\helpers\Console;
  */
 class InstallController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The default email address for the first user to create during install
      */
@@ -60,9 +57,6 @@ class InstallController extends Controller
     public $language;
 
     public $defaultAction = 'craft';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -262,9 +256,6 @@ class InstallController extends Controller
     {
         return $this->_validateSiteAttribute('language', $value, $error);
     }
-
-    // Private Methods
-    // =========================================================================
 
     private function _validateUserAttribute(string $attribute, $value, &$error): bool
     {

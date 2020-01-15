@@ -37,16 +37,10 @@ use yii\web\BadRequestHttpException;
  */
 class InstallController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -309,9 +303,6 @@ class InstallController extends Controller
 
         return $this->asJson(['success' => $success]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether it looks like we have control over the DB config settings.

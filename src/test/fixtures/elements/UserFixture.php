@@ -18,16 +18,10 @@ use craft\elements\User;
  */
 abstract class UserFixture extends ElementFixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $modelClass = User::class;
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

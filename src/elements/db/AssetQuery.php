@@ -38,9 +38,6 @@ use yii\db\Connection;
  */
 class AssetQuery extends ElementQuery
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var bool
      * @see _supportsUploaderParam()
@@ -62,9 +59,6 @@ class AssetQuery extends ElementQuery
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         return self::$_supportsUploaderParam = version_compare($schemaVersion, '3.4.5', '>=');
     }
-
-    // Properties
-    // =========================================================================
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -230,9 +224,6 @@ class AssetQuery extends ElementQuery
      * @used-by withTransforms()
      */
     public $withTransforms;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -796,9 +787,6 @@ class AssetQuery extends ElementQuery
 
         return $elements;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

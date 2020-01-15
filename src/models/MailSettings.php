@@ -21,9 +21,6 @@ use craft\validators\TemplateValidator;
  */
 class MailSettings extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The default email address that emails should be sent from
      */
@@ -48,9 +45,6 @@ class MailSettings extends Model
      * @var array|null The transport type’s settings
      */
     public $transportSettings;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

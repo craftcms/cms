@@ -34,9 +34,6 @@ use yii\base\ErrorException;
  */
 class Raster extends Image
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -76,9 +73,6 @@ class Raster extends Image
      * @var Font|null
      */
     private $_font;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -628,9 +622,6 @@ class Raster extends Image
 
         return $this;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param string $tempFileName

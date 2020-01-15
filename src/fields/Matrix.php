@@ -51,9 +51,6 @@ use yii\base\InvalidConfigException;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragmentFieldInterface
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
      * @since 3.1.27
@@ -64,9 +61,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
     const PROPAGATION_METHOD_ALL = 'all';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -94,9 +88,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         return MatrixBlockQuery::class;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null Min blocks
@@ -143,9 +134,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @var MatrixBlockType[]|null The block types' fields
      */
     private $_blockTypeFields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1013,9 +1001,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         parent::afterElementRestore($element);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns info about each field type for the configurator.

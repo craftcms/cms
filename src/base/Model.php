@@ -21,13 +21,7 @@ use craft\helpers\StringHelper;
  */
 abstract class Model extends \yii\base\Model
 {
-    // Traits
-    // =========================================================================
-
     use ClonefixTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -47,9 +41,6 @@ abstract class Model extends \yii\base\Model
      * @since 3.1.0
      */
     const EVENT_DEFINE_RULES = 'defineRules';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

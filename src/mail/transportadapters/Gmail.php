@@ -18,9 +18,6 @@ use craft\behaviors\EnvAttributeParserBehavior;
  */
 class Gmail extends BaseTransportAdapter
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -28,9 +25,6 @@ class Gmail extends BaseTransportAdapter
     {
         return 'Gmail';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The username that should be used
@@ -46,9 +40,6 @@ class Gmail extends BaseTransportAdapter
      * @var string The timeout duration (in seconds)
      */
     public $timeout = 10;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -28,14 +28,8 @@ use yii\base\BaseObject;
  */
 class ElementRelationParamParser extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     const DIR_FORWARD = 0;
     const DIR_REVERSE = 1;
-
-    // Static
-    // =========================================================================
 
     /**
      * @var int
@@ -57,16 +51,10 @@ class ElementRelationParamParser extends BaseObject
      */
     private static $_relateTargetsCount = 0;
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
     public $fields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Parses a `relatedTo` element query param and returns the condition that should
@@ -138,9 +126,6 @@ class ElementRelationParamParser extends BaseObject
 
         return $conditions;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Parses a part of a relatedTo element query param and returns the condition or `false` if there's an issue.

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterPreviewTargetsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The additional locations that should be available for previewing the element.
      */

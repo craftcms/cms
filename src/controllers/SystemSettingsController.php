@@ -36,9 +36,6 @@ use yii\web\Response;
  */
 class SystemSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -348,9 +345,6 @@ class SystemSettingsController extends Controller
             'tabs' => $tabs
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Creates a MailSettings model, populated with post data.

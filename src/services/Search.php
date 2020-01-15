@@ -34,9 +34,6 @@ use yii\db\Schema;
  */
 class Search extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
@@ -46,9 +43,6 @@ class Search extends Component
      * @event SearchEvent The event that is triggered after a search is performed.
      */
     const EVENT_AFTER_SEARCH = 'afterSearch';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int The minimum word length that keywords must be in order to use a full-text search.
@@ -77,9 +71,6 @@ class Search extends Component
      * truncate search index data for a single row in Postgres.
      */
     public $maxPostgresKeywordLength = 2450;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -357,9 +348,6 @@ SQL;
         }
         $db->createCommand($sql)->execute();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Indexes keywords for a specific element attribute/field.

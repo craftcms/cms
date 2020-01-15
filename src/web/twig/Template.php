@@ -22,9 +22,6 @@ use Twig\Template as TwigTemplate;
  */
 abstract class Template extends TwigTemplate
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Displays the template.
      *

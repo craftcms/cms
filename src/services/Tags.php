@@ -33,9 +33,6 @@ use yii\base\Component;
  */
 class Tags extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event TagGroupEvent The event that is triggered before a tag group is saved.
      */
@@ -64,16 +61,10 @@ class Tags extends Component
 
     const CONFIG_TAGGROUP_KEY = 'tagGroups';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var TagGroup[]
      */
     private $_tagGroups;
-
-    // Public Methods
-    // =========================================================================
 
     // Tag groups
     // -------------------------------------------------------------------------
@@ -462,9 +453,6 @@ class Tags extends Component
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
-
-    // Private methods
-    // =========================================================================
 
     /**
      * Gets a tag group's record by uid.

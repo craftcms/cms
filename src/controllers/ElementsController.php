@@ -30,9 +30,6 @@ use yii\web\Response;
  */
 class ElementsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Renders and returns the body of an ElementSelectorModal.
      *
@@ -235,9 +232,6 @@ class ElementsController extends BaseElementsController
 
         return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the element that is currently being edited.

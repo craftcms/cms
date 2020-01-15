@@ -36,16 +36,10 @@ use yii\web\ServerErrorHttpException;
  */
 class CategoriesController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
      */
     const EVENT_PREVIEW_CATEGORY = 'previewCategory';
-
-    // Public Methods
-    // =========================================================================
 
     // Category Groups
     // -------------------------------------------------------------------------
@@ -639,9 +633,6 @@ class CategoriesController extends Controller
 
         return $this->_showCategory($category);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Preps category category variables.

@@ -21,9 +21,6 @@ use yii\base\BaseObject;
  */
 class Paginate extends BaseObject
 {
-    // Static
-    // =========================================================================
-
     /**
      * Creates a new instance based on a Paginator object
      *
@@ -44,9 +41,6 @@ class Paginate extends BaseObject
             'totalPages' => $paginator->getTotalPages(),
         ]);
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var
@@ -79,9 +73,6 @@ class Paginate extends BaseObject
      * @see setBasePath()
      */
     private $_basePath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the base path that should be used for pagination URLs.

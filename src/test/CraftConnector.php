@@ -26,16 +26,10 @@ use yii\web\Application;
  */
 class CraftConnector extends Yii2
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var array|MessageInterface
      */
     protected $emails;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

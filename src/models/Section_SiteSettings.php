@@ -22,9 +22,6 @@ use yii\base\InvalidConfigException;
  */
 class Section_SiteSettings extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -64,9 +61,6 @@ class Section_SiteSettings extends Model
      * @var Section|null
      */
     private $_section;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the section.

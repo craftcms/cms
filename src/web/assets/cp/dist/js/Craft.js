@@ -1920,9 +1920,6 @@ Craft.BaseElementEditor = Garnish.Base.extend(
  */
 Craft.BaseElementIndex = Garnish.Base.extend(
     {
-        // Properties
-        // =========================================================================
-
         initialized: false,
         elementType: null,
 
@@ -1993,9 +1990,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         exporters: null,
         _$detachedToolbarItems: null,
         _$triggers: null,
-
-        // Public methods
-        // =========================================================================
 
         /**
          * Constructor
@@ -3108,9 +3102,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.base();
         },
 
-        // Events
-        // =========================================================================
-
         onAfterInit: function() {
             this.settings.onAfterInit();
             this.trigger('afterInit');
@@ -3150,9 +3141,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.settings.onAfterAction(action, params);
             this.trigger('afterAction', {action: action, params: params});
         },
-
-        // Private methods
-        // =========================================================================
 
         // UI state handlers
         // -------------------------------------------------------------------------
@@ -3742,10 +3730,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
         }
     },
-
-// Static Properties
-// =============================================================================
-
     {
         defaults: {
             context: 'index',
@@ -19660,9 +19644,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
 /** global: Garnish */
 Craft.StructureTableSorter = Garnish.DragSort.extend({
 
-        // Properties
-        // =========================================================================
-
         tableView: null,
         structureId: null,
         maxLevels: null,
@@ -19688,9 +19669,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
         _targetLevelBounds: null,
 
         _positionChanged: null,
-
-        // Public methods
-        // =========================================================================
 
         /**
          * Constructor
@@ -20015,9 +19993,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             this.base();
         },
 
-        // Private methods
-        // =========================================================================
-
         /**
          * Returns the min and max levels that the draggee could occupy between
          * two given rows, or false if it’s not going to work out.
@@ -20239,10 +20214,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             delete this._updateAncestors._newAncestors;
         }
     },
-
-// Static Properties
-// =============================================================================
-
     {
         HELPER_MARGIN: 0,
         LEVEL_INDENT: 44,
@@ -21872,10 +21843,6 @@ Craft.Uploader = Garnish.Base.extend(
             this.base();
         }
     },
-
-// Static Properties
-// =============================================================================
-
     {
         defaults: {
             dropZone: null,

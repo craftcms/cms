@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DefineRulesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The model rules
      */

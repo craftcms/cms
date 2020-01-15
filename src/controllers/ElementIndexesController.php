@@ -34,9 +34,6 @@ use yii\web\ServerErrorHttpException;
  */
 class ElementIndexesController extends BaseElementsController
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -81,9 +78,6 @@ class ElementIndexesController extends BaseElementsController
      * @var ElementExporterInterface[]|null
      */
     protected $exporters;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -317,9 +311,6 @@ class ElementIndexesController extends BaseElementsController
 
         return $this->asJson(compact('token'));
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Identify whether index actions should be included in the element index

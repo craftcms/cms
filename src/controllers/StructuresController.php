@@ -25,9 +25,6 @@ use yii\web\Response;
  */
 class StructuresController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Structure|null
      */
@@ -37,9 +34,6 @@ class StructuresController extends Controller
      * @var Element|null
      */
     private $_element;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Initializes the application component.

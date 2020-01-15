@@ -21,9 +21,6 @@ use yii\validators\Validator;
  */
 interface FieldInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether this field has a column in the content table.
      *
@@ -63,9 +60,6 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.2.0
      */
     public static function valueType(): string;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the column type that this field should get within the content table.

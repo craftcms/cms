@@ -15,9 +15,6 @@ namespace craft\base;
  */
 abstract class Utility extends Component implements UtilityInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

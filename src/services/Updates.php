@@ -35,9 +35,6 @@ use yii\base\InvalidArgumentException;
  */
 class Updates extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -52,9 +49,6 @@ class Updates extends Component
      * @var bool|null
      */
     private $_isCraftDbMigrationNeeded;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the update info is cached.

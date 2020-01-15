@@ -29,9 +29,6 @@ use yii\base\Component;
  */
 class UserGroups extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event UserGroupEvent The event that is triggered before a user group is saved.
      */
@@ -59,9 +56,6 @@ class UserGroups extends Component
     const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
     const CONFIG_USERPGROUPS_KEY = 'users.groups';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all user groups.
@@ -353,9 +347,6 @@ class UserGroups extends Component
         Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid, "Delete the “{$group->handle}” user group");
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @return Query

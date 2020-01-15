@@ -22,16 +22,10 @@ use yii\base\Component;
  */
 class SystemSettings extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
     public $defaults;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the system settings for a category.

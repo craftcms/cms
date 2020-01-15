@@ -5,9 +5,6 @@
  */
 Craft.BaseElementIndex = Garnish.Base.extend(
     {
-        // Properties
-        // =========================================================================
-
         initialized: false,
         elementType: null,
 
@@ -78,9 +75,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         exporters: null,
         _$detachedToolbarItems: null,
         _$triggers: null,
-
-        // Public methods
-        // =========================================================================
 
         /**
          * Constructor
@@ -1193,9 +1187,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.base();
         },
 
-        // Events
-        // =========================================================================
-
         onAfterInit: function() {
             this.settings.onAfterInit();
             this.trigger('afterInit');
@@ -1235,9 +1226,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.settings.onAfterAction(action, params);
             this.trigger('afterAction', {action: action, params: params});
         },
-
-        // Private methods
-        // =========================================================================
 
         // UI state handlers
         // -------------------------------------------------------------------------
@@ -1827,10 +1815,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
         }
     },
-
-// Static Properties
-// =============================================================================
-
     {
         defaults: {
             context: 'index',

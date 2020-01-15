@@ -40,22 +40,13 @@ use yii\web\NotFoundHttpException;
  */
 class Request extends \yii\web\Request
 {
-    // Traits
-    // =========================================================================
-
     use RequestTrait;
-
-    // Constants
-    // =========================================================================
 
     const CP_PATH_LOGIN = 'login';
     const CP_PATH_LOGOUT = 'logout';
     const CP_PATH_SET_PASSWORD = 'set-password';
     const CP_PATH_VERIFY_EMAIL = 'verify-email';
     const CP_PATH_UPDATE = 'update';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -165,9 +156,6 @@ class Request extends \yii\web\Request
      * @see getToken()
      */
     public $_token;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1039,9 +1027,6 @@ class Request extends \yii\web\Request
         return [$route, $params + $this->getQueryParams()];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Generates an unmasked random token used to perform CSRF validation.
      *
@@ -1129,9 +1114,6 @@ class Request extends \yii\web\Request
 
         return Craft::$app->getSecurity()->compareString($expectedToken, $token);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the segments of a given path.

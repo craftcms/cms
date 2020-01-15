@@ -15,9 +15,6 @@ namespace craft\base;
  */
 interface UtilityInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the utility’s unique identifier.
      *

@@ -18,16 +18,10 @@ use craft\base\Model;
  */
 class Url extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null URL
      */
     public $url;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -17,24 +17,15 @@ use yii\web\HttpException;
  */
 class Response extends \yii\web\Response
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @since 3.4.0
      */
     const FORMAT_CSV = 'csv';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool whether the response has been prepared.
      */
     private $_isPrepared = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.
@@ -187,9 +178,6 @@ class Response extends \yii\web\Response
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @since 3.4.0
@@ -213,9 +201,6 @@ class Response extends \yii\web\Response
 
         return $return;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Clear the output buffer to prevent corrupt downloads.

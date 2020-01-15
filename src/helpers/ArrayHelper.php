@@ -17,9 +17,6 @@ use Craft;
  */
 class ArrayHelper extends \yii\helpers\ArrayHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

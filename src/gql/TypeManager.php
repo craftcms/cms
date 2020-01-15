@@ -18,9 +18,6 @@ use craft\events\DefineGqlTypeFieldsEvent;
  */
 class TypeManager extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event DefineGqlTypeFields The event that is triggered when GraphQL type fields are being prepared.
      *
@@ -51,9 +48,6 @@ class TypeManager extends Component
      * ```
      */
     const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
-
-    // Static
-    // =========================================================================
 
     /**
      * @var self

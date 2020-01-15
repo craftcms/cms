@@ -20,9 +20,6 @@ use DateTime;
  */
 class DeprecationError extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -62,9 +59,6 @@ class DeprecationError extends Model
      * @var array|null Traces
      */
     public $traces;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

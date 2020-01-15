@@ -25,14 +25,8 @@ use yii\db\Schema;
  */
 class Db
 {
-    // Constants
-    // =========================================================================
-
     const SIMPLE_TYPE_NUMERIC = 'numeric';
     const SIMPLE_TYPE_TEXTUAL = 'textual';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array
@@ -84,9 +78,6 @@ class Db
         MysqlSchema::TYPE_MEDIUMTEXT => 16777215,
         MysqlSchema::TYPE_LONGTEXT => 4294967295,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Prepares an array or object’s values to be sent to the database.
@@ -846,9 +837,6 @@ class Db
 
         return $config;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Converts a given param value to an array.

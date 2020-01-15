@@ -21,9 +21,6 @@ use yii\validators\Validator;
  */
 class LanguageValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @param bool Whether to limit the value to the sites' languages
      */
@@ -33,9 +30,6 @@ class LanguageValidator extends Validator
      * @param string The error message to use if the value isn't allowed.
      */
     public $notAllowed;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -52,9 +46,6 @@ class LanguageValidator extends Validator
 
         parent::init();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

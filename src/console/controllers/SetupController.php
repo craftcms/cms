@@ -31,9 +31,6 @@ use yii\console\ExitCode;
  */
 class SetupController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
      */
@@ -68,9 +65,6 @@ class SetupController extends Controller
      * be no more than 5 characters, and must be all lowercase.
      */
     public $tablePrefix;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -406,9 +400,6 @@ EOD;
         $this->stdout('The `phpsessions` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Outputs a terminal command.

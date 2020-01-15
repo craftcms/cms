@@ -27,9 +27,6 @@ use yii\db\ActiveQueryInterface;
  */
 class GqlToken extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

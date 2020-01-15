@@ -54,9 +54,6 @@ use yii\web\Response;
  */
 class UsersController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
@@ -85,9 +82,6 @@ class UsersController extends Controller
      */
     const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -102,9 +96,6 @@ class UsersController extends Controller
         'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1589,9 +1580,6 @@ class UsersController extends Controller
 
         return $this->asErrorJson(Craft::t('app', 'Invalid password.'));
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Handles a failed login attempt.

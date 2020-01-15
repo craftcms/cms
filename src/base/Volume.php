@@ -22,13 +22,7 @@ use craft\validators\UniqueValidator;
  */
 abstract class Volume extends SavableComponent implements VolumeInterface
 {
-    // Traits
-    // =========================================================================
-
     use VolumeTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

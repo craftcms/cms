@@ -30,16 +30,10 @@ use yii\web\ServerErrorHttpException;
  */
 class QueueController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = ['run'];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

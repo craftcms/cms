@@ -19,9 +19,6 @@ use craft\helpers\Json;
  */
 class RenameFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

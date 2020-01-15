@@ -23,9 +23,6 @@ use yii\db\Schema;
  */
 class PlainText extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -41,9 +38,6 @@ class PlainText extends Field implements PreviewableFieldInterface
     {
         return 'string|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The input’s placeholder text
@@ -80,9 +74,6 @@ class PlainText extends Field implements PreviewableFieldInterface
      * @var string|null The type of database column the field should have in the content table
      */
     public $columnType;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

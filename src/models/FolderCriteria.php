@@ -17,9 +17,6 @@ use craft\base\Model;
  */
 class FolderCriteria extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -64,9 +61,6 @@ class FolderCriteria extends Model
      * @var string|string[]|null
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

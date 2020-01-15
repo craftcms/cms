@@ -18,9 +18,6 @@ use craft\base\Utility;
  */
 class PhpInfo extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

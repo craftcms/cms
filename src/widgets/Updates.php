@@ -19,9 +19,6 @@ use craft\web\assets\updateswidget\UpdatesWidgetAsset;
  */
 class Updates extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -54,9 +51,6 @@ class Updates extends Widget
     {
         return Craft::getAlias('@app/icons/excite.svg');
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

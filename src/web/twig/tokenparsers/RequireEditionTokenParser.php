@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class RequireEditionTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -42,9 +42,6 @@ use yii\db\Exception as DbException;
  */
 class Connection extends \yii\db\Connection
 {
-    // Constants
-    // =========================================================================
-
     const DRIVER_MYSQL = 'mysql';
     const DRIVER_PGSQL = 'pgsql';
 
@@ -68,9 +65,6 @@ class Connection extends \yii\db\Connection
      */
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
-    // Static
-    // =========================================================================
-
     /**
      * Creates a new Connection instance based off the given DbConfig object.
      *
@@ -83,9 +77,6 @@ class Connection extends \yii\db\Connection
         $config = App::dbConfig($config);
         return Craft::createObject($config);
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool|null whether the database supports 4+ byte characters
@@ -104,9 +95,6 @@ class Connection extends \yii\db\Connection
      * @see quoteColumnName()
      */
     private $_quotedColumnNames;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether this is a MySQL connection.
@@ -525,9 +513,6 @@ class Connection extends \yii\db\Connection
 
         return $name;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a table name without the table prefix

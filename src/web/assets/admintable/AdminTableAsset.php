@@ -16,9 +16,6 @@ use craft\web\assets\vue\VueAsset;
  */
 class AdminTableAsset extends AssetBundle
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
@@ -28,9 +25,6 @@ class AdminTableAsset extends AssetBundle
      * @var bool
      */
     private $devServerBaseUrl = 'http://localhost:8082/';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

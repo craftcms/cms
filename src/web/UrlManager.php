@@ -24,9 +24,6 @@ use yii\web\UrlRule as YiiUrlRule;
  */
 class UrlManager extends \yii\web\UrlManager
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
      * URL rules for the control panel.
@@ -69,9 +66,6 @@ class UrlManager extends \yii\web\UrlManager
      */
     const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
      * @since 3.2.0
@@ -92,9 +86,6 @@ class UrlManager extends \yii\web\UrlManager
      * @var
      */
     private $_matchedElementRoute;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.
@@ -262,9 +253,6 @@ class UrlManager extends \yii\web\UrlManager
         $this->_matchedElementRoute = $element;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -299,9 +287,6 @@ class UrlManager extends \yii\web\UrlManager
 
         return parent::buildRules($rules);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the rules that should be used for the current request.

@@ -20,9 +20,6 @@ use craft\elements\User;
  */
 class UnsuspendUsers extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -66,9 +66,6 @@ use yii\db\Exception as DbException;
  */
 class Elements extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering element types.
      *
@@ -224,9 +221,6 @@ class Elements extends Component
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 
-    // Static
-    // =========================================================================
-
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
      */
@@ -237,9 +231,6 @@ class Elements extends Component
      * @since 3.4.0
      */
     public static $duplicatedElementSourceIds = [];
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array|null
@@ -257,9 +248,6 @@ class Elements extends Component
      * @var string[]
      */
     private $_elementTypesByRefHandle = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates an element with a given config.
@@ -1895,9 +1883,6 @@ class Elements extends Component
 
         $this->_propagateElement($element, $isNewElement, $siteInfo, $siteElement);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Saves an element.

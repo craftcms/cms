@@ -25,15 +25,9 @@ use yii\base\UnknownPropertyException;
  */
 class GeneralConfig extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
     const IMAGE_DRIVER_IMAGICK = 'imagick';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string The URI segment Craft should look for when determining if the current request should first be routed to a
@@ -959,9 +953,6 @@ class GeneralConfig extends BaseObject
      * @var array Stores any custom config settings
      */
     private $_customSettings = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -22,9 +22,6 @@ use craft\db\Table;
  */
 class GqlSchema extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

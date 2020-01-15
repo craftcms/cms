@@ -18,9 +18,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 class ElementActionEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementActionInterface|null The element action associated with the event
      */

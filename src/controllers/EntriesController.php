@@ -35,17 +35,11 @@ use yii\web\ServerErrorHttpException;
  */
 class EntriesController extends BaseEntriesController
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementEvent The event that is triggered when an entry’s template is rendered for Live Preview.
      * @deprecated in 3.2.0
      */
     const EVENT_PREVIEW_ENTRY = 'previewEntry';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Called when a user beings up an entry for editing before being displayed.
@@ -475,9 +469,6 @@ class EntriesController extends BaseEntriesController
 
         return $this->redirectToPostedUrl($entry);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Preps entry edit variables.

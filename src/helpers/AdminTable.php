@@ -15,9 +15,6 @@ namespace craft\helpers;
  */
 abstract class AdminTable
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param int $page
      * @param int $total

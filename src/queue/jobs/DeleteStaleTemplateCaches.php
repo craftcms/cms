@@ -21,16 +21,10 @@ use craft\queue\BaseJob;
  */
 class DeleteStaleTemplateCaches extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|int[]|null The element ID(s) whose caches need to be cleared
      */
     public $elementId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -100,9 +94,6 @@ class DeleteStaleTemplateCaches extends BaseJob
             $templateCachesService->deleteCacheById(array_keys($deleteCacheIds));
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

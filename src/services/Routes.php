@@ -23,9 +23,6 @@ use yii\base\Component;
  */
 class Routes extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RouteEvent The event that is triggered before a route is saved.
      */
@@ -47,16 +44,10 @@ class Routes extends Component
     const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
 
     const CONFIG_ROUTES_KEY = 'routes';
-
-    // Properties
-    // =========================================================================
     /**
      * @var array|null all the routes in project config for current site
      */
     private $_projectConfigRoutes;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the routes defined in `config/routes.php`

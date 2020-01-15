@@ -22,9 +22,6 @@ use yii\base\InvalidConfigException;
  */
 class Formatter extends \yii\i18n\Formatter
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The locale’s date/time formats.
      */
@@ -64,9 +61,6 @@ class Formatter extends \yii\i18n\Formatter
      * @var array|null The locale's currency symbols.
      */
     public $currencySymbols;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -300,9 +294,6 @@ class Formatter extends \yii\i18n\Formatter
     {
         return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Formats a given date/time.

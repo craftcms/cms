@@ -70,9 +70,6 @@ use yii\base\UnknownPropertyException;
  */
 class Asset extends Element
 {
-    // Constants
-    // =========================================================================
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -117,9 +114,6 @@ class Asset extends Element
     const KIND_WORD = 'word';
     const KIND_XML = 'xml';
     const KIND_UNKNOWN = 'unknown';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -507,9 +501,6 @@ class Asset extends Element
         return $source;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Volume ID
      */
@@ -644,9 +635,6 @@ class Asset extends Element
      * @var User|null
      */
     private $_uploader;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1654,9 +1642,6 @@ class Asset extends Element
         return $this->keptFile && parent::beforeRestore();
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -1704,9 +1689,6 @@ class Asset extends Element
 
         return $attributes;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the current user can move/rename the asset.

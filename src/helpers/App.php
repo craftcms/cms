@@ -45,16 +45,10 @@ use yii\web\JsonParser;
  */
 class App
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
     private static $_iconv;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns an array of all known Craft editions’ IDs.

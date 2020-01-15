@@ -31,13 +31,7 @@ use yii\base\Module;
  */
 class Plugin extends Module implements PluginInterface
 {
-    // Traits
-    // =========================================================================
-
     use PluginTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
@@ -54,9 +48,6 @@ class Plugin extends Module implements PluginInterface
      */
     const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -67,17 +58,11 @@ class Plugin extends Module implements PluginInterface
         ];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -343,9 +328,6 @@ class Plugin extends Module implements PluginInterface
             $this->trigger(self::EVENT_AFTER_SAVE_SETTINGS);
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Instantiates and returns the plugin’s installation migration, if it has one.

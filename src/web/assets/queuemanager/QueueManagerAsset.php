@@ -23,9 +23,6 @@ use craft\web\View;
  */
 class QueueManagerAsset extends AssetBundle
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

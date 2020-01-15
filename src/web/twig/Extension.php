@@ -71,9 +71,6 @@ use yii\helpers\Markdown;
  */
 class Extension extends AbstractExtension implements GlobalsInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var View|null
      */
@@ -83,9 +80,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @var TwigEnvironment|null
      */
     protected $environment;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

@@ -71,9 +71,6 @@ use yii\caching\TagDependency;
  */
 class Gql extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
@@ -243,9 +240,6 @@ class Gql extends Component
      * @see setActiveSchema()
      */
     private $_schema;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the GraphQL schema.
@@ -870,9 +864,6 @@ class Gql extends Component
 
         return $scopes;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Generate a cache key for the GraphQL operation. Returns null if caching is disabled or unable to generate one.

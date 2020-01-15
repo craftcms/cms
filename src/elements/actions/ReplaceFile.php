@@ -19,9 +19,6 @@ use craft\helpers\Json;
  */
 class ReplaceFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

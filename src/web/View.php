@@ -57,9 +57,6 @@ use yii\web\Response as WebResponse;
  */
 class View extends \yii\web\View
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
@@ -99,9 +96,6 @@ class View extends \yii\web\View
      * @const TEMPLATE_MODE_SITE
      */
     const TEMPLATE_MODE_SITE = 'site';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether to minify CSS registered with [[registerCss()]]
@@ -248,9 +242,6 @@ class View extends \yii\web\View
      * @see setRegisteredJsfiles()
      */
     private $_registeredJsFiles = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1645,9 +1636,6 @@ JS;
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -1748,9 +1736,6 @@ JS;
         $this->_registeredAssetBundles[$name] = true;
         parent::registerAssetFiles($name);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Ensures that a template name isn't null, and that it doesn't lead outside the template folder. Borrowed from

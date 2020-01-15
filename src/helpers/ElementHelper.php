@@ -23,9 +23,6 @@ use yii\base\Exception;
  */
 class ElementHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Generates a new temporary slug.
      *

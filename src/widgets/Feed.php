@@ -20,9 +20,6 @@ use craft\web\assets\feed\FeedAsset;
  */
 class Feed extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -39,9 +36,6 @@ class Feed extends Widget
         return Craft::getAlias('@app/icons/feed.svg');
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The feed URL
      */
@@ -56,9 +50,6 @@ class Feed extends Widget
      * @var int The maximum number of feed items to display
      */
     public $limit;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RestoreEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The file path to the backup to restore.
      */

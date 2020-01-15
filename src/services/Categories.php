@@ -42,9 +42,6 @@ use yii\base\Exception;
  */
 class Categories extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
      */
@@ -73,16 +70,10 @@ class Categories extends Component
 
     const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var CategoryGroup[]
      */
     private $_groups;
-
-    // Public Methods
-    // =========================================================================
 
     // Category groups
     // -------------------------------------------------------------------------
@@ -807,9 +798,6 @@ class Categories extends Component
             $prevCategory = $category;
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Creates a CategoryGroup with attributes from a CategoryGroupRecord.

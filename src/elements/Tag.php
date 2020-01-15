@@ -26,9 +26,6 @@ use yii\base\InvalidConfigException;
  */
 class Tag extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -148,9 +145,6 @@ class Tag extends Element
         return ['taggroups.' . $context->uid];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Group ID
      */
@@ -161,9 +155,6 @@ class Tag extends Element
      * @see beforeDelete()
      */
     public $deletedWithGroup = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

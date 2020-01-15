@@ -19,9 +19,6 @@ use yii\base\InvalidConfigException;
  */
 class UploadedFile extends \yii\web\UploadedFile
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns an instance of the specified uploaded file. The name can be a plain string or a string like an array
      * element (e.g. 'Post[imageFile]', or 'Post[0][imageFile]').
@@ -138,9 +135,6 @@ class UploadedFile extends \yii\web\UploadedFile
 
         return $mimeType;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Swaps dot notation for the normal format.

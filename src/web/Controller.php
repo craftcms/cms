@@ -33,15 +33,9 @@ use yii\web\Response as YiiResponse;
  */
 abstract class Controller extends \yii\web\Controller
 {
-    // Constants
-    // =========================================================================
-
     const ALLOW_ANONYMOUS_NEVER = 0;
     const ALLOW_ANONYMOUS_LIVE = 1;
     const ALLOW_ANONYMOUS_OFFLINE = 2;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
@@ -62,9 +56,6 @@ abstract class Controller extends \yii\web\Controller
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
     protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

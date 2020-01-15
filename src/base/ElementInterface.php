@@ -21,9 +21,6 @@ use Twig\Markup;
  */
 interface ElementInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the lowercase version of [[displayName()]].
      *
@@ -451,9 +448,6 @@ interface ElementInterface extends ComponentInterface
      * @since 3.3.0
      */
     public static function gqlScopesByContext($context): array;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the element’s ID.

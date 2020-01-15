@@ -19,9 +19,6 @@ use Twig\Node\Node;
  */
 class NamespaceNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

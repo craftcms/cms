@@ -46,15 +46,9 @@ use yii\base\InvalidConfigException;
  */
 class Entry extends Element
 {
-    // Constants
-    // =========================================================================
-
     const STATUS_LIVE = 'live';
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -550,9 +544,6 @@ class Entry extends Element
         }
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Section ID
      * ---
@@ -640,9 +631,6 @@ class Entry extends Element
      * @see _hasNewParent()
      */
     private $_hasNewParent;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1353,9 +1341,6 @@ EOD;
 
         parent::afterMoveInStructure($structureId);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the entry has been assigned a new parent entry.

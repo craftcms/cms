@@ -44,9 +44,6 @@ use yii\base\Exception;
  */
 class Matrix extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to ignore changes to the project config.
      * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
@@ -80,9 +77,6 @@ class Matrix extends Component
 
     const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
 
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the block types for a given Matrix field.
@@ -1015,9 +1009,6 @@ class Matrix extends Component
 
         return $siteIds;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving block types.

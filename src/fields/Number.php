@@ -25,9 +25,6 @@ use craft\i18n\Locale;
  */
 class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,9 +40,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         return 'int|float|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|float|null The default value for new elements
@@ -81,9 +75,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      * @var string|null Text that should be displayed after the input
      */
     public $suffix;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

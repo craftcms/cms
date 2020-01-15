@@ -30,9 +30,6 @@ use ZipArchive;
 
 class UtilitiesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Index
      *
@@ -446,9 +443,6 @@ class UtilitiesController extends Controller
 
         return $this->redirect('utilities/migrations');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns info about all of the utilities.

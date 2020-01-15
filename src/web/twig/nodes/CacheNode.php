@@ -20,16 +20,10 @@ use Twig\Node\Node;
  */
 class CacheNode extends Node
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int
      */
     private static $_cacheCount = 1;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

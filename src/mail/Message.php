@@ -17,9 +17,6 @@ use craft\elements\User;
  */
 class Message extends \yii\swiftmailer\Message
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The key of the message that should be loaded
      */
@@ -34,9 +31,6 @@ class Message extends \yii\swiftmailer\Message
      * @var string|null The language that the email should be sent in, based on the first [[User]] model passed into [[setTo()]] with a preferred language
      */
     public $language;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Sets the message sender.
@@ -113,9 +107,6 @@ class Message extends \yii\swiftmailer\Message
 
         return $this;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param string|array|User|User[]|null $emails

@@ -15,9 +15,6 @@ namespace craft\base;
  */
 trait PluginTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The plugin’s package name
      */

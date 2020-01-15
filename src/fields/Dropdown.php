@@ -20,9 +20,6 @@ use craft\fields\data\SingleOptionFieldData;
  */
 class Dropdown extends BaseOptionsField implements SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -39,16 +36,10 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         return SingleOptionFieldData::class;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $optgroups = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -61,9 +52,6 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

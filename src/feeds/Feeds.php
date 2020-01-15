@@ -27,9 +27,6 @@ use yii\base\InvalidConfigException;
  */
 class Feeds extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Fetches and parses an RSS or Atom feed, and returns info about the feed and its items.
      *
@@ -200,9 +197,6 @@ class Feeds extends Component
 
         return $items;
     }
-
-    // Private Methods
-    // =========================================================================\
 
     /**
      * Returns an array of a feed’s items.

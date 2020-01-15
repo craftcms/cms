@@ -25,9 +25,6 @@ use yii\base\InvalidConfigException;
  */
 class Site extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -97,9 +94,6 @@ class Site extends Model
      * @var \DateTime Date updated
      */
     public $dateUpdated;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the site’s base URL.

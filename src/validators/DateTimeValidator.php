@@ -18,9 +18,6 @@ use yii\validators\Validator;
  */
 class DateTimeValidator extends Validator
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -99,13 +99,7 @@ use yii\validators\Validator;
  */
 abstract class Element extends Component implements ElementInterface
 {
-    // Traits
-    // =========================================================================
-
     use ElementTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @since 3.3.6
@@ -328,9 +322,6 @@ abstract class Element extends Component implements ElementInterface
      * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
      */
     const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -931,9 +922,6 @@ abstract class Element extends Component implements ElementInterface
         return $result;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Revision creator ID to be saved
      * @see setRevisionCreatorId()
@@ -1040,9 +1028,6 @@ abstract class Element extends Component implements ElementInterface
      * @see setEnabledForSite()
      */
     private $_enabledForSite = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -2656,9 +2641,6 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Normalizes a field’s value.
      *
@@ -2935,9 +2917,6 @@ abstract class Element extends Component implements ElementInterface
     {
         return [];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns an element right before/after this one, from a given set of criteria.

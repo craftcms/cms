@@ -27,9 +27,6 @@ use yii\base\Event;
  */
 class MailerHelper
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering mailer transport adapter types.
      *
@@ -49,9 +46,6 @@ class MailerHelper
      * ```
      */
     const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
-
-    // Static
-    // =========================================================================
 
     /**
      * Returns all available mailer transport adapter classes.

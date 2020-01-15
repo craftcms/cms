@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class DefineComponentsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The component definitions
      */

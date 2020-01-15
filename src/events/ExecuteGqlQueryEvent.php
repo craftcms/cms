@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class ExecuteGqlQueryEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The access token used for this request.
      * @deprecated in 3.4.0. Use [[schemaId]] instead to determine schema used.

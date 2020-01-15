@@ -11,9 +11,6 @@ use craft\helpers\FileHelper;
  */
 class m151016_133600_delete_asset_thumbnails extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

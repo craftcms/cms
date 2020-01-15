@@ -22,16 +22,10 @@ use yii\base\Exception;
  */
 class DeleteUsers extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
      */
     public $transferContentTo;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -141,9 +135,6 @@ JS;
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a list of the user IDs that can't be deleted.

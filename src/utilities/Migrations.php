@@ -18,9 +18,6 @@ use craft\base\Utility;
  */
 class Migrations extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

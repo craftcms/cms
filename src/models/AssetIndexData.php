@@ -18,9 +18,6 @@ use DateTime;
  */
 class AssetIndexData extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -65,9 +62,6 @@ class AssetIndexData extends Model
      * @var bool In progress
      */
     public $inProgress = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

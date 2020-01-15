@@ -16,9 +16,6 @@ namespace craft\base;
  */
 interface Serializable
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the object’s serialized value.
      *

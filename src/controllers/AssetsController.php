@@ -51,16 +51,10 @@ use ZipArchive;
  */
 class AssetsController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Edits an asset.

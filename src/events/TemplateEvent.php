@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class TemplateEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The name of the template being rendered
      */

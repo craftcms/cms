@@ -66,9 +66,6 @@ use yii\base\Exception;
  */
 class Fields extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
      *
@@ -166,9 +163,6 @@ class Fields extends Component
     const CONFIG_FIELDGROUP_KEY = 'fieldGroups';
     const CONFIG_FIELDS_KEY = 'fields';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -204,9 +198,6 @@ class Fields extends Component
      * @var array
      */
     private $_savingFields = [];
-
-    // Public Methods
-    // =========================================================================
 
     // Groups
     // -------------------------------------------------------------------------
@@ -1588,9 +1579,6 @@ class Fields extends Component
             ]));
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving groups.

@@ -20,9 +20,6 @@ use craft\base\Model;
  */
 class FieldLayout extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -47,9 +44,6 @@ class FieldLayout extends Model
      * @var
      */
     private $_fields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

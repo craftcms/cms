@@ -21,16 +21,10 @@ use craft\validators\UniqueValidator;
  */
 class GqlToken extends Model
 {
-    // Constants
-    // =========================================================================
-
     /**
      * The public access token value.
      */
     const PUBLIC_TOKEN = '__PUBLIC__';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null ID
@@ -92,9 +86,6 @@ class GqlToken extends Model
      * @var bool Whether this is a temporary token
      */
     public $isTemporary = false;
-
-    // Public Methods
-    // =========================================================================
 
     public function __construct($config = [])
     {

@@ -22,16 +22,10 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\pgsql\Schema
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int The maximum length that objects' names can be.
      */
     public $maxObjectNameLength = 63;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates a query builder for the database.
@@ -222,9 +216,6 @@ class Schema extends \yii\db\pgsql\Schema
         return null;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Collects extra foreign key information details for the given table.
      *
@@ -341,9 +332,6 @@ ORDER BY i.relname, k';
             ':tableName' => $table->name,
         ])->queryAll();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the PGPASSWORD command for backup/restore actions.

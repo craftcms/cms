@@ -19,9 +19,6 @@ use craft\web\twig\variables\Cp;
  */
 interface PluginInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns supported plugin editions (lowest to highest).
      *
@@ -29,9 +26,6 @@ interface PluginInterface
      * @since 3.1.0
      */
     public static function editions(): array;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the plugin’s handle (really just an alias of [[\yii\base\Module::id]]).

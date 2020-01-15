@@ -37,18 +37,12 @@ use yii\web\ServerErrorHttpException;
  */
 class AppController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -448,9 +442,6 @@ class AppController extends Controller
         // Return the new plugin license info
         return $this->asJson(1);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.

@@ -18,9 +18,6 @@ use Craft;
  */
 class ElementIndexes
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the element index sources in the custom groupings/order.
      *

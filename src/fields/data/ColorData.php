@@ -28,16 +28,10 @@ use yii\base\BaseObject;
  */
 class ColorData extends BaseObject implements Serializable
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The color’s hex value
      */
     private $_hex;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.

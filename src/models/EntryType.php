@@ -26,9 +26,6 @@ use yii\base\InvalidConfigException;
  */
 class EntryType extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -73,9 +70,6 @@ class EntryType extends Model
      * @var string UID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

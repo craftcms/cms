@@ -40,9 +40,6 @@ use ZipArchive;
  */
 class DashboardController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Dashboard index.
      *
@@ -494,9 +491,6 @@ class DashboardController extends Controller
             'errors' => []
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.

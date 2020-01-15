@@ -18,9 +18,6 @@ use craft\db\Table;
  */
 class CreatePhpSessionTable extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

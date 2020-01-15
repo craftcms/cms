@@ -29,9 +29,6 @@ use craft\validators\UniqueValidator;
  */
 class Section extends Model
 {
-    // Constants
-    // =========================================================================
-
     const TYPE_SINGLE = 'single';
     const TYPE_CHANNEL = 'channel';
     const TYPE_STRUCTURE = 'structure';
@@ -40,9 +37,6 @@ class Section extends Model
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
     const PROPAGATION_METHOD_ALL = 'all';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null ID
@@ -118,9 +112,6 @@ class Section extends Model
      * @var EntryType[]|null
      */
     private $_entryTypes;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

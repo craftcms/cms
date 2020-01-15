@@ -33,9 +33,6 @@ use yii\base\InvalidConfigException;
  */
 class MatrixBlock extends Element implements BlockElementInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -156,9 +153,6 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Field ID
      */
@@ -212,9 +206,6 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @var ElementInterface[]|null
      */
     private $_eagerLoadedBlockTypeElements;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -468,9 +459,6 @@ class MatrixBlock extends Element implements BlockElementInterface
 
         parent::afterDelete();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the Matrix field.

@@ -32,9 +32,6 @@ class RebrandController extends Controller
      */
     private $_allowedTypes = ['logo', 'icon'];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Handles control panel logo and site icon uploads.
      *

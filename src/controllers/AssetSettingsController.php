@@ -20,9 +20,6 @@ use yii\web\Response;
  */
 class AssetSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

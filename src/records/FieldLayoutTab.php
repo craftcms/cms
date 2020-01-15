@@ -25,9 +25,6 @@ use yii\db\ActiveQueryInterface;
  */
 class FieldLayoutTab extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

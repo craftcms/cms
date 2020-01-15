@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class ReplaceAssetEvent extends AssetEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null file on server that is being used to replace
      */

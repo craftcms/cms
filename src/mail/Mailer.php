@@ -25,9 +25,6 @@ use yii\mail\MessageInterface;
  */
 class Mailer extends \yii\swiftmailer\Mailer
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The email template that should be used
      */
@@ -37,9 +34,6 @@ class Mailer extends \yii\swiftmailer\Mailer
      * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).
      */
     public $from;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Composes a new email based on a given key.

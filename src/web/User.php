@@ -34,9 +34,6 @@ use yii\web\Cookie;
  */
 class User extends \yii\web\User
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string the session variable name used to store the user session token.
      */
@@ -52,9 +49,6 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
     public $elevatedSessionTimeoutParam = '__elevated_timeout';
-
-    // Public Methods
-    // =========================================================================
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -393,9 +387,6 @@ class User extends \yii\web\User
         $session->remove('enableDebugToolbarForCp');
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -555,9 +546,6 @@ class User extends \yii\web\User
 
         parent::afterLogout($identity);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Validates that the request has a user agent and IP associated with it,

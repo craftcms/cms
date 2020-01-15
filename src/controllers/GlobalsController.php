@@ -26,9 +26,6 @@ use yii\web\Response;
  */
 class GlobalsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Index
      *

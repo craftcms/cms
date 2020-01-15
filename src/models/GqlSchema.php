@@ -21,9 +21,6 @@ use craft\validators\UniqueValidator;
  */
 class GqlSchema extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -54,9 +51,6 @@ class GqlSchema extends Model
      * @since 3.3.16
      */
     private $_cachedPairs = [];
-
-    // Public Methods
-    // =========================================================================
 
     public function __construct($config = [])
     {

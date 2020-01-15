@@ -29,9 +29,6 @@ use yii\web\Response;
  */
 class PluginStoreController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -271,9 +268,6 @@ class PluginStoreController extends Controller
 
         return $this->asJson(['success' => true]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the Plugin Store’s Vue App Base URL for Vue Router.

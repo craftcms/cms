@@ -46,13 +46,7 @@ use yii\helpers\Console;
  */
 class MigrateController extends BaseMigrateController
 {
-    // Traits
-    // =========================================================================
-
     use ControllerTrait;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
@@ -75,9 +69,6 @@ class MigrateController extends BaseMigrateController
      * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -343,9 +334,6 @@ class MigrateController extends BaseMigrateController
 
         return $res;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the migration manager that should be used for this request

@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class AssetTransformIndex extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -88,9 +85,6 @@ class AssetTransformIndex extends Model
      * @var AssetTransform|null The transform associated with this index
      */
     private $_transform;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

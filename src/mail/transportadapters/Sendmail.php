@@ -15,9 +15,6 @@ namespace craft\mail\transportadapters;
  */
 class Sendmail extends BaseTransportAdapter
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -25,9 +22,6 @@ class Sendmail extends BaseTransportAdapter
     {
         return 'Sendmail';
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

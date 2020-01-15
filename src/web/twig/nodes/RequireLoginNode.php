@@ -19,9 +19,6 @@ use Twig\Node\Node;
  */
 class RequireLoginNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Compiles a RequireLoginNode into PHP.
      *

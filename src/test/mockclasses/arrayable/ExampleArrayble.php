@@ -19,13 +19,7 @@ use yii\base\ArrayableTrait;
  */
 class ExampleArrayble implements Arrayable
 {
-    // Traits
-    // =========================================================================
-
     use ArrayableTrait;
-
-    // Public Properties
-    // =========================================================================
 
     /**
      * @var
@@ -36,9 +30,6 @@ class ExampleArrayble implements Arrayable
      * @var
      */
     public $extraField;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @return array

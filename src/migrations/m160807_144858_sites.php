@@ -23,9 +23,6 @@ use yii\db\Expression;
  */
 class m160807_144858_sites extends Migration
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var array The site FK columns ([table, column, not null?, locale column])
      */
@@ -43,16 +40,10 @@ class m160807_144858_sites extends Migration
         [Table::TEMPLATECACHES, 'siteId', true, 'locale'],
     ];
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The CASE SQL used to set site column values
      */
     protected $caseSql;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -494,9 +485,6 @@ class m160807_144858_sites extends Migration
             $this->update(Table::WIDGETS, ['settings' => Json::encode($settings)], ['id' => $result['id']]);
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Creates a new siteId column and migrates the locale data over

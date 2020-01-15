@@ -67,9 +67,6 @@ abstract class ObjectType extends GqlObjectType
         return $value;
     }
 
-    // Protected methods
-    // =========================================================================
-
     /**
      * Resolve a field value with arguments, context and resolve information.
      *

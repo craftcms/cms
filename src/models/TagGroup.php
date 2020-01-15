@@ -24,9 +24,6 @@ use craft\validators\UniqueValidator;
  */
 class TagGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -51,9 +48,6 @@ class TagGroup extends Model
      * @var int|null Field layout ID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

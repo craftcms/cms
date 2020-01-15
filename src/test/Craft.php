@@ -64,9 +64,6 @@ use yii\db\Exception;
  */
 class Craft extends Yii2
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var array A static version of the testing config.
      *
@@ -101,9 +98,6 @@ class Craft extends Yii2
      * @var array For expecting events code
      */
     protected $requiredEvents = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Craft constructor.
@@ -335,9 +329,6 @@ class Craft extends Yii2
         ]);
     }
 
-    // Helpers for test methods
-    // =========================================================================
-
     /**
      * Ensure that an event is triggered by the $callback() function.
      *
@@ -564,9 +555,6 @@ class Craft extends Yii2
 
         return $items;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param $event

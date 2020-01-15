@@ -206,9 +206,6 @@
                 }, this));
             },
 
-            // Private Methods
-            // =========================================================================
-
             _createConfirmDeleteModal: function($row) {
                 this.$rowToDelete = $row;
 

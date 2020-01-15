@@ -40,9 +40,6 @@ use yii\web\JqueryAsset;
  */
 class CpAsset extends AssetBundle
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -96,9 +93,6 @@ window.Craft = {$craftJson};
 JS;
         $view->registerJs($js, View::POS_HEAD);
     }
-
-    // Private Methods
-    // =========================================================================
 
     private function _registerTranslations(View $view)
     {

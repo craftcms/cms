@@ -23,16 +23,10 @@ use yii\base\InvalidArgumentException;
  */
 class FieldFixture extends Fixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $modelClass = Field::class;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

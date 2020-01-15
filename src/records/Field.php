@@ -31,16 +31,10 @@ use yii\db\ActiveQueryInterface;
  */
 class Field extends ActiveRecord
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
     private $_oldHandle;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Initializes the application component.

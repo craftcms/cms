@@ -23,9 +23,6 @@ use yii\base\ErrorException;
  */
 class DateTimeHelper
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @var int Number of seconds in a minute.
      */
@@ -55,16 +52,10 @@ class DateTimeHelper
      */
     const SECONDS_YEAR = 31556874;
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Translation pairs for [[translateDate()]]
      */
     private static $_translationPairs;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Converts a value into a DateTime object.
@@ -578,9 +569,6 @@ class DateTimeHelper
         $string .= $last;
         return $string;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Normalizes and returns a date string along with the format it was set in.

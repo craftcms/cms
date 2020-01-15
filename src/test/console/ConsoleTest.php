@@ -19,9 +19,6 @@ use yii\base\InvalidConfigException;
  */
 class ConsoleTest extends TestCase
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param string $command
      * @param array $parameters

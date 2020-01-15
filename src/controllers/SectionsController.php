@@ -31,9 +31,6 @@ use yii\web\Response;
  */
 class SectionsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

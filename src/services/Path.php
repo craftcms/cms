@@ -21,9 +21,6 @@ use yii\base\Exception;
  */
 class Path extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
@@ -43,9 +40,6 @@ class Path extends Component
      * @var
      */
     private $_vendorPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the path to the `config/` directory.

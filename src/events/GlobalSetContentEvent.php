@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class GlobalSetContentEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var GlobalSet|null The global set model associated with the event.
      */

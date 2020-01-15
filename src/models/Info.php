@@ -18,9 +18,6 @@ use craft\base\Model;
  */
 class Info extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -65,9 +62,6 @@ class Info extends Model
      * @var \DateTime|null Date created
      */
     public $dateCreated;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

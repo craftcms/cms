@@ -33,9 +33,6 @@ use yii\db\Exception as DbException;
  */
 class Drafts extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event DraftEvent The event that is triggered before a draft is created.
      */
@@ -67,9 +64,6 @@ class Drafts extends Component
      * @event DraftEvent The event that is triggered after a draft is applied to its source element.
      */
     const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
@@ -478,9 +472,6 @@ class Drafts extends Component
             Craft::info("Just deleted unsaved draft ID {$draftInfo['draftId']}", __METHOD__);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Creates a new row in the `drafts` table.

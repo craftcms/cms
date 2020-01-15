@@ -25,17 +25,11 @@ use yii\web\Response;
  */
 class ConfigSyncController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_RETRY = 'retry';
     const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
     const ACTION_REGENERATE_YAML = 'regenerate-yaml';
     const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
     const ACTION_INSTALL_PLUGIN = 'install-plugin';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
@@ -127,9 +121,6 @@ class ConfigSyncController extends BaseUpdaterController
 
         return $this->sendNextAction($this->_nextApplyYamlAction());
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

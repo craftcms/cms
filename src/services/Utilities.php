@@ -33,9 +33,6 @@ use yii\base\Component;
  */
 class Utilities extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
      *
@@ -57,9 +54,6 @@ class Utilities extends Component
      * ```
      */
     const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all available utility type classes.

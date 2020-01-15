@@ -35,9 +35,6 @@ use yii\web\ServerErrorHttpException;
  */
 class EntryRevisionsController extends BaseEntriesController
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Creates a new entry draft and redirects the client to its edit URL
      *
@@ -453,9 +450,6 @@ class EntryRevisionsController extends BaseEntriesController
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past revision.'));
         return $this->redirectToPostedUrl($revision);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Sets a draft's attributes from the post data.

@@ -23,9 +23,6 @@ use yii\db\Schema;
  */
 class Url extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,9 +39,6 @@ class Url extends Field implements PreviewableFieldInterface
         return 'string|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The input’s placeholder text
      */
@@ -54,9 +48,6 @@ class Url extends Field implements PreviewableFieldInterface
      * @var int The maximum length (in bytes) the field can hold
      */
     public $maxLength = 255;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

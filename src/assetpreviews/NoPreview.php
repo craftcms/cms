@@ -20,9 +20,6 @@ use craft\base\AssetPreview;
 class NoPreview extends AssetPreview
 {
 
-    // Public Methods
-    // =========================================================================
-
 
     /**
      * @inheritDoc

@@ -39,9 +39,6 @@ use yii\web\HttpException;
  */
 class Plugins extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event \yii\base\Event The event that is triggered before any plugins have been loaded
      */
@@ -102,9 +99,6 @@ class Plugins extends Component
 
     const CONFIG_PLUGINS_KEY = 'plugins';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array[] Custom plugin configurations.
      * @since 3.4.0
@@ -150,9 +144,6 @@ class Plugins extends Component
      * @var string[] Cache for [[getPluginHandleByClass()]]
      */
     private $_classPluginHandles = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1231,9 +1222,6 @@ class Plugins extends Component
             $this->_enabledPluginInfo[$handle]['licensedEdition'] = $licensedEdition;
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving sections.

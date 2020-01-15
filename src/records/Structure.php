@@ -23,13 +23,7 @@ use yii\db\ActiveQueryInterface;
  */
 class Structure extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

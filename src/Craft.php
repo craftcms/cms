@@ -27,9 +27,6 @@ use yii\web\Request;
  */
 class Craft extends Yii
 {
-    // Constants
-    // =========================================================================
-
     // Edition constants
     const Solo = 0;
     const Pro = 1;
@@ -42,9 +39,6 @@ class Craft extends Yii
      * @deprecated in 3.0.0. Use [[Pro]] instead.
      */
     const Client = 1;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var \craft\web\Application|\craft\console\Application The application instance.
@@ -60,9 +54,6 @@ class Craft extends Yii
      * @var array Field info for autoload()
      */
     private static $_fields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)

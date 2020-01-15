@@ -39,9 +39,6 @@ use yii\base\InvalidConfigException;
  */
 class Assets extends BaseRelationField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -73,9 +70,6 @@ class Assets extends BaseRelationField
     {
         return AssetQuery::class;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether related assets should be limited to a single folder
@@ -157,9 +151,6 @@ class Assets extends BaseRelationField
      * @var array|null References for files uploaded as data strings for this field.
      */
     private $_uploadedDataFiles;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -563,9 +554,6 @@ class Assets extends BaseRelationField
         return ['volumeId' => array_values($volumeIds)];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -667,9 +655,6 @@ class Assets extends BaseRelationField
 
         return $criteria;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns any files that were uploaded to the field.

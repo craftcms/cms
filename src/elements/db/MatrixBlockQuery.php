@@ -38,9 +38,6 @@ use yii\db\Connection;
  */
 class MatrixBlockQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -101,9 +98,6 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by typeId()
      */
     public $typeId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -453,9 +447,6 @@ class MatrixBlockQuery extends ElementQuery
         $this->typeId = $value;
         return $this;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -34,9 +34,6 @@ use yii\db\Connection;
  */
 class UserQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -142,9 +139,6 @@ class UserQuery extends ElementQuery
      * @used-by lastLoginDate()
      */
     public $lastLoginDate;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -545,9 +539,6 @@ class UserQuery extends ElementQuery
         return parent::status($value);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -656,9 +647,6 @@ class UserQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'can' param to the query being prepared.

@@ -24,9 +24,6 @@ use yii\base\InvalidConfigException;
  */
 class FieldLayoutTab extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -61,9 +58,6 @@ class FieldLayoutTab extends Model
      * @var FieldInterface[]|null
      */
     private $_fields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

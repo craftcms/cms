@@ -19,9 +19,6 @@ use craft\base\Model;
  */
 class Structure extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -36,9 +33,6 @@ class Structure extends Model
      * @var string|null UID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

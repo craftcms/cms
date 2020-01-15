@@ -19,9 +19,6 @@ use craft\web\UploadedFile;
  */
 class CraftSupport extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null From email
      */
@@ -51,9 +48,6 @@ class CraftSupport extends Model
      * @var UploadedFile|null Attachment
      */
     public $attachment;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

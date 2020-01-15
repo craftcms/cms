@@ -20,9 +20,6 @@ use yii\db\Exception as YiiDbException;
  */
 class Command extends \yii\queue\cli\Command
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Queue
      */
@@ -40,9 +37,6 @@ class Command extends \yii\queue\cli\Command
         'class' => VerboseBehavior::class,
     ];
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -50,9 +44,6 @@ class Command extends \yii\queue\cli\Command
     {
         return in_array($actionID, ['run', 'listen'], true);
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

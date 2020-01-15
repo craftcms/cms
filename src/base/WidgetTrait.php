@@ -15,9 +15,6 @@ namespace craft\base;
  */
 trait WidgetTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user’s chosen cospan for the widget
      */

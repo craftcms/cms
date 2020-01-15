@@ -36,9 +36,6 @@ use yii\base\InvalidConfigException;
  */
 class Install extends Migration
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The admin user’s username
      */
@@ -58,9 +55,6 @@ class Install extends Migration
      * @var Site|null The default site
      */
     public $site;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1125,9 +1119,6 @@ class Install extends Migration
             Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Attempts to install any plugins listed in project.yaml.

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DefineGqlTypeFieldsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of fields being defined for a GraphQL Type.
      */

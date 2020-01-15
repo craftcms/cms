@@ -18,9 +18,6 @@ use Craft;
  */
 class Deprecator
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the total number of deprecation errors that have been logged.
      *

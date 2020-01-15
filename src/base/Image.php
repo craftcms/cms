@@ -109,9 +109,6 @@ abstract class Image extends BaseObject
      */
     abstract public function getIsTransparent(): bool;
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Normalizes the given dimensions. If width or height is set to 'AUTO', we calculate the missing dimension.
      *

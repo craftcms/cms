@@ -48,13 +48,7 @@ use yii\db\ExpressionInterface;
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
-    // Traits
-    // =========================================================================
-
     use ArrayableTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
@@ -70,9 +64,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
-
-    // Static
-    // =========================================================================
 
     /**
      * @var bool
@@ -95,9 +86,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         return self::$_supportsRevisionParams = version_compare($schemaVersion, '3.2.6', '>=');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The name of the [[ElementInterface]] class.
@@ -468,9 +456,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var array|null
      */
     private $_searchScores;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor
@@ -1906,9 +1891,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this->count();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * This method is called at the beginning of preparing an element query for the query builder.
      *
@@ -2036,9 +2018,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         return parent::normalizeOrderBy($columns);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Combines the given condition with an alternative condition if there are any relevant placeholder elements.

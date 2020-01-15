@@ -35,16 +35,10 @@ use yii\db\Exception;
  */
 class UserPermissions extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
     const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var
@@ -55,9 +49,6 @@ class UserPermissions extends Component
      * @var
      */
     private $_permissionsByUserId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the known permissions, sorted by category.
@@ -452,9 +443,6 @@ class UserPermissions extends Component
         // Update caches
         $this->_permissionsByGroupId[$userGroup->id] = $permissions;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the entry permissions for a given Single section.

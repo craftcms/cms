@@ -20,9 +20,6 @@ use craft\db\TableSchema;
  */
 class MigrationHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a foreign key exists.
      *
@@ -655,9 +652,6 @@ class MigrationHelper
     {
         self::_addForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete, $migration);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Restores a foreign key.

@@ -17,13 +17,7 @@ use craft\base\RequestTrait;
  */
 class Request extends \yii\console\Request
 {
-    // Traits
-    // =========================================================================
-
     use RequestTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

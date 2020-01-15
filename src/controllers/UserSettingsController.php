@@ -23,9 +23,6 @@ use yii\web\Response;
  */
 class UserSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

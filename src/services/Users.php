@@ -49,9 +49,6 @@ use yii\db\Exception as DbException;
  */
 class Users extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event UserEvent The event that is triggered before a user's email is verified.
      */
@@ -141,9 +138,6 @@ class Users extends Component
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a user by their ID.
@@ -1135,9 +1129,6 @@ class Users extends Component
         // Allow events again
         $projectConfig->muteEvents = false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Gets a user record by its ID.

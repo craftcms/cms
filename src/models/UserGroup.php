@@ -21,9 +21,6 @@ use craft\validators\UniqueValidator;
  */
 class UserGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -43,9 +40,6 @@ class UserGroup extends Model
      * @var string|null UID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

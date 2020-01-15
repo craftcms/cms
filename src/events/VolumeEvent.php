@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class VolumeEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var VolumeInterface|null The volume associated with the event.
      */

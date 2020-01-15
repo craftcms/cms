@@ -133,9 +133,6 @@ use yii\web\ServerErrorHttpException;
  */
 trait ApplicationTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Craft’s schema version number.
      */
@@ -201,9 +198,6 @@ trait ApplicationTrait
      * @see saveInfoAfterRequest()
      */
     private $_waitingToSaveInfo = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Sets the target application language.
@@ -1327,9 +1321,6 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('volumes');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Initializes things that should happen before the main Application::init()

@@ -23,9 +23,6 @@ use craft\validators\UniqueValidator;
  */
 class AssetTransform extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -85,9 +82,6 @@ class AssetTransform extends Model
      * @var string|null UID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

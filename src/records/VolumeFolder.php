@@ -26,9 +26,6 @@ use yii\db\ActiveQueryInterface;
  */
 class VolumeFolder extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

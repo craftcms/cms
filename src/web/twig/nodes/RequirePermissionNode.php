@@ -18,9 +18,6 @@ use Twig\Node\Node;
  */
 class RequirePermissionNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

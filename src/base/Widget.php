@@ -17,13 +17,7 @@ use Craft;
  */
 abstract class Widget extends SavableComponent implements WidgetInterface
 {
-    // Traits
-    // =========================================================================
-
     use WidgetTrait;
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -69,9 +63,6 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     {
         return null;
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

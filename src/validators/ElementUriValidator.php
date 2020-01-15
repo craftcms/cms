@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class ElementUriValidator extends UriValidator
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

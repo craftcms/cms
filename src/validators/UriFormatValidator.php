@@ -19,9 +19,6 @@ use yii\validators\Validator;
  */
 class UriFormatValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether we should ensure that "{slug}" is used within the URI format.
      */
@@ -32,9 +29,6 @@ class UriFormatValidator extends Validator
      * @since 3.2.10
      */
     public $disallowTriggers = true;
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

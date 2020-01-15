@@ -21,9 +21,6 @@ use yii\base\Event;
  */
 class EventTriggeringComponent extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Triggers an event.
      */

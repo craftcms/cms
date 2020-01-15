@@ -19,9 +19,6 @@ use Twig\Node\Node;
  */
 class RequireGuestNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Compiles a RequireGuestNode into PHP.
      *

@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class VolumeFolder extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -58,9 +55,6 @@ class VolumeFolder extends Model
      * @var VolumeFolder[]|null
      */
     private $_children;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

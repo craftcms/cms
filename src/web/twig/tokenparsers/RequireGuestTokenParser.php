@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class RequireGuestTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
