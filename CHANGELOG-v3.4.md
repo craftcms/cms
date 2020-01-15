@@ -53,27 +53,27 @@
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
-- Added the `_count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
-- It’s now possible to filter users by user groups when querying for them using GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
-- Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch a single element using the GraphQL API. ([#5363](https://github.com/craftcms/cms/issues/5363))
-- The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
-- Improved the cropper behavior when dragging along the edges in the image editor.
+- Elements now have a `_count` field when queried via GraphQL, which returns the total number of related elements for a given relational field handle
+- It’s now possible to filter users by their groups when querying for them via GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
+- Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch single elements via GraphQL. ([#5363](https://github.com/craftcms/cms/issues/5363))
+- The Image Editor now displays the resulting image size when cropping. ([#4551](https://github.com/craftcms/cms/issues/4551))
+- Improved the crop behavior when dragging along the edges of an image in the Image Editor.
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.
 - Added `craft\assetpreviews\NoPreview`.
 - Added `craft\assetpreviews\PdfPreview`.
+- Added `craft\base\AssetPreview`.
 - Added `craft\base\AssetPreviewInterface`.
 - Added `craft\base\AssetPreviewTrait`.
-- Added `craft\base\AssetPreview`.
 - Added `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Added `craft\base\Element::ATTR_STATUS_MODIFIED`.
 - Added `craft\base\Element::ATTR_STATUS_OUTDATED`.
-- Added `craft\base\Element::EVENT_REGISTER_EXPORTERS`.
 - Added `craft\base\Element::defineExporters()`.
-- Added `craft\base\ElementExporterInterface`.
+- Added `craft\base\Element::EVENT_REGISTER_EXPORTERS`.
 - Added `craft\base\ElementExporter`.
+- Added `craft\base\ElementExporterInterface`.
 - Added `craft\base\ElementInterface::exporters()`
 - Added `craft\base\ElementInterface::getAttributeStatus()`.
 - Added `craft\base\ElementInterface::getDirtyAttributes()`.
@@ -112,6 +112,8 @@
 - Added `craft\controllers\GraphqlController::actionSaveToken()`.
 - Added `craft\controllers\GraphqlController::actionViewToken()`.
 - Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
+- Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
+- Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
 - Added `craft\db\Connection::DRIVER_MYSQL`.
 - Added `craft\db\Connection::DRIVER_PGSQL`.
 - Added `craft\elements\Asset::$uploaderId`.
@@ -121,13 +123,13 @@
 - Added `craft\elements\Asset::getPreviewThumbImg()`.
 - Added `craft\elements\Asset::getUploader()`.
 - Added `craft\elements\Asset::setUploader()`.
-- Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\elements\db\AssetQuery::$uploaderId`.
 - Added `craft\elements\db\AssetQuery::uploader()`.
 - Added `craft\elements\db\ElementQuery::clearCachedResult()`.
 - Added `craft\elements\db\MatrixBlockQuery::field()`.
 - Added `craft\elements\exporters\Expanded`.
 - Added `craft\elements\exporters\Raw`.
+- Added `craft\elements\MatrixBlock::$dirty`.
 - Added `craft\events\AssetPreviewEvent`.
 - Added `craft\events\BackupEvent::$ignoreTables`. ([#5330](https://github.com/craftcms/cms/issues/5330))
 - Added `craft\events\DefineGqlTypeFieldsEvent`.
@@ -168,24 +170,24 @@
 - Added `craft\services\Drafts::mergeSourceChanges()`.
 - Added `craft\services\Elements::createExporter()`.
 - Added `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`.
-- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
-- Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
 - Added `craft\services\Gql::deleteSchema()`.
 - Added `craft\services\Gql::deleteTokenById()`.
+- Added `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`.
 - Added `craft\services\Gql::getSchemaByUid()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
 - Added `craft\services\Gql::getTokenByUid()`.
 - Added `craft\services\Gql::getTokens()`.
 - Added `craft\services\Gql::getValidationRules()`.
+- Added `craft\services\Gql::GRAPHQL_COUNT_FIELD`.
 - Added `craft\services\Gql::handleChangedSchema()`.
 - Added `craft\services\Gql::handleDeletedSchema()`.
 - Added `craft\services\Gql::saveToken()`.
 - Added `craft\services\Path::getConfigDeltaPath()`.
 - Added `craft\services\Plugins::$pluginConfigs`. ([#1989](https://github.com/craftcms/cms/issues/1989))
+- Added `craft\services\ProjectConfig::$maxDeltas`.
 - Added `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Added `craft\services\ProjectConfig::CONFIG_ASSOC_KEY`.
-- Added `craft\services\ProjectConfig::$maxDeltas`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
 - Added `craft\services\ProjectConfig::CONFIG_DELTA_FILENAME`.
@@ -199,6 +201,9 @@
 - Added `craft\web\assets\queuemanager\QueueManagerAsset`.
 - Added `craft\web\Controller::requireGuest()`.
 - Added `craft\web\CsvResponseFormatter`.
+- Added `craft\web\twig\nodes\RequireGuestNode`.
+- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
+- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added `craft\web\User::guestRequired()`.
 - Added `craft\web\View::$minifyCss`.
 - Added `craft\web\View::$minifyJs`.
@@ -206,9 +211,6 @@
 - Added `craft\web\View::getIsDeltaRegistrationActive()`.
 - Added `craft\web\View::registerDeltaName()`.
 - Added `craft\web\View::setIsDeltaRegistrationActive()`.
-- Added `craft\web\twig\nodes\RequireGuestNode`.
-- Added `craft\web\twig\tokenparsers\RequireGuestTokenParser`.
-- Added `craft\web\twig\variables\Paginate::getDynamicRangeUrls()`, making it easy to create Google-style pagination links. ([#5005](https://github.com/craftcms/cms/issues/5005))
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
 - Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `beforeUpdateIframe` and `switchTarget` events to the `Craft.Preview` JavaScript class. ([#5359](https://github.com/craftcms/cms/issues/5359))
@@ -305,6 +307,6 @@
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 - Fixed a bug where the image editor would not immediately apply new aspect ratio selections when cropping images.
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
-- Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
+- Fixed a bug where it wasn’t possible to use aliases for Matrix fields when querying via GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 - Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
-- Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
+- Fixed a bug where deactivating the Crop tool in the Image Editor would not set the image zoom correctly for straightened images.

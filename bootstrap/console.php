@@ -22,8 +22,7 @@ setlocale(
     LC_CTYPE,
     'C.UTF-8', // libc >= 2.13
     'C.utf8', // different spelling
-    'en_US.UTF-8', // fallback to lowest common denominator
-    'en_US.utf8' // different spelling for fallback
+    'en_US.UTF-8' // fallback to lowest common denominator
 );
 
 // Set default timezone to UTC

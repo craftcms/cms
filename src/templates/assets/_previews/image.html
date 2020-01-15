@@ -1,28 +1,18 @@
-<img src="{{ assetUrl }}" width="{{ asset.width }}" height="{{ asset.height }}" data-maxWidth="{{ asset.width }}" data-maxHeight="{{ asset.height }}" />
+<img id="preview-image" src="{{ assetUrl }}" width="{{ asset.width }}" height="{{ asset.height }}" data-maxWidth="{{ asset.width }}" data-maxHeight="{{ asset.height }}" onload="resizePreviewImage()" />
+
 {% js %}
+function resizePreviewImage() {
     var $instance = Craft.PreviewFileModal.openInstance;
     var containerHeight = Garnish.$win.height() * 0.66;
     var containerWidth = Math.min(containerHeight / 3 * 4, Garnish.$win.width() - $instance.settings.minGutter * 2);
     containerHeight = containerWidth / 4 * 3;
 
-    if (startingWidth && startingHeight) {
-        var ratio = startingWidth / startingHeight;
-        containerWidth =  Math.min(startingWidth, Garnish.$win.width() - $instance.settings.minGutter * 2);
-        containerHeight = Math.min(containerWidth / ratio, Garnish.$win.height() - $instance.settings.minGutter * 2);
-        containerWidth = containerHeight * ratio;
+    var $img = $('img#preview-image');
 
-        // This might actually have put width over the viewport limits, so doublecheck
-        if (containerWidth > Math.min(startingWidth, Garnish.$win.width() - $instance.settings.minGutter * 2)) {
-            containerWidth =  Math.min(startingWidth, Garnish.$win.width() - $instance.settings.minGutter * 2);
-            containerHeight = containerWidth / ratio;
-        }
-    }
-
-    $instance.find('img').css({
+    $img.css({
         width: containerWidth,
         height: containerHeight
     });
-    var $img = $instance.find('img');
 
     if ($instance.loaded && $img.length) {
         // Make sure we maintain the ratio
@@ -30,8 +20,8 @@
         var maxWidth = $img.data('maxwidth'),
             maxHeight = $img.data('maxheight'),
             imageRatio = maxWidth / maxHeight,
-            desiredWidth = $instance.desiredWidth ? $instance.desiredWidth : $instance.width(),
-            desiredHeight = $instance.desiredHeight ? $instance.desiredHeight : $instance.height(),
+            desiredWidth = $instance.desiredWidth ? $instance.desiredWidth : $instance.getWidth(),
+            desiredHeight = $instance.desiredHeight ? $instance.desiredHeight : $instance.getHeight(),
             width = Math.min(desiredWidth, maxWidth),
             height = Math.round(Math.min(maxHeight, width / imageRatio));
 
@@ -62,4 +52,5 @@
 
         $img.css({'width': containerWidth, 'height': containerHeight});
     }
+}
 {% endjs %}

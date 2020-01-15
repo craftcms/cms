@@ -3,10 +3,24 @@
 ## Unreleased
 
 ### Added
+- Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
+- Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
+
+### Fixed
+- Fixed a SQL error that could occur when updating to Craft 3.4.
+
+## 3.4.0-RC1.1 - 2020-01-14
+
+### Fixed
+- Fixed a PHP error that would occur when running console commands. ([#5436](https://github.com/craftcms/cms/issues/5436))
+
+## 3.4.0-RC1 - 2020-01-14
+
+### Added
 - “Set Status” element actions no longer have the option to disable multi-site elements globally; only for the currently selected site. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
 - Multi-site entries’ edit pages no longer have the option to set the entry’s global status. Instead, only the current site’s status is shown by default, and that setting can be expanded to show all sites that the user has permission to edit, for bulk-editing the entry’s status across multiple sites. ([#2817](https://github.com/craftcms/cms/issues/2817), [#2899](https://github.com/craftcms/cms/issues/2899))
-- The crop area is now displayed underneath when cropping an image in the image editor. ([#4551](https://github.com/craftcms/cms/issues/4551))
-- Improved the cropper behavior when dragging along the edges in the image editor.
+- The Image Editor now displays the resulting image size when cropping. ([#4551](https://github.com/craftcms/cms/issues/4551))
+- Improved the crop behavior when dragging along the edges of an image in the Image Editor.
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
 - Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `combine()` Twig function.
@@ -55,7 +69,7 @@
 - Fixed a bug where forward slashes weren’t being trimmed from database URLs’ `path` params when building the connection DSN string.
 - Fixed an error that occurred when updating from Craft 3.0. ([#5391](https://github.com/craftcms/cms/issues/5391))
 - Fixed an error that occurred when updating from Craft 2. ([#5402](https://github.com/craftcms/cms/issues/5402))
-- Fixed a bug where exiting cropping mode on straightened images would not set the image zoom correctly.
+- Fixed a bug where deactivating the Crop tool in the Image Editor would not set the image zoom correctly for straightened images.
 - Fixed a bug where control panel page content could be scrolled out of view when its height was less than the viewport height. ([#5347](https://github.com/craftcms/cms/issues/5347))
 
 ## 3.4.0-beta.5 - 2020-01-02
@@ -64,8 +78,8 @@
 - Added new “View files uploaded by other users”, “Edit files uploaded by other users”, “Replace files uploaded by other users”, “Remove files uploaded by other users”, and “Edit images uploaded by other users” user permissions.
 - Assets fields now have a “Show unpermitted files setting, which determines whether the field should show files that the user doesn’t have permission to view per the new “View files uploaded by other users” permission.
 - It’s now possible to filter element query results by their related elements using relational fields’ element query params (e.g. `publisher(100)` rather than `relatedTo({targetElement: 100, field: 'publisher'})`). ([#5200](https://github.com/craftcms/cms/issues/5200))
-- It’s now possible to filter users by user groups when querying for them using GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
-- Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch a single element using the GraphQL API. ([#5363](https://github.com/craftcms/cms/issues/5363))
+- It’s now possible to filter users by their groups when querying for them via GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
+- Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch single elements via GraphQL. ([#5363](https://github.com/craftcms/cms/issues/5363))
 - Added `craft\controllers\UsersController::actionSessionInfo()`. ([#5355](https://github.com/craftcms/cms/issues/5355))
 - Added `craft\gql\types\Number`.
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
@@ -76,7 +90,7 @@
 - Number fields now return the `Number` type when queried via GraphQL, which can be an integer, a float, or null. ([#5344](https://github.com/craftcms/cms/issues/5344))
 - The `loginPath` and `logoutPath` config settings can now be set to `false` to disable front-end login/logout. ([#5352](https://github.com/craftcms/cms/issues/5352))
 - The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.
-- The `__count` field when querying Elements using GraphQL has been renamed to `_count`.
+- Renamed the `__count` GraphQL field on elements to `_count`.
 - Element index pages no longer link to elements’ edit pages if `getIsEditable()` returns `false`.
 - Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
 - `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
@@ -104,7 +118,7 @@
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
 - It’s now possible to query for elements by their custom field values via GraphQL. ([#5208](https://github.com/craftcms/cms/issues/5208))
-- Added the `__count` field to all Elements when using GraphQL that returns the total related elements for a field. ([#4847](https://github.com/craftcms/cms/issues/4847))
+- Elements now have a `__count` field when queried via GraphQL, which returns the total number of related elements for a given relational field handle. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
 - Added `craft\controllers\AssetsController::actionEditAsset()`.
 - Added `craft\controllers\AssetsController::actionSaveAsset()`.
@@ -135,7 +149,7 @@
 - Fixed a bug where the `maxBackups` config setting wasn’t getting applied if a custom `backupCommand` was set.
 - Fixed a bug where changes to entry types would not be synced when using project config. ([#5332](https://github.com/craftcms/cms/issues/5332))
 - Fix a php error where some GraphQL objects weren't extending the parent objects correctly.
-- Fixed a bug where it was impossible to use aliases for matrix fields when using GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
+- Fixed a bug where it wasn’t possible to use aliases for Matrix fields when querying via GraphQL. ([#5008](https://github.com/craftcms/cms/issues/5008))
 - Fixed an error that occurred when renaming a site group. ([#5337](https://github.com/craftcms/cms/issues/5337))
 - Fixed a bug where section names on the Settings → Sections page were linking to their entry type indexes. ([#5339](https://github.com/craftcms/cms/issues/5339))
 - Fixed an error that occurred when saving a user group. ([#5348](https://github.com/craftcms/cms/issues/5348))
@@ -364,7 +378,16 @@
 - Fixed a SQL error that could occur if the `info` table has more than one row. ([#5222](https://github.com/craftcms/cms/issues/5222))
 - Fixed a layout issue where the control panel footer would be hidden if the Debug Toolbar was shown. ([#4591](https://github.com/craftcms/cms/issues/4591))
 
-## Unreleased (3.3)
+## 3.3.20.1 - 2020-01-14
+
+### Fixed
+- Fixed a PHP error that would occur when running console commands. ([#5436](https://github.com/craftcms/cms/issues/5436))
+
+## 3.3.20 - 2020-01-14
+
+### Changed
+- The control panel will now display an alert if `useProjectConfigFile` is enabled, but the `project.yaml` file isn’t writable. ([#4319](https://github.com/craftcms/cms/issues/4319))
+- Browser-based form validation is now disabled for element editor HUDs. ([#5433](https://github.com/craftcms/cms/issues/5433))
 
 ### Fixed
 - Fixed a bug where entry revision menus could list sites that the entry didn’t support. ([#5387](https://github.com/craftcms/cms/issues/5387))
@@ -373,8 +396,10 @@
 - Fixed a bug where an unknown error was displayed when attempting to create an Asset folder without proper permissions. ([#5223](https://github.com/craftcms/cms/issues/5223))
 - Fixed a PHP warning that occurred sometimes when Craft was attempting to list resized versions of asset images. ([#5399](https://github.com/craftcms/cms/issues/5399))
 - Fixed a bug where preview target URLs weren’t getting generated correctly if they contained an anchor. ([#5404](https://github.com/craftcms/cms/issues/5404))
-- Fixed a bug where preview iframes could lose their scroll positions between refreshes. ([#5404](https://github.com/craftcms/cms/issues/5404))
+- Fixed couple bugs related to entry preview frames maintaining their scroll position between refreshes. ([#5404](https://github.com/craftcms/cms/issues/5404))
 - Fixed a bug where Matrix blocks weren’t getting updated correctly when their field’s Propagation Method setting was changed via `project.yaml`. ([#5295](https://github.com/craftcms/cms/issues/5295))
+- Fixed an error that could occur when syncing the project config if a Matrix field had been changed to something else. ([#5419](https://github.com/craftcms/cms/issues/5419))
+- Fixed a bug where changes to an entry draft’s name or notes weren’t getting saved until the next draft autosave. ([#5432](https://github.com/craftcms/cms/issues/5432))
 
 ### Security
 - Fixed XSS vulnerabilities.

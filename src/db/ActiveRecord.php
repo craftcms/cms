@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 
@@ -22,6 +23,13 @@ use craft\helpers\StringHelper;
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
     /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     * @since 3.4.0
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
      * @inheritdoc
      * @since 3.4.0
      */
@@ -31,6 +39,18 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             $value = $this->_prepareValue($name, $value);
         }
         parent::__set($name, $value);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function behaviors()
+    {
+        // Fire a 'defineBehaviors' event
+        $event = new DefineBehaviorsEvent();
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        return $event->behaviors;
     }
 
     /**
