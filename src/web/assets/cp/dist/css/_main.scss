@@ -613,7 +613,7 @@ td.right {
   vertical-align: bottom;
   display: inline-block;
   width: 1em;
-  height: 16px;
+  height: 1.375em;
   text-align: center;
   cursor: pointer;
   overflow: hidden;
@@ -3938,6 +3938,10 @@ div.checkbox {
   line-height: 16px;
   height: 16px;
   cursor: pointer;
+
+  .info {
+    height: 16px;
+  }
 }
 
 input.checkbox:disabled + label,
