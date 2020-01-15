@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a SQL error that could occur when updating to Craft 3.4.
+- Fixed a bug where newly-created widgets didn’t have subtitles.
 
 ## 3.4.0-RC1.1 - 2020-01-14
 
