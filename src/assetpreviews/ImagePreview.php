@@ -19,16 +19,21 @@ use craft\base\AssetPreview;
  */
 class ImagePreview extends AssetPreview
 {
+    /**
+     * @var string Body html.
+     */
+    private $bodyHtml = '';
+
+    /**
+     * @var string Foot html.
+     */
+    private $footHtml = '';
 
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritDoc
-     */
-    public function getModalHtml(): string
+    public function init()
     {
-
         $volume = $this->asset->getVolume();
 
         if ($volume->hasUrls) {
@@ -39,9 +44,29 @@ class ImagePreview extends AssetPreview
         }
 
         $view = Craft::$app->getView();
-        return $view->renderTemplate('assets/_previews/image', [
+        $this->bodyHtml = $view->renderTemplate('assets/_previews/image', [
             'asset' => $this->asset,
             'assetUrl' => $assetUrl
         ]);
+
+        $this->footHtml = $view->getBodyHtml();
+
+        parent::init();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getModalHtml(): string
+    {
+        return $this->bodyHtml;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFootHtml()
+    {
+        return $this->footHtml;
     }
 }
