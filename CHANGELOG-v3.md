@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
 - Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
 
