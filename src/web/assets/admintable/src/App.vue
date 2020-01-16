@@ -222,6 +222,7 @@
                 checks: [],
                 currentPage: 1,
                 detailRow: AdminTableDetailRow,
+                dragging: false,
                 isEmpty: false,
                 isLoading: true,
                 searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
@@ -239,8 +240,12 @@
 
                 if (this.canReorder) {
                     this.sortable = Sortable.create(tableBody, {
+                        animation: 150,
                         handle: '.move.icon',
-                        onSort: this.handleReorder
+                        ghostClass: 'vue-admin-table-drag',
+                        onSort: this.handleReorder,
+                        onStart: this.startReorder,
+                        onEnd: this.endReorder,
                     })
                 }
                 this.isEmpty = (this.$refs.vuetable.tableData.length) ? false : true;
@@ -259,6 +264,14 @@
 
             loading() {
               this.isLoading = true;
+            },
+
+            startReorder() {
+                this.dragging = true;
+            },
+
+            endReorder() {
+                this.dragging = false;
             },
 
             handleReorder(ev) {
@@ -445,13 +458,18 @@
             },
 
             tableCss() {
+                var tableClass = this.tableClass;
+                if (this.dragging) {
+                    tableClass = tableClass + ' vue-admin-table-dragging';
+                }
+
                 return {
                     ascendingClass: 'ordered asc',
                     descendingClass: 'ordered desc',
                     sortableIcon: 'orderable',
                     handleIcon: 'move icon',
                     loadingClass: 'loading',
-                    tableClass: this.tableClass,
+                    tableClass: tableClass,
                 }
             }
         },
@@ -509,7 +527,17 @@
         margin: 0;
     }
 
+    .vue-admin-table-drag {
+        background: #f3f7fc;
+    }
+
     table thead th.sortable:hover {
         background-color: #f9f9f9;
     }
+
+
+    table.data.vue-admin-table-dragging tbody tr:not(.disabled):hover td {
+        background-color: transparent;
+    }
+
 </style>
