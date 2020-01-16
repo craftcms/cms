@@ -12,6 +12,7 @@
 - Fixed a bug where newly-created widgets didn’t have subtitles.
 - Fixed a PHP error that could occur when running jobs from the queue in some PostgreSQL installations. ([#2715](https://github.com/craftcms/cms/issues/2715))
 - Fixed info icon alignment issues. ([#5444](https://github.com/craftcms/cms/issues/5444))
+- Fixed a bug where some classes didn’t support `EVENT_DEFINE_BEHAVIORS`.
 
 ## 3.4.0-RC1.1 - 2020-01-14
 

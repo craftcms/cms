@@ -51,16 +51,16 @@ class MailSettings extends Model
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'fromEmail',
-                    'fromName',
-                    'template',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'fromEmail',
+                'fromName',
+                'template',
+            ],
         ];
+        return $behaviors;
     }
 
     /**

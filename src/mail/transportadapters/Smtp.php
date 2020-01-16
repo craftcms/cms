@@ -66,17 +66,17 @@ class Smtp extends BaseTransportAdapter
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'host',
-                    'port',
-                    'username',
-                    'password',
-                ],
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'host',
+                'port',
+                'username',
+                'password',
             ],
         ];
+        return $behaviors;
     }
 
     /**

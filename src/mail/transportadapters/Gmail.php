@@ -46,15 +46,15 @@ class Gmail extends BaseTransportAdapter
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'username',
-                    'password',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'username',
+                'password',
+            ],
         ];
+        return $behaviors;
     }
 
     /**

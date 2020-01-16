@@ -115,14 +115,14 @@ class Site extends Model
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'baseUrl',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'baseUrl',
+            ],
         ];
+        return $behaviors;
     }
 
     /**
