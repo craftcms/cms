@@ -10,6 +10,7 @@
 
 ### Changed
 - Improved the control panel styling.
+- Element indexes now load up to 100 elements per page/batch, rather than 50. ([#4555](https://github.com/craftcms/cms/issues/4555))
 
 ### Fixed
 - Fixed a SQL error that could occur when updating to Craft 3.4.

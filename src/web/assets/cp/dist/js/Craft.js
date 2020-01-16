@@ -3730,7 +3730,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             modal: null,
             storageKey: null,
             criteria: null,
-            batchSize: 50,
+            batchSize: 100,
             disabledElementIds: [],
             selectable: false,
             multiSelect: false,
