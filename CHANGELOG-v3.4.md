@@ -313,3 +313,4 @@
 - Fixed a bug where deactivating the Crop tool in the Image Editor would not set the image zoom correctly for straightened images.
 - Fixed a PHP error that could occur when running jobs from the queue in some PostgreSQL installations. ([#2715](https://github.com/craftcms/cms/issues/2715))
 - Fixed a bug where some classes didn’t support `EVENT_DEFINE_BEHAVIORS`.
+- Fixed a bug where directives applied to object fields would be ignored when using GraphQL.
