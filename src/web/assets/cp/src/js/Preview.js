@@ -23,6 +23,7 @@ Craft.Preview = Garnish.Base.extend(
 
         isActive: false,
         activeTarget: 0,
+        draftId: null,
         url: null,
         fields: null,
 
@@ -295,6 +296,7 @@ Craft.Preview = Garnish.Base.extend(
 
             var target = this.draftEditor.settings.previewTargets[this.activeTarget];
             var refresh = !!(
+                this.draftId !== (this.draftId = this.draftEditor.settings.draftId) ||
                 !this.$iframe ||
                 resetScroll ||
                 typeof target.refresh === 'undefined' ||
@@ -303,7 +305,6 @@ Craft.Preview = Garnish.Base.extend(
 
             this.trigger('beforeUpdateIframe', {
                 target: target,
-                $iframe: this.$iframe,
                 resetScroll: resetScroll,
                 refresh: refresh,
             });
@@ -313,9 +314,7 @@ Craft.Preview = Garnish.Base.extend(
                 return;
             }
 
-            var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
-
-            this.draftEditor.getTokenizedPreviewUrl(url, 'x-craft-live-preview').then(function(url) {
+            this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function(url) {
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {
