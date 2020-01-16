@@ -789,7 +789,7 @@ $toolbarIconColor: darken($inputColor, 10%);
           border-radius: 4px;
           background-color: $linkColor;
           opacity: 0;
-          transition: opacity linear 150ms, left linear 120ms, right linear 150ms;
+          transition: opacity linear 150ms, left linear 150ms, right linear 150ms;
         }
 
         &:not(.sel) {
@@ -805,7 +805,6 @@ $toolbarIconColor: darken($inputColor, 10%);
           &:before {
             @include left(24px);
             opacity: 1;
-            transition: opacity linear 250ms, left linear 250ms, right linear 250ms;
           }
         }
       }

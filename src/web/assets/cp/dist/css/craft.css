@@ -1931,14 +1931,14 @@ body.rtl #sidebar-container { margin-right: -24px; }
 #sidebar { -webkit-box-sizing: border-box; box-sizing: border-box; padding: 0 24px; width: 249px; background-color: transparent; }
 #sidebar.fixed { position: fixed; overflow-y: auto; padding-top: 14px; padding-bottom: 14px; }
 #sidebar nav li a { position: relative; -webkit-transition: color linear 100ms, padding-left linear 150ms, padding-right linear 150ms; transition: color linear 100ms, padding-left linear 150ms, padding-right linear 150ms; }
-#sidebar nav li a:before { content: '.'; display: block; content: '.'; font-size: 0; position: absolute; top: calc(50% - 4px); width: 8px; height: 8px; border-radius: 4px; background-color: #0B69A3; opacity: 0; -webkit-transition: opacity linear 150ms, left linear 120ms, right linear 150ms; transition: opacity linear 150ms, left linear 120ms, right linear 150ms; }
+#sidebar nav li a:before { content: '.'; display: block; content: '.'; font-size: 0; position: absolute; top: calc(50% - 4px); width: 8px; height: 8px; border-radius: 4px; background-color: #0B69A3; opacity: 0; -webkit-transition: opacity linear 150ms, left linear 150ms, right linear 150ms; transition: opacity linear 150ms, left linear 150ms, right linear 150ms; }
 body.ltr #sidebar nav li a:before { left: 20px; }
 body.rtl #sidebar nav li a:before { right: 20px; }
 #sidebar nav li a:not(.sel):hover { color: #0B69A3; }
 #sidebar nav li a.sel { background-color: transparent; color: #0B69A3; }
 body.ltr #sidebar nav li a.sel { padding-left: 39px; }
 body.rtl #sidebar nav li a.sel { padding-right: 39px; }
-#sidebar nav li a.sel:before { opacity: 1; -webkit-transition: opacity linear 250ms, left linear 250ms, right linear 250ms; transition: opacity linear 250ms, left linear 250ms, right linear 250ms; }
+#sidebar nav li a.sel:before { opacity: 1; }
 body.ltr #sidebar nav li a.sel:before { left: 24px; }
 body.rtl #sidebar nav li a.sel:before { right: 24px; }
 
