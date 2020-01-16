@@ -616,17 +616,9 @@ JS;
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        // Figure out which target site to use
-        $targetSite = $this->targetSiteId($firstElement);
-
         return [
             'elementType' => static::elementType(),
             'map' => $map,
-            'criteria' => [
-                'siteId' => '*',
-                'unique' => true,
-                'preferSites' => [$targetSite],
-            ],
         ];
     }
 
