@@ -70,7 +70,11 @@ class Transform extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
-        if (!$source instanceof Asset || $resolveInfo->fieldName !== 'url') {
+        $onAssetElement = $source === null && $value instanceof Asset;
+        $onAssetElementList = $source === null && is_array($value) && !empty($value);
+        $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
+
+        if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments) ) {
             return $value;
         }
 
@@ -85,6 +89,32 @@ class Transform extends Directive
             $transform = $arguments;
         }
 
-        return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
+        // If this directive is applied to an entire Asset
+        if ($onAssetElement) {
+            return $value->setTransform($transform);
+        }
+
+        if ($onAssetElementList) {
+            foreach ($value as &$asset) {
+                // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
+                if ($asset instanceof Asset) {
+                    $asset->setTransform($transform);
+                }
+            }
+
+            return $value;
+        }
+
+        switch ($resolveInfo->fieldName)
+        {
+            case 'height':
+                return $source->getHeight($transform);
+            case 'width':
+                return $source->getWidth($transform);
+            case 'url':
+                return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
+        }
+
+        return $value;
     }
 }

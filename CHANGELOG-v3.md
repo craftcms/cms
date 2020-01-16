@@ -6,6 +6,7 @@
 - The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
 - Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
+- It’s now possible to apply the Transform GraphQL directive to the entire Asset element. ([#5425](https://github.com/craftcms/cms/issues/5425))
 
 ### Fixed
 - Fixed a SQL error that could occur when updating to Craft 3.4.
@@ -14,6 +15,8 @@
 - Fixed a PHP error that could occur when running jobs from the queue in some PostgreSQL installations. ([#2715](https://github.com/craftcms/cms/issues/2715))
 - Fixed info icon alignment issues. ([#5444](https://github.com/craftcms/cms/issues/5444))
 - Fixed a bug where some classes didn’t support `EVENT_DEFINE_BEHAVIORS`.
+- Fixed a bug where directives applied to object fields would be ignored when using GraphQL.
+- Fixed admin table reordering to make dragging more visually obvious.
 
 ## 3.4.0-RC1.1 - 2020-01-14
 

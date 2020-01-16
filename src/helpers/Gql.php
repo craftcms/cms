@@ -9,8 +9,10 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\GqlException;
+use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\UnionType;
 
 /**
@@ -191,5 +193,33 @@ class Gql
         }
 
         return $schema;
+    }
+
+    /**
+     * Apply directives (if any) to a resolved value according to source and resolve info.
+     *
+     * @param $source
+     * @param ResolveInfo $resolveInfo
+     * @param $value
+     * @return mixed
+     */
+    public static function applyDirectives($source, ResolveInfo $resolveInfo, $value)
+    {
+        if (isset($resolveInfo->fieldNodes[0]->directives)) {
+            foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
+                /** @var Directive $directiveEntity */
+                $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
+                $arguments = [];
+
+                if (isset($directive->arguments[0])) {
+                    foreach ($directive->arguments as $argument) {
+                        $arguments[$argument->name->value] = $argument->value->value;
+                    }
+                }
+
+                $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
+            }
+        }
+        return $value;
     }
 }

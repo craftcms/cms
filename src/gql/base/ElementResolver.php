@@ -9,6 +9,7 @@ namespace craft\gql\base;
 
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -43,7 +44,8 @@ abstract class ElementResolver extends Resolver
     public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
-        return $query instanceof ElementQuery ? $query->one() : $query;
+        $value = $query instanceof ElementQuery ? $query->one() : $query;
+        return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
 
     /**
@@ -52,7 +54,8 @@ abstract class ElementResolver extends Resolver
     public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
-        return $query instanceof ElementQuery ? $query->all() : $query;
+        $value = $query instanceof ElementQuery ? $query->all() : $query;
+        return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
 
     /**
