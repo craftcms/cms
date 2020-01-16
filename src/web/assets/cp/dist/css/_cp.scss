@@ -264,7 +264,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-bottom: 10px;
 
       li a {
-        @include padding(3px, 14px, 3px, 56px);
+        @include padding(3px, 14px, 3px, 56px, !important);
         font-size: 12px;
 
         &:not(.active) {

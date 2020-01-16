@@ -26,8 +26,8 @@ body { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-or
 #login-form.reset-password #loginName { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
 
 #password { margin: 0 -1px -1px; border-radius: 0 0 5px 5px; }
-body.ltr #password { padding: 14px 5em 14px 16px; }
-body.rtl #password { padding: 14px 16px 14px 5em; }
+body.ltr #password { padding: 14px 5em 14px 16px ; }
+body.rtl #password { padding: 14px 16px 14px 5em ; }
 
 #password-field .passwordwrapper .password-toggle { top: 14px; }
 body.ltr #password-field .passwordwrapper .password-toggle { right: 14px; }

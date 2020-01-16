@@ -357,12 +357,12 @@ $checkboxSize: 16px;
   }
 }
 
-@mixin padding($t, $r, $b, $l) {
+@mixin padding($t, $r, $b, $l, $important: '') {
   body.ltr & {
-    padding: $t $r $b $l;
+    padding: $t $r $b $l unquote($important);
   }
   body.rtl & {
-    padding: $t $l $b $r;
+    padding: $t $l $b $r unquote($important);
   }
 }
 

@@ -17,8 +17,8 @@
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 h2 { margin: 7px 0 14px; font-weight: normal; text-align: center; color: #7b8793; }
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results { position: relative; padding: 14px 0 14px; }
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a { display: block; position: relative; }
-body.ltr .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a { padding: 3px 0 3px 20px; }
-body.rtl .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a { padding: 3px 20px 3px 0; }
+body.ltr .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a { padding: 3px 0 3px 20px ; }
+body.rtl .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a { padding: 3px 20px 3px 0 ; }
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a .status { position: absolute; top: 6px; }
 body.ltr .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a .status { left: 0; }
 body.rtl .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-results a .status { right: 0; }
