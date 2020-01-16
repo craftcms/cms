@@ -1081,7 +1081,7 @@ class Elements extends Component
 
                 if (!$persistingElementIsInStructureToo) {
                     $db->createCommand()
-                        ->update(Table::RELATIONS,
+                        ->update(Table::STRUCTUREELEMENTS,
                             [
                                 'elementId' => $prevailingElement->id
                             ],

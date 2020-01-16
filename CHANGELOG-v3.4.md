@@ -315,3 +315,4 @@
 - Fixed a PHP error that could occur when running jobs from the queue in some PostgreSQL installations. ([#2715](https://github.com/craftcms/cms/issues/2715))
 - Fixed a bug where some classes didn’t support `EVENT_DEFINE_BEHAVIORS`.
 - Fixed a bug where directives applied to object fields would be ignored when using GraphQL.
+- Fixed a SQL error that could occur when merging an element that belonged to a structure into another element that didn’t. ([#5450](https://github.com/craftcms/cms/issues/5450))
