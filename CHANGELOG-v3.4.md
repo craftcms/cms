@@ -58,6 +58,7 @@
 - Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch single elements via GraphQL. ([#5363](https://github.com/craftcms/cms/issues/5363))
 - The Image Editor now displays the resulting image size when cropping. ([#4551](https://github.com/craftcms/cms/issues/4551))
 - Improved the crop behavior when dragging along the edges of an image in the Image Editor.
+- The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
 - Added `craft\assetpreviews\HtmlPreview`.
@@ -311,3 +312,4 @@
 - Fixed a bug where Lightswitch column values within Table fields weren’t returning boolean values when queried via GraphQL. ([#5344](https://github.com/craftcms/cms/issues/5344))
 - Fixed a bug where deactivating the Crop tool in the Image Editor would not set the image zoom correctly for straightened images.
 - Fixed a PHP error that could occur when running jobs from the queue in some PostgreSQL installations. ([#2715](https://github.com/craftcms/cms/issues/2715))
+- Fixed a bug where some classes didn’t support `EVENT_DEFINE_BEHAVIORS`.
