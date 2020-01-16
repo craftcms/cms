@@ -16,6 +16,7 @@
 - Fixed info icon alignment issues. ([#5444](https://github.com/craftcms/cms/issues/5444))
 - Fixed a bug where some classes didn’t support `EVENT_DEFINE_BEHAVIORS`.
 - Fixed a bug where directives applied to object fields would be ignored when using GraphQL.
+- Fixed admin table reordering to make dragging more visually obvious.
 
 ## 3.4.0-RC1.1 - 2020-01-14
 
