@@ -4,6 +4,8 @@
 
 > {warning} Custom queue drivers need to be updated to support yii2-queue 2.3, and those that implement `craft\queue\QueueInterface` must be updated to implement `getTotalJobs()`, `getJobDetails()`, `retryAll()` and `releaseAll()`.
 
+> {warning} It’s no longer possible to set custom field property values directly (e.g. `$entry->heading = 'Hello'`). `setFieldValue()` should be used instead. ([#5449](https://github.com/craftcms/cms/issues/5449))
+
 > {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
 >
 > ```bash
