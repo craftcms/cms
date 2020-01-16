@@ -31,18 +31,6 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  &:after {
-    display: block;
-    content: '.';
-    font-size: 0;
-    position: absolute;
-    top: 0;
-    left: 100%;
-    width: 10px;
-    height: 100vh;
-    box-shadow: 0 0 0 1px $grey900, 0 0 12px transparentize($grey900, 0.5);
-  }
-
   a {
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
@@ -545,11 +533,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 2px solid $grey100;
+  border: 2px solid $white;
   @include shadow;
+  transition: box-shadow linear 100ms;
 
   #user-info:hover & {
-    border-color: $white;
+    box-shadow: 0 1px 5px -1px transparentize($grey900, 0.5);
   }
 }
 
@@ -613,7 +602,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
@@ -677,7 +666,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth + 24 - 7} !important;
+      min-width: #{$sidebarWidth - 7} !important;
     }
   }
 }
@@ -686,6 +675,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 #toolbar {
   flex: 1;
+  align-items: flex-start;
 
   .btn,
   .text {
@@ -738,6 +728,10 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 }
 
+#action-button {
+  height: 34px;
+}
+
 #main-content {
   display: flex;
   flex-direction: row;
@@ -757,16 +751,16 @@ $toolbarIconColor: darken($inputColor, 10%);
 }
 
 #sidebar-container {
-  flex: 0 0 $sidebarWidth + 48;
-  width: $sidebarWidth + 48;
+  flex: 0 0 $sidebarWidth + 24;
+  width: $sidebarWidth + 24;
   box-sizing: border-box;
   @include margin-left(-24px);
 }
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 48px;
-  width: $sidebarWidth + 48;
+  padding: 0 24px;
+  width: $sidebarWidth + 24px;
   background-color: transparent;
 
   &.fixed {
@@ -779,16 +773,40 @@ $toolbarIconColor: darken($inputColor, 10%);
   nav {
     li {
       a {
-        border-radius: $largeBorderRadius;
+        position: relative;
+        transition: color linear 100ms, padding-left linear 150ms, padding-right linear 150ms;
+
+        &:before {
+          content: '.';
+          display: block;
+          content: '.';
+          font-size: 0;
+          position: absolute;
+          top: calc(50% - 4px);
+          @include left(20px);
+          width: 8px;
+          height: 8px;
+          border-radius: 4px;
+          background-color: $linkColor;
+          opacity: 0;
+          transition: opacity linear 150ms, left linear 120ms, right linear 150ms;
+        }
 
         &:not(.sel) {
           &:hover {
-            background-color: $grey200;
+            color: $linkColor;
           }
         }
         &.sel {
-          @include pane;
-          background-color: $grey050;
+          background-color: transparent;
+          @include padding-left(39px);
+          color: $linkColor;
+
+          &:before {
+            @include left(24px);
+            opacity: 1;
+            transition: opacity linear 250ms, left linear 250ms, right linear 250ms;
+          }
         }
       }
     }
@@ -890,7 +908,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   border-radius: $largeBorderRadius;
   position: relative;
   background-clip: padding-box;
-  padding: 24px 24px 48px;
+  padding: 24px;
   word-wrap: break-word;
 
   &.square {
@@ -910,7 +928,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 #footer {
   z-index: 1;
-  margin: 48px -24px -48px;
+  margin: 24px -24px -24px;
   padding: 10px 24px;
   background-color: $grey050;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
@@ -1330,6 +1348,20 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
   }
 
+  @mixin nav-padding($level) {
+    $padding: 24px + 20 * $level;
+    @include padding-left($padding !important);
+    &:before {
+      @include left(#{$padding - 4} !important);
+    }
+    &.sel {
+      @include padding-left(#{$padding + 15} !important);
+      &:before {
+        @include left(#{$padding} !important);
+      }
+    }
+  }
+
   nav {
     margin-left: -24px;
     margin-right: -24px;
@@ -1337,21 +1369,21 @@ $toolbarIconColor: darken($inputColor, 10%);
 
     & > ul > li > ul > li {
       & > a {
-        @include padding-left(44px);
+        @include nav-padding(1);
       }
 
       & > ul > li {
         & > a {
-          @include padding-left(64px);
+          @include nav-padding(2);
         }
 
         & > ul > li {
           & > a {
-            @include padding-left(84px);
+            @include nav-padding(3);
           }
 
           & > ul > li a {
-            @include padding-left(104px);
+            @include nav-padding(4);
           }
         }
       }
@@ -1391,10 +1423,11 @@ $toolbarIconColor: darken($inputColor, 10%);
         }
 
         .icon {
-          @include margin(0, 10px, 0, -10px);
+          @include margin-right(10px);
           flex-shrink: 1;
           width: 16px;
           height: 16px;
+          transition: margin-left linear 150ms, margin-right linear 150ms;
 
           &.icon-mask {
             svg {
@@ -1416,6 +1449,23 @@ $toolbarIconColor: darken($inputColor, 10%);
 
             &::before {
               display: block;
+            }
+          }
+        }
+
+        &:hover {
+          .icon.icon-mask {
+            svg {
+              @include svg-mask($linkColor);
+            }
+          }
+        }
+
+        &.sel {
+          .icon {
+            @include margin-left(5px);
+            &.icon-mask {
+              @include svg-mask($linkColor);
             }
           }
         }

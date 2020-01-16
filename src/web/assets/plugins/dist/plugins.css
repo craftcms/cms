@@ -24,11 +24,11 @@ body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name
 #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; -webkit-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-color: transparent #7b8793 transparent transparent; }
 body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { right: -7px; border-width: 0 0 16px 7px; border-color: transparent transparent transparent #7b8793; }
-#plugins tbody .plugin-infos .details .plugin-id a.edition:hover { text-decoration: none; border-color: #127FBF; }
-#plugins tbody .plugin-infos .details .plugin-id a.edition:hover > .edition-name { color: #127FBF; }
-#plugins tbody .plugin-infos .details .plugin-id a.edition:hover > .edition-trial { background: #127FBF; }
-body.ltr #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-right-color: #127FBF; }
-body.rtl #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { border-left-color: #127FBF; }
+#plugins tbody .plugin-infos .details .plugin-id a.edition:hover { text-decoration: none; border-color: #0B69A3; }
+#plugins tbody .plugin-infos .details .plugin-id a.edition:hover > .edition-name { color: #0B69A3; }
+#plugins tbody .plugin-infos .details .plugin-id a.edition:hover > .edition-trial { background: #0B69A3; }
+body.ltr #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-right-color: #0B69A3; }
+body.rtl #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { border-left-color: #0B69A3; }
 #plugins tbody .plugin-infos .details .plugin-id .version { color: #7b8793; font-weight: normal; }
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .version { margin-left: 14px; }
 body.rtl #plugins tbody .plugin-infos .details .plugin-id .version { margin-right: 14px; }

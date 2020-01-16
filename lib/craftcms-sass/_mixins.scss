@@ -91,7 +91,7 @@ $textColor: $grey700;
 $mediumDarkTextColor: $grey500;
 $mediumTextColor: $grey400;
 $lightTextColor: $grey300;
-$linkColor: $blue700;
+$linkColor: $blue800;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -130,6 +130,7 @@ $checkboxSize: 16px;
   rect, circle, ellipse, line, polyline, polygon, path, text {
     fill: $color;
     stroke-width: 0;
+    transition: fill linear 100ms;
   }
 }
 
