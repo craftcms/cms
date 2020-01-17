@@ -149,6 +149,11 @@ class Images extends Component
             return false;
         }
 
+        // https://github.com/craftcms/cms/issues/5435
+        if (empty(\Imagick::queryFormats())) {
+            return false;
+        }
+
         // Make sure it meets the minimum API version requirement
         if (version_compare($this->getImageMagickApiVersion(), self::MINIMUM_IMAGICK_VERSION) === -1) {
             return false;

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Make sure that Imagick can process images when determining if it can be used. ([#5435](https://github.com/craftcms/cms/issues/5435))
+
 ### Fixed
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
 
