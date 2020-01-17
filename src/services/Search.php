@@ -828,7 +828,15 @@ SQL;
      */
     private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
-        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude && strlen($keywords) >= $this->minFullTextWordLength;
+        return
+            $keywords !== '' &&
+            !$term->subLeft &&
+            !$term->exact &&
+            !$term->exclude &&
+            strlen($keywords) >= $this->minFullTextWordLength &&
+            // Workaround on MySQL until this gets fixed: https://bugs.mysql.com/bug.php?id=78485
+            // Related issue: https://github.com/craftcms/cms/issues/3862
+            strpos($keywords, ' ') === false;
     }
 
     /**

@@ -184,36 +184,37 @@ class SearchTest extends Unit
         return [
             [
                 [
-                    ['identifier' => 'user1', 'score' => 20.833333333333336]
+                    ['identifier' => 'user1', 'score' => 14.166666666666666]
                 ], ['user1'], 'user', true, 1
             ],
             [
                 [
-                    ['identifier' => 'user4', 'score' => 125.0],
-                    ['identifier' => 'user1', 'score' => 20.833333333333336],
-                    ['identifier' => 'user2', 'score' => 20.0],
-                    ['identifier' => 'user3', 'score' => 20.0]
+                    ['identifier' => 'user4', 'score' => 118.33333333333333],
+                    ['identifier' => 'user1', 'score' => 14.166666666666666],
+                    ['identifier' => 'user2', 'score' => 13.333333333333332],
+                    ['identifier' => 'user3', 'score' => 13.333333333333332]
                 ], ['user1', 'user2', 'user3', 'user4'], 'user', true, 1
             ],
             [
                 [
-                    ['identifier' => 'user4', 'score' => 125.0],
-                    ['identifier' => 'user1', 'score' => 20.833333333333336],
-                    ['identifier' => 'user2', 'score' => 20.0],
-                    ['identifier' => 'user3', 'score' => 20.0]
+                    ['identifier' => 'user4', 'score' => 118.33333333333333],
+                    ['identifier' => 'user1', 'score' => 14.166666666666666],
+                    ['identifier' => 'user2', 'score' => 13.333333333333332],
+                    ['identifier' => 'user3', 'score' => 13.333333333333332]
                 ], [], 'user', true, 1
             ],
             [
                 [
+                    ['identifier' => 'user4', 'score' => 1.6666666666666665],
                     ['identifier' => 'user1', 'score' => 0.0],
                 ], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', true, 1
             ],
             [
                 [
-                    ['identifier' => 'user4', 'score' => 62.5],
-                    ['identifier' => 'user1', 'score' => 10.416666666666668],
-                    ['identifier' => 'user2', 'score' => 10.0],
-                    ['identifier' => 'user3', 'score' => 10.0]
+                    ['identifier' => 'user4', 'score' => 60.833333333333336],
+                    ['identifier' => 'user1', 'score' => 7.083333333333333],
+                    ['identifier' => 'user2', 'score' => 6.666666666666666],
+                    ['identifier' => 'user3', 'score' => 6.666666666666666]
                 ], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1
             ],
         ];
