@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+### Changed
+- Updated Yii to 1.1.22. 
+
 ## 2.8.0.2 - 2019-12-19
 
 ### Fixed
