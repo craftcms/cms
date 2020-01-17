@@ -1902,7 +1902,7 @@ body.ltr #header h1:not(:last-child) { margin-right: 14px !important; }
 body.rtl #header h1:not(:last-child) { margin-left: 14px !important; }
 #header .buttons, #header .btngroup { margin-top: 0; }
 
-@media only screen and (min-width: 975px) { #page-title.has-toolbar { min-width: 218px !important; } }
+@media only screen and (min-width: 975px) { #page-title.has-toolbar { min-width: 242px !important; } }
 
 #toolbar { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
 #toolbar .btn, #toolbar .text { color: #394b60; }
@@ -1924,23 +1924,15 @@ body.rtl #header h1:not(:last-child) { margin-left: 14px !important; }
 
 #sidebar-toggle-container { display: none; }
 
-#sidebar-container { -webkit-box-flex: 0; -ms-flex: 0 0 249px; flex: 0 0 249px; width: 249px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+#sidebar-container { -webkit-box-flex: 0; -ms-flex: 0 0 273px; flex: 0 0 273px; width: 273px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 body.ltr #sidebar-container { margin-left: -24px; }
 body.rtl #sidebar-container { margin-right: -24px; }
 
-#sidebar { -webkit-box-sizing: border-box; box-sizing: border-box; padding: 0 24px; width: 249px; background-color: transparent; }
+#sidebar { -webkit-box-sizing: border-box; box-sizing: border-box; padding: 0 48px; width: 273px; background-color: transparent; }
 #sidebar.fixed { position: fixed; overflow-y: auto; padding-top: 14px; padding-bottom: 14px; }
-#sidebar nav li a { position: relative; -webkit-transition: color linear 100ms, padding-left linear 150ms, padding-right linear 150ms; transition: color linear 100ms, padding-left linear 150ms, padding-right linear 150ms; }
-#sidebar nav li a:before { content: '.'; display: block; content: '.'; font-size: 0; position: absolute; top: calc(50% - 4px); width: 8px; height: 8px; border-radius: 4px; background-color: #0B69A3; opacity: 0; -webkit-transition: opacity linear 150ms, left linear 150ms, right linear 150ms; transition: opacity linear 150ms, left linear 150ms, right linear 150ms; }
-body.ltr #sidebar nav li a:before { left: 20px; }
-body.rtl #sidebar nav li a:before { right: 20px; }
-#sidebar nav li a:not(.sel):hover { color: #0B69A3; }
-#sidebar nav li a.sel { background-color: transparent; color: #0B69A3; }
-body.ltr #sidebar nav li a.sel { padding-left: 39px; }
-body.rtl #sidebar nav li a.sel { padding-right: 39px; }
-#sidebar nav li a.sel:before { opacity: 1; }
-body.ltr #sidebar nav li a.sel:before { left: 24px; }
-body.rtl #sidebar nav li a.sel:before { right: 24px; }
+#sidebar nav li a { border-radius: 5px; }
+#sidebar nav li a:not(.sel):hover { background-color: #cdd8e4; }
+#sidebar nav li a.sel { background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; }
 
 #content-container { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #main-content.has-sidebar #content-container { width: calc(100% - 225px - 24px); }
@@ -2079,38 +2071,14 @@ body.ltr .sidebar .heading { margin: 14px 0 2px -24px ; }
 body.rtl .sidebar .heading { margin: 14px -24px 2px 0 ; }
 .sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: #9aa5b1; font-size: 11px; font-weight: bold; }
 .sidebar nav { margin-left: -24px; margin-right: -24px; padding: 0 24px; }
-body.ltr .sidebar nav > ul > li > ul > li > a { padding-left: 44px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > a { padding-right: 44px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > a:before { left: 40px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > a:before { right: 40px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > a.sel { padding-left: 59px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > a.sel { padding-right: 59px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > a.sel:before { left: 44px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > a.sel:before { right: 44px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > a { padding-left: 64px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > a { padding-right: 64px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > a:before { left: 60px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > a:before { right: 60px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > a.sel { padding-left: 79px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > a.sel { padding-right: 79px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > a.sel:before { left: 64px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > a.sel:before { right: 64px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-left: 84px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-right: 84px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a:before { left: 80px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a:before { right: 80px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a.sel { padding-left: 99px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a.sel { padding-right: 99px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a.sel:before { left: 84px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a.sel:before { right: 84px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-left: 104px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-right: 104px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a:before { left: 100px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a:before { right: 100px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a.sel { padding-left: 119px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a.sel { padding-right: 119px !important; }
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a.sel:before { left: 104px !important; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a.sel:before { right: 104px !important; }
+body.ltr .sidebar nav > ul > li > ul > li > a { padding-left: 44px; }
+body.rtl .sidebar nav > ul > li > ul > li > a { padding-right: 44px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > a { padding-left: 64px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > a { padding-right: 64px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-left: 84px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-right: 84px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-left: 104px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-right: 104px; }
 .sidebar nav li { position: relative; }
 .sidebar nav li:not(.has-subnav) > a { -webkit-transition: background-color linear 100ms; transition: background-color linear 100ms; }
 .sidebar nav li:not(.has-subnav) > a:hover { text-decoration: none; background-color: #e4edf6; }
@@ -2127,10 +2095,6 @@ body.rtl .sidebar nav li a .icon { margin-left: 10px; }
 .sidebar nav li a .icon svg { width: 16px; height: 16px; }
 .sidebar nav li a .icon span[data-icon] { font-size: 16px; }
 .sidebar nav li a .icon span[data-icon]::before { display: block; }
-.sidebar nav li a:hover .icon.icon-mask svg rect, .sidebar nav li a:hover .icon.icon-mask svg circle, .sidebar nav li a:hover .icon.icon-mask svg ellipse, .sidebar nav li a:hover .icon.icon-mask svg line, .sidebar nav li a:hover .icon.icon-mask svg polyline, .sidebar nav li a:hover .icon.icon-mask svg polygon, .sidebar nav li a:hover .icon.icon-mask svg path, .sidebar nav li a:hover .icon.icon-mask svg text { fill: #0B69A3; stroke-width: 0; -webkit-transition: fill linear 100ms; transition: fill linear 100ms; }
-body.ltr .sidebar nav li a.sel .icon { margin-left: 5px; }
-body.rtl .sidebar nav li a.sel .icon { margin-right: 5px; }
-.sidebar nav li a.sel .icon.icon-mask rect, .sidebar nav li a.sel .icon.icon-mask circle, .sidebar nav li a.sel .icon.icon-mask ellipse, .sidebar nav li a.sel .icon.icon-mask line, .sidebar nav li a.sel .icon.icon-mask polyline, .sidebar nav li a.sel .icon.icon-mask polygon, .sidebar nav li a.sel .icon.icon-mask path, .sidebar nav li a.sel .icon.icon-mask text { fill: #0B69A3; stroke-width: 0; -webkit-transition: fill linear 100ms; transition: fill linear 100ms; }
 .sidebar nav li a .label { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 .sidebar nav li a .badge { -ms-flex-negative: 1; flex-shrink: 1; padding: 0 6px; font-size: 11px; line-height: 16px; border-radius: 8px; background-color: #7b8793; color: #fff; }
 body.ltr .sidebar nav li a .badge { margin: 0 -4px 0 10px ; }

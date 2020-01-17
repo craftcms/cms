@@ -666,7 +666,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth - 7} !important;
+      min-width: #{$sidebarWidth + 24 - 7} !important;
     }
   }
 }
@@ -751,16 +751,16 @@ $toolbarIconColor: darken($inputColor, 10%);
 }
 
 #sidebar-container {
-  flex: 0 0 $sidebarWidth + 24;
-  width: $sidebarWidth + 24;
+  flex: 0 0 $sidebarWidth + 48;
+  width: $sidebarWidth + 48;
   box-sizing: border-box;
   @include margin-left(-24px);
 }
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 24px;
-  width: $sidebarWidth + 24px;
+  padding: 0 48px;
+  width: $sidebarWidth + 48px;
   background-color: transparent;
 
   &.fixed {
@@ -773,39 +773,16 @@ $toolbarIconColor: darken($inputColor, 10%);
   nav {
     li {
       a {
-        position: relative;
-        transition: color linear 100ms, padding-left linear 150ms, padding-right linear 150ms;
-
-        &:before {
-          content: '.';
-          display: block;
-          content: '.';
-          font-size: 0;
-          position: absolute;
-          top: calc(50% - 4px);
-          @include left(20px);
-          width: 8px;
-          height: 8px;
-          border-radius: 4px;
-          background-color: $linkColor;
-          opacity: 0;
-          transition: opacity linear 150ms, left linear 150ms, right linear 150ms;
-        }
+        border-radius: $largeBorderRadius;
 
         &:not(.sel) {
           &:hover {
-            color: $linkColor;
+            background-color: $grey200;
           }
         }
         &.sel {
-          background-color: transparent;
-          @include padding-left(39px);
-          color: $linkColor;
-
-          &:before {
-            @include left(24px);
-            opacity: 1;
-          }
+          @include pane;
+          background-color: $grey050;
         }
       }
     }
@@ -1349,16 +1326,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   @mixin nav-padding($level) {
     $padding: 24px + 20 * $level;
-    @include padding-left($padding !important);
-    &:before {
-      @include left(#{$padding - 4} !important);
-    }
-    &.sel {
-      @include padding-left(#{$padding + 15} !important);
-      &:before {
-        @include left(#{$padding} !important);
-      }
-    }
+    @include padding-left($padding);
   }
 
   nav {
@@ -1448,23 +1416,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 
             &::before {
               display: block;
-            }
-          }
-        }
-
-        &:hover {
-          .icon.icon-mask {
-            svg {
-              @include svg-mask($linkColor);
-            }
-          }
-        }
-
-        &.sel {
-          .icon {
-            @include margin-left(5px);
-            &.icon-mask {
-              @include svg-mask($linkColor);
             }
           }
         }
