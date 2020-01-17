@@ -637,25 +637,22 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
-        Craft::$app->getView()->registerJs('new Craft.MatrixInput(' .
+        $js = 'var matrixInput = new Craft.MatrixInput(' .
             '"' . Craft::$app->getView()->namespaceInputId($id) . '", ' .
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             '"' . Craft::$app->getView()->namespaceInputName($this->handle) . '", ' .
             ($this->maxBlocks ?: 'null') .
-            ');');
+            ');';
 
-        // Safe to set the default blocks?
+        // Safe to create the default blocks?
         if ($createDefaultBlocks) {
-            $blockType = $blockTypes[0];
-
+            $blockTypeJs = Json::encode($blockTypes[0]->handle);
             for ($i = count($value); $i < $this->minBlocks; $i++) {
-                $block = new MatrixBlock();
-                $block->fieldId = $this->id;
-                $block->typeId = $blockType->id;
-                $block->siteId = $element->siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
-                $value[] = $block;
+                $js .= "\nmatrixInput.addBlock({$blockTypeJs});";
             }
         }
+
+        Craft::$app->getView()->registerJs($js);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
             [
