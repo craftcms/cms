@@ -1,5 +1,5 @@
 <template>
-    <div class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded }">
+    <div :id="tableId" class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded }">
         <div v-show="showToolbar" class="toolbar">
             <div class="flex">
 
@@ -136,6 +136,9 @@
         },
 
         props: {
+            container: {
+                type: String,
+            },
             actions: {
                 type: Array,
                 default: () => { return [] },
@@ -374,6 +377,15 @@
         },
 
         computed: {
+            tableId() {
+                // Replace either `#` or `.` from the container selector
+                if (this.container) {
+                    return this.container.replace(/[#.]/g,'');
+                }
+                
+                return '';
+            },
+            
             apiUrl() {
                 if (!this.tableDataEndpoint) {
                     return '';
