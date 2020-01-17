@@ -2396,10 +2396,14 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies draft and revision params to the query being prepared.
+     * @throws QueryAbortedException
      */
     private function _applyRevisionParams()
     {
         if (!self::_supportsRevisionParams()) {
+            if ($this->drafts || $this->revisions) {
+                throw new QueryAbortedException();
+            }
             return;
         }
 
