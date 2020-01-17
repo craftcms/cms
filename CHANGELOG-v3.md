@@ -22,6 +22,7 @@
 - Fixed a bug where directives applied to object fields would be ignored when using GraphQL.
 - Fixed a SQL error that could occur when merging an element that belonged to a structure into another element that didn’t. ([#5450](https://github.com/craftcms/cms/issues/5450))
 - Fixed a bug where eager-loaded relational fields would fetch elements from other sites by default. ([#5451](https://github.com/craftcms/cms/issues/5451))
+- Fixed a bug where Project Config would ignore multiple changes on the same entity. ([#5438](https://github.com/craftcms/cms/issues/5438)), ([#5446](https://github.com/craftcms/cms/issues/5446))
 
 ## 3.4.0-RC1.1 - 2020-01-14
 
