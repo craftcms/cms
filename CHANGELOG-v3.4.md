@@ -58,11 +58,11 @@
 - Elements now have a `_count` field when queried via GraphQL, which returns the total number of related elements for a given relational field handle
 - It’s now possible to filter users by their groups when querying for them via GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374)) 
 - Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch single elements via GraphQL. ([#5363](https://github.com/craftcms/cms/issues/5363))
+- It’s now possible to apply the `transform` GraphQL directive to entire assets. ([#5425](https://github.com/craftcms/cms/issues/5425))
 - The Image Editor now displays the resulting image size when cropping. ([#4551](https://github.com/craftcms/cms/issues/4551))
 - Improved the crop behavior when dragging along the edges of an image in the Image Editor.
 - The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
-- It’s now possible to apply the Transform GraphQL directive to the entire Asset element. ([#5425](https://github.com/craftcms/cms/issues/5425))
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
 - Added `craft\assetpreviews\HtmlPreview`.
 - Added `craft\assetpreviews\ImagePreview`.

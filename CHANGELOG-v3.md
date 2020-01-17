@@ -6,7 +6,7 @@
 - The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added `craft\db\ActiveRecord::behaviors()`, which now gives plugins a chance to define their own behaviors.
 - Added `craft\db\ActiveRecord::EVENT_DEFINE_BEHAVIORS`.
-- It’s now possible to apply the Transform GraphQL directive to the entire Asset element. ([#5425](https://github.com/craftcms/cms/issues/5425))
+- It’s now possible to apply the `transform` GraphQL directive to entire assets. ([#5425](https://github.com/craftcms/cms/issues/5425))
 
 ### Changed
 - Improved the control panel styling.
@@ -22,7 +22,7 @@
 - Fixed a bug where directives applied to object fields would be ignored when using GraphQL.
 - Fixed a SQL error that could occur when merging an element that belonged to a structure into another element that didn’t. ([#5450](https://github.com/craftcms/cms/issues/5450))
 - Fixed a bug where eager-loaded relational fields would fetch elements from other sites by default. ([#5451](https://github.com/craftcms/cms/issues/5451))
-- Fixed a bug where Project Config would ignore multiple changes on the same entity. ([#5438](https://github.com/craftcms/cms/issues/5438)), ([#5446](https://github.com/craftcms/cms/issues/5446))
+- Fixed a bug where the Project Config would ignore multiple changes on the same entity. ([#5438](https://github.com/craftcms/cms/issues/5438)), ([#5446](https://github.com/craftcms/cms/issues/5446))
 - Fixed a bug where Matrix fields with a Min Blocks setting value weren’t remembering their default block data when saving a new entry. ([#5455](https://github.com/craftcms/cms/issues/5455))
 - Fixed a bug where Project Config event handlers weren’t getting triggered if a parent config path had been updated in the same request. ([#5440](https://github.com/craftcms/cms/issues/5440))
 
