@@ -24,6 +24,7 @@
 - Fixed a bug where eager-loaded relational fields would fetch elements from other sites by default. ([#5451](https://github.com/craftcms/cms/issues/5451))
 - Fixed a bug where Project Config would ignore multiple changes on the same entity. ([#5438](https://github.com/craftcms/cms/issues/5438)), ([#5446](https://github.com/craftcms/cms/issues/5446))
 - Fixed a bug where Matrix fields with a Min Blocks setting value weren’t remembering their default block data when saving a new entry. ([#5455](https://github.com/craftcms/cms/issues/5455))
+- Fixed a bug where Project Config event handlers weren’t getting triggered if a parent config path had been updated in the same request. ([#5440](https://github.com/craftcms/cms/issues/5440))
 
 ## 3.4.0-RC1.1 - 2020-01-14
 

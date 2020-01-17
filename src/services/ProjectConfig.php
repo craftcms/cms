@@ -420,7 +420,14 @@ class ProjectConfig extends Component
         $this->_traverseDataArray($config, $path, $value, $value === null);
         $this->_saveConfig($config, $targetFilePath);
 
-        unset($this->_parsedChanges[$path]);
+        // Ensure that new data is processed for this path and all its parent paths
+        $tok = strtok($path, '.');
+        $unsetPath = '';
+        while ($tok !== false) {
+            $unsetPath .= ($unsetPath !== '' ? '.' : '') . $tok;
+            unset($this->_parsedChanges[$unsetPath]);
+            $tok = strtok('.');
+        }
 
         $this->processConfigChanges($path, true, $message);
     }
