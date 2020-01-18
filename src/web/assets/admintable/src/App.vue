@@ -16,7 +16,7 @@
                     </admin-table-action-button>
                 </div>
 
-                <div v-if="search && !tableData.length" class="flex-grow texticon search icon clearable">
+                <div v-if="search && tableData.length" class="flex-grow texticon search icon clearable">
                     <input
                         class="text fullwidth"
                         type="text"
