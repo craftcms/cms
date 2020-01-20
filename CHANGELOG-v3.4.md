@@ -262,6 +262,7 @@
 - If any elements are selected while exporting, only the selected elements will be included in the export. ([#5130](https://github.com/craftcms/cms/issues/5130))
 - Craft now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
+- Project config event handlers are now triggered in order of specificity (from most-to-least specific).
 - Active record classes now normalize attribute values right when they are set.
 - Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
 - Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.

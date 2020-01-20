@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Project config event handlers are now triggered in order of specificity (from most-to-least specific).
 - ImageMagick is no longer used when the `imageDriver` config setting is set to `auto`, if `Imagick::queryFormats()` returns an empty array. ([#5435](https://github.com/craftcms/cms/issues/5435))
 
 ### Fixed
