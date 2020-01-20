@@ -245,6 +245,7 @@
 - Craft now uses the `slugWordSeparator` when generating URI formats. ([#5315](https://github.com/craftcms/cms/pull/5315))
 - The `loginPath` and `logoutPath` config setings can now be set to `false` to disable front-end login/logout. ([#5352](https://github.com/craftcms/cms/issues/5352))
 - The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.
+- ImageMagick is no longer used when the `imageDriver` config setting is set to `auto`, if `Imagick::queryFormats()` returns an empty array. ([#5435](https://github.com/craftcms/cms/issues/5435))
 - CSS registered with `craft\web\View::registerCss()` or the `{% css %}` tag is now minified by default. ([#5183](https://github.com/craftcms/cms/issues/5183))
 - JavaScript code registered with `craft\web\registerJs()` or the `{% js %}` tag is now minified per the `useCompressedJs` config setting. ([#5183](https://github.com/craftcms/cms/issues/5183))
 - `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
@@ -278,7 +279,6 @@
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
-- Make sure that Imagick can process before when determining if it can be used. ([#5435](https://github.com/craftcms/cms/issues/5435))
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
 - The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
