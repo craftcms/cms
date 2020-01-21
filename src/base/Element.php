@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use craft\behaviors\ContentBehavior;
+use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -93,7 +93,7 @@ use yii\validators\Validator;
  * @property string|null $url The element’s full URL
  * @property-write int|null $revisionCreatorId revision creator ID to be saved
  * @property-write string|null $revisionNotes revision notes to be saved
- * @mixin ContentBehavior
+ * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -1094,7 +1094,7 @@ abstract class Element extends Component implements ElementInterface
             return $this->getFieldValue(substr($name, 6));
         }
 
-        // If this is a field, make sure the value has been normalized before returning the ContentBehavior value
+        // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             $this->normalizeFieldValue($name);
         }
@@ -1134,7 +1134,7 @@ abstract class Element extends Component implements ElementInterface
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        $behaviors['customFields'] = ContentBehavior::class;
+        $behaviors['customFields'] = CustomFieldBehavior::class;
         return $behaviors;
     }
 

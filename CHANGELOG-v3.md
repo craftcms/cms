@@ -6,6 +6,7 @@
 - Project config event handlers are now triggered in order of specificity (from least-to-most specific).
 - ImageMagick is no longer used when the `imageDriver` config setting is set to `auto`, if `Imagick::queryFormats()` returns an empty array. ([#5435](https://github.com/craftcms/cms/issues/5435))
 - `craft\services\ProjectConfig::areChangesPending()` will now return `true` if the path was updated but not processed yet.
+- The `ContentBehavior` and `ElementQueryBehavior` behavior classes have been replaced by a single `CustomFieldBehavior` class.
 
 ### Fixed
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
