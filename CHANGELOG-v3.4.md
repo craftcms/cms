@@ -152,6 +152,7 @@
 - Added `craft\helpers\ArrayHelper::prepend()`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
+- Added `craft\helpers\FileHelper::invalidate()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
 - Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.

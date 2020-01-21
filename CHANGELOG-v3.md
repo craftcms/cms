@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\FileHelper::invalidate()`.
+
 ## 3.4.0-RC3 - 2020-01-21
 
 ### Changed
