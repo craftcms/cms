@@ -345,7 +345,12 @@ EOD;
             return false;
         }
 
-        include $path;
+        try {
+            include $path;
+        } catch (\Throwable $e) {
+            return false;
+        }
+
         return true;
     }
 

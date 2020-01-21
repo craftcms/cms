@@ -326,3 +326,4 @@
 - Fixed a bug where eager-loaded relational fields would fetch elements from other sites by default. ([#5451](https://github.com/craftcms/cms/issues/5451))
 - Fixed a bug where Project Config event handlers weren’t getting triggered if a parent config path had been updated in the same request. ([#5440](https://github.com/craftcms/cms/issues/5440))
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
+- Fixed a PHP error that occurred when a dynamically generated class was loaded before it was finished being written. ([#5434](https://github.com/craftcms/cms/issues/5434))
