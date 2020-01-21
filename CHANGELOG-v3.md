@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\FileHelper::invalidate()`.
 
+### Fixed
+- Fixed a bug where field headings within widget bodies and settings were getting extra large bottom margins.
+
 ## 3.4.0-RC3 - 2020-01-21
 
 ### Changed
