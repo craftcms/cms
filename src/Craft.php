@@ -255,18 +255,38 @@ EOD;
 EOD;
         }
 
-        self::_generateBehavior(
-            static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template',
+        // Load the template
+        $fileContents = file_get_contents(static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' .
+            DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template');
+
+        // Replace placeholders with generated code
+        $fileContents = str_replace(
             [
-                '{VERSION}' => $storedFieldVersion,
-                '{METHOD_DOCS}' => implode("\n", $methods),
-                '/* HANDLES */' => implode("\n", $handles),
-                '/* PROPERTIES */' => implode("\n\n", $properties),
+                '{VERSION}',
+                '{METHOD_DOCS}',
+                '/* HANDLES */',
+                '/* PROPERTIES */',
             ],
-            $filePath,
-            $write,
-            $load
-        );
+            [
+                $storedFieldVersion,
+                implode("\n", $methods),
+                implode("\n", $handles),
+                implode("\n\n", $properties),
+            ],
+            $fileContents);
+
+        if ($write) {
+            $tmpFile = tempnam(dirname($filePath), basename($filePath));
+            FileHelper::writeToFile($tmpFile, $fileContents);
+            rename($tmpFile, $filePath);
+            FileHelper::invalidate($filePath);
+            if ($load) {
+                include $filePath;
+            }
+        } else if ($load) {
+            // Just evaluate the code
+            eval(preg_replace('/^<\?php\s*/', '', $fileContents));
+        }
     }
 
     /**
@@ -352,35 +372,6 @@ EOD;
         }
 
         return true;
-    }
-
-    /**
-     * Writes a field attributes file.
-     *
-     * @param string $templatePath
-     * @param string[] $replace
-     * @param string $filePath
-     * @param bool $write
-     * @param bool $load
-     * @throws \yii\base\ErrorException
-     */
-    private static function _generateBehavior(string $templatePath, array $replace, string $filePath, bool $write, bool $load)
-    {
-        $fileContents = file_get_contents($templatePath);
-        $fileContents = str_replace(array_keys($replace), $replace, $fileContents);
-
-        if ($write) {
-            $tmpFile = tempnam(dirname($filePath), basename($filePath));
-            FileHelper::writeToFile($tmpFile, $fileContents);
-            rename($tmpFile, $filePath);
-            FileHelper::invalidate($filePath);
-            if ($load) {
-                include $filePath;
-            }
-        } else if ($load) {
-            // Just evaluate the code
-            eval(preg_replace('/^<\?php\s*/', '', $fileContents));
-        }
     }
 }
 
