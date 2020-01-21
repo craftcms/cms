@@ -10,6 +10,7 @@
 ### Fixed
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
 - Fixed an error that would occur when creating a new Single section. ([#5462](https://github.com/craftcms/cms/issues/5462))
+- Fixed a bug where the wrong Project Config event handlers could be triggered if multiple changes occurred for the same path in the same request.
 
 ## 3.4.0-RC2 - 2020-01-17
 

@@ -196,10 +196,10 @@ class ProjectConfig extends Component
     private $_memoizationDependencies = [];
 
     /**
-     * @var array A list of paths that are currently being processed
+     * @var array Map of paths being processed and their original loaded values.
      * @since 3.4.0
      */
-    private $_parsingChanges = [];
+    private $_oldValuesByPath = [];
 
     /**
      * @var array A list of already parsed change paths
@@ -443,6 +443,17 @@ class ProjectConfig extends Component
             }
         }
 
+        // Mark this path (and its parent paths) as being processed, and store their current values
+        // Ensure that new data is processed for this path and all its parent paths
+        $tok = strtok($path, '.');
+        $thisPath = '';
+        while ($tok !== false) {
+            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
+            $this->_oldValuesByPath[$thisPath] = $this->get($thisPath);
+            unset($this->_parsedChanges[$thisPath]);
+            $tok = strtok('.');
+        }
+
         $targetFilePath = null;
 
         if ($this->_useConfigFile()) {
@@ -464,17 +475,6 @@ class ProjectConfig extends Component
 
         $this->_traverseDataArray($config, $path, $value, $value === null);
         $this->_saveConfig($config, $targetFilePath);
-
-        // Ensure that new data is processed for this path and all its parent paths
-        $tok = strtok($path, '.');
-        $thisPath = '';
-        while ($tok !== false) {
-            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
-            $this->_parsingChanges[$thisPath] = true;
-            unset($this->_parsedChanges[$thisPath]);
-            $tok = strtok('.');
-        }
-
         $this->processConfigChanges($path, true, $message);
     }
 
@@ -570,7 +570,7 @@ class ProjectConfig extends Component
     public function areChangesPending(string $path = null): bool
     {
         // If the path is currently being processed, return true
-        if (isset($this->_parsingChanges[$path])) {
+        if (array_key_exists($path, $this->_oldValuesByPath)) {
             return true;
         }
 
@@ -626,6 +626,19 @@ class ProjectConfig extends Component
 
         $storedConfig = $this->_getStoredConfig();
         $oldValue = $this->_traverseDataArray($storedConfig, $path);
+
+        // If this path is currently being processed, use its original pre-processed value as the "old" value
+        foreach ($this->_oldValuesByPath as $thisPath => $thisOldValue) {
+            if (strpos("$path.", "$thisPath.") === 0) {
+                if ($path === $thisPath) {
+                    $oldValue = $thisOldValue;
+                } else {
+                    $oldValue = $this->_traverseDataArray($thisOldValue, substr($path, strlen($thisPath) + 1));
+                }
+                break;
+            }
+        }
+
         $newValue = $this->get($path, true);
         $valueChanged = $triggerUpdate || $this->forceUpdate || Json::encode($oldValue) !== Json::encode($newValue);
 
@@ -648,7 +661,7 @@ class ProjectConfig extends Component
         $thisPath = '';
         while ($tok !== false) {
             $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
-            unset($this->_parsingChanges[$thisPath]);
+            unset($this->_oldValuesByPath[$thisPath]);
             $this->_parsedChanges[$thisPath] = true;
             $tok = strtok('.');
         }
