@@ -632,8 +632,10 @@ class ProjectConfig extends Component
             if (strpos("$path.", "$thisPath.") === 0) {
                 if ($path === $thisPath) {
                     $oldValue = $thisOldValue;
-                } else {
+                } else if (is_array($thisOldValue)) {
                     $oldValue = $this->_traverseDataArray($thisOldValue, substr($path, strlen($thisPath) + 1));
+                } else {
+                    $oldValue = null;
                 }
                 break;
             }
