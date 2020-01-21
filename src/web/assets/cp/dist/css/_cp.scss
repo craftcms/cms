@@ -318,6 +318,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   border-radius: 3px;
   display: inline-flex;
   height: 24px;
+  box-sizing: content-box;
   transition: border-color linear 100ms;
 
   & > .edition-name,
