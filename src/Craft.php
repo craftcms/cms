@@ -370,8 +370,10 @@ EOD;
         $fileContents = str_replace(array_keys($replace), $replace, $fileContents);
 
         if ($write) {
-            FileHelper::writeToFile($filePath, $fileContents);
-            clearstatcache(true, $filePath);
+            $tmpFile = tempnam(dirname($filePath), basename($filePath));
+            FileHelper::writeToFile($tmpFile, $fileContents);
+            rename($tmpFile, $filePath);
+            FileHelper::invalidate($filePath);
             if ($load) {
                 include $filePath;
             }
