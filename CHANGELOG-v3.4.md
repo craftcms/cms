@@ -262,7 +262,7 @@
 - If any elements are selected while exporting, only the selected elements will be included in the export. ([#5130](https://github.com/craftcms/cms/issues/5130))
 - Craft now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
-- Project config event handlers are now triggered in order of specificity (from most-to-least specific).
+- Project config event handlers are now triggered in order of specificity (from least-to-most specific).
 - Active record classes now normalize attribute values right when they are set.
 - Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
 - Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
@@ -274,6 +274,7 @@
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\ProjectConfig::areChangesPending()` will now return `true` if the path was updated but not processed yet.
 - `craft\services\ProjectConfig::processConfigChanges()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\ProjectConfig::remove()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\ProjectConfig::set()` now has a `$message` argument to specify the reason for config changes.

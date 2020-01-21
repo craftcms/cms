@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Changed
-- Project config event handlers are now triggered in order of specificity (from most-to-least specific).
+- Project config event handlers are now triggered in order of specificity (from least-to-most specific).
 - ImageMagick is no longer used when the `imageDriver` config setting is set to `auto`, if `Imagick::queryFormats()` returns an empty array. ([#5435](https://github.com/craftcms/cms/issues/5435))
+- `craft\services\ProjectConfig::areChangesPending()` will now return `true` if the path was updated but not processed yet.
 
 ### Fixed
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
+- Fixed an error that would occur when creating a new Single section. ([#5462](https://github.com/craftcms/cms/issues/5462))
 
 ## 3.4.0-RC2 - 2020-01-17
 

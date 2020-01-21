@@ -196,6 +196,12 @@ class ProjectConfig extends Component
     private $_memoizationDependencies = [];
 
     /**
+     * @var array A list of paths that are currently being processed
+     * @since 3.4.0
+     */
+    private $_parsingChanges = [];
+
+    /**
      * @var array A list of already parsed change paths
      */
     private $_parsedChanges = [];
@@ -286,41 +292,6 @@ class ProjectConfig extends Component
     private $_loadedConfig;
 
     /**
-     * @var array[] Config change handlers
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @since 3.4.0
-     */
-    private $_changeEventHandlers = [];
-
-    /**
-     * @var array[] The specificity of change event handlers.
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     * @since 3.4.0
-     */
-    private $_changeEventHandlerSpecificity = [];
-
-    /**
-     * @var array[] The registration order of change event handlers.
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     * @since 3.4.0
-     */
-    private $_changeEventHandlerRegistrationOrder = [];
-
-    /**
-     * @var bool[] Whether the change event handlers have been sorted.
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     * @since 3.4.0
-     */
-    private $_sortedChangeEventHandlers = [];
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -339,10 +310,6 @@ class ProjectConfig extends Component
     public function init()
     {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData'], null, false);
-
-        $this->on(self::EVENT_ADD_ITEM, [$this, 'handleChangeEvent']);
-        $this->on(self::EVENT_UPDATE_ITEM, [$this, 'handleChangeEvent']);
-        $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);
 
         parent::init();
     }
@@ -461,14 +428,20 @@ class ProjectConfig extends Component
 
         // Ensure that new data is processed for this path and all its parent paths
         $tok = strtok($path, '.');
-        $unsetPath = '';
+        $paths = [];
+        $thisPath = '';
         while ($tok !== false) {
-            $unsetPath .= ($unsetPath !== '' ? '.' : '') . $tok;
-            unset($this->_parsedChanges[$unsetPath]);
+            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
+            $paths[] = $thisPath;
+            $this->_parsingChanges[$thisPath] = true;
+            unset($this->_parsedChanges[$thisPath]);
             $tok = strtok('.');
         }
 
-        $this->processConfigChanges($path, true, $message);
+        // Now process the changes from least-to-most specific
+        foreach ($paths as $thisPath) {
+            $this->processConfigChanges($thisPath, true, $message);
+        }
     }
 
     /**
@@ -554,7 +527,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns whether `project.yaml` has any pending changes that need to be applied to the project config.
+     * Returns whether a given path has pending changes that need to be applied to the loaded project config.
      *
      * @param string|null $path A specific config path that should be checked for pending changes.
      * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml.`.
@@ -562,6 +535,11 @@ class ProjectConfig extends Component
      */
     public function areChangesPending(string $path = null): bool
     {
+        // If the path is currently being processed, return true
+        if (isset($this->_parsingChanges[$path])) {
+            return true;
+        }
+
         // TODO remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             return false;
@@ -611,6 +589,7 @@ class ProjectConfig extends Component
         }
 
         $this->_parsedChanges[$path] = true;
+        unset($this->_parsingChanges[$path]);
 
         $storedConfig = $this->_getStoredConfig();
         $oldValue = $this->_traverseDataArray($storedConfig, $path);
@@ -1004,71 +983,17 @@ class ProjectConfig extends Component
      */
     public function registerChangeEventHandler(string $event, string $path, $handler, $data = null)
     {
-        $specificity = substr_count($path, '.');
-        $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
+        $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')$/';
         $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
 
-        $this->_changeEventHandlers[$event][] = [$pattern, $handler, $data];
-        $this->_changeEventHandlerSpecificity[$event][] = $specificity;
-        $this->_changeEventHandlerRegistrationOrder[$event][] = count($this->_changeEventHandlers[$event]);
-        unset($this->_sortedChangeEventHandlers[$event]);
-    }
-
-    /**
-     * Handles a config change event.
-     *
-     * @param ConfigEvent $event
-     * @since 3.4.0
-     */
-    public function handleChangeEvent(ConfigEvent $event)
-    {
-        if (empty($this->_changeEventHandlers[$event->name])) {
-            return;
-        }
-
-        // Make sure the event handlers are sorted from most-to-least specific
-        $this->_sortChangeEventHandlers($event->name);
-
-        foreach ($this->_changeEventHandlers[$event->name] as list($pattern, $handler, $data)) {
+        $this->on($event, function(ConfigEvent $event) use ($pattern, $handler) {
             if (preg_match($pattern, $event->path, $matches)) {
-                // Is this a nested path?
-                if (isset($matches['extra'])) {
-                    $this->processConfigChanges($matches['path']);
-                    return;
-                }
-
                 // Chop off [0] (full match) and ['path'] & [1] (requested path)
                 $event->tokenMatches = array_values(array_slice($matches, 3));
-
-                // Set the event data
-                $event->data = $data;
-
                 $handler($event);
-
                 $event->tokenMatches = null;
-                $event->data = null;
             }
-        }
-    }
-
-    /**
-     * Ensures that the config change event handlers are sorted by most-to-least specific.
-     *
-     * @param string $event The event name
-     * @since 3.4.0
-     */
-    private function _sortChangeEventHandlers(string $event)
-    {
-        if (isset($this->_sortedChangeEventHandlers[$event])) {
-            return;
-        }
-
-        array_multisort(
-            $this->_changeEventHandlerSpecificity[$event], SORT_DESC, SORT_NUMERIC,
-            $this->_changeEventHandlerRegistrationOrder[$event], SORT_ASC, SORT_NUMERIC,
-            $this->_changeEventHandlers[$event]);
-
-        $this->_sortedChangeEventHandlers[$event] = true;
+        }, $data);
     }
 
     /**
