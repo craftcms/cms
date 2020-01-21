@@ -19,19 +19,10 @@ use craft\web\Response;
  */
 class ResponseTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var Response
      */
     public $response;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider getContentTypeDataProvider
@@ -82,9 +73,6 @@ class ResponseTest extends Unit
         $this->assertSame(gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT', $this->response->getHeaders()->get('Last-Modified'));
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -100,9 +88,6 @@ class ResponseTest extends Unit
             ['application/javascript', null, 'application/javascript;'],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

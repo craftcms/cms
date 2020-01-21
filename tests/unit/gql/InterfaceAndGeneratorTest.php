@@ -112,9 +112,6 @@ class InterfaceAndGeneratorTest extends Unit
         Craft::$app->getGql()->flushCaches();
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test interfaces running type generators.
      *
@@ -177,9 +174,6 @@ class InterfaceAndGeneratorTest extends Unit
         $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
     }
 
-
-    // Data providers
-    // =========================================================================
 
     public function interfaceDataProvider(): array
     {

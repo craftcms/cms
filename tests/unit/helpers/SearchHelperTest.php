@@ -20,19 +20,10 @@ use UnitTester;
  */
 class SearchHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider keywordNormalizationDataProviders
@@ -48,9 +39,6 @@ class SearchHelperTest extends Unit
         $keyword = Search::normalizeKeywords($keyword, $ignore, $processMap, $language);
         $this->assertSame($result, $keyword);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

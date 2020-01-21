@@ -69,9 +69,6 @@ class TypeResolverTest extends Unit
         ];
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test resolving a related element.
      **/

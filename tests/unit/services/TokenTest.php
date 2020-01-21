@@ -26,9 +26,6 @@ use UnitTester;
  */
 class TokenTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -38,12 +35,6 @@ class TokenTest extends Unit
      * @var Tokens
      */
     protected $token;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @throws Exception
@@ -86,9 +77,6 @@ class TokenTest extends Unit
         $this->assertNull($tokenRec->usageCount);
         $this->assertSame($expiryDate->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -22,9 +22,6 @@ use FunctionalTester;
  */
 class PageRenderChecksCest
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -34,9 +31,6 @@ class PageRenderChecksCest
      * @var
      */
     public $currentUser;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -50,9 +44,6 @@ class PageRenderChecksCest
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -75,12 +66,6 @@ class PageRenderChecksCest
             }
         }
     }
-
-    // Protected Methods
-    // =========================================================================
-
-    // Data providers
-    // =========================================================================
 
     /**
      * @return array

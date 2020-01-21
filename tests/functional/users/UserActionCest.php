@@ -24,9 +24,6 @@ use yii\db\Exception;
  */
 class UserActionCest
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -41,9 +38,6 @@ class UserActionCest
      * @var
      */
     public $currentUser;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -70,9 +64,6 @@ class UserActionCest
             ->id($user->id)
             ->one();
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I

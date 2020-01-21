@@ -26,9 +26,6 @@ use craft\search\SearchQueryTermGroup;
  */
 class SearchQueryTest extends Unit
 {
-    // Constants
-    // =========================================================================
-
     const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
@@ -37,9 +34,6 @@ class SearchQueryTest extends Unit
         'attribute' => null,
         'phrase' => null
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param $token
@@ -102,9 +96,6 @@ class SearchQueryTest extends Unit
             $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -226,9 +217,6 @@ class SearchQueryTest extends Unit
             $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
         }
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      *

@@ -21,9 +21,6 @@ class GqlHelperTest extends Unit
      */
     protected $tester;
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test Schema helper methods.
      *

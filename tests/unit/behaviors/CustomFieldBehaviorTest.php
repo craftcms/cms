@@ -24,19 +24,10 @@ use UnitTester;
  */
 class CustomFieldBehaviorTest extends Unit
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     public $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider existingFieldHandlesDataProvider
@@ -75,9 +66,6 @@ class CustomFieldBehaviorTest extends Unit
             throw new InvalidArgumentException('Unable to delete field: ' . $field->name . '');
         }
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

@@ -28,19 +28,10 @@ use yii\base\InvalidConfigException;
  */
 class ComponentHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * Tests whether the $callback will evaluate to an instance of the componentInterface.
@@ -92,9 +83,6 @@ class ComponentHelperTest extends Unit
     {
         $this->assertSame($result, Component::mergeSettings($mergeable));
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

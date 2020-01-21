@@ -21,9 +21,6 @@ use craft\test\Fixture;
  */
 class TransformsFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -33,9 +30,6 @@ class TransformsFixture extends Fixture
      * @inheritdoc
      */
     public $modelClass = AssetTransform::class;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

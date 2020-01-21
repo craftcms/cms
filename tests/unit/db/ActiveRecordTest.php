@@ -29,19 +29,10 @@ use UnitTester;
  */
 class ActiveRecordTest extends Unit
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     public $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.

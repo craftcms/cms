@@ -51,9 +51,6 @@ class GqlTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test getting active schema errors out if none set
      *

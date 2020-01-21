@@ -35,9 +35,6 @@ use yii\base\Exception;
  */
 class ViewTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -47,9 +44,6 @@ class ViewTest extends TestCase
      * @var View
      */
     protected $view;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @return array
@@ -62,9 +56,6 @@ class ViewTest extends TestCase
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider normalizeObjectTemplateDataProvider
@@ -389,9 +380,6 @@ class ViewTest extends TestCase
         $this->_registeredJs('randomprop', ['name' => 'value']);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -560,9 +548,6 @@ class ViewTest extends TestCase
         ];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -575,9 +560,6 @@ class ViewTest extends TestCase
         // By default we want to be in site mode.
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param $category
