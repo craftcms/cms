@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.0-RC3 - 2020-01-21
 
 ### Changed
 - Project config event handlers are now triggered in order of specificity (from least-to-most specific).
