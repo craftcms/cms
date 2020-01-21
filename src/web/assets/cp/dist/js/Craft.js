@@ -1,4 +1,4 @@
-/*!   - 2020-01-16 */
+/*!   - 2020-01-21 */
 (function($){
 
 /** global: Craft */
@@ -12042,7 +12042,7 @@ Craft.CP = Garnish.Base.extend(
             this.$alerts.remove();
 
             if (Garnish.isArray(alerts) && alerts.length) {
-                this.$alerts = $('<ul id="alerts"/>').prependTo(this.$mainContainer);
+                this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
                 for (var i = 0; i < alerts.length; i++) {
                     $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);
