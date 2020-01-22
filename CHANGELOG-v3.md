@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\helpers\FileHelper::invalidate()`.
+- The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 
 ### Fixed
 - Fixed a bug where field headings within widget bodies and settings were getting extra large bottom margins.

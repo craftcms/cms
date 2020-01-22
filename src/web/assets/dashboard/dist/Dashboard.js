@@ -567,7 +567,9 @@
                     }
 
                     $('<a/>', {
-                        title: (i === 1 ? Craft.t('app', '1 column') : Craft.t('app', '{num} columns', {num: i})),
+                        title: Craft.t('app', '{num, number} {num, plural, =1{column} other{columns}}', {
+                            num: i,
+                        }),
                         role: 'button',
                         'class': cssClass,
                         data: {colspan: i}
