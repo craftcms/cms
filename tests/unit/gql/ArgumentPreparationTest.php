@@ -25,9 +25,6 @@ class ArgumentPreparationTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test an arrayable string is split by comma
      *
@@ -42,9 +39,6 @@ class ArgumentPreparationTest extends Unit
         }
     }
 
-
-    // Data Providers
-    // =========================================================================
 
     public function argumentPreparationDataProvider()
     {

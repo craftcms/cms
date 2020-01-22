@@ -25,19 +25,10 @@ use UnitTester;
  */
 class ElementHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Fixtures
-    // =========================================================================
 
     public function _fixtures(): array
     {
@@ -47,9 +38,6 @@ class ElementHelperTest extends Unit
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider createSlugDataProvider
@@ -157,9 +145,6 @@ class ElementHelperTest extends Unit
 
         $this->assertNull($three->getNext());
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

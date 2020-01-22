@@ -196,6 +196,12 @@ class ProjectConfig extends Component
     private $_memoizationDependencies = [];
 
     /**
+     * @var array Map of paths being processed and their original loaded values.
+     * @since 3.4.0
+     */
+    private $_oldValuesByPath = [];
+
+    /**
      * @var array A list of already parsed change paths
      */
     private $_parsedChanges = [];
@@ -286,6 +292,41 @@ class ProjectConfig extends Component
     private $_loadedConfig;
 
     /**
+     * @var array[] Config change handlers
+     * @see registerChangeEventHandler()
+     * @see handleChangeEvent()
+     * @since 3.4.0
+     */
+    private $_changeEventHandlers = [];
+
+    /**
+     * @var array[] The specificity of change event handlers.
+     * @see registerChangeEventHandler()
+     * @see handleChangeEvent()
+     * @see _sortChangeEventHandlers()
+     * @since 3.4.0
+     */
+    private $_changeEventHandlerSpecificity = [];
+
+    /**
+     * @var array[] The registration order of change event handlers.
+     * @see registerChangeEventHandler()
+     * @see handleChangeEvent()
+     * @see _sortChangeEventHandlers()
+     * @since 3.4.0
+     */
+    private $_changeEventHandlerRegistrationOrder = [];
+
+    /**
+     * @var bool[] Whether the change event handlers have been sorted.
+     * @see registerChangeEventHandler()
+     * @see handleChangeEvent()
+     * @see _sortChangeEventHandlers()
+     * @since 3.4.0
+     */
+    private $_sortedChangeEventHandlers = [];
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -304,6 +345,10 @@ class ProjectConfig extends Component
     public function init()
     {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData'], null, false);
+
+        $this->on(self::EVENT_ADD_ITEM, [$this, 'handleChangeEvent']);
+        $this->on(self::EVENT_UPDATE_ITEM, [$this, 'handleChangeEvent']);
+        $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);
 
         parent::init();
     }
@@ -398,6 +443,17 @@ class ProjectConfig extends Component
             }
         }
 
+        // Mark this path (and its parent paths) as being processed, and store their current values
+        // Ensure that new data is processed for this path and all its parent paths
+        $tok = strtok($path, '.');
+        $thisPath = '';
+        while ($tok !== false) {
+            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
+            $this->_oldValuesByPath[$thisPath] = $this->get($thisPath);
+            unset($this->_parsedChanges[$thisPath]);
+            $tok = strtok('.');
+        }
+
         $targetFilePath = null;
 
         if ($this->_useConfigFile()) {
@@ -419,16 +475,6 @@ class ProjectConfig extends Component
 
         $this->_traverseDataArray($config, $path, $value, $value === null);
         $this->_saveConfig($config, $targetFilePath);
-
-        // Ensure that new data is processed for this path and all its parent paths
-        $tok = strtok($path, '.');
-        $unsetPath = '';
-        while ($tok !== false) {
-            $unsetPath .= ($unsetPath !== '' ? '.' : '') . $tok;
-            unset($this->_parsedChanges[$unsetPath]);
-            $tok = strtok('.');
-        }
-
         $this->processConfigChanges($path, true, $message);
     }
 
@@ -515,7 +561,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns whether `project.yaml` has any pending changes that need to be applied to the project config.
+     * Returns whether a given path has pending changes that need to be applied to the loaded project config.
      *
      * @param string|null $path A specific config path that should be checked for pending changes.
      * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml.`.
@@ -523,6 +569,11 @@ class ProjectConfig extends Component
      */
     public function areChangesPending(string $path = null): bool
     {
+        // If the path is currently being processed, return true
+        if (array_key_exists($path, $this->_oldValuesByPath)) {
+            return true;
+        }
+
         // TODO remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             return false;
@@ -575,37 +626,55 @@ class ProjectConfig extends Component
 
         $storedConfig = $this->_getStoredConfig();
         $oldValue = $this->_traverseDataArray($storedConfig, $path);
-        $newValue = $this->get($path, true);
 
-        $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
-
-        if ($newValue === null) {
-            // Fire a 'removeItem' event
-            if (!$this->muteEvents) {
-                $this->trigger(self::EVENT_REMOVE_ITEM, $event);
+        // If this path is currently being processed, use its original pre-processed value as the "old" value
+        foreach ($this->_oldValuesByPath as $thisPath => $thisOldValue) {
+            if (strpos("$path.", "$thisPath.") === 0) {
+                if ($path === $thisPath) {
+                    $oldValue = $thisOldValue;
+                } else if (is_array($thisOldValue)) {
+                    $oldValue = $this->_traverseDataArray($thisOldValue, substr($path, strlen($thisPath) + 1));
+                } else {
+                    $oldValue = null;
+                }
+                break;
             }
-        } else if ($oldValue === null) {
-            // Fire an 'addItem' event
-            if (!$this->muteEvents) {
-                $this->trigger(self::EVENT_ADD_ITEM, $event);
-            }
-        } else if ($this->forceUpdate ||
-            $triggerUpdate ||
-            Json::encode($oldValue) !== Json::encode($newValue)
-        ) {
-            // Fire an 'updateItem' event
-            if (!$this->muteEvents) {
-                $this->trigger(self::EVENT_UPDATE_ITEM, $event);
-            }
-        } else {
-            return;
         }
 
-        // Memoize the new config data
-        $this->_updateInternalConfig($path, $oldValue, $newValue, $message);
+        $newValue = $this->get($path, true);
+        $valueChanged = $triggerUpdate || $this->forceUpdate || Json::encode($oldValue) !== Json::encode($newValue);
 
-        $this->updateStoredConfigAfterRequest();
-        $this->updateParsedConfigTimesAfterRequest();
+        if ($valueChanged && !$this->muteEvents) {
+            $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
+            if ($newValue === null && $oldValue !== null) {
+                // Fire a 'removeItem' event
+                $this->trigger(self::EVENT_REMOVE_ITEM, $event);
+            } else if ($oldValue === null && $newValue !== null) {
+                // Fire an 'addItem' event
+                $this->trigger(self::EVENT_ADD_ITEM, $event);
+            } else {
+                // Fire an 'updateItem' event
+                $this->trigger(self::EVENT_UPDATE_ITEM, $event);
+            }
+        }
+
+        // Mark this path, and any parent paths, as parsed
+        $tok = strtok($path, '.');
+        $thisPath = '';
+        while ($tok !== false) {
+            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
+            unset($this->_oldValuesByPath[$thisPath]);
+            $this->_parsedChanges[$thisPath] = true;
+            $tok = strtok('.');
+        }
+
+        if ($valueChanged) {
+            // Memoize the new config data
+            $this->_updateInternalConfig($path, $oldValue, $newValue, $message);
+
+            $this->updateStoredConfigAfterRequest();
+            $this->updateParsedConfigTimesAfterRequest();
+        }
     }
 
     /**
@@ -965,23 +1034,71 @@ class ProjectConfig extends Component
      */
     public function registerChangeEventHandler(string $event, string $path, $handler, $data = null)
     {
+        $specificity = substr_count($path, '.');
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
 
-        $this->on($event, function(ConfigEvent $event) use ($pattern, $handler) {
+        $this->_changeEventHandlers[$event][] = [$pattern, $handler, $data];
+        $this->_changeEventHandlerSpecificity[$event][] = $specificity;
+        $this->_changeEventHandlerRegistrationOrder[$event][] = count($this->_changeEventHandlers[$event]);
+        unset($this->_sortedChangeEventHandlers[$event]);
+    }
+
+    /**
+     * Handles a config change event.
+     *
+     * @param ConfigEvent $event
+     * @since 3.4.0
+     */
+    public function handleChangeEvent(ConfigEvent $event)
+    {
+        if (empty($this->_changeEventHandlers[$event->name])) {
+            return;
+        }
+
+        // Make sure the event handlers are sorted from least-to-most specific
+        $this->_sortChangeEventHandlers($event->name);
+
+        foreach ($this->_changeEventHandlers[$event->name] as list($pattern, $handler, $data)) {
             if (preg_match($pattern, $event->path, $matches)) {
                 // Is this a nested path?
                 if (isset($matches['extra'])) {
                     $this->processConfigChanges($matches['path']);
-                    return;
+                    continue;
                 }
 
                 // Chop off [0] (full match) and ['path'] & [1] (requested path)
                 $event->tokenMatches = array_values(array_slice($matches, 3));
+
+                // Set the event data
+                $event->data = $data;
+
                 $handler($event);
+
                 $event->tokenMatches = null;
+                $event->data = null;
             }
-        }, $data);
+        }
+    }
+
+    /**
+     * Ensures that the config change event handlers are sorted by least-to-most specific.
+     *
+     * @param string $event The event name
+     * @since 3.4.0
+     */
+    private function _sortChangeEventHandlers(string $event)
+    {
+        if (isset($this->_sortedChangeEventHandlers[$event])) {
+            return;
+        }
+
+        array_multisort(
+            $this->_changeEventHandlerSpecificity[$event], SORT_ASC, SORT_NUMERIC,
+            $this->_changeEventHandlerRegistrationOrder[$event], SORT_ASC, SORT_NUMERIC,
+            $this->_changeEventHandlers[$event]);
+
+        $this->_sortedChangeEventHandlers[$event] = true;
     }
 
     /**

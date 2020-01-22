@@ -363,8 +363,8 @@ new Vue({
          * @return {string}
          */
         ttrValue(value) {
-            return Craft.t('app', '{num} seconds', {
-                num: Craft.formatNumber(value)
+            return Craft.t('app', '{num, number} {num, plural, =1{second} other{seconds}}', {
+                num: value
             })
         },
 

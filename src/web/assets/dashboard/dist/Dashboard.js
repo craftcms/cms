@@ -57,7 +57,7 @@
                         '<div class="front">' +
                         '<div class="pane">' +
                         '<div class="spinner body-loading"/>' +
-                        '<div class="heading">' +
+                        '<div class="widget-heading">' +
                         '<h2/>' +
                         '<h5/>' +
                         '</div>' +
@@ -248,9 +248,9 @@
 
                 this.$front = this.$container.children('.front');
                 this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
-                this.$heading = this.$front.find('> .pane > .heading');
-                this.$title = this.$front.find('> .pane > .heading > h2');
-                this.$subtitle = this.$front.find('> .pane > .heading > h5');
+                this.$heading = this.$front.find('> .pane > .widget-heading');
+                this.$title = this.$heading.find('> h2');
+                this.$subtitle = this.$heading.find('> h5');
                 this.$bodyContainer = this.$front.find('> .pane > .body');
 
                 this.setSettingsHtml(settingsHtml, initSettingsFn);
@@ -567,7 +567,9 @@
                     }
 
                     $('<a/>', {
-                        title: (i === 1 ? Craft.t('app', '1 column') : Craft.t('app', '{num} columns', {num: i})),
+                        title: Craft.t('app', '{num, number} {num, plural, =1{column} other{columns}}', {
+                            num: i,
+                        }),
                         role: 'button',
                         'class': cssClass,
                         data: {colspan: i}

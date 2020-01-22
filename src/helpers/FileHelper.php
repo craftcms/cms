@@ -373,9 +373,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         // Invalidate opcache
-        if (function_exists('opcache_invalidate')) {
-            @opcache_invalidate($file, true);
-        }
+        static::invalidate($file);
 
         if ($lock) {
             $mutex->release($lockName);
@@ -602,6 +600,20 @@ class FileHelper extends \yii\helpers\FileHelper
                     @rename($thisFile, "$basePath.$i");
                 }
             }
+        }
+    }
+
+    /**
+     * Invalidates a cached file with `clearstatcache()` and `opcache_invalidate()`.
+     *
+     * @param string $file the file path
+     * @since 3.4.0
+     */
+    public static function invalidate(string $file)
+    {
+        clearstatcache(true, $file);
+        if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
+            @opcache_invalidate($file, true);
         }
     }
 }

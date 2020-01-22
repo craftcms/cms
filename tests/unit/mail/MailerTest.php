@@ -32,9 +32,6 @@ use yii\web\ServerErrorHttpException;
  */
 class MailerTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var TestMailer
      */
@@ -44,12 +41,6 @@ class MailerTest extends TestCase
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests Methods
-    // =========================================================================
 
     /**
      * Tests mail from key composition
@@ -188,9 +179,6 @@ class MailerTest extends TestCase
         ], $lastMessage->to);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -201,9 +189,6 @@ class MailerTest extends TestCase
             ['not_a_key that exists']
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     protected function _sendMail()
     {

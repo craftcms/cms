@@ -10,12 +10,19 @@ namespace craft\behaviors;
 use yii\base\Behavior;
 
 /**
- * Content behavior
+ * Custom field behavior
  *
  * This class provides attributes for all the unique custom field handles.
+ *
+{METHOD_DOCS}
  */
-class ContentBehavior extends Behavior
+class CustomFieldBehavior extends Behavior
 {
+    /**
+     * @var bool Whether the behavior should provide methods based on the field handles.
+     */
+    public $hasMethods = false;
+
     /**
      * @var string[] List of supported field handles.
      */
@@ -29,6 +36,29 @@ class ContentBehavior extends Behavior
      * @var array Additional custom field values we don’t know about yet.
      */
     private $_customFieldValues = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function __call($name, $params)
+    {
+        if ($this->hasMethods && isset(self::$fieldHandles[$name]) && count($params) === 1) {
+            $this->$name = $params[0];
+            return $this->owner;
+        }
+        return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasMethod($name)
+    {
+        if ($this->hasMethods && isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::hasMethod($name);
+    }
 
     /**
      * @inheritdoc

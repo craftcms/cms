@@ -18,9 +18,6 @@ use craft\test\fixtures\elements\EntryFixture as BaseEntriesFixture;
  */
 class EntryWithFieldsFixture extends BaseEntriesFixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

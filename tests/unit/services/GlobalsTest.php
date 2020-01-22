@@ -22,9 +22,6 @@ use UnitTester;
  */
 class GlobalsTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -33,12 +30,6 @@ class GlobalsTest extends Unit
     protected function _before()
     {
     }
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     // @TODO: more tests, obviously.
 

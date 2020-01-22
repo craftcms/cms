@@ -26,19 +26,10 @@ use yii\base\Component;
  */
 class AppHelperTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -194,9 +185,6 @@ class AppHelperTest extends TestCase
         $this->testConfigIndexes('viewConfig', ['class']);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -265,9 +253,6 @@ class AppHelperTest extends TestCase
 
         ];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param array $configArray

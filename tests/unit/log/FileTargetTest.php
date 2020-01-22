@@ -29,9 +29,6 @@ use yii\base\InvalidConfigException;
  */
 class FileTargetTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var FileTarget
      */
@@ -41,12 +38,6 @@ class FileTargetTest extends TestCase
      * @var UnitTester
      */
     public $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @throws InvalidConfigException
@@ -92,9 +83,6 @@ class FileTargetTest extends TestCase
         Craft::$app = $craftApp;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -102,9 +90,6 @@ class FileTargetTest extends TestCase
     {
         $this->fileTarget = new FileTarget();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Mocks the Craft::$app object so that it overrides the components we need for self::testFullMessagePrefix

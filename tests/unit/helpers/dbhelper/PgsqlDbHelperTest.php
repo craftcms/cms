@@ -24,19 +24,10 @@ use yii\base\NotSupportedException;
  */
 class PgsqlDbHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider sqlTypesDataProvider
@@ -90,9 +81,6 @@ class PgsqlDbHelperTest extends Unit
         $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
         $this->assertSame($result, $textualCapacity);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -174,9 +162,6 @@ class PgsqlDbHelperTest extends Unit
             [null, Schema::TYPE_TEXT],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

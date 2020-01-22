@@ -25,16 +25,10 @@ use yii\db\Exception;
  */
 class CommandTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var DateTime
      */
     protected $sessionDate;
-
-    // Tests
-    // =========================================================================
 
     /**
      *

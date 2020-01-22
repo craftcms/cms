@@ -98,7 +98,6 @@ JS;
     {
         $view->registerTranslations('app', [
             '(blank)',
-            '1 Available Update',
             'A server error occurred.',
             'Actions',
             'All',
@@ -241,7 +240,7 @@ JS;
             'weeks',
             '{ctrl}C to copy.',
             '{first}-{last} of {total}',
-            '{num} Available Updates',
+            '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '“{name}” deleted.',
         ]);
     }

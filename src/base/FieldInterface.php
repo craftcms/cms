@@ -45,7 +45,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the PHPDoc type this field’s values will have.
      *
-     * It will be used by generated `ContentBehavior` and `ElementQueryBehavior` classes.
+     * It will be used by the generated `CustomFieldBehavior` class.
      *
      * If the values can be of more than one type, return multiple types separated by `|`s.
      *

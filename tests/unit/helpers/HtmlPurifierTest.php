@@ -21,12 +21,6 @@ use HTMLPurifier_Config;
  */
 class HtmlPurifierTest extends Unit
 {
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      * @dataProvider utf8CleanDataProvider
      *
@@ -50,9 +44,6 @@ class HtmlPurifierTest extends Unit
         $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
         $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

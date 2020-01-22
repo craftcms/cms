@@ -67,9 +67,6 @@ class PrepareQueryTest extends Unit
     const TAG_GROUP_UID = 'tagGroup-uid';
     const USER_GROUP_UID = 'userGroup-uid';
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test relational field query preparation
      *

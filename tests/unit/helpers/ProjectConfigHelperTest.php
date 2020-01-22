@@ -18,9 +18,6 @@ class ProjectConfigHelperTest extends Unit
      */
     protected $tester;
 
-    // Tests
-    // =========================================================================
-
     /**
      * @dataProvider packedUnpackedDataProvider
      *
@@ -43,9 +40,6 @@ class ProjectConfigHelperTest extends Unit
         $this->assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

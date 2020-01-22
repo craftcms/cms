@@ -30,9 +30,6 @@ use yii\web\BadRequestHttpException;
  */
 class ControllerTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -42,12 +39,6 @@ class ControllerTest extends Unit
      * @var TestController
      */
     private $controller;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -209,9 +200,6 @@ class ControllerTest extends Unit
         );
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -221,9 +209,6 @@ class ControllerTest extends Unit
         $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';
         $this->controller = new TestController('test', Craft::$app);
     }
-
-    // Private Methods
-    // =========================================================================
 
     private function _determineUrlScheme(): string
     {

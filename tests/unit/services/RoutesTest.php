@@ -23,9 +23,6 @@ use UnitTester;
  */
 class RoutesTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -35,12 +32,6 @@ class RoutesTest extends Unit
      * @var Routes
      */
     protected $routes;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
 
     /**
@@ -63,9 +54,6 @@ class RoutesTest extends Unit
 
         $this->assertTrue(StringHelper::isUUID($routeUUID));
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -146,9 +134,6 @@ class RoutesTest extends Unit
             ],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

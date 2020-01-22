@@ -93,9 +93,6 @@ class ExtractEagerLoadingParameterTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test eager loading parameter extraction from a query string
      *

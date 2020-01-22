@@ -1,4 +1,4 @@
-/*!   - 2020-01-20 */
+/*!   - 2020-01-21 */
 (function($){
 
 /** global: Craft */
@@ -25,16 +25,151 @@ $.extend(Craft,
             }
 
             if (params) {
-                for (var key in params) {
-                    if (!params.hasOwnProperty(key)) {
-                        continue;
-                    }
-
-                    message = message.replace('{' + key + '}', params[key]);
-                }
+                return this.formatMessage(message, params);
             }
 
             return message;
+        },
+
+        formatMessage: function(pattern, args) {
+            let tokens;
+            if ((tokens = this._tokenizePattern(pattern)) === false) {
+                throw 'Message pattern is invalid.';
+            }
+            for (let i = 0; i < tokens.length; i++) {
+                let token = tokens[i];
+                if (typeof token === 'object') {
+                    if ((tokens[i] = this._parseToken(token, args)) === false) {
+                        throw 'Message pattern is invalid.';
+                    }
+                }
+            }
+            return tokens.join('');
+        },
+
+        _tokenizePattern: function(pattern) {
+            let depth = 1, start, pos;
+            // Get an array of the string characters (factoring in 3+ byte chars)
+            const chars = [...pattern];
+            if ((start = pos = chars.indexOf('{')) === -1) {
+                return [pattern];
+            }
+            tokens = [chars.slice(0, pos).join('')];
+            while (true) {
+                let open = chars.indexOf('{', pos + 1);
+                let close = chars.indexOf('}', pos + 1);
+                if (open === -1) {
+                    open = false;
+                }
+                if (close === -1) {
+                    close = false;
+                }
+                if (open === false && close === false) {
+                    break;
+                }
+                if (open === false) {
+                    open = chars.length;
+                }
+                if (close > open) {
+                    depth++;
+                    pos = open;
+                } else {
+                    depth--;
+                    pos = close;
+                }
+                if (depth === 0) {
+                    tokens.push(chars.slice(start + 1, pos).join('').split(',', 3));
+                    start = pos + 1;
+                    tokens.push(chars.slice(start, open).join(''));
+                    start = open;
+                }
+
+                if (depth !== 0 && (open === false || close === false)) {
+                    break;
+                }
+            }
+            if (depth !== 0) {
+                return false;
+            }
+
+            return tokens;
+        },
+
+        _parseToken: function(token, args) {
+            // parsing pattern based on ICU grammar:
+            // http://icu-project.org/apiref/icu4c/classMessageFormat.html#details
+            const param = Craft.trim(token[0]);
+            if (typeof args[param] === 'undefined') {
+                return `{${token.join(',')}}`;
+            }
+            const arg = args[param];
+            const type = typeof token[1] !== 'undefined' ? Craft.trim(token[1]) : 'none';
+            switch (type) {
+                case 'number':
+                    let format = typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
+                    if (format !== null && format !== 'integer') {
+                        throw `Message format 'number' is only supported for integer values.`;
+                    }
+                    let number = Craft.formatNumber(arg);
+                    let pos;
+                    if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
+                        number += `.${arg.substr(pos + 1)}`;
+                    }
+
+                    return number;
+                case 'none':
+                    return arg;
+                case 'plural':
+                    /* http://icu-project.org/apiref/icu4c/classicu_1_1PluralFormat.html
+                    pluralStyle = [offsetValue] (selector '{' message '}')+
+                    offsetValue = "offset:" number
+                    selector = explicitValue | keyword
+                    explicitValue = '=' number  // adjacent, no white space in between
+                    keyword = [^[[:Pattern_Syntax:][:Pattern_White_Space:]]]+
+                    message: see MessageFormat
+                    */
+                    if (typeof token[2] === 'undefined') {
+                        return false;
+                    }
+                    plural = this._tokenizePattern(token[2]);
+                    const c = plural.length;
+                    let message = false;
+                    let offset = 0;
+                    for (let i = 0; i + 1 < c; i++) {
+                        if (typeof plural[i] === 'object' || typeof plural[i + 1] !== 'object') {
+                            return false;
+                        }
+                        let selector = Craft.trim(plural[i++]);
+                        let selectorChars = [...selector];
+
+                        if (i === 1 && selector.substring(0, 7) === 'offset:') {
+                            let pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
+                            if (pos === -1) {
+                                throw 'Message pattern is invalid.';
+                            }
+                            let offset = parseInt(Craft.trim(selectorChars.slice(7, pos).join('')));
+                            selector = Craft.trim(selectorChars.slice(pos + 1, pos + 1 + selectorChars.length).join(''));
+                        }
+                        if (
+                            message === false &&
+                            selector === 'other' ||
+                            selector[0] === '=' && parseInt(selectorChars.slice(1, 1 + selectorChars.length).join('')) === arg ||
+                            selector === 'one' && arg - offset === 1
+                        ) {
+                            message = (typeof plural[i] === 'string' ? [plural[i]] : plural[i]).map((p) => {
+                                return p.replace('#', arg - offset);
+                            }).join(',');
+                        }
+                    }
+                    if (message !== false) {
+                        return this.formatMessage(message, args);
+                    }
+                    break;
+                default:
+                    throw `Message format '${type}' is not supported.`;
+            }
+
+            return false;
         },
 
         formatDate: function(date) {
@@ -12042,7 +12177,7 @@ Craft.CP = Garnish.Base.extend(
             this.$alerts.remove();
 
             if (Garnish.isArray(alerts) && alerts.length) {
-                this.$alerts = $('<ul id="alerts"/>').prependTo(this.$mainContainer);
+                this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
                 for (var i = 0; i < alerts.length; i++) {
                     $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);
@@ -16222,6 +16357,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 
         findTargets: function() {
             if (this.type === 'select') {
+                var toggleVal = this.getToggleVal();
                 this._$target = $(this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal()));
             }
             else {
@@ -16241,7 +16377,7 @@ Craft.FieldToggle = Garnish.Base.extend(
             }
             else {
                 var postVal = Garnish.getInputPostVal(this.$toggle);
-                return postVal === null ? null : postVal.replace(/[\[\]\\]+/g, '-');
+                return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
             }
         },
 
@@ -21231,7 +21367,6 @@ Craft.ui =
             var now = new Date();
             var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             config = $.extend({
-                class: '',
                 options: [
                     'today',
                     'thisWeek',
@@ -21239,32 +21374,26 @@ Craft.ui =
                     'thisYear',
                     'past7Days',
                     'past30Days',
-                    'past90Days',
                     'pastYear',
                 ],
                 onChange: $.noop,
-                selected: null,
-                startDate:null,
-                endDate: null,
             }, config);
 
             var $menu = $('<div/>', {'class': 'menu'});
             var $ul = $('<ul/>', {'class': 'padded'}).appendTo($menu);
             var menu = new Garnish.Menu($menu);
-            var $allOption = $('<a/>')
-                .addClass('sel')
-                .text(Craft.t('app', 'All'))
-                .data('handle', 'all');
 
             $('<li/>')
-                .append($allOption)
+                .append($('<a/>', {
+                    'class': 'sel',
+                    text: Craft.t('app', 'All'),
+                }))
                 .appendTo($ul);
 
             var option;
-            var selectedOption;
             for (var i = 0; i < config.options.length; i++) {
-                var handle = config.options[i];
-                switch (handle) {
+                option = config.options[i];
+                switch (option) {
                     case 'today':
                         option = {
                             label: Craft.t('app', 'Today'),
@@ -21311,13 +21440,6 @@ Craft.ui =
                             endDate: today,
                         };
                         break;
-                    case 'past90Days':
-                        option = {
-                            label: Craft.t('app', 'Past {num} days', {num: 90}),
-                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90),
-                            endDate: today,
-                        };
-                        break;
                     case 'pastYear':
                         option = {
                             label: Craft.t('app', 'Past year'),
@@ -21327,20 +21449,13 @@ Craft.ui =
                         break;
                 }
 
-                var $li = $('<li/>');
-                var $a = $('<a/>', {text: option.label})
-                    .data('handle', handle)
-                    .data('startDate', option.startDate)
-                    .data('endDate', option.endDate)
-                    .data('startTime', option.startDate ? option.startDate.getTime() : null)
-                    .data('endTime', option.endDate ? option.endDate.getTime() : null);
-
-                if (config.selected && handle == config.selected) {
-                    selectedOption = $a[0];
-                }
-
-                $li.append($a);
-                $li.appendTo($ul);
+                $('<li/>')
+                    .append($('<a/>', {text: option.label})
+                        .data('startDate', option.startDate)
+                        .data('endDate', option.endDate)
+                        .data('startTime', option.startDate ? option.startDate.getTime() : null)
+                        .data('endTime', option.endDate ? option.endDate.getTime() : null))
+                    .appendTo($ul);
             }
 
             $('<hr/>').appendTo($menu);
@@ -21355,7 +21470,7 @@ Craft.ui =
                 if (ev.keyCode === Garnish.ESC_KEY && $(this).data('datepicker').dpDiv.is(':visible')) {
                     ev.stopPropagation();
                 }
-            });
+            })
 
             // prevent clicks in the datepicker divs from closing the menu
             $startDate.data('datepicker').dpDiv.on('mousedown', function(ev) {
@@ -21377,7 +21492,7 @@ Craft.ui =
                     $startDate.datepicker('setDate', $option.data('startDate'));
                     $endDate.datepicker('setDate', $option.data('endDate'));
 
-                    config.onChange($option.data('startDate') || null, $option.data('endDate') || null, $option.data('handle'));
+                    config.onChange($option.data('startDate') || null, $option.data('endDate') || null);
                 }
             });
 
@@ -21400,7 +21515,6 @@ Craft.ui =
                     ) {
                         menu.selectOption($option[0]);
                         foundOption = true;
-                        config.onChange(null, null, $option.data('handle'));
                         break;
                     }
                 }
@@ -21420,7 +21534,7 @@ Craft.ui =
                     }
                     menu.setPositionRelativeToAnchor();
 
-                    config.onChange(startDate, endDate, 'custom');
+                    config.onChange(startDate, endDate);
                 }
             });
 
@@ -21429,32 +21543,10 @@ Craft.ui =
                 $endDate.datepicker('hide');
             });
 
-            var btnClasses = 'btn menubtn';
-            if (config.class) {
-                btnClasses = btnClasses + ' ' + config.class;
-            }
-
-            var $btn = $('<div class="'+btnClasses+'" data-icon="date"/>')
+            var $btn = $('<div class="btn menubtn" data-icon="date"/>')
                 .text(Craft.t('app', 'All'));
 
             new Garnish.MenuBtn($btn, menu);
-
-            if (selectedOption) {
-                menu.selectOption(selectedOption);
-            }
-
-            if (config.startDate) {
-                $startDate.datepicker('setDate', config.startDate);
-            }
-
-            if (config.endDate) {
-                $endDate.datepicker('setDate', config.endDate);
-            }
-
-            if (config.startDate || config.endDate) {
-                $dateInputs.trigger('change');
-            }
-
             return $btn;
         },
 

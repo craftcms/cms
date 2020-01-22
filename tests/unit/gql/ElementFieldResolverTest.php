@@ -59,9 +59,6 @@ class ElementFieldResolverTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test resolving fields on entries.
      *
@@ -233,9 +230,6 @@ class ElementFieldResolverTest extends Unit
             $this->tester->expectThrowable(GqlException::class, $resolve);
         }
     }
-
-    // Data providers
-    // =========================================================================
 
     public function entryFieldTestDataProvider(): array
     {

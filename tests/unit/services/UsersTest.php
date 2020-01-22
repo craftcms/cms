@@ -39,9 +39,6 @@ use yii\web\ServerErrorHttpException;
  */
 class UsersTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -72,9 +69,6 @@ class UsersTest extends TestCase
      */
     protected $suspendedUser;
 
-    // Public Methods
-    // =========================================================================
-
     public function _fixtures() : array
     {
         return [
@@ -83,9 +77,6 @@ class UsersTest extends TestCase
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -508,9 +499,6 @@ class UsersTest extends TestCase
         );
     }
 
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param string $desiredKey

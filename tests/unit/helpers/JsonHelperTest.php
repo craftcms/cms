@@ -20,19 +20,10 @@ use UnitTester;
  */
 class JsonHelperTest extends Test
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider jsonDecodableDataProvider
@@ -44,9 +35,6 @@ class JsonHelperTest extends Test
     {
         $this->assertSame($result, Json::decodeIfJson($input));
     }
-
-    // Data Providers
-    // =========================================================================
 
     public function jsonDecodableDataProvider(): array
     {

@@ -31,9 +31,6 @@ use UnitTester;
  */
 class SearchTest extends Unit
 {
-    // Protected Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -44,9 +41,6 @@ class SearchTest extends Unit
      */
     protected $search;
 
-    // Public Methods
-    // =========================================================================
-
     public function _fixtures(): array
     {
         return [
@@ -55,9 +49,6 @@ class SearchTest extends Unit
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider filterElementIdByQueryDataProvider
@@ -147,9 +138,6 @@ class SearchTest extends Unit
         $this->assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * Provide an array with input user names
      *
@@ -220,9 +208,6 @@ class SearchTest extends Unit
         ];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -248,9 +233,6 @@ class SearchTest extends Unit
                 ['not', ['elementId' => 1]]
             )->execute();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param $attributeName

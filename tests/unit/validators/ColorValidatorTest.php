@@ -21,9 +21,6 @@ use ErrorException;
  */
 class ColorValidatorTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var ColorValidator
      */
@@ -38,12 +35,6 @@ class ColorValidatorTest extends Unit
      * @var \UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -100,9 +91,6 @@ class ColorValidatorTest extends Unit
         $this->model->exampleParam = null;
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -141,9 +129,6 @@ class ColorValidatorTest extends Unit
             ['255, 0, 0, 0.2', false]
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

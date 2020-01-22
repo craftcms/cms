@@ -18,9 +18,6 @@ use craft\test\fixtures\elements\GlobalSetFixture as BaseGlobalSetFixture;
  */
 class GlobalSetFixture extends BaseGlobalSetFixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -545,7 +545,7 @@ Craft.CP = Garnish.Base.extend(
             this.$alerts.remove();
 
             if (Garnish.isArray(alerts) && alerts.length) {
-                this.$alerts = $('<ul id="alerts"/>').prependTo(this.$mainContainer);
+                this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
                 for (var i = 0; i < alerts.length; i++) {
                     $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);

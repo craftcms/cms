@@ -22,10 +22,7 @@ use yii\base\NotSupportedException;
  * @since 3.3.16
  */
 class ProjectConfigTest extends Unit
-{
-    // Public Properties
-    // =========================================================================
-    /**
+{    /**
      * @var UnitTester
      */
     protected $tester;
@@ -33,12 +30,6 @@ class ProjectConfigTest extends Unit
     protected function _before()
     {
     }
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test if rebuilding project config ignores the `readOnly` flag.

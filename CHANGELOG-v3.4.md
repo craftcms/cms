@@ -152,6 +152,7 @@
 - Added `craft\helpers\ArrayHelper::prepend()`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.
+- Added `craft\helpers\FileHelper::invalidate()`.
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
 - Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
@@ -218,6 +219,7 @@
 - Added the `Craft.ui.createDateRangePicker()` JavaScript method.
 - Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `beforeUpdateIframe` and `switchTarget` events to the `Craft.Preview` JavaScript class. ([#5359](https://github.com/craftcms/cms/issues/5359))
+- The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
@@ -245,6 +247,7 @@
 - Craft now uses the `slugWordSeparator` when generating URI formats. ([#5315](https://github.com/craftcms/cms/pull/5315))
 - The `loginPath` and `logoutPath` config setings can now be set to `false` to disable front-end login/logout. ([#5352](https://github.com/craftcms/cms/issues/5352))
 - The `loginPath`, `logoutPath`, `setPasswordPath`, and `verifyEmailPath` config settings are now ignored when Craft is running in headless mode.
+- ImageMagick is no longer used when the `imageDriver` config setting is set to `auto`, if `Imagick::queryFormats()` returns an empty array. ([#5435](https://github.com/craftcms/cms/issues/5435))
 - CSS registered with `craft\web\View::registerCss()` or the `{% css %}` tag is now minified by default. ([#5183](https://github.com/craftcms/cms/issues/5183))
 - JavaScript code registered with `craft\web\registerJs()` or the `{% js %}` tag is now minified per the `useCompressedJs` config setting. ([#5183](https://github.com/craftcms/cms/issues/5183))
 - `resave/*` commands now have an `--update-search-index` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
@@ -261,6 +264,7 @@
 - If any elements are selected while exporting, only the selected elements will be included in the export. ([#5130](https://github.com/craftcms/cms/issues/5130))
 - Craft now sorts the `project.yaml` file alphabetically by keys. ([#5147](https://github.com/craftcms/cms/issues/5147))
 - The project config is now stored in its own `projectconfig` table, rather than a `config` column within the `info` table.
+- Project config event handlers are now triggered in order of specificity (from least-to-most specific).
 - Active record classes now normalize attribute values right when they are set.
 - Entry queries no longer factor in seconds when looking for currently live entries. ([#5389](https://github.com/craftcms/cms/issues/5389))
 - Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
@@ -272,13 +276,14 @@
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
+- `craft\services\ProjectConfig::areChangesPending()` will now return `true` if the path was updated but not processed yet.
 - `craft\services\ProjectConfig::processConfigChanges()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\ProjectConfig::remove()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\ProjectConfig::set()` now has a `$message` argument to specify the reason for config changes.
 - `craft\services\Search::indexElementAttributes()` now has a `$fieldHandles` argument, for specifying which custom fields’ keywords should be updated.
 - `craft\web\Controller::renderTemplate()` now has a `$templateMode` argument.
 - `craft\web\View::renderTemplate()`, `renderPageTemplate()`, `renderTemplateMacro()`, `doesTemplateExist()`, and `resolveTemplate()` now have `$templateMode` arguments. ([#4570](https://github.com/craftcms/cms/pull/4570))
-- Make sure that Imagick can process before when determining if it can be used. ([#5435](https://github.com/craftcms/cms/issues/5435))
+- The `ContentBehavior` and `ElementQueryBehavior` behavior classes have been replaced by a single `CustomFieldBehavior` class.
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
 - The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
@@ -323,3 +328,4 @@
 - Fixed a bug where eager-loaded relational fields would fetch elements from other sites by default. ([#5451](https://github.com/craftcms/cms/issues/5451))
 - Fixed a bug where Project Config event handlers weren’t getting triggered if a parent config path had been updated in the same request. ([#5440](https://github.com/craftcms/cms/issues/5440))
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
+- Fixed a PHP error that occurred when a dynamically generated class was loaded before it was finished being written. ([#5434](https://github.com/craftcms/cms/issues/5434))

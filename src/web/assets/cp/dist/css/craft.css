@@ -1819,7 +1819,7 @@ body.rtl #nav li ul li a { padding: 3px 56px 3px 14px !important; }
 body.ltr #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent #9aa5b1 transparent transparent; }
 body.rtl #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent transparent transparent #9aa5b1; }
 
-#edition-logo { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; border: 1px solid #131a20; border-radius: 3px; display: -webkit-inline-box; display: -ms-inline-flexbox; display: inline-flex; height: 24px; -webkit-transition: border-color linear 100ms; transition: border-color linear 100ms; }
+#edition-logo { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; border: 1px solid #131a20; border-radius: 3px; display: -webkit-inline-box; display: -ms-inline-flexbox; display: inline-flex; height: 24px; -webkit-box-sizing: content-box; box-sizing: content-box; -webkit-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 #edition-logo > .edition-name, #edition-logo > .edition-trial { padding: 8px 8px 7px; line-height: 8px; font-weight: 500; }
 #edition-logo > .edition-name { letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; -webkit-transition: color linear 100ms; transition: color linear 100ms; }
 #edition-logo > .edition-trial { display: inline-block; position: relative; background-color: #131a20; color: #33404d; border-radius: 0 1px 1px 0; letter-spacing: 1px; text-transform: lowercase; -webkit-transition: background linear 100ms; transition: background linear 100ms; }

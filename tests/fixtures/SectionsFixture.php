@@ -21,9 +21,6 @@ use craft\test\Fixture;
  */
 class SectionsFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,9 +35,6 @@ class SectionsFixture extends Fixture
      * @inheritdoc
      */
     public $depends = [SectionSettingFixture::class];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

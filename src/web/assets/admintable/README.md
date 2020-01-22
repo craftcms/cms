@@ -46,6 +46,7 @@ new Craft.VueAdminTable({...options...});
 | emptyMessage              | String   | `No data available.`                        | Message to be displayed when there are no rows in the table data. |
 | fullPage                  | Bool     | `false`                                     | Set to this to true when the table is the only element on the template. Sets the correct styling classes. |
 | minItems                  | Int      | `null`                                      | The minimum number of items allowed in the table.            |
+| padded                   | Bool      | `false`                                     | Set this to true to add padding around the table. |
 | perPage                   | Int      | `null`                                      | Used with `tableDataEndpoint` to define the number of rows to show per page. |
 | reorderAction             | String   | `null`                                      | The action URL used to post to for reordering items. Reorder draggable handles are display when this option is provided. |
 | reorderSuccessMessage     | String   | `Items reordered`                           | Message to be displayed as the success notice after successful reorder. |

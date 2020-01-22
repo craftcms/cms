@@ -31,19 +31,10 @@ use DateInterval;
  */
 class CraftCodeceptionModuleTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester $tester
      */
     protected $tester;
-
-    // Public methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *

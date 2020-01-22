@@ -20,9 +20,6 @@ use craft\validators\UriFormatValidator;
  */
 class UriFormatValidatorTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UriFormatValidator
      */
@@ -36,12 +33,6 @@ class UriFormatValidatorTest extends Unit
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider validateAttributeDataProvider
@@ -66,9 +57,6 @@ class UriFormatValidatorTest extends Unit
         }
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -88,9 +76,6 @@ class UriFormatValidatorTest extends Unit
             [false, 'adminustriggerus', false],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -2,11 +2,27 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\FileHelper::invalidate()`.
+- The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
+
+### Fixed
+- Fixed a bug where field headings within widget bodies and settings were getting extra large bottom margins.
+
+## 3.4.0-RC3 - 2020-01-21
+
 ### Changed
-- Make sure that Imagick can process images when determining if it can be used. ([#5435](https://github.com/craftcms/cms/issues/5435))
+- Project config event handlers are now triggered in order of specificity (from least-to-most specific).
+- ImageMagick is no longer used when the `imageDriver` config setting is set to `auto`, if `Imagick::queryFormats()` returns an empty array. ([#5435](https://github.com/craftcms/cms/issues/5435))
+- `craft\services\ProjectConfig::areChangesPending()` will now return `true` if the path was updated but not processed yet.
+- The `ContentBehavior` and `ElementQueryBehavior` behavior classes have been replaced by a single `CustomFieldBehavior` class.
 
 ### Fixed
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
+- Fixed an error that would occur when creating a new Single section. ([#5462](https://github.com/craftcms/cms/issues/5462))
+- Fixed a bug where the wrong Project Config event handlers could be triggered if multiple changes occurred for the same path in the same request.
+- Fixed a bug where new Control Panel alerts were getting added to the DOM in the wrong place.
+- Fixed a PHP error that occurred when a dynamically generated class was loaded before it was finished being written. ([#5434](https://github.com/craftcms/cms/issues/5434))
 
 ## 3.4.0-RC2 - 2020-01-17
 

@@ -10,51 +10,42 @@ namespace crafttests\unit\behaviors;
 use Codeception\Test\Unit;
 use Craft;
 use craft\base\Field;
-use craft\behaviors\ContentBehavior;
+use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
 use InvalidArgumentException;
 use UnitTester;
 
 /**
- * Unit tests for ContentBehavior
+ * Unit tests for CustomFieldBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.4.0
  */
-class ContentBehaviorTest extends Unit
+class CustomFieldBehaviorTest extends Unit
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     public $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider existingFieldHandlesDataProvider
      *
      * @param $handle
      */
-    public function testExistsInContentBehavior(string $handle)
+    public function testExistsInCustomFieldBehavior(string $handle)
     {
         // Make sure it exists
-        new ContentBehavior();
+        new CustomFieldBehavior();
 
         $this->assertInstanceOf(Field::class, Craft::$app->getFields()->getFieldByHandle($handle));
-        $this->assertTrue(property_exists(ContentBehavior::class, $handle));
-        $this->assertArrayHasKey($handle, ContentBehavior::$fieldHandles);
+        $this->assertTrue(property_exists(CustomFieldBehavior::class, $handle));
+        $this->assertArrayHasKey($handle, CustomFieldBehavior::$fieldHandles);
     }
 
     /**
-     * Test that adding a field doesnt automatically modify the ContentBehavior
+     * Test that adding a field doesnt automatically modify the CustomFieldBehavior
      */
     public function testRetrofittingDontWork()
     {
@@ -66,9 +57,9 @@ class ContentBehaviorTest extends Unit
             throw new InvalidArgumentException("Couldn't save field");
         }
 
-        $cBehavior = new ContentBehavior();
+        $cBehavior = new CustomFieldBehavior();
         $this->assertFalse(property_exists($cBehavior, 'testRetrofittingDontWork1'));
-        $this->assertArrayHasKey('testRetrofittingDontWork1', ContentBehavior::$fieldHandles);
+        $this->assertArrayHasKey('testRetrofittingDontWork1', CustomFieldBehavior::$fieldHandles);
 
         // Cleanup and remove the column from the content table.
         if (!Craft::$app->getFields()->deleteField($field)) {
@@ -76,12 +67,9 @@ class ContentBehaviorTest extends Unit
         }
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
-     * @todo Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.
+     * @todo Help needed. Saving fields with fixtures doesnt update the CustomFieldBehavior class props. I cant find a way to solve this.
      *
      */
     public function existingFieldHandlesDataProvider(): array

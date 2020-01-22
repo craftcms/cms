@@ -23,12 +23,6 @@ use Exception;
  */
 class ModelTest extends Unit
 {
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      * Tests a model for errors.
      *
@@ -145,9 +139,6 @@ class ModelTest extends Unit
         $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
         $this->assertSame('alsoAintGood', $model1->getErrors()['-custom-.exampleParam'][0]);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
