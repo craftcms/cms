@@ -1563,7 +1563,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'What this category group will be called in the control panel.' => 'What this category group will be called in the control panel.',
     'You cannot access the control panel while the system is offline with that account.' => 'You cannot access the control panel while the system is offline with that account.',
     'What this tag group will be called in the control panel.' => 'What this tag group will be called in the control panel.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'What this field will be called in the control panel.' => 'What this field will be called in the control panel.',
     'You cannot access the control panel with that account.' => 'You cannot access the control panel with that account.',
     'Access the control panel when the system is offline' => 'Access the control panel when the system is offline',
