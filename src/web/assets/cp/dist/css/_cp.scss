@@ -434,7 +434,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #global-header {
   margin-bottom: 14px;
-  background-color: $grey200;
+  @include pane;
+  background: $grey050;
 
   .flex {
     height: 60px;
@@ -453,10 +454,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   a {
-    color: $mediumDarkTextColor;
+    color: $lightTextColor;
+    transition: color linear 100ms;
 
     &:hover {
-      color: $textColor;
+      color: $linkColor;
       text-decoration: none;
     }
   }
@@ -474,10 +476,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
           @include icon;
           margin: -1px 5px 0;
           font-size: 11px;
-          color: $mediumDarkTextColor;
+          color: $lightTextColor;
+
           body.ltr & {
             content: 'rightangle';
           }
+
           body.rtl & {
             content: 'leftangle';
           }
@@ -517,29 +521,36 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: row;
   align-items: center;
-  @include padding(0, 7px, 0, 14px);
+  @include padding(0, 24px, 0, 14px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;
 
   &:after {
-    margin: 0 !important;
-    width: 17px;
-    color: $mediumDarkTextColor;
+    @include margin(0, 0, 0, 5px, !important);
+    color: $lightTextColor;
+    transition: color linear 100ms;
+  }
+
+  &:hover:after {
+    color: $mediumTextColor;
   }
 }
 
 #user-photo {
-  display: block;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 2px solid $white;
-  @include shadow;
-  transition: box-shadow linear 100ms;
+  padding: 5px 0;
 
-  #user-info:hover & {
-    box-shadow: 0 1px 5px -1px transparentize($grey900, 0.5);
+  img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 0 0 transparentize($grey900, 1);
+    transition: box-shadow linear 150ms;
+
+    #user-info:hover & {
+      box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 2px 10px -2px transparentize($grey900, 0.7);
+    }
   }
 }
 
