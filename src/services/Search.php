@@ -396,7 +396,7 @@ SQL;
 
         // Insert/update the row in searchindex
         $db->createCommand()
-            ->insert(Table::SEARCHINDEX, $columns, false)
+            ->upsert(Table::SEARCHINDEX, $columns, false)
             ->execute();
     }
 
