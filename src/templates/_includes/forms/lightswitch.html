@@ -8,6 +8,7 @@
 {%- set disabled = disabled ?? false %}
 
 {%- set containerAttributes = {
+    id: id ?? null,
     class: [
         'lightswitch',
         on ? 'on',
@@ -23,8 +24,9 @@
         'target': toggle ?: false,
         'reverse-target': reverseToggle ?: false,
     },
-    id: id ?? null,
-    'aria-labelledby': labelId ?? null,
+    aria: {
+        labelledby: labelId ?? null,
+    },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
