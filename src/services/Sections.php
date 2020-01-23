@@ -725,7 +725,7 @@ class Sections extends Component
                     'elementType' => Entry::class,
                     'criteria' => [
                         'sectionId' => $sectionRecord->id,
-                        'siteId' => '*',
+                        'siteId' => array_values($siteIdMap),
                         'unique' => true,
                         'status' => null,
                         'enabledForSite' => false,
