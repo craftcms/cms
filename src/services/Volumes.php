@@ -262,7 +262,25 @@ class Volumes extends Component
     }
 
     /**
-     * Saves an asset volume.
+     * Creates or updates a volume.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\volumes\Local;
+     *
+     * $volume = new Local([
+     *     'name' => 'Content Images',
+     *     'handle' => 'contentImages',
+     *     'hasUrls' => true,
+     *     'url' => '$CONTENT_IMAGES_URL',
+     *     'path' => '$CONTENT_IMAGES_PATH',
+     * ]);
+     *
+     * if (!Craft::$app->volumes->saveVolume(($volume))) {
+     *     throw new Exception('Couldn’t save volume.');
+     * }
+     * ```
      *
      * @param VolumeInterface $volume the volume to be saved.
      * @param bool $runValidation Whether the volume should be validated
