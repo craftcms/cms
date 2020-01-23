@@ -8,9 +8,9 @@
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 - The `index-assets` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
 
-
 ### Changed
 - Improved the look of the global header. ([#5476](https://github.com/craftcms/cms/issues/5476))
+- `craft\elements\Asset::getImg()` now has an optional `$transform` argument. ([#3563](https://github.com/craftcms/cms/issues/3563))
 
 ### Fixed
 - Fixed a bug where field headings within widget bodies and settings were getting extra large bottom margins.
