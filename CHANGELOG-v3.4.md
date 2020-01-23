@@ -181,6 +181,7 @@
 - Added `craft\services\Gql::getSchemaByUid()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
+- Added `craft\services\Gql::getTokenByName()`.
 - Added `craft\services\Gql::getTokenByUid()`.
 - Added `craft\services\Gql::getTokens()`.
 - Added `craft\services\Gql::getValidationRules()`.

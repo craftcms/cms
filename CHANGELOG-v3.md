@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\helpers\FileHelper::invalidate()`.
+- Added `craft\services\Gql::getTokenByName()`.
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 
 ### Fixed
