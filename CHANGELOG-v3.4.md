@@ -290,6 +290,7 @@
 - The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
 - The `index-assets/*` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
+- Updated Yii to 2.0.32.
 - Updated yii2-queue to 2.3.
 - Updated Garnish to 0.1.32.
 
