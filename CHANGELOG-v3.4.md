@@ -221,7 +221,6 @@
 - Added the `Craft.VueAdminTable` JavaScript class.
 - Added the `beforeUpdateIframe` and `switchTarget` events to the `Craft.Preview` JavaScript class. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
-- The `index-assets` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
 - Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
@@ -290,6 +289,7 @@
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
 - The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
+- The `index-assets/*` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
 - Updated yii2-queue to 2.3.
 - Updated Garnish to 0.1.32.
 
