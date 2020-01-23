@@ -43,6 +43,11 @@ class IndexAssetsController extends Controller
     public $createMissingAssets = true;
 
     /**
+     * @var bool Whether to delete all the asset records that have their files missing.
+     */
+    public $deleteMissingAssets = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
@@ -50,6 +55,7 @@ class IndexAssetsController extends Controller
         $options = parent::options($actionID);
         $options[] = 'cacheRemoteImages';
         $options[] = 'createMissingAssets';
+        $options[] = 'deleteMissingAssets';
         return $options;
     }
 
@@ -175,6 +181,7 @@ class IndexAssetsController extends Controller
 
             $missingFiles = $assetIndexer->getMissingFiles($sessionId);
             $maybes = false;
+
             if (!empty($missingFiles)) {
                 $totalMissing = count($missingFiles);
                 $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
@@ -196,9 +203,12 @@ class IndexAssetsController extends Controller
             }
         }
 
+        $remainingMissingFiles = $missingFiles;
+        $db = Craft::$app->getDb();
+
         if ($maybes && $this->confirm('Fix asset locations?')) {
-            $db = Craft::$app->getDb();
             foreach ($missingFiles as $assetId => $path) {
+                unset($remainingMissingFiles[$assetId]);
                 $filename = basename($path);
                 if (isset($missingRecordsByFilename[$filename])) {
                     $e = $this->_chooseMissingRecord($path, $missingRecordsByFilename[$filename]);
@@ -220,6 +230,17 @@ class IndexAssetsController extends Controller
             }
 
             $this->stdout('Done fixing asset locations.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        }
+
+        if (!empty($remainingMissingFiles) && $this->deleteMissingAssets) {
+            $totalMissingFiles = count($remainingMissingFiles);
+            $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
+
+            $db->createCommand()
+                ->delete(Table::ASSETS, ['id' => array_keys($remainingMissingFiles)])
+                ->execute();
+
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
         return ExitCode::OK;
