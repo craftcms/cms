@@ -31,7 +31,7 @@
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
 - Assets fields now have a “Show unpermitted files setting, which determines whether the field should show files that the user doesn’t have permission to view per the new “View files uploaded by other users” permission.
 - It’s now possible to download multiple assets at once as a zip file. ([#5259](https://github.com/craftcms/cms/issues/5259))
-- It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
+- It’s now possible to preview text and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
@@ -64,13 +64,11 @@
 - The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
-- Added `craft\assetpreviews\HtmlPreview`.
-- Added `craft\assetpreviews\ImagePreview`.
-- Added `craft\assetpreviews\NoPreview`.
-- Added `craft\assetpreviews\PdfPreview`.
-- Added `craft\base\AssetPreview`.
-- Added `craft\base\AssetPreviewInterface`.
-- Added `craft\base\AssetPreviewTrait`.
+- Added `craft\assetpreviews\Image`.
+- Added `craft\assetpreviews\Pdf`.
+- Added `craft\assetpreviews\Text`.
+- Added `craft\base\AssetPreviewHandler`.
+- Added `craft\base\AssetPreviewHandlerInterface`.
 - Added `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Added `craft\base\Element::ATTR_STATUS_MODIFIED`.
 - Added `craft\base\Element::ATTR_STATUS_OUTDATED`.
@@ -168,8 +166,8 @@
 - Added `craft\queue\QueueInterface::retryAll()`.
 - Added `craft\records\Asset::getUploader()`.
 - Added `craft\records\GqlToken`.
-- Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
-- Added `craft\services\Assets::getAssetPreview()`.
+- Added `craft\services\Assets::EVENT_REGISTER_PREVIEW_HANDLER`.
+- Added `craft\services\Assets::getAssetPreviewHandler()`.
 - Added `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::mergeSourceChanges()`.
@@ -300,7 +298,7 @@
 - Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\controllers\UsersController::actionGetRemainingSessionTime()`. `actionSessionInfo()` should be used instead.
-- Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
+- Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreviewHandler()` instead.
 - Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
 - Deprecated `craft\services\ProjectConfig::$maxBackups`. `$maxDeltas` should be used instead.
 - Deprecated `craft\services\Search::indexElementFields()`.

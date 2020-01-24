@@ -8,12 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use craft\assetpreviews\HtmlPreview;
-use craft\assetpreviews\ImagePreview;
-use craft\assetpreviews\NoPreview;
-use craft\assetpreviews\PdfPreview;
-use craft\base\AssetPreview;
-use craft\base\AssetPreviewInterface;
+use craft\assetpreviews\Image as ImagePreview;
+use craft\assetpreviews\Text;
+use craft\assetpreviews\Pdf;
+use craft\base\AssetPreviewHandler;
+use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
@@ -87,10 +86,10 @@ class Assets extends Component
     const EVENT_GET_THUMB_PATH = 'getThumbPath';
 
     /**
-     * @event AssetPreviewEvent The event that is triggered when an asset is previewed
+     * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
      * @since 3.4.0
      */
-    const EVENT_GET_ASSET_PREVIEW = 'getAssetPreview';
+    const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
      * @var
@@ -1033,24 +1032,21 @@ class Assets extends Component
     }
 
     /**
+     * Returns the asset preview handler for a given asset, or `null` if the asset is not previewable.
      *
      * @param Asset $asset
-     * @return AssetPreviewInterface
+     * @return AssetPreviewHandlerInterface|null
      * @since 3.4.0
      */
-    public function getAssetPreview(Asset $asset): AssetPreviewInterface
+    public function getAssetPreviewHandler(Asset $asset)
     {
-        $event = new AssetPreviewEvent(['asset' => $asset]);
-
         // Give plugins a chance to register their own preview handlers
-        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_PREVIEW)) {
-            $this->trigger(self::EVENT_GET_ASSET_PREVIEW, $event);
-        }
-
-        $preview = $event->previewHandler;
-
-        if ($preview instanceof AssetPreview) {
-            return $preview;
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
+            $event = new AssetPreviewEvent(['asset' => $asset]);
+            $this->trigger(self::EVENT_REGISTER_PREVIEW_HANDLER, $event);
+            if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
+                return $event->previewHandler;
+            }
         }
 
         // These are our default preview handlers if one is not supplied
@@ -1058,14 +1054,17 @@ class Assets extends Component
             case Asset::KIND_IMAGE:
                 return new ImagePreview($asset);
             case Asset::KIND_PDF:
-                return new PdfPreview($asset);
+                return new Pdf($asset);
             case Asset::KIND_HTML:
-            case Asset::KIND_JSON:
             case Asset::KIND_JAVASCRIPT:
-                return new HtmlPreview($asset);
-            default:
-                return new NoPreview($asset);
+            case Asset::KIND_JSON:
+            case Asset::KIND_PHP:
+            case Asset::KIND_TEXT:
+            case Asset::KIND_XML:
+                return new Text($asset);
         }
+
+        return null;
     }
 
     /**

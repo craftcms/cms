@@ -1,4 +1,4 @@
-/*!   - 2020-01-21 */
+/*!   - 2020-01-24 */
 (function($){
 
 /** global: Craft */
@@ -18543,7 +18543,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             Craft.PreviewFileModal.openInstance = this;
             this.elementSelect = elementSelect;
 
-            this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
+            this.$container = $('<div class="modal previewmodal loading"/>').appendTo(Garnish.$bod);
 
             this.base(this.$container, $.extend({
                 resizable: true
@@ -18634,17 +18634,24 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             this.requestId++;
 
             Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, function(response, textStatus) {
+                this.$container.removeClass('loading');
+                this.$spinner.remove();
+                this.loaded = true;
+
                 if (textStatus === 'success') {
                     if (response.success) {
                         if (response.requestId != this.requestId) {
                             return;
                         }
 
-                        this.$container.removeClass('loading');
-                        this.$spinner.remove();
+                        if (!response.previewHtml) {
+                            this.$container.addClass('zilch');
+                            this.$container.append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
+                            return;
+                        }
 
-                        this.loaded = true;
-                        this.$container.append(response.modalHtml);
+                        this.$container.removeClass('zilch');
+                        this.$container.append(response.previewHtml);
                         Craft.appendHeadHtml(response.headHtml);
                         Craft.appendFootHtml(response.footHtml);
                     } else {

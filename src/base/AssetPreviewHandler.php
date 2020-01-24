@@ -8,7 +8,6 @@
 
 namespace craft\base;
 
-
 use craft\elements\Asset;
 
 /**
@@ -17,12 +16,15 @@ use craft\elements\Asset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-abstract class AssetPreview extends Component implements AssetPreviewInterface
+abstract class AssetPreviewHandler extends Component implements AssetPreviewHandlerInterface
 {
-    use AssetPreviewTrait;
+    /**
+     * @var Asset
+     */
+    public $asset;
 
     /**
-     * AssetPreview constructor.
+     * Constructor.
      *
      * @param Asset $asset
      */
@@ -31,29 +33,5 @@ abstract class AssetPreview extends Component implements AssetPreviewInterface
         parent::__construct([
             'asset' => $asset
         ]);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFootHtml()
-    {
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHeadHtml()
-    {
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getModalHtml()
-    {
-        return false;
     }
 }

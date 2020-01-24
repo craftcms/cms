@@ -272,7 +272,7 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .fullwidth { width: 100%; }
 
-.token { display: inline-block; border-radius: 10px; padding: 2px 7px; font-size: 12px; line-height: 14px; color: #3f4d5a; background-color: rgba(255, 255, 255, 0.5); -webkit-box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.5); box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.5); }
+*:not(.highlight) > * > * > .token { display: inline-block; border-radius: 10px; padding: 2px 7px; font-size: 12px; line-height: 14px; color: #3f4d5a; background-color: rgba(255, 255, 255, 0.5); -webkit-box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.5); box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.5); }
 
 .token[data-name='*'] { position: relative; width: 10px; }
 
@@ -1155,6 +1155,8 @@ body.rtl .deleteusermodal .buttons .spinner { margin-right: -4px; }
 
 .dropdownsettingsmodal { width: auto; height: auto; min-width: 0; min-height: 0; max-width: 400px; }
 .dropdownsettingsmodal .body { max-height: 100%; overflow-y: auto; }
+
+.previewmodal.zilch { padding: 100px 0; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; }
 
 /* ----------------------------------------
 /*  Menus

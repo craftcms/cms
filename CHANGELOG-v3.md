@@ -11,12 +11,27 @@
 - Improved the look of the global header. ([#5476](https://github.com/craftcms/cms/issues/5476))
 - The `index-assets/*` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
 - `craft\elements\Asset::getImg()` now has an optional `$transform` argument. ([#3563](https://github.com/craftcms/cms/issues/3563))
+- Renamed `craft\assetpreviews\HtmlPreview` to `Text`.
+- Renamed `craft\assetpreviews\ImagePreview` to `Image`.
+- Renamed `craft\assetpreviews\PdfPreview` to `Pdf`.
+- Renamed `craft\base\AssetPreview` to `AssetPreviewHandler`.
+- Renamed `craft\base\AssetPreviewInterface` to `AssetPreviewHandlerInterface`.
+- Renamed `craft\base\AssetPreviewHandlerInterface::getModalHtml()` to `getPreviewHtml()`.
+- Renamed `craft\services\Assets::EVENT_GET_ASSET_PREVIEW` to `EVENT_REGISTER_PREVIEW_HANDLER`.
+- Renamed `craft\services\Assets::getAssetPreview()` to `getAssetPreviewHandler()`, and now the method will return `null` if no preview handler exists for the given asset.
 - Updated Yii to 2.0.32.
+
+### Removed
+- Removed `craft\assetpreviews\NoPreview`.
+- Removed `craft\base\AssetPreviewTrait`.
+- Removed `craft\base\AssetPreviewHandlerInterface::getFootHtml()`.
+- Removed `craft\base\AssetPreviewHandlerInterface::getHeadHtml()`.
 
 ### Fixed
 - Fixed a bug where field headings within widget bodies and settings were getting extra large bottom margins.
 - Fixed an error that occurred after disabling a section for the primary site, while its existing entries were being resaved. ([#5489](https://github.com/craftcms/cms/issues/5489))
 - Fixed a bug where Project Config would incorrectly save a setting when it changed from null to an array. ([#5483](https://github.com/craftcms/cms/issues/5483))
+- Fixed JavaScript errors that could occur on Edit Asset pages. ([#5485](https://github.com/craftcms/cms/issues/5485))
 
 ## 3.4.0-RC3 - 2020-01-21
 
