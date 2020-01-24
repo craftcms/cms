@@ -16,6 +16,7 @@
 ### Fixed
 - Fixed a bug where field headings within widget bodies and settings were getting extra large bottom margins.
 - Fixed an error that occurred after disabling a section for the primary site, while its existing entries were being resaved. ([#5489](https://github.com/craftcms/cms/issues/5489))
+- Fixed a bug where Project Config would incorrectly save a setting when it changed from null to an array. ([#5483](https://github.com/craftcms/cms/issues/5483))
 
 ## 3.4.0-RC3 - 2020-01-21
 

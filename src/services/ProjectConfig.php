@@ -745,6 +745,7 @@ class ProjectConfig extends Component
                     $isMysql = $db->getIsMysql();
                     $batch = [];
                     $pathsToInsert = [];
+                    $additionalCleanupPaths = [];
 
                     foreach ($currentSet['added'] as $key => $value) {
                         // Prepare for storage
@@ -754,6 +755,9 @@ class ProjectConfig extends Component
                         }
                         $batch[] = [$key, $dbValue];
                         $pathsToInsert[] = $key;
+
+                        // Delete parent key, as it cannot hold a value AND be an array at the same time
+                        $additionalCleanupPaths[pathinfo($key, PATHINFO_FILENAME)] = true;
 
                         // Prepare for delta
                         if (!empty($currentSet['removed']) && array_key_exists($key, $currentSet['removed'])) {
@@ -787,6 +791,9 @@ class ProjectConfig extends Component
                     if (!empty($batch)) {
                         $db->createCommand()
                             ->delete(Table::PROJECTCONFIG, ['path' => $pathsToInsert])
+                            ->execute();
+                        $db->createCommand()
+                            ->delete(Table::PROJECTCONFIG, ['path' => array_keys($additionalCleanupPaths)])
                             ->execute();
                         $db->createCommand()
                             ->batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false)
@@ -1724,6 +1731,11 @@ class ProjectConfig extends Component
             $segments = explode('.', $path);
 
             foreach ($segments as $segment) {
+                // If we're still traversing, enforce array to avoid errors.
+                if (!is_array($current)) {
+                    $current = [];
+                }
+
                 if (!array_key_exists($segment, $current)) {
                     $current[$segment] = [];
                 }
