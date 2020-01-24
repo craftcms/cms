@@ -13,7 +13,7 @@ return [
     'A folder with the name “{folderName}” already exists in the folder.' => 'В данной папке уже существует папка с именем «{folderName}».',
     'A folder with the name “{folderName}” already exists in the volume.' => 'В данной томе уже существует папка с именем «{folderName}».',
     'A license key is required.' => 'Требуется лицензионный ключ.',
-    'A server error occurred.' => 'A server error occurred.',
+    'A server error occurred.' => 'Произошла ошибка сервера.',
     'A template name cannot contain NUL bytes.' => 'Имя шаблона не может содержать NUL байт.',
     'A verification email will be sent automatically.' => 'Электронное письмо с подтверждением будет отправлено автоматически.',
     'Abort the update' => 'Прервать обновление',
