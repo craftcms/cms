@@ -1490,7 +1490,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Asset saved.' => 'Tartalom mentve.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Megjelenjenek-e a kötetek, amelyek megjelenítésére a felhasználónak nincs jogosultsága.',
     'No Schemas exist yet to assign to this token.' => 'Még nem léteznek a tokenhez rendelhető sémák.',
-    'Blocks will be saved across all {language}-language sites.' => 'Blocks will be saved across all {language}-language sites.',
+    'Blocks will be saved across all {language}-language sites.' => 'A blokkok el lesznek mentve az összes {language} nyelvű oldalra.',
     'From {date}' => 'From {date}',
     'Edit images uploaded by other users' => 'Edit images uploaded by other users',
     'Create a new GraphQL Schema' => 'Create a new GraphQL Schema',
