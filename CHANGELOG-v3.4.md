@@ -40,6 +40,7 @@
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+- Added the “Reply-To Address” email setting. ([#5498](https://github.com/craftcms/cms/issues/5498))
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
@@ -155,9 +156,11 @@
 - Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
+- Added `craft\mail\Mailer::$replyTo`.
 - Added `craft\migrations\CreatePhpSessionTable`.
 - Added `craft\models\FieldLayoutTab::elementHasErrors()`.
 - Added `craft\models\GqlToken`.
+- Added `craft\models\MailSettings::$replyToEmail`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\queue\QueueInterface::getJobDetails()`.
@@ -273,6 +276,7 @@
 - `craft\elements\Asset::getImg()` now has an optional `$transform` argument. ([#3563](https://github.com/craftcms/cms/issues/3563))
 - `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).
 - `craft\i18n\Formatter::asShortSize()` now capitalizes the size unit.
+- `craft\mail\Message::setReplyTo()` can now be set to a `craft\elements\User` object, or an array of them.
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))

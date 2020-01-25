@@ -3,7 +3,10 @@
 ## Unreleased
 
 ### Added
+- Added the “Reply-To Address” email setting. ([#5498](https://github.com/craftcms/cms/issues/5498))
 - Added `craft\helpers\FileHelper::invalidate()`.
+- Added `craft\mail\Mailer::$replyTo`.
+- Added `craft\models\MailSettings::$replyToEmail`.
 - Added `craft\services\Gql::getTokenByName()`.
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 
@@ -19,6 +22,7 @@
 - Renamed `craft\base\AssetPreviewHandlerInterface::getModalHtml()` to `getPreviewHtml()`.
 - Renamed `craft\services\Assets::EVENT_GET_ASSET_PREVIEW` to `EVENT_REGISTER_PREVIEW_HANDLER`.
 - Renamed `craft\services\Assets::getAssetPreview()` to `getAssetPreviewHandler()`, and now the method will return `null` if no preview handler exists for the given asset.
+- `craft\mail\Message::setReplyTo()` can now be set to a `craft\elements\User` object, or an array of them.
 - Updated Yii to 2.0.32.
 
 ### Removed

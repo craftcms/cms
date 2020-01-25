@@ -50,6 +50,24 @@ class Message extends \yii\swiftmailer\Message
     }
 
     /**
+     * Sets the Reply-To email.
+     *
+     * @param string|array|User|User[] $replyTo The Reply-To email address, or their
+     * user model(s). You may pass an array of addresses if this message is from
+     * multiple people. You may also specify Reply-To name in addition to email
+     * address using format: `[email => name]`.
+     * @return static self reference
+     * @since 3.4.0
+     */
+    public function setReplyTo($replyTo)
+    {
+        $replyTo = $this->_normalizeEmails($replyTo);
+        parent::setReplyTo($replyTo);
+
+        return $this;
+    }
+
+    /**
      * Sets the message recipient(s).
      *
      * @param string|array|User|User[] $to The receiver’s email address, or their

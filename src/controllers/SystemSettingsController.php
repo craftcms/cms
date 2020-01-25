@@ -357,6 +357,7 @@ class SystemSettingsController extends Controller
         $settings = new MailSettings();
 
         $settings->fromEmail = $request->getBodyParam('fromEmail');
+        $settings->replyToEmail = $request->getBodyParam('replyToEmail') ?: null;
         $settings->fromName = $request->getBodyParam('fromName');
         $settings->template = $request->getBodyParam('template');
         $settings->transportType = $request->getBodyParam('transportType');
