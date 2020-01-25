@@ -14,7 +14,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author PixelDeluxe | Tim van Dijkhuizen <tim@pixeldeluxe.nl>
- * @since ctrl_find_replace_this_for_since_supported_sites
+ * @since find_replace_this_for_since_supported_sites
  */
 class RegisterElementSupportedSitesEvent extends Event
 {

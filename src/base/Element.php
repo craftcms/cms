@@ -127,7 +127,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event RegisterElementSupportedSitesEvent The event that is triggered when registering the sites this element is associated with.
-     * @since ctrl_find_replace_this_for_since_supported_sites
+     * @since find_replace_this_for_since_supported_sites
      */
     const EVENT_REGISTER_SUPPORTED_SITES = 'registerSupportedSites';
 
@@ -496,7 +496,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return int[]|array
      * @see getSupportedSites()
-     * @since ctrl_find_replace_this_for_since_supported_sites
+     * @since find_replace_this_for_since_supported_sites
      */
     protected function defineSupportedSites(): array
     {
