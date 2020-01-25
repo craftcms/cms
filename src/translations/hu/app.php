@@ -1590,13 +1590,13 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Contents of {path}' => '{path} tartalma',
     'Are you sure you want to release the job “{description}”?' => 'Biztosan fel kívánja oldani a “{description}” feladatot?',
     'Record of generated image transforms' => 'A létrehozott kép-transzformációk bejegyzése',
-    'Whether preview frames should be automatically refreshed when content changes.' => 'Whether preview frames should be automatically refreshed when content changes.',
-    'Draft' => 'Draft',
-    'Restart job' => 'Restart job',
-    'Are you sure you want to restart the job “{description}”? Any progress could be lost.' => 'Are you sure you want to restart the job “{description}”? Any progress could be lost.',
-    'Job released.' => 'Job released.',
-    'Local copies of remote images, generated thumbnails' => 'Local copies of remote images, generated thumbnails',
-    'Retry' => 'Retry',
-    'Are you sure you want to release all jobs in the queue?' => 'Are you sure you want to release all jobs in the queue?',
-    'Reserved' => 'Reserved'
+    'Whether preview frames should be automatically refreshed when content changes.' => 'Fríssítse-e automatikusan az előnézet kereteit a tartalom változásakor.',
+    'Draft' => 'Vázlat',
+    'Restart job' => 'Feladat újraindítása',
+    'Are you sure you want to restart the job “{description}”? Any progress could be lost.' => 'Biztosan újra kívánja indítani a „{description}” feladatot? Minden eddigi eredmény elveszik.',
+    'Job released.' => 'Feladat feloldva.',
+    'Local copies of remote images, generated thumbnails' => 'Távoli képek helyi másolatai, létrehozott miniatűrök',
+    'Retry' => 'Újrapróbálni',
+    'Are you sure you want to release all jobs in the queue?' => 'Biztosan fel kívánja oldani az összes feladatot a várakozási sorban?',
+    'Reserved' => 'Fenntartva'
 ];
