@@ -243,7 +243,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function getSupportedSites(): array
+    public function defineSupportedSites(): array
     {
         try {
             $owner = $this->getOwner();

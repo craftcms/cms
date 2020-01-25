@@ -23,6 +23,7 @@ use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
+use craft\events\RegisterElementSupportedSitesEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
@@ -123,6 +124,12 @@ abstract class Element extends Component implements ElementInterface
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @event RegisterElementSupportedSitesEvent The event that is triggered when registering the sites this element is associated with.
+     * @since ctrl_find_replace_this_for_since_supported_sites
+     */
+    const EVENT_REGISTER_SUPPORTED_SITES = 'registerSupportedSites';
 
     /**
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
@@ -479,6 +486,25 @@ abstract class Element extends Component implements ElementInterface
         Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
 
         return $event->attributes;
+    }
+
+    /**
+     * Defines the sites this element is associated with.
+     *
+     * The function can either return an array of site IDs, or an array of sub-arrays,
+     * each with the keys `siteId` (int) and `enabledByDefault` (boolean).
+     *
+     * @return int[]|array
+     * @see getSupportedSites()
+     * @since ctrl_find_replace_this_for_since_supported_sites
+     */
+    protected static function defineSupportedSites(): array
+    {
+        if (static::isLocalized()) {
+            return Craft::$app->getSites()->getAllSiteIds();
+        }
+
+        return [Craft::$app->getSites()->getPrimarySite()->id];
     }
 
     /**
@@ -1432,11 +1458,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSupportedSites(): array
     {
-        if (static::isLocalized()) {
-            return Craft::$app->getSites()->getAllSiteIds();
-        }
+        $sites = static::defineSupportedSites();
 
-        return [Craft::$app->getSites()->getPrimarySite()->id];
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSupportedSitesEvent([
+            'sites' => $sites
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SUPPORTED_SITES, $event);
+
+        return $event->sites;
     }
 
     /**

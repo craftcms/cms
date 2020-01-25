@@ -484,12 +484,17 @@ interface ElementInterface extends ComponentInterface
     public function getFieldLayout();
 
     /**
-     * Returns the sites this element is associated with.
+     * Returns the [sites](https://docs.craftcms.com/v3/sites.html) this element is associated with.
      *
-     * The function can either return an array of site IDs, or an array of sub-arrays,
+     * The sites can either return an array of site IDs, or an array of sub-arrays,
      * each with the keys `siteId` (int) and `enabledByDefault` (boolean).
      *
-     * @return int[]|array
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineSupportedSites()]]
+     * instead of this method.
+     * :::
+     *
+     * @return int[]|array The sites this element is associated with.
      */
     public function getSupportedSites(): array;
 
