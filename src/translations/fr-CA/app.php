@@ -529,7 +529,7 @@ return [
     'Last login' => 'Dernière connexion',
     'Last login fail' => 'Dernier échec de connexion',
     'Last update' => 'Dernière mise à jour',
-    'Last {num, number} {num, plural, =1{day} other{days}}' => 'Last {num, number} {num, plural, =1{day} other{days}}',
+    'Last {num, number} {num, plural, =1{day} other{days}}' => '{num, plural, =0{Dernier jour} =1{Dernier jour} other{Derniers {num, number} jours}}',
     'Learn more' => 'En savoir plus',
     'Leave blank if categories don’t have URLs' => 'Laissez la zone à blanc si les catégories n’ont pas d’URL',
     'Leave it uninstalled' => 'Le laisser non installé',
