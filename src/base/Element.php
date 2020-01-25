@@ -498,7 +498,7 @@ abstract class Element extends Component implements ElementInterface
      * @see getSupportedSites()
      * @since ctrl_find_replace_this_for_since_supported_sites
      */
-    protected static function defineSupportedSites(): array
+    protected function defineSupportedSites(): array
     {
         if (static::isLocalized()) {
             return Craft::$app->getSites()->getAllSiteIds();
@@ -1458,7 +1458,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSupportedSites(): array
     {
-        $sites = static::defineSupportedSites();
+        $sites = $this->defineSupportedSites();
 
         // Give plugins a chance to modify them
         $event = new RegisterElementSupportedSitesEvent([
