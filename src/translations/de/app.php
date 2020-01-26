@@ -1596,5 +1596,5 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Local copies of remote images, generated thumbnails' => 'Lokale Kopien von externen Bildern, generierte Vorschaubilder',
     'Retry' => 'Erneut versuchen',
     'Are you sure you want to release all jobs in the queue?' => 'Sind Sie sicher, dass Sie alle Aufgaben in der Queue abbrechen möchten?',
-    'Reserved' => 'Reserved'
+    'Reserved' => 'Reserviert'
 ];
