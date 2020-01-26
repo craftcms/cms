@@ -1194,7 +1194,7 @@ return [
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, zero {} one {عمود} two {عمود} few {أعمدة} many {عمود} =1{عمود} other{columns}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, zero {} one {ي} two {أيام} few {أيام} many {يوم} =1{يوم} other{يوم}}',
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, zero {} one {ساعة} two {ساعة} few {ساعات} many {ساعة} =1{ساعة} other{ساعة}}',
-    '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{minute} other{minutes}}',
+    '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, zero {} one {دقيقة} two {دقيقة} few {دقائق} many {دقيقة} =1{دقيقة} other{دقيقة}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{month} other{months}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{second} other{seconds}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{week} other{weeks}}',
