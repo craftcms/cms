@@ -1124,7 +1124,7 @@ return [
     'You can only delete groups that have no sites.' => '只能删除没有站点的组。',
     'You cannot access the CP while the system is offline with that account.' => '系统离线时，您不能使用该账户访问 CP。',
     'You cannot access the CP with that account.' => '您不能使用该账户访问 CP。',
-    'You cannot access the site while the system is offline with that account.' => '当系统与该账户未连接时你无法访问该网站。',
+    'You cannot access the site while the system is offline with that account.' => 'You cannot access the site while the system is offline with that account.',
     'You don’t have any widgets yet.' => '您目前没有任何小部件。',
     'You don’t have the proper credentials to access this page.' => '您没有合适的凭证用于访问该页。',
     'You must set at least one of the dimensions.' => '至少要设置一个维数。',
