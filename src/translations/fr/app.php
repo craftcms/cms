@@ -1511,6 +1511,6 @@ Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',
     'Delete them' => 'Les supprimer',
     'Keep them' => 'Les garder',
     'View tag group - {tagGroup}' => 'Voir le groupe d\'étiquettes - {tagGroup}',
-    'Single' => 'Single',
-    'Channel' => 'Channel'
+    'Single' => 'Élément individuel',
+    'Channel' => 'Canal'
 ];
