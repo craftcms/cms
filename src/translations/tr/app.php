@@ -1507,6 +1507,6 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'Delete them' => 'Öğeleri sil',
     'Keep them' => 'Öğeleri tut',
     'View tag group - {tagGroup}' => 'Etiket grubunu göster - {tagGroup}',
-    'Single' => 'Single',
-    'Channel' => 'Channel'
+    'Single' => 'Tekli',
+    'Channel' => 'Kanal'
 ];
