@@ -36,12 +36,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     const STATUS_FAILED = 4;
 
     /**
-     * @var int timeout
+     * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
     public $mutexTimeout = 3;
 
     /**
-     * @var string command class name
+     * @inheritdoc
      */
     public $commandClass = Command::class;
 
