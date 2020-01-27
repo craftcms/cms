@@ -789,13 +789,18 @@ class Asset extends Element
     /**
      * Returns an `<img>` tag based on this asset.
      *
+     * @param mixed $transform The transform to use when generating the html.
      * @return Markup|null
      */
-    public function getImg()
+    public function getImg($transform = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
+
+        if ($transform) {
+            $this->setTransform($transform);
+        };
 
         /** @var Volume $volume */
         $volume = $this->getVolume();

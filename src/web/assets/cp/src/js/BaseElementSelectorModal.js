@@ -193,7 +193,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         multiSelect: this.settings.multiSelect,
                         buttonContainer: this.$secondaryButtons,
                         onSelectionChange: $.proxy(this, 'onSelectionChange'),
-                        hideSidebar: this.settings.hideSidebar
+                        hideSidebar: this.settings.hideSidebar,
+                        defaultSource: this.settings.defaultSource
                     });
 
                     // Double-clicking or double-tapping should select the elements
@@ -221,6 +222,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             hideOnSelect: true,
             onCancel: $.noop,
             onSelect: $.noop,
-            hideSidebar: false
+            hideSidebar: false,
+            defaultSource: null
         }
     });

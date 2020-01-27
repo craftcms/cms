@@ -1,9 +1,9 @@
 <div class="highlight {{ asset.kind }}">
-    <pre><code class="language-{{ language }}">{{ content|raw }}</code></pre>
+    <pre><code class="language-{{ language }}">{{ contents|raw }}</code></pre>
 </div>
 {% js %}
-var $instance = Craft.PreviewFileModal.openInstance;
-var $highlight = $instance.find('.highlight');
+var instance = Craft.PreviewFileModal.openInstance;
+var $highlight = instance.$container.find('.highlight');
 
 if ($highlight.length && $highlight.hasClass('json')) {
     var $target = $highlight.find('code');
@@ -14,10 +14,10 @@ if ($highlight.length) {
     Prism.highlightElement($highlight.find('code').get(0));
 }
 
-$instance.base();
+instance.base();
 
-$instance.find('.highlight')
-    .height($instance.height())
-    .width($instance.width())
+instance.$container
+    .height(instance.$container.height())
+    .width(instance.$container.width())
     .css({'overflow': 'auto'});
 {% endjs %}

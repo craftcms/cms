@@ -556,6 +556,22 @@ class Gql extends Component
     }
 
     /**
+     * Returns a GraphQL token by its name.
+     *
+     * @param string $tokenName
+     * @return GqlToken|null
+     * @since 3.4.0
+     */
+    public function getTokenByName(string $tokenName)
+    {
+        $result = $this->_createTokenQuery()
+            ->where(['name' => $tokenName])
+            ->one();
+
+        return $result ? new GqlToken($result) : null;
+    }
+
+    /**
      * Returns a GraphQL token by its UID.
      *
      * @param string $uid

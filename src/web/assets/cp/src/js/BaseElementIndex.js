@@ -410,6 +410,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getDefaultSourceKey: function() {
+            if (this.settings.defaultSource) {
+                var paths = this.settings.defaultSource.split('/'),
+                    path = '';
+
+                // Expand the tree
+                for (var i = 0; i < paths.length; i++) {
+                    path += paths[i];
+                    var $source = this.getSourceByKey(path);
+                    this._expandSource($source);
+                    path += '/';
+                }
+
+                // Just make sure that the modal is aware of the newly expanded sources, too.
+                this._setSite(this.siteId);
+
+                return this.settings.defaultSource;
+            }
+
             return this.instanceState.selectedSource;
         },
 
@@ -1826,6 +1844,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
+            defaultSource: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,

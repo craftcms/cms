@@ -8,7 +8,8 @@
 namespace craft\assetpreviews;
 
 use Craft;
-use craft\base\AssetPreview;
+use craft\base\AssetPreviewHandler;
+use craft\base\Volume;
 
 /**
  * Provides functionality to preview PDFs
@@ -16,25 +17,24 @@ use craft\base\AssetPreview;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-class PdfPreview extends AssetPreview
+class Pdf extends AssetPreviewHandler
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function getModalHtml(): string
+    public function getPreviewHtml(): string
     {
+        /** @var Volume $volume */
         $volume = $this->asset->getVolume();
 
         if ($volume->hasUrls) {
-            $assetUrl = $this->asset->getUrl();
+            $url = $this->asset->getUrl();
         } else {
-            $assetUrl = $this->asset->getCopyOfFile();
+            $url = $this->asset->getCopyOfFile();
         }
 
-        $view = Craft::$app->getView();
-        return $view->renderTemplate('assets/_previews/pdf', [
-            'asset' => $this->asset,
-            'assetUrl' => $assetUrl
+        return Craft::$app->getView()->renderTemplate('assets/_previews/pdf', [
+            'url' => $url
         ]);
     }
 }

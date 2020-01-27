@@ -1,4 +1,4 @@
-/*!   - 2020-01-22 */
+/*!   - 2020-01-27 */
 (function($){
 
 /** global: Craft */
@@ -2459,6 +2459,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getDefaultSourceKey: function() {
+            if (this.settings.defaultSource) {
+                var paths = this.settings.defaultSource.split('/'),
+                    path = '';
+
+                // Expand the tree
+                for (var i = 0; i < paths.length; i++) {
+                    path += paths[i];
+                    var $source = this.getSourceByKey(path);
+                    this._expandSource($source);
+                    path += '/';
+                }
+
+                // Just make sure that the modal is aware of the newly expanded sources, too.
+                this._setSite(this.siteId);
+
+                return this.settings.defaultSource;
+            }
+
             return this.instanceState.selectedSource;
         },
 
@@ -3875,6 +3893,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
+            defaultSource: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
@@ -4925,7 +4944,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         multiSelect: this.settings.multiSelect,
                         buttonContainer: this.$secondaryButtons,
                         onSelectionChange: $.proxy(this, 'onSelectionChange'),
-                        hideSidebar: this.settings.hideSidebar
+                        hideSidebar: this.settings.hideSidebar,
+                        defaultSource: this.settings.defaultSource
                     });
 
                     // Double-clicking or double-tapping should select the elements
@@ -4953,7 +4973,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             hideOnSelect: true,
             onCancel: $.noop,
             onSelect: $.noop,
-            hideSidebar: false
+            hideSidebar: false,
+            defaultSource: null
         }
     });
 
@@ -18543,7 +18564,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             Craft.PreviewFileModal.openInstance = this;
             this.elementSelect = elementSelect;
 
-            this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
+            this.$container = $('<div class="modal previewmodal loading"/>').appendTo(Garnish.$bod);
 
             this.base(this.$container, $.extend({
                 resizable: true
@@ -18634,17 +18655,24 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             this.requestId++;
 
             Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, function(response, textStatus) {
+                this.$container.removeClass('loading');
+                this.$spinner.remove();
+                this.loaded = true;
+
                 if (textStatus === 'success') {
                     if (response.success) {
                         if (response.requestId != this.requestId) {
                             return;
                         }
 
-                        this.$container.removeClass('loading');
-                        this.$spinner.remove();
+                        if (!response.previewHtml) {
+                            this.$container.addClass('zilch');
+                            this.$container.append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
+                            return;
+                        }
 
-                        this.loaded = true;
-                        this.$container.append(response.modalHtml);
+                        this.$container.removeClass('zilch');
+                        this.$container.append(response.previewHtml);
                         Craft.appendHeadHtml(response.headHtml);
                         Craft.appendFootHtml(response.footHtml);
                     } else {
@@ -21367,7 +21395,6 @@ Craft.ui =
             var now = new Date();
             var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             config = $.extend({
-                class: '',
                 options: [
                     'today',
                     'thisWeek',
@@ -21375,32 +21402,26 @@ Craft.ui =
                     'thisYear',
                     'past7Days',
                     'past30Days',
-                    'past90Days',
                     'pastYear',
                 ],
                 onChange: $.noop,
-                selected: null,
-                startDate:null,
-                endDate: null,
             }, config);
 
             var $menu = $('<div/>', {'class': 'menu'});
             var $ul = $('<ul/>', {'class': 'padded'}).appendTo($menu);
             var menu = new Garnish.Menu($menu);
-            var $allOption = $('<a/>')
-                .addClass('sel')
-                .text(Craft.t('app', 'All'))
-                .data('handle', 'all');
 
             $('<li/>')
-                .append($allOption)
+                .append($('<a/>', {
+                    'class': 'sel',
+                    text: Craft.t('app', 'All'),
+                }))
                 .appendTo($ul);
 
             var option;
-            var selectedOption;
             for (var i = 0; i < config.options.length; i++) {
-                var handle = config.options[i];
-                switch (handle) {
+                option = config.options[i];
+                switch (option) {
                     case 'today':
                         option = {
                             label: Craft.t('app', 'Today'),
@@ -21447,13 +21468,6 @@ Craft.ui =
                             endDate: today,
                         };
                         break;
-                    case 'past90Days':
-                        option = {
-                            label: Craft.t('app', 'Past {num} days', {num: 90}),
-                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90),
-                            endDate: today,
-                        };
-                        break;
                     case 'pastYear':
                         option = {
                             label: Craft.t('app', 'Past year'),
@@ -21463,20 +21477,13 @@ Craft.ui =
                         break;
                 }
 
-                var $li = $('<li/>');
-                var $a = $('<a/>', {text: option.label})
-                    .data('handle', handle)
-                    .data('startDate', option.startDate)
-                    .data('endDate', option.endDate)
-                    .data('startTime', option.startDate ? option.startDate.getTime() : null)
-                    .data('endTime', option.endDate ? option.endDate.getTime() : null);
-
-                if (config.selected && handle == config.selected) {
-                    selectedOption = $a[0];
-                }
-
-                $li.append($a);
-                $li.appendTo($ul);
+                $('<li/>')
+                    .append($('<a/>', {text: option.label})
+                        .data('startDate', option.startDate)
+                        .data('endDate', option.endDate)
+                        .data('startTime', option.startDate ? option.startDate.getTime() : null)
+                        .data('endTime', option.endDate ? option.endDate.getTime() : null))
+                    .appendTo($ul);
             }
 
             $('<hr/>').appendTo($menu);
@@ -21491,7 +21498,7 @@ Craft.ui =
                 if (ev.keyCode === Garnish.ESC_KEY && $(this).data('datepicker').dpDiv.is(':visible')) {
                     ev.stopPropagation();
                 }
-            });
+            })
 
             // prevent clicks in the datepicker divs from closing the menu
             $startDate.data('datepicker').dpDiv.on('mousedown', function(ev) {
@@ -21513,7 +21520,7 @@ Craft.ui =
                     $startDate.datepicker('setDate', $option.data('startDate'));
                     $endDate.datepicker('setDate', $option.data('endDate'));
 
-                    config.onChange($option.data('startDate') || null, $option.data('endDate') || null, $option.data('handle'));
+                    config.onChange($option.data('startDate') || null, $option.data('endDate') || null);
                 }
             });
 
@@ -21536,7 +21543,6 @@ Craft.ui =
                     ) {
                         menu.selectOption($option[0]);
                         foundOption = true;
-                        config.onChange(null, null, $option.data('handle'));
                         break;
                     }
                 }
@@ -21556,7 +21562,7 @@ Craft.ui =
                     }
                     menu.setPositionRelativeToAnchor();
 
-                    config.onChange(startDate, endDate, 'custom');
+                    config.onChange(startDate, endDate);
                 }
             });
 
@@ -21565,32 +21571,10 @@ Craft.ui =
                 $endDate.datepicker('hide');
             });
 
-            var btnClasses = 'btn menubtn';
-            if (config.class) {
-                btnClasses = btnClasses + ' ' + config.class;
-            }
-
-            var $btn = $('<div class="'+btnClasses+'" data-icon="date"/>')
+            var $btn = $('<div class="btn menubtn" data-icon="date"/>')
                 .text(Craft.t('app', 'All'));
 
             new Garnish.MenuBtn($btn, menu);
-
-            if (selectedOption) {
-                menu.selectOption(selectedOption);
-            }
-
-            if (config.startDate) {
-                $startDate.datepicker('setDate', config.startDate);
-            }
-
-            if (config.endDate) {
-                $endDate.datepicker('setDate', config.endDate);
-            }
-
-            if (config.startDate || config.endDate) {
-                $dateInputs.trigger('change');
-            }
-
             return $btn;
         },
 

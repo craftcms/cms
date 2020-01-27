@@ -477,6 +477,7 @@ class App
             'from' => [
                 Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
             ],
+            'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];

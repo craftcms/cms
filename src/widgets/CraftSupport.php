@@ -56,7 +56,7 @@ class CraftSupport extends Widget
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getTitle(): string
     {

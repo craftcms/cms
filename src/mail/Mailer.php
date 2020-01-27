@@ -36,6 +36,12 @@ class Mailer extends \yii\swiftmailer\Mailer
     public $from;
 
     /**
+     * @var string|array|User|User[]|null The default Reply-To email address, or their user model(s).
+     * @since 3.4.0
+     */
+    public $replyTo;
+
+    /**
      * Composes a new email based on a given key.
      *
      * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
@@ -101,6 +107,7 @@ class Mailer extends \yii\swiftmailer\Mailer
             $variables = ($message->variables ?: []) + [
                     'emailKey' => $message->key,
                     'fromEmail' => Craft::parseEnv($settings->fromEmail),
+                    'replyToEmail' => Craft::parseEnv($settings->replyToEmail),
                     'fromName' => Craft::parseEnv($settings->fromName),
                 ];
 
@@ -137,6 +144,10 @@ class Mailer extends \yii\swiftmailer\Mailer
         // Set the default sender if there isn't one already
         if (!$message->getFrom()) {
             $message->setFrom($this->from);
+        }
+
+        if ($this->replyTo && !$message->getReplyTo()) {
+            $message->setReplyTo($this->replyTo);
         }
 
         // Apply the testToEmailAddress config setting

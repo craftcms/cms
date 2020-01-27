@@ -8,7 +8,7 @@
 
 namespace craft\events;
 
-use craft\base\AssetPreviewInterface;
+use craft\base\AssetPreviewHandlerInterface;
 use craft\elements\Asset;
 use yii\base\Event;
 
@@ -21,14 +21,14 @@ use yii\base\Event;
 class AssetPreviewEvent extends Event
 {
     /**
-     * @var Asset|null The asset Element associated with the event.
+     * @var Asset The asset Element associated with the event.
      */
     public $asset;
 
     /**
      * An AssetPreview handler
      *
-     * @var AssetPreviewInterface $previewHandler
+     * @var AssetPreviewHandlerInterface $previewHandler
      */
     public $previewHandler;
 }

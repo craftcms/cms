@@ -31,7 +31,7 @@
 - Assets fields now have a “Show unpermitted volumes” setting, which determines whether the field should show volumes that the user doesn’t have permission to view (disabled by default for new fields; enabled by default for existing fields). ([#887](https://github.com/craftcms/cms/issues/887))
 - Assets fields now have a “Show unpermitted files setting, which determines whether the field should show files that the user doesn’t have permission to view per the new “View files uploaded by other users” permission.
 - It’s now possible to download multiple assets at once as a zip file. ([#5259](https://github.com/craftcms/cms/issues/5259))
-- It’s now possible to preview HTML and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
+- It’s now possible to preview text and PDF assets, and plugins can add support for additional file types. ([#5136](https://github.com/craftcms/cms/pull/5136))
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
@@ -40,6 +40,7 @@
 - Added the `verifyEmailPath` config setting.
 - Added the `maxBackups` config setting. ([#2078](https://github.com/craftcms/cms/issues/2078))
 - Added the `upscaleImages` config setting. ([#844](https://github.com/craftcms/cms/issues/844))
+- Added the “Reply-To Address” email setting. ([#5498](https://github.com/craftcms/cms/issues/5498))
 - Added the `{% requireGuest %}` Twig tag, which redirects a user to the path specified by the `postLoginRedirect` config setting if they’re already logged in. ([#5015](https://github.com/craftcms/cms/pull/5015))
 - Added the `combine()` Twig function.
 - Added the `|contains` Twig filter.
@@ -64,13 +65,11 @@
 - The Sendmail mailer transport now has a “Sendmail Command” setting. ([#5445](https://github.com/craftcms/cms/pull/5445))
 - Added support for the `CRAFT_EPHEMERAL` PHP constant, which can be defined as `true` when Craft is running on an environment with ephemeral storage.
 - Added the `setup/php-session-table` command for creating a database table to store PHP sessions.
-- Added `craft\assetpreviews\HtmlPreview`.
-- Added `craft\assetpreviews\ImagePreview`.
-- Added `craft\assetpreviews\NoPreview`.
-- Added `craft\assetpreviews\PdfPreview`.
-- Added `craft\base\AssetPreview`.
-- Added `craft\base\AssetPreviewInterface`.
-- Added `craft\base\AssetPreviewTrait`.
+- Added `craft\assetpreviews\Image`.
+- Added `craft\assetpreviews\Pdf`.
+- Added `craft\assetpreviews\Text`.
+- Added `craft\base\AssetPreviewHandler`.
+- Added `craft\base\AssetPreviewHandlerInterface`.
 - Added `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Added `craft\base\Element::ATTR_STATUS_MODIFIED`.
 - Added `craft\base\Element::ATTR_STATUS_OUTDATED`.
@@ -157,9 +156,11 @@
 - Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
+- Added `craft\mail\Mailer::$replyTo`.
 - Added `craft\migrations\CreatePhpSessionTable`.
 - Added `craft\models\FieldLayoutTab::elementHasErrors()`.
 - Added `craft\models\GqlToken`.
+- Added `craft\models\MailSettings::$replyToEmail`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
 - Added `craft\queue\QueueInterface::getJobDetails()`.
@@ -168,8 +169,8 @@
 - Added `craft\queue\QueueInterface::retryAll()`.
 - Added `craft\records\Asset::getUploader()`.
 - Added `craft\records\GqlToken`.
-- Added `craft\services\Assets::EVENT_GET_ASSET_PREVIEW`.
-- Added `craft\services\Assets::getAssetPreview()`.
+- Added `craft\services\Assets::EVENT_REGISTER_PREVIEW_HANDLER`.
+- Added `craft\services\Assets::getAssetPreviewHandler()`.
 - Added `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
 - Added `craft\services\Drafts::mergeSourceChanges()`.
@@ -181,6 +182,7 @@
 - Added `craft\services\Gql::getSchemaByUid()`.
 - Added `craft\services\Gql::getTokenByAccessToken()`.
 - Added `craft\services\Gql::getTokenById()`.
+- Added `craft\services\Gql::getTokenByName()`.
 - Added `craft\services\Gql::getTokenByUid()`.
 - Added `craft\services\Gql::getTokens()`.
 - Added `craft\services\Gql::getValidationRules()`.
@@ -270,9 +272,12 @@
 - Editable tables now set existing row’s cell values to their column’s default value, if the cell is missing from the row data.
 - Preview targets can now opt out of being automatically refreshed when content changes, by setting `refresh` to `false` on their target definition. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
+- Assets fields now open their asset selection modals to the field's Default Upload Location, if it exists. ([#2778](https://github.com/craftcms/cms/issues/2778)
 - `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
+- `craft\elements\Asset::getImg()` now has an optional `$transform` argument. ([#3563](https://github.com/craftcms/cms/issues/3563))
 - `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).
 - `craft\i18n\Formatter::asShortSize()` now capitalizes the size unit.
+- `craft\mail\Message::setReplyTo()` can now be set to a `craft\elements\User` object, or an array of them.
 - `craft\models\GqlSchema::$scope` is now read-only.
 - `craft\services\Elements::resaveElements()` now has an `$updateSearchIndex` argument (defaults to `false`). ([#4840](https://github.com/craftcms/cms/issues/4840))
 - `craft\services\Elements::saveElement()` now has an `$updateSearchIndex` argument (defaults to `true`). ([#4840](https://github.com/craftcms/cms/issues/4840))
@@ -287,6 +292,8 @@
 - Matrix fields now trigger a `blockDeleted` JavaScript event when a block is deleted. ([#5329](https://github.com/craftcms/cms/issues/5329))
 - The `afterUpdateIframe` event fired by the `Craft.Preview` JavaScript class now includes `target` and `$iframe` data properties.
 - Replaced the deprecated zend-feed library with laminas-feed. ([#5400](https://github.com/craftcms/cms/issues/5400))
+- The `index-assets/*` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
+- Updated Yii to 2.0.32.
 - Updated yii2-queue to 2.3.
 - Updated Garnish to 0.1.32.
 
@@ -296,7 +303,7 @@
 - Deprecated `craft\config\DbConfig::DRIVER_PGSQL`.
 - Deprecated `craft\config\DbConfig::updateDsn()`.
 - Deprecated `craft\controllers\UsersController::actionGetRemainingSessionTime()`. `actionSessionInfo()` should be used instead.
-- Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreview()` instead.
+- Deprecated `craft\elements\Asset::getSupportsPreview()`. Use `craft\services\Assets::getAssetPreviewHandler()` instead.
 - Deprecated `craft\events\ExecuteGqlQueryEvent::$accessToken`. Use `craft\events\ExecuteGqlQueryEvent::$schemaId` instead.
 - Deprecated `craft\services\ProjectConfig::$maxBackups`. `$maxDeltas` should be used instead.
 - Deprecated `craft\services\Search::indexElementFields()`.
@@ -329,3 +336,4 @@
 - Fixed a bug where Project Config event handlers weren’t getting triggered if a parent config path had been updated in the same request. ([#5440](https://github.com/craftcms/cms/issues/5440))
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
 - Fixed a PHP error that occurred when a dynamically generated class was loaded before it was finished being written. ([#5434](https://github.com/craftcms/cms/issues/5434))
+- Fixed an error that occurred after disabling a section for the primary site, while its existing entries were being resaved. ([#5489](https://github.com/craftcms/cms/issues/5489))

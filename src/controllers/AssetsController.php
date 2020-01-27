@@ -8,8 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\assetpreviews\NoPreview;
-use craft\base\AssetPreview;
+use craft\base\AssetPreviewHandler;
 use craft\base\Element;
 use craft\base\Volume;
 use craft\elements\Asset;
@@ -131,9 +130,7 @@ class AssetsController extends Controller
                 '</div>' .
                 '<div class="buttons">';
 
-            $previewer = Craft::$app->getAssets()->getAssetPreview($asset);
-
-            if (!$previewer instanceof NoPreview) {
+            if (Craft::$app->getAssets()->getAssetPreviewHandler($asset) !== null) {
                 $previewHtml .= '<div class="btn" id="preview-btn">' . Craft::t('app', 'Preview') . '</div>';
             }
 
@@ -1155,16 +1152,21 @@ class AssetsController extends Controller
             return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
         }
 
-        $assets = Craft::$app->getAssets();
+        $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);
 
-        /** @var AssetPreview $preview */
-        $preview = $assets->getAssetPreview($asset);
+        if ($previewHandler) {
+            $previewHtml = $previewHandler->getPreviewHtml();
+        } else {
+            $previewHtml = null;
+        }
+
+        $view = $this->getView();
 
         return $this->asJson([
             'success' => true,
-            'modalHtml' => $preview->getModalHtml(),
-            'headHtml' => $preview->getHeadHtml(),
-            'footHtml' => $preview->getFootHtml(),
+            'previewHtml' => $previewHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
             'requestId' => $requestId,
         ]);
     }

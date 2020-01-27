@@ -55,6 +55,17 @@
     }) }}
 
     {{ forms.autosuggestField({
+        first: true,
+        label: 'Reply-To Address'|t('app'),
+        instructions: 'The Reply-To email address Craft CMS should use when sending email.'|t('app'),
+        id: 'replyToEmail',
+        name: 'replyToEmail',
+        suggestEnvVars: true,
+        value: settings.replyToEmail,
+        errors: (freshSettings ? null : settings.getErrors('replyToEmail'))
+    }) }}
+
+    {{ forms.autosuggestField({
         label: "Sender Name"|t('app'),
         instructions: "The “From” name Craft CMS will use when sending email."|t('app'),
         id: 'fromName',

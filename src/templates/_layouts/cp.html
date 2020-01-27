@@ -111,15 +111,16 @@
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
                     <div id="user-info" class="btn menubtn" data-menu-anchor="#user-photo" role="button">
-                        {{ tag('img', {
-                            id: 'user-photo',
-                            width: 30,
-                            height: 30,
-                            sizes: '30px',
-                            srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-                            alt: currentUser.getName(),
-                            title: currentUser.getName(),
-                        }) }}
+                        <div id="user-photo">
+                            {{ tag('img', {
+                                width: 30,
+                                height: 30,
+                                sizes: '30px',
+                                srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
+                                alt: currentUser.getName(),
+                                title: currentUser.getName(),
+                            }) }}
+                        </div>
                     </div>
                     <div class="menu" data-align="right">
                         <ul>

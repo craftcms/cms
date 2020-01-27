@@ -38,7 +38,10 @@
     fieldId: fieldId,
     prevalidate: prevalidate ?? false,
     defaultFieldLayoutId: defaultFieldLayoutId,
-    modalSettings: {hideSidebar: hideSidebar}
+    modalSettings: {
+        hideSidebar: hideSidebar,
+        defaultSource: defaultUploadLocation
+    }
 } %}
 
 {% js %}

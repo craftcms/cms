@@ -30,7 +30,7 @@ class GeneralConfig extends BaseObject
     const IMAGE_DRIVER_IMAGICK = 'imagick';
 
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should first be routed to a
+     * @var string The URI segment Craft should look for when determining if the current request should be routed to a
      * controller action.
      */
     public $actionTrigger = 'actions';
@@ -274,7 +274,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
      * will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
-     * session increases security, it requires starting a session for every page that a CSRF token is need, which may
+     * session increases security, it requires starting a session for every page that a CSRF token is needed, which may
      * degrade site performance.
      * @see enableCsrfProtection
      */
@@ -748,6 +748,11 @@ class GeneralConfig extends BaseObject
      * @var mixed The URI Craft should use for Set Password forms on the front-end.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * ::: tip
+     * You might also want to set <config:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * :::
+     *
      * @see getSetPasswordPath()
      */
     public $setPasswordPath = 'setpassword';

@@ -302,9 +302,10 @@ class GqlTest extends Unit
         $gql = Craft::$app->getGql();
 
         $accessToken = StringHelper::randomString();
+        $tokenName = StringHelper::randomString(15);
 
         $token = new GqlToken([
-            'name' => StringHelper::randomString(15),
+            'name' => $tokenName,
             'accessToken' => $accessToken,
             'enabled' => true,
         ]);
@@ -315,6 +316,7 @@ class GqlTest extends Unit
         $this->assertEquals($gql->getTokenById($token->id)->uid, $token->uid);
         $this->assertEquals($gql->getTokenByUid($token->uid)->id, $token->id);
         $this->assertEquals($gql->getTokenByAccessToken($token->accessToken)->id, $token->id);
+        $this->assertEquals($gql->getTokenByName($token->name)->id, $token->id);
 
         // Test fetching all tokens
         $allSchemas = $gql->getTokens();
