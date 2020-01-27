@@ -163,6 +163,9 @@
 - Added `craft\models\MailSettings::$replyToEmail`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\queue\Queue::$db`.
+- Added `craft\queue\Queue::$mutex`.
+- Added `craft\queue\Queue::$tableName`.
 - Added `craft\queue\QueueInterface::getJobDetails()`.
 - Added `craft\queue\QueueInterface::getTotalJobs()`.
 - Added `craft\queue\QueueInterface::releaseAll()`.

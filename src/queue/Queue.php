@@ -8,6 +8,7 @@
 namespace craft\queue;
 
 use Craft;
+use craft\db\Connection;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -17,6 +18,8 @@ use craft\helpers\UrlHelper;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Query;
+use yii\di\Instance;
+use yii\mutex\Mutex;
 use yii\queue\cli\Signal;
 use yii\queue\ExecEvent;
 use yii\web\Response;
@@ -36,9 +39,27 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     const STATUS_FAILED = 4;
 
     /**
+     * @var Connection|array|string The database connection to use
+     * @since 3.4.0
+     */
+    public $db = 'db';
+
+    /**
+     * @var Mutex|array|string The mutex component to use
+     * @since 3.4.0
+     */
+    public $mutex = 'mutex';
+
+    /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
     public $mutexTimeout = 3;
+
+    /**
+     * @var string The table name the queue is stored in.
+     * @since 3.4.0
+     */
+    public $tableName = Table::QUEUE;
 
     /**
      * @inheritdoc
@@ -71,6 +92,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function init()
     {
         parent::init();
+
+        $this->db = Instance::ensure($this->db, Connection::class);
+        $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
         $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = $e->id;
@@ -160,9 +184,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retry(string $id)
     {
-        Craft::$app->getDb()->createCommand()
+        $this->db->createCommand()
             ->update(
-                Table::QUEUE,
+                $this->tableName,
                 [
                     'dateReserved' => null,
                     'timeUpdated' => null,
@@ -188,9 +212,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        Craft::$app->getDb()->createCommand()
+        $this->db->createCommand()
             ->update(
-                Table::QUEUE,
+                $this->tableName,
                 [
                     'dateReserved' => null,
                     'timeUpdated' => null,
@@ -213,8 +237,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function release(string $id)
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::QUEUE, ['id' => $id])
+        $this->db->createCommand()
+            ->delete($this->tableName, ['id' => $id])
             ->execute();
     }
 
@@ -223,8 +247,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function releaseAll()
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::QUEUE, [])
+        $this->db->createCommand()
+            ->delete($this->tableName, [])
             ->execute();
     }
 
@@ -242,8 +266,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             $data['progressLabel'] = $label;
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::QUEUE, $data, ['id' => $this->_executingJobId], [], false)
+        $this->db->createCommand()
+            ->update($this->tableName, $data, ['id' => $this->_executingJobId], [], false)
             ->execute();
     }
 
@@ -327,7 +351,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobDetails(string $id): array
     {
         $result = (new Query())
-            ->from(Table::QUEUE)
+            ->from($this->tableName)
             ->where(['id' => $id])
             ->one();
 
@@ -404,9 +428,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Have we given up?
         if (parent::handleError($event)) {
             // Mark the job as failed
-            Craft::$app->getDb()->createCommand()
+            $this->db->createCommand()
                 ->update(
-                    Table::QUEUE,
+                    $this->tableName,
                     [
                         'fail' => true,
                         'dateFailed' => Db::prepareDateForDb(new \DateTime()),
@@ -486,10 +510,9 @@ EOD;
      */
     protected function pushMessage($message, $ttr, $delay, $priority)
     {
-        $db = Craft::$app->getDb();
-        $db->createCommand()
+        $this->db->createCommand()
             ->insert(
-                Table::QUEUE,
+                $this->tableName,
                 [
                     'job' => $message,
                     'description' => $this->_jobDescription,
@@ -501,7 +524,7 @@ EOD;
                 false)
             ->execute();
 
-        return $db->getLastInsertID(Table::QUEUE);
+        return $this->db->getLastInsertID($this->tableName);
     }
 
     /**
@@ -510,9 +533,7 @@ EOD;
      */
     protected function reserve()
     {
-        $mutex = Craft::$app->getMutex();
-
-        if (!$mutex->acquire(__CLASS__, $this->mutexTimeout)) {
+        if (!$this->mutex->acquire(__CLASS__, $this->mutexTimeout)) {
             throw new Exception('Has not waited the lock.');
         }
 
@@ -530,9 +551,9 @@ EOD;
             $payload['dateReserved'] = new \DateTime();
             $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
             $payload['attempt'] = (int)$payload['attempt'] + 1;
-            Craft::$app->getDb()->createCommand()
+            $this->db->createCommand()
                 ->update(
-                    Table::QUEUE,
+                    $this->tableName,
                     [
                         'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
                         'timeUpdated' => $payload['timeUpdated'],
@@ -545,7 +566,7 @@ EOD;
                 ->execute();
         }
 
-        $mutex->release(__CLASS__);
+        $this->mutex->release(__CLASS__);
 
         // pgsql
         if (is_array($payload)) {
@@ -584,9 +605,9 @@ EOD;
     {
         if ($this->_reserveTime !== time()) {
             $this->_reserveTime = time();
-            Craft::$app->getDb()->createCommand()
+            $this->db->createCommand()
                 ->update(
-                    Table::QUEUE,
+                    $this->tableName,
                     [
                         'dateReserved' => null,
                         'timeUpdated' => null,
@@ -609,7 +630,7 @@ EOD;
     private function _createJobQuery(): Query
     {
         return (new Query())
-            ->from(Table::QUEUE);
+            ->from($this->tableName);
     }
 
     /**

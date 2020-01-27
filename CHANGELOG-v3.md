@@ -7,6 +7,9 @@
 - Added `craft\helpers\FileHelper::invalidate()`.
 - Added `craft\mail\Mailer::$replyTo`.
 - Added `craft\models\MailSettings::$replyToEmail`.
+- Added `craft\queue\Queue::$db`.
+- Added `craft\queue\Queue::$mutex`.
+- Added `craft\queue\Queue::$tableName`.
 - Added `craft\services\Gql::getTokenByName()`.
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 
