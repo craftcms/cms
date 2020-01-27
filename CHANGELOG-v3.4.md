@@ -35,6 +35,7 @@
 - It’s now possible to set a custom aspect ratio when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - It’s now possible to change the the aspect ratio orientation when cropping images with the image editor. ([#4359](https://github.com/craftcms/cms/issues/4359))
 - Added the Queue Manager utility. ([#2753](https://github.com/craftcms/cms/issues/2753), [#3489](https://github.com/craftcms/cms/issues/3489))
+- It’s now possible to define additional queues using `craft\queue\Queue`, with custom `channel` values. ([#5492](https://github.com/craftcms/cms/issues/5492))
 - Added the `queue/release` action. ([#4777](https://github.com/craftcms/cms/issues/4777))
 - Added the `utils/prune-revisions` action. ([#4851](https://github.com/craftcms/cms/issues/4851))
 - Added the `verifyEmailPath` config setting.
@@ -163,6 +164,7 @@
 - Added `craft\models\MailSettings::$replyToEmail`.
 - Added `craft\queue\Command::actionRelease()`.
 - Added `craft\queue\jobs\UpdateSearchIndex::$fieldHandles`.
+- Added `craft\queue\Queue::$channel`.
 - Added `craft\queue\Queue::$db`.
 - Added `craft\queue\Queue::$mutex`.
 - Added `craft\queue\Queue::$tableName`.

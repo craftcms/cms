@@ -62,6 +62,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public $tableName = Table::QUEUE;
 
     /**
+     * @var string The `channel` column value to the queue should use.
+     * @since 3.4.0
+     */
+    public $channel = 'queue';
+
+    /**
      * @inheritdoc
      */
     public $commandClass = Command::class;
@@ -145,6 +151,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         $payload = $this->_createJobQuery()
             ->select(['fail', 'timeUpdated'])
+            // No need to use andWhere() here since we're fetching by ID
             ->where(['id' => $id])
             ->one();
 
@@ -225,7 +232,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     'dateFailed' => null,
                     'error' => null,
                 ],
-                ['fail' => true],
+                [
+                    'channel' => $this->channel,
+                    'fail' => true,
+                ],
                 [],
                 false
             )
@@ -248,7 +258,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function releaseAll()
     {
         $this->db->createCommand()
-            ->delete($this->tableName, [])
+            ->delete($this->tableName, ['channel' => $this->channel])
             ->execute();
     }
 
@@ -383,7 +393,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalJobs()
     {
         return $this->_createJobQuery()
-            ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
+            ->andWhere('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->count();
     }
 
@@ -397,7 +407,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         $results = $this->_createJobQuery()
             ->select(['id', 'description', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
-            ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
+            ->andWhere('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
             ->all();
@@ -514,6 +524,7 @@ EOD;
             ->insert(
                 $this->tableName,
                 [
+                    'channel' => $this->channel,
                     'job' => $message,
                     'description' => $this->_jobDescription,
                     'timePushed' => time(),
@@ -533,7 +544,8 @@ EOD;
      */
     protected function reserve()
     {
-        if (!$this->mutex->acquire(__CLASS__, $this->mutexTimeout)) {
+        $lockName = __CLASS__ . "::$this->channel";
+        if (!$this->mutex->acquire($lockName, $this->mutexTimeout)) {
             throw new Exception('Has not waited the lock.');
         }
 
@@ -542,7 +554,7 @@ EOD;
 
         // Reserve one message
         $payload = $this->_createJobQuery()
-            ->where(['and', ['fail' => false, 'timeUpdated' => null], '[[timePushed]] <= :time - [[delay]]'], [':time' => time()])
+            ->andWhere(['and', ['fail' => false, 'timeUpdated' => null], '[[timePushed]] <= :time - [[delay]]'], [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit(1)
             ->one();
@@ -566,7 +578,7 @@ EOD;
                 ->execute();
         }
 
-        $this->mutex->release(__CLASS__);
+        $this->mutex->release($lockName);
 
         // pgsql
         if (is_array($payload)) {
@@ -614,7 +626,14 @@ EOD;
                         'progress' => 0,
                         'progressLabel' => null,
                     ],
-                    ['and', ['fail' => false], '[[timeUpdated]] < :time - [[ttr]]'],
+                    [
+                        'and',
+                        [
+                            'channel' => $this->channel,
+                            'fail' => false
+                        ],
+                        '[[timeUpdated]] < :time - [[ttr]]',
+                    ],
                     [':time' => $this->_reserveTime],
                     false
                 )
@@ -630,7 +649,8 @@ EOD;
     private function _createJobQuery(): Query
     {
         return (new Query())
-            ->from($this->tableName);
+            ->from($this->tableName)
+            ->where(['channel' => $this->channel]);
     }
 
     /**
@@ -641,7 +661,7 @@ EOD;
     private function _createWaitingJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere(['fail' => false, 'timeUpdated' => null])
             ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()]);
     }
 
@@ -653,7 +673,7 @@ EOD;
     private function _createDelayedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere(['fail' => false, 'timeUpdated' => null])
             ->andWhere('[[timePushed]] + [[delay]] > :time', ['time' => time()]);
     }
 
@@ -665,7 +685,7 @@ EOD;
     private function _createReservedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['and', ['fail' => false], ['not', ['timeUpdated' => null]]]);
+            ->andWhere(['and', ['fail' => false], ['not', ['timeUpdated' => null]]]);
     }
 
     /**
@@ -676,7 +696,7 @@ EOD;
     private function _createFailedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => true]);
+            ->andWhere(['fail' => true]);
     }
 
     /**

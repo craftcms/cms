@@ -4,9 +4,11 @@
 
 ### Added
 - Added the “Reply-To Address” email setting. ([#5498](https://github.com/craftcms/cms/issues/5498))
+- It’s now possible to define additional queues using `craft\queue\Queue`, with custom `channel` values. ([#5492](https://github.com/craftcms/cms/issues/5492))
 - Added `craft\helpers\FileHelper::invalidate()`.
 - Added `craft\mail\Mailer::$replyTo`.
 - Added `craft\models\MailSettings::$replyToEmail`.
+- Added `craft\queue\Queue::$channel`.
 - Added `craft\queue\Queue::$db`.
 - Added `craft\queue\Queue::$mutex`.
 - Added `craft\queue\Queue::$tableName`.
