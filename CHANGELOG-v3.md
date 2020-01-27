@@ -4,9 +4,14 @@
 
 ### Added
 - Added the “Reply-To Address” email setting. ([#5498](https://github.com/craftcms/cms/issues/5498))
+- It’s now possible to define additional queues using `craft\queue\Queue`, with custom `channel` values. ([#5492](https://github.com/craftcms/cms/issues/5492))
 - Added `craft\helpers\FileHelper::invalidate()`.
 - Added `craft\mail\Mailer::$replyTo`.
 - Added `craft\models\MailSettings::$replyToEmail`.
+- Added `craft\queue\Queue::$channel`.
+- Added `craft\queue\Queue::$db`.
+- Added `craft\queue\Queue::$mutex`.
+- Added `craft\queue\Queue::$tableName`.
 - Added `craft\services\Gql::getTokenByName()`.
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 
@@ -37,6 +42,7 @@
 - Fixed an error that occurred after disabling a section for the primary site, while its existing entries were being resaved. ([#5489](https://github.com/craftcms/cms/issues/5489))
 - Fixed a bug where Project Config would incorrectly save a setting when it changed from null to an array. ([#5483](https://github.com/craftcms/cms/issues/5483))
 - Fixed JavaScript errors that could occur on Edit Asset pages. ([#5485](https://github.com/craftcms/cms/issues/5485))
+- Fixed a bug where Matrix blocks weren’t propagating to newly-enabled sites on a section. ([#5494](https://github.com/craftcms/cms/issues/5494))
 
 ## 3.4.0-RC3 - 2020-01-21
 

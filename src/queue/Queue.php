@@ -8,6 +8,7 @@
 namespace craft\queue;
 
 use Craft;
+use craft\db\Connection;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -17,6 +18,8 @@ use craft\helpers\UrlHelper;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Query;
+use yii\di\Instance;
+use yii\mutex\Mutex;
 use yii\queue\cli\Signal;
 use yii\queue\ExecEvent;
 use yii\web\Response;
@@ -36,12 +39,36 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     const STATUS_FAILED = 4;
 
     /**
-     * @var int timeout
+     * @var Connection|array|string The database connection to use
+     * @since 3.4.0
+     */
+    public $db = 'db';
+
+    /**
+     * @var Mutex|array|string The mutex component to use
+     * @since 3.4.0
+     */
+    public $mutex = 'mutex';
+
+    /**
+     * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
     public $mutexTimeout = 3;
 
     /**
-     * @var string command class name
+     * @var string The table name the queue is stored in.
+     * @since 3.4.0
+     */
+    public $tableName = Table::QUEUE;
+
+    /**
+     * @var string The `channel` column value to the queue should use.
+     * @since 3.4.0
+     */
+    public $channel = 'queue';
+
+    /**
+     * @inheritdoc
      */
     public $commandClass = Command::class;
 
@@ -71,6 +98,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function init()
     {
         parent::init();
+
+        $this->db = Instance::ensure($this->db, Connection::class);
+        $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
         $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = $e->id;
@@ -121,6 +151,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         $payload = $this->_createJobQuery()
             ->select(['fail', 'timeUpdated'])
+            // No need to use andWhere() here since we're fetching by ID
             ->where(['id' => $id])
             ->one();
 
@@ -160,9 +191,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retry(string $id)
     {
-        Craft::$app->getDb()->createCommand()
+        $this->db->createCommand()
             ->update(
-                Table::QUEUE,
+                $this->tableName,
                 [
                     'dateReserved' => null,
                     'timeUpdated' => null,
@@ -188,9 +219,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        Craft::$app->getDb()->createCommand()
+        $this->db->createCommand()
             ->update(
-                Table::QUEUE,
+                $this->tableName,
                 [
                     'dateReserved' => null,
                     'timeUpdated' => null,
@@ -201,7 +232,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     'dateFailed' => null,
                     'error' => null,
                 ],
-                ['fail' => true],
+                [
+                    'channel' => $this->channel,
+                    'fail' => true,
+                ],
                 [],
                 false
             )
@@ -213,8 +247,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function release(string $id)
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::QUEUE, ['id' => $id])
+        $this->db->createCommand()
+            ->delete($this->tableName, ['id' => $id])
             ->execute();
     }
 
@@ -223,8 +257,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function releaseAll()
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::QUEUE, [])
+        $this->db->createCommand()
+            ->delete($this->tableName, ['channel' => $this->channel])
             ->execute();
     }
 
@@ -242,8 +276,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             $data['progressLabel'] = $label;
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::QUEUE, $data, ['id' => $this->_executingJobId], [], false)
+        $this->db->createCommand()
+            ->update($this->tableName, $data, ['id' => $this->_executingJobId], [], false)
             ->execute();
     }
 
@@ -327,7 +361,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobDetails(string $id): array
     {
         $result = (new Query())
-            ->from(Table::QUEUE)
+            ->from($this->tableName)
             ->where(['id' => $id])
             ->one();
 
@@ -359,7 +393,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getTotalJobs()
     {
         return $this->_createJobQuery()
-            ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
+            ->andWhere('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->count();
     }
 
@@ -373,7 +407,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         $results = $this->_createJobQuery()
             ->select(['id', 'description', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
-            ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
+            ->andWhere('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
             ->all();
@@ -404,9 +438,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Have we given up?
         if (parent::handleError($event)) {
             // Mark the job as failed
-            Craft::$app->getDb()->createCommand()
+            $this->db->createCommand()
                 ->update(
-                    Table::QUEUE,
+                    $this->tableName,
                     [
                         'fail' => true,
                         'dateFailed' => Db::prepareDateForDb(new \DateTime()),
@@ -486,11 +520,11 @@ EOD;
      */
     protected function pushMessage($message, $ttr, $delay, $priority)
     {
-        $db = Craft::$app->getDb();
-        $db->createCommand()
+        $this->db->createCommand()
             ->insert(
-                Table::QUEUE,
+                $this->tableName,
                 [
+                    'channel' => $this->channel,
                     'job' => $message,
                     'description' => $this->_jobDescription,
                     'timePushed' => time(),
@@ -501,7 +535,7 @@ EOD;
                 false)
             ->execute();
 
-        return $db->getLastInsertID(Table::QUEUE);
+        return $this->db->getLastInsertID($this->tableName);
     }
 
     /**
@@ -510,9 +544,8 @@ EOD;
      */
     protected function reserve()
     {
-        $mutex = Craft::$app->getMutex();
-
-        if (!$mutex->acquire(__CLASS__, $this->mutexTimeout)) {
+        $lockName = __CLASS__ . "::$this->channel";
+        if (!$this->mutex->acquire($lockName, $this->mutexTimeout)) {
             throw new Exception('Has not waited the lock.');
         }
 
@@ -521,7 +554,7 @@ EOD;
 
         // Reserve one message
         $payload = $this->_createJobQuery()
-            ->where(['and', ['fail' => false, 'timeUpdated' => null], '[[timePushed]] <= :time - [[delay]]'], [':time' => time()])
+            ->andWhere(['and', ['fail' => false, 'timeUpdated' => null], '[[timePushed]] <= :time - [[delay]]'], [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit(1)
             ->one();
@@ -530,9 +563,9 @@ EOD;
             $payload['dateReserved'] = new \DateTime();
             $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
             $payload['attempt'] = (int)$payload['attempt'] + 1;
-            Craft::$app->getDb()->createCommand()
+            $this->db->createCommand()
                 ->update(
-                    Table::QUEUE,
+                    $this->tableName,
                     [
                         'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
                         'timeUpdated' => $payload['timeUpdated'],
@@ -545,7 +578,7 @@ EOD;
                 ->execute();
         }
 
-        $mutex->release(__CLASS__);
+        $this->mutex->release($lockName);
 
         // pgsql
         if (is_array($payload)) {
@@ -584,16 +617,23 @@ EOD;
     {
         if ($this->_reserveTime !== time()) {
             $this->_reserveTime = time();
-            Craft::$app->getDb()->createCommand()
+            $this->db->createCommand()
                 ->update(
-                    Table::QUEUE,
+                    $this->tableName,
                     [
                         'dateReserved' => null,
                         'timeUpdated' => null,
                         'progress' => 0,
                         'progressLabel' => null,
                     ],
-                    ['and', ['fail' => false], '[[timeUpdated]] < :time - [[ttr]]'],
+                    [
+                        'and',
+                        [
+                            'channel' => $this->channel,
+                            'fail' => false
+                        ],
+                        '[[timeUpdated]] < :time - [[ttr]]',
+                    ],
                     [':time' => $this->_reserveTime],
                     false
                 )
@@ -609,7 +649,8 @@ EOD;
     private function _createJobQuery(): Query
     {
         return (new Query())
-            ->from(Table::QUEUE);
+            ->from($this->tableName)
+            ->where(['channel' => $this->channel]);
     }
 
     /**
@@ -620,7 +661,7 @@ EOD;
     private function _createWaitingJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere(['fail' => false, 'timeUpdated' => null])
             ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()]);
     }
 
@@ -632,7 +673,7 @@ EOD;
     private function _createDelayedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere(['fail' => false, 'timeUpdated' => null])
             ->andWhere('[[timePushed]] + [[delay]] > :time', ['time' => time()]);
     }
 
@@ -644,7 +685,7 @@ EOD;
     private function _createReservedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['and', ['fail' => false], ['not', ['timeUpdated' => null]]]);
+            ->andWhere(['and', ['fail' => false], ['not', ['timeUpdated' => null]]]);
     }
 
     /**
@@ -655,7 +696,7 @@ EOD;
     private function _createFailedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => true]);
+            ->andWhere(['fail' => true]);
     }
 
     /**
