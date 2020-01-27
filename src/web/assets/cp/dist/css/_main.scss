@@ -956,6 +956,23 @@ ul.icons {
   color: $textColor;
   background-color: transparentize($inputColor, 0.75);
 
+  &.chromeless {
+    background-color: transparent;
+    height: auto;
+    padding: 0;
+
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: transparent;
+    }
+
+    &:hover,
+    &:active {
+      text-decoration: underline;
+    }
+  }
+
   &.rounded {
     border-radius: 17px;
   }
