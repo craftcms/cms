@@ -2213,7 +2213,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isFieldDirty(string $fieldHandle): bool
     {
-        return $this->_allDirty || isset($this->_dirtyFields[$fieldHandle]);
+        return $this->_allDirty() || isset($this->_dirtyFields[$fieldHandle]);
     }
 
     /**
@@ -2221,13 +2221,23 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getDirtyFields(): array
     {
-        if ($this->_allDirty) {
+        if ($this->_allDirty()) {
             return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
         }
         if ($this->_dirtyFields) {
             return array_keys($this->_dirtyFields);
         }
         return [];
+    }
+
+    /**
+     * Returns whether all fields should be considered dirty.
+     *
+     * @return bool
+     */
+    private function _allDirty(): bool
+    {
+        return $this->_allDirty || $this->resaving;
     }
 
     /**

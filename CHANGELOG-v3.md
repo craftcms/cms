@@ -42,6 +42,7 @@
 - Fixed an error that occurred after disabling a section for the primary site, while its existing entries were being resaved. ([#5489](https://github.com/craftcms/cms/issues/5489))
 - Fixed a bug where Project Config would incorrectly save a setting when it changed from null to an array. ([#5483](https://github.com/craftcms/cms/issues/5483))
 - Fixed JavaScript errors that could occur on Edit Asset pages. ([#5485](https://github.com/craftcms/cms/issues/5485))
+- Fixed a bug where Matrix blocks weren’t propagating to newly-enabled sites on a section. ([#5494](https://github.com/craftcms/cms/issues/5494))
 
 ## 3.4.0-RC3 - 2020-01-21
 
