@@ -14,6 +14,7 @@
 - Improved the look of the global header. ([#5476](https://github.com/craftcms/cms/issues/5476))
 - The `index-assets/*` commands now have a `--deleteMissingAssets` option, which deletes the records of Assets that are missing their files after indexing. ([#4928](https://github.com/craftcms/cms/issues/4928))
 - `craft\elements\Asset::getImg()` now has an optional `$transform` argument. ([#3563](https://github.com/craftcms/cms/issues/3563))
+- Assets fields now open their asset selection modals to the field's Default Upload Location, if it exists. ([#2778](https://github.com/craftcms/cms/issues/2778)
 - Renamed `craft\assetpreviews\HtmlPreview` to `Text`.
 - Renamed `craft\assetpreviews\ImagePreview` to `Image`.
 - Renamed `craft\assetpreviews\PdfPreview` to `Pdf`.

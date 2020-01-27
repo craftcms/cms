@@ -1,4 +1,4 @@
-/*!   - 2020-01-24 */
+/*!   - 2020-01-27 */
 (function($){
 
 /** global: Craft */
@@ -2459,6 +2459,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getDefaultSourceKey: function() {
+            if (this.settings.defaultSource) {
+                var paths = this.settings.defaultSource.split('/'),
+                    path = '';
+
+                // Expand the tree
+                for (var i = 0; i < paths.length; i++) {
+                    path += paths[i];
+                    var $source = this.getSourceByKey(path);
+                    this._expandSource($source);
+                    path += '/';
+                }
+
+                // Just make sure that the modal is aware of the newly expanded sources, too.
+                this._setSite(this.siteId);
+
+                return this.settings.defaultSource;
+            }
+
             return this.instanceState.selectedSource;
         },
 
@@ -3875,6 +3893,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
             submitActionsAction: 'element-indexes/perform-action',
+            defaultSource: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
@@ -4925,7 +4944,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         multiSelect: this.settings.multiSelect,
                         buttonContainer: this.$secondaryButtons,
                         onSelectionChange: $.proxy(this, 'onSelectionChange'),
-                        hideSidebar: this.settings.hideSidebar
+                        hideSidebar: this.settings.hideSidebar,
+                        defaultSource: this.settings.defaultSource
                     });
 
                     // Double-clicking or double-tapping should select the elements
@@ -4953,7 +4973,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             hideOnSelect: true,
             onCancel: $.noop,
             onSelect: $.noop,
-            hideSidebar: false
+            hideSidebar: false,
+            defaultSource: null
         }
     });
 
