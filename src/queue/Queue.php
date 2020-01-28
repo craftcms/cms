@@ -520,19 +520,22 @@ EOD;
      */
     protected function pushMessage($message, $ttr, $delay, $priority)
     {
+        $data = [
+            'job' => $message,
+            'description' => $this->_jobDescription,
+            'timePushed' => time(),
+            'ttr' => $ttr,
+            'delay' => $delay,
+            'priority' => $priority ?: 1024,
+        ];
+
+        // todo: remove this check after the next breakpoint
+        if ($this->db->columnExists($this->tableName, 'channel')) {
+            $data['channel'] = $this->channel;
+        }
+
         $this->db->createCommand()
-            ->insert(
-                $this->tableName,
-                [
-                    'channel' => $this->channel,
-                    'job' => $message,
-                    'description' => $this->_jobDescription,
-                    'timePushed' => time(),
-                    'ttr' => $ttr,
-                    'delay' => $delay,
-                    'priority' => $priority ?: 1024,
-                ],
-                false)
+            ->insert($this->tableName, $data, false)
             ->execute();
 
         return $this->db->getLastInsertID($this->tableName);
