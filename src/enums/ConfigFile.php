@@ -18,11 +18,12 @@ abstract class ConfigFile extends BaseEnum
 	// Constants
 	// =========================================================================
 
-	const FileCache    = 'filecache';
-	const General      = 'general';
-	const Db           = 'db';
-	const DbCache      = 'dbcache';
-	const Memcache     = 'memcache';
-	const RedisCache   = 'rediscache';
-	const ApcCache     = 'apc';
+	const FileCache     = 'filecache';
+	const General       = 'general';
+	const Db            = 'db';
+	const DbCache       = 'dbcache';
+	const Memcache      = 'memcache';
+	const RedisCache    = 'rediscache';
+	const ApcCache      = 'apc';
+	const S3AssetSource = 's3assetsource';
 }

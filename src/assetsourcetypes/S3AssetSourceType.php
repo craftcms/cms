@@ -20,16 +20,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * A list of predefined endpoints.
-	 *
-	 * @var array
-	 */
-	private static $_predefinedEndpoints = array(
-		'US' => 's3.amazonaws.com',
-		'EU' => 's3-eu-west-1.amazonaws.com'
-	);
-
-	/**
 	 * @var \S3
 	 */
 	private $_s3;
@@ -48,7 +38,22 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public static function getBucketList($keyId, $secret)
 	{
-		$s3 = new \S3($keyId, $secret);
+		$host = craft()->config->get('host', 's3assetsource');
+		$region = craft()->config->get('region', 's3assetsource');
+
+		$endpoint = str_replace(
+			array('{host}', '{region}'),
+			array($host, $region),
+			craft()->config->get('endpoint', 's3assetsource')
+		);
+
+		$urlPrefix = str_replace(
+			array('{host}', '{region}'),
+			array($host, $region),
+			craft()->config->get('urlPrefix', 's3assetsource')
+		);
+
+		$s3 = new \S3($keyId, $secret, false, $endpoint);
 		$s3->setExceptions(true);
 
 		try
@@ -67,13 +72,16 @@ class S3AssetSourceType extends BaseAssetSourceType
 		{
 			try
 			{
-				$location = $s3->getBucketLocation($bucket);
+				$location = $region ?: $s3->getBucketLocation($bucket);
 				$bucketList[] = array(
 					'bucket' => $bucket,
 					'location' => $location,
-					'urlPrefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
+					'urlPrefix' => str_replace(
+                        array('{bucket}', '{endpointByLocation}', '{location}'),
+                        array($bucket, static::getEndpointByLocation($location), $location),
+                    	$urlPrefix
+                    ),
 				);
-
 			}
 			catch (\Exception $exception)
 			{
@@ -93,12 +101,17 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public static function getEndpointByLocation($location)
 	{
-		if (isset(static::$_predefinedEndpoints[$location]))
-		{
-			return static::$_predefinedEndpoints[$location];
-		}
+		$predefinedEndpoints = craft()->config->get('predefinedEndpoints', 's3assetsource') ?: array();
+		$host = craft()->config->get('host', 's3assetsource');
+		$endpointByLocation = (isset($predefinedEndpoints[$location]))
+			? $predefinedEndpoints[$location]
+			: craft()->config->get('endpointByLocation', 's3assetsource');
 
-		return 's3-'.$location.'.amazonaws.com';
+		return str_replace(
+			array('{host}', '{location}'),
+			array($host, $location),
+			$endpointByLocation
+		);
 	}
 
 	/**
@@ -108,7 +121,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getName()
 	{
-		return 'Amazon S3';
+		return craft()->config->get('assetSourceName', 's3assetsource');
 	}
 
 	/**
@@ -433,7 +446,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$baseFileName = IOHelper::getFileName($fileName, false);
 		$prefix = $this->_getPathPrefix().$folder->path;
-		
+
 		$this->_prepareForRequests();
 		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $prefix.$baseFileName);
 
@@ -717,6 +730,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 			$diff = $expires->format('U') - $now->format('U');
 			$headers['Cache-Control'] = 'max-age='.$diff.', must-revalidate';
 		}
+		else if (empty($object) && craft()->config->get('putObjectForceContentLength', 's3assetsource'))
+		{
+			$headers['Content-Length'] = 0;
+		}
 
 		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
 	}
@@ -790,7 +807,16 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		\S3::setAuth($settings->keyId, $settings->secret);
-		$this->_s3->setEndpoint(static::getEndpointByLocation($settings->location));
+
+		$host = craft()->config->get('host', 's3assetsource');
+		$region = craft()->config->get('region', 's3assetsource');
+		$endpoint = str_replace(
+			array('{host}', '{region}'),
+			array($host, $region),
+			craft()->config->get('endpoint', 's3assetsource')
+		);
+
+		$this->_s3->setEndpoint($endpoint ?: static::getEndpointByLocation($settings->location));
 	}
 
 	/**
