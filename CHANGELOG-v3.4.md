@@ -149,6 +149,7 @@
 - Added `craft\helpers\App::isEphemeral()`.
 - Added `craft\helpers\ArrayHelper::append()`.
 - Added `craft\helpers\ArrayHelper::contains()`.
+- Added `craft\helpers\ArrayHelper::isOrdered()`.
 - Added `craft\helpers\ArrayHelper::prepend()`.
 - Added `craft\helpers\Db::parseDsn()`.
 - Added `craft\helpers\Db::url2config()`.

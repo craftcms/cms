@@ -352,4 +352,32 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             $array = array_values($array);
         }
     }
+
+    /**
+     * Checks whether a numerically-indexed array's keys are in ascending order.
+     *
+     * @param array $array
+     * @return bool
+     * @since 3.4.0
+     */
+    public static function isOrdered(array $array): bool
+    {
+        $lastKey = null;
+        foreach (array_keys($array) as $key) {
+            if (is_string($key)) {
+                // Associative arrays don't have an order
+                return false;
+            }
+
+            if ($lastKey !== null) {
+                if ($key < $lastKey) {
+                    return false;
+                }
+            }
+
+            $lastKey = $key;
+        }
+
+        return true;
+    }
 }
