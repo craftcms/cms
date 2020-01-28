@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Assets fields’ selection modals could be blank if limited to a single folder. ([#5516](https://github.com/craftcms/cms/issues/5516))
+
 ## 3.4.0 - 2020-01-28
 
 > {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
