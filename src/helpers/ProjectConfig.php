@@ -174,14 +174,15 @@ class ProjectConfig
      * so that the order of its items will be remembered.
      *
      * @param array $array
+     * @param bool $recursive Whether to process nested associative arrays as well
      * @return array
      * @since 3.4.0
      */
-    public static function packAssociativeArrays(array $array): array
+    public static function packAssociativeArrays(array $array, bool $recursive = true): array
     {
         foreach ($array as &$value) {
-            if (ArrayHelper::isAssociative($value)) {
-                $value = static::packAssociativeArray($value);
+            if (is_array($value)) {
+                $value = static::packAssociativeArray($value, $recursive);
             }
         }
 
@@ -211,13 +212,28 @@ class ProjectConfig
      * ```
      *
      * @param array $array
+     * @param bool $recursive Whether to process nested associative arrays as well
      * @return array
      * @since 3.4.0
      */
-    public static function packAssociativeArray(array $array): array
+    public static function packAssociativeArray(array $array, bool $recursive = true): array
     {
+        // Deal with the nested values first
+        if ($recursive) {
+            foreach ($array as &$value) {
+                if (is_array($value)) {
+                    $value = static::packAssociativeArray($value, true);
+                }
+            }
+        }
+
+        // Only pack associative arrays
+        if (!ArrayHelper::isAssociative($array)) {
+            return $array;
+        }
+
         $packed = [];
-        foreach ($array as $key => $value) {
+        foreach ($array as $key => &$value) {
             $packed[] = [$key, $value];
         }
         return [ProjectConfigService::CONFIG_ASSOC_KEY => $packed];
@@ -246,24 +262,31 @@ class ProjectConfig
      * Restores an array that was prepared via [[packAssociativeArray()]] to its original form.
      *
      * @param array $array
+     * @param bool $recursive Whether to process nested associative arrays as well
      * @return array
      * @since 3.4.0
      */
-    public static function unpackAssociativeArray(array $array): array
+    public static function unpackAssociativeArray(array $array, bool $recursive = true): array
     {
-        if (!isset($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
-            return $array;
+        if (isset($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+            $associative = [];
+            if (!empty($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+                foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                    $associative[$items[0]] = $items[1];
+                }
+            }
+            $array = $associative;
         }
 
-        $associative = [];
-
-        if (is_array($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
-            foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
-                $associative[$items[0]] = $items[1];
+        if ($recursive) {
+            foreach ($array as &$value) {
+                if (is_array($value)) {
+                    $value = static::unpackAssociativeArray($value, true);
+                }
             }
         }
 
-        return $associative;
+        return $array;
     }
 
     /**
