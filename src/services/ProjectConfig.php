@@ -2026,7 +2026,7 @@ class ProjectConfig extends Component
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
 
             if (is_array($fieldRow['settings'])) {
-                $fieldRow['settings'] = ProjectConfigHelper::packAssociativeArray($fieldRow['settings']);
+                $fieldRow['settings'] = ProjectConfigHelper::packAssociativeArrays($fieldRow['settings']);
             }
 
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
@@ -2114,7 +2114,7 @@ class ProjectConfig extends Component
             $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
 
             if (is_array($matrixSubfieldRow['settings'])) {
-                $matrixSubfieldRow['settings'] = ProjectConfigHelper::packAssociativeArray($matrixSubfieldRow['settings']);
+                $matrixSubfieldRow['settings'] = ProjectConfigHelper::packAssociativeArrays($matrixSubfieldRow['settings']);
             }
 
             $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);

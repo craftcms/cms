@@ -156,7 +156,9 @@
 - Added `craft\helpers\FileHelper::writeGitignoreFile()`.
 - Added `craft\helpers\ProjectConfigHelper::flattenConfigArray()`.
 - Added `craft\helpers\ProjectConfigHelper::packAssociativeArray()`.
+- Added `craft\helpers\ProjectConfigHelper::packAssociativeArrays()`.
 - Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArray()`.
+- Added `craft\helpers\ProjectConfigHelper::unpackAssociativeArrays()`.
 - Added `craft\mail\Mailer::$replyTo`.
 - Added `craft\migrations\CreatePhpSessionTable`.
 - Added `craft\models\FieldLayoutTab::elementHasErrors()`.

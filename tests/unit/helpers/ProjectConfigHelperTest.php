@@ -26,8 +26,8 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
     {
-        $this->assertSame($packedData, ProjectConfigHelper::packAssociativeArray($unpackedData));
-        $this->assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArray($packedData));
+        $this->assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
+        $this->assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
     }
 
     /**

@@ -170,7 +170,31 @@ class ProjectConfig
     }
 
     /**
+     * Loops through an array, and prepares any nested associative arrays for storage in project config,
+     * so that the order of its items will be remembered.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.4.0
+     */
+    public static function packAssociativeArrays(array $array): array
+    {
+        foreach ($array as &$value) {
+            if (ArrayHelper::isAssociative($value)) {
+                $value = static::packAssociativeArray($value);
+            }
+        }
+
+        return $array;
+    }
+
+    /**
      * Prepares an associative array for storage in project config, so that the order of its items will be remembered.
+     *
+     * ::: tip
+     * Use [[unpackAssociativeArray()]] to restore the array to its original form when fetching the value from
+     * the Project Config.
+     * :::
      *
      * ---
      *
@@ -192,15 +216,26 @@ class ProjectConfig
      */
     public static function packAssociativeArray(array $array): array
     {
-        foreach ($array as $setting => &$value) {
-            if (ArrayHelper::isAssociative($value)) {
-                $newValues = [];
+        $packed = [];
+        foreach ($array as $key => $value) {
+            $packed[] = [$key, $value];
+        }
+        return [ProjectConfigService::CONFIG_ASSOC_KEY => $packed];
+    }
 
-                foreach ($value as $key => $innerValue) {
-                    $newValues[] = [$key, $innerValue];
-                }
-
-                $value = [ProjectConfigService::CONFIG_ASSOC_KEY => $newValues];
+    /**
+     * Loops through an array, and restores any arrays that were prepared via [[packAssociativeArray()]]
+     * to their original form.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.4.0
+     */
+    public static function unpackAssociativeArrays(array $array): array
+    {
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $value = self::unpackAssociativeArray($value);
             }
         }
 
@@ -208,7 +243,7 @@ class ProjectConfig
     }
 
     /**
-     * Unpacks a packed associative array from project config storage.
+     * Restores an array that was prepared via [[packAssociativeArray()]] to its original form.
      *
      * @param array $array
      * @return array
@@ -216,19 +251,19 @@ class ProjectConfig
      */
     public static function unpackAssociativeArray(array $array): array
     {
-        foreach ($array as $key => &$value) {
-            if (is_array($value) && !empty($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
-                $associative = [];
+        if (!isset($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+            return $array;
+        }
 
-                foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
-                    $associative[$items[0]] = $items[1];
-                }
+        $associative = [];
 
-                $value = $associative;
+        if (is_array($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+            foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                $associative[$items[0]] = $items[1];
             }
         }
 
-        return $array;
+        return $associative;
     }
 
     /**

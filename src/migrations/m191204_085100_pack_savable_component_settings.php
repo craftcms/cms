@@ -36,7 +36,7 @@ class m191204_085100_pack_savable_component_settings extends Migration
 
         if (!empty($fields)) {
             foreach ($fields as &$field) {
-                $field['settings'] = ProjectConfig::packAssociativeArray($field['settings'] ?? []);
+                $field['settings'] = ProjectConfig::packAssociativeArrays($field['settings'] ?? []);
             }
 
             $projectConfig->set(Fields::CONFIG_FIELDS_KEY, $fields);
@@ -56,7 +56,7 @@ class m191204_085100_pack_savable_component_settings extends Migration
 
         if (!empty($volumes)) {
             foreach ($volumes as &$volume) {
-                $volume['settings'] = ProjectConfig::packAssociativeArray($volume['settings'] ?? []);
+                $volume['settings'] = ProjectConfig::packAssociativeArrays($volume['settings'] ?? []);
             }
 
             $projectConfig->set(Volumes::CONFIG_VOLUME_KEY, $volumes);
@@ -66,7 +66,7 @@ class m191204_085100_pack_savable_component_settings extends Migration
         $plugins = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY);
         if (!empty($plugins)) {
             foreach ($plugins as $plugin) {
-                $plugin['settings'] = ProjectConfig::packAssociativeArray($plugin['settings'] ?? []);
+                $plugin['settings'] = ProjectConfig::packAssociativeArrays($plugin['settings'] ?? []);
             }
 
             $projectConfig->set(Plugins::CONFIG_PLUGINS_KEY, $plugins);
@@ -89,7 +89,7 @@ class m191204_085100_pack_savable_component_settings extends Migration
             $fields = $blockType['fields'] ?? [];
 
             foreach ($fields as &$field) {
-                $field['settings'] = ProjectConfig::packAssociativeArray($field['settings'] ?? []);
+                $field['settings'] = ProjectConfig::packAssociativeArrays($field['settings'] ?? []);
             }
 
             $projectConfig->set($pathPrefix . '.' . $blockTypeUid . '.fields', $fields);

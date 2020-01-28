@@ -719,7 +719,7 @@ class Fields extends Component
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => get_class($field),
-            'settings' => ProjectConfigHelper::packAssociativeArray($field->getSettings()),
+            'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
             'contentColumnType' => $field->getContentColumnType(),
         ];
 
@@ -1516,7 +1516,7 @@ class Fields extends Component
             }
 
             if (!empty($data['settings']) && is_array($data['settings'])) {
-                $data['settings'] = ProjectConfigHelper::unpackAssociativeArray($data['settings']);
+                $data['settings'] = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
             }
 
             $fieldRecord->uid = $fieldUid;
