@@ -170,7 +170,21 @@ class ProjectConfig
     }
 
     /**
-     * Packs an associative array for storage in project config.
+     * Prepares an associative array for storage in project config, so that the order of its items will be remembered.
+     *
+     * ---
+     *
+     * ```php
+     * $myArray = [
+     *     'foo' => 1,
+     *     'bar' => 2,
+     * ];
+     *
+     * // "Pack" the array so it doesn't get reordered to [bar=>2,foo=>1]
+     * $packedArray = \craft\helpers\ProjectConfig::packAssociativeArray($myArray);
+     *
+     * Craft::$app->projectConfig->set($configKey, $packedArray);
+     * ```
      *
      * @param array $array
      * @return array
