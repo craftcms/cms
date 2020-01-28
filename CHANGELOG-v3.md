@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- Fixed an error that could occur when updating to Craft 3.4.
 - Fixed a bug where Assets fields’ selection modals could be blank if limited to a single folder. ([#5516](https://github.com/craftcms/cms/issues/5516))
 
 ## 3.4.0 - 2020-01-28
