@@ -1,0 +1,144 @@
+{% extends "_layouts/cp" %}
+
+{% requireEdition CraftPro %}
+
+{% set selectedSubnavItem = 'tokens' %}
+
+{% set fullPageForm = true %}
+
+{% set crumbs = [
+    { label: "GraphQL Tokens"|t('app'), url: url('graphql/tokens') }
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <input type="hidden" name="action" value="graphql/save-token">
+    {{ redirectInput('graphql/tokens') }}
+    {% if token.id %}<input type="hidden" name="tokenId" value="{{ token.id }}">{% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this token will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: token.name,
+        errors: token.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
+
+    {{ forms.selectField({
+        label: 'GraphQL Schema',
+        instructions: 'Choose which GraphQL schema this token has access to.',
+        name: 'schema',
+        id: 'schema',
+        options: schemaOptions,
+        value: token.schemaId,
+        warning: not schemaOptions|length ? 'No Schemas exist yet to assign to this token.'|t('app') : null
+    }) }}
+
+    <hr>
+
+    {% embed '_includes/forms/field' with {
+        label: 'Authorization Header'|t('app'),
+        instructions: 'The `Authorization` header that should be sent with GraphQL API requests to use this token.'|t('app'),
+        id: 'auth-header',
+    } %}
+        {% block input %}
+            {% import '_includes/forms' as forms %}
+            <div class="flex">
+                {{ forms.text({
+                    id: 'auth-header',
+                    value: 'Authorization: Bearer ' ~ (accessToken ?? '••••••••••••••••••••••••••••••••'),
+                    errors: token.getErrors('accessToken'),
+                    readonly: true,
+                    class: 'code' ~ (not accessToken ? ' disabled'),
+                    size: 54
+                }) }}
+                {{ hiddenInput('accessToken', accessToken, {
+                    id: 'access-token',
+                    disabled: not accessToken,
+                }) }}
+                <div class="btngroup">
+                    <div id="copy-btn" class="btn">{{ 'Copy'|t('app') }}</div>
+                    <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>
+                </div>
+                <div id="token-spinner" class="spinner hidden"></div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block details %}
+    <div class="meta">
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: token.enabled,
+        }) }}
+
+        {{ forms.dateTimeField({
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (token.expiryDate ? token.expiryDate : null),
+            errors: token.getErrors('expiryDate')
+        }) }}
+    </div>
+{% endblock %}
+
+{% js %}
+    var $headerInput = $('#auth-header');
+    var $tokenInput = $('#access-token');
+
+    function copyHeader() {
+        $headerInput[0].select();
+        document.execCommand('copy');
+        Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
+    }
+
+    $headerInput.on('click', function() {
+        if (!$headerInput.hasClass('disabled')) {
+            this.select();
+        }
+    });
+
+    $('#copy-btn').on('click', function() {
+        if (!$headerInput.hasClass('disabled')) {
+            copyHeader();
+        } else {
+            Craft.elevatedSessionManager.requireElevatedSession(function() {
+                $('#token-spinner').removeClass('hidden');
+                var data = {{ {tokenUid: token.uid}|json_encode|raw }};
+                Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
+                    $('#token-spinner').addClass('hidden');
+                    if (textStatus === 'success') {
+                        $headerInput
+                            .val('Authorization: Bearer ' + response.accessToken)
+                            .removeClass('disabled');
+                        copyHeader();
+                    }
+                });
+            });
+        }
+    });
+    $('#regen-btn').on('click', function() {
+        $('#token-spinner').removeClass('hidden');
+        Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
+            $('#token-spinner').addClass('hidden');
+            if (textStatus === 'success') {
+                $headerInput
+                    .val('Authorization: Bearer ' + response.accessToken)
+                    .removeClass('disabled');
+                $tokenInput
+                    .val(response.accessToken)
+                    .prop('disabled', false);
+            }
+        });
+    });
+
+    new Craft.ElevatedSessionForm('#main-form');
+{% endjs %}

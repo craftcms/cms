@@ -2,7 +2,7 @@
 
 .user-permissions h3:first-child { margin-top: 14px !important; }
 
-.user-permissions .select-all { font-size: 0.9em; margin: 13px 0; color: #0d78f2; cursor: pointer; }
+.user-permissions .select-all { font-size: 0.9em; margin: 13px 0; color: #0B69A3; cursor: pointer; }
 
 .user-permissions .select-all:hover { text-decoration: underline; }
 

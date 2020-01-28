@@ -18,16 +18,10 @@ use yii\validators\Validator;
  */
 class UriValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
     public $pattern = '/^\S+$/u';
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

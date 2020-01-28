@@ -29,9 +29,6 @@ use yii\base\Exception;
  */
 class Structures extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      */
@@ -41,9 +38,6 @@ class Structures extends Component
      * @event MoveElementEvent The event that is triggered after an element is moved.
      */
     const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
@@ -55,9 +49,6 @@ class Structures extends Component
      * @var
      */
     private $_rootElementRecordsByStructureId;
-
-    // Public Methods
-    // =========================================================================
 
     // Structure CRUD
     // -------------------------------------------------------------------------
@@ -323,9 +314,6 @@ class Structures extends Component
 
         return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a structure element record from given structure and element IDs.

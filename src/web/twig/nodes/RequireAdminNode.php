@@ -19,9 +19,6 @@ use Twig\Node\Node;
  */
 class RequireAdminNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

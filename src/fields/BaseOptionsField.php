@@ -28,9 +28,6 @@ use yii\db\Schema;
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array|null The available options
      */
@@ -45,9 +42,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @var bool Whether the field should support optgroups
      */
     protected $optgroups = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -97,9 +91,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = ['options', 'validateOptions'];
         return $rules;
     }
@@ -385,9 +379,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         return Type::listOf(Type::string());
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the label for the Options setting.

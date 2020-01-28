@@ -23,9 +23,6 @@ use yii\web\Response;
  */
 class UserSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -136,7 +133,7 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
         }
 
-        $projectConfig->set('users', $settings);
+        $projectConfig->set('users', $settings, 'Update user settings');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();

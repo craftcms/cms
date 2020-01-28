@@ -19,13 +19,7 @@ use craft\base\Widget;
  */
 class MissingWidget extends Widget implements MissingComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use MissingComponentTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

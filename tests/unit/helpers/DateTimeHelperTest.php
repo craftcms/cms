@@ -27,9 +27,6 @@ use yii\base\ErrorException;
  */
 class DateTimeHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -49,12 +46,6 @@ class DateTimeHelperTest extends Unit
      * @var DateTimeZone
      */
     protected $asiaTokyoTimezone;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider constantsDataProvider
@@ -470,9 +461,6 @@ class DateTimeHelperTest extends Unit
         });
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -827,9 +815,6 @@ class DateTimeHelperTest extends Unit
             [false, false],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

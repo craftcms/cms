@@ -25,16 +25,10 @@ use yii\web\HttpException;
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ExceptionEvent The event that is triggered before handling an exception.
      */
     const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -119,9 +113,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -160,9 +151,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         return $url;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the full exception view should be shown.

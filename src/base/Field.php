@@ -31,13 +31,7 @@ use yii\db\Schema;
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
-    // Traits
-    // =========================================================================
-
     use FieldTrait;
-
-    // Constants
-    // =========================================================================
 
     // Events
     // -------------------------------------------------------------------------
@@ -92,9 +86,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -131,18 +122,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         return 'mixed';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
     private $_isFresh;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Use the translated field name as the string representation.
@@ -179,9 +164,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         // Make sure the column name is under the databases maximum column length allowed.
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
@@ -287,6 +272,27 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        if (!$this->getIsTranslatable($element)) {
+            return null;
+        }
+
+        switch ($this->translationMethod) {
+            case self::TRANSLATION_METHOD_SITE:
+                return Craft::t('app', 'This field is translated for each site.');
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'This field is translated for each site group.');
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return Craft::t('app', 'This field is translated for each language.');
+            default:
+                return null;
+        }
     }
 
     /**
@@ -611,9 +617,6 @@ abstract class Field extends SavableComponent implements FieldInterface
         // No restrictions
         return [];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the field’s param name on the request.

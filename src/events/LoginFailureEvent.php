@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class LoginFailureEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The authentication error key, if the reason is known.
      * @see User

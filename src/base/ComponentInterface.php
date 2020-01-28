@@ -16,9 +16,6 @@ namespace craft\base;
  */
 interface ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the display name of this class.
      *

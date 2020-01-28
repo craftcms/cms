@@ -15,9 +15,6 @@ namespace craft\elements\actions;
  */
 class DeepDuplicate extends Duplicate
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

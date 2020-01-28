@@ -19,9 +19,6 @@ use craft\base\Model;
  */
 class Updates extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Update CMS update info
      */
@@ -31,9 +28,6 @@ class Updates extends Model
      * @var Update[] Plugin update info
      */
     public $plugins = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

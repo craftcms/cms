@@ -30,9 +30,6 @@ use yii\web\ServerErrorHttpException;
  */
 class FieldsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

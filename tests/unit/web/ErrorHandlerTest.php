@@ -30,9 +30,6 @@ use yii\web\HttpException;
  */
 class ErrorHandlerTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -42,12 +39,6 @@ class ErrorHandlerTest extends TestCase
      * @var ErrorHandler
      */
     protected $errorHandler;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test that Twig runtime errors use the previous error (if it exists).
@@ -137,9 +128,6 @@ class ErrorHandlerTest extends TestCase
         $this->assertSame($result, $isCore);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -184,9 +172,6 @@ class ErrorHandlerTest extends TestCase
             [false, __DIR__]
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class RequireAdminTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

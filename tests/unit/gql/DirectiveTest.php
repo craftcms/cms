@@ -38,9 +38,6 @@ class DirectiveTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test directives
      *
@@ -138,9 +135,6 @@ class DirectiveTest extends Unit
 
         $this->assertEquals($asset->filename, $type->resolveWithDirectives($asset, [], null, $resolveInfo));
     }
-
-    // Data Providers
-    // =========================================================================
 
     public function directiveDataProvider()
     {

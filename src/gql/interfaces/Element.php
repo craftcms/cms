@@ -10,8 +10,10 @@ namespace craft\gql\interfaces;
 use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
+use craft\services\Gql;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -59,7 +61,19 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+            Gql::GRAPHQL_COUNT_FIELD => [
+                'name' => Gql::GRAPHQL_COUNT_FIELD,
+                'type' => Type::int(),
+                'args' => [
+                    'field' => [
+                        'name' => 'field',
+                        'type' => Type::nonNull(Type::string()),
+                        'description' => 'The handle of the field that holds the relations.'
+                    ]
+                ],
+                'description' => 'Return a number of related elements for a field.'
+            ],
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
@@ -115,7 +129,7 @@ class Element extends InterfaceType
                 'type' => DateTime::getType(),
                 'description' => 'The date the element was last updated.'
             ],
-        ]);
+        ]), self::getName());
     }
 
     /**

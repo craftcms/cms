@@ -7,6 +7,8 @@
 
 namespace craft\gql\arguments\elements;
 
+use Craft;
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\ElementArguments;
 use GraphQL\Type\Definition\Type;
 
@@ -23,12 +25,21 @@ class GlobalSet extends ElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'handle' => [
                 'name' => 'handle',
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the global sets’ handles.'
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getContentArguments(): array
+    {
+        $globalSetFieldArgument = static::buildContentArguments(Craft::$app->getGlobals()->getAllSets(), GlobalSetElement::class);
+        return array_merge(parent::getContentArguments(), $globalSetFieldArgument);
     }
 }

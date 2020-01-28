@@ -13,10 +13,13 @@
 {% endif %}
 
 {% macro cellClass(fullWidth, col, class) %}
-    {{- (class is iterable ? class : [class])|merge(fullWidth and (col.thin ?? false) ? ['thin'] : [])|join(' ') -}}
+    {{- (class is iterable ? class : [class])|merge([
+        fullWidth and (col.thin ?? false) ? 'thin',
+        col.info is defined ? 'has-info',
+    ]|filter)|join(' ') -}}
 {% endmacro %}
 
-<table id="{{ id }}" class="shadow-box editable{% if fullWidth %} fullwidth{% endif %}"
+<table id="{{ id }}" class="editable{% if fullWidth %} fullwidth{% endif %}"
        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
@@ -49,7 +52,7 @@
         {% for rowId, row in rows %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
-                    {% set cell = row[colId] ?? null %}
+                    {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
                     {% set value = cell.value is defined ? cell.value : cell %}
                     {% if col.type == 'heading' %}
                         <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</th>
@@ -60,7 +63,7 @@
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set textual = (col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
-                        <td class="{% if textual %}textual{% endif %} {{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+                        <td class="{% if textual %}textual{% endif %} {{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}

@@ -19,9 +19,6 @@ use yii\base\Exception;
  */
 class UrlHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a given string appears to be an absolute URL.
      *
@@ -214,7 +211,7 @@ class UrlHelper
     }
 
     /**
-     * Returns either a CP or a site URL, depending on the request type.
+     * Returns either a control panel or a site URL, depending on the request type.
      *
      * @param string $path
      * @param array|string|null $params
@@ -258,7 +255,7 @@ class UrlHelper
     }
 
     /**
-     * Returns a CP URL.
+     * Returns a control panel URL.
      *
      * @param string $path
      * @param array|string|null $params
@@ -415,7 +412,7 @@ class UrlHelper
     }
 
     /**
-     * Returns either the current site’s base URL or the CP base URL, depending on the type of request this is.
+     * Returns either the current site’s base URL or the control panel’s base URL, depending on the type of request this is.
      *
      * @return string
      * @throws SiteNotFoundException if this is a site request and yet there's no current site for some reason
@@ -453,7 +450,7 @@ class UrlHelper
     }
 
     /**
-     * Returns the Control Panel’s base URL (with a trailing slash) (sans-CP trigger).
+     * Returns the control panel’s base URL (with a trailing slash) (sans control panel trigger).
      *
      * @return string
      */
@@ -485,7 +482,7 @@ class UrlHelper
     }
 
     /**
-     * Returns the host info for the CP or the current site, depending on the request type.
+     * Returns the host info for the control panel or the current site, depending on the request type.
      *
      * @return string
      * @throws SiteNotFoundException
@@ -507,7 +504,7 @@ class UrlHelper
     }
 
     /**
-     * Returns the Control Panel's host.
+     * Returns the control panel's host.
      *
      * @return string
      */
@@ -574,9 +571,6 @@ class UrlHelper
         Craft::$app->getDeprecator()->log('UrlHelper::getProtocolForTokenizedUrl()', 'UrlHelper::getProtocolForTokenizedUrl() is deprecated. Use getSchemeForTokenizedUrl() instead.');
         return static::getSchemeForTokenizedUrl();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a URL.

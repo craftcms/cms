@@ -25,9 +25,6 @@ use yii\web\ForbiddenHttpException;
  */
 abstract class BaseEntriesController extends Controller
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Returns the editable site IDs for a section.
      *
@@ -129,5 +126,25 @@ abstract class BaseEntriesController extends Controller
             return Craft::t('app', 'Create a new entry');
         }
         return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
+    }
+
+    /**
+     * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
+     *
+     * @return bool|bool[]|null
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    protected function enabledForSiteValue()
+    {
+        $enabledForSite = Craft::$app->getRequest()->getBodyParam('enabledForSite');
+        if (is_array($enabledForSite)) {
+            // Make sure they are allowed to edit all of the posted site IDs
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
+                throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
+            }
+        }
+        return $enabledForSite;
     }
 }

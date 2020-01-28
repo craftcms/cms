@@ -12,6 +12,7 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\helpers\StringHelper;
+use craft\services\Gql;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
@@ -125,11 +126,10 @@ abstract class Resolver
 
                 // If that's a GraphQL field
                 if ($subNode instanceof FieldNode) {
-
                     $field = $eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                     // That is a Craft field that can be eager-loaded or is the special `children` property
-                    if ($field || $subNode->name->value === 'children') {
+                    if ($field || $nodeName === 'children' || $nodeName === Gql::GRAPHQL_COUNT_FIELD) {
                         $arguments = [];
 
                         // Any arguments?
@@ -183,8 +183,21 @@ abstract class Resolver
                             }
                         }
 
+                        if ($nodeName == Gql::GRAPHQL_COUNT_FIELD) {
+                            if (!empty($subNode->alias) && !empty($subNode->alias->value)) {
+                                $nodeName = $subNode->alias->value . '@' . $nodeName;
+                            } else {
+                                // Just re-use the node name, then.
+                                $nodeName .= '@' . $nodeName;
+                            }
+                        }
+
                         // Add it all to the list
-                        $eagerLoadNodes[$prefix . $nodeName] = $arguments;
+                        if (array_key_exists($prefix . $nodeName, $eagerLoadNodes)) {
+                            $eagerLoadNodes[$prefix . $nodeName] = array_merge_recursive($eagerLoadNodes[$prefix . $nodeName], $arguments);
+                        } else {
+                            $eagerLoadNodes[$prefix . $nodeName] = $arguments;
+                        }
 
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {

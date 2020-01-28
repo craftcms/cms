@@ -4,7 +4,7 @@
 {% set structureEditable = structureEditable is defined ? structureEditable : false -%}
 
 {% if structure -%}
-    {% set basePadding = (context == 'index' ? 20 + (showCheckboxes ? 7 : 0) + (structureEditable ? 14 : 0) : 7) %}
+    {% set basePadding = (showCheckboxes ? 14 : 24) + (structureEditable ? 14 : 0) %}
     {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% endif -%}
 

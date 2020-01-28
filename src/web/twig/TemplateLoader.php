@@ -23,16 +23,10 @@ use Twig\Source;
 
 class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var View|null
      */
     protected $view;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor
@@ -103,9 +97,6 @@ class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
 
         return false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the path to a given template, or throws a TemplateLoaderException.

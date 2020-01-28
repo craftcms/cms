@@ -22,9 +22,6 @@ use yii\web\BadRequestHttpException;
  */
 abstract class BaseElementsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Initializes the application component.
      *
@@ -36,9 +33,6 @@ abstract class BaseElementsController extends Controller
         $this->requireCpRequest();
         parent::init();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the posted element type class.

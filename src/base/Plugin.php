@@ -31,13 +31,7 @@ use yii\base\Module;
  */
 class Plugin extends Module implements PluginInterface
 {
-    // Traits
-    // =========================================================================
-
     use PluginTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
@@ -54,9 +48,6 @@ class Plugin extends Module implements PluginInterface
      */
     const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -67,17 +58,11 @@ class Plugin extends Module implements PluginInterface
         ];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -344,9 +329,6 @@ class Plugin extends Module implements PluginInterface
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Instantiates and returns the plugin’s installation migration, if it has one.
      *
@@ -423,7 +405,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Returns the path to the SVG icon that should be used in the plugin’s CP nav item.
+     * Returns the path to the SVG icon that should be used in the plugin’s nav item in the control panel.
      *
      * @return string|null
      * @see getCpNavItem()

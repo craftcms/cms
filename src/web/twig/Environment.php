@@ -22,9 +22,6 @@ use Twig\Source;
  */
 class Environment extends TwigEnvironment
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

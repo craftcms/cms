@@ -13,6 +13,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Schema;
 
@@ -24,14 +25,8 @@ use yii\db\Schema;
  */
 class Db
 {
-    // Constants
-    // =========================================================================
-
     const SIMPLE_TYPE_NUMERIC = 'numeric';
     const SIMPLE_TYPE_TEXTUAL = 'textual';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array
@@ -84,9 +79,6 @@ class Db
         MysqlSchema::TYPE_LONGTEXT => 4294967295,
     ];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Prepares an array or object’s values to be sent to the database.
      *
@@ -135,22 +127,23 @@ class Db
      * Prepares a date to be sent to the database.
      *
      * @param mixed $date The date to be prepared
+     * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
      */
-    public static function prepareDateForDb($date)
+    public static function prepareDateForDb($date, bool $stripSeconds = false)
     {
         $date = DateTimeHelper::toDateTime($date);
 
-        if ($date !== false) {
-            $timezone = $date->getTimezone();
-            $date->setTimezone(new \DateTimeZone('UTC'));
-            $formattedDate = $date->format('Y-m-d H:i:s');
-            $date->setTimezone($timezone);
-
-            return $formattedDate;
+        if ($date === false) {
+            return null;
         }
 
-        return null;
+        $date = clone $date;
+        $date->setTimezone(new \DateTimeZone('UTC'));
+        if ($stripSeconds) {
+            return $date->format('Y-m-d H:i') . ':00';
+        }
+        return $date->format('Y-m-d H:i:s');
     }
 
     /**
@@ -746,8 +739,104 @@ class Db
             ->pairs();
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
+     *
+     * @param string $dsn
+     * @param string|null $key The key that is needed from the DSN. If this is
+     * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
+     * doesn’t exist in the DSN string.
+     * @throws InvalidArgumentException if $dsn is invalid
+     * @since 3.4.0
+     */
+    public static function parseDsn(string $dsn, string $key = null)
+    {
+        if (($pos = strpos($dsn, ':')) === false) {
+            throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
+        }
+
+        $driver = strtolower(substr($dsn, 0, $pos));
+        if ($key === 'driver') {
+            return $driver;
+        }
+        if ($key === null) {
+            $parsed = [
+                'driver' => $driver,
+            ];
+        }
+
+        $params = substr($dsn, $pos + 1);
+        foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
+            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            if ($key === $n) {
+                return $v;
+            }
+            if ($key === null) {
+                $parsed[$n] = $v;
+            }
+        }
+        if ($key === null) {
+            return $parsed;
+        }
+        return false;
+    }
+
+    /**
+     * Generates a DB config from a database connection URL.
+     *
+     * This can be used from `config/db.php`:
+     * ---
+     * ```php
+     * $url = getenv('DB_URL');
+     * return craft\helpers\Db::url2config($url);
+     * ```
+     *
+     * @param string $url
+     * @return array
+     * @since 3.4.0
+     */
+    public static function url2config(string $url): array
+    {
+        $parsed = parse_url($url);
+
+        if (!isset($parsed['scheme'])) {
+            throw new InvalidArgumentException('Invalid URL: ' . $url);
+        }
+
+        $config = [];
+
+        // user & password
+        if (isset($parsed['user'])) {
+            $config['user'] = $parsed['user'];
+        }
+        if (isset($parsed['pass'])) {
+            $config['password'] = $parsed['pass'];
+        }
+
+        // URL scheme => driver
+        if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
+            $driver = Connection::DRIVER_PGSQL;
+        } else {
+            $driver = Connection::DRIVER_MYSQL;
+        }
+
+        // DSN params
+        $checkParams = [
+            'host' => 'host',
+            'port' => 'port',
+            'path' => 'dbname',
+        ];
+        $dsnParams = [];
+        foreach ($checkParams as $urlParam => $dsnParam) {
+            if (isset($parsed[$urlParam])) {
+                $dsnParams[] = $dsnParam . '=' . trim($parsed[$urlParam], '/');
+            }
+        }
+
+        $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
+
+        return $config;
+    }
 
     /**
      * Converts a given param value to an array.

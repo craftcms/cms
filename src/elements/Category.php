@@ -38,9 +38,6 @@ use yii\base\InvalidConfigException;
  */
 class Category extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -316,9 +313,6 @@ class Category extends Element
         ];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Group ID
      */
@@ -341,9 +335,6 @@ class Category extends Element
      */
     private $_hasNewParent;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -357,9 +348,9 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -685,9 +676,6 @@ class Category extends Element
 
         parent::afterMoveInStructure($structureId);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the category has been assigned a new parent entry.

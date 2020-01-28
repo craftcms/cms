@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\exporters\Raw;
 use craft\helpers\ElementHelper;
-use craft\helpers\FileHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -23,9 +23,6 @@ use yii\web\Response;
  */
 class ExportController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -36,20 +33,18 @@ class ExportController extends Controller
      */
     protected $allowAnonymous = true;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Exports element data.
      *
      * @param string $elementType
      * @param string $sourceKey
      * @param array $criteria
+     * @param string $exporter
      * @param string $format
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $format = 'csv'): Response
+    public function actionExport(string $elementType, string $sourceKey, array $criteria, string $exporter = Raw::class, string $format = 'csv'): Response
     {
         $this->requireToken();
 
@@ -74,34 +69,25 @@ class ExportController extends Controller
             Craft::configure($query, $criteria);
         }
 
-        // Get the results and add a header row to the beginning
-        /** @var array $results */
-        $results = $query->asArray()->all();
-        $header = !empty($results) ? array_keys(reset($results)) : [];
-        array_unshift($results, $header);
-
-        switch ($format) {
-            case 'csv':
-                $file = tempnam(sys_get_temp_dir(), 'export');
-                $fp = fopen($file, 'wb');
-                foreach ($results as $result) {
-                    fputcsv($fp, $result, ',');
-                }
-                fclose($fp);
-                $contents = file_get_contents($file);
-                unlink($file);
-                break;
-            default:
-                throw new BadRequestHttpException('Invalid export format: ' . $format);
-        }
-
-        $filename = $elementType::pluralLowerDisplayName() . '.' . $format;
-        $mimeType = FileHelper::getMimeTypeByExtension($filename);
+        $exporter = Craft::$app->getElements()->createExporter($exporter);
+        $exporter->setElementType($elementType);
 
         $response = Craft::$app->getResponse();
-        $response->content = $contents;
-        $response->format = Response::FORMAT_RAW;
-        $response->setDownloadHeaders($filename, $mimeType);
+        $response->data = $exporter->export($query);
+        $response->format = $format;
+        $response->setDownloadHeaders($exporter->getFilename() . ".{$format}");
+
+        switch ($format) {
+            case Response::FORMAT_JSON:
+                $response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                break;
+            case Response::FORMAT_XML:
+                Craft::$app->language = 'en-US';
+                $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                $response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
+                break;
+        }
+
         return $response;
     }
 }

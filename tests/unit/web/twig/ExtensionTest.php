@@ -31,9 +31,6 @@ use yii\web\ServerErrorHttpException;
  */
 class ExtensionTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -44,9 +41,6 @@ class ExtensionTest extends Unit
      */
     protected $view;
 
-    // Public Methods
-    // =========================================================================
-
     public function _fixtures(): array
     {
         return [
@@ -55,9 +49,6 @@ class ExtensionTest extends Unit
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @throws LoaderError
@@ -293,9 +284,6 @@ class ExtensionTest extends Unit
             '1'
         );
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param string $renderString

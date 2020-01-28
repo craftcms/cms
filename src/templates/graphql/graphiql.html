@@ -1,6 +1,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Explore the GraphQL API"|t %}
 {% set selectedSubnavItem = 'explore' %}
+{% set showHeader = false %}
 
 {% block main %}
     <div data-endpoint="{{ url }}" id="graphiql">
@@ -12,7 +13,7 @@
     var gqlSchemas = {{ schemas|json_encode|raw }};
     var selectedSchema = {{ {
         name: selectedSchema.name,
-        token: selectedSchema.accessToken,
+        schema: selectedSchema.uid,
     }|json_encode|raw }};
     initGraphiQl();
 {% endjs %}

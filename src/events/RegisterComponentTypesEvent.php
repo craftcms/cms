@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterComponentTypesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string[] List of registered component types classes.
      */

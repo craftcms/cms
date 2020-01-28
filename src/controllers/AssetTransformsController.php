@@ -25,9 +25,6 @@ use yii\web\Response;
  */
 class AssetTransformsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

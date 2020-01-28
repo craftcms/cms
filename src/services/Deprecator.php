@@ -31,9 +31,6 @@ use yii\db\IntegrityException;
  */
 class Deprecator extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
      * @since 3.1.18
@@ -60,9 +57,6 @@ class Deprecator extends Component
      * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
     private $_allLogs;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Logs a new deprecation error.
@@ -234,9 +228,6 @@ class Deprecator extends Component
 
         return (bool)$affectedRows;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving deprecation logs.

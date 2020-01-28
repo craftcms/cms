@@ -1,7 +1,6 @@
 /** global: Garnish */
 
 Craft.SlideRuleInput = Garnish.Base.extend({
-
     $container: null,
     $options: null,
     $selectedOption: null,
@@ -89,7 +88,6 @@ Craft.SlideRuleInput = Garnish.Base.extend({
         if (value < this.slideMin) {
             value = this.slideMin;
             left = this.valueToPosition(value);
-
         }
         else if (value > this.slideMax) {
             value = this.slideMax;

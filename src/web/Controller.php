@@ -33,15 +33,9 @@ use yii\web\Response as YiiResponse;
  */
 abstract class Controller extends \yii\web\Controller
 {
-    // Constants
-    // =========================================================================
-
     const ALLOW_ANONYMOUS_NEVER = 0;
     const ALLOW_ANONYMOUS_LIVE = 1;
     const ALLOW_ANONYMOUS_OFFLINE = 2;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
@@ -62,9 +56,6 @@ abstract class Controller extends \yii\web\Controller
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
     protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -168,7 +159,7 @@ abstract class Controller extends \yii\web\Controller
                 $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {
                     $error = $request->getIsCpRequest()
-                        ? Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.')
+                        ? Craft::t('app', 'Your account doesn’t have permission to access the control panel when the system is offline.')
                         : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                     throw new ServiceUnavailableHttpException($error);
                 }
@@ -189,7 +180,7 @@ abstract class Controller extends \yii\web\Controller
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 if (!YII_DEBUG && !$e instanceof UserException) {
-                    $message = Craft::t('app', 'An unknown error occurred.');
+                    $message = Craft::t('app', 'A server error occurred.');
                 } else {
                     $message = $e->getMessage();
                 }
@@ -218,10 +209,11 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
+     * @param string $templateMode The template mode to use
      * @return YiiResponse
      * @throws InvalidArgumentException if the view file does not exist.
      */
-    public function renderTemplate(string $template, array $variables = []): YiiResponse
+    public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $headers = $response->getHeaders();
@@ -240,7 +232,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // Render and return the template
-        $response->data = $this->getView()->renderPageTemplate($template, $variables);
+        $response->data = $this->getView()->renderPageTemplate($template, $variables, $templateMode);
 
         // Prevent a response formatter from overriding the content-type header
         $response->format = YiiResponse::FORMAT_RAW;
@@ -257,6 +249,21 @@ abstract class Controller extends \yii\web\Controller
 
         if ($userSession->getIsGuest()) {
             $userSession->loginRequired();
+            Craft::$app->end();
+        }
+    }
+
+    /**
+     * Redirects the user to the account template if they are logged in.
+     *
+     * @since 3.4.0
+     */
+    public function requireGuest()
+    {
+        $userSession = Craft::$app->getUser();
+
+        if (!$userSession->getIsGuest()) {
+            $userSession->guestRequired();
             Craft::$app->end();
         }
     }
@@ -359,15 +366,15 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Throws a 400 error if the current request isn’t a Control Panel request.
+     * Throws a 400 error if the current request isn’t a control panel request.
      *
-     * @throws BadRequestHttpException if the request is not a CP request
+     * @throws BadRequestHttpException if this is not a control panel request
      * @since 3.1.0
      */
     public function requireCpRequest()
     {
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            throw new BadRequestHttpException('Request must be a Control Panel request');
+            throw new BadRequestHttpException('Request must be a control panel request');
         }
     }
 

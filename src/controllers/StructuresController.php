@@ -25,9 +25,6 @@ use yii\web\Response;
  */
 class StructuresController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Structure|null
      */
@@ -38,13 +35,10 @@ class StructuresController extends Controller
      */
     private $_element;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Initializes the application component.
      *
-     * @throws ForbiddenHttpException if this is not a Control Panel request
+     * @throws ForbiddenHttpException if this is not a control panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */
     public function init()
@@ -54,9 +48,9 @@ class StructuresController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        // This controller is only available to the Control Panel
+        // This controller is only available to the control panel
         if (!$request->getIsCpRequest()) {
-            throw new ForbiddenHttpException('Action only available from the Control Panel');
+            throw new ForbiddenHttpException('Action only available from the control panel');
         }
 
         $structureId = $request->getRequiredBodyParam('structureId');

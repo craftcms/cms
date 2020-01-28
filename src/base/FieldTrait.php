@@ -15,9 +15,6 @@ namespace craft\base;
  */
 trait FieldTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The field’s group’s ID
      */

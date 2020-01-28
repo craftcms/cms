@@ -22,9 +22,6 @@ use yii\base\Exception;
  */
 class UserGroupsFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -34,9 +31,6 @@ class UserGroupsFixture extends Fixture
      * @inheritdoc
      */
     public $dataFile = __DIR__ . '/data/user-groups.php';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

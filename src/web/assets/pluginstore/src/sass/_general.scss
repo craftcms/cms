@@ -1,3 +1,6 @@
+@charset "UTF-8";
+@import "../../../../../../lib/craftcms-sass/mixins";
+
 /* Basics */
 
 html, body, div, span,  object, iframe, table, caption, tbody, tfoot, thead, tr, th, td,
@@ -12,7 +15,7 @@ hr {
 }
 
 h1 {
-  font-size: 24px;
+  font-size: 18px;
 }
 
 h2 {
@@ -111,11 +114,11 @@ input.error {
     }
 
     svg {
-      @include svg-mask($secondarySubmitColor);
+      @include svg-mask($secondaryColor);
     }
 
     &:hover svg {
-      @include svg-mask($secondarySubmitHoverColor);
+      @include svg-mask(darken($secondaryColor, 5%));
     }
 
     .badge {
@@ -126,8 +129,7 @@ input.error {
       font-size: 11px;
       line-height: 16px;
       border-radius: 1em;
-      background: $submitColor;
-      box-shadow: 0 0 0 2px $bgColor;
+      background: $primaryColor;
     }
   }
 
@@ -177,12 +179,12 @@ input.error {
     }
 
     tr {
-      background-color: #fff;
+      background-color: $white;
       border-top: 1px solid #c6cbd1;
     }
 
     tr:nth-child(2n) {
-      background-color: #f6f8fa;
+      background-color: $grey050;
     }
 
     img {

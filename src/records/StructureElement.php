@@ -32,9 +32,6 @@ use yii\db\ActiveQueryInterface;
  */
 class StructureElement extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -94,15 +91,15 @@ class StructureElement extends ActiveRecord
      */
     public function behaviors()
     {
-        return [
-            'tree' => [
-                'class' => NestedSetsBehavior::class,
-                'treeAttribute' => 'root',
-                'leftAttribute' => 'lft',
-                'rightAttribute' => 'rgt',
-                'depthAttribute' => 'level',
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['tree'] = [
+            'class' => NestedSetsBehavior::class,
+            'treeAttribute' => 'root',
+            'leftAttribute' => 'lft',
+            'rightAttribute' => 'rgt',
+            'depthAttribute' => 'level',
         ];
+        return $behaviors;
     }
 
     /**

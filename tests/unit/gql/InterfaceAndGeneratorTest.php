@@ -105,16 +105,12 @@ class InterfaceAndGeneratorTest extends Unit
             'matrix',
             ['getAllBlockTypes' => function () { return $this->mockMatrixBlocks();}]
         );
-
     }
 
     protected function _after()
     {
         Craft::$app->getGql()->flushCaches();
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test interfaces running type generators.
@@ -178,9 +174,6 @@ class InterfaceAndGeneratorTest extends Unit
         $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
     }
 
-
-    // Data providers
-    // =========================================================================
 
     public function interfaceDataProvider(): array
     {

@@ -34,6 +34,7 @@ use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
+use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -48,9 +49,6 @@ use yii\db\Exception as DbException;
  */
 class Users extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event UserEvent The event that is triggered before a user's email is verified.
      */
@@ -140,9 +138,6 @@ class Users extends Component
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a user by their ID.
@@ -385,7 +380,8 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'verify-email');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getVerifyEmailPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
     }
 
     /**
@@ -396,7 +392,8 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'set-password');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
     }
 
     /**
@@ -1055,7 +1052,7 @@ class Users extends Component
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();
 
-        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
+        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
@@ -1120,7 +1117,7 @@ class Users extends Component
             foreach ($fieldLayouts as $layoutUid => $layout) {
                 if (!empty($layout['tabs'])) {
                     foreach ($layout['tabs'] as $tabUid => $tab) {
-                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                     }
                 }
             }
@@ -1132,9 +1129,6 @@ class Users extends Component
         // Allow events again
         $projectConfig->muteEvents = false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Gets a user record by its ID.
@@ -1197,22 +1191,22 @@ class Users extends Component
     }
 
     /**
-     * Sets a new verification code on a user, and returns their new verification URL
+     * Sets a new verification code on a user, and returns a verification URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     * @param string $action The UsersController action that the URL should point to
-     * @return string The new Password Reset URL.
+     * @param string $fePath The path to use if we end up linking to the front end
+     * @param string $cpPath The path to use if we end up linking to the control panel
+     * @return string
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
      */
-    private function _getUserUrl(User $user, string $action): string
+    private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1220,22 +1214,17 @@ class Users extends Component
 
         $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
-        if ($user->can('accessCp')) {
-            // Only use getCpUrl() if the base CP URL has been explicitly set,
-            // so UrlHelper won't use HTTP_HOST
-            if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $scheme);
-            }
-
-            $path = $generalConfig->cpTrigger . '/' . $path;
+        if (!$user->can('accessCp')) {
+            return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else {
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        // Only use cpUrl() if the base CP URL has been explicitly set,
+        // so UrlHelper won't use HTTP_HOST
+        if ($generalConfig->baseCpUrl) {
+            return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 
-        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
+        $path = $generalConfig->cpTrigger . '/' . $cpPath;
+        return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

@@ -16,9 +16,6 @@ namespace craft\enums;
  */
 abstract class PeriodType
 {
-    // Constants
-    // =========================================================================
-
     const Seconds = 'seconds';
     const Minutes = 'minutes';
     const Hours = 'hours';

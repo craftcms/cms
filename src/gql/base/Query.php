@@ -14,13 +14,7 @@ namespace craft\gql\base;
  * @since 3.3.0
  */
 abstract class Query
-{
-    // Traits
-    // =========================================================================
-    use GqlTypeTrait;
-
-    // Methods
-    // =========================================================================
+{    use GqlTypeTrait;
     /**
      * Returns the queries defined by the class as an array.
      *

@@ -34,9 +34,6 @@ use yii\base\ErrorException;
  */
 class Raster extends Image
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -76,9 +73,6 @@ class Raster extends Image
      * @var Font|null
      */
     private $_font;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -209,7 +203,6 @@ class Raster extends Image
         $height = $y2 - $y1;
 
         if ($this->_isAnimatedGif) {
-
             // Create a new image instance to avoid object references messing up our dimensions.
             $newSize = new Box($width, $height);
             $startingPoint = new Point($x1, $y1);
@@ -241,6 +234,8 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
+        $scaleIfSmaller = $scaleIfSmaller && Craft::$app->getConfig()->getGeneral()->upscaleImages;
+
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
@@ -256,90 +251,96 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
+        if ($scaleIfSmaller || ($this->getWidth() > $targetWidth && $this->getHeight() > $targetHeight)) {
             // Scale first.
             $factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $newHeight = round($this->getHeight() / $factor);
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-
-            if (is_array($cropPosition)) {
-                $centerX = $newWidth * $cropPosition['x'];
-                $centerY = $newHeight * $cropPosition['y'];
-                $x1 = $centerX - $targetWidth / 2;
-                $y1 = $centerY - $targetHeight / 2;
-                $x2 = $x1 + $targetWidth;
-                $y2 = $y1 + $targetHeight;
-
-                // Now see if we have to bump this around to make it fit the image.
-                if ($x1 < 0) {
-                    $x2 -= $x1;
-                    $x1 = 0;
-                }
-                if ($y1 < 0) {
-                    $y2 -= $y1;
-                    $y1 = 0;
-                }
-                if ($x2 > $newWidth) {
-                    $x1 -= ($x2 - $newWidth);
-                    $x2 = $newWidth;
-                }
-                if ($y2 > $newHeight) {
-                    $y1 -= ($y2 - $newHeight);
-                    $y2 = $newHeight;
-                }
-            } else {
-                list($verticalPosition, $horizontalPosition) = explode('-', $cropPosition);
-
-                // Now crop.
-                if ($newWidth - $targetWidth > 0) {
-
-                    switch ($horizontalPosition) {
-                        case 'left':
-                            $x1 = 0;
-                            $x2 = $x1 + $targetWidth;
-                            break;
-                        case 'right':
-                            $x2 = $newWidth;
-                            $x1 = $newWidth - $targetWidth;
-                            break;
-                        default:
-                            $x1 = round(($newWidth - $targetWidth) / 2);
-                            $x2 = $x1 + $targetWidth;
-                            break;
-                    }
-
-                    $y1 = 0;
-                    $y2 = $y1 + $targetHeight;
-                } else if ($newHeight - $targetHeight > 0) {
-                    switch ($verticalPosition) {
-                        case 'top':
-                            $y1 = 0;
-                            $y2 = $y1 + $targetHeight;
-                            break;
-                        case 'bottom':
-                            $y2 = $newHeight;
-                            $y1 = $newHeight - $targetHeight;
-                            break;
-                        default:
-                            $y1 = round(($newHeight - $targetHeight) / 2);
-                            $y2 = $y1 + $targetHeight;
-                            break;
-                    }
-
-                    $x1 = 0;
-                    $x2 = $x1 + $targetWidth;
-                } else {
-                    $x1 = round(($newWidth - $targetWidth) / 2);
-                    $x2 = $x1 + $targetWidth;
-                    $y1 = round(($newHeight - $targetHeight) / 2);
-                    $y2 = $y1 + $targetHeight;
-                }
-            }
-
-            $this->crop($x1, $x2, $y1, $y2);
+        } else if (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
+            // Figure the crop size reductions
+            $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
+            $newHeight = $this->getHeight();
+            $newWidth = $this->getWidth();
+            $targetHeight = round($targetHeight / $factor);
+            $targetWidth = round($targetWidth / $factor);
         }
+
+        if (is_array($cropPosition)) {
+            $centerX = $newWidth * $cropPosition['x'];
+            $centerY = $newHeight * $cropPosition['y'];
+            $x1 = $centerX - $targetWidth / 2;
+            $y1 = $centerY - $targetHeight / 2;
+            $x2 = $x1 + $targetWidth;
+            $y2 = $y1 + $targetHeight;
+
+            // Now see if we have to bump this around to make it fit the image.
+            if ($x1 < 0) {
+                $x2 -= $x1;
+                $x1 = 0;
+            }
+            if ($y1 < 0) {
+                $y2 -= $y1;
+                $y1 = 0;
+            }
+            if ($x2 > $newWidth) {
+                $x1 -= ($x2 - $newWidth);
+                $x2 = $newWidth;
+            }
+            if ($y2 > $newHeight) {
+                $y1 -= ($y2 - $newHeight);
+                $y2 = $newHeight;
+            }
+        } else {
+            list($verticalPosition, $horizontalPosition) = explode('-', $cropPosition);
+
+            // Now crop.
+            if ($newWidth - $targetWidth > 0) {
+                switch ($horizontalPosition) {
+                    case 'left':
+                        $x1 = 0;
+                        $x2 = $x1 + $targetWidth;
+                        break;
+                    case 'right':
+                        $x2 = $newWidth;
+                        $x1 = $newWidth - $targetWidth;
+                        break;
+                    default:
+                        $x1 = round(($newWidth - $targetWidth) / 2);
+                        $x2 = $x1 + $targetWidth;
+                        break;
+                }
+
+                $y1 = 0;
+                $y2 = $y1 + $targetHeight;
+            } else if ($newHeight - $targetHeight > 0) {
+                switch ($verticalPosition) {
+                    case 'top':
+                        $y1 = 0;
+                        $y2 = $y1 + $targetHeight;
+                        break;
+                    case 'bottom':
+                        $y2 = $newHeight;
+                        $y1 = $newHeight - $targetHeight;
+                        break;
+                    default:
+                        $y1 = round(($newHeight - $targetHeight) / 2);
+                        $y2 = $y1 + $targetHeight;
+                        break;
+                }
+
+                $x1 = 0;
+                $x2 = $x1 + $targetWidth;
+            } else {
+                $x1 = round(($newWidth - $targetWidth) / 2);
+                $x2 = $x1 + $targetWidth;
+                $y1 = round(($newHeight - $targetHeight) / 2);
+                $y2 = $y1 + $targetHeight;
+            }
+        }
+
+        $this->crop($x1, $x2, $y1, $y2);
 
         return $this;
     }
@@ -352,7 +353,6 @@ class Raster extends Image
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($this->_isAnimatedGif) {
-
             // Create a new image instance to avoid object references messing up our dimensions.
             $newSize = new Box($targetWidth, $targetHeight);
             $gif = $this->_instance->create($newSize);
@@ -592,7 +592,6 @@ class Raster extends Image
      */
     public function writeText(string $text, int $x, int $y, int $angle = 0)
     {
-
         if ($this->_font === null) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
@@ -619,9 +618,6 @@ class Raster extends Image
 
         return $this;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param string $tempFileName

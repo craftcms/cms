@@ -20,20 +20,27 @@ use craft\elements\db\ElementQueryInterface;
  */
 class SetStatus extends ElementAction
 {
-    // Constants
-    // =========================================================================
-
     const ENABLED = 'enabled';
+    /**
+     * @since 3.4.0
+     */
+    const DISABLED = 'disabled';
+    /**
+     * @since 3.0.30
+     * @deprecated in 3.4.0. Use `DISABLED` instead.
+     */
     const DISABLED_GLOBALLY = 'disabled';
+    /**
+     * @since 3.0.30
+     * @deprecated in 3.4.0. Use `DISABLED` instead.
+     */
     const DISABLED_FOR_SITE = 'disabled-for-site';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether to show the “Disabled for Site” status option.
      *
      * @since 3.0.30
+     * @deprecated in 3.4.0. This is no longer needed.
      */
     public $allowDisabledForSite = false;
 
@@ -41,23 +48,6 @@ class SetStatus extends ElementAction
      * @var string|null The status elements should be set to
      */
     public $status;
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        // Only allow the "Disabled for site" option if there are multiple sites and the element type is localized
-        if ($this->allowDisabledForSite) {
-            $elementType = $this->elementType;
-            $this->allowDisabledForSite = $elementType && $elementType::isLocalized() && Craft::$app->getIsMultiSite();
-        }
-
-        parent::init();
-    }
 
     /**
      * @inheritdoc
@@ -70,18 +60,11 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['status'], 'required'];
-        $rules[] = [
-            ['status'],
-            'in',
-            'range' => $this->allowDisabledForSite
-                ? [self::ENABLED, self::DISABLED_GLOBALLY, self::DISABLED_FOR_SITE]
-                : [self::ENABLED, self::DISABLED_GLOBALLY]
-        ];
-
+        $rules[] = [['status'], 'in', 'range' => [self::ENABLED, self::DISABLED]];
         return $rules;
     }
 
@@ -90,9 +73,7 @@ class SetStatus extends ElementAction
      */
     public function getTriggerHtml()
     {
-        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger', [
-            'allowDisabledForSite' => $this->allowDisabledForSite,
-        ]);
+        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger');
     }
 
     /**
@@ -100,6 +81,7 @@ class SetStatus extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
+        $isLocalized = $this->elementType::isLocalized() && Craft::$app->getIsMultiSite();
         $elementsService = Craft::$app->getElements();
 
         /** @var Element[] $elements */
@@ -118,22 +100,21 @@ class SetStatus extends ElementAction
                     $element->setScenario(Element::SCENARIO_LIVE);
                     break;
 
-                case self::DISABLED_GLOBALLY:
-                    // Skip if there's nothing to change
-                    if (!$element->enabled) {
-                        continue 2;
+                case self::DISABLED:
+                    // Is this a multi-site element?
+                    if ($isLocalized && count($element->getSupportedSites()) !== 1) {
+                        // Skip if there's nothing to change
+                        if (!$element->enabledForSite) {
+                            continue 2;
+                        }
+                        $element->enabledForSite = false;
+                    } else {
+                        // Skip if there's nothing to change
+                        if (!$element->enabled) {
+                            continue 2;
+                        }
+                        $element->enabled = false;
                     }
-
-                    $element->enabled = false;
-                    break;
-
-                case self::DISABLED_FOR_SITE:
-                    // Skip if there's nothing to change
-                    if (!$element->enabledForSite) {
-                        continue 2;
-                    }
-
-                    $element->enabledForSite = false;
                     break;
             }
 

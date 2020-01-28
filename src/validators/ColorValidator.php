@@ -19,9 +19,6 @@ use yii\validators\RegularExpressionValidator;
  */
 class ColorValidator extends RegularExpressionValidator
 {
-    // Static
-    // =========================================================================
-
     /**
      * Normalizes a color value.
      *
@@ -45,9 +42,6 @@ class ColorValidator extends RegularExpressionValidator
 
         return $color;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc

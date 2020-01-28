@@ -21,9 +21,6 @@ use yii\validators\Validator;
  */
 interface FieldInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether this field has a column in the content table.
      *
@@ -48,7 +45,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the PHPDoc type this field’s values will have.
      *
-     * It will be used by generated `ContentBehavior` and `ElementQueryBehavior` classes.
+     * It will be used by the generated `CustomFieldBehavior` class.
      *
      * If the values can be of more than one type, return multiple types separated by `|`s.
      *
@@ -63,9 +60,6 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.2.0
      */
     public static function valueType(): string;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the column type that this field should get within the content table.
@@ -90,6 +84,15 @@ interface FieldInterface extends SavableComponentInterface
      * @return bool
      */
     public function getIsTranslatable(ElementInterface $element = null): bool;
+
+    /**
+     * Returns the description of this field’s translation support.
+     *
+     * @param ElementInterface|null $element The element being edited
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getTranslationDescription(ElementInterface $element = null);
 
     /**
      * Returns the field’s translation key, based on a given element.

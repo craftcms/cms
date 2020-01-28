@@ -48,9 +48,6 @@ use yii\base\InvalidArgumentException;
  */
 class AssetTransforms extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is saved
      */
@@ -94,9 +91,6 @@ class AssetTransforms extends Component
 
     const CONFIG_TRANSFORM_KEY = 'imageTransforms';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransform[]
      */
@@ -116,9 +110,6 @@ class AssetTransforms extends Component
      * @var AssetTransformIndex|null
      */
     private $_activeTransformIndex;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all named asset transforms.
@@ -220,7 +211,7 @@ class AssetTransforms extends Component
         ];
 
         $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
             $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid);
@@ -341,7 +332,7 @@ class AssetTransforms extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
         return true;
     }
 
@@ -917,7 +908,6 @@ class AssetTransforms extends Component
         try {
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
-
                     // Delete it just in case it's a 0-byter
                     try {
                         FileHelper::unlink($imageSourcePath);
@@ -1034,7 +1024,6 @@ class AssetTransforms extends Component
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
-
             $image = Craft::$app->getImages()->loadImage($source);
 
             if ($image instanceof Raster) {
@@ -1212,7 +1201,6 @@ class AssetTransforms extends Component
                         Craft::warning('Unable to delete asset thumbnails: ' . $e->getMessage(), __METHOD__);
                     }
                 }
-
             }
         }
     }
@@ -1285,9 +1273,6 @@ class AssetTransforms extends Component
         $this->_activeTransformIndex = $index;
     }
 
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving transform indexes.
@@ -1452,7 +1437,7 @@ class AssetTransforms extends Component
                 } else {
                     $position = $transform->position;
                 }
-                $image->scaleAndCrop($transform->width, $transform->height, true, $position);
+                $image->scaleAndCrop($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
         }
 
         if ($image instanceof Raster) {

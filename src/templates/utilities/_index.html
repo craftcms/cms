@@ -21,6 +21,14 @@
     </nav>
 {% endblock %}
 
+{% block toolbar %}
+    {{ toolbarHtml|raw }}
+{% endblock %}
+
 {% block content %}
     {{ contentHtml|raw }}
+{% endblock %}
+
+{% block footer %}
+    {{ footerHtml|raw }}
 {% endblock %}

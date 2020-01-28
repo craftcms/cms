@@ -23,9 +23,6 @@ use yii\web\Response;
  */
 class PluginsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

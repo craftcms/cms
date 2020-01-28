@@ -31,9 +31,6 @@ use yii\web\Response;
  */
 class VolumesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

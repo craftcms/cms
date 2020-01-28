@@ -24,9 +24,6 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class SystemMessagesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

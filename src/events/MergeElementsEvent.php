@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class MergeElementsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The ID of the element that just got merged into the other.
      */

@@ -21,9 +21,6 @@ use Twig\Markup;
  */
 interface ElementInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the lowercase version of [[displayName()]].
      *
@@ -54,6 +51,17 @@ interface ElementInterface extends ComponentInterface
      * @return string|null The reference handle, or null if the element type doesn’t support reference tags
      */
     public static function refHandle();
+
+    /**
+     * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
+     * including when the last time they were changed, and who was logged-in at the time.
+     *
+     * @return bool Whether to track changes made to elements of this type.
+     * @see getDirtyAttributes()
+     * @see getDirtyFields()
+     * @since 3.4.0
+     */
+    public static function trackChanges(): bool;
 
     /**
      * Returns whether elements of this type will be storing any data in the `content` table (titles or custom fields).
@@ -287,6 +295,23 @@ interface ElementInterface extends ComponentInterface
     public static function actions(string $source): array;
 
     /**
+     * Returns the available export options for a given source.
+     *
+     * The exporters can be represented by their fully qualified class name, a config array with the class name
+     * set to a `type` key, or by an instantiated element exporter object.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineExporters()]]
+     * instead of this method.
+     * :::
+     *
+     * @param string $source The selected source’s key.
+     * @return array The available element exporters.
+     * @since 3.4.0
+     */
+    public static function exporters(string $source): array;
+
+    /**
      * Defines which element attributes should be searchable.
      *
      * This method should return an array of attribute names that can be accessed on your elements.
@@ -424,9 +449,6 @@ interface ElementInterface extends ComponentInterface
      */
     public static function gqlScopesByContext($context): array;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the element’s ID.
      *
@@ -547,7 +569,7 @@ interface ElementInterface extends ComponentInterface
     public function getLink();
 
     /**
-     * Returns what the element should be called within the Control Panel.
+     * Returns what the element should be called within the control panel.
      *
      * @return string
      * @since 3.2.0
@@ -569,7 +591,7 @@ interface ElementInterface extends ComponentInterface
     public function getIsEditable(): bool;
 
     /**
-     * Returns the element’s CP edit URL.
+     * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
      */
@@ -578,7 +600,11 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
-     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     * Each target should be represented by a sub-array with the following keys:
+     *
+     * - `label` – What the preview target will be called in the control panel.
+     * - `url` – The URL that the preview target should open.
+     * - `refresh` – Whether preview frames should be automatically refreshed when content changes (`true` by default).
      *
      * ::: tip
      * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
@@ -597,6 +623,28 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getThumbUrl(int $size);
+
+    /**
+     * Returns whether the element is enabled for the current site.
+     *
+     * This can also be set to an array of site ID/site-enabled mappings.
+     *
+     * @param int|null $siteId The ID of the site to return for. If `null`, the current site status will be returned.
+     * @return bool|null Whether the element is enabled for the given site. `null` will be returned if a `$siteId` was
+     * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
+     * @since 3.4.0
+     */
+    public function getEnabledForSite(int $siteId = null);
+
+    /**
+     * Sets whether the element is enabled for the current site.
+     *
+     * This can also be set to an array of site ID/site-enabled mappings.
+     *
+     * @param bool|bool[] $enabledForSite
+     * @since 3.4.0
+     */
+    public function setEnabledForSite($enabledForSite);
 
     /**
      * Returns the element’s status.
@@ -773,6 +821,23 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
+     * Returns the status of a given attribute.
+     *
+     * @param string $attribute
+     * @return array|null
+     * @since 3.4.0
+     */
+    public function getAttributeStatus(string $attribute);
+
+    /**
+     * Returns a list of attribute names that have changed since the element was first loaded.
+     *
+     * @return string[]
+     * @since 3.4.0
+     */
+    public function getDirtyAttributes(): array;
+
+    /**
      * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values
@@ -814,6 +879,39 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $value The value to set on the field
      */
     public function setFieldValue(string $fieldHandle, $value);
+
+    /**
+     * Returns the status of a given field.
+     *
+     * @param string $fieldHandle
+     * @return array|null
+     * @since 3.4.0
+     */
+    public function getFieldStatus(string $fieldHandle);
+
+    /**
+     * Returns whether a custom field value has changed since the element was first loaded.
+     *
+     * @param string $fieldHandle
+     * @return bool
+     * @since 3.4.0
+     */
+    public function isFieldDirty(string $fieldHandle): bool;
+
+    /**
+     * Returns a list of custom field handles that have changed since the element was first loaded.
+     *
+     * @return string[]
+     * @since 3.4.0
+     */
+    public function getDirtyFields(): array;
+
+    /**
+     * Resets the record of dirty attributes and fields.
+     *
+     * @since 3.4.0
+     */
+    public function markAsClean();
 
     /**
      * Sets the element’s custom field values, when the values have come from post data.
@@ -858,6 +956,48 @@ interface ElementInterface extends ComponentInterface
     public function getFieldContext(): string;
 
     /**
+     * Returns whether elements have been eager-loaded with a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return bool Whether elements have been eager-loaded with the given handle
+     */
+    public function hasEagerLoadedElements(string $handle): bool;
+
+    /**
+     * Returns the eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return ElementInterface[]|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     */
+    public function getEagerLoadedElements(string $handle);
+
+    /**
+     * Sets some eager-loaded elements on a given handle.
+     *
+     * @param string $handle The handle to load the elements with in the future
+     * @param ElementInterface[] $elements The eager-loaded elements
+     */
+    public function setEagerLoadedElements(string $handle, array $elements);
+
+    /**
+     * Returns the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return int The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function getEagerLoadedElementCount(string $handle): int;
+
+    /**
+     * Sets the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle to load the elements with in the future
+     * @param int $count The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function setEagerLoadedElementCount(string $handle, int $count);
+
+    /**
      * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
      *
      * @return bool Whether the element’s content is fresh
@@ -892,7 +1032,7 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
+     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
      *
      * ::: tip
      * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]

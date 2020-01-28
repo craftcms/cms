@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class ElementContentEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface|null The element model associated with the event.
      */

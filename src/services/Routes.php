@@ -23,9 +23,6 @@ use yii\base\Component;
  */
 class Routes extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RouteEvent The event that is triggered before a route is saved.
      */
@@ -47,16 +44,10 @@ class Routes extends Component
     const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
 
     const CONFIG_ROUTES_KEY = 'routes';
-
-    // Properties
-    // =========================================================================
     /**
      * @var array|null all the routes in project config for current site
      */
     private $_projectConfigRoutes;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the routes defined in `config/routes.php`
@@ -100,7 +91,7 @@ class Routes extends Component
     }
 
     /**
-     * Returns the routes defined in the CP.
+     * Returns the routes defined in the control panel.
      *
      * @return array
      * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
@@ -213,7 +204,7 @@ class Routes extends Component
             'siteUid' => $siteUid
         ];
 
-        $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData);
+        $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData, 'Save route');
 
         // Fire an 'afterSaveRoute' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ROUTE)) {
@@ -248,7 +239,7 @@ class Routes extends Component
                 ]));
             }
 
-            $route = Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
+            $route = Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, "Delete route");
 
             // Fire an 'afterDeleteRoute' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
@@ -275,7 +266,7 @@ class Routes extends Component
 
         foreach ($routes as $routeUid => $route) {
             if ($route['siteUid'] === $event->site->uid) {
-                $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
+                $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, 'Remove routes that belong to a site being deleted');
             }
         }
     }
@@ -288,7 +279,7 @@ class Routes extends Component
     public function updateRouteOrder(array $routeUids)
     {
         foreach ($routeUids as $order => $routeUid) {
-            Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1);
+            Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
         }
     }
 

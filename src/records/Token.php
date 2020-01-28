@@ -25,9 +25,6 @@ use craft\validators\DateTimeValidator;
  */
 class Token extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

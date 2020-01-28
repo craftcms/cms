@@ -20,13 +20,7 @@ use craft\base\MissingComponentTrait;
  */
 class MissingField extends Field implements MissingComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use MissingComponentTrait;
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -35,9 +29,6 @@ class MissingField extends Field implements MissingComponentInterface
     {
         return false;
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

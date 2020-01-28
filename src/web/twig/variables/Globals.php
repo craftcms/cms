@@ -21,9 +21,6 @@ use yii\base\Exception;
  */
 class Globals
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all global sets.
      *

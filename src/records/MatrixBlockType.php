@@ -28,16 +28,10 @@ use yii\db\ActiveQueryInterface;
  */
 class MatrixBlockType extends ActiveRecord
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the Name and Handle attributes should validated to ensure they’re unique.
      */
     public $validateUniques = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

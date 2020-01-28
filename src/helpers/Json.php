@@ -17,9 +17,6 @@ use yii\base\InvalidArgumentException;
  */
 class Json extends \yii\helpers\Json
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Decodes the given JSON string into a PHP data structure, only if the string is valid JSON.
      *

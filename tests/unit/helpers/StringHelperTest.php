@@ -28,19 +28,10 @@ use function mb_strpos;
  */
 class StringHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -1612,9 +1603,6 @@ class StringHelperTest extends Unit
         $actual = StringHelper::collapseWhitespace($string);
         $this->assertSame($expected, $actual);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

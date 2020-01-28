@@ -11,10 +11,12 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
+use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -32,9 +34,6 @@ use yii\web\ServerErrorHttpException;
  */
 class ElementIndexesController extends BaseElementsController
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -75,8 +74,10 @@ class ElementIndexesController extends BaseElementsController
      */
     protected $actions;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var ElementExporterInterface[]|null
+     */
+    protected $exporters;
 
     /**
      * @inheritdoc
@@ -98,6 +99,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($this->includeActions() && $this->sourceKey !== null) {
             $this->actions = $this->availableActions();
+            $this->exporters = $this->availableExporters();
         }
 
         return true;
@@ -275,12 +277,30 @@ class ElementIndexesController extends BaseElementsController
 
         $request = Craft::$app->getRequest();
 
+        // Find that exporter from the list of available exporters for the source
+        $exporterClass = $request->getBodyParam('type', Raw::class);
+        if (!empty($this->exporters)) {
+            foreach ($this->exporters as $availableExporter) {
+                /** @var ElementAction $availableExporter */
+                if ($exporterClass === get_class($availableExporter)) {
+                    $exporter = $availableExporter;
+                    break;
+                }
+            }
+        }
+
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        if (!isset($exporter)) {
+            throw new BadRequestHttpException('Element exporter is not supported by the element type');
+        }
+
         $token = Craft::$app->getTokens()->createToken([
             'export/export',
             [
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
                 'criteria' => $request->getBodyParam('criteria', []),
+                'exporter' => $exporterClass,
                 'format' => $request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
@@ -291,9 +311,6 @@ class ElementIndexesController extends BaseElementsController
 
         return $this->asJson(compact('token'));
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Identify whether index actions should be included in the element index
@@ -462,6 +479,7 @@ class ElementIndexesController extends BaseElementsController
             $responseData['actions'] = $this->actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
             $responseData['actionsFootHtml'] = $view->getBodyHtml();
+            $responseData['exporters'] = $this->exporterData();
         }
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
@@ -531,6 +549,42 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Returns the available exporters for the current source.
+     *
+     * @return ElementExporterInterface[]|null
+     * @since 3.4.0
+     */
+    protected function availableExporters()
+    {
+        if (Craft::$app->getRequest()->isMobileBrowser()) {
+            return null;
+        }
+
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $exporters = $elementType::exporters($this->sourceKey);
+
+        foreach ($exporters as $i => $exporter) {
+            // $action could be a string or config array
+            if ($exporter instanceof ElementExporterInterface) {
+                $exporter->setElementType($elementType);
+            } else {
+                if (is_string($exporter)) {
+                    $exporter = ['type' => $exporter];
+                }
+                $exporter['elementType'] = $elementType;
+                $exporters[$i] = $exporter = Craft::$app->getElements()->createExporter($exporter);
+
+                if ($exporters[$i] === null) {
+                    unset($exporters[$i]);
+                }
+            }
+        }
+
+        return array_values($exporters);
+    }
+
+    /**
      * Returns the data for the available actions.
      *
      * @return array|null
@@ -555,5 +609,29 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $actionData;
+    }
+
+    /**
+     * Returns the data for the available exporters.
+     *
+     * @return array|null
+     * @since 3.4.0
+     */
+    protected function exporterData()
+    {
+        if (empty($this->exporters)) {
+            return null;
+        }
+
+        $exporterData = [];
+
+        foreach ($this->exporters as $exporter) {
+            $exporterData[] = [
+                'type' => get_class($exporter),
+                'name' => $exporter::displayName(),
+            ];
+        }
+
+        return $exporterData;
     }
 }

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementSortOptionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered sort options for the element type.
      */

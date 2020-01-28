@@ -21,9 +21,6 @@ use yii\base\NotSupportedException;
  */
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

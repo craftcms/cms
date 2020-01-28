@@ -15,7 +15,7 @@
     {{ forms.textField({
         first: true,
         label: "Name"|t('app'),
-        instructions: "What this section will be called in the CP."|t('app'),
+        instructions: "What this section will be called in the control panel."|t('app'),
         id: 'name',
         name: 'name',
         value: section.name,
@@ -78,14 +78,14 @@
                     value: site.id,
                     small: true
                 }),
-                singleHomepage: not headlessMode ? {
+                singleHomepage: {
                     value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
                 },
-                singleUri: not headlessMode ? {
+                singleUri: {
                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
                    hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
-                uriFormat: not headlessMode ? {
+                uriFormat: {
                     value: siteSettings ? siteSettings.uriFormat,
                     hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
                 },
@@ -114,7 +114,7 @@
                 thin: true,
                 class: not craft.app.getIsMultiSite() ? 'hidden'
             },
-            singleHomepage: not headlessMode ? {
+            singleHomepage: {
                 type: 'checkbox',
                 headingHtml: tag('div', {
                     data: {icon: 'home'},
@@ -123,18 +123,20 @@
                 thin: true,
                 class: ['single-homepage', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            singleUri: not headlessMode ? {
+            singleUri: {
                 type: 'singleline',
                 heading: "URI"|t('app'),
                 info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
                 code: true,
+                width: headlessMode ? 500,
                 class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
-            uriFormat: not headlessMode ? {
+            uriFormat: {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 code: true,
+                width: headlessMode ? 500,
                 class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             },
             template: not headlessMode ? {
@@ -190,9 +192,7 @@
     {% if CraftEdition == CraftPro %}
         {{ forms.editableTableField({
             label: 'Preview Targets'|t('app'),
-            instructions: headlessMode
-                ? 'Locations that should be available for previewing entries in this section.'|t('app')
-                : 'Additional locations that should be available for previewing entries in this section.'|t('app'),
+            instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
             id: 'previewTargets',
             name: 'previewTargets',
             cols: {
@@ -205,7 +205,16 @@
                     heading: 'URL Format'|t('app'),
                     info: 'The URL/URI to use for this target.'|t('app'),
                     code: true,
+                },
+                refresh: {
+                    type: 'checkbox',
+                    heading: 'Refresh'|t('app'),
+                    info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
+                    thin: true,
                 }
+            },
+            defaultValues: {
+                refresh: true,
             },
             rows: section.previewTargets,
             errors: section.getErrors('previewTargets')

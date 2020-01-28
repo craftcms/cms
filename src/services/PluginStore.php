@@ -25,9 +25,6 @@ use yii\base\Component;
  */
 class PluginStore extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string Craft ID endpoint
      */
@@ -62,9 +59,6 @@ class PluginStore extends Component
      * @var bool Enable dev server
      */
     public $useDevServer = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Saves the OAuth token.

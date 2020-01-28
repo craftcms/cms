@@ -9,6 +9,6 @@
 
 {% if sectionHandle is defined %}
     {% js %}
-        window.defaultSectionHandle = '{{ sectionHandle }}';
+        window.defaultSectionHandle = "{{ sectionHandle|e('js') }}";
     {% endjs %}
 {% endif %}

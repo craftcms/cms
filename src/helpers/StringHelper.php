@@ -20,9 +20,6 @@ use yii\base\InvalidConfigException;
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
-    // Constants
-    // =========================================================================
-
     const UTF8 = 'UTF-8';
 
     /**
@@ -30,8 +27,11 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var array Character mappings
+     * @see asciiCharMap()
+     */
+    private static $_asciiCharMaps;
 
     /**
      * Gets the substring after the first occurrence of a separator.
@@ -120,10 +120,15 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function asciiCharMap(bool $flat = false, string $language = null): array
     {
+        $key = $flat ? 'flat-' . ($language ?? '*') : '*';
+        if (isset(self::$_asciiCharMaps[$key])) {
+            return self::$_asciiCharMaps[$key];
+        }
+
         $map = (new Stringy())->getAsciiCharMap();
 
         if (!$flat) {
-            return $map;
+            return self::$_asciiCharMaps[$key] = $map;
         }
 
         $flatMap = [];
@@ -148,7 +153,7 @@ class StringHelper extends \yii\helpers\StringHelper
             }
         }
 
-        return $flatMap;
+        return self::$_asciiCharMaps[$key] = $flatMap;
     }
 
     /**

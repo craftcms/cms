@@ -31,13 +31,7 @@ use yii\db\ActiveQueryInterface;
  */
 class EntryType extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

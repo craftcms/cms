@@ -17,11 +17,14 @@ use yii\base\Event;
  */
 class BackupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The file path to the backup.
      */
     public $file;
+
+    /**
+     * @var string[] The table names whose data should be excluded from the backup.
+     * @since 3.4.0
+     */
+    public $ignoreTables;
 }

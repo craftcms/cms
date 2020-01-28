@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.3.20.1",
+  "version": "3.4.0",
   "keywords": [
     "cms",
     "craftcms",
@@ -38,6 +38,8 @@
     "league/flysystem": "^1.0.35",
     "league/oauth2-client": "^2.2.1",
     "mikehaertl/php-shellcommand": "^1.2.5",
+    "mrclay/jsmin-php": "^2.4",
+    "mrclay/minify": "^3.0.7",
     "pixelandtonic/imagine": "~1.2.2.1",
     "seld/cli-prompt": "^1.0.3",
     "symfony/yaml": "^3.2|^4.0",
@@ -47,11 +49,12 @@
     "voku/stringy": "~5.1.0",
     "webonyx/graphql-php": "^0.12.0",
     "yii2tech/ar-softdelete": "^1.0.2",
-    "yiisoft/yii2": "~2.0.31.0",
+    "yiisoft/yii2": "~2.0.32.0",
     "yiisoft/yii2-debug": "^2.1.0",
-    "yiisoft/yii2-queue": "2.1.0",
+    "yiisoft/yii2-queue": "~2.3.0",
+    "yiisoft/yii2-shell": "^2.0.2",
     "yiisoft/yii2-swiftmailer": "^2.1.0",
-    "zendframework/zend-feed": "^2.8.0"
+    "laminas/laminas-feed": "^2.12.0"
   },
   "require-dev": {
     "codeception/codeception": "^3.1.0",

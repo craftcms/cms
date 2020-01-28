@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class SetAssetFilenameEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The asset filename (sans extension).
      */

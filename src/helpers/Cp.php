@@ -21,16 +21,10 @@ use yii\base\Event;
  */
 class Cp
 {
-    // Constants
-    // =========================================================================
-
     /**
-     * @event RegisterCpAlertsEvent The event that is triggered when registering CP alerts.
+     * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     const EVENT_REGISTER_ALERTS = 'registerAlerts';
-
-    // Static
-    // =========================================================================
 
     /**
      * @param string|null $path

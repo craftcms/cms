@@ -26,9 +26,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Widget extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

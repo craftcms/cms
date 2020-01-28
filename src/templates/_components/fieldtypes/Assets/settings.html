@@ -32,69 +32,81 @@
 
 
 {% block fieldSettings %}
-    {% block uploadLocationFields %}
-        {{ forms.checkboxField({
-            label: "Restrict uploads to a single folder?"|t('app'),
-            id: 'useSingleFolder-toggle',
-            name: 'useSingleFolder',
-            class: 'use-single-folder-cb',
-            value: 1,
-            checked: field.useSingleFolder,
-            toggle: 'single-folder-settings',
-            reverseToggle: 'multi-folder-settings'
-        }) }}
+    {{ forms.checkboxField({
+        label: "Restrict uploads to a single folder?"|t('app'),
+        id: 'useSingleFolder-toggle',
+        name: 'useSingleFolder',
+        class: 'use-single-folder-cb',
+        value: 1,
+        checked: field.useSingleFolder,
+        toggle: 'single-folder-settings',
+        reverseToggle: 'multi-folder-settings'
+    }) }}
 
-        {% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t('app') %}
-        {% if isMatrix %}
-            {% set uploadLocationNote = uploadLocationNote|replace({
+    {% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t('app') %}
+    {% if isMatrix %}
+        {% set uploadLocationNote = uploadLocationNote|replace({
             '{slug}': '{owner.slug}',
             '{author.username}': '{owner.author.username}'
-            }) %}
-        {% endif %}
+        }) %}
+    {% endif %}
 
-        <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
-            {{ block('sourcesField') }}
+    <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
+        {{ block('sourcesField') }}
 
-            {{ forms.field({
-                label: "Default Upload Location"|t('app'),
-                instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t('app') ~' '~ uploadLocationNote,
-                errors: field.getErrors('defaultUploadLocationSubpath')
-            }, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
-        </div>
+        {{ forms.field({
+            label: "Default Upload Location"|t('app'),
+            instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t('app') ~' '~ uploadLocationNote,
+            errors: field.getErrors('defaultUploadLocationSubpath')
+        }, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
+    </div>
 
-        <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
-            {{ forms.field({
-                label: "Upload Location"|t('app'),
-                instructions: uploadLocationNote,
-                errors: field.getErrors('singleUploadLocationSubpath')
-            }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
-        </div>
-    {% endblock %}
+    <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
+        {{ forms.field({
+            label: "Upload Location"|t('app'),
+            instructions: uploadLocationNote,
+            errors: field.getErrors('singleUploadLocationSubpath')
+        }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
+    </div>
 
-    {% block fileTypesField %}
-        {{ forms.checkboxField({
-            label: "Restrict allowed file types?"|t('app'),
-            class: 'restrictFiles',
-            id: 'restrictFiles',
-            name: 'restrictFiles',
-            value: 1,
-            checked: field.restrictFiles,
-            toggle: 'restrict-allowed-types'
-        }) }}
+    {{ forms.checkboxField({
+        label: 'Show unpermitted volumes'|t('app'),
+        instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+        id: 'showUnpermittedVolumes',
+        name: 'showUnpermittedVolumes',
+        checked: field.showUnpermittedVolumes,
+    }) }}
 
-        <div id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
-            {% for option in fileKindOptions %}
-                {{ forms.checkboxField({
-                    label: option.label,
-                    id: 'allowedKinds-'~option.value,
-                    name: 'allowedKinds[]',
-                    value: option.value,
-                    checked: (option.value in field.allowedKinds)
-                }) }}
-            {% endfor %}
-            {{ forms.errorList(field.getErrors('allowedKinds')) }}
-        </div>
-    {% endblock %}
+    {{ forms.checkboxField({
+        label: 'Show unpermitted files'|t('app'),
+        instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
+        id: 'showUnpermittedFiles',
+        name: 'showUnpermittedFiles',
+        checked: field.showUnpermittedFiles,
+    }) }}
+
+    {{ forms.checkboxField({
+        label: "Restrict allowed file types?"|t('app'),
+        class: 'restrictFiles',
+        id: 'restrictFiles',
+        name: 'restrictFiles',
+        value: 1,
+        checked: field.restrictFiles,
+        toggle: 'restrict-allowed-types'
+    }) }}
+
+    <div id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
+        {% for option in fileKindOptions %}
+            {{ forms.checkboxField({
+                label: option.label,
+                id: 'allowedKinds-'~option.value,
+                name: 'allowedKinds[]',
+                value: option.value,
+                checked: (option.value in field.allowedKinds)
+            }) }}
+        {% endfor %}
+        {{ forms.errorList(field.getErrors('allowedKinds')) }}
+    </div>
 
     {{ block('limitField') }}
     {{ block('viewModeField') }}

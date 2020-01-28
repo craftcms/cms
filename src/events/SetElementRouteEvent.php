@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class SetElementRouteEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var mixed The route that should be used for the element, or false if no special action should be taken
      */

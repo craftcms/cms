@@ -15,9 +15,6 @@ namespace craft\base;
  */
 trait VolumeTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Name
      */

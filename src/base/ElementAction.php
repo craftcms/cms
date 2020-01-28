@@ -17,9 +17,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 abstract class ElementAction extends SavableComponent implements ElementActionInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -27,9 +24,6 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     {
         return false;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|ElementInterface
@@ -42,9 +36,6 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      * @var
      */
     private $_message;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -93,9 +84,6 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     {
         return $this->_message;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Sets the message that should be displayed to the user after the action is performed.

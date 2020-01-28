@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterAssetFileKindsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The registered asset file kinds
      */

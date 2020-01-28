@@ -22,9 +22,6 @@ use Twig\TokenStream;
  */
 class RegisterResourceTokenParser extends AbstractTokenParser
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The tag name
      */
@@ -60,9 +57,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
      * @todo Remove this in Craft 4
      */
     public $newCode;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param string $tag the tag name
@@ -184,9 +178,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     {
         return $token->test('end' . strtolower($this->tag));
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the next token in the stream is a position param.

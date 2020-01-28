@@ -136,16 +136,17 @@ if (!defined('CRAFT_LICENSE_KEY')) {
     }
 }
 
+if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
+    $ensureFolderIsReadable($storagePath, true);
 
-$ensureFolderIsReadable($storagePath, true);
+    // Create the storage/runtime/ folder if it doesn't already exist
+    $createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
+    $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
 
-// Create the storage/runtime/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
-
-// Create the storage/logs/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
+    // Create the storage/logs/ folder if it doesn't already exist
+    $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
+    $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
+}
 
 // Log errors to storage/logs/phperrors.log
 if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {

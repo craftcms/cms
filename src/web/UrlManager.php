@@ -24,12 +24,9 @@ use yii\web\UrlRule as YiiUrlRule;
  */
 class UrlManager extends \yii\web\UrlManager
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
-     * URL rules for the Control Panel.
+     * URL rules for the control panel.
      *
      * ::: warning
      * This event gets called during class initialization, so you should always
@@ -69,9 +66,6 @@ class UrlManager extends \yii\web\UrlManager
      */
     const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
      * @since 3.2.0
@@ -92,9 +86,6 @@ class UrlManager extends \yii\web\UrlManager
      * @var
      */
     private $_matchedElementRoute;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.
@@ -262,9 +253,6 @@ class UrlManager extends \yii\web\UrlManager
         $this->_matchedElementRoute = $element;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -299,9 +287,6 @@ class UrlManager extends \yii\web\UrlManager
 
         return parent::buildRules($rules);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the rules that should be used for the current request.
@@ -390,7 +375,6 @@ class UrlManager extends \yii\web\UrlManager
             !$request->getIsSiteRequest() ||
             Craft::$app->getConfig()->getGeneral()->headlessMode
         ) {
-
             $this->setMatchedElement(false);
             return false;
         }
@@ -423,7 +407,6 @@ class UrlManager extends \yii\web\UrlManager
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var $rule YiiUrlRule */
         foreach ($this->rules as $rule) {
-
             $route = $rule->parseRequest($this, $request);
 
             if (YII_DEBUG) {

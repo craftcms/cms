@@ -28,6 +28,7 @@ use craft\helpers\User as UserHelper;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
+use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
@@ -53,9 +54,6 @@ use yii\web\Response;
  */
 class UsersController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
@@ -84,14 +82,12 @@ class UsersController extends Controller
      */
     const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = [
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
@@ -100,9 +96,6 @@ class UsersController extends Controller
         'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -128,7 +121,7 @@ class UsersController extends Controller
     {
         if (!Craft::$app->getUser()->getIsGuest()) {
             // Too easy.
-            return $this->_handleSuccessfulLogin(false);
+            return $this->_handleSuccessfulLogin();
         }
 
         if (!Craft::$app->getRequest()->getIsPost()) {
@@ -170,7 +163,7 @@ class UsersController extends Controller
             return $this->_handleLoginFailure(null, $user);
         }
 
-        return $this->_handleSuccessfulLogin(true);
+        return $this->_handleSuccessfulLogin();
     }
 
     /**
@@ -209,24 +202,49 @@ class UsersController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Logged in.'));
-
-        return $this->_handleSuccessfulLogin(true);
+        return $this->_handleSuccessfulLogin();
     }
 
     /**
      * Returns how many seconds are left in the current user session.
      *
      * @return Response
+     * @deprecated in 3.4.0. Use [[actionSessionInfo()]] instead.
      */
     public function actionGetRemainingSessionTime(): Response
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The users/get-remaining-session-time action is deprecated. Use users/session-info instead.');
+        return $this->runAction('session-info');
+    }
+
+    /**
+     * Returns information about the current user session, if any.
+     *
+     * @return Response
+     * @since 3.4.0
+     */
+    public function actionSessionInfo(): Response
+    {
         $this->requireAcceptsJson();
 
-        $return = ['timeout' => Craft::$app->getUser()->getRemainingSessionTime()];
+        $userService = Craft::$app->getUser();
+        /** @var User|null $user */
+        $user = $userService->getIdentity();
+
+        $return = [
+            'isGuest' => $user === null,
+            'timeout' => $userService->getRemainingSessionTime(),
+        ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
+        }
+
+        if ($user !== null) {
+            $return['id'] = $user->id;
+            $return['uid'] = $user->uid;
+            $return['username'] = $user->username;
+            $return['email'] = $user->email;
         }
 
         return $this->asJson($return);
@@ -299,7 +317,7 @@ class UsersController extends Controller
 
         // Redirect to the login page if this is a CP request
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->redirect('login');
+            return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
         return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
@@ -422,7 +440,7 @@ class UsersController extends Controller
             Craft::$app->getUser()->sendUsernameCookie($user);
 
             // Send them to the set password template.
-            return $this->_renderSetPasswordTemplate($user, [
+            return $this->_renderSetPasswordTemplate([
                 'code' => $code,
                 'id' => $uid,
                 'newUser' => $user->password ? false : true,
@@ -453,7 +471,7 @@ class UsersController extends Controller
 
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
-            return $this->_renderSetPasswordTemplate($user, [
+            return $this->_renderSetPasswordTemplate([
                 'errors' => $errors,
                 'code' => $code,
                 'id' => $uid,
@@ -481,7 +499,7 @@ class UsersController extends Controller
         // Can they access the CP?
         if ($user->can('accessCp')) {
             // Send them to the CP login page
-            $url = UrlHelper::cpUrl('login');
+            $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
             // Send them to the 'setPasswordSuccessPath'.
             $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
@@ -867,7 +885,7 @@ class UsersController extends Controller
      * - A normal user with user-administration permissions registering a new user account.
      * - A normal user with user-administration permissions editing an existing user account.
      * - A guest registering a new user account ("public registration").
-     * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
+     * This action behaves the same regardless of whether it was requested from the control panel or the front-end site.
      *
      * @return Response|null
      * @throws NotFoundHttpException if the requested user cannot be found
@@ -1169,7 +1187,8 @@ class UsersController extends Controller
         }
 
         if ($isPublicRegistration) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
+            $message = $request->getParam('userRegisteredNotice') ?? Craft::t('app', 'User registered.');
+            Craft::$app->getSession()->setNotice($message);
         } else {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
         }
@@ -1562,9 +1581,6 @@ class UsersController extends Controller
         return $this->asErrorJson(Craft::t('app', 'Invalid password.'));
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Handles a failed login attempt.
      *
@@ -1608,10 +1624,9 @@ class UsersController extends Controller
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
-     * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
      * @return Response
      */
-    private function _handleSuccessfulLogin(bool $setNotice): Response
+    private function _handleSuccessfulLogin(): Response
     {
         // Get the return URL
         $userSession = Craft::$app->getUser();
@@ -1635,38 +1650,29 @@ class UsersController extends Controller
             return $this->asJson($return);
         }
 
-        if ($setNotice) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
-        }
-
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
     }
 
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
      * @param array $variables
      * @return Response
      */
-    private function _renderSetPasswordTemplate(User $user, array $variables): Response
+    private function _renderSetPasswordTemplate(array $variables): Response
     {
         $view = $this->getView();
 
-        // If the user doesn't have CP access, see if a custom Set Password template exists
-        if (!$user->can('accessCp')) {
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+        // If this is a site request, see if a custom Set Password template exists
+        if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $templatePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
-
             if ($view->doesTemplateExist($templatePath)) {
                 return $this->renderTemplate($templatePath, $variables);
             }
         }
 
         // Otherwise go with the CP's template
-        $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-
-        return $this->renderTemplate('setpassword', $variables);
+        return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -1945,7 +1951,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Redirects a user to the `postCpLoginRedirect` location, if they have access to the Control Panel.
+     * Redirects a user to the `postCpLoginRedirect` location, if they have access to the control panel.
      *
      * @param User $user The user to redirect
      * @return Response|null
@@ -2022,12 +2028,11 @@ class UsersController extends Controller
         $view = $this->getView();
         $templateMode = $view->getTemplateMode();
         if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
-            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            $templateMode = View::TEMPLATE_MODE_CP;
         }
-        $html = $view->renderTemplate('users/_photo', [
+
+        return $view->renderTemplate('users/_photo', [
             'user' => $user
-        ]);
-        $view->setTemplateMode($templateMode);
-        return $html;
+        ], $templateMode);
     }
 }

@@ -2,9 +2,9 @@
 {% set title = "Dashboard"|t('app') %}
 
 {% block actionButton %}
-    <div class="buttons secondary-buttons">
+    <div class="buttons">
         <div class="newwidget btngroup">
-            <div id="newwidgetmenubtn" class="btn submit menubtn add icon">{{ 'New widget'|t('app') }}</div>
+            <div id="newwidgetmenubtn" class="btn menubtn add icon">{{ 'New widget'|t('app') }}</div>
             <div class="menu newwidgetmenu">
                 <ul>
                     {% for type, info in widgetTypes if info.selectable %}
@@ -19,12 +19,12 @@
             </div>
         </div>
 
-        <div id="widgetManagerBtn" class="btn settings icon submit" title="{{ 'Settings'|t('app') }}"></div>
+        <div id="widgetManagerBtn" class="btn settings icon" title="{{ 'Settings'|t('app') }}"></div>
     </div>
 {% endblock %}
 
 
-{% block content %}
+{% block main %}
     <div id="dashboard-grid" class="grid">
         {% for widget in widgets %}
             <div class="item" data-colspan="{{ widget.colspan }}">
@@ -32,11 +32,20 @@
                     <div class="front">
                         <div class="pane">
                             <div class="spinner body-loading"></div>
-                            <div class="settings icon hidden"></div>
-                            <h2>{{ widget.title }}</h2>
+                            {% if widget.title or widget.subtitle %}
+                                <div class="widget-heading">
+                                    {% if widget.title %}
+                                        <h2>{{ widget.title }}</h2>
+                                    {% endif %}
+                                    {% if widget.subtitle %}
+                                        <h5>{{ widget.subtitle }}</h5>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                             <div class="body">
                                 {{ widget.bodyHtml|raw }}
                             </div>
+                            <div class="settings icon hidden"></div>
                         </div>
                     </div>
                     <div class="back">

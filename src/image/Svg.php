@@ -21,9 +21,6 @@ use craft\helpers\Image as ImageHelper;
  */
 class Svg extends Image
 {
-    // Constants
-    // =========================================================================
-
     const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
     const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
     const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(-?[\d.]+(?:,|\s)-?[\d.]+(?:,|\s)-?([\d.]+)(?:,|\s)(-?[\d.]+))"/i';
@@ -31,9 +28,6 @@ class Svg extends Image
     const SVG_TAG_RE = '/<svg/i';
     const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
     const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/i';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null
@@ -49,9 +43,6 @@ class Svg extends Image
      * @var int|null
      */
     private $_width;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

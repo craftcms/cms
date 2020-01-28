@@ -27,9 +27,6 @@ use craft\records\VolumeFolder;
  */
 abstract class AssetFixture extends ElementFixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -59,9 +56,6 @@ abstract class AssetFixture extends ElementFixture
      * @var $string
      */
     protected $destinationAssetPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -133,9 +127,6 @@ abstract class AssetFixture extends ElementFixture
 
         FileHelper::clearDirectory($this->destinationAssetPath);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

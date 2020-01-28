@@ -26,13 +26,7 @@ use yii\base\Exception;
  */
 class VolumesFixture extends Fixture
 {
-    // Constants
-    // =========================================================================
-
     const BASE_URL = 'https://cdn.test.craftcms.test/';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -48,9 +42,6 @@ class VolumesFixture extends Fixture
      * @inheritdoc
      */
     public $depends = [FieldLayoutFixture::class];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

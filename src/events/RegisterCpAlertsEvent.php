@@ -17,11 +17,8 @@ use yii\base\Event;
  */
 class RegisterCpAlertsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var array The registered CP alerts
+     * @var array The registered control panel alerts
      */
     public $alerts = [];
 }

@@ -21,16 +21,10 @@ use yii\web\NotFoundHttpException;
  */
 class PluginStoreAsset extends AssetBundle
 {
-    // Constants
-    // =========================================================================
-
     const CACHE_KEY = 'pluginstore';
     const CACHE_TAG = 'pluginstore';
 
     const DEVMODE_CACHE_DURATION = 1;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array
@@ -41,9 +35,6 @@ class PluginStoreAsset extends AssetBundle
      * @var bool
      */
     private $isHot = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

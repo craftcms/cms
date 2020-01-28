@@ -59,9 +59,6 @@ class ElementFieldResolverTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test resolving fields on entries.
      *
@@ -230,12 +227,9 @@ class ElementFieldResolverTest extends Unit
             $this->assertEquals($element->$propertyName, $resolve());
             $this->assertNotNull($element->$propertyName);
         } else {
-            $this->tester->expectException(GqlException::class, $resolve);
+            $this->tester->expectThrowable(GqlException::class, $resolve);
         }
     }
-
-    // Data providers
-    // =========================================================================
 
     public function entryFieldTestDataProvider(): array
     {

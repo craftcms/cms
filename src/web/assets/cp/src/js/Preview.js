@@ -23,6 +23,7 @@ Craft.Preview = Garnish.Base.extend(
 
         isActive: false,
         activeTarget: 0,
+        draftId: null,
         url: null,
         fields: null,
 
@@ -173,7 +174,6 @@ Craft.Preview = Garnish.Base.extend(
                         $clone: $clone
                     });
                 }
-
             }
 
             this._slideInOnIframeLoad = true;
@@ -192,6 +192,9 @@ Craft.Preview = Garnish.Base.extend(
             this.$targetMenu.find('a.sel').removeClass('sel');
             this.$targetMenu.find('a').eq(i).addClass('sel');
             this.updateIframe(true);
+            this.trigger('switchTarget', {
+                target: this.draftEditor.settings.previewTargets[i],
+            });
         },
 
         handleWindowResize: function() {
@@ -291,9 +294,27 @@ Craft.Preview = Garnish.Base.extend(
             // Ignore non-boolean resetScroll values
             resetScroll = resetScroll === true;
 
-            var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
+            var target = this.draftEditor.settings.previewTargets[this.activeTarget];
+            var refresh = !!(
+                this.draftId !== (this.draftId = this.draftEditor.settings.draftId) ||
+                !this.$iframe ||
+                resetScroll ||
+                typeof target.refresh === 'undefined' ||
+                target.refresh
+            );
 
-            this.draftEditor.getTokenizedPreviewUrl(url, 'x-craft-live-preview').then(function(url) {
+            this.trigger('beforeUpdateIframe', {
+                target: target,
+                resetScroll: resetScroll,
+                refresh: refresh,
+            });
+
+            // If this is an existing preview target, make sure it wants to be refreshed automatically
+            if (!refresh) {
+                return;
+            }
+
+            this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function(url) {
                 // Capture the current scroll position?
                 var sameHost;
                 if (resetScroll) {
@@ -338,7 +359,10 @@ Craft.Preview = Garnish.Base.extend(
         },
 
         afterUpdateIframe: function() {
-            this.trigger('afterUpdateIframe');
+            this.trigger('afterUpdateIframe', {
+                target: this.draftEditor.settings.previewTargets[this.activeTarget],
+                $iframe: this.$iframe,
+            });
 
             if (this._slideInOnIframeLoad) {
                 this.slideIn();

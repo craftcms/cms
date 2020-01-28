@@ -83,6 +83,7 @@ return [
         ]
     ],
     [
+        'uid' => 'field-layout-1000----------------uid',
         'type' => 'field_layout_with_matrix_and_normal_fields',
         'tabs' => [
             [
@@ -94,6 +95,7 @@ return [
                             'required' => false
                         ],
                         'field' => [
+                            'uid' => 'field-1000-----------------------uid',
                             'name' => 'Matrix 1',
                             'handle' => 'matrixFirst',
                             'fieldType' => Matrix::class,
@@ -124,6 +126,7 @@ return [
                             'required' => true
                         ],
                         'field' => [
+                            'uid' => 'field-1001-----------------------uid',
                             'name' => 'Plain Text Field',
                             'handle' => 'plainTextField',
                             'fieldType' => PlainText::class,
@@ -136,6 +139,7 @@ return [
                             'required' => true
                         ],
                         'field' => [
+                            'uid' => 'field-1002-----------------------uid',
                             'name' => 'Appointments',
                             'handle' => 'appointments',
                             'fieldType' => Table::class,

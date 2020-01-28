@@ -22,6 +22,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
+use craft\web\Request;
 use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\Session;
@@ -44,16 +45,10 @@ use yii\web\JsonParser;
  */
 class App
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
     private static $_iconv;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns an array of all known Craft editions’ IDs.
@@ -346,6 +341,17 @@ class App
         return $trace;
     }
 
+    /**
+     * Returns whether Craft is running on an environment with ephemeral storage.
+     *
+     * @return bool
+     * @since 3.4.0
+     */
+    public static function isEphemeral(): bool
+    {
+        return defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true;
+    }
+
     // App component configs
     // -------------------------------------------------------------------------
 
@@ -401,7 +407,9 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+
+        if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];
@@ -414,17 +422,17 @@ class App
 
         return [
             'class' => Connection::class,
-            'driverName' => $dbConfig->driver,
+            'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
             'schemaMap' => [
-                $dbConfig->driver => $schemaConfig,
+                $driver => $schemaConfig,
             ],
             'commandMap' => [
-                $dbConfig->driver => Command::class,
+                $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,
@@ -469,6 +477,7 @@ class App
             'from' => [
                 Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
             ],
+            'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];
@@ -581,7 +590,7 @@ class App
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
             $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
         } else {
-            $loginUrl = UrlHelper::cpUrl('login');
+            $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
         $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);

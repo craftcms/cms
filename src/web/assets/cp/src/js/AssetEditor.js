@@ -11,13 +11,12 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
             this.base(response);
 
             if (this.$element.data('id')) {
-                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .image-preview-container.editable');
+                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .preview-thumb-container.editable');
 
                 if ($imageEditorTrigger.length) {
                     this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
                 }
             }
-
         },
 
         showImageEditor: function()

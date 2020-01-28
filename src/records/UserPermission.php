@@ -20,9 +20,6 @@ use craft\db\Table;
  */
 class UserPermission extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -20,9 +20,6 @@ use craft\db\TableSchema;
  */
 class MigrationHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a foreign key exists.
      *
@@ -216,7 +213,6 @@ class MigrationHelper
         // Restore foreign keys pointing to this table.
         foreach ($fks as $sourceTable => $fk) {
             foreach ($fk as $num => $row) {
-
                 // Skip if this FK is from *and* to this table
                 if ($sourceTable === $rawNewName && $row[0] === $rawNewName) {
                     continue;
@@ -241,7 +237,6 @@ class MigrationHelper
 
         // Restore this table's foreign keys
         foreach ($droppedForeignKeys as $sourceTableName => $fkInfo) {
-
             if ($sourceTableName === $rawOldName) {
                 $sourceTableName = $rawNewName;
             }
@@ -298,7 +293,6 @@ class MigrationHelper
 
         // Drop all the FKs because any one of them might be relying on an index we're about to drop
         foreach ($table->foreignKeys as $key => $fkInfo) {
-
             $columns = self::_getColumnsForFK($fkInfo, true);
 
             // Save something to restore later.
@@ -316,7 +310,6 @@ class MigrationHelper
         }
 
         foreach ($allOtherTableFks as $refTableName => $fkInfo) {
-
             // Figure out the reference columns.
             foreach ($fkInfo as $number => $fk) {
                 $columns = self::_getColumnsForFK($fk, true);
@@ -344,13 +337,11 @@ class MigrationHelper
                 $columns = [];
 
                 foreach ($fk as $count => $row) {
-
                     if ($count === 0) {
                         $refTableName = $fk[$count];
                     }
 
                     if ($count !== 0 && $count !== 'updateType' && $count !== 'deleteType') {
-
                         // Save the source column
                         $columns[] = $count;
 
@@ -655,9 +646,6 @@ class MigrationHelper
     {
         self::_addForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete, $migration);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Restores a foreign key.

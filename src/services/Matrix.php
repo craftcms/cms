@@ -44,9 +44,6 @@ use yii\base\Exception;
  */
 class Matrix extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to ignore changes to the project config.
      * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
@@ -80,9 +77,6 @@ class Matrix extends Component
 
     const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
 
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the block types for a given Matrix field.
@@ -302,7 +296,7 @@ class Matrix extends Component
         ];
 
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$parentField->handle}”");
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid(Table::MATRIXBLOCKTYPES, $blockType->uid);
@@ -430,7 +424,7 @@ class Matrix extends Component
      */
     public function deleteBlockType(MatrixBlockType $blockType): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
         return true;
     }
 
@@ -758,18 +752,35 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
         /** @var MatrixBlock[] $blocks */
-        if (($blocks = $query->getCachedResult()) === null) {
+        if (($blocks = $query->getCachedResult()) !== null) {
+            $saveAll = false;
+        } else {
             $blocksQuery = clone $query;
             $blocks = $blocksQuery->anyStatus()->all();
+            $saveAll = true;
         }
         $blockIds = [];
         $collapsedBlockIds = [];
+        $sortOrder = 0;
+        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
-                $block->ownerId = $owner->id;
-                $elementsService->saveElement($block, false);
+                $sortOrder++;
+                if ($saveAll || !$block->id || $block->dirty) {
+                    $block->ownerId = $owner->id;
+                    $block->sortOrder = $sortOrder;
+                    $elementsService->saveElement($block, false);
+                } else if ((int)$block->sortOrder !== $sortOrder) {
+                    // Just update its sortOrder
+                    $block->sortOrder = $sortOrder;
+                    $db->createCommand()->update(Table::MATRIXBLOCKS,
+                        ['sortOrder' => $sortOrder],
+                        ['id' => $block->id], [], false)
+                        ->execute();
+                }
+
                 $blockIds[] = $block->id;
 
                 // Tell the browser to collapse this block?
@@ -998,9 +1009,6 @@ class Matrix extends Component
 
         return $siteIds;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving block types.

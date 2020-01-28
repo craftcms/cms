@@ -58,7 +58,6 @@
                                 Craft.cp.displayError();
                             }
                         }
-
                     }, this));
                 }
             },
@@ -87,7 +86,6 @@
                                 Craft.cp.displayError();
                             }
                         }
-
                     }, this));
                 }
             },
@@ -205,9 +203,6 @@
                     }
                 }, this));
             },
-
-            // Private Methods
-            // =========================================================================
 
             _createConfirmDeleteModal: function($row) {
                 this.$rowToDelete = $row;

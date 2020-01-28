@@ -6,12 +6,6 @@ use FunctionalTester;
 
 class ExampleFunctionalCest
 {
-    // Public methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      * @param FunctionalTester $I
      */

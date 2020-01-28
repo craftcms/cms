@@ -20,9 +20,6 @@ use RuntimeException;
  */
 class DependencyHeavyComponentExample implements ComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param array $settings
      * @throws Exception
@@ -49,5 +46,4 @@ class DependencyHeavyComponentExample implements ComponentInterface
     {
         return 'Dependency heavy component';
     }
-
 }

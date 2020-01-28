@@ -34,9 +34,6 @@ use yii\web\Cookie;
  */
 class User extends \yii\web\User
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string the session variable name used to store the user session token.
      */
@@ -52,9 +49,6 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
     public $elevatedSessionTimeoutParam = '__elevated_timeout';
-
-    // Public Methods
-    // =========================================================================
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -191,6 +185,21 @@ class User extends \yii\web\User
     public function getIsGuest()
     {
         return parent::getIsGuest();
+    }
+
+    /**
+     * Redirects the user browser away from a guest page.
+     *
+     * @return Response the redirection response
+     * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
+     * @since 3.4.0
+     */
+    public function guestRequired()
+    {
+        if (!$this->checkRedirectAcceptable()) {
+            throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
+        }
+        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
     }
 
     /**
@@ -378,9 +387,6 @@ class User extends \yii\web\User
         $session->remove('enableDebugToolbarForCp');
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -540,9 +546,6 @@ class User extends \yii\web\User
 
         parent::afterLogout($identity);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Validates that the request has a user agent and IP associated with it,

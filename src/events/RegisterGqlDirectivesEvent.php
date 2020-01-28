@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterGqlDirectivesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of GraphQL Directive classes
      */

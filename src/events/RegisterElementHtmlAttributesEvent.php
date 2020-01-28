@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementHtmlAttributesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered HTML attributes for the element
      */

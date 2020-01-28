@@ -17,16 +17,15 @@ use yii\web\HttpException;
  */
 class Response extends \yii\web\Response
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @since 3.4.0
+     */
+    const FORMAT_CSV = 'csv';
 
     /**
      * @var bool whether the response has been prepared.
      */
     private $_isPrepared = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.
@@ -46,6 +45,8 @@ class Response extends \yii\web\Response
                     return 'application/json';
                 case self::FORMAT_JSONP:
                     return 'application/javascript';
+                case self::FORMAT_CSV:
+                    return 'text/csv';
             }
         }
 
@@ -179,42 +180,16 @@ class Response extends \yii\web\Response
 
     /**
      * @inheritdoc
-     * @internal this is an exact copy of yii\web\Response::sendContent(), except for the `@` before `set_time_limit(0)`
-     * @todo remove this if Yii ever merges https://github.com/yiisoft/yii2/pull/15679 or similar
+     * @since 3.4.0
      */
-    protected function sendContent()
+    protected function defaultFormatters()
     {
-        if ($this->stream === null) {
-            echo $this->content;
-
-            return;
-        }
-
-        @set_time_limit(0); // Reset time limit for big files
-        $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
-
-        if (is_array($this->stream)) {
-            list($handle, $begin, $end) = $this->stream;
-            fseek($handle, $begin);
-            while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
-                if ($pos + $chunkSize > $end) {
-                    $chunkSize = $end - $pos + 1;
-                }
-                echo fread($handle, $chunkSize);
-                flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
-            }
-            fclose($handle);
-        } else {
-            while (!feof($this->stream)) {
-                echo fread($this->stream, $chunkSize);
-                flush();
-            }
-            fclose($this->stream);
-        }
+        $formatters = parent::defaultFormatters();
+        $formatters[self::FORMAT_CSV] = [
+            'class' => CsvResponseFormatter::class,
+        ];
+        return $formatters;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -226,9 +201,6 @@ class Response extends \yii\web\Response
 
         return $return;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Clear the output buffer to prevent corrupt downloads.

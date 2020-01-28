@@ -25,15 +25,9 @@ use yii\base\UnknownPropertyException;
  */
 class GeneralConfig extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
     const IMAGE_DRIVER_IMAGICK = 'imagick';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a
@@ -41,7 +35,7 @@ class GeneralConfig extends BaseObject
      */
     public $actionTrigger = 'actions';
     /**
-     * @var mixed The URI that users without access to the Control Panel should be redirected to after activating their account.
+     * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getActivateAccountSuccessPath()
@@ -72,7 +66,7 @@ class GeneralConfig extends BaseObject
      */
     public $allowAdminChanges = true;
     /**
-     * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+     * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
      * This setting will automatically be disabled if [[allowAdminChanges]] is disabled.
      */
@@ -119,12 +113,12 @@ class GeneralConfig extends BaseObject
      */
     public $backupCommand;
     /**
-     * @var string|null The base URL that Craft should use when generating Control Panel URLs.
+     * @var string|null The base URL that Craft should use when generating control panel URLs.
      *
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base CP URL should **not** include the [[cpTrigger|CP trigger word]] (e.g. `/admin`).
+     * The base control panel URL should **not** include the [[cpTrigger|control panel trigger word]] (e.g. `/admin`).
      * :::
      */
     public $baseCpUrl;
@@ -166,7 +160,7 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should route to the Control Panel rather than
+     * @var string The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      */
     public $cpTrigger = 'admin';
@@ -197,7 +191,7 @@ class GeneralConfig extends BaseObject
      */
     public $defaultCookieDomain = '';
     /**
-     * @var string|null The default language the Control Panel should use for users who haven’t set a preferred language yet.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      */
     public $defaultCpLanguage;
     /**
@@ -381,16 +375,18 @@ class GeneralConfig extends BaseObject
     public $generateTransformsBeforePageLoad = false;
     /**
      * @var bool bool Whether the system should run in Headless Mode, which
-     * optimizes the system and Control Panel for headless CMS implementations.
+     * optimizes the system and control panel for headless CMS implementations.
      *
      * When this is enabled, the following changes will take place:
      *
-     * - URI Format settings for sections and category groups will be hidden.
+     * - Template settings for sections and category groups will be hidden.
      * - Template route management will be hidden.
      * - Front-end routing will skip checks for element and template requests.
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON
      *   rather than HTML by default for front-end requests.
+     * - The [[loginPath]], [[logoutPath]], [[setPasswordPath]], and
+     *   [[verifyEmailPath]] settings will be ignored.
      *
      * @since 3.3.0
      */
@@ -443,12 +439,16 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The URI Craft should use for user login on the front-end.
      *
+     * This can be set to `false` to disable front-end login.
+     *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
      * @var mixed The URI Craft should use for user logout on the front-end.
+     *
+     * This can be set to `false` to disable front-end logout.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLogoutPath()
@@ -464,6 +464,11 @@ class GeneralConfig extends BaseObject
      * locked.
      */
     public $maxInvalidLogins = 5;
+    /**
+     * @var int|false The number of backups that Craft should make before it starts deleting the oldest backups.
+     * If it is set to `false`, then Craft will not delete any backups.
+     */
+    public $maxBackups = 20;
     /**
      * @var int|null The maximum number of revisions that should be stored for each element.
      *
@@ -544,10 +549,10 @@ class GeneralConfig extends BaseObject
      */
     public $phpSessionName = 'CraftSessionId';
     /**
-     * @var mixed The path that users should be redirected to after logging in from the Control Panel.
+     * @var mixed The path that users should be redirected to after logging in from the control panel.
      *
-     * This setting will also come into effect if the user visits the CP’s Login page (`/admin/login`)
-     * or the CP’s root URL (/admin) when they are already logged in.
+     * This setting will also come into effect if a user visits the control panel’s Login page (`/admin/login`)
+     * or the control panel’s root URL (/admin) when they are already logged in.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -603,7 +608,7 @@ class GeneralConfig extends BaseObject
      */
     public $privateTemplateTrigger = '_';
     /**
-     * @var bool When set to `false` and you go through the "forgot password" workflow on the Control Panel login page, for example,
+     * @var bool When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
      * you get distinct messages saying if the username/email didn't exist or the email was successfully sent and to check
      * your email for further instructions. This can allow for username/email enumeration based on the response. If set
      * `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
@@ -640,7 +645,7 @@ class GeneralConfig extends BaseObject
      */
     public $purgeUnsavedDraftsDuration = 2592000;
     /**
-     * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
+     * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
      *
@@ -665,11 +670,11 @@ class GeneralConfig extends BaseObject
      */
     public $requireUserAgentAndIpForSession = true;
     /**
-     * @var string The path to the root directory that should store published CP resources.
+     * @var string The path to the root directory that should store published control panel resources.
      */
     public $resourceBasePath = '@webroot/cpresources';
     /**
-     * @var string The URL to the root directory that should store published CP resources.
+     * @var string The URL to the root directory that should store published control panel resources.
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
@@ -740,7 +745,7 @@ class GeneralConfig extends BaseObject
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var mixed The password-reset template path. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for Set Password forms on the front-end.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -858,6 +863,11 @@ class GeneralConfig extends BaseObject
      */
     public $trustedHosts = ['any'];
     /**
+     * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     * @since 3.4.0
+     */
+    public $upscaleImages = true;
+    /**
      * @var bool Whether Craft should use compressed JavaScript files whenever possible.
      */
     public $useCompressedJs = true;
@@ -928,7 +938,15 @@ class GeneralConfig extends BaseObject
      */
     public $verificationCodeDuration = 86400;
     /**
-     * @var mixed The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
+     * @var mixed The URI Craft should use for email verification links on the front-end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * @see getVerifyEmailPath()
+     * @since 3.4.0
+     */
+    public $verifyEmailPath = 'verifyemail';
+    /**
+     * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getVerifyEmailSuccessPath()
@@ -940,9 +958,6 @@ class GeneralConfig extends BaseObject
      * @var array Stores any custom config settings
      */
     private $_customSettings = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1088,6 +1103,19 @@ class GeneralConfig extends BaseObject
     }
 
     /**
+     * Returns the localized Verify Email Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     * @return string
+     * @see verifyEmailPath
+     * @since 3.4.0
+     */
+    public function getVerifyEmailPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+    }
+
+    /**
      * Returns the localized Verify Email Success Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
@@ -1116,10 +1144,10 @@ class GeneralConfig extends BaseObject
      * Returns the localized Login Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return mixed
      * @see loginPath
      */
-    public function getLoginPath(string $siteHandle = null): string
+    public function getLoginPath(string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
     }
@@ -1128,16 +1156,16 @@ class GeneralConfig extends BaseObject
      * Returns the localized Logout Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return mixed
      * @see logoutPath
      */
-    public function getLogoutPath(string $siteHandle = null): string
+    public function getLogoutPath(string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
     }
 
     /**
-     * Returns the localized Post-CP Login Redirect path.
+     * Returns the localized Post-Login Redirect path for the control panel.
      *
      * @return string
      * @see postCpLoginRedirect

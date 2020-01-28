@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
@@ -28,6 +29,7 @@ use craft\errors\AssetTransformException;
 use craft\errors\FileException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -68,9 +70,6 @@ use yii\base\UnknownPropertyException;
  */
 class Asset extends Element
 {
-    // Constants
-    // =========================================================================
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -115,9 +114,6 @@ class Asset extends Element
     const KIND_WORD = 'word';
     const KIND_XML = 'xml';
     const KIND_UNKNOWN = 'unknown';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -194,6 +190,45 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.4.0
+     */
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    {
+        if ($handle === 'uploader') {
+            // Get the source element IDs
+            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+            $map = (new Query())
+                ->select(['id as source', 'uploaderId as target'])
+                ->from([Table::ASSETS])
+                ->where(['and', ['id' => $sourceElementIds], ['not', ['uploaderId' => null]]])
+                ->all();
+
+            return [
+                'elementType' => User::class,
+                'map' => $map
+            ];
+        }
+
+        return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        if ($handle === 'uploader') {
+            $uploader = $elements[0] ?? null;
+            $this->setUploader($uploader);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function gqlTypeNameByContext($context): string
@@ -229,7 +264,7 @@ class Asset extends Element
 
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
 
-        $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
+        $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
 
         // Add the Temporary Uploads location, if that's not set to a real volume
         if (
@@ -259,47 +294,35 @@ class Asset extends Element
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => PreviewAsset::class,
-                    'label' => Craft::t('app', 'Preview file'),
-                ]
-            );
+            $actions[] = [
+                'type' => PreviewAsset::class,
+                'label' => Craft::t('app', 'Preview file'),
+            ];
 
             // Download
             $actions[] = DownloadAssetFile::class;
 
             // Edit
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => Edit::class,
-                    'label' => Craft::t('app', 'Edit asset'),
-                ]
-            );
+            $actions[] = [
+                'type' => Edit::class,
+                'label' => Craft::t('app', 'Edit asset'),
+            ];
 
             $userSession = Craft::$app->getUser();
-            $canDeleteAndSave = (
-                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
-            );
-
-            // Rename File
-            if ($canDeleteAndSave) {
+            if (
+                $userSession->checkPermission("saveAssetInVolume:{$volume->uid}") &&
+                $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}")
+            ) {
+                // Rename/Replace File
                 $actions[] = RenameFile::class;
-            }
-
-            // Replace File
-            if ($userSession->checkPermission('saveAssetInVolume:' . $volume->uid)) {
                 $actions[] = ReplaceFile::class;
             }
 
             // Copy Reference Tag
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => CopyReferenceTag::class,
-                    'elementType' => static::class,
-                ]
-            );
+            $actions[] = [
+                'type' => CopyReferenceTag::class,
+                'elementType' => static::class,
+            ];
 
             // Edit Image
             if ($userSession->checkPermission('editImagesInVolume:' . $volume->uid)) {
@@ -351,12 +374,12 @@ class Asset extends Element
      */
     protected static function defineTableAttributes(): array
     {
-        return [
+        $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
-            'imageSize' => ['label' => Craft::t('app', 'Image Size')],
+            'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -365,7 +388,15 @@ class Asset extends Element
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'uploader' => ['label' => Craft::t('app', 'Uploaded by')],
         ];
+
+        // Hide Author from Craft Solo
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            unset($attributes['uploader']);
+        }
+
+        return $attributes;
     }
 
     /**
@@ -377,7 +408,20 @@ class Asset extends Element
             'filename',
             'size',
             'dateModified',
+            'uploader',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    {
+        if ($attribute === 'uploader') {
+            $elementQuery->andWith('uploader');
+        } else {
+            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
     }
 
     /**
@@ -385,14 +429,15 @@ class Asset extends Element
      *
      * @param array $folders
      * @param bool $includeNestedFolders
+     * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true): array
+    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true, User $user = null): array
     {
         $sources = [];
 
         foreach ($folders as $folder) {
-            $sources[] = self::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
+            $sources[] = self::_assembleSourceInfoForFolder($folder, $includeNestedFolders, $user);
         }
 
         return $sources;
@@ -403,12 +448,31 @@ class Asset extends Element
      *
      * @param VolumeFolder $folder
      * @param bool $includeNestedFolders
+     * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true, User $user = null): array
     {
         /** @var Volume $volume */
         $volume = $folder->getVolume();
+
+        if ($volume instanceof Temp) {
+            $volumeHandle = 'temp';
+        } else if (!$folder->parentId) {
+            $volumeHandle = $volume->handle ?? false;
+        } else {
+            $volumeHandle = false;
+        }
+
+        $userSession = Craft::$app->getUser();
+        $canUpload = $userSession->checkPermission("saveAssetInVolume:{$volume->uid}");
+        $canMoveTo = $canUpload && $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}");
+        $canMovePeerFilesTo = (
+            $canMoveTo &&
+            $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
+            $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+        );
+
         $source = [
             'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
@@ -416,23 +480,26 @@ class Asset extends Element
             'criteria' => ['folderId' => $folder->id],
             'defaultSort' => ['dateCreated', 'desc'],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $volume->uid),
-                'folder-id' => $folder->id
+                'volume-handle' => $volumeHandle,
+                'folder-id' => $folder->id,
+                'can-upload' => $folder->volumeId === null || $canUpload,
+                'can-move-to' => $canMoveTo,
+                'can-move-peer-files-to' => $canMovePeerFilesTo,
             ]
         ];
 
+        if ($user) {
+            if (!$user->can("viewPeerFilesInVolume:{$volume->uid}")) {
+                $source['criteria']['uploaderId'] = $user->id;
+            }
+        }
+
         if ($includeNestedFolders) {
-            $source['nested'] = self::_assembleSourceList(
-                $folder->getChildren(),
-                true
-            );
+            $source['nested'] = self::_assembleSourceList($folder->getChildren(), true, $user);
         }
 
         return $source;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null Volume ID
@@ -443,6 +510,11 @@ class Asset extends Element
      * @var int|null Folder ID
      */
     public $folderId;
+
+    /**
+     * @var int|null The ID of the user who first added this asset (if known)
+     */
+    public $uploaderId;
 
     /**
      * @var string|null Folder path
@@ -559,8 +631,10 @@ class Asset extends Element
      */
     private $_volume;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var User|null
+     */
+    private $_uploader;
 
     /**
      * @inheritdoc
@@ -639,9 +713,9 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
@@ -673,21 +747,60 @@ class Asset extends Element
     {
         /** @var Volume $volume */
         $volume = $this->getVolume();
-        return Craft::$app->getUser()->checkPermission(
-            'saveAssetInVolume:' . $volume->uid
+        $userSession = Craft::$app->getUser();
+        return (
+            $userSession->checkPermission("saveAssetInVolume:{$volume->uid}") &&
+            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}"))
         );
+    }
+
+    /**
+     * @inheritdoc
+     * ---
+     * ```php
+     * $url = $asset->cpEditUrl;
+     * ```
+     * ```twig{2}
+     * {% if asset.isEditable %}
+     *     <a href="{{ asset.cpEditUrl }}">Edit</a>
+     * {% endif %}
+     * ```
+     * @since 3.4.0
+     */
+    public function getCpEditUrl()
+    {
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+        if ($volume instanceof Temp) {
+            return null;
+        }
+
+        $filename = $this->getFilename(false);
+        $path = "assets/{$volume->handle}/{$this->id}-{$filename}";
+
+        $params = [];
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($path, $params);
     }
 
     /**
      * Returns an `<img>` tag based on this asset.
      *
+     * @param mixed $transform The transform to use when generating the html.
      * @return Markup|null
      */
-    public function getImg()
+    public function getImg($transform = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
+
+        if ($transform) {
+            $this->setTransform($transform);
+        };
 
         /** @var Volume $volume */
         $volume = $this->getVolume();
@@ -757,6 +870,41 @@ class Asset extends Element
     }
 
     /**
+     * Returns the user that uploaded the asset, if known.
+     *
+     * @return User|null
+     * @since 3.4.0
+     */
+    public function getUploader()
+    {
+        if ($this->_uploader !== null) {
+            return $this->_uploader;
+        }
+
+        if ($this->uploaderId === null) {
+            return null;
+        }
+
+        if (($this->_uploader = Craft::$app->getUsers()->getUserById($this->uploaderId)) === null) {
+            // The uploader is probably soft-deleted. Just pretend no uploader is set
+            return null;
+        }
+
+        return $this->_uploader;
+    }
+
+    /**
+     * Sets the asset's uploader.
+     *
+     * @param User|null $uploader
+     * @since 3.4.0
+     */
+    public function setUploader(User $uploader = null)
+    {
+        $this->_uploader = $uploader;
+    }
+
+    /**
      * Sets the transform.
      *
      * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
@@ -820,6 +968,35 @@ class Asset extends Element
     public function getThumbUrl(int $size)
     {
         return Craft::$app->getAssets()->getThumbUrl($this, $size, $size, false);
+    }
+
+    /**
+     * Returns preview thumb image HTML.
+     *
+     * @param int $width
+     * @param int $height
+     * @return string
+     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
+     * @since 3.4.0
+     */
+    public function getPreviewThumbImg(int $width, int $height): string
+    {
+        $assetsService = Craft::$app->getAssets();
+        $srcsets = [];
+        $thumbSizes = [
+            [$width, $height],
+            [$width * 2, $height * 2],
+        ];
+        foreach ($thumbSizes as list($width, $height)) {
+            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
+            $srcsets[] = $thumbUrl . ' ' . $width . 'w';
+        }
+
+        return Html::tag('img', '', [
+            'sizes' => "{$thumbSizes[0][0]}px",
+            'srcset' => implode(', ', $srcsets),
+            'alt' => $this->title,
+        ]);
     }
 
     /**
@@ -899,6 +1076,60 @@ class Asset extends Element
     public function setWidth($width)
     {
         $this->_width = $width;
+    }
+
+    /**
+     * Returns the formatted file size, if known.
+     *
+     * @param int|null $decimals the number of digits after the decimal point
+     * @param bool $short whether the size should be returned in short form (“kB” instead of “kilobytes”)
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getFormattedSize(int $decimals = null, bool $short = true)
+    {
+        if ($this->size === null) {
+            return null;
+        }
+        if ($short) {
+            return Craft::$app->getFormatter()->asShortSize($this->size, $decimals);
+        }
+        return Craft::$app->getFormatter()->asSize($this->size, $decimals);
+    }
+
+    /**
+     * Returns the formatted file size in bytes, if known.
+     *
+     * @param bool $short whether the size should be returned in short form (“B” instead of “bytes”)
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getFormattedSizeInBytes(bool $short = true)
+    {
+        $params = [
+            'n' => $this->size,
+            'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
+        ];
+        if ($short) {
+            return Craft::t('yii', '{nFormatted} B', $params);
+        }
+        return Craft::t('yii', '{nFormatted} {n, plural, =1{byte} other{bytes}}', $params);
+    }
+
+    /**
+     * Returns the image dimensions.
+     *
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getDimensions()
+    {
+        $width = $this->getWidth();
+        $height = $this->getHeight();
+        if (!$width || !$height) {
+            return null;
+        }
+        return "{$width}×{$height}";
     }
 
     /**
@@ -1033,9 +1264,12 @@ class Asset extends Element
      * Returns whether this asset can be previewed.
      *
      * @return bool
+     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreview]] instead.
      */
     public function getSupportsPreview(): bool
     {
+        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', self::class . '::getSupportsPreview() has been deprecated. Use \craft\services\Assets::getAssetPreview() instead.');
+
         return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
@@ -1109,24 +1343,32 @@ class Asset extends Element
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'uploader':
+                $uploader = $this->getUploader();
+                return $uploader ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $uploader]) : '';
+
             case 'filename':
-                return Html::encodeParams('<span style="word-wrap: break-word;;">{filename}</span>', [
-                    'filename' => $this->filename,
+                return Html::tag('span', Html::encode($this->filename), [
+                    'class' => 'break-word',
                 ]);
 
             case 'kind':
                 return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
-                return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';
+                if ($this->size === null) {
+                    return '';
+                }
+                return Html::tag('span', $this->getFormattedSize(0), [
+                    'title' => $this->getFormattedSizeInBytes(false),
+                ]);
 
             case 'imageSize':
-                return (($width = $this->getWidth()) && ($height = $this->getHeight())) ? "{$width} × {$height}" : '';
+                return $this->getDimensions() ?? '';
 
             case 'width':
             case 'height':
                 $size = $this->$attribute;
-
                 return ($size ? $size . 'px' : '');
         }
 
@@ -1148,17 +1390,6 @@ class Asset extends Element
 
         // See if we can show a thumbnail
         try {
-            $assetsService = Craft::$app->getAssets();
-            $srcsets = [];
-            $thumbSizes = [
-                [380, 190],
-                [760, 380],
-            ];
-            foreach ($thumbSizes as list($width, $height)) {
-                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
-                $srcsets[] = $thumbUrl . ' ' . $width . 'w';
-            }
-
             // Is the image editable, and is the user allowed to edit?
             $userSession = Craft::$app->getUser();
 
@@ -1167,16 +1398,17 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission('editImagesInVolume:' . $volume->uid)
+                $userSession->checkPermission("editImagesInVolume:{$volume->uid}") &&
+                ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
             );
 
-            $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
-                '<div class="image-preview">' .
-                '<img sizes="' . $thumbSizes[0][0] . 'px" srcset="' . implode(', ', $srcsets) . '" alt="">' .
+            $html .= '<div class="preview-thumb-container' . ($editable ? ' editable' : '') . '">' .
+                '<div class="preview-thumb">' .
+                $this->getPreviewThumbImg(380, 190) .
                 '</div>';
 
             if ($editable) {
-                $html .= '<div class="btn">' . Craft::t('app', 'Edit') . '</div>';
+                $html .= '<div class="buttons"><div class="btn">' . Craft::t('app', 'Edit') . '</div></div>';
             }
 
             $html .= '</div>';
@@ -1353,6 +1585,7 @@ class Asset extends Element
             $record->filename = $this->filename;
             $record->volumeId = (int)$this->volumeId ?: null;
             $record->folderId = (int)$this->folderId;
+            $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
@@ -1414,9 +1647,6 @@ class Asset extends Element
         return $this->keptFile && parent::beforeRestore();
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -1424,21 +1654,66 @@ class Asset extends Element
     {
         $attributes = [];
 
-        // Eligible for the image editor?
-        if ($context === 'index' && $this->getSupportsImageEditor()) {
-            $attributes['data-editable-image'] = null;
-        }
-
         if ($this->kind === self::KIND_IMAGE) {
             $attributes['data-image-width'] = $this->width;
             $attributes['data-image-height'] = $this->height;
         }
 
+        $userSession = Craft::$app->getUser();
+        $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
+
+        if ($userSession->getId() == $this->uploaderId) {
+            $attributes['data-own-file'] = null;
+            $movable = $replaceable = true;
+        } else {
+            $attributes['data-peer-file'] = null;
+            /** @var Volume $volume */
+            $volume = $this->getVolume();
+            $movable = (
+                $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
+                $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+            );
+            $replaceable = $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}");
+            $imageEditable = (
+                $imageEditable &&
+                ($userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
+            );
+        }
+
+        if ($movable) {
+            $attributes['data-movable'] = null;
+        }
+
+        if ($replaceable) {
+            $attributes['data-replaceable'] = null;
+        }
+
+        if ($imageEditable) {
+            $attributes['data-editable-image'] = null;
+        }
+
         return $attributes;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Returns whether the current user can move/rename the asset.
+     *
+     * @return bool
+     */
+    private function _isMovable(): bool
+    {
+        $userSession = Craft::$app->getUser();
+        if ($userSession->getId() == $this->uploaderId) {
+            return true;
+        }
+
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+        return (
+            $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
+            $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+        );
+    }
 
     /**
      * Return a dimension of the image.

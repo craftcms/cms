@@ -24,9 +24,6 @@ use yii\db\Schema;
  */
 class Color extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,16 +40,10 @@ class Color extends Field implements PreviewableFieldInterface
         return ColorData::class . '|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The default color hex
      */
     public $defaultColor;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -78,9 +69,9 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['defaultColor'], ColorValidator::class];
         return $rules;
     }

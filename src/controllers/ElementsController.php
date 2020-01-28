@@ -30,9 +30,6 @@ use yii\web\Response;
  */
 class ElementsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Renders and returns the body of an ElementSelectorModal.
      *
@@ -236,9 +233,6 @@ class ElementsController extends BaseElementsController
         return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the element that is currently being edited.
      *
@@ -396,8 +390,9 @@ class ElementsController extends BaseElementsController
 
         $response['siteId'] = $element->siteId;
 
+        $view = $this->getView();
         $namespace = 'editor_' . StringHelper::randomString(10);
-        $this->getView()->setNamespace($namespace);
+        $view->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
@@ -410,12 +405,12 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">' .
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
+            $view->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
-        $view = $this->getView();
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
+        $response['deltaNames'] = $view->getDeltaNames();
 
         return $this->asJson($response);
     }

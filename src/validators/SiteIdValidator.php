@@ -18,9 +18,6 @@ use yii\validators\Validator;
  */
 class SiteIdValidator extends Validator
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

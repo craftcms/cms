@@ -19,9 +19,6 @@ use craft\web\assets\dbbackup\DbBackupAsset;
  */
 class DbBackup extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -9,7 +9,6 @@ namespace craft\queue;
 
 use Craft;
 use craft\log\FileTarget;
-use yii\queue\ErrorEvent;
 use yii\queue\ExecEvent;
 
 /**
@@ -20,9 +19,6 @@ use yii\queue\ExecEvent;
  */
 class QueueLogBehavior extends VerboseBehavior
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var float timestamp
      */
@@ -32,9 +28,6 @@ class QueueLogBehavior extends VerboseBehavior
      * @var bool Whether any jobs have executed yet
      */
     private $_jobExecuted = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -62,7 +55,7 @@ class QueueLogBehavior extends VerboseBehavior
     }
 
     /**
-     * @param ExecEvent $event
+     * @inheritdoc
      */
     public function afterExec(ExecEvent $event)
     {
@@ -71,17 +64,14 @@ class QueueLogBehavior extends VerboseBehavior
     }
 
     /**
-     * @param ErrorEvent $event
+     * @inheritdoc
      */
-    public function afterError(ErrorEvent $event)
+    public function afterError(ExecEvent $event)
     {
         $duration = $this->_formattedDuration();
         $error = $event->error->getMessage();
         Craft::error(sprintf('%s - Error (time: %s): %s', parent::jobTitle($event), $duration, $error), __METHOD__);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Changes the file that logs will get flushed to.

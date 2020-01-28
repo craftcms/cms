@@ -26,9 +26,6 @@ use GraphQL\Type\Definition\Type;
  */
 class Entries extends BaseRelationField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -60,9 +57,6 @@ class Entries extends BaseRelationField
     {
         return EntryQuery::class;
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

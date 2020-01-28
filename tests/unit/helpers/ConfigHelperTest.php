@@ -25,19 +25,10 @@ use yii\base\InvalidConfigException;
  */
 class ConfigHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider sizeInBytesDataProvider
@@ -101,9 +92,6 @@ class ConfigHelperTest extends Unit
     {
         $this->assertSame($result, ConfigHelper::localizedValue($input, $handle));
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

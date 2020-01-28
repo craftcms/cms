@@ -26,7 +26,10 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
+{% set supportedSiteIds = (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
+{% set editableSiteIds = supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
+{% set isMultiSiteElement = craft.app.isMultiSite and supportedSiteIds|length > 1 %}
+{% set canEditMultipleSites = isMultiSiteElement and editableSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set isRevision = element.getIsRevision() %}
@@ -40,6 +43,7 @@
 {% set canDuplicateSource = canDuplicateSource ?? false %}
 {% set canAddAnother = canAddAnother ?? false %}
 {% set canDeleteSource = canDeleteSource ?? false %}
+{% set canEdit = canEdit ?? (canUpdateSource or canDuplicateSource or canAddAnother or saveDraftAction) %}
 
 {% set redirectUrl = redirectUrl ?? element.cpEditUrl %}
 {% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
@@ -48,6 +52,7 @@
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
 {% set deleteSourceAction = deleteSourceAction ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
+{% set saveDraftAction = saveDraftAction ?? null %}
 
 {% if not isRevision %}
     {% set fullPageForm = true %}
@@ -73,6 +78,19 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
+{% if tabs is not defined %}
+    {% set tabs = [] %}
+    {% for tab in element.fieldLayout.tabs ?? [] %}
+        {% set tabs = tabs|merge([{
+            label: tab.name|t('site'),
+            url: '#' ~ tab.getHtmlId(),
+            class: tab.elementHasErrors(element) ? 'error',
+        }]) %}
+    {% endfor %}
+{% endif %}
+
+{% set settingsHtml = (block('settings') ?? '')|trim %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
@@ -88,12 +106,12 @@
             </div>
         {% endif %}
 
-        {% if isCurrent %}
+        {% if isCurrent and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+                    <div id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</div>
                 {% else %}
-                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a draft'|t('app') }}">
                 {% endif %}
             </div>
         {% endif %}
@@ -103,7 +121,11 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% include "_includes/revisionmenu" %}
+    {% if isMultiSiteElement or saveDraftAction or element.find().revisionOf(element).exists() %}
+        {% include "_includes/revisionmenu" with {
+            canHaveDrafts: saveDraftAction is not empty,
+        } %}
+    {% endif %}
 {% endblock %}
 
 {% block actionButton %}
@@ -155,7 +177,7 @@
         {% endif %}
     {% elseif isDraft %}
         {% if canUpdateSource and saveSourceAction %}
-            <input type="submit" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
+            <input type="submit" class="btn submit" value="{{ 'Publish changes'|t('app') }}">
         {% endif %}
     {% elseif isRevision %}
         {% if canUpdateSource and revertSourceAction %}
@@ -194,41 +216,66 @@
     {{ parent() }}
 {% endblock %}
 
-{% block details %}
-    <div id="settings" class="meta">
-        {% block settings %}
-            {% if showStatusToggles %}
-                {{ forms.lightswitchField({
-                    label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
-                    id: 'enabled',
-                    name: 'enabled',
-                    on: element.enabled,
-                    disabled: isRevision,
-                    toggle: 'enabledForSite-field'
-                }) }}
-
-                {% if isMultiSiteElement %}
-                    {{ forms.lightswitchField({
-                        fieldClass: not element.enabled ? 'hidden',
-                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site')|e }),
-                        id: 'enabledForSite',
-                        name: 'enabledForSite',
-                        on: element.enabledForSite,
-                        disabled: isRevision
-                    }) }}
-                {% endif %}
-            {% endif %}
-        {% endblock %}
+{% block content %}
+    <div id="fields">
+        {% for tab in element.fieldLayout.tabs ?? [] %}
+            <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
+                {% include "_includes/fields" with {
+                    fields:  tab.getFields(),
+                    element: element,
+                    static:  isRevision or not canEdit,
+                    registerDeltas: true,
+                } only %}
+            </div>
+        {% endfor %}
     </div>
-    <div class="meta read-only">
+{% endblock %}
+
+{% block details %}
+    {% if settingsHtml %}
+        <div id="settings" class="meta">
+            {{ settingsHtml|raw }}
+        </div>
+    {% endif %}
+
+    {% if showStatusToggles and isMultiSiteElement %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                status: element.getAttributeStatus('enabled'),
+                label: 'Enabled for {site}'|t('app', { site: element.site.name|t('site')|e }) ~
+                    (canEditMultipleSites ? '<a id="expand-status-btn" data-icon="ellipsis" class="btn" role="button"></a>'),
+                id: "enabledForSite-#{element.siteId}",
+                name: "enabledForSite[#{element.siteId}]",
+                on: element.enabled and element.enabledForSite,
+                disabled: isRevision,
+            }) }}
+        </div>
+    {% endif %}
+
+    <div id="meta-details" class="meta read-only">
         {% block meta %}
+            {% if element.hasStatuses() %}
+                {% if isUnsavedDraft %}
+                    {% set statusColor = 'white' %}
+                    {% set statusLabel = 'Draft'|t('app') %}
+                {% else %}
+                    {% set status = element.getStatus() %}
+                    {% set statusDef = element.statuses()[status] ?? null %}
+                    {% set statusColor = statusDef.color ?? status %}
+                    {% set statusLabel = statusDef.label ?? statusDef ?? status|ucfirst %}
+                {% endif %}
+                <div class="data">
+                    <h5 class="heading">{{ 'Status'|t('app') }}</h5>
+                    <div id="status-value" class="value"><span class="status {{ statusColor }}"></span>{{ statusLabel }}</div>
+                </div>
+            {% endif %}
             <div class="data">
                 <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                <div class="value">{{ element.dateCreated|datetime('short') }}</div>
+                <div id="date-created-value" class="value">{{ element.dateCreated|datetime('short') }}</div>
             </div>
             <div class="data">
                 <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                <div class="value">{{ element.dateUpdated|datetime('short') }}</div>
+                <div id="date-updated-value" class="value">{{ element.dateUpdated|datetime('short') }}</div>
             </div>
             {% if isRevision %}
                 {% set revisionNotes = element.revisionNotes %}
@@ -245,7 +292,65 @@
             {% endif %}
         {% endblock %}
     </div>
+
+    {% if isDraft and element.getIsOutdated() %}
+        {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}
+        <div class="meta read-only warning">
+            <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
+            <div class="flex flex-nowrap">
+                {% if element.trackChanges %}
+                    {{ tag('div', {
+                        id: 'merge-changes-btn',
+                        class: ['btn'],
+                        role: 'button',
+                        text: 'Merge changes into draft'|t('app'),
+                    }) }}
+                    <div id="merge-changes-spinner" class="spinner hidden"></div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
+
+{% block settings %}
+    {% if showStatusToggles and not isMultiSiteElement %}
+        {{ forms.lightswitchField({
+            status: element.getAttributeStatus('enabled'),
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: element.enabled,
+            disabled: isRevision,
+        }) }}
+    {% endif %}
+{% endblock %}
+
+{% if canEditMultipleSites and element.enabled %}
+    {# get the element's statuses across all sites #}
+    {% set siteStatusesQuery = element.find()
+        .select(['elements_sites.siteId', 'elements_sites.enabled'])
+        .id(element.id)
+        .siteId(editableSiteIds)
+        .anyStatus()
+        .asArray() %}
+    {% if isDraft %}
+        {% do siteStatusesQuery.drafts() %}
+    {% elseif isRevision %}
+        {% do siteStatusesQuery.revisions() %}
+    {% endif %}
+    {% set siteStatuses = siteStatusesQuery
+        .pairs()|map(s => s ? true : false) %}
+{% elseif canEditMultipleSites %}
+    {% set siteStatusValues = {} %}
+    {% for siteId in editableSiteIds %}
+        {% set siteStatusValues = siteStatusValues|merge([false]) %}
+    {% endfor %}
+    {% set siteStatuses = combine(editableSiteIds, siteStatusValues) %}
+{% else %}
+    {% set siteStatuses = {
+        ("#{element.siteId}"): element.enabled ? true : false
+    } %}
+{% endif %}
 
 {% set settings = {
     elementType: className(element),
@@ -253,6 +358,9 @@
     sourceId: element.getSourceId(),
     siteId: element.siteId,
     isUnsavedDraft: isUnsavedDraft,
+    siteStatuses: siteStatuses,
+    enabled: element.enabled ? true : false,
+    enabledForSite: element.enabled and element.enabledForSite,
     isLive: isCurrent and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
     hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
@@ -260,11 +368,12 @@
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,
     draftNotes: isDraft ? element.draftNotes : null,
+    canEditMultipleSites: canEditMultipleSites,
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,
-    deleteDraftAction: deleteDraftAction,
-    applyDraftAction: applyDraftAction,
+    deleteDraftAction: deleteDraftAction ?? null,
+    applyDraftAction: applyDraftAction ?? null,
     enablePreview: enablePreview,
     previewTargets: previewTargets,
 } %}

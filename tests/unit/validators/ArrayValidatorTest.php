@@ -22,9 +22,6 @@ use craft\validators\ArrayValidator;
  */
 class ArrayValidatorTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var ArrayValidator
      */
@@ -38,12 +35,6 @@ class ArrayValidatorTest extends Unit
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test that if messages aren't provided when creating the array validator (i.e. not setting the $tooMany message),
@@ -108,9 +99,6 @@ class ArrayValidatorTest extends Unit
         $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -138,9 +126,6 @@ class ArrayValidatorTest extends Unit
             [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], false],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

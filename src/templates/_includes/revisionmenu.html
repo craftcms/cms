@@ -6,11 +6,11 @@
 
 {% import "_includes/forms" as forms %}
 
-{% set drafts = element.find()
+{% set drafts = canHaveDrafts ? element.find()
     .draftOf(element)
     .siteId(element.siteId)
     .anyStatus()
-    .all() %}
+    .all() : [] %}
 
 {% set revisions = element.find()
     .revisionOf(element.sourceId)
@@ -21,13 +21,14 @@
     .all() %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
-{% set supportedSiteIds = (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
-{% set editableSiteIds = supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
+{% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
+{% set editableSiteIds = editableSiteIds ?? supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
-{% set canEditMultilpeSites = editableSiteIds|length > 1 %}
+{% set canEditMultipleSites = editableSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set showSiteLabel = showSiteLabel ?? isMultiSiteElement %}
+{% set showRevisionLabel = showRevisionLabel ?? (canHaveDrafts or revisions|length) %}
 {% set cpEditUrl = element.getCpEditUrl() %}
 {% if isDraft %}
     {% set baseUrl = url(cpEditUrl, baseParams|merge({ draftId: element.draftId })) %}
@@ -38,25 +39,32 @@
 {% endif %}
 
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
-{% set enableMenu = not isUnsavedDraft or editableSiteIds %}
+{% set showRevisions = showRevisionLabel and not isUnsavedDraft %}
+{% set enableMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div id="revision-btngroup" class="btngroup">
     <div id="revision-btn" class="btn {% if enableMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
-        {% if showSiteLabel %}{{ element.getSite().name|t('site') }} –{% endif %}
-        <span id="revision-label">
-            {%- if isDraft %}
-                {{- element.getDraftName() }}
-            {%- elseif isRevision %}
-                {{- element.getRevisionLabel() }}
-            {%- else %}
-                {{- 'Current'|t('app') }}
-            {%- endif -%}
-        </span>
+        {% if showSiteLabel %}
+            {{ element.getSite().name|t('site') }}
+        {% endif %}
+        {% if showSiteLabel and showRevisionLabel %}–{% endif %}
+        {% if showRevisionLabel %}
+            <span id="revision-label">
+                {%- if isDraft %}
+                    {{- element.getDraftName() }}
+                {%- elseif isRevision %}
+                    {{- element.getRevisionLabel() }}
+                {%- else %}
+                    {{- 'Current'|t('app') }}
+                {%- endif -%}
+            </span>
+        {% endif %}
     </div>
 
     {% if enableMenu %}
         <div class="menu">
-            {% if canEditMultilpeSites %}
+            {% if canEditMultipleSites %}
+                {% set enabledSiteIds = craft.app.elements.getEnabledSiteIdsForElement(element.id) %}
                 {% set siteGroups = craft.app.sites.getAllGroups() %}
                 {% for group in siteGroups %}
                     {% set groupSiteIds = group.getSiteIds()|intersect(editableSiteIds) %}
@@ -82,10 +90,11 @@
                         </ul>
                     {% endif %}
                 {% endfor %}
-                {% if not isUnsavedDraft %}<hr>{% endif %}
             {% endif %}
 
-            {% if not isUnsavedDraft %}
+            {% if canEditMultipleSites and showRevisions %}<hr>{% endif %}
+
+            {% if showRevisions %}
                 <ul class="padded revision-group-current">
                     {% set currentRevision = element.getCurrentRevision() %}
                     {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}

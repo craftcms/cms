@@ -20,9 +20,6 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserPermissions
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all of the known permissions, sorted by category.
      *

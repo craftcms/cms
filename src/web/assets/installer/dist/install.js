@@ -219,7 +219,6 @@
                             Garnish.shake(this.$currentScreen);
                         }
                     }
-
                 }, this));
             }
         }, {

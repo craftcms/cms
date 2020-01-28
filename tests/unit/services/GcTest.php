@@ -40,9 +40,6 @@ use yii\base\InvalidArgumentException;
  */
 class GcTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -52,9 +49,6 @@ class GcTest extends Unit
      * @var Gc
      */
     protected $gc;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @return array
@@ -82,9 +76,6 @@ class GcTest extends Unit
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -175,9 +166,6 @@ class GcTest extends Unit
         $this->assertEquals(2, $count);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      * @todo Other GC tables
@@ -192,9 +180,6 @@ class GcTest extends Unit
         ];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -204,9 +189,6 @@ class GcTest extends Unit
 
         $this->gc = Craft::$app->getGc();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Helper method to check entries are removed. You can pass $expectedRemove

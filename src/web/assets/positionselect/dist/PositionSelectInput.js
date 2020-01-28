@@ -2,7 +2,6 @@
     /** global: Craft */
     /** global: Garnish */
     PositionSelectInput = Garnish.Base.extend({
-
         $container: null,
         $options: null,
         $selectedOption: null,
@@ -28,6 +27,5 @@
             this.$selectedOption = $option.addClass('active');
             this.$input.val($option.data('option'));
         }
-
     });
 })(jQuery);

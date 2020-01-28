@@ -36,9 +36,6 @@ use yii\base\Exception;
  */
 class AssetIndexer extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns a unique indexing session id.
      *
@@ -428,9 +425,6 @@ class AssetIndexer extends Component
 
         return $asset;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Indexes a file.

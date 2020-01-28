@@ -21,19 +21,10 @@ use UnitTester;
  */
 class ArrayHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider toArrayDataProvider
@@ -338,9 +329,6 @@ class ArrayHelperTest extends Unit
         $this->assertCount(1, $filtered);
         $this->assertSame('array 3', $filtered[2]['name']);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

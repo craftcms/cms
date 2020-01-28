@@ -19,9 +19,6 @@ use craft\helpers\Json;
  */
 class RenameFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -44,6 +41,10 @@ class RenameFile extends ElementAction
     var trigger = new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-movable');
+        },
         activate: function(\$selectedItems)
         {
             var \$element = \$selectedItems.find('.element'),

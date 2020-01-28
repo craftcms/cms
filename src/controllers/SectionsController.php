@@ -31,9 +31,6 @@ use yii\web\Response;
  */
 class SectionsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -93,19 +90,11 @@ class SectionsController extends Controller
             $variables['title'] = Craft::t('app', 'Create a new section');
         }
 
-        $types = [
-            Section::TYPE_SINGLE,
-            Section::TYPE_CHANNEL,
-            Section::TYPE_STRUCTURE
+        $typeOptions = [
+            Section::TYPE_SINGLE => Craft::t('app', 'Single'),
+            Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
+            Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
         ];
-        $typeOptions = [];
-
-        // Get these strings to be caught by our translation util:
-        // Craft::t('app', 'Channel') Craft::t('app', 'Structure') Craft::t('app', 'Single')
-
-        foreach ($types as $type) {
-            $typeOptions[$type] = Craft::t('app', ucfirst($type));
-        }
 
         if (!$section->type) {
             $section->type = Section::TYPE_CHANNEL;
@@ -179,7 +168,7 @@ class SectionsController extends Controller
             }
 
             if ($siteSettings->hasUrls = (bool)$siteSettings->uriFormat) {
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->template = $postedSettings['template'] ?? null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;

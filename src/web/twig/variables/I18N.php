@@ -19,9 +19,6 @@ use craft\i18n\Locale;
  */
 class I18N
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Gets all known languages.
      *

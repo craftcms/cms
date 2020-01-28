@@ -22,9 +22,6 @@ use yii\helpers\Inflector;
  */
 class Security extends \yii\base\Security
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string[] Keywords used to reference sensitive data
      * @see redactIfSensitive()
@@ -35,9 +32,6 @@ class Security extends \yii\base\Security
      * @var mixed
      */
     private $_blowFishHashCost;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      */

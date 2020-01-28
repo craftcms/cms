@@ -9,27 +9,23 @@ namespace craft\db\pgsql;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\Connection;
 use craft\db\TableSchema;
 use yii\db\Exception;
 
 /**
  * @inheritdoc
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
+ * @property Connection $db
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Schema extends \yii\db\pgsql\Schema
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int The maximum length that objects' names can be.
      */
     public $maxObjectNameLength = 63;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates a query builder for the database.
@@ -115,12 +111,17 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Returns the default backup command to execute.
      *
+     * @param string[]|null The table names whose data should be excluded from the backup
      * @return string|false The command to execute
      */
-    public function getDefaultBackupCommand()
+    public function getDefaultBackupCommand(array $ignoreTables = null)
     {
+        if ($ignoreTables === null) {
+            $ignoreTables = $this->db->getIgnoredBackupTables();
+        }
         $ignoredTableArgs = [];
-        foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
+        foreach ($ignoreTables as $table) {
+            $table = $this->getRawTableName($table);
             $ignoredTableArgs[] = "--exclude-table-data '{schema}.{$table}'";
         }
 
@@ -214,9 +215,6 @@ class Schema extends \yii\db\pgsql\Schema
 
         return null;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Collects extra foreign key information details for the given table.
@@ -334,9 +332,6 @@ ORDER BY i.relname, k';
             ':tableName' => $table->name,
         ])->queryAll();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the PGPASSWORD command for backup/restore actions.

@@ -20,7 +20,7 @@
 /* ----------------------------------------*/
 
 body, html {
-  background: $bgColor;
+  background-color: $grey100;
 }
 
 html.noscroll,
@@ -29,6 +29,8 @@ html.noscroll body {
 }
 
 body {
+  width: 100vw;
+  overflow-x: hidden;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
@@ -67,6 +69,7 @@ table.editable textarea {
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
+.menu .flex.padded.sel:before,
 .texticon:before,
 .element:before,
 #help:before,
@@ -142,7 +145,7 @@ body.rtl [data-icon-after=structure]:after {
 
 .help:before {
   content: 'help';
-  color: #9d2dcc;
+  color: $pink400;
 }
 
 #preview-btn,
@@ -166,49 +169,12 @@ body.rtl [data-icon-after=structure]:after {
   }
 }
 
-/* nav */
-.nav {
-  display: block;
-}
-
-.nav ul li a {
-  display: block;
-  padding: 5px 0;
-  color: #b3b3b3;
-}
-
-.nav ul li a:hover {
-  color: $linkColor;
-  text-decoration: none;
-}
-
-.nav ul li a .status {
-  @include margin(0, 7px, 0, 6px);
-}
-
-.nav ul li a .badge {
-  display: block;
-  @include floatright;
-  padding: 0 7px;
-  border-radius: 9px;
-  line-height: 18px;
-  font-weight: bold;
-}
-
-.nav ul li a[data-icon]:before {
-  margin: 0 8px 0 3px;
-}
-
-.nav ul li a.sel {
-  color: #2c2c2c;
-}
-
 /* headings */
 h1 {
   margin-bottom: 24px;
-  font-weight: 300;
-  font-size: 24px;
-  line-height: 1;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.2;
 }
 
 h2 {
@@ -345,8 +311,7 @@ li.sel a {
 #revision-btn.disabled {
   opacity: 1;
   color: $mediumDarkTextColor;
-  background: transparent;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+  background-color: transparentize($grey200, 0.5) !important;
 }
 
 /* status icons */
@@ -364,7 +329,7 @@ li.sel a {
 }
 
 .checkmark-icon {
-  background: darken($bgColor, 10%);
+  background-color: $grey200;
 
   &:before {
     content: 'check';
@@ -373,7 +338,7 @@ li.sel a {
 }
 
 .alert-icon {
-  background: darken($bgColor, 10%);
+  background-color: $grey200;
 
   &:before {
     content: 'alert';
@@ -463,6 +428,10 @@ strong, b, i em {
   white-space: nowrap;
 }
 
+.break-word {
+  word-wrap: break-word;
+}
+
 .light {
   color: $mediumTextColor !important;
   font-weight: normal;
@@ -474,6 +443,14 @@ strong, b, i em {
 
 .smalltext {
   font-size: 12px;
+}
+
+.zilch {
+  padding: 100px 0 76px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 24px;
+  color: $lightTextColor;
 }
 
 input.checkbox + label.smalltext {
@@ -538,7 +515,7 @@ td.right {
   width: 100%;
 }
 
-.token {
+*:not(.highlight) > * > * > .token {
   @include token-styles;
 }
 
@@ -565,8 +542,8 @@ td.right {
 }
 
 .token:focus {
-  border-color: $mediumTextColor;
-  background: #aaa;
+  box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
+  background-color: $white;
   outline: none;
 }
 
@@ -596,7 +573,7 @@ td.right {
 
 .icon.move:before {
   content: 'move';
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor;
 }
 
 .icon.move:not(.disabled):hover:before {
@@ -609,15 +586,15 @@ td.right {
 
 .icon.delete:before {
   content: 'remove';
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor;
 }
 
 .icon.delete:not(.disabled):hover:before {
-  color: $red;
+  color: $red600;
 }
 
 .icon.delete:not(.disabled):active:before {
-  color: darken($red, 10%);
+  color: darken($red600, 10%);
 }
 
 .hidden {
@@ -669,7 +646,6 @@ td.right {
 }
 
 .info-hud {
-
   table {
     max-width: 280px;
     table-layout: auto;
@@ -679,20 +655,15 @@ td.right {
     word-wrap: break-word;
     width: 100%;
   }
-
 }
 
 @media (max-width: 450px) {
-
   .info-hud {
-
     table {
       table-layout: fixed;
       width: 100%;
     }
-
   }
-
 }
 
 /* ----------------------------------------
@@ -708,8 +679,32 @@ td.right {
 }
 
 /* Customize Sources */
-.sidebar .customize-sources {
-  color: rgba(0, 0, 0, 0.2);
+.sidebar {
+  .customize-sources {
+    display: block;
+    margin: 14px -24px 4px;
+    @include padding(7px, 14px, 7px, 24px);
+    color: $lightTextColor !important;
+    transition: color linear 100ms;
+
+    .icon {
+      @include margin-right(4px);
+    }
+
+    .label {
+      opacity: 0;
+      transition: opacity linear 100ms;
+    }
+
+    &:hover {
+      color: $mediumTextColor !important;
+      text-decoration: none;
+
+      .label {
+        opacity: 1;
+      }
+    }
+  }
 }
 
 .sidebar .customize-sources:hover {
@@ -734,10 +729,11 @@ td.right {
   padding: 10px 0;
   border: none;
   width: 200px;
-  height: calc(100% - 78px);
-  background: $lightBgColor;
+  height: calc(100% - 62px);
+  box-sizing: border-box;
+  background-color: $grey050;
   overflow: auto;
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.06);
+  box-shadow: inset -1px 0 0 $hairlineColor;
 }
 
 .customize-sources-modal > .cs-sidebar > .btn {
@@ -749,19 +745,19 @@ td.right {
   margin-top: -1px;
   @include margin-right(1px);
   @include padding(10px, 14px, 10px, 40px);
-  background: #fcfcfc;
-  border: solid rgba(0, 0, 0, 0.06);
+  background-color: $grey100;
+  border: solid $hairlineColor;
   border-width: 1px 0;
   user-select: none;
   cursor: default;
 }
 
 .customize-sources-item + .customize-sources-item:not(.heading) {
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid $hairlineColor;
 }
 
 .customize-sources-item.sel {
-  background: #ececec;
+  background-color: $grey200;
   z-index: 1;
 }
 
@@ -785,11 +781,10 @@ td.right {
   font-weight: bold;
 }
 
-/*.matrix-configurator .mc-sidebar .items .btn { margin: 14px; }*/
-
 .customize-sources-modal > .source-settings {
   position: relative;
-  height: calc(100% - 106px);
+  height: calc(100% - 62px);
+  box-sizing: border-box;
   padding: 24px;
   overflow: auto;
 }
@@ -813,50 +808,46 @@ ul.icons {
   margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
-}
 
-ul.icons:after {
-  @include clearafter;
-}
+  li {
+    margin: 0 0 10px;
 
-ul.icons li {
-  margin: 0 0 10px;
-}
+    a {
+      display: block;
+      position: relative;
+      padding: 60px 5px 10px;
+      width: 110px;
+      text-align: center;
+      color: $textColor;
+      border-radius: 4px;
+      border: 1px solid $white;
 
-ul.icons li a {
-  display: block;
-  position: relative;
-  padding: 60px 5px 10px;
-  width: 110px;
-  text-align: center;
-  color: $textColor;
-  border-radius: 4px;
-  border: 1px solid #fff;
-}
+      &:before {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        font-size: 40px;
+        line-height: 60px;
+      }
 
-ul.icons li a img,
-ul.icons li a svg {
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 12px;
-  left: calc(50% - 20px);
-}
+      &:hover {
+        text-decoration: none;
+        background-color: $grey050;
+        border-color: $grey100;
+      }
 
-ul.icons li a:before {
-  display: block;
-  position: absolute;
-  top: 0;
-  @include left(0);
-  width: 100%;
-  font-size: 40px;
-  line-height: 60px;
-}
-
-ul.icons li a:hover {
-  text-decoration: none;
-  background-color: #f9f9f9;
-  border-color: #f2f2f2;
+      img,
+      svg {
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        top: 12px;
+        left: calc(50% - 20px);
+      }
+    }
+  }
 }
 
 @media only screen and (max-width: 380px) {
@@ -877,21 +868,16 @@ ul.icons li a:hover {
 
 .toolbar {
   position: relative;
-  margin-bottom: 21px;
-  min-height: 32px;
-
-  &.fixed {
-    position: fixed;
-    z-index: 1;
-    top: 0;
-    margin: 0 -1px;
-    padding: 7px 1px 0;
-    background: #fff;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
-  }
+  margin-bottom: 14px;
+  min-height: 34px;
 
   .flex {
     align-items: flex-start;
+  }
+
+  .text {
+    border-radius: $largeBorderRadius !important;
+    box-shadow: none !important;
   }
 }
 
@@ -915,6 +901,10 @@ ul.icons li a:hover {
 
     &:not(:last-child) {
       @include margin-right(7px !important);
+    }
+
+    &.spinner {
+      @include margin-left(0 !important);
     }
   }
 }
@@ -953,8 +943,8 @@ ul.icons li a:hover {
 
 .btn {
   display: inline-block;
-  border-radius: $btnBorderRadius;
-  padding: 6px 12px;
+  border-radius: $largeBorderRadius;
+  padding: 7px 14px;
   border: none;
   text-align: center;
   white-space: nowrap;
@@ -962,28 +952,39 @@ ul.icons li a:hover {
   cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
-
+  outline: none;
   color: $textColor;
+  background-color: transparentize($inputColor, 0.75);
 
-  &:focus {
-    outline: none;
-    box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+  &.chromeless {
+    background-color: transparent;
+    height: auto;
+    padding: 0;
+
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: transparent;
+    }
+
+    &:hover,
+    &:active {
+      text-decoration: underline;
+    }
+  }
+
+  &.rounded {
+    border-radius: 17px;
+  }
+
+  &:focus,
+  &:hover {
+    background-color: transparentize($inputColor, 0.65);
   }
 
   &:active,
   &.active {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15);
-  }
-
-  &:not(.submit) {
-    color: $textColor;
-    background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
-
-    &:active,
-    &.active {
-      background-image: linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
-    }
+    background-color: transparentize($inputColor, 0.5);
   }
 
   &[type='color'] {
@@ -1003,8 +1004,24 @@ ul.icons li a:hover {
     outline: none;
   }
 
+  &:not(.small) {
+    &[data-icon]:before,
+    &.icon:before,
+    &.menubtn[data-icon]:before,
+    &.menubtn.icon:before {
+      margin-top: -3px;
+    }
+  }
+
+  &[data-icon]:not(:empty):before,
+  &.icon:not(:empty):before,
+  &.menubtn[data-icon]:empty:before,
+  &.menubtn.icon:empty:before {
+    @include margin-right(5px);
+  }
+
   div.checkbox {
-    margin-top: 4px;
+    margin-top: 2px;
   }
 }
 
@@ -1019,14 +1036,7 @@ ul.icons li a:hover {
 
 .btn,
 .spinner {
-  height: 32px;
-}
-
-.btn[data-icon]:not(:empty):before,
-.btn.icon:not(:empty):before,
-.btn.menubtn[data-icon]:empty:before,
-.btn.menubtn.icon:empty:before {
-  @include margin-right(5px);
+  height: 34px;
 }
 
 .btn[data-icon-after]:not(:empty):after,
@@ -1099,7 +1109,7 @@ ul.icons li a:hover {
       cursor: default;
     }
 
-    &:not(:last-child) {
+    &:not(.dashed):not(:last-child) {
       @include margin-right(1px);
     }
 
@@ -1213,41 +1223,45 @@ ul.icons li a:hover {
 /* submit buttons */
 .btn.submit,
 .btn.secondary {
-  color: #fff;
-  @include light-on-dark-text;
+  &,
+  &:before,
+  &:after {
+    color: $white !important;
+    @include light-on-dark-text;
+  }
 }
 
 .btn.submit {
-  background-image: linear-gradient($submitColor, #cc5643);
+  background-color: $primaryColor !important;
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
 .btn.submit:not(.disabled):not(.inactive).hover {
-  background-image: linear-gradient($submitHoverColor, #b34b3b);
+  background-color: darken($primaryColor, 5%) !important;
 }
 
 .btn.submit:not(.disabled):not(.inactive):active,
 .btn.submit:not(.disabled):not(.inactive).active {
-  background-image: linear-gradient($submitActiveColor, #994032);
+  background-color: darken($primaryColor, 10%) !important;
 }
 
 .secondary-buttons .btn.submit,
 .btn.secondary {
-  background-image: linear-gradient($secondarySubmitColor, #878f99);
+  background-color: $secondaryColor !important;
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
 .btn.secondary:not(.disabled):not(.inactive):hover,
 .btn.secondary:not(.disabled):not(.inactive).hover {
-  background-image: linear-gradient($secondarySubmitHoverColor, #697480);
+  background-color: darken($secondaryColor, 5%) !important;
 }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active,
 .btn.secondary:not(.disabled):not(.inactive):active,
 .btn.secondary:not(.disabled):not(.inactive).active {
-  background-image: linear-gradient($secondarySubmitActiveColor, #697380);
+  background-color: darken($secondaryColor, 10%) !important;
 }
 
 div.btn.submit {
@@ -1262,14 +1276,20 @@ div.btn.submit input {
 
 /* dashed buttons */
 .btn.dashed {
-  border: 1px dashed rgba(0, 0, 0, 0.2) !important;
-  background: none !important;
-  box-shadow: none !important;
-}
+  border: 1px dashed $mediumHairlineColor;
+  background-color: transparent !important;
 
-.btn.dashed:not(.disabled):active,
-.btn.dashed:not(.disabled).active {
-  background-color: hsla($hue, 10%, 50%, 0.1) !important;
+  .btngroup &:not(:last-child) {
+    @include border-right(1px solid transparent);
+    @include margin-right(-1px);
+  }
+
+  &:not(.disabled) {
+    &:active,
+    &.active {
+      background-color: transparentize($grey200, 0.75) !important;
+    }
+  }
 }
 
 /* color inputs */
@@ -1281,31 +1301,14 @@ div.btn.submit input {
   display: inline-block;
   position: relative;
   vertical-align: middle;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
   padding: 0;
-  background: url(../images/checkers.png);
+  background-color: url(../images/checkers.png);
 
   &:not(.static) {
     cursor: pointer;
-
-    &:not(.disabled) {
-      &:hover,
-      &:active,
-      &.active {
-        .color-preview {
-          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05);
-        }
-      }
-
-      &:active,
-      &.active {
-        .color-preview {
-          background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
-        }
-      }
-    }
   }
 
   &.small {
@@ -1319,9 +1322,8 @@ div.btn.submit input {
     @include left(0);
     width: 100%;
     height: 100%;
-    border-radius: 16px;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 17px;
+    box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
   }
 }
 
@@ -1339,65 +1341,61 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  transition: box-shadow linear 100ms;
+  background-image: linear-gradient(to right, $grey300, $grey300);
+  transition: background-image linear 100ms;
+
+  &.on {
+    background-image: linear-gradient(to right, $successColor, $successColor);
+  }
+
+  &.indeterminate {
+    background-image: linear-gradient(to right, $successColor, $grey300);
+  }
+
+  .lightswitch-container {
+    position: relative;
+    height: 100%;
+
+    .handle {
+      position: absolute;
+      top: 1px;
+      background-color: $white;
+    }
+  }
 
   &:not(.small) {
     border-radius: 11px;
-    width: 33px;
+    width: 34px;
     height: 22px;
 
     .lightswitch-container {
-      @include margin-left(-11px);
-      width: 44px;
-    }
+      @include margin-left(-12px);
+      width: 46px;
 
-    .label {
-      width: 22px;
-      height: 22px;
-
-      &.on {
-        @include border-radius(11px, 0, 0, 11px);
+      .handle {
+        border-radius: 10px;
+        width: 20px;
+        height: 20px;
+        left: calc(50% - 10px);
       }
-      &.off {
-        @include border-radius(0, 11px, 11px, 0);
-      }
-    }
-
-    .handle {
-      border-radius: 10px;
-      margin: 1px -10px;
-      width: 20px;
-      height: 20px;
     }
   }
 
   &.small {
     border-radius: 9px;
-    width: 27px;
+    width: 28px;
     height: 18px;
 
     .lightswitch-container {
-      @include margin-left(-9px);
-      width: 36px;
-    }
+      @include margin-left(-10px);
+      width: 38px;
 
-    .label {
-      width: 18px;
-      height: 18px;
-
-      &.on {
-        @include border-radius(9px, 0, 0, 9px);
+      .handle {
+        border-radius: 8px;
+        width: 16px;
+        height: 16px;
+        left: calc(50% - 8px);
       }
-      &.off {
-        @include border-radius(0, 9px, 9px, 0);
-      }
-    }
-
-    .handle {
-      border-radius: 8px;
-      margin: 1px -8px;
-      width: 16px;
-      height: 16px;
     }
   }
 
@@ -1408,7 +1406,12 @@ div.btn.submit input {
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 1px hsla(205, 100%, 60%, 0.5), 0 0 2px hsl(205, 100%, 60%);
+
+    .lightswitch-container {
+      .handle {
+        background-color: $lightSelColor;
+      }
+    }
   }
 
   &.on {
@@ -1417,26 +1420,17 @@ div.btn.submit input {
     }
   }
 
-  .label {
-    @include floatleft;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
-  }
-
-  .label.on,
-  &:not(.dragging).on .label.off {
-    background: $successColor;
-  }
-
-  .label.off,
-  &:not(.dragging):not(.on) .label.on {
-    background: hsl($hue, 10%, 65%);
-  }
-
-  .handle {
-    position: relative;
-    @include floatleft;
-    background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  &.indeterminate {
+    &:not(.small) {
+      .lightswitch-container {
+        @include margin-left(-12px / 2);
+      }
+    }
+    &.small {
+      .lightswitch-container {
+        @include margin-left(-10px / 2);
+      }
+    }
   }
 }
 
@@ -1448,7 +1442,7 @@ div.btn.submit input {
 
   .page-link {
     padding: 4px 13px 8px;
-    border-radius: $btnBorderRadius;
+    border-radius: $mediumBorderRadius;
     color: $textColor;
 
     &:before {
@@ -1457,7 +1451,7 @@ div.btn.submit input {
 
     &:not(.disabled) {
       transition: box-shadow linear 100ms;
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 0 0 1px $hairlineColor;
       cursor: pointer;
 
       &:hover {
@@ -1468,8 +1462,6 @@ div.btn.submit input {
 
     &.disabled {
       opacity: 1;
-      background: $bgColor;
-      font-weight: bold;
       color: $lightTextColor;
     }
   }
@@ -1500,192 +1492,269 @@ h2 + .actions {
 /*  Tables
 /* ----------------------------------------*/
 
-table thead th {
-  font-weight: bold;
-  @include alignleft;
-  vertical-align: top;
-  line-height: 1.2;
-  color: rgba(0, 0, 0, 0.5);
-}
+.tablepane {
+  margin: -24px -24px 0;
+  overflow-x: auto;
 
-table thead th.ordered {
-  @include padding-right(26px);
-  background: #f2f2f2 url(../images/listview_sort.png) no-repeat;
-  body.ltr & {
-    background-position: 100% -3px;
-  }
-  body.rtl & {
-    background-position: 0 -3px;
-  }
-}
+  table {
+    th,
+    td {
+      &:first-child {
+        @include padding-left(24px);
+      }
+      &:last-child {
+        @include padding-right(24px);
+      }
+    }
 
-table thead th.ordered.desc {
-  body.ltr & {
-    background-position: 100% -34px;
-  }
-  body.rtl & {
-    background-position: 0 -34px;
+    thead {
+      th,
+      td {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+      }
+    }
   }
 }
 
-table thead th.ordered:first-child {
-  @include padding-left(10px);
-}
-
-table thead th.ordered.loading {
-  background-image: url(../images/spinner_tableheader.gif);
-  body.ltr & {
-    background-position: 100% 4px;
+table {
+  &.fixed-layout {
+    table-layout: fixed;
   }
-  body.rtl & {
-    background-position: 0 4px;
+
+  th.thin,
+  td.thin {
+    width: 0.01% !important;
   }
-}
 
-table thead th.orderable:hover {
-  background-color: #f9f9f9;
-}
-
-th.thin,
-td.thin {
-  width: 0.01% !important;
-}
-
-/* data */
-body.ltr table.data:not([dir='rtl']),
-body.rtl table.data[dir='ltr'] {
-  th:not(:first-child),
-  td:not(:first-child) {
-    padding-left: 14px;
+  thead {
+    th {
+      font-weight: bold;
+      @include alignleft;
+      vertical-align: top;
+      color: $mediumTextColor;
+    }
   }
-}
-body.rtl table.data:not([dir='ltr']),
-body.ltr table.data[dir='rtl'] {
-  th:not(:first-child),
-  td:not(:first-child) {
-    padding-right: 14px;
+
+  // plain tables
+  &:not(.data) {
+    th,
+    td {
+      padding-top: 7px;
+      padding-bottom: 7px;
+
+      &:not(:first-child) {
+        padding-left: 12px;
+      }
+      &:not(:last-child) {
+        padding-right: 12px;
+      }
+    }
   }
-}
 
-table.data thead th,
-table.data thead td {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  width: auto;
-  cursor: default;
-}
+  // data tables
+  &.data {
+    th,
+    td {
+      position: relative;
+      padding-left: 12px;
+      padding-right: 12px;
+      box-sizing: border-box;
 
-table.data tbody th,
-table.data tbody td {
-  padding-top: 7px;
-  padding-bottom: 7px;
-  border-bottom: 1px dotted $hairlineColor;
-}
+      &.checkbox-cell {
+        width: $checkboxSize !important;
+        min-width: $checkboxSize;
+        box-sizing: content-box;
+        position: relative;
 
-table.data tbody tr:first-child th,
-table.data tbody tr:first-child td {
-  border-top: 1px dotted $hairlineColor;
-}
+        input.checkbox + label,
+        div.checkbox {
+          position: absolute;
+          top: calc(50% - 8px);
+        }
+      }
+    }
 
-table.data thead + tbody tr:first-child th,
-table.data thead + tbody tr:first-child td {
-  border-top-style: solid;
-}
+    th {
+      font-weight: bold;
+    }
 
-table.data th {
-  font-weight: bold;
-}
+    thead {
+      th,
+      td {
+        padding-top: 14px;
+        padding-bottom: 14px;
+        width: auto;
+        background-color: $grey050;
+        cursor: default;
 
-table.data thead th {
-  white-space: nowrap;
-}
+        &:first-child {
+          @include border-top-left-radius($largeBorderRadius);
+          @include border-bottom-left-radius($largeBorderRadius);
+        }
 
-table.data td.timestamp {
-  @include alignright;
-  vertical-align: bottom;
-  white-space: nowrap;
-  color: $lightTextColor;
-}
+        &:last-child {
+          @include border-top-right-radius($largeBorderRadius);
+          @include border-bottom-right-radius($largeBorderRadius);
+        }
+      }
 
-table.fixed-layout {
-  table-layout: fixed;
-}
+      th {
+        white-space: nowrap;
 
-/* collapsable data tables for small screens
-   based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
-table.collapsed {
-  width: auto;
-}
+        &.orderable:not(.ordered):hover {
+          background-color: $grey100;
+        }
 
-table.collapsed,
-table.collapsed tbody,
-table.collapsed tbody tr,
-table.collapsed tbody th,
-table.collapsed tbody td {
-  display: block;
-  border: none;
-  padding: 0;
-  @include alignleft;
-  width: auto !important;
-  white-space: normal;
-}
+        &.ordered {
+          background-color: $lightSelColor;
+        }
 
-table.collapsed tbody th,
-table.collapsed tbody td {
-  padding: 2px 0 !important;
-}
+        &.ordered {
+          @include padding-right(26px);
+          background-image: url(../images/listview_sort.png);
+          background-repeat: no-repeat;
 
-table.collapsed thead {
-  display: none;
-}
+          &:first-child {
+            @include padding-left(10px);
+          }
 
-table.collapsed tbody tr {
-  padding: 6px 0;
-  border-bottom: 1px dotted $hairlineColor;
-}
+          &:not(.desc) {
+            body.ltr & {
+              background-position: 100% 9px;
+            }
+            body.rtl & {
+              background-position: 0 9px;
+            }
+          }
 
-table.collapsed tbody [data-title] {
-  @include margin-right(0);
-}
+          &.desc {
+            body.ltr & {
+              background-position: 100% -22px;
+            }
+            body.rtl & {
+              background-position: 0 -22px;
+            }
+          }
 
-table.collapsed tbody [data-title]:before {
-  margin-right: 5px;
-  content: attr(data-title) ":";
-  font-weight: bold;
-}
+          &.loading {
+            background-image: url(../images/spinner_tableheader.gif);
+            body.ltr & {
+              background-position: 100% 16px;
+            }
+            body.rtl & {
+              background-position: 0 16px;
+            }
+          }
+        }
+      }
+    }
 
-table.collapsed tbody td:empty {
-  display: none;
-}
+    tbody {
+      tr {
+        outline: none;
 
-table.collapsed tbody tr:after {
-  @include clearafter;
-}
+        &:not(.disabled) {
+          &:hover {
+            th,
+            td {
+              background-color: $grey050;
+            }
+          }
 
-table.collapsed tbody td[data-title] form {
-  display: inline-block;
-}
+          &.sel {
+            th,
+            td {
+              background-color: $lightSelColor;
+            }
+          }
+        }
+      }
 
-table.collapsed thead + tbody tr:first-child th,
-table.collapsed thead + tbody tr:first-child td {
-  border-top: none;
-}
+      th,
+      td {
+        border-top: 1px solid transparent;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        background-clip: padding-box;
+      }
 
-table.collapsed tbody tr:last-child th:not(:last-child),
-table.collapsed tbody tr:last-child td:not(:last-child) {
-  border-bottom: none;
+      td {
+        &.timestamp {
+          @include alignright;
+          vertical-align: bottom;
+          white-space: nowrap;
+          color: $lightTextColor;
+        }
+      }
+    }
+  }
+
+  // collapsable data tables for small screens
+  // based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/
+  &.collapsed {
+    width: auto;
+
+    &,
+    tbody,
+    tbody tr,
+    tbody th,
+    tbody td {
+      display: block;
+      border: none;
+      padding: 0;
+      @include alignleft;
+      width: auto !important;
+      white-space: normal;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      tr {
+        padding: 6px 0;
+        border-bottom: 1px dotted $hairlineColor;
+
+        &:after {
+          @include clearafter;
+        }
+      }
+
+      th,
+      td {
+        padding: 2px 0 !important;
+      }
+
+      td {
+        &:empty {
+          display: none;
+        }
+      }
+
+      [data-title] {
+        @include margin-right(0);
+
+        &:before {
+          margin-right: 5px;
+          content: attr(data-title) ":";
+          font-weight: bold;
+        }
+
+        form {
+          display: inline-block;
+        }
+      }
+    }
+  }
 }
 
 .datatablesorthelper,
 .editabletablesorthelper,
 .thumbviewhelper {
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 5px -1px rgba(0, 0, 0, 0.1);
-}
-
-.datatablesorthelper {
-  margin: 0 -7px;
-  padding: 0 7px;
+  background-color: $white;
+  @include shadow;
 }
 
 .datatablesorthelper,
@@ -1714,10 +1783,11 @@ table.collapsed tbody tr:last-child td:not(:last-child) {
 }
 
 /* elements */
+$smallThumbSize: 32px;
+$largeThumbSize: 120px;
+$statusSize: 10px;
 $baseElementSidePadding: 7px;
-$elementInnerSpacing: 10;
-$elementStatusPadding: 8 + $elementInnerSpacing;
-$elementThumbPadding: 30 + $elementInnerSpacing;
+$elementInnerSpacing: 5px;
 
 .element {
   position: relative;
@@ -1725,23 +1795,15 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
   outline: none !important;
   user-select: none;
 
+  &:focus,
+  li:focus & {
+    background-color: $grey050;
+  }
+
   &.sel,
   li.sel & {
-    border-radius: $elementBorderRadius;
-    background: $lightSelColor;
+    background-color: $lightSelColor !important;
     cursor: default;
-
-    &.hasthumb .elementthumb:after {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      content: '.';
-      font-size: 0;
-      background: rgba(35, 51, 76, 0.19);
-    }
 
     &.loading:after {
       background-image: url(../images/spinner_element.gif);
@@ -1750,9 +1812,8 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 
   &.hasthumb .elementthumb img {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
-    background: url(../images/checkers.svg) 0 0;
+    width: 100%;
+    height: 100%;
     flex-shrink: 0;
     pointer-events: none;
   }
@@ -1764,37 +1825,40 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
   &.small,
   &.large:not(.hasthumb) {
     display: inline-block;
-    padding: 6px $baseElementSidePadding;
+    padding: $baseElementSidePadding;
+    border-radius: 17px;
+
     &.hasstatus {
+      @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
+
       .status {
         position: absolute;
         @include left($baseElementSidePadding);
-        top: calc(50% - 4px);
+        top: calc(50% - 5px);
       }
     }
-    &.hasstatus:not(.hasthumb) {
-      @include padding-left($baseElementSidePadding + $elementStatusPadding);
-    }
+
     &.hasthumb {
+      @include padding-left(1px + $smallThumbSize + $elementInnerSpacing);
+
       .elementthumb {
         display: flex;
         align-items: center;
         justify-content: center;
         position: absolute;
-        top: calc(50% - 15px);
-        width: 30px;
-        height: 30px;
+        top: calc(50% - 16px);
+        @include left(1px);
+        width: $smallThumbSize;
+        height: $smallThumbSize;
+        border-radius: 16px;
+        overflow: hidden;
       }
-      &:not(.hasstatus) {
-        @include padding-left($baseElementSidePadding + $elementThumbPadding);
-        .elementthumb {
-          @include left($baseElementSidePadding);
-        }
-      }
+
       &.hasstatus {
-        @include padding-left($baseElementSidePadding + $elementStatusPadding + $elementThumbPadding);
-        .elementthumb {
-          @include left($baseElementSidePadding + $elementStatusPadding);
+        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing * 2 + $statusSize);
+
+        .status {
+          @include left(1px + $smallThumbSize + $elementInnerSpacing);
         }
       }
     }
@@ -1802,33 +1866,34 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 
   &.large.hasthumb {
     display: block;
-    padding: 105px 0 5px;
-    width: 100px;
+    padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing} $baseElementSidePadding $baseElementSidePadding;
+    width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
     box-sizing: border-box;
+    border-radius: $smallBorderRadius;
 
     &.hasstatus {
-      @include padding-left($elementStatusPadding + px);
+      @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
+
       .status {
         position: absolute;
-        @include left(0);
-        top: 110px;
+        @include left($baseElementSidePadding);
+        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing + 6};
       }
     }
 
     .elementthumb {
       position: absolute;
-      top: 0;
-      @include left(0);
-      border-radius: $elementBorderRadius;
+      top: $baseElementSidePadding;
+      @include left($baseElementSidePadding);
       overflow: hidden;
-      background: #fff;
       display: flex;
       justify-content: center;
       -ms-flex-pack: center;
       align-items: center;
       -ms-flex-align: center;
-      width: 100px;
-      height: 100px;
+      width: $largeThumbSize;
+      height: $largeThumbSize;
+      border-radius: $largeBorderRadius;
     }
 
     .label {
@@ -1846,21 +1911,22 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
     }
 
     .delete:before {
-      color: rgba(0, 0, 0, 0.2);
+      color: $darkHairlineColor;
     }
 
     &.small,
     &.large:not(.hasthumb) {
       .delete {
         position: absolute;
-        @include right(7px);
+        top: calc(50% - 11px);
+        @include right($baseElementSidePadding);
       }
     }
 
     &.large.hasthumb {
       .delete {
         position: absolute;
-        @include right(0);
+        @include right($baseElementSidePadding);
       }
     }
   }
@@ -1884,54 +1950,63 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
   }
 }
 
-$checkboxPadding: 20px;
+$checkboxPadding: $checkboxSize + 4;
 
 .elements {
-  // table views
-  .tableview {
-    tr {
-      outline: none;
+  position: relative;
 
-      &.sel {
-        td {
-          &:not(.checkbox-cell) {
-            background: $lightSelColor;
-          }
-        }
+  &.busy {
+    min-height: 200px;
+
+    &:after {
+      display: block;
+      content: '.';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      left: -24px;
+      width: calc(100% + #{24 + 24}px);
+      height: 100%;
+      background: transparentize($white, 0.25) url(../images/spinner.gif) no-repeat 50% 50%;;
+      border-radius: $largeBorderRadius;
+    }
+  }
+
+  .header {
+    margin: -24px -24px 24px;
+    padding: 14px 24px;
+    background-color: $grey050;
+    box-shadow: none;
+
+    &:after {
+      content: '';
+    }
+
+    .selectallcontainer {
+      cursor: default;
+
+      &:focus {
+        outline: none;
+      }
+
+      .checkbox {
+        @include margin-right($elementInnerSpacing);
       }
     }
+  }
 
-    th,
-    td {
-      padding-top: 5px;
-      padding-bottom: 5px;
-    }
-
-    td {
-      position: relative;
-
-      &.checkbox-cell {
-        @include padding-right(7px);
-        width: 12px !important;
-        position: relative;
-
-        input.checkbox + label,
-        div.checkbox {
-          position: absolute;
-          top: calc(50% - 6px);
-        }
-
-        & + td,
-        & + th {
-          @include padding-left(7px);
-        }
+  // table views
+  .tableview {
+    thead {
+      th.selectallcontainer {
+        outline: none;
       }
     }
 
     .move {
       display: block;
       position: absolute;
-      top: calc(50% - 9px);
+      top: calc(50% - 11px);
       @include margin-left(-14px);
       font-size: 11px;
       text-decoration: none;
@@ -1940,7 +2015,7 @@ $checkboxPadding: 20px;
     .toggle {
       display: block;
       position: absolute;
-      top: 13px;
+      top: calc(50% - 8px);
       @include margin-left(-20px);
     }
 
@@ -1951,31 +2026,40 @@ $checkboxPadding: 20px;
 
   // thumbs views
   .thumbsview {
-    @include margin(-14px, 0, 0, -14px);
+    @include margin(-$baseElementSidePadding, -$baseElementSidePadding - 1px, -$baseElementSidePadding - 1px, -$baseElementSidePadding);
+    width: calc(100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px});
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 
     li {
       position: relative;
-      @include floatleft;
-      @include margin(14px, 0, 0, 14px);
+      @include margin(0, 1px, 1px, 0);
       outline: none;
+
+      &:hover {
+        .element {
+          background-color: $grey050;
+        }
+      }
 
       &.has-checkbox {
         .checkbox {
           position: absolute;
-          top: 108px;
-          @include left(4px);
+          top: $baseElementSidePadding + $largeThumbSize + -$checkboxSize - 2px;
+          @include left($baseElementSidePadding + 2px);
         }
 
-        .element.large.hasthumb {
-          &:not(.hasstatus) {
-            @include padding-left($checkboxPadding);
+        @supports (backdrop-filter: blur(10px)) {
+          div.checkbox:before {
+            background-color: transparentize($white, 0.25);
+            border-color: transparentize($black, 0.85);
+            backdrop-filter: blur(10px);
           }
-          &.hasstatus {
-            @include padding-left($checkboxPadding + $elementStatusPadding);
 
-            .status {
-              @include left($checkboxPadding);
-            }
+          &:focus div.checkbox:before {
+            background-color: transparentize($white, 0.1);
+            border-color: transparentize($black, 0.5);
           }
         }
       }
@@ -2039,7 +2123,7 @@ $checkboxPadding: 20px;
       @include margin(-1px, 0, -1px, 8px);
       @include padding-left(0);
       height: 2px;
-      background: $linkColor !important;
+      background-color: $linkColor !important;
       @include border-left(none);
       border-radius: 1px;
     }
@@ -2067,7 +2151,7 @@ $checkboxPadding: 20px;
 
       &:before {
         content: 'downangle';
-        color: rgba(0, 0, 0, 0.2);
+        color: $darkHairlineColor;
       }
 
       &:not(.disabled):hover:before,
@@ -2166,11 +2250,14 @@ $checkboxPadding: 20px;
 
 /* editable tables */
 table.editable {
+  border-radius: $largeBorderRadius;
+  border: 1px solid $grey200;
+
   th,
   td.action {
     color: $mediumTextColor;
     font-weight: normal;
-    background: $bgColor;
+    background-color: $grey050;
   }
 
   thead,
@@ -2186,7 +2273,11 @@ table.editable {
   thead {
     tr {
       th {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        border-bottom: 1px solid $hairlineColor;
+
+        &.has-info {
+          @include padding-right(calc(15px + 1em));
+        }
 
         span.info {
           position: absolute;
@@ -2201,24 +2292,24 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-top: 1px solid rgba(0, 0, 0, 0.07);
+          border-top: 1px solid $hairlineColor;
         }
       }
 
       &:last-child {
         td:first-child {
-          @include border-bottom-left-radius($paneBorderRadius);
+          @include border-bottom-left-radius($largeBorderRadius);
 
           textarea,
           input.text {
-            @include border-bottom-left-radius($paneBorderRadius - 1);
+            @include border-bottom-left-radius($largeBorderRadius - 1);
           }
         }
       }
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(1px solid rgba(0, 0, 0, 0.07));
+        @include border-left(1px solid $hairlineColor);
       }
 
       th {
@@ -2234,7 +2325,7 @@ table.editable {
       td {
         vertical-align: middle;
         text-align: center;
-        background: #fff;
+        background-color: $white;
 
         &.textual {
           vertical-align: top;
@@ -2246,6 +2337,10 @@ table.editable {
 
         &:not(.textual) {
           padding: 4px 10px;
+        }
+
+        &.textual {
+          padding: 0;
         }
 
         &.error {
@@ -2264,7 +2359,7 @@ table.editable {
             left: 0;
             width: 100%;
             height: 100%;
-            background: hsla($hue, 10%, 96%, 0.75);
+            background-color: transparentize($grey050, 0.25);
             user-select: none;
           }
         }
@@ -2290,14 +2385,15 @@ table.editable {
       display: block;
       width: 100%;
       border: none;
+      box-shadow: none;
       border-radius: 0;
       padding: 7px 10px;
-      background: transparent;
+      background-color: transparent;
       overflow: hidden;
       transition: none;
 
       &:focus {
-        border: 1px solid rgba(0, 0, 0, 0.15);
+        border: 1px solid $hairlineColor;
         padding: 6px 9px;
         outline: none;
       }
@@ -2339,15 +2435,15 @@ table.editable {
 
   & + .btn.add {
     display: block;
-    border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
-    border: 1px dashed $darkHairlineColorAlpha;
+    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
+    border: 1px dashed $mediumHairlineColor;
     border-top-width: 0;
-    background: none;
+    background-color: transparent;
     box-shadow: none;
 
     &:focus {
       border-style: solid;
-      border-color: $blue;
+      border-color: $blue600;
     }
   }
 }
@@ -2383,65 +2479,65 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
-  border-color: rgba(0, 0, 0, 0.40);
+  border-color: transparentize($inputColor, 0.2);
 }
 
-.status.green,
+.green,
 .status.on,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: $green;
+  background-color: $teal500;
 }
 
 /* green */
 
-.status.orange,
+.orange,
 .status.pending {
-  background-color: $orange;
+  background-color: $yellow700;
 }
 
 /* orange */
 
-.status.red,
+.red,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: $red;
+  background-color: $red600;
 }
 
 /* red */
 
-.status.yellow {
-  background-color: $yellow;
+.yellow {
+  background-color: $yellow300;
 }
 
-.status.pink {
-  background-color: $pink;
+.pink {
+  background-color: $pink400;
 }
 
-.status.purple {
-  background-color: $purple;
+.purple {
+  background-color: #9B59B6;
 }
 
-.status.blue {
-  background-color: $blue;
+.blue {
+  background-color: $blue600;
 }
 
-.status.turquoise {
-  background-color: $turquoise;
+.turquoise {
+  background-color: $teal300;
 }
 
 .status.light {
-  background-color: $light;
+  background-color: $grey100;
 }
 
-.status.grey {
-  background-color: $grey;
+.grey {
+  background-color: $grey300;
 }
 
-.status.black {
-  background-color: $black;
+.black {
+  background-color: $grey800;
 }
 
 .status.white,
@@ -2465,7 +2561,7 @@ ul.tree,
 .progressbar-inner {
   border-radius: 2px;
   height: 4px;
-  background: $textColor;
+  background-color: $textColor;
 }
 
 .progressbar:not(.pending) .progressbar-inner {
@@ -2474,7 +2570,7 @@ ul.tree,
 }
 
 .progressbar.pending .progressbar-inner {
-  background: url(../images/progressbar_pending.png) repeat-x;
+  background-color: url(../images/progressbar_pending.png) repeat-x;
   body.ltr & {
     animation-name: pendingprogress-ltr;
   }
@@ -2541,7 +2637,7 @@ ul.tree,
 }
 
 .elementselect .progress-shade {
-  background: rgba(255, 255, 255, 0.8);
+  background-color: transparentize($white, 0.2);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -2564,7 +2660,7 @@ ul.tree,
 .missing-component {
   padding: 7px 10px !important;
   max-width: 400px;
-  background: $lightBgColor !important;
+  background-color: $grey050 !important;
 
   .error {
     margin: 0;
@@ -2609,12 +2705,15 @@ ul.tree,
   position: relative;
   margin: 14px 0;
   padding: 24px;
-  border-radius: $paneBorderRadius;
+  border-radius: $largeBorderRadius;
   word-wrap: break-word;
   box-sizing: border-box;
 
-  .pane {
-    background: $lightBgColor;
+  .pane &,
+  #content & {
+    background-color: $grey050;
+    border: 1px solid $hairlineColor;
+    box-shadow: none;
   }
 }
 
@@ -2631,6 +2730,11 @@ ul.tree,
     flex-wrap: wrap;
     margin: 0 !important;
     padding: 0 24px;
+    transition: padding-left linear 100ms, padding-right linear 100ms;
+
+    &.nested {
+      @include padding-left(38px);
+    }
 
     & > .heading {
       flex: 0 0 105px;
@@ -2658,7 +2762,7 @@ ul.tree,
   }
 
   & > .data > .heading {
-    padding: 8px 0;
+    padding: 7px 0;
   }
 
   & > .field > .heading > label,
@@ -2668,7 +2772,7 @@ ul.tree,
 
   & > .field > .input,
   & > .data > .value {
-    padding: 8px 0;
+    padding: 7px 0;
     width: calc(100% - 112px);
   }
 
@@ -2677,17 +2781,19 @@ ul.tree,
   }
 
   & > .field {
-    box-shadow: 0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0);
-    transition: box-shadow linear 100ms;
-
-    &.has-focus {
-      z-index: 1;
-      box-shadow: 0 0 5px hsl(205, 100%, 60%);
-    }
-
     &.has-errors {
       margin: 0 -1px !important;
       border: 1px solid $errorColor !important;
+
+      &:first-child {
+        border-top-left-radius: $largeBorderRadius;
+        border-top-right-radius: $largeBorderRadius;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: $largeBorderRadius;
+        border-bottom-right-radius: $largeBorderRadius;
+      }
 
       & + .field {
         border-top: none !important;
@@ -2695,12 +2801,7 @@ ul.tree,
     }
 
     & + .field {
-      border-top: 1px solid $hairlineColorAlpha;
-
-      &.has-focus {
-        border-top: none;
-        margin-top: 1px !important;
-      }
+      border-top: 1px solid $hairlineColor;
     }
 
     & > .heading {
@@ -2726,11 +2827,12 @@ ul.tree,
       & > .datetimewrapper > .timewrapper {
         & > .text {
           display: block;
-          margin: -8px 0;
+          margin: -7px 0;
           padding: 14px 0;
           border-radius: 0;
           box-shadow: none;
-          border: none !important;
+          background-color: transparent;
+          border: none;
         }
       }
 
@@ -2738,7 +2840,7 @@ ul.tree,
       & > .timewrapper,
       & > .datetimewrapper > .datewrapper,
       & > .datetimewrapper > .timewrapper {
-        background: transparent;
+        background-color: transparent;
         .text:placeholder-shown + div[data-icon] {
           @include left(0);
         }
@@ -2773,13 +2875,13 @@ ul.tree,
   }
 }
 
-.meta > .field > .input .select {
+.meta > .field > .input > .select {
   display: block;
-  margin: -8px 0;
+  margin: -7px 0;
   width: 100%;
   border-radius: 0;
   box-shadow: none;
-  background: none;
+  background-color: transparent;
 
   &:after {
     @include right(0);
@@ -2792,9 +2894,9 @@ ul.tree,
   }
 
   select {
-    @include padding(8px, 12px, 8px, 0);
+    @include padding(7px, 12px, 7px, 0);
     width: 100%;
-    box-shadow: none;
+    background-color: transparent;
   }
 }
 
@@ -2810,9 +2912,7 @@ ul.tree,
 
 .modal,
 .hud .body {
-  border-radius: $paneBorderRadius;
-  background: #fff;
-  box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);
+  @include modal;
 }
 
 .header,
@@ -2835,11 +2935,17 @@ ul.tree,
 }
 
 .header,
+.hud-header,
+.footer,
+.hud-footer {
+  background-color: $grey100;
+}
+
+.header,
 .hud-header {
-  border-radius: $paneBorderRadius $paneBorderRadius 0 0;
+  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
   padding: 24px;
-  background-image: linear-gradient(#fff, hsl($hue, 8%, 98%));
-  box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 -1px 0 $hairlineColor;
 
   h1 {
     margin: 0;
@@ -2848,10 +2954,9 @@ ul.tree,
 
 .footer,
 .hud-footer {
-  border-radius: 0 0 $paneBorderRadius $paneBorderRadius;
+  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
   padding: 14px 24px;
-  background-image: linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
-  box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 0 $hairlineColor;
 
   &.flex {
     & > * {
@@ -2890,12 +2995,20 @@ ul.tree,
 }
 
 .modal-shade {
+  backdrop-filter: blur(10px);
+
   &:not(.dark) {
-    background: rgba(255, 255, 255, 0.75) !important;
+    background-color: transparentize($white, 0.25) !important;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        background-color: transparent !important;
+      }
+    }
   }
 
   &.dark {
-    background: rgba(0, 0, 0, 0.75) !important;
+    background-color: transparentize($grey900, 0.5) !important;
   }
 }
 
@@ -3025,12 +3138,97 @@ ul.tree,
   ::-webkit-scrollbar-thumb {
     border-radius: 8px;
     border: 2px solid transparent;
-    background-color: rgba(0, 0, 0, .5);
+    background-color: transparentize($black, 0.5);
     background-clip: content-box;
   }
 
   ::-webkit-scrollbar-track {
-    background-color: $lightBgColor;
+    background-color: $grey050;
+  }
+}
+
+/* inline asset previews */
+
+.preview-thumb-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 190px;
+  background-color: $grey900;
+
+  &.loading {
+    &:after {
+      content: '.';
+      font-size: 0;
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: transparentize($grey900, 0.2) no-repeat 50% 50% url(../images/spinner_dark.gif);
+    }
+  }
+
+  #details & {
+    margin-bottom: 14px;
+    border-radius: $largeBorderRadius;
+    overflow: hidden;
+  }
+
+  .preview-thumb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+    img {
+      display: block;
+      max-width: 100%;
+      max-height: 190px;
+    }
+  }
+
+  &.editable {
+    cursor: pointer;
+  }
+
+  .buttons {
+    opacity: 0;
+    position: absolute;
+    top: 10px;
+    @include right(10px);
+    margin: 0;
+    transition: opacity linear 100ms;
+
+    .btn {
+      background-color: $grey600;
+      color: $white;
+      @include light-on-dark-text;
+
+      @supports (backdrop-filter: blur(10px)) {
+        & {
+          background-color: transparentize($grey600, 0.6);
+          backdrop-filter: blur(10px);
+          transition: opacity linear 100ms, backdrop-filter linear 100ms;
+        }
+      }
+    }
+  }
+
+  &:hover .buttons {
+    opacity: 1;
+  }
+
+  &:not(.editable) .buttons .btn:hover {
+    background-color: $grey500;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        background-color: transparentize($grey500, 0.3);
+      }
+    }
   }
 }
 
@@ -3053,48 +3251,8 @@ ul.tree,
     padding: 8px 0;
 
     .meta {
-      .image-preview-container {
-        position: relative;
+      .preview-thumb-container {
         margin: -8px 0 8px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        height: 190px;
-        background: #222;
-
-        .image-preview {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 100%;
-
-          img {
-            display: block;
-            max-width: 100%;
-            max-height: 190px;
-          }
-        }
-
-        &.editable {
-          cursor: pointer;
-
-          .btn {
-            opacity: 0;
-            position: absolute;
-            top: 10px;
-            @include right(10px);
-            background: rgba(34, 34, 34, 0.9);
-            color: #fff;
-            border: 1px solid rgba(153, 153, 153, 0.9);
-            background-clip: padding-box;
-            box-shadow: none;
-            transition: opacity linear 100ms;
-          }
-
-          &:hover .btn {
-            opacity: 1;
-          }
-        }
       }
 
       .field {
@@ -3107,7 +3265,7 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal {
-  padding-bottom: 58px;
+  padding-bottom: 62px;
   user-select: none;
 
   .body {
@@ -3127,7 +3285,7 @@ ul.tree,
       .sidebar {
         position: absolute;
         top: 0;
-        @include margin-left(-242px);
+        @include margin-left(-249px);
         height: 100%;
         overflow: auto;
       }
@@ -3135,11 +3293,16 @@ ul.tree,
       .main {
         margin: -24px;
         padding: 24px;
-        height: calc(100% - 48px);
+        height: 100%;
+        box-sizing: border-box;
         overflow: auto;
         position: relative;
 
         .elements {
+          &.busy {
+            min-height: calc(100% - 48px);
+          }
+
           .tableview table {
             .element {
               display: inline-block;
@@ -3152,14 +3315,7 @@ ul.tree,
 
               &.disabled {
                 opacity: 1;
-                color: #d4d4d4;
-
-                & + tr.disabled {
-                  th,
-                  td {
-                    border-top-color: rgba(0, 0, 0, 0.025);
-                  }
-                }
+                color: $grey200;
 
                 .element {
                   opacity: 0.25;
@@ -3253,7 +3409,7 @@ ul.tree,
   .content-summary {
     margin: -24px -24px 24px;
     padding: 24px;
-    background: $lightBgColor;
+    background-color: $grey050;
   }
 
   .options {
@@ -3288,6 +3444,15 @@ ul.tree,
   .body {
     max-height: 100%;
     overflow-y: auto;
+  }
+}
+
+.previewmodal {
+  &.zilch {
+    padding: 100px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -3358,6 +3523,28 @@ ul.tree,
           @include floatright;
           @include margin-left(14px);
           color: $mediumTextColor;
+        }
+      }
+    }
+  }
+
+  .flex {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    position: relative;
+
+    &.padded {
+      @include margin-left(-14px);
+      @include padding-left(24px);
+
+      &.sel {
+        &:before {
+          position: absolute;
+          top: 36px;
+          @include left(7px);
+          content: 'check';
+          font-size: 14px;
+          color: $lightTextColor;
         }
       }
     }
@@ -3452,12 +3639,13 @@ ul.tree,
 /* ----------------------------------------*/
 
 .shadow-box {
-  border-radius: $paneBorderRadius;
-  border: 1px solid #ccc;
-  box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+  border-radius: $largeBorderRadius;
+  border: 1px solid $grey200;
+  @include shadow;
 }
 
-table.shadow-box {
+table.shadow-box,
+table.editable {
   thead:first-child,
   tbody:first-child {
     tr:first-child {
@@ -3465,14 +3653,14 @@ table.shadow-box {
       td:first-child {
         &,
         &.disabled:after {
-          border-top-left-radius: $paneBorderRadius - 1;
+          border-top-left-radius: $mediumBorderRadius;
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-top-right-radius: $paneBorderRadius - 1;
+          border-top-right-radius: $mediumBorderRadius;
         }
       }
     }
@@ -3484,14 +3672,14 @@ table.shadow-box {
       td:first-child {
         &,
         &.disabled:after {
-          border-bottom-left-radius: $paneBorderRadius - 1;
+          border-bottom-left-radius: $largeBorderRadius - 1;
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-bottom-right-radius: $paneBorderRadius - 1;
+          border-bottom-right-radius: $largeBorderRadius - 1;
         }
       }
     }
@@ -3501,8 +3689,10 @@ table.shadow-box {
 .text:not(.selectize-text),
 .border-box,
 .matrix-configurator > .field > .input,
-.selectize-text > .selectize-control > .selectize-input {
-  @include text-input-styles;
+.selectize-text > .selectize-control > .selectize-input,
+.multiselect > select,
+.selectize.multiselect .selectize-control.multi .selectize-input {
+  @include input-styles;
 }
 
 .text,
@@ -3510,7 +3700,7 @@ table.shadow-box {
 .selectize-text > .selectize-control > .selectize-input {
   &.focus,
   &:focus {
-    @include text-input-focused-styles;
+    @include input-focused-styles;
   }
 }
 
@@ -3543,21 +3733,21 @@ textarea.text.fullwidth {
 
   &:first-child .text {
     &:first-child {
-      @include border-top-left-radius($btnBorderRadius);
+      @include border-top-left-radius($mediumBorderRadius);
     }
 
     &:last-child {
-      @include border-top-right-radius($btnBorderRadius);
+      @include border-top-right-radius($mediumBorderRadius);
     }
   }
 
   &:last-child .text {
     &:first-child {
-      @include border-bottom-left-radius($btnBorderRadius);
+      @include border-bottom-left-radius($mediumBorderRadius);
     }
 
     &:last-child {
-      @include border-bottom-right-radius($btnBorderRadius);
+      @include border-bottom-right-radius($mediumBorderRadius);
     }
   }
 
@@ -3604,7 +3794,7 @@ textarea.text.fullwidth {
 .chars-left {
   position: relative;
   @include floatright;
-  @include margin(-24px, 7px, 0, 0);
+  @include margin(-27px, 7px, 0, 0);
   color: $lightTextColor;
 
   &.negative-chars-left {
@@ -3616,6 +3806,40 @@ textarea.text.fullwidth {
   position: relative;
   margin: 24px 0;
 
+  .flex > & {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  & > .status-badge {
+    position: absolute;
+    top: 2px;
+    @include left(-19px);
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 15px;
+    width: 15px;
+    text-align: center;
+    cursor: default;
+    border-radius: $smallBorderRadius;
+
+    &.modified {
+      background-color: $blue600;
+      color: $white;
+      @include light-on-dark-text;
+    }
+
+    &.outdated {
+      background-color: $yellow300;
+    }
+
+    &.conflicted {
+      background-color: $red600;
+      color: $white;
+      @include light-on-dark-text;
+    }
+  }
+
   & > .heading {
     margin-bottom: 5px;
 
@@ -3626,12 +3850,12 @@ textarea.text.fullwidth {
 
       & > .site {
         display: inline-block;
-        border-radius: $btnBorderRadius;
+        border-radius: $mediumBorderRadius;
         @include margin-left(7px);
         padding: 0 4px;
         font-size: 11px;
         color: $mediumTextColor;
-        background: $bgColor;
+        background-color: $grey100;
       }
     }
   }
@@ -3688,6 +3912,20 @@ textarea.text.fullwidth {
   }
 }
 
+#expand-status-btn {
+  margin-left: 5px;
+  width: 30px;
+  height: 17px;
+  padding: 0;
+  line-height: 16px;
+  border-radius: $smallBorderRadius;
+  color: $mediumDarkTextColor;
+
+  &:before {
+    margin: 0;
+  }
+}
+
 /* toggles and nested fields */
 .nested-fields {
   margin: -24px;
@@ -3707,8 +3945,8 @@ textarea.text.fullwidth {
 input.checkbox {
   opacity: 0;
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: $checkboxSize;
+  height: $checkboxSize;
 }
 
 input.checkbox + label,
@@ -3716,8 +3954,14 @@ div.checkbox {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left(20px);
+  @include padding-left($checkboxSize + 5);
+  line-height: 16px;
+  height: 16px;
   cursor: pointer;
+
+  .info {
+    height: 16px;
+  }
 }
 
 input.checkbox:disabled + label,
@@ -3727,7 +3971,7 @@ input.checkbox:disabled + label,
 
 input.checkbox + label:empty,
 div.checkbox:empty {
-  @include padding-left(12px);
+  @include padding-left($checkboxSize);
 }
 
 input.checkbox + label:empty:after,
@@ -3743,17 +3987,15 @@ div.checkbox:before {
   position: absolute;
   @include left(0);
   top: 0;
-  width: 12px !important;
-  height: 12px;
+  width: $checkboxSize !important;
+  height: $checkboxSize;
+  box-sizing: border-box;;
   content: '.';
   font-size: 0;
-  border-radius: 1px;
-  background: #fff;
-  box-shadow: 0 0 0 1px $mediumHairlineColorAlpha;
-}
-
-input.checkbox + label:before {
-  top: 3px;
+  background-color: hsl(212, 50%, 99%);
+  border: 1px solid transparentize($inputColor, 0.6);
+  background-clip: padding-box;
+  border-radius: $smallBorderRadius;
 }
 
 input.checkbox:disabled + label,
@@ -3768,7 +4010,8 @@ div.checkbox.checked:before,
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
   @include icon;
-  line-height: 12px;
+  line-height: $checkboxSize;
+  color: $grey900;
 }
 
 input.checkbox:checked:not(:indeterminate) + label:before,
@@ -3788,7 +4031,7 @@ div.checkbox.indeterminate:before {
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
   outline: none;
-  box-shadow: 0 0 0 1px $blue;
+  border-color: $inputColor;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
@@ -3796,18 +4039,17 @@ input.checkbox:focus + label:before,
 }
 
 .checkboxfield.has-instructions .instructions {
-  @include padding-left(20px);
+  @include padding-left($checkboxSize + 5);
 }
 
 /* multiselect */
 .multiselect > select {
-  @include text-input-styles;
   color: $textColor;
   font-size: 14px;
   appearance: none;
 
   &:focus {
-    @include text-input-focused-styles;
+    @include input-focused-styles;
   }
 
   option {
@@ -3817,11 +4059,11 @@ input.checkbox:focus + label:before,
 
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
-  padding: 5px 7px;
+  padding: 6px 13px;
 }
 
 .text {
-  background: #fff;
+  background-color: $white;
 
   &.small {
     padding: 3px;
@@ -3832,7 +4074,7 @@ input.checkbox:focus + label:before,
     padding: 0;
     border: none;
     outline: none;
-    background: none;
+    background-color: transparent;
   }
 }
 
@@ -3854,7 +4096,7 @@ input.checkbox:focus + label:before,
       position: absolute;
       top: 9px;
       @include left(9px);
-      color: $lightTextColor;
+      color: $mediumTextColor;
     }
 
     .text {
@@ -3921,19 +4163,17 @@ input.checkbox:focus + label:before,
 .timewrapper {
   display: inline-block;
   position: relative;
-  background: #fff;
 
   .text {
     position: relative;
     z-index: 1;
     width: 100%;
-    background: transparent;
 
     &:placeholder-shown + div[data-icon] {
       display: block;
       position: absolute;
       top: calc(50% - 10px);
-      @include left(8px);
+      @include left(14px);
       z-index: 0;
       color: $lightTextColor;
 
@@ -3941,10 +4181,11 @@ input.checkbox:focus + label:before,
       &:before {
         user-select: none;
         pointer-events: none;
+        z-index: 1;
       }
 
       #details & {
-        color: rgba(0, 0, 0, 0.25);
+        color: $darkHairlineColor;
       }
     }
 
@@ -3975,29 +4216,7 @@ input.checkbox:focus + label:before,
   }
 }
 
-::-webkit-input-placeholder {
-  @include placeholder-styles;
-}
-
-input:-ms-input-placeholder {
-  @include placeholder-styles;
-}
-
-::-ms-input-placeholder {
-  @include placeholder-styles;
-}
-
-:-moz-placeholder {
-  @include placeholder-styles;
-}
-
-::-moz-placeholder {
-  @include placeholder-styles;
-}
-
-::placeholder {
-  @include placeholder-styles;
-}
+@include placeholder-styles($grey300);
 
 /* Kill IE's special text features */
 ::-ms-reveal,
@@ -4030,7 +4249,7 @@ input:-ms-input-placeholder {
   white-space: pre;
 
   option {
-    background: #fff;
+    background-color: $white;
   }
 }
 
@@ -4038,8 +4257,11 @@ input:-ms-input-placeholder {
   @include select-input-fullwidth-styles;
 }
 
-.select:not(.selectize) select:focus {
-  @include select-input-focused-styles;
+.select:not(.selectize) select {
+  &:hover,
+  &:focus {
+    @include select-input-focused-styles;
+  }
 }
 
 .select:not(.selectize).small:after {
@@ -4056,7 +4278,7 @@ input:-ms-input-placeholder {
 .selectize .selectize-control.single .selectize-input {
   border-color: inherit;
   box-shadow: none;
-  background: none;
+  background-color: transparent;
 }
 
 .selectize .selectize-control.single .selectize-input:after {
@@ -4092,7 +4314,6 @@ body .selectize-dropdown {
 
 /* multi select styles */
 .selectize.multiselect .selectize-control.multi .selectize-input {
-  @include text-input-styles;
   padding: 6px 8px;
 }
 
@@ -4112,7 +4333,7 @@ body .selectize-dropdown {
 
 /* shared styles */
 .selectize .selectize-control .selectize-input.focus {
-  @include text-input-focused-styles;
+  @include input-focused-styles;
 }
 
 /* menu styles */
@@ -4212,7 +4433,7 @@ body .selectize-dropdown .active {
 
 .ui-datepicker-calendar th,
 .ui-datepicker-calendar td {
-  padding: 2px;
+  padding: 2px !important;
 }
 
 .ui-datepicker-calendar th span,
@@ -4234,19 +4455,20 @@ body .selectize-dropdown .active {
 }
 
 .ui-datepicker-calendar td a:hover {
-  background: $lightSelColor;
+  background-color: $lightSelColor;
   text-decoration: none;
 }
 
 .ui-datepicker-calendar td a.ui-state-active {
-  background: $darkSelColor;
-  color: #fff;
+  background-color: $darkSelColor;
+  color: $white;
+  @include light-on-dark-text;
   cursor: default;
 }
 
 .ui-datepicker-calendar td.ui-datepicker-today a {
   border-radius: 13px;
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 0 0 2px $lightSelColor;
 }
 
 /* timepicker */
@@ -4269,12 +4491,13 @@ body .selectize-dropdown .active {
 }
 
 .ui-timepicker-list li:hover {
-  background: $lightSelColor;
+  background-color: $lightSelColor;
 }
 
 .ui-timepicker-list li.ui-timepicker-selected {
-  background: $darkSelColor;
-  color: #fff;
+  background-color: $darkSelColor;
+  color: $white;
+  @include light-on-dark-text;
   cursor: default;
 }
 
@@ -4299,7 +4522,7 @@ ul.errors li {
   height: 100%;
 
   &.no-access {
-    background: rgba(50, 50, 50, 0.9);
+    background-color: transparentize($grey900, 0.5);
   }
 
   .pane {
@@ -4308,6 +4531,7 @@ ul.errors li {
     margin-left: auto;
     margin-right: auto;
     width: 320px;
+    box-shadow: 0 25px 100px transparentize($grey900, 0.5);
   }
 }
 
@@ -4320,9 +4544,9 @@ ul.errors li {
   position: absolute;
   z-index: 2;
   width: 100%;
-  border-radius: $paneBorderRadius;
-  background: #fff;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  border-radius: $largeBorderRadius;
+  background-color: $white;
+  @include shadow;
   box-sizing: border-box;
   padding: 0 14px;
   text-align: left;
@@ -4357,7 +4581,26 @@ ul.errors li {
 .matrix-configurator > .field > .input {
   position: relative;
   @include padding-left(400px);
+  background-color: $grey050;
   overflow: hidden;
+  box-shadow: none;
+
+  &:after {
+    display: block;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    visibility: visible;
+    content: '.';
+    font-size: 0;
+    border-radius: $largeBorderRadius;
+    box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
+    user-select: none;
+    pointer-events: none;
+  }
 }
 
 .matrix-configurator .mc-sidebar {
@@ -4367,8 +4610,9 @@ ul.errors li {
   border: none;
   width: 200px;
   height: 100%;
-  background: hsla($hue, 8%, 0%, 0.03);
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.06);
+  @include border-right(1px solid $hairlineColor);
+  box-sizing: border-box;
+  background-color: $grey100;
 }
 
 .matrix-configurator .mc-sidebar.block-types {
@@ -4388,21 +4632,26 @@ ul.errors li {
   position: relative;
   margin-top: -1px;
   @include padding(11px, 45px, 10px, 14px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border: solid $hairlineColor;
+  border-width: 1px 0;
   user-select: none;
   cursor: default;
+  background-color: $grey100;
 }
 
 .matrixconfigitem.sel {
-  background: rgba(0, 0, 0, 0.05);
+  z-index: 1;
+  @include margin-right(-1px);
+  @include border-right-width(1px);
+  background-color: darken($grey100, 5%);
 }
 
 .matrixconfigitem.error {
-  background: rgba(255, 0, 0, 0.1);
+  background-color: transparentize($red600, 0.9);
 }
 
 .matrixconfigitem.sel.error {
-  background: rgba(200, 0, 0, 0.2);
+  background-color: transparentize($red600, 0.8)
 }
 
 .matrixconfigitem .handle {
@@ -4431,7 +4680,7 @@ ul.errors li {
 }
 
 .matrixconfigitem .actions .icon.settings:before {
-  color: rgba(0, 0, 0, 0.2);
+  color: $darkHairlineColor;
 }
 
 .matrixconfigitem .actions .icon.settings.error:before {
@@ -4459,20 +4708,26 @@ ul.errors li {
 .matrix-configurator .field-settings > .col-inner-container > .heading {
   margin: 0;
   padding: 7px 14px 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03));
+  border-bottom: 1px solid $hairlineColor;
+  background-image: linear-gradient(transparentize($grey800, 1), transparentize($grey800, 0.95));
 }
 
-/* blocks */
-$titlebarBorderRadius: $paneBorderRadius - 1;
+/* Matrix fields */
+.matrix {
+  & > .buttons {
+    margin-top: 10px;
+  }
+}
+
+$titlebarBorderRadius: $largeBorderRadius - 1;
 
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
   padding: 0 14px 14px;
-  border-radius: $paneBorderRadius;
+  border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
-  background: $lightBgColor;
+  background-color: $grey050;
   outline: none;
 
   & > .titlebar {
@@ -4480,9 +4735,9 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
     width: calc(100% + 28px);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
-    @include padding(5px, 70px, 5px, 33px);
+    @include padding(5px, 70px, 5px, 35px);
     border-bottom: 1px solid $hairlineColor;
-    background: $bgColor;
+    background-color: $grey050;
     color: $lightTextColor;
     overflow: hidden;
     white-space: nowrap;
@@ -4562,7 +4817,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
       width: 15px;
       height: 20px;
       text-align: center;
-      color: rgba(0, 0, 0, 0.25);
+      color: $darkHairlineColor;
 
       &:hover {
         width: 15px;
@@ -4621,15 +4876,15 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
 
 /* site pickers */
 body.sitepicker {
-  #main-container {
-    #main {
-      #main-content {
-        padding: 30px;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-      }
-    }
+  #main-content {
+    padding: 30px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  #content-container {
+    max-width: 400px;
   }
 }
 
@@ -4660,8 +4915,8 @@ body.sitepicker {
       text-align: left;
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid $hairlineColorAlpha;
-      border-radius: $btnBorderRadius;
+      border: 1px solid $hairlineColor;
+      border-radius: $mediumBorderRadius;
       @include padding(9px, 42px, 9px, 15px);
       font-size: 16px;
       line-height: 1.4;
@@ -4714,16 +4969,24 @@ only screen and (min-resolution: 1.5dppx) {
     }
   }
 
-  table thead th.ordered {
-    background-image: url(../images/listview_sort_2x.png);
-    background-size: 26px;
-  }
-  table thead th.ordered.loading {
-    background-image: url(../images/spinner_tableheader_2x.gif);
-    background-size: 26px;
+  table.data {
+    thead {
+      th {
+        &.ordered {
+          background-image: url(../images/listview_sort_2x.png);
+          background-size: 26px;
+
+          &.loading {
+            background-image: url(../images/spinner_tableheader_2x.gif);
+            background-size: 26px;
+          }
+        }
+      }
+    }
   }
 
-  .spinner {
+  .spinner
+  .elements.busy:after {
     background-image: url(../images/spinner_2x.gif);
     background-size: 20px;
   }
@@ -4747,6 +5010,11 @@ only screen and (min-resolution: 1.5dppx) {
   .sel .element.loading:after,
   .element.loading.sel:after {
     background-image: url(../images/spinner_element_2x.gif);
+    background-size: 20px;
+  }
+
+  .preview-thumb-container.loading:after {
+    background-image: url(../images/spinner_dark_2x.gif);
     background-size: 20px;
   }
 
