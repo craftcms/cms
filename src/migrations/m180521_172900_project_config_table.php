@@ -19,6 +19,9 @@ class m180521_172900_project_config_table extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists(Table::PROJECTCONFIG);
+
         $this->createTable(Table::PROJECTCONFIG, [
             'path' => $this->string()->notNull(),
             'value' => $this->text()->notNull(),
