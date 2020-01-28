@@ -345,3 +345,4 @@
 - Fixed a SQL error that could occur when searching for elements, if MySQL was used and the `searchindex` table was using InnoDB. ([#3862](https://github.com/craftcms/cms/issues/5440))
 - Fixed a PHP error that occurred when a dynamically generated class was loaded before it was finished being written. ([#5434](https://github.com/craftcms/cms/issues/5434))
 - Fixed an error that occurred after disabling a section for the primary site, while its existing entries were being resaved. ([#5489](https://github.com/craftcms/cms/issues/5489))
+- Fixed a bug where radio buttons within radio groups were getting `id` attributes even if no `id` was passed. ([#5508](https://github.com/craftcms/cms/issues/5508))
