@@ -228,7 +228,7 @@ class ProjectConfig
         }
 
         // Only pack this array if its keys are not in numerical order
-        if (!ArrayHelper::isOrdered($array)) {
+        if (ArrayHelper::isOrdered($array)) {
             return $array;
         }
 
