@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.0.1 - 2020-01-28
 
 ### Fixed
 - Fixed an error that could occur when updating to Craft 3.4.
