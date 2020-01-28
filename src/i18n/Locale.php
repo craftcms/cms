@@ -27,9 +27,6 @@ use yii\helpers\FormatConverter;
  */
 class Locale extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @var int Positive prefix.
      */
@@ -224,9 +221,6 @@ class Locale extends BaseObject
      */
     const FORMAT_JUI = 'jui';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The languages that use RTL orientation.
      */
@@ -246,9 +240,6 @@ class Locale extends BaseObject
      * @var Formatter|null The locale's formatter.
      */
     private $_formatter;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.
@@ -880,9 +871,6 @@ class Locale extends BaseObject
 
         return $this->getDisplayName();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a localized date/time format.

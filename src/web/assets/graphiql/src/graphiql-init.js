@@ -1,10 +1,3 @@
-
-var header = document.querySelector('#header');
-
-if (header) {
-    header.parentNode.removeChild(header);
-}
-
 // Parse the search string to get url parameters.
 var search = window.location.search;
 var parameters = {};
@@ -63,7 +56,7 @@ function initGraphiQl() {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + selectedSchema.token,
+                'X-Craft-Gql-Schema': selectedSchema.schema,
             },
             body: JSON.stringify(graphQLParams),
             credentials: 'include',

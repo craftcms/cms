@@ -6,59 +6,36 @@ $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
-$sidebarBgColor: hsl($hue, 20%, 25%);
-$sidebarLinkHoverBgColor: hsla($hue, 20%, 20%, 0.05);
-
-$editionStaticColor: hsl($hue, 20%, 8%);
-$editionHoverColor: hsl($hue, 20%, 70%);
-
-html,
-body {
-  overflow-x: hidden;
+html {
   -webkit-text-size-adjust: 100%;
 }
 
 #global-container {
-  display: flex;
-  min-height: 0;
-  flex-direction: row;
-  align-items: stretch;
-  height: 100vh;
-  width: 100vw;
+  position: relative;
 }
 
 /* global sidebar */
-
-$sidebarLinkStaticColor: hsl($hue, 5%, 85%);
-$sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
+$sidebarLinkStaticColor: $grey100;
+$sidebarLinkSecondaryColor: $grey200;
 
 #global-sidebar {
-  flex: 0 0 $sidebarWidth;
+  position: fixed;
+  z-index: 100;
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  position: relative;
-  width: $sidebarWidth;
   height: 100vh;
   padding: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
-  background: $sidebarBgColor;
-  box-shadow: inset -1px 0 0 darken($sidebarBgColor, 10%);
-
-  #devmode {
-    flex: 0 0 4px;
-    width: 100%;
-    min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
-    background: url(../images/dev-mode.svg) repeat-x 21px 0;
-    cursor: help;
-  }
+  background-color: $grey800;
 
   a {
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
     text-decoration: none;
+    margin-bottom: 0 !important;
   }
 
   & > a,
@@ -66,24 +43,31 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     outline: none;
     transition: background-color linear 100ms;
 
-    &:hover,
-    &.active,
-    &:active {
-      color: #fff;
-    }
+    &[href] {
+      &:hover,
+      &.active,
+      &:active {
+        color: $white;
+      }
 
-    &:hover {
-      background-color: darken($sidebarBgColor, 3%);
-      transition: none;
+      &:hover {
+        background-color: darken($grey800, 5%);
+        transition: none;
 
-      .icon {
-        opacity: 1;
+        .icon {
+          opacity: 1;
+        }
+      }
+
+      &.active,
+      &:active {
+        background-color: darken($grey800, 10%);
       }
     }
 
-    &.active,
-    &:active {
-      background: darken($sidebarBgColor, 6%);
+    &:not([href]) {
+      cursor: default;
+      background-color: transparent;
     }
 
     .icon {
@@ -91,210 +75,200 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     }
   }
 
-  #user-photo img {
-    width: auto;
-    max-width: 32px;
-    margin: 0 auto;
-    overflow: hidden
-  }
-
   .light {
-    color: #717983;
+    color: $grey400;
+  }
+}
+
+$systemInfoBgColor: darken($grey800, 5%);
+$systemInfoHoverBgColor: darken($grey800, 10%);
+
+#system-info {
+  display: flex;
+  position: relative;
+  flex: 0 0 60px;
+  flex-direction: row;
+  align-items: center;
+  background-color: $systemInfoBgColor;
+
+  &:after {
+    display: none;
   }
 
-  #system-info {
+  &:focus,
+  &:hover {
+    background-color: $systemInfoHoverBgColor !important;
+  }
+}
+
+#site-icon {
+  flex: 0 0 32px;
+  height: 32px;
+  @include margin(0, 14px, 0, 10px);
+
+  img,
+  svg {
+    display: block;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+  }
+
+  svg {
+    @include svg-mask($mediumTextColor);
+  }
+}
+
+#system-name {
+  flex: 1;
+  width: $sidebarWidth - 56;
+
+  h2 {
+    margin: 0;
+    width: 100%;
+    overflow: hidden;
+    max-height: 40px;
     position: relative;
-    display: flex;
-    flex-direction: row;
-    align-items: top;
-    @include padding(28px, 14px, 28px, 10px);
-    min-height: -webkit-min-content;
-    min-height: -moz-min-content;
 
     &:after {
-      display: none;
-    }
-
-    #site-icon {
-      width: 32px;
-      height: 32px;
-      @include margin(6px, 14px, 0, 0);
-
-      img,
-      svg {
-        display: block;
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-      }
-
-      svg {
-        @include svg-mask($mediumTextColor);
-      }
-    }
-
-    #system-name {
-      flex: 1;
-
-      h2 {
-        margin: 0;
-
-        span {
-          white-space: nowrap;
-        }
-      }
-
-      #user-info {
-        margin-top: 4px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-
-        #user-photo {
-          width: 14px;
-          height: 14px;
-          @include margin-right(5px);
-
-          img {
-            display: block;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-          }
-        }
-      }
-    }
-  }
-
-  #devmode + #system-info {
-    padding-top: 26px;
-    padding-bottom: 26px;
-  }
-
-  nav {
-    flex: 1;
-    margin: 12px 0 0;
-  }
-
-  #job-icon {
-    & > span.icon {
       display: block;
-      position: relative;
+      content: '.';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      @include right(0);
+      width: 14px;
+      background-image: linear-gradient(to right, transparentize($systemInfoBgColor, 1), $systemInfoBgColor);
+
+      #system-info:hover & {
+        background-image: linear-gradient(to right, transparentize($systemInfoHoverBgColor, 1), $systemInfoHoverBgColor);
+      }
+    }
+  }
+}
+
+#job-icon {
+  & > span.icon {
+    display: block;
+    position: relative;
+    width: 16px;
+    height: 16px;
+
+    & > canvas {
+      display: block;
+      position: absolute;
       width: 16px;
       height: 16px;
 
-      & > canvas {
-        display: block;
-        position: absolute;
-        width: 16px;
-        height: 16px;
-
-        &#job-icon-hover {
-          opacity: 0;
-          transition: opacity linear 100ms;
-        }
-      }
-    }
-
-    .progressbar {
-      position: static;
-      margin: 8px 2px;
-      width: auto;
-      border-color: hsl($hue, 5%, 85%);
-      transition: color linear 100ms;
-    }
-
-    .progressbar-inner {
-      background: hsl($hue, 5%, 85%);
-      transition: color linear 100ms;
-    }
-
-    &:hover {
-      .progressbar {
-        border-color: #fff;
-      }
-
-      .progressbar-inner {
-        background: #fff;
-      }
-
-      .icon > span.icon > canvas#job-icon-hover {
-        opacity: 1;
+      &#job-icon-hover {
+        opacity: 0;
+        transition: opacity linear 100ms;
       }
     }
   }
 
-  #nav {
-    overflow: visible;
+  .progressbar {
+    position: static;
+    margin: 8px 2px;
+    width: auto;
+    border-color: $grey200;
+    transition: color linear 100ms;
+  }
 
-    li {
-      &:not(.has-subnav) > a.sel {
-        color: #fff;
-        background: darken($sidebarBgColor, 6%);
-        box-shadow: inset 0 0 0 1px darken($sidebarBgColor, 10%);
-        border-color: $submitColor;
+  .progressbar-inner {
+    background-color: $grey200;
+    transition: color linear 100ms;
+  }
+
+  &[href]:hover {
+    .progressbar {
+      border-color: $white;
+    }
+
+    .progressbar-inner {
+      background-color: $white;
+    }
+
+    .icon > span.icon > canvas#job-icon-hover {
+      opacity: 1;
+    }
+  }
+}
+
+#nav {
+  flex: 1;
+  margin: 27px 0 0;
+  overflow: visible;
+
+  li {
+    &:not(.has-subnav) > a.sel {
+      color: $white;
+      background-color: $grey900;
+      border-color: $primaryColor;
+      opacity: 1;
+
+      .icon {
         opacity: 1;
+      }
+    }
 
-        .icon {
-          opacity: 1;
+    a {
+      @include padding-left(18px);
+      border-left: 0 solid transparent;
+
+      &.active {
+        color: $white;
+      }
+
+      &.menubtn {
+        line-height: 26px;
+      }
+
+      &:active .icon {
+        opacity: 1;
+      }
+
+      .icon {
+        @include margin(0, 22px, 0, 0);
+        opacity: 0.5;
+
+        &.icon-mask {
+          svg {
+            @include svg-mask($white);
+          }
+
+          span[data-icon] {
+            color: $white;
+          }
         }
       }
 
-      a {
-        @include padding-left(18px);
-        border-left: 0 solid transparent;
-
-        &.active {
-          color: #fff;
-        }
-
-        &.menubtn {
-          line-height: 26px;
-        }
-
-        &:active .icon {
-          opacity: 1;
-        }
-
-        .icon {
-          @include margin(0, 22px, 0, 0);
-          opacity: 0.5;
-
-          &.icon-mask {
-            svg {
-              @include svg-mask(#fff);
-            }
-
-            span[data-icon] {
-              color: #fff;
-            }
-          }
-        }
-
-        .label {
+      .label {
+        &,
+        & span {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-
-        .badge {
-          @include margin-right(0);
-          background: rgba(255, 255, 255, 0.5);
-          color: $sidebarBgColor;
-        }
       }
 
-      ul {
-        display: block;
-        margin-bottom: 10px;
+      .badge {
+        @include margin-right(0);
+        background-color: transparentize($white, 0.5);
+        color: $grey800;
+      }
+    }
 
-        li a {
-          @include padding(3px, 14px, 3px, 56px);
-          font-size: 12px;
+    ul {
+      display: block;
+      margin-bottom: 10px;
 
-          &:not(.active) {
-            color: $sidebarLinkSecondaryColor;
-          }
+      li a {
+        @include padding(3px, 14px, 3px, 56px, !important);
+        font-size: 12px;
+
+        &:not(.active) {
+          color: $sidebarLinkSecondaryColor;
         }
       }
     }
@@ -303,539 +277,781 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 #app-info {
   padding: 14px 14px 24px;
-  color: $editionStaticColor;
+  color: $grey1000;
   text-align: center;
+}
 
-  #edition {
-    font-size: 14px;
+#edition {
+  font-size: 14px;
 
-    &.hot:hover {
-      cursor: pointer;
-
-      #edition-logo {
-        border-color: $editionHoverColor;
-
-        & > .edition-name {
-          color: $editionHoverColor;
-        }
-
-        & > .edition-trial {
-          background: $editionHoverColor;
-
-          &:before {
-            body.ltr & {
-              border-color: transparent $editionHoverColor transparent transparent;
-            }
-
-            body.rtl & {
-              border-color: transparent transparent transparent $editionHoverColor;
-            }
-          }
-        }
-      }
-    }
+  &.hot:hover {
+    cursor: pointer;
 
     #edition-logo {
-      user-select: none;
-      border: 1px solid $editionStaticColor;
-      border-radius: 3px;
-      display: inline-flex;
-      height: 24px;
-      transition: border-color linear 100ms;
-
-      & > .edition-name,
-      & > .edition-trial {
-        padding: 8px 8px 7px;
-        line-height: 8px;
-        font-weight: 500;
-      }
+      border-color: $grey300;
 
       & > .edition-name {
-        letter-spacing: 2.2px;
-        padding-right: 5.8px;
-        text-transform: uppercase;
-        transition: color linear 100ms;
+        color: $grey300;
+        @include light-on-dark-text;
       }
 
       & > .edition-trial {
-        display: inline-block;
-        position: relative;
-        @include margin-left(5px);
-        @include padding-left(5px);
-        background: $editionStaticColor;
-        color: $sidebarBgColor;
-        border-radius: 0 1px 1px 0;
-        letter-spacing: 1px;
-        @include padding-right(7px);
-        text-transform: lowercase;
-        transition: background linear 100ms;
+        background-color: $grey300;
 
         &:before {
-          display: block;
-          position: absolute;
-          top: 0;
-          content: '.';
-          font-size: 0;
-          width: 0;
-          height: 0;
-          border-style: solid;
-          transition: border-color linear 100ms;
-
           body.ltr & {
-            left: -10px;
-            border-width: 0 10px 23px 0;
-            border-color: transparent $editionStaticColor transparent transparent;
+            border-color: transparent $grey300 transparent transparent;
           }
 
           body.rtl & {
-            right: -10px;
-            border-width: 0 0 23px 10px;
-            border-color: transparent transparent transparent $editionStaticColor;
+            border-color: transparent transparent transparent $grey300;
           }
         }
       }
     }
-  }
-
-  #version {
-    margin-top: 4px;
-    font-size: 12px;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 
-/* main-container */
+#edition-logo {
+  user-select: none;
+  border: 1px solid $grey1000;
+  border-radius: 3px;
+  display: inline-flex;
+  height: 24px;
+  box-sizing: content-box;
+  transition: border-color linear 100ms;
+
+  & > .edition-name,
+  & > .edition-trial {
+    padding: 8px 8px 7px;
+    line-height: 8px;
+    font-weight: 500;
+  }
+
+  & > .edition-name {
+    letter-spacing: 2.2px;
+    padding-right: 5.8px;
+    text-transform: uppercase;
+    transition: color linear 100ms;
+  }
+
+  & > .edition-trial {
+    display: inline-block;
+    position: relative;
+    @include margin-left(5px);
+    @include padding-left(5px);
+    background-color: $grey1000;
+    color: $grey800;
+    border-radius: 0 1px 1px 0;
+    letter-spacing: 1px;
+    @include padding-right(7px);
+    text-transform: lowercase;
+    transition: background linear 100ms;
+
+    &:before {
+      display: block;
+      position: absolute;
+      top: 0;
+      content: '.';
+      font-size: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      transition: border-color linear 100ms;
+
+      body.ltr & {
+        left: -10px;
+        border-width: 0 10px 23px 0;
+        border-color: transparent $grey1000 transparent transparent;
+      }
+
+      body.rtl & {
+        right: -10px;
+        border-width: 0 0 23px 10px;
+        border-color: transparent transparent transparent $grey1000;
+      }
+    }
+  }
+}
+
+#version {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+#devmode {
+  flex: 0 0 4px;
+  width: 100%;
+  min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
+  background: url(../images/dev-mode.svg) repeat-x 21px 0;
+  cursor: help;
+}
+
+#page-container {
+  @include padding-left($sidebarWidth);
+}
+
+#alerts {
+  background-color: $errorColor;
+  padding: 9px 0;
+  text-align: center;
+  color: $white;
+
+  li {
+    padding: 4px 24px;
+
+    &:before {
+      @include icon;
+      @include margin(-1px, 3px, 0, 0);
+      content: 'alert';
+      font-size: 16px;
+    }
+
+    a {
+      color: $white;
+      text-decoration: underline;
+
+      &.go {
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid transparentize($white, 0.5);
+        border-radius: $mediumBorderRadius;
+        padding: 3px 5px;
+        margin: 0 2px;
+
+        &:after {
+          color: $white;
+        }
+
+        &:hover {
+          border-color: $white;
+          transition: border-color linear 100ms;
+        }
+      }
+    }
+  }
+}
+
+#global-header {
+  margin-bottom: 14px;
+  @include pane;
+  background: $grey050;
+
+  .flex {
+    height: 60px;
+    align-items: center;
+  }
+}
+
+#crumbs {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  font-size: 13px;
+
+  &.empty {
+    display: none;
+  }
+
+  a {
+    color: $lightTextColor;
+    transition: color linear 100ms;
+
+    &:hover {
+      color: $linkColor;
+      text-decoration: none;
+    }
+  }
+
+  nav {
+    margin: 0;
+
+    ul {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+
+      li {
+        &:after {
+          @include icon;
+          margin: -1px 5px 0;
+          font-size: 11px;
+          color: $lightTextColor;
+
+          body.ltr & {
+            content: 'rightangle';
+          }
+
+          body.rtl & {
+            content: 'leftangle';
+          }
+        }
+
+        a {
+          display: inline-block;
+          padding: 5px 0 1px;
+        }
+      }
+    }
+  }
+}
+
+#nav-toggle {
+  display: none;
+  width: 36px;
+  height: 26px;
+  line-height: 26px;
+  color: $grey300;
+  text-align: center;
+  @include margin-left(-10px);
+
+  &:before {
+    @include icon;
+    content: 'menu';
+    font-size: 16px;
+    line-height: 0;
+  }
+
+  &:hover {
+    color: $grey400;
+  }
+}
+
+#user-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  @include padding(0, 24px, 0, 14px);
+  height: 100%;
+  background-color: transparent;
+  border-radius: 0;
+
+  &:after {
+    @include margin(0, 0, 0, 5px, !important);
+    color: $lightTextColor;
+    transition: color linear 100ms;
+  }
+
+  &:hover:after {
+    color: $mediumTextColor;
+  }
+}
+
+#user-photo {
+  padding: 5px 0;
+
+  img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 0 0 transparentize($grey900, 1);
+    transition: box-shadow linear 150ms;
+
+    #user-info:hover & {
+      box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 2px 10px -2px transparentize($grey900, 0.7);
+    }
+  }
+}
+
+/* main container */
 
 #main-container {
-  flex: 1 0 0;
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
-  align-items: stretch;
+  position: relative;
+}
 
-  #alerts {
-    background: $errorColor;
-    padding: 9px 0;
-    text-align: center;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    color: #fff;
+#notifications {
+  position: fixed;
+  width: calc(100% - #{$sidebarWidth});
+  z-index: 101;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  .notification {
+    padding: 5px 10px;
+    border-radius: 0 0 3px 3px;
+    border-width: 0 1px 1px;
+    color: $white !important;
+    pointer-events: auto;
+    @include light-on-dark-text;
+    @include shadow;
+
+    &.notice {
+      background-color: $noticeColor;
+    }
+
+    &.error {
+      background-color: $primaryColor;
+    }
+  }
+}
+
+#header-container {
+  margin-bottom: 14px;
+}
+
+#crumbs,
+#header {
+  padding: 0 24px;
+}
+
+#global-header,
+#header {
+  .flex {
+    flex-wrap: nowrap;
+    max-width: 100%;
+
+    &.flex-nowrap {
+      min-width: 0;
+    }
+
+    & > * {
+      margin-bottom: 0;
+    }
+  }
+}
+
+#header {
+  display: flex;
+  align-items: flex-start;
+  align-content: stretch;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  position: relative;
+  z-index: 2;
+  width: calc(100vw - #{$sidebarWidth});
+  box-sizing: border-box;
+  background-color: transparentize($grey300, 1);
+  box-shadow: 0 1px 0 transparentize($grey800, 1);
+  transition: background-color linear 100ms, box-shadow linear 100ms;
+
+  body.fixed-header & {
+    position: fixed;
+    z-index: 12;
+    top: 0;
+    background-color: $grey100;
+    box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
+  }
+
+  @supports (backdrop-filter: blur(10px)) {
+    & {
+      transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms;
+
+      body.fixed-header & {
+        background-color: transparentize($grey100, 0.25);
+        backdrop-filter: blur(10px);
+      }
+    }
+  }
+
+  .flex {
+    &:not(:last-child) {
+      @media only screen and (min-width: $minHorizontalUiWidth) {
+        @include margin-right(7px);
+      }
+    }
+  }
+
+  h1 {
+    line-height: 32px;
+    margin-top: 0;
+    margin-bottom: 0;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:not(:last-child) {
+      @include margin-right(14px !important);
+    }
+  }
+
+  .buttons,
+  .btngroup {
+    margin-top: 0;
+  }
+}
+
+#page-title {
+  &.has-toolbar {
+    @media only screen and (min-width: $minHorizontalUiWidth) {
+      min-width: #{$sidebarWidth + 24 - 7} !important;
+    }
+  }
+}
+
+$toolbarIconColor: darken($inputColor, 10%);
+
+#toolbar {
+  flex: 1;
+  align-items: flex-start;
+
+  .btn,
+  .text {
+    color: darken($inputColor, 20%);
+  }
+
+  .icon:before,
+  .texticon:before,
+  .menubtn:after,
+  [data-icon]:before,
+  [data-icon-after]:after {
+    color: $toolbarIconColor;
+  }
+
+  .text {
+    border-radius: $largeBorderRadius;
+    box-shadow: none;
+
+    &::-webkit-input-placeholder {
+      color: $toolbarIconColor;
+    }
+
+    &:-ms-input-placeholder {
+      color: $toolbarIconColor;
+    }
+
+    &::-ms-input-placeholder {
+      color: $toolbarIconColor;
+    }
+
+    &:-moz-placeholder {
+      color: $toolbarIconColor;
+    }
+
+    &::-moz-placeholder {
+      color: $toolbarIconColor;
+    }
+
+    &::placeholder {
+      color: $toolbarIconColor;
+    }
+
+    &:not(:focus) {
+      background-clip: border-box;
+    }
+  }
+
+  .spinner {
+    background-image: url(../images/spinner_toolbar.gif);
+  }
+}
+
+#action-button {
+  height: 34px;
+}
+
+#main-content {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: calc(100vw - #{$sidebarWidth});
+  padding: 0 24px 48px;
+  box-sizing: border-box;
+
+  // for the Dashboard and any other full-page grids:
+  & > .grid:only-child {
+    flex: 1;
+  }
+}
+
+#sidebar-toggle-container {
+  display: none;
+}
+
+#sidebar-container {
+  flex: 0 0 $sidebarWidth + 48;
+  width: $sidebarWidth + 48;
+  box-sizing: border-box;
+  @include margin-left(-24px);
+}
+
+#sidebar {
+  box-sizing: border-box;
+  padding: 0 48px;
+  width: $sidebarWidth + 48px;
+  background-color: transparent;
+
+  &.fixed {
+    position: fixed;
+    overflow-y: auto;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  nav {
+    li {
+      a {
+        border-radius: $largeBorderRadius;
+
+        &:not(.sel) {
+          &:hover {
+            background-color: $grey200;
+          }
+        }
+        &.sel {
+          @include pane;
+          background-color: $grey050;
+        }
+      }
+    }
+  }
+}
+
+#content-container {
+  flex: 1;
+
+  #main-content.has-sidebar & {
+    width: calc(100% - #{$sidebarWidth} - 24px);
+  }
+
+  #main-content.has-details & {
+    width: calc(100% - #{$detailsWidth} - 14px);
+  }
+
+  #main-content.has-sidebar.has-details {
+    width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
+  }
+}
+
+#tabs {
+  margin: -10px -12px 0;
+  padding: 10px 12px 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    max-width: calc(100% - 40px);
 
     li {
-      padding: 4px 24px;
+      max-width: 100%;
 
-      &:before {
-        @include icon;
-        @include margin(-1px, 3px, 0, 0);
-        content: 'alert';
-        font-size: 16px;
+      & + li {
+        @include margin-left(-12px);
       }
 
       a {
-        color: #fff;
-        text-decoration: underline;
-
-        &.go {
-          text-decoration: none;
-          white-space: nowrap;
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          border-radius: $btnBorderRadius;
-          padding: 3px 5px;
-          margin: 0 2px;
-
-          &:after {
-            color: #fff;
-          }
-
-          &:hover {
-            border-color: #fff;
-            transition: border-color linear 100ms;
-          }
-        }
-      }
-    }
-  }
-
-  #crumbs {
-    flex-direction: row;
-    align-items: stretch;
-    padding: 16px 24px 0;
-    font-size: 13px;
-    background: darken($bgColor, 3%);
-
-    &.empty {
-      display: none;
-
-      & + #main #header {
-        padding-top: 33px;
-        padding-bottom: 33px;
-      }
-    }
-
-    &:not(.empty) {
-      display: flex;
-
-      & + #main #header {
-        padding-top: 3px;
-        padding-bottom: 21px;
-      }
-    }
-
-    nav {
-      margin: 0;
-
-      ul {
-        display: flex;
-        flex-direction: row;
-        align-items: stretch;
-
-        li {
-          &:after {
-            @include icon;
-            margin: -1px 5px 0;
-            font-size: 11px;
-            color: $mediumTextColor;
-            body.ltr & {
-              content: 'rightangle';
-            }
-            body.rtl & {
-              content: 'leftangle';
-            }
-          }
-
-          a {
-            display: inline-block;
-            padding: 5px 0 1px;
-            color: $mediumTextColor;
-
-            &:hover {
-              color: $linkColor;
-              text-decoration: none;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  #main,
-  #main-form {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  #main {
-    #header {
-      display: flex;
-      align-items: center;
-      align-content: stretch;
-      flex-wrap: nowrap;
-      justify-content: space-between;
-      position: relative;
-      z-index: 2;
-      padding-left: 24px;
-      padding-right: 24px;
-      box-sizing: border-box;
-      width: calc(100vw - #{$sidebarWidth});
-      background: darken($bgColor, 3%);
-      box-shadow: 0 1px 0 $hairlineColorAlpha;
-
-      body.fixed-header & {
-        position: fixed;
-        z-index: 12;
-        top: 0;
-      }
-
-      body.fixed-header.ltr & {
-        left: $sidebarWidth;
-      }
-
-      body.fixed-header.rtl & {
-        right: $sidebarWidth;
-      }
-
-      body.fixed-header.focused & {
-        position: absolute;
-      }
-
-      .flex {
-        flex-wrap: nowrap;
+        display: block;
+        position: relative;
+        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+        padding: 12px 24px;
         max-width: 100%;
-
-        &.flex-nowrap {
-          min-width: 0;
-        }
-
-        & > * {
-          margin-bottom: 0;
-        }
-      }
-
-      h1 {
-        line-height: 32px;
-        margin-top: 0;
-        margin-bottom: 0;
-        min-width: 0;
-
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-
-        &:not(:last-child) {
-          @include margin-right(14px !important);
-        }
-      }
-
-      .buttons,
-      .btngroup {
-        margin-top: 0;
-      }
-    }
-
-    #main-content {
-      flex: 1;
-      display: flex;
-      min-height: 0;
-      flex-direction: row;
-      align-items: stretch;
-      width: calc(100vw - #{$sidebarWidth});
-
-      &:not(.has-sidebar):not(.has-details) {
-        #content-container {
-          width: 100%;
-        }
-      }
-      &.has-sidebar:not(.has-details) {
-        #content-container {
-          width: calc(100% - #{$sidebarWidth});
-        }
-      }
-      &.has-details:not(.has-sidebar) {
-        #content-container {
-          width: calc(100% - #{$detailsWidth});
-        }
-      }
-      &.has-sidebar.has-details {
-        #content-container {
-          width: calc(100% - #{$sidebarWidth + $detailsWidth});
-        }
-      }
-
-      #sidebar-toggle {
-        display: none;
-      }
-
-      #sidebar,
-      #content,
-      #details {
-        overflow-y: auto;
-      }
-
-      #sidebar {
-        flex: 0 0 $sidebarWidth;
-        width: $sidebarWidth;
         box-sizing: border-box;
-        padding-bottom: 48px;
-      }
+        line-height: 1.2;
 
-      #content-container {
-        display: flex;
-        min-height: 0;
-        flex-direction: column;
-        align-items: stretch;
+        &:hover {
+          text-decoration: none;
+        }
 
-        #tabs {
-          position: relative;
-          z-index: 2;
-          min-height: 40px;
-          overflow: hidden;
-          margin: -4px 0 -10px;
-          padding: 5px 0 10px;
-          box-sizing: border-box;
+        &:not(.sel) {
+          color: $mediumDarkTextColor;
 
-          &:after {
-            content: '.';
-            font-size: 0;
-            display: block;
-            position: absolute;
-            pointer-events: none;
-            bottom: 0;
-            left: 0;
-            width: calc(100% - 1px);
-            height: 10px;
-            background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0));
-            box-shadow: 0 -1px 0 $hairlineColor;
-          }
-
-          ul {
-            display: flex;
-            flex-direction: row;
-            width: calc(100% - 1px);
-
-            li {
-              a {
-                position: relative;
-                display: block;
-                padding: 8px 24px;
-                white-space: nowrap;
-                overflow: hidden;
-                box-sizing: border-box;
-
-                &:after {
-                  content: '.';
-                  font-size: 0;
-                  display: block;
-                  position: absolute;
-                  top: 0;
-                  @include right(0);
-                  width: 24px;
-                  height: calc(100% - 1px);
-
-                  body.ltr & {
-                    background: linear-gradient(to right, hsla($hue, 10%, 93%, 0), $bgColor 17px);
-                  }
-
-                  body.rtl & {
-                    background: linear-gradient(to left, hsla($hue, 10%, 93%, 0), $bgColor 17px);
-                  }
-                }
-
-                &:hover {
-                  text-decoration: none;
-                }
-
-                &:not(.sel) {
-                  color: $mediumDarkTextColor;
-
-                  &:hover {
-                    color: $linkColor;
-                  }
-                }
-
-                &.sel {
-                  color: $textColor;
-                  background: #fff;
-                  padding-top: 10px;
-                  padding-bottom: 10px;
-                  margin: -4px -1px 0;
-                  cursor: default;
-                  background-clip: padding-box;
-                  border-radius: $menuBorderRadius $menuBorderRadius 0 0;
-                  border: solid $hairlineColorAlpha;
-                  border-width: 1px 1px 0;
-                  z-index: 1;
-
-                  &:after {
-                    body.ltr & {
-                      background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 17px);
-                    }
-
-                    body.rtl & {
-                      background: linear-gradient(to left, rgba(255, 255, 255, 0), #fff 17px);
-                    }
-                  }
-                }
-              }
-            }
+          &:hover {
+            color: $textColor;
+            background-image: linear-gradient(to bottom, $grey050, transparentize($grey050, 0.5));
           }
         }
 
-        #content {
-          flex: 1;
-          background: #fff;
-          background-clip: padding-box;
-          padding: 24px 24px 48px;
-          word-wrap: break-word;
-          @include border-right(1px solid $hairlineColorAlpha);
-        }
-
-        #footer {
+        &.sel {
+          @include pane;
           z-index: 1;
-          box-shadow: 0 -1px 0 $hairlineColorAlpha;
-          padding: 10px 24px;
-          background: #fff;
-
-          & > *,
-          .flex > * {
-            margin-bottom: 0;
-          }
+          color: $textColor;
+          cursor: default;
+          background-clip: padding-box;
         }
-      }
-
-      #details {
-        flex: 0 0 $detailsWidth;
-        width: $detailsWidth;
-        padding: 24px 0 32px;
-
-        .meta {
-          padding: 16px 24px;
-
-          &.read-only {
-            background: darken($bgColor, 3%);
-
-            &:first-child {
-              margin-top: 30px;
-            }
-          }
-
-          & > .field,
-          & > .data {
-            padding-left: 0;
-            padding-right: 0;
-
-            & > .heading > label,
-            & > .heading {
-              color: hsl($hue, 15%, 38%);
-            }
-          }
-          & > .field.has-errors {
-            margin: 0 -24px !important;
-            padding: 0 24px;
-          }
-
-          & > .field + .field {
-            border-top-color: $hairlineColorAlpha;
-          }
-
-          .text::placeholder,
-          .datewrapper .text:placeholder-shown + div[data-icon],
-          .timewrapper .text:placeholder-shown + div[data-icon] {
-            color: hsl($hue, 5%, 60%);
-          }
-
-          .ui-datepicker {
-            @include margin(0, 0, 0, -8px);
-          }
-        }
-
-        hr {
-          margin: 0;
-          border-top-color: $hairlineColorAlpha;
-        }
-
-        .spinner {
-          background-image: url(../images/spinner_details.gif);
-        }
-
-        .text {
-          background: transparent;
-        }
-      }
-
-      // for the Dashboard and any other full-page grids:
-      & > .grid:only-child {
-        flex: 1;
       }
     }
+  }
+
+  #overflow-tab-btn {
+    margin-left: 10px;
+    width: 30px;
+    height: 17px;
+    padding: 0;
+    line-height: 16px;
+    border-radius: $smallBorderRadius;
+    color: $mediumDarkTextColor;
+
+    &:before {
+      margin: 0;
+    }
+
+    &:after {
+      display: none;
+    }
+  }
+}
+
+.content-pane {
+  @include pane;
+  border-radius: $largeBorderRadius;
+  position: relative;
+  background-clip: padding-box;
+  padding: 24px;
+  word-wrap: break-word;
+
+  &.square {
+    body.ltr & {
+      border-top-left-radius: 0;
+    }
+    body.rtl & {
+      border-top-right-radius: 0;
+    }
+  }
+
+  & > hr {
+    margin-left: -24px;
+    margin-right: -24px;
+  }
+}
+
+#footer {
+  z-index: 1;
+  margin: 24px -24px -24px;
+  padding: 10px 24px;
+  background-color: $grey050;
+  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+
+  &:empty {
+    display: none;
+  }
+
+  & > *,
+  .flex > * {
+    margin-bottom: 0;
+  }
+}
+
+#details-container {
+  flex: 0 0 #{$detailsWidth + 38};
+  width: $detailsWidth + 38;
+  @include margin-right(-24px);
+  box-sizing: border-box;
+}
+
+#details {
+  box-sizing: border-box;
+  padding-bottom: 24px;
+  @include padding-right(24px);
+  @include padding-left(14px);
+  width: $detailsWidth + 38;
+
+  #main-content.has-tabs & {
+    padding-top: 40px;
+  }
+
+  &.fixed {
+    position: fixed;
+    overflow-y: auto;
+    padding-top: 14px;
+
+    #main-content.has-tabs & {
+      padding-top: 54px;
+    }
+  }
+
+  .meta {
+    margin-bottom: 14px;
+    border-radius: $largeBorderRadius;
+    padding: 0 24px;
+
+    &:not(.read-only):not(.warning) {
+      @include pane;
+      background-color: $grey050;
+    }
+
+    &.read-only {
+      padding-top: 14px;
+      padding-bottom: 14px;
+      background-color: $grey200;
+    }
+
+    &.warning {
+      border: 2px solid $yellow300;
+      padding: 19px 22px;
+      background: $grey050;
+      color: $textColor !important;
+
+      p {
+        margin-bottom: 5px;
+      }
+
+      .btn {
+        background-color: $yellow300;
+
+        &:hover,
+        &:focus {
+          background-color: darken($yellow300, 10%);
+        }
+
+        &:active {
+          background-color: darken($yellow300, 15%);
+        }
+      }
+    }
+
+    & > .field,
+    & > .data {
+      margin: 0 -24px !important;
+
+      & > .heading > label,
+      & > .heading {
+        color: $grey600;
+      }
+    }
+    & > .field.has-errors {
+      margin: 0 -24px !important;
+      padding: 0 24px;
+    }
+
+    & > .field {
+      .status-badge {
+        @include left(4px);
+        top: calc(50% - 8px);
+      }
+
+      & + .field {
+        border-top-color: $hairlineColor;
+      }
+    }
+
+    .text::placeholder,
+    .datewrapper .text:placeholder-shown + div[data-icon],
+    .timewrapper .text:placeholder-shown + div[data-icon] {
+      color: $grey300;
+    }
+
+    .ui-datepicker {
+      @include margin(0, 0, 0, -8px);
+    }
+  }
+
+  hr {
+    margin: 14px 0;
+    border-top-color: $hairlineColor;
+  }
+
+  .spinner {
+    background-image: url(../images/spinner_details.gif);
+  }
+
+  .text {
+    background-color: transparent;
   }
 }
 
 // Hide the sidebar at < 1200
 @media only screen and (max-width: $minFullUiWidth - 1px) {
   #global-container {
-    position: relative;
     @include left(-$sidebarWidth);
     width: calc(100vw + #{$sidebarWidth});
 
@@ -856,184 +1072,127 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     }
   }
 
-  #main-container {
-    max-width: none;
+  #crumbs {
+    display: flex !important;
+  }
 
-    #crumbs {
-      display: flex !important;
+  #header {
+    width: 100vw;
+  }
 
-      body.no-header & {
-        padding-bottom: 16px;
-      }
+  #nav-toggle {
+    display: block;
+  }
 
-      #nav-toggle {
-        display: block;
-      }
-    }
-
-    #main {
-      #header {
-        width: 100vw;
-        padding-top: 3px !important;
-        padding-bottom: 21px !important;
-
-        body.ltr.fixed-header & {
-          left: 0;
-          transition: left 250ms ease-in-out;
-        }
-
-        body.rtl.fixed-header & {
-          right: 0;
-          transition: right 250ms ease-in-out;
-        }
-
-        body.ltr.showing-nav.fixed-header & {
-          left: $sidebarWidth;
-        }
-
-        body.rtl.showing-nav.fixed-header & {
-          right: $sidebarWidth;
-        }
-      }
-
-      #main-content {
-        width: 100vw;
-      }
-    }
+  #main-content {
+    width: 100vw;
   }
 }
 
 // Rearrange #main-content to flow vertically at < 999
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-  #global-container {
-    height: auto;
-    min-height: 100vh;
+  #header {
+    display: block;
+
+    .flex:not(#toolbar) {
+      margin-top: 10px;
+    }
   }
 
-  #main-container {
-    #main {
-      #header {
-        flex-wrap: wrap;
+  #toolbar {
+    flex-wrap: wrap !important;
 
-        .flex {
-          margin-top: 10px;
-        }
-      }
+    & > * {
+      margin-top: 10px !important;
+    }
+  }
 
-      #main-content {
-        flex-direction: column;
-        max-height: none !important;
+  body.fixed-header #header .flex:first-child {
+    margin-top: 0;
+  }
 
-        #sidebar-toggle {
-          display: block;
-          position: relative;
-          box-shadow: inset 0 -1px 0 $hairlineColor;
-          color: $textColor;
-          text-align: center;
-          line-height: 21px;
-          @include padding(14px, 50px, 14px, 24px);
-          padding: 14px 24px;
+  #main-content {
+    display: block;
+  }
 
-          body:not(.showing-sidebar) & {
-            background: $lightBgColor;
-          }
+  #sidebar-toggle-container {
+    display: block;
+    margin-bottom: 14px;
+  }
 
-          body.showing-sidebar & {
-            background: linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
-          }
+  #sidebar-toggle {
+    &:after {
+      @include icon;
+      content: 'downangle';
+      @include margin-left(5px);
+    }
 
-          &:hover {
-            text-decoration: none;
-          }
-        }
+    body.showing-sidebar & {
+      background-color: darken($grey200, 10%) !important;
 
-        #sidebar,
-        #content-container,
-        #details {
-          overflow-y: visible;
-        }
-
-        #sidebar {
-          flex-basis: auto;
-          width: auto;
-          box-shadow: inset 0 -1px 0 $hairlineColor;
-
-          body:not(.showing-sidebar) & {
-            display: none;
-          }
-        }
-
-        #content-container {
-          width: 100% !important;
-        }
-
-        #details {
-          flex-basis: auto;
-          width: auto;
-          box-shadow: inset 0 1px 0 $hairlineColorAlpha !important;
-          padding-top: 0;
-        }
+      &:after {
+        content: 'upangle';
       }
     }
+  }
+
+  #sidebar-container,
+  #details-container {
+    width: auto !important;
+  }
+
+  #sidebar,
+  #details {
+    position: static !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    width: auto;
+  }
+
+  #sidebar {
+    margin-bottom: 14px;
+
+    body:not(.showing-sidebar) & {
+      display: none;
+    }
+  }
+
+  #details-container {
+    @include margin-right(0);
+  }
+
+  #content-container {
+    width: auto !important;
+  }
+
+  #details {
+    padding: 0 !important;
+    margin-top: 14px;
   }
 }
 
 // Tighten up the padding at < 768
 @media only screen and (max-width: 767px) {
-  #main-container {
-    #crumbs,
-    #main #header,
-    #main #main-content #content-container #tabs ul li a,
-    #main #main-content #content-container #content,
-    #main #main-content #details .meta {
-      padding-left: 12px;
-      padding-right: 12px;
+  #crumbs,
+  #header,
+  #main-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  #tabs ul li {
+    a {
+      padding-left: 14px;
+      padding-right: 14px;
     }
 
-    #main #main-content #content-container #tabs ul li a:after {
-      width: 12px;
+    & + li {
+      @include margin-left(-7px);
     }
   }
 }
 
 @media print {
-}
-
-#queue-hud {
-  padding: 0;
-  overflow: auto;
-
-  .job {
-    padding: 14px 24px;
-
-    & + .job {
-      border-top: 1px solid $hairlineColor;
-    }
-
-    .flex {
-      align-items: center;
-
-      & > * {
-        margin-bottom: 0;
-      }
-    }
-
-    .job-status {
-      @include margin-left(7px);
-      width: 100px;
-      color: $lightTextColor;
-      text-align: center;
-
-      .progressbar {
-        position: static;
-        width: auto;
-      }
-
-      .menubtn {
-        @include margin-right(-22px);
-      }
-    }
-  }
 }
 
 #settingsmenu ul li a {
@@ -1050,61 +1209,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     position: absolute;
     margin-left: -23px;
     margin-top: 1px;
-  }
-}
-
-/* notifications */
-#notifications-wrapper {
-  position: relative;
-  z-index: 101;
-  pointer-events: none;
-
-  body.fixed-header & {
-    position: fixed;
-    width: 100%;
-  }
-}
-
-#notifications {
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-
-  .notification {
-    padding: 5px 10px;
-    border-radius: 0 0 3px 3px;
-    border-width: 0 1px 1px;
-    color: #fff !important;
-    pointer-events: auto;
-    @include light-on-dark-text;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
-
-    &.notice {
-      background: $noticeColor;
-    }
-
-    &.error {
-      background: $submitColor;
-    }
-  }
-}
-
-#nav-toggle {
-  display: none;
-  width: 36px;
-  height: 26px;
-  line-height: 26px;
-  color: $secondarySubmitColor;
-  text-align: center;
-  @include margin-left(-10px);
-
-  &:before {
-    @include icon;
-    content: 'menu';
-    font-size: 16px;
-    line-height: 0;
   }
 }
 
@@ -1127,28 +1231,45 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   position: fixed;
   top: 0;
   height: 100%;
-  background: #fff;
+  background-color: $white;
   z-index: 100;
+
+  header {
+    padding: 10px 24px;
+    background-color: $grey100;
+    box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
+    box-sizing: border-box;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: transparentize($grey100, 0.25);
+        backdrop-filter: blur(10px);
+
+        & + .lp-editor {
+          padding-top: #{10 + 34 + 10 + 24}px;
+        }
+      }
+    }
+
+    .btn, .spinner, .checkmark-icon {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .lp-editor-container {
   display: flex;
   flex-direction: column;
 
-  header {
-    padding: 10px 24px;
-    background: darken($bgColor, 3%);
-
-    .btn, .spinner, .checkmark-icon {
-      margin-bottom: 0;
-    }
-  }
-
   .lp-editor {
     flex: 1;
     padding: 24px;
     overflow: auto;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
 
     & > .field:last-child {
@@ -1181,21 +1302,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 
   header {
-    padding: 10px 24px;
-    background: #222;
-    border-bottom: 1px solid #444;
     justify-content: center;
-
-    .btn {
-      background: #444;
-      margin-bottom: 0;
-      color: #fff;
-      box-shadow: none;
-
-      &:active, &.active {
-        background: #333;
-      }
-    }
   }
 
   .lp-preview {
@@ -1203,38 +1310,13 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 }
 
-.lp-target-menu {
-  background: #444;
-
-  ul {
-    li {
-      a {
-        color: #fff !important;
-
-        &:not(.sel):not(.disabled):hover {
-          background: #555;
-        }
-      }
-    }
-  }
-}
-
 /* Sidebar */
 .sidebar {
-  width: $sidebarWidth;
   padding: 14px 24px;
-  overflow: auto;
-  background: $lightBgColor;
+  width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
-
-  body.ltr & {
-    box-shadow: inset -1px 0 0 $hairlineColor;
-  }
-
-  body.rtl & {
-    box-shadow: inset 1px 0 0 $hairlineColor;
-  }
+  background-color: $grey050;
 
   .heading {
     position: relative;
@@ -1254,28 +1336,33 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     }
   }
 
+  @mixin nav-padding($level) {
+    $padding: 24px + 20 * $level;
+    @include padding-left($padding);
+  }
+
   nav {
-    margin: 0 -24px;
+    margin-left: -24px;
+    margin-right: -24px;
     padding: 0 24px;
-    overflow: auto;
 
     & > ul > li > ul > li {
       & > a {
-        @include padding-left(44px);
+        @include nav-padding(1);
       }
 
       & > ul > li {
         & > a {
-          @include padding-left(64px);
+          @include nav-padding(2);
         }
 
         & > ul > li {
           & > a {
-            @include padding-left(84px);
+            @include nav-padding(3);
           }
 
           & > ul > li a {
-            @include padding-left(104px);
+            @include nav-padding(4);
           }
         }
       }
@@ -1289,40 +1376,17 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
         &:hover {
           text-decoration: none;
-          color: $textColor;
-          background: $sidebarLinkHoverBgColor;
-          transition: none;
+          background-color: $grey100;
         }
 
         &.sel {
-          background: $darkSelColor;
-          @include light-on-dark-text;
           cursor: default;
-
-          &,
-          & + .toggle {
-            color: #fff;
-          }
-
-          .icon.icon-mask {
-            svg {
-              @include svg-mask(#fff);
-            }
-
-            span[data-icon] {
-              color: #fff;
-            }
-          }
-
-          .badge {
-            background: #fff;
-            color: $darkSelColor;
-          }
+          background-color: $grey200;
         }
       }
 
       a {
-        margin: 0 -24px;
+        margin: 0 -24px 4px;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -1338,10 +1402,11 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         }
 
         .icon {
-          @include margin(0, 10px, 0, -10px);
+          @include margin-right(10px);
           flex-shrink: 1;
           width: 16px;
           height: 16px;
+          transition: margin-left linear 150ms, margin-right linear 150ms;
 
           &.icon-mask {
             svg {
@@ -1378,8 +1443,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           font-size: 11px;
           line-height: 16px;
           border-radius: 8px;
-          background: $mediumTextColor;
-          color: #fff;
+          background-color: $mediumTextColor;
+          color: $white;
         }
       }
 
@@ -1399,8 +1464,23 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 }
 
+#job-icon {
+  align-items: flex-start;
+
+  .icon {
+    margin-top: 2px !important;
+  }
+
+  .progress-label {
+    display: block;
+    color: $grey300;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}
+
 .content.has-sidebar:not(.hiding-sidebar) {
-  @include margin-left(218px);
+  @include margin-left($sidebarWidth);
 }
 
 nav > ul > li > .toggle {
@@ -1429,15 +1509,16 @@ only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-  #main-container {
-    #main {
-      #main-content {
-        #details {
-          .spinner {
-            background-image: url(../images/spinner_details_2x.gif);
-          }
-        }
-      }
+  #details {
+    .spinner {
+      background-image: url(../images/spinner_details_2x.gif);
+      background-size: 20px;
+    }
+  }
+  #toolbar {
+    .spinner {
+      background-image: url(../images/spinner_toolbar_2x.gif);
+      background-size: 20px;
     }
   }
   #upgrademodal.loading {

@@ -35,9 +35,6 @@ use yii\base\Exception;
  */
 class DraftsTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -58,9 +55,6 @@ class DraftsTest extends Unit
      */
     protected $revisions;
 
-    // Fixtures
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -72,9 +66,6 @@ class DraftsTest extends Unit
             ],
         ];
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Test applying draft changes to an entry
@@ -170,9 +161,6 @@ class DraftsTest extends Unit
         // Old title should now be da one.
         $this->assertSame('With versioning', $newEntry->title);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param string $entryTitle

@@ -46,15 +46,9 @@ use yii\base\InvalidConfigException;
  */
 class Entry extends Element
 {
-    // Constants
-    // =========================================================================
-
     const STATUS_LIVE = 'live';
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -94,6 +88,14 @@ class Entry extends Element
     public static function refHandle()
     {
         return 'entry';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function trackChanges(): bool
+    {
+        return true;
     }
 
     /**
@@ -295,7 +297,6 @@ class Entry extends Element
         if (!empty($sections)) {
             $userSession = Craft::$app->getUser();
             $canSetStatus = true;
-            $allowDisabledForSite = true;
             $canEdit = false;
 
             foreach ($sections as $section) {
@@ -310,10 +311,6 @@ class Entry extends Element
                     $canSetStatus = false;
                 }
 
-                if (!$section->getHasMultiSiteEntries()) {
-                    $allowDisabledForSite = false;
-                }
-
                 // Show the Edit action if they can publish changes to *any* of the sections
                 // (the trigger will disable itself for entries that aren't editable)
                 if ($canPublishEntries) {
@@ -323,10 +320,7 @@ class Entry extends Element
 
             // Set Status
             if ($canSetStatus) {
-                $actions[] = [
-                    'type' => SetStatus::class,
-                    'allowDisabledForSite' => $allowDisabledForSite,
-                ];
+                $actions[] = SetStatus::class;
             }
 
             // Edit
@@ -550,9 +544,6 @@ class Entry extends Element
         }
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Section ID
      * ---
@@ -641,9 +632,6 @@ class Entry extends Element
      */
     private $_hasNewParent;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -694,9 +682,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -1244,6 +1232,10 @@ EOD;
             $record->authorId = (int)$this->authorId ?: null;
             $record->postDate = $this->postDate;
             $record->expiryDate = $this->expiryDate;
+
+            // Capture the dirty attributes from the record
+            $dirtyAttributes = array_keys($record->getDirtyAttributes());
+
             $record->save(false);
 
             if ($section->type == Section::TYPE_STRUCTURE) {
@@ -1259,6 +1251,8 @@ EOD;
                 // Update the entry's descendants, who may be using this entry's URI in their own URIs
                 Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
             }
+
+            $this->setDirtyAttributes($dirtyAttributes);
         }
 
         parent::afterSave($isNew);
@@ -1347,9 +1341,6 @@ EOD;
 
         parent::afterMoveInStructure($structureId);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the entry has been assigned a new parent entry.

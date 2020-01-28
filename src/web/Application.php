@@ -59,13 +59,7 @@ use yii\web\Response;
  */
 class Application extends \yii\web\Application
 {
-    // Traits
-    // =========================================================================
-
     use ApplicationTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the application has been fully initialized
@@ -85,9 +79,6 @@ class Application extends \yii\web\Application
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.
@@ -355,17 +346,22 @@ class Application extends \yii\web\Application
         return $component;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Ensures that the resources folder exists and is writable.
      *
+     * @throws ErrorException
      * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
     protected function ensureResourcePathExists()
     {
-        $resourceBasePath = Craft::getAlias($this->getConfig()->getGeneral()->resourceBasePath);
+        $generalConfig = $this->getConfig()->getGeneral();
+
+        if ($generalConfig->resourceBasePath === false) {
+            return;
+        }
+
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
@@ -424,9 +420,6 @@ class Application extends \yii\web\Application
         $module->bootstrap($this);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Unregisters the Debug module's end body event.
      */
@@ -479,7 +472,7 @@ class Application extends \yii\web\Application
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
+        $publishedPath = $this->getAssetManager()->publish(Craft::getAlias($sourcePath))[0] . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException($filePath . ' does not exist.');
         }
@@ -521,7 +514,7 @@ class Application extends \yii\web\Application
         }
 
         // Is this an installer action request?
-        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== Request::CP_PATH_LOGIN)) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);

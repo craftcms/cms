@@ -13,8 +13,8 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\ElementQueryBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
@@ -42,19 +42,13 @@ use yii\db\ExpressionInterface;
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
  * @property string|Site $site The site or site handle that the elements should be returned in
- * @mixin ElementQueryBehavior
+ * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
-    // Traits
-    // =========================================================================
-
     use ArrayableTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
@@ -70,9 +64,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
-
-    // Static
-    // =========================================================================
 
     /**
      * @var bool
@@ -95,9 +86,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         return self::$_supportsRevisionParams = version_compare($schemaVersion, '3.2.6', '>=');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The name of the [[ElementInterface]] class.
@@ -469,9 +457,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private $_searchScores;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Constructor
      *
@@ -673,7 +658,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $behaviors = parent::behaviors();
         /** @noinspection PhpUndefinedClassInspection */
-        $behaviors['customFields'] = ElementQueryBehavior::class;
+        $behaviors['customFields'] = [
+            'class' => CustomFieldBehavior::class,
+            'hasMethods' => true,
+        ];
         return $behaviors;
     }
 
@@ -1417,10 +1405,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
-            if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
-                throw new QueryAbortedException();
-            }
-
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
@@ -1619,6 +1603,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Clears the cached result.
+     *
+     * @see getCachedResult()
+     * @see setCachedResult()
+     * @since 3.4.0
+     */
+    public function clearCachedResult()
+    {
+        $this->_result = $this->_resultCriteria = null;
+    }
+
+    /**
      * Returns an array of the current criteria attribute values.
      *
      * @return array
@@ -1774,6 +1770,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['trashed'] = $row['dateDeleted'] !== null;
         }
 
+        // Set the custom field values
+        if (isset($fieldValues)) {
+            $row['fieldValues'] = $fieldValues;
+        }
+
         $behaviors = [];
 
         if ($this->drafts) {
@@ -1782,6 +1783,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                 'draftName' => ArrayHelper::remove($row, 'draftName'),
                 'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+                'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
+                'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
             ]);
         }
 
@@ -1797,12 +1800,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var Element $element */
         $element = new $class($row);
         $element->attachBehaviors($behaviors);
-
-        // Set the custom field values
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (isset($fieldValues)) {
-            $element->setFieldValues($fieldValues);
-        }
 
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
@@ -1896,9 +1893,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         return $this->count();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * This method is called at the beginning of preparing an element query for the query builder.
@@ -2028,9 +2022,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         return parent::normalizeOrderBy($columns);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Combines the given condition with an alternative condition if there are any relevant placeholder elements.
      *
@@ -2114,7 +2105,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                 $handle = $field->handle;
 
-                // In theory all field handles will be accounted for on the ElementQueryBehavior, but just to be safe...
+                // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
                 if ($handle !== 'owner' && isset($fieldAttributes->$handle)) {
                     $fieldAttributeValue = $fieldAttributes->$handle;
                 } else {
@@ -2408,10 +2399,14 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies draft and revision params to the query being prepared.
+     * @throws QueryAbortedException
      */
     private function _applyRevisionParams()
     {
         if (!self::_supportsRevisionParams()) {
+            if ($this->drafts || $this->revisions) {
+                throw new QueryAbortedException();
+            }
             return;
         }
 
@@ -2426,6 +2421,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'drafts.name as draftName',
                     'drafts.notes as draftNotes',
                 ]);
+
+            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+            if (version_compare($schemaVersion, '3.4.3', '>=')) {
+                $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
+                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
+            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
@@ -2673,13 +2674,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
+                'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
-
-            // Only include the URI if this isn't headless mode
-            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
-                $select['elements_sites.uri'] = 'elements_sites.uri';
-            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {

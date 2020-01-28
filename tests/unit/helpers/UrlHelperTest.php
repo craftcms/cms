@@ -25,9 +25,6 @@ use yii\base\Exception;
  */
 class UrlHelperTest extends Unit
 {
-    // Constants
-    // =========================================================================
-
     const ABSOLUTE_URL = 'http://craftcms.com/';
     const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
     const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
@@ -35,9 +32,6 @@ class UrlHelperTest extends Unit
     const NON_ABSOLUTE_URL = 'craftcms.com/';
     const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
     const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
-
-    // Public Properties
-    // =========================================================================
 
     /**
      * @var UnitTester
@@ -68,9 +62,6 @@ class UrlHelperTest extends Unit
      * @var string
      */
     protected $cpTrigger;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Replaces the http or https in a url to the $scheme variable.
@@ -105,9 +96,6 @@ class UrlHelperTest extends Unit
         return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * @dataProvider buildQueryDataProvider
      *
@@ -138,7 +126,7 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * Test that CP Urls are created. We do some hand modification work to construct an 'expected' result based on the cp trigger
+     * Test that control panel URLs are created. We do some hand modification work to construct an 'expected' result based on the cp trigger
      * config variable. We cant do this (yet)(https://github.com/Codeception/Codeception/issues/4087) as the Craft::$app var and thus
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *
@@ -356,9 +344,6 @@ class UrlHelperTest extends Unit
             UrlHelper::siteUrl('', null, null, 12892);
         });
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -738,9 +723,6 @@ class UrlHelperTest extends Unit
             ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

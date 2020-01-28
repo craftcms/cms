@@ -1,6 +1,14 @@
 {% extends "_layouts/cp" %}
 {% set title = "Tag Groups"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "No tag groups exist yet.",
+]) %}
+
 {% block actionButton %}
     <a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t('app') }}</a>
 {% endblock %}
@@ -9,38 +17,32 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-
 {% block content %}
-    <div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
-        <p>{{ "No tag groups exist yet."|t('app') }}</p>
-    </div>
-
-    {% if tagGroups|length %}
-        <table id="taggroups" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for tagGroup in tagGroups %}
-                    <tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('site') }}</a></th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ tagGroup.handle }}</code></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <div id="taggroups-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for tagGroup in tagGroups %}
+    {% set tableData = tableData|merge([{
+        id: tagGroup.id,
+        title: tagGroup.name|t('site')|e,
+        url: url('settings/tags/' ~ tagGroup.id),
+        name: tagGroup.name|t('site')|e,
+        handle: tagGroup.handle,
+    }]) %}
+{% endfor %}
 
 {% js %}
-    new Craft.AdminTable({
-        tableSelector: '#taggroups',
-        noItemsSelector: '#notaggroups',
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#taggroups-vue-admin-table',
         deleteAction: 'tags/delete-tag-group',
-        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t('app') }}',
+        emptyMessage: Craft.t('app', 'No tag groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}

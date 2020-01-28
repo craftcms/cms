@@ -18,9 +18,6 @@ use craft\base\Model;
  */
 class CommandTestItem extends Model
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * @var string
      */

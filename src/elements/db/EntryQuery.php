@@ -47,9 +47,6 @@ use yii\db\Connection;
  */
 class EntryQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -194,9 +191,6 @@ class EntryQuery extends ElementQuery
      * @inheritdoc
      */
     protected $defaultOrderBy = ['entries.postDate' => SORT_DESC];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -761,9 +755,6 @@ class EntryQuery extends ElementQuery
         return parent::status($value);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -827,7 +818,7 @@ class EntryQuery extends ElementQuery
      */
     protected function statusCondition(string $status)
     {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime(), true);
 
         switch ($status) {
             case Entry::STATUS_LIVE:
@@ -867,9 +858,6 @@ class EntryQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'editable' param to the query being prepared.

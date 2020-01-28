@@ -23,9 +23,6 @@ use yii\base\Exception;
  */
 class ElementHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Generates a new temporary slug.
      *
@@ -90,7 +87,7 @@ class ElementHelper
     public static function setUniqueUri(ElementInterface $element)
     {
         /** @var Element $element */
-        $uriFormat = Craft::$app->getConfig()->getGeneral()->headlessMode ? null : $element->getUriFormat();
+        $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
         if ($uriFormat === null) {

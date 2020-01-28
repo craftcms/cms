@@ -17,9 +17,6 @@ use craft\base\Image;
  */
 class GenerateTransformEvent extends AssetTransformImageEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Image
      */

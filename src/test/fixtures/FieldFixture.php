@@ -23,16 +23,10 @@ use yii\base\InvalidArgumentException;
  */
 class FieldFixture extends Fixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $modelClass = Field::class;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -40,7 +34,6 @@ class FieldFixture extends Fixture
     public function load()
     {
         foreach ($this->getData() as $alias => $row) {
-
             if (isset($row['fieldType'])) {
                 $class = $row['fieldType'];
                 $field = new $class;

@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.PluginStoreOauthCallback = Garnish.Base.extend(
         {
             $graphic: null,
@@ -38,7 +37,6 @@
                         if(response.error) {
                             this.showError(response.error);
                         } else {
-
                             this.updateStatus('<p>' + Craft.t('app', 'Connected!') + '</p>');
                             this.$graphic.addClass('success');
 
@@ -103,5 +101,4 @@
                 }).appendTo($buttonContainer);
             }
         });
-
 })(jQuery);

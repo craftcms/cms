@@ -24,9 +24,6 @@ use yii\db\ActiveQueryInterface;
  */
 class UserPermission_UserGroup extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

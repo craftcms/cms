@@ -88,7 +88,6 @@ class m190417_085010_add_image_editor_permissions extends Migration
 
                 // Migrate the users
                 foreach ($volumeUids as $volumeUid) {
-
                     $savePermission = 'saveassetinvolume:' . $volumeUid;
                     $deletePermission = 'deletefilesandfoldersinvolume:' . $volumeUid;
 

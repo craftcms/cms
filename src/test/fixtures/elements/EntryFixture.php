@@ -22,9 +22,6 @@ use craft\elements\Entry;
  */
 abstract class EntryFixture extends ElementFixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -39,9 +36,6 @@ abstract class EntryFixture extends ElementFixture
      * @var array
      */
     public $typeIds = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * {@inheritdoc}
@@ -91,9 +85,6 @@ abstract class EntryFixture extends ElementFixture
 
         return $query->one();
     }
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

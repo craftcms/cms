@@ -30,9 +30,6 @@ use yii\db\Exception;
  */
 class Revisions extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event DraftEvent The event that is triggered before a revision is created.
      */
@@ -52,9 +49,6 @@ class Revisions extends Component
      * @event DraftEvent The event that is triggered after an element is reverted to a revision.
      */
     const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates a new revision for the given element.
@@ -194,7 +188,7 @@ class Revisions extends Component
                 ->siteId($source->siteId)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
-                ->offset($maxRevisions + 1)
+                ->offset($maxRevisions)
                 ->all();
 
             foreach ($extraRevisions as $extraRevision) {

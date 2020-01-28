@@ -17,9 +17,6 @@ use yii\base\BaseObject;
  */
 abstract class BaseJob extends BaseObject implements JobInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The configured job description
      */
@@ -34,9 +31,6 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @var string|null The current progress label
      */
     private $_progressLabel;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -56,9 +50,6 @@ abstract class BaseJob extends BaseObject implements JobInterface
     {
         return $this->description ?? $this->defaultDescription();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns a default description for [[getDescription()]].

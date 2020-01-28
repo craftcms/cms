@@ -18,7 +18,6 @@
         props: ['release'],
 
         computed: {
-
             date() {
                 return Craft.formatDate(this.release.date)
             }

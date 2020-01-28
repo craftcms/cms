@@ -1,6 +1,17 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Type",
+    "Handle",
+    "Name",
+    "Edit entry types ({count})",
+    "Are you sure you want to delete “{name}” and all its entries?",
+    "No sections exist yet.",
+]) %}
+
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
@@ -11,63 +22,52 @@
 
 
 {% block content %}
-    <div id="nosections"{% if sections %} class="hidden"{% endif %}>
-        <p>{{ "No sections exist yet."|t('app') }}</p>
-    </div>
-
-    {% if sections|length %}
-        <table id="sections" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <th scope="col">{{ "Type"|t('app') }}</th>
-                <th scope="col">{{ "Entry Types"|t('app')}}</th>
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for section in sections %}
-                    <tr data-id="{{ section.id }}" data-name="{{ section.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('site') }}</a></th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
-                        <td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
-                        <td data-title="{{ 'Entry Types'|t('app') }}">
-                            {% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
-                                {% set entryType = section.getEntryTypes()[0] %}
-                                <a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t('app') }}</a>
-                            {% else %}
-                                <a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t('app', { count: section.getEntryTypes()|length }) }}</a>
-                                <a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>
-                                <div class="menu">
-                                    <ul>
-                                        {% for entryType in section.getEntryTypes() %}
-                                            <li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name|t('site') }}</a></li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-                        </td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <div id="sections-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for section in sections %}
+    {% set isSingle = section.type == 'single' and section.getEntryTypes()|length == 1 %}
+    {% set menuItems = [] %}
+
+    {% for entryTypeObject in section.getEntryTypes() %}
+        {% set menuItems = menuItems|merge([{
+            label: entryTypeObject.name|t('site'),
+            url: entryTypeObject.getCpEditUrl(),
+        }]) %}
+    {% endfor %}
+
+    {% set tableData = tableData|merge([{
+        id: section.id,
+        name: section.name|t('site')|e,
+        title: section.name|t('site')|e,
+        url: url('settings/sections/' ~ section.id),
+        handle: section.handle,
+        type: section.type|title|t('app')|e,
+        menu: {
+            showItems: not isSingle,
+            menuBtnTitle: 'Entry Types'|t('app'),
+            label: isSingle ? 'Edit entry type'|t('app') : 'Edit entry types'|t('app'),
+            url: isSingle ? section.getEntryTypes()[0].getCpEditUrl() : url('settings/sections/' ~ section.id ~ '/entrytypes'),
+            items: menuItems,
+        }
+    }]) %}
+{% endfor %}
 
 {% js %}
-    var adminTable = new Craft.AdminTable({
-        tableSelector: '#sections',
-        noItemsSelector: '#nosections',
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+        { name: 'type', title: Craft.t('app', 'Type') },
+        { name: '__slot:menu', title: Craft.t('app', 'Entry Types') }
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#sections-vue-admin-table',
         deleteAction: 'sections/delete-section',
-        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t('app') }}',
-        onDeleteItem: function()
-        {
-            // Hide the Entries tab if that was the last one
-            if (adminTable.totalItems == 0)
-            {
-                $('#nav-entries').remove();
-            }
-        }
+        deleteConfirmationMessage: Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?"),
+        emptyMessage: Craft.t('app', 'No sections exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}

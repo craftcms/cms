@@ -24,5 +24,4 @@ class ImageException extends UserException
     {
         return 'Image Exception';
     }
-
 }

@@ -4,44 +4,46 @@
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'groups' %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "No groups exist yet.",
+]) %}
 
 {% set groups = craft.app.userGroups.getAllGroups() %}
 
-
 {% block content %}
-    <p id="nogroups"{% if groups|length %} class="hidden"{% endif %}>
-        {{ "No groups exist yet."|t('app') }}
-    </p>
-
-    {% if groups|length %}
-        <table id="groups" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for group in groups %}
-                    <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <div id="groups-vue-admin-table"></div>
 
     <div class="buttons">
         <a href="{{ url('settings/users/groups/new') }}" class="btn submit add icon">{{ "New user group"|t('app') }}</a>
     </div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for group in groups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: group.name|t('site')|e,
+        url: url('settings/users/groups/' ~ group.id),
+        name: group.name|t('site')|e,
+        handle: group.handle,
+    }]) %}
+{% endfor %}
 
 {% js %}
-    new Craft.AdminTable({
-        tableSelector: '#groups',
-        noItemsSelector: '#nogroups',
-        deleteAction: 'user-settings/delete-group'
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') }
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#groups-vue-admin-table',
+        deleteAction: 'user-settings/delete-group',
+        emptyMessage: Craft.t('app', 'No groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}

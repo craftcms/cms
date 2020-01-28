@@ -84,7 +84,6 @@ const actions = {
                 .then(responseData => {
                     commit('updateCmsEditions', {responseData})
                     resolve(responseData)
-
                 })
                 .catch(error => {
                     reject(error)

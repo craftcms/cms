@@ -18,9 +18,6 @@ use Twig\Node\Node;
  */
 class PaginateNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

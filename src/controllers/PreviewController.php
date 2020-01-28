@@ -23,18 +23,12 @@ use yii\web\ServerErrorHttpException;
  */
 class PreviewController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

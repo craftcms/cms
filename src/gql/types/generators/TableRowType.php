@@ -10,7 +10,9 @@ namespace craft\gql\types\generators;
 use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
+use craft\gql\types\Number;
 use craft\gql\types\TableRow;
 use GraphQL\Type\Definition\Type;
 
@@ -33,10 +35,26 @@ class TableRowType implements GeneratorInterface
         $contentFields = [];
 
         foreach ($context->columns as $columnKey => $columnDefinition) {
-            $cellType = in_array($columnDefinition['type'], ['date', 'time'], true) ? DateTime::getType() : Type::string();
+            switch ($columnDefinition['type']){
+                case 'date':
+                case 'time':
+                    $cellType = DateTime::getType();
+                    break;
+                case 'number':
+                    $cellType = Number::getType();
+                    break;
+                case 'lightswitch':
+                    $cellType = Type::boolean();
+                    break;
+                default:
+                    $cellType = Type::string();
+            }
+
             $contentFields[$columnKey] = $cellType;
             $contentFields[$columnDefinition['handle']] = $cellType;
         }
+
+        $contentFields = TypeManager::prepareFieldDefinitions($contentFields, $typeName);
 
         // Generate a type for each entry type
         $tableRowType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
@@ -57,5 +75,4 @@ class TableRowType implements GeneratorInterface
         /** @var TableField $context */
         return $context->handle . '_TableRow';
     }
-
 }

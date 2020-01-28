@@ -33,7 +33,7 @@ class ExtractEagerLoadingParameterTest extends Unit
     protected function _before()
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
 
         $this->tester->mockMethods(
@@ -92,9 +92,6 @@ class ExtractEagerLoadingParameterTest extends Unit
     protected function _after()
     {
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test eager loading parameter extraction from a query string
@@ -182,6 +179,12 @@ GQL;
                 '{ entries { assetField (volumeId: 4) { filename }}}',
                 [
                     ['assetField', ['id' => 0]]
+                ],
+            ],
+            [
+                '{ entries { _count(field: "assetField") assetField { filename }}}',
+                [
+                    ['assetField', ['volumeId' => [5, 7], 'count' => true]]
                 ],
             ],
             [

@@ -29,16 +29,10 @@ use yii\base\Exception;
  */
 class Api extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Client
      */
     public $client;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

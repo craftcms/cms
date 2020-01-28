@@ -25,19 +25,10 @@ use yii\base\NotSupportedException;
  */
 class MysqlDbHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider sqlTypesDataProvider
@@ -101,9 +92,6 @@ class MysqlDbHelperTest extends Unit
         $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
         $this->assertSame($result, $textualCapacity);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -187,9 +175,6 @@ class MysqlDbHelperTest extends Unit
 
         return $returnArray;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

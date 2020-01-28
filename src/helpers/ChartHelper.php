@@ -21,9 +21,6 @@ use yii\base\Exception;
  */
 class ChartHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the data for a run chart, based on a given DB query, start/end dates, and the desired time interval unit.
      *
@@ -215,8 +212,8 @@ class ChartHelper
     public static function dateRanges(): array
     {
         $dateRanges = [
-            'd7' => ['label' => Craft::t('app', 'Last 7 days'), 'startDate' => '-7 days', 'endDate' => null],
-            'd30' => ['label' => Craft::t('app', 'Last 30 days'), 'startDate' => '-30 days', 'endDate' => null],
+            'd7' => ['label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'startDate' => '-7 days', 'endDate' => null],
+            'd30' => ['label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'startDate' => '-30 days', 'endDate' => null],
             'lastweek' => ['label' => Craft::t('app', 'Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'],
             'lastmonth' => ['label' => Craft::t('app', 'Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'],
         ];

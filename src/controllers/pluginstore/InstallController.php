@@ -22,23 +22,14 @@ use yii\web\Response as YiiResponse;
  */
 class InstallController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_CRAFT_INSTALL = 'craft-install';
     const ACTION_ENABLE = 'enable';
     const ACTION_MIGRATE = 'migrate';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null
      */
     private $_pluginRedirect;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -126,9 +117,6 @@ class InstallController extends BaseUpdaterController
     {
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

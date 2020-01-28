@@ -20,13 +20,7 @@ use yii\base\NotSupportedException;
  */
 class MissingVolume extends Volume implements MissingComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use MissingComponentTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

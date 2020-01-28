@@ -13,9 +13,6 @@ use craft\helpers\Json;
  */
 class m151002_095935_volume_cache_settings extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

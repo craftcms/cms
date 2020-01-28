@@ -16,9 +16,6 @@ namespace craft\base;
  */
 interface SortableFieldInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the sort option array that should be included in the element’s
      * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.

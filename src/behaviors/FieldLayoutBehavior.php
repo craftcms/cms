@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class FieldLayoutBehavior extends Behavior
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The element type that the field layout will be associated with
      */
@@ -48,9 +45,6 @@ class FieldLayoutBehavior extends Behavior
      * @var FieldInterface[]|null The fields associated with the owner's field layout
      */
     private $_fields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

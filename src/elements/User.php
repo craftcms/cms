@@ -58,9 +58,6 @@ use yii\web\IdentityInterface;
  */
 class User extends Element implements IdentityInterface
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
@@ -96,9 +93,6 @@ class User extends Element implements IdentityInterface
 
     const SCENARIO_REGISTRATION = 'registration';
     const SCENARIO_PASSWORD = 'password';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -430,9 +424,6 @@ class User extends Element implements IdentityInterface
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Username
      */
@@ -574,9 +565,6 @@ class User extends Element implements IdentityInterface
      */
     private $_preferences;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -669,9 +657,9 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
@@ -1448,9 +1436,6 @@ class User extends Element implements IdentityInterface
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Validates a cookie's stored user agent against the current request's user agent string,

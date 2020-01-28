@@ -18,9 +18,6 @@ use craft\base\Serializable as SerializableInterface;
  */
 class Serializable implements SerializableInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @return mixed|string
      */

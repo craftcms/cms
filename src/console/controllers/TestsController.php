@@ -25,9 +25,6 @@ use yii\console\ExitCode;
  */
 class TestsController extends Controller
 {
-    // Public functions
-    // =========================================================================
-
     /**
      * Sets up a test suite for the current project.
      *

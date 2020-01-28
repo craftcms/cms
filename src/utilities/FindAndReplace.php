@@ -19,9 +19,6 @@ use craft\web\assets\findreplace\FindReplaceAsset;
  */
 class FindAndReplace extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

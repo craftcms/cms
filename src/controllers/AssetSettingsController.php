@@ -20,9 +20,6 @@ use yii\web\Response;
  */
 class AssetSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -51,9 +48,9 @@ class AssetSettingsController extends Controller
             if ($tempSubpath = trim(Craft::$app->getRequest()->getBodyParam('tempSubpath'), '/\\ ')) {
                 $settings['tempSubpath'] = str_replace('\\', '/', $tempSubpath);
             }
-            $projectConfig->set('assets', $settings);
+            $projectConfig->set('assets', $settings, 'Update Temporary Upload Volume settings.');
         } else {
-            $projectConfig->remove('assets');
+            $projectConfig->remove('assets', 'Update Temporary Upload Volume settings.');
         }
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset settings saved.'));

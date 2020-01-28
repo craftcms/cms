@@ -3,6 +3,7 @@
 {% set entryType = entry.getType() %}
 
 {{ textField({
+    status: entry.getAttributeStatus('title'),
     label: entryType.titleLabel|t('site')|e ?: 'Title'|t('app'),
     siteId: entryType.hasTitleField ? entry.siteId,
     translationDescription: 'This field is translated for each site.'|t('app'),

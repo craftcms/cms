@@ -18,6 +18,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -39,6 +40,7 @@ use craft\web\twig\tokenparsers\RedirectTokenParser;
 use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
 use craft\web\twig\tokenparsers\RequireAdminTokenParser;
 use craft\web\twig\tokenparsers\RequireEditionTokenParser;
+use craft\web\twig\tokenparsers\RequireGuestTokenParser;
 use craft\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
@@ -69,9 +71,6 @@ use yii\helpers\Markdown;
  */
 class Extension extends AbstractExtension implements GlobalsInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var View|null
      */
@@ -81,9 +80,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @var TwigEnvironment|null
      */
     protected $environment;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor
@@ -137,6 +133,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new RequireAdminTokenParser(),
             new RequireEditionTokenParser(),
             new RequireLoginTokenParser(),
+            new RequireGuestTokenParser(),
             new RequirePermissionTokenParser(),
             new SwitchTokenParser(),
 
@@ -210,6 +207,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
+            new TwigFilter('contains', [ArrayHelper::class, 'contains']),
             new TwigFilter('currency', [$formatter, 'asCurrency']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
@@ -231,16 +229,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('literal', [$this, 'literalFilter']),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs']),
             new TwigFilter('ns', [$this->view, 'namespaceInputs']),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
             new TwigFilter('number', [$formatter, 'asDecimal']),
+            new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
             new TwigFilter('percentage', [$formatter, 'asPercent']),
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -442,6 +443,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Parses an HTML tag to find its attributes.
+     *
+     * @param string $tag The HTML tag to parse
+     * @return array The parsed HTML tag attributes
+     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @since 3.4.0
+     */
+    public function parseAttrFilter(string $tag): array
+    {
+        try {
+            return Html::parseTagAttributes($tag, 0, $start, $end, true);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return [];
+        }
+    }
+
+    /**
      * Parses a string for reference tags.
      *
      * @param mixed $str
@@ -472,6 +491,35 @@ class Extension extends AbstractExtension implements GlobalsInterface
             Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
+    }
+
+    /**
+     * Purifies the given HTML using HTML Purifier.
+     *
+     * @param string $html The HTML to be purified
+     * @param string|array|null $config The HTML Purifier config. This can either be the name of a JSON file within
+     * `config/htmlpurifier/` (sans `.json` extension) or a config array.
+     * @return string The purified HTML
+     * @since 3.4.0
+     */
+    public function purifyFilter(string $html, $config = null): string
+    {
+        if (is_string($config)) {
+            $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier' .
+                DIRECTORY_SEPARATOR . $config . '.json';
+            $config = null;
+            if (!is_file($path)) {
+                Craft::warning("No HTML Purifier config found at {$path}.");
+            } else {
+                try {
+                    $config = Json::decode(file_get_contents($path));
+                } catch (InvalidArgumentException $e) {
+                    Craft::warning("Invalid HTML Purifier config at {$path}.");
+                }
+            }
+        }
+
+        return HtmlPurifier::process($html, $config);
     }
 
     /**
@@ -793,6 +841,24 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Merges an array with another one.
+     *
+     * @param array|\Traversable $arr1 An array
+     * @param array|\Traversable $arr2 An array
+     * @param bool $recursive Whether the arrays should be merged recursively using [[\yii\helpers\BaseArrayHelper::merge()]]
+     * @return array The merged array
+     * @since 3.4.0
+     */
+    public function mergeFilter($arr1, $arr2, bool $recursive = false): array
+    {
+        if ($recursive) {
+            return ArrayHelper::merge($arr1, $arr2);
+        }
+
+        return twig_array_merge($arr1, $arr2);
+    }
+
+    /**
      * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
      *
      * @param mixed $array the array to be sorted. The array will be modified after calling this method.
@@ -830,6 +896,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
+            new TwigFunction('combine', 'array_combine'),
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),

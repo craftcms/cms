@@ -26,13 +26,7 @@ use yii\db\ActiveQueryInterface;
  */
 class TagGroup extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

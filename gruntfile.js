@@ -9,6 +9,7 @@ module.exports = function(grunt) {
                     'src/web/assets/**/*.scss',
                     '!src/web/assets/graphiql/**/*.scss',
                     '!src/web/assets/pluginstore/**/*.scss',
+                    '!src/web/assets/admintable/**/*.scss',
                 ],
                 tasks: 'css'
             },
@@ -36,7 +37,8 @@ module.exports = function(grunt) {
                 src: [
                     '**/*.scss',
                     '!graphiql/**/*.scss',
-                    '!pluginstore/**/*.scss'
+                    '!pluginstore/**/*.scss',
+                    '!admintable/**/*.scss'
                 ],
                 dest: 'src/web/assets',
                 rename: function(dest, src) {
@@ -59,7 +61,8 @@ module.exports = function(grunt) {
                 src: [
                     '**/*.css',
                     '!graphiql/**/*.css',
-                    '!pluginstore/**/*.css'
+                    '!pluginstore/**/*.css',
+                    '!admintable/**/*.css'
                 ],
                 dest: 'src/web/assets'
             }
@@ -77,7 +80,8 @@ module.exports = function(grunt) {
                     'src/web/assets/cp/src/js/*.js',
                     '!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)',
                     '!src/web/assets/graphiql/**/*.js',
-                    '!src/web/assets/pluginstore/**/*.js'
+                    '!src/web/assets/pluginstore/**/*.js',
+                    '!src/web/assets/admintable/**/*.js'
                 ],
                 dest: 'src/web/assets/cp/dist/js/Craft.js'
             }
@@ -125,7 +129,8 @@ module.exports = function(grunt) {
                 '!src/web/assets/**/*.min.js',
                 '!src/web/assets/cp/dist/js/Craft.js',
                 '!src/web/assets/graphiql/**/*.js',
-                '!src/web/assets/pluginstore/**/*.js'
+                '!src/web/assets/pluginstore/**/*.js',
+                '!src/web/assets/admintable/**/*.js'
             ],
             afterconcat: [
                 'src/web/assets/cp/dist/js/Craft.js'
@@ -137,7 +142,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify-es');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 

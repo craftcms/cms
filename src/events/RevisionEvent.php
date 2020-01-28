@@ -19,9 +19,6 @@ use yii\base\Event;
  */
 class RevisionEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface The source element
      */

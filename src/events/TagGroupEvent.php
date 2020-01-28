@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class TagGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var TagGroup|null The tag group model associated with the event.
      */

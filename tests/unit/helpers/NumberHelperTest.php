@@ -21,19 +21,10 @@ use UnitTester;
  */
 class NumberHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Properties
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider wordDataProvider
@@ -106,9 +97,6 @@ class NumberHelperTest extends Unit
         $numeric = Number::makeNumeric($input);
         $this->assertSame($result, $numeric);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

@@ -12,9 +12,6 @@ use craft\helpers\MigrationHelper;
  */
 class m150403_183908_migrations_table_changes extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -4,6 +4,7 @@
 {% set title = "Fields"|t('app') %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fields\\FieldsAsset") %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% do view.registerTranslations('app', [
     "What do you want to name the group?",
@@ -12,12 +13,17 @@
     "Are you sure you want to delete this group and all its fields?",
     "Could not delete the group.",
     "Group renamed.",
+    "Name",
+    "Handle",
+    "Type",
+    "Group",
+    "This group doesn’t have any fields yet.",
+    "No fields exist yet.",
 ]) %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
-
 
 {% set groups = craft.app.fields.getAllGroups()|index('id') %}
 
@@ -27,7 +33,9 @@
     {% endif %}
 
     {% set fields = groups[groupId].getFields() %}
+    {% set emptyMessage = "This group doesn’t have any fields yet."|t('app') %}
 {% else %}
+    {% set emptyMessage = "No fields exist yet."|t('app') %}
     {% set fields = craft.app.fields.getAllFields() %}
 {% endif %}
 
@@ -67,51 +75,64 @@
 
 
 {% block content %}
-    <p id="nofields"{% if fields %} class="hidden"{% endif %}>
-        {% if groupId is defined %}
-            {{ "This group doesn’t have any fields yet."|t('app') }}
-        {% else %}
-            {{ "No fields exist yet."|t('app') }}
-        {% endif %}
-    </p>
-
-    {% if fields %}
-        <table id="fields" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <th scope="col">{{ "Type"|t('app') }}</th>
-                {% if groupId is not defined %}<th scope="col">{{ "Group"|t('app') }}</th>{% endif %}
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for field in fields %}
-                    <tr data-id="{{ field.id }}" data-name="{{ field.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/fields/edit/' ~ field.id) }}">{{ field.name|t('site') }}</a>
-                            {%- if field.required %} <span class="required"></span>{% endif -%}
-                        </th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ field.handle }}</code></td>
-                        <td data-title="{{ 'Type'|t('app') }}">
-                            {% if field is missing %}
-                                <span class="error">{{ field.expectedType }}</span>
-                            {% else %}
-                                {{ field.displayName() }}
-                            {% endif %}
-                        </td>
-                        {% if groupId is not defined %}<td data-title="{{ 'Group'|t('app') }}">{{ field.group.name|t('site') }}</td>{% endif %}
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <div id="fields-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for field in fields %}
+    {% set fieldIsMissing = false %}
+
+    {% if field is missing %}
+        {% set fieldIsMissing = true %}
+    {% endif %}
+
+    {% if groupId is not defined %}
+        {% set group = field.group.name|t('site')|e %}
+    {% endif %}
+
+    {% set tableData = tableData|merge([{
+        id: field.id,
+        title: field.name|t('site')|e,
+        url: url('settings/fields/edit/' ~ field.id),
+        handle: field.handle,
+        type: {
+            isMissing: fieldIsMissing,
+            label: fieldIsMissing ? field.expectedType : field.displayName()
+        },
+
+        group: group ?? null,
+    }]) %}
+{% endfor %}
 
 {% js %}
-    new Craft.AdminTable({
-        tableSelector: '#fields',
-        noItemsSelector: '#nofields',
-        deleteAction: 'fields/delete-field'
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+        {
+            name: 'type',
+            title: Craft.t('app', 'Type'),
+            callback: function(value) {
+                if (value.isMissing) {
+                    return '<span class="error">' + value.label + '</span>'
+                }
+
+                return value.label
+            }
+        },
+    ];
+
+    {% if groupId is not defined %}
+        columns.push({
+            name: 'group',
+            title: Craft.t('app', 'Group'),
+        })
+    {% endif %}
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#fields-vue-admin-table',
+        deleteAction: 'fields/delete-field',
+        emptyMessage: Craft.t('app', '{{ emptyMessage }}'),
+        tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}

@@ -19,15 +19,12 @@ use craft\helpers\Json;
  */
 class DownloadAssetFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Download file');
+        return Craft::t('app', 'Download');
     }
 
     /**
@@ -37,28 +34,37 @@ class DownloadAssetFile extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOD
+        $js = <<<JS
 (function()
 {
     var trigger = new Craft.ElementActionTrigger({
         type: {$type},
-        batch: false,
         activate: function(\$selectedItems)
         {
-            var form = $('<form method="post" target="_blank" action="">' +
-            '<input type="hidden" name="action" value="assets/download-asset" />' +
-            '<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
-            '<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
-            '<input type="submit" value="Submit" />' +
-            '</form>');
-            
-            form.appendTo('body');
-            form.submit();
-            form.remove();
+            var \$form = Craft.createForm().appendTo(Garnish.\$bod);
+            $(Craft.getCsrfInput()).appendTo(\$form);
+            $('<input/>', {
+                type: 'hidden',
+                name: 'action',
+                value: 'assets/download-asset'
+            }).appendTo(\$form);
+            \$selectedItems.each(function() {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'assetId[]',
+                    value: $(this).data('id')
+                }).appendTo(\$form);
+            });
+            $('<input/>', {
+                type: 'submit',
+                value: 'Submit',
+            }).appendTo(\$form);
+            \$form.submit();
+            \$form.remove();
         }
     });
 })();
-EOD;
+JS;
 
         $request = Craft::$app->getRequest();
         $js = str_replace([

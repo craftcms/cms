@@ -3,6 +3,14 @@
 {% extends "_layouts/cp" %}
 {% set title = "Globals"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Global Set Name",
+    "Handle",
+    "No global sets exist yet.",
+]) %}
+
 {% block actionButton %}
     <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t('app') }}</a>
 {% endblock %}
@@ -11,50 +19,39 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-
 {% set globalSets = craft.app.globals.getAllSets() %}
 
-
 {% block content %}
-    <div class="field">
-        <p id="nosets"{% if globalSets %} class="hidden"{% endif %}>
-            {{ "No global sets exist yet."|t('app') }}
-        </p>
-
-        {% if globalSets %}
-            <table id="sets" class="data fullwidth collapsible">
-                <thead>
-                    <th scope="col">{{ "Global Set Name"|t('app') }}</th>
-                    <th scope="col">{{ "Handle"|t('app') }}</th>
-                    <td class="thin"></td>
-                </thead>
-                <tbody>
-                    {% for globalSet in globalSets %}
-                        <tr data-id="{{ globalSet.id }}" data-name="{{ globalSet.name }}">
-                            <th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('site') }}</a></th>
-                            <td class="code" data-title="{{ 'Handle'|t('app') }}">{{ globalSet.handle }}</td>
-                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    </div>
+    <div id="sets-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for globalSet in globalSets %}
+    {% set tableData = tableData|merge([{
+        id: globalSet.id,
+        title: globalSet.name|t('site')|e,
+        url: url('settings/globals/' ~ globalSet.id),
+        handle: globalSet.handle,
+    }]) %}
+{% endfor %}
 
 {% js %}
-    var adminTable = new Craft.AdminTable({
-        tableSelector: '#sets',
-        noItemsSelector: '#nosets',
-        deleteAction: 'globals/delete-set',
-        onDeleteItem: function()
-        {
-            // Hide the Globals tab if that was the last one
-            if (adminTable.totalItems == 0)
-            {
-                $('#nav-globals').remove();
-            }
-        }
+var columns = [
+    {
+        name: '__slot:title',
+        title: Craft.t('app', 'Global Set Name'),
+    },
+    {
+        name: '__slot:handle',
+        title: Craft.t('app', 'Handle'),
+    },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#sets-vue-admin-table',
+    deleteAction: 'globals/delete-set',
+    emptyMessage: Craft.t('app', 'No global sets exist yet.'),
+    tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}

@@ -27,9 +27,6 @@ use yii\base\Exception;
  */
 class Content extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementContentEvent The event that is triggered before an element's content is saved.
      */
@@ -39,9 +36,6 @@ class Content extends Component
      * @event ElementContentEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string
@@ -57,9 +51,6 @@ class Content extends Component
      * @var string
      */
     public $fieldContext = 'global';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the content row for a given element, with field column prefixes removed from the keys.
@@ -176,7 +167,10 @@ class Content extends Component
         if ($fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                if ($field::hasContentColumn()) {
+                if (
+                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
+                    $field::hasContentColumn()
+                ) {
                     $column = $this->fieldColumnPrefix . $field->handle;
                     $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
@@ -222,9 +216,6 @@ class Content extends Component
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Removes the column prefixes from a given row.

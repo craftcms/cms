@@ -25,9 +25,6 @@ use Exception;
  */
 class TemplateCachesTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var TemplateCaches
      */
@@ -37,12 +34,6 @@ class TemplateCachesTest extends Unit
      * @var Connection
      */
     protected $db;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @throws Exception
@@ -78,9 +69,6 @@ class TemplateCachesTest extends Unit
         $this->assertTrue($this->templateCaches->deleteCacheById($cacheId));
         $this->assertFalse($this->templateCaches->deleteCacheById($cacheId));
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

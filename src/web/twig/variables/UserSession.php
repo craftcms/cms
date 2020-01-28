@@ -19,9 +19,6 @@ use craft\elements\User;
  */
 class UserSession
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether the user is logged in.
      *

@@ -34,9 +34,6 @@ use yii\db\Connection;
  */
 class TagQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -64,9 +61,6 @@ class TagQuery extends ElementQuery
      * @used-by groupId()
      */
     public $groupId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -167,9 +161,6 @@ class TagQuery extends ElementQuery
         $this->groupId = $value;
         return $this;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

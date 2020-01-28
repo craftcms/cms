@@ -60,6 +60,7 @@
     {% if not isSingle %}
         {% if showEntryTypes %}
             {{ forms.selectField({
+                status: entry.getAttributeStatus('typeId'),
                 label: "Entry Type"|t('app'),
                 id: 'entryType',
                 name: 'typeId',
@@ -70,6 +71,7 @@
     {% endif %}
 
         {{ forms.textField({
+            status: entry.getAttributeStatus('slug'),
             label: "Slug"|t('app'),
             siteId: entry.siteId,
             translationDescription: 'This field is translated for each site.'|t('app'),
@@ -101,6 +103,7 @@
 
         {% if CraftEdition == CraftPro and currentUser.can('editPeerEntries'~permissionSuffix) %}
             {{ forms.elementSelectField({
+                status: entry.getAttributeStatus('authorId'),
                 label: "Author"|t('app'),
                 id: 'author',
                 name: 'author',
@@ -113,6 +116,7 @@
         {% endif %}
 
         {{ forms.dateTimeField({
+            status: entry.getAttributeStatus('postDate'),
             label: "Post Date"|t('app'),
             id: 'postDate',
             name: 'postDate',
@@ -122,6 +126,7 @@
         }) }}
 
         {{ forms.dateTimeField({
+            status: entry.getAttributeStatus('expiryDate'),
             label: "Expiry Date"|t('app'),
             id: 'expiryDate',
             name: 'expiryDate',

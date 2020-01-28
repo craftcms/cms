@@ -18,9 +18,6 @@ use yii\validators\Validator;
  */
 class HandleValidator extends Validator
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -58,16 +55,10 @@ class HandleValidator extends Validator
         'yes',
     ];
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array
      */
     public $reservedWords = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

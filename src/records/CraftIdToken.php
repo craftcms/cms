@@ -23,9 +23,6 @@ use yii\db\ActiveQueryInterface;
  */
 class CraftIdToken extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

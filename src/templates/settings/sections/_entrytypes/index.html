@@ -1,5 +1,12 @@
 {% extends "_layouts/cp" %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+]) %}
+
 {% set entryTypes = section.getEntryTypes() %}
 {% set multiple  = (entryTypes|length > 1) %}
 
@@ -10,40 +17,32 @@
 {% endblock %}
 
 {% block content %}
-    <table id="entrytypes" class="data fullwidth collapsible">
-        <thead>
-            <th scope="col">{{ "Name"|t('app') }}</th>
-            <th scope="col">{{ "Handle"|t('app') }}</th>
-            {% if multiple %}
-                <td class="thin"></td>
-                <td class="thin"></td>
-            {% endif %}
-        </thead>
-        <tbody>
-            {% for entryType in entryTypes %}
-                <tr data-id="{{ entryType.id }}" data-uid="{{ entryType.uid }}" data-name="{{ entryType.name|t('site') }}">
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t('site') }}</a></th>
-                    <td data-title="{{ 'Handle'|t('app') }}"><code>{{ entryType.handle }}</code></td>
-                    {% if multiple %}
-                        <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div id="entrytypes-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for entryType in entryTypes %}
+    {% set tableData = tableData|merge([{
+        id: entryType.id,
+        title: entryType.name|t('site')|e,
+        url: url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id),
+        name: entryType.name|t('site')|e,
+        handle: entryType.handle,
+    }]) %}
+{% endfor %}
 
-{% if section.type != 'single' %}
-    {% js %}
-        new Craft.AdminTable({
-            tableSelector: '#entrytypes',
-            deleteAction: 'sections/delete-entry-type',
-            minItems: 1,
-            sortable: true,
-            reorderAction: 'sections/reorder-entry-types',
-            confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t('app') }}',
-        });
-    {% endjs %}
-{% endif %}
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#entrytypes-vue-admin-table',
+    deleteAction: '{{ section.type != 'single' ? 'sections/delete-entry-type' : '' }}',
+    reorderAction: '{{ section.type != 'single' ? 'sections/reorder-entry-types' : '' }}',
+    tableData: {{ tableData|json_encode|raw }},
+    minItems: 1
+});
+{% endjs %}

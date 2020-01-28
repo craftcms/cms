@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DefineUserContentSummaryEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|int[] The user ID(s) associated with the event
      */

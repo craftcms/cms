@@ -20,9 +20,6 @@ use craft\base\Model;
  */
 class FieldLayout extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -48,15 +45,12 @@ class FieldLayout extends Model
      */
     private $_fields;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         return $rules;
     }

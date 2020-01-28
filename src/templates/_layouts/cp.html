@@ -1,44 +1,40 @@
 {#
-┌───────────────────────────────────────────────────────────────────────────┐
-│                            #global-container                              │
-│ ┌────────┐ ┌────────────────────────────────────────────────────────────┐ │
-│ │        │ │                      #main-container                       │ │
-│ │        │ │ ┌────────────────────────────────────────────────────────┐ │ │
-│ │        │ │ │                        #alerts                         │ │ │
-│ │        │ │ └────────────────────────────────────────────────────────┘ │ │
-│ │        │ │ ┌────────────────────────────────────────────────────────┐ │ │
-│ │        │ │ │                        #crumbs                         │ │ │
-│ │        │ │ └────────────────────────────────────────────────────────┘ │ │
-│ │        │ │ ┌────────────────────────────────────────────────────────┐ │ │
-│ │        │ │ │                         #main                          │ │ │
-│ │        │ │ │ ┌────────────────────────────────────────────────────┐ │ │ │
-│ │        │ │ │ │                   #main-form (?)                   │ │ │ │
-│ │        │ │ │ │ ┌────────────────────────────────────────────────┐ │ │ │ │
-│ │        │ │ │ │ │                    #header                     │ │ │ │ │
-│ │        │ │ │ │ └────────────────────────────────────────────────┘ │ │ │ │
-│ │        │ │ │ │ ┌────────────────────────────────────────────────┐ │ │ │ │
-│ │        │ │ │ │ │                 #main-content                  │ │ │ │ │
-│ │#global-│ │ │ │ │ ┌────────┐ ┌──────────────────────┐ ┌────────┐ │ │ │ │ │
-│ │sidebar │ │ │ │ │ │        │ │  #content-container  │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │    #tabs (?)     │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │#sidebar│ │ │                  │ │ │#details│ │ │ │ │ │
-│ │        │ │ │ │ │ │  (?)   │ │ │     #content     │ │ │  (?)   │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │                  │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ ┌──────────────────┐ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ │   #footer (?)    │ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ │        │ │ └──────────────────┘ │ │        │ │ │ │ │ │
-│ │        │ │ │ │ │ └────────┘ └──────────────────────┘ └────────┘ │ │ │ │ │
-│ │        │ │ │ │ └────────────────────────────────────────────────┘ │ │ │ │
-│ │        │ │ │ └────────────────────────────────────────────────────┘ │ │ │
-│ │        │ │ └────────────────────────────────────────────────────────┘ │ │
-│ └────────┘ └────────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────┐
+│                                 #global-container                                  │
+│   ┌─────┐   ┌──────────────────────────────────────────────────────────────────┐   │
+│   │     │   │                         #page-container                          │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                      #global-header                      │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
+│   │     │   │                                                                  │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                          #main                           │   │   │
+│   │  #  │   │   │   ┌──────────────────────────────────────────────────┐   │   │   │
+│   │  g  │   │   │   │                #header-container                 │   │   │   │
+│   │  l  │   │   │   └──────────────────────────────────────────────────┘   │   │   │
+│   │  o  │   │   │                                                          │   │   │
+│   │  b  │   │   │   ┌──────────────────────────────────────────────────┐   │   │   │
+│   │  a  │   │   │   │                  #main-content                   │   │   │   │
+│   │  l  │   │   │   │   ┌─────┐   ┌──────────────────────┐   ┌─────┐   │   │   │   │
+│   │  -  │   │   │   │   │     │   │                      │   │     │   │   │   │   │
+│   │  s  │   │   │   │   │  #  │   │                      │   │  #  │   │   │   │   │
+│   │  i  │   │   │   │   │  s  │   │                      │   │  d  │   │   │   │   │
+│   │  d  │   │   │   │   │  i  │   │                      │   │  e  │   │   │   │   │
+│   │  e  │   │   │   │   │  d  │   │       #content       │   │  t  │   │   │   │   │
+│   │  b  │   │   │   │   │  e  │   │                      │   │  a  │   │   │   │   │
+│   │  a  │   │   │   │   │  b  │   │                      │   │  i  │   │   │   │   │
+│   │  r  │   │   │   │   │  a  │   │                      │   │  l  │   │   │   │   │
+│   │     │   │   │   │   │  r  │   │                      │   │  s  │   │   │   │   │
+│   │     │   │   │   │   │     │   │                      │   │     │   │   │   │   │
+│   │     │   │   │   │   └─────┘   └──────────────────────┘   └─────┘   │   │   │   │
+│   │     │   │   │   │                                                  │   │   │   │
+│   │     │   │   │   └──────────────────────────────────────────────────┘   │   │   │
+│   │     │   │   │                                                          │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
+│   │     │   │                                                                  │   │
+│   └─────┘   └──────────────────────────────────────────────────────────────────┘   │
+│                                                                                    │
+└────────────────────────────────────────────────────────────────────────────────────┘
 #}
 
 {% extends "_layouts/basecp" %}
@@ -66,239 +62,170 @@
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+{% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
+{% set actionButton = (block('actionButton') ?? '')|trim %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
+{% set tabs = tabs is defined and tabs|length != 1 ? tabs : null %}
+
+{% set mainContentClasses = [
+    sidebar ? 'has-sidebar',
+    details ? 'has-details',
+    tabs ? 'has-tabs',
+]|filter %}
 
 {% set showHeader = showHeader ?? true %}
 {% if not showHeader %}
     {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ 'no-header' -%}
 {% endif %}
 
+{% set mainAttributes = {
+    id: 'main',
+    role: 'main',
+}|merge(mainAttributes ?? []) %}
+
+{% set mainFormAttributes = {
+    'id': 'main-form',
+    'method': 'post',
+    'accept-charset': 'UTF-8',
+    'novalidate': true,
+    'data': {
+        'saveshortcut': saveShortcut ?? true,
+        'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
+        'confirm-unload': true,
+        'delta': view.getIsDeltaRegistrationActive(),
+    },
+}|merge(mainFormAttributes ?? [], recursive=true) %}
+
 {% block body %}
     <div id="global-container">
-        <header id="global-sidebar" class="sidebar">
-            {% if currentUser.admin and devMode %}
-                <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
-            {% endif %}
+        {% include '_layouts/components/global-sidebar' %}
 
-            <a id="system-info" class="menubtn" role="button" data-menu-anchor="#user-info">
-                <div id="site-icon">
-                    {% if hasSystemIcon %}
-                        <img src="{{ craft.rebrand.icon.url }}" alt="">
-                    {% else %}
-                        {{ svg('@app/icons/circle-c-outline.svg', namespace=true) }}
-                    {% endif %}
-                </div>
-                <div id="system-name">
-                    <h2>{{ systemName }}&nbsp;<span data-icon="downangle"></span></h2>
-                    <div id="user-info">
-                        {% if currentUser.photoId %}
-                            <div id="user-photo">
-                                <img width="14" sizes="14px" srcset="{{ currentUser.getThumbUrl(14) }} 14w, {{ currentUser.getThumbUrl(28) }} 28w" alt="{{ currentUser.getName() }}">
-                            </div>
-                        {% endif %}
-                        <div>{{ currentUser.friendlyName }}</div>
+        <div id="page-container">
+            {% include '_layouts/components/alerts' %}
+            {% include '_layouts/components/notifications' %}
+
+            <div id="global-header">
+                <div class="flex">
+                    {% include '_layouts/components/crumbs' %}
+                    <div class="flex-grow"></div>
+                    <div id="user-info" class="btn menubtn" data-menu-anchor="#user-photo" role="button">
+                        <div id="user-photo">
+                            {{ tag('img', {
+                                width: 30,
+                                height: 30,
+                                sizes: '30px',
+                                srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
+                                alt: currentUser.getName(),
+                                title: currentUser.getName(),
+                            }) }}
+                        </div>
                     </div>
-                </div>
-            </a>
-
-            <div class="menu" data-align="left">
-                <ul>
-                    <li><a href="{{ siteUrl }}" rel="noopener" target="_blank">{{ 'View site'|t('app') }}</a></li>
-                </ul>
-                <hr>
-                <ul>
-                    <li><a href="{{ url('myaccount') }}">{{ 'My Account'|t('app') }}</a></li>
-                    <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                </ul>
-            </div>
-
-            <nav id="nav">
-                <ul>
-                    {% for item in craft.cp.nav() %}
-                        {% set hasSubnav = (item.subnav is defined and item.subnav) %}
-                        <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
-                            <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
-                                <span class="icon icon-mask">
-                                    {%- if item.icon is defined -%}
-                                        {{ svg(item.icon, sanitize=true, namespace=true) }}
-                                    {%- elseif item.fontIcon is defined -%}
-                                        <span data-icon="{{ item.fontIcon }}"></span>
-                                    {%- else -%}
-                                        {% include "_includes/defaulticon.svg" with { label: item.label } %}
-                                    {%- endif -%}
-                                </span>
-
-                                <span class="label">
-                                    {{- item.label -}}
-                                </span>
-
-                                {%- if not item.sel and item.badgeCount -%}
-                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
-                                {%- endif -%}
-                            </a>
-                            {% if item.sel and hasSubnav %}
-                                <ul class="subnav">
-                                    {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = (
-                                            (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
-                                            (selectedSubnavItem is not defined and loop.first)
-                                        ) -%}
-
-                                        <li>
-                                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>
-                                                {{ item.label }}
-
-                                                {%- if not itemIsSelected and item.badgeCount is defined -%}
-                                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
-                                                {%- endif -%}
-                                            </a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </nav>
-
-            <div id="app-info">
-                <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
-                    <div id="edition-logo">
-                        <div class="edition-name">{{ craft.app.getEditionName() }}</div>
-                        {% if isTrial %}
-                            <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div id="version">Craft CMS {{ craft.app.version }}</div>
-            </div>
-        </header><!-- #global-sidebar -->
-
-        <div id="main-container">
-
-            {# alerts #}
-            {% if craft.cp.areAlertsCached() %}
-                {% set alerts = craft.cp.getAlerts() %}
-                {% if alerts %}
-                    <ul id="alerts">
-                        {% for alert in craft.cp.getAlerts() %}
-                            <li>{{ alert|raw }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            {% else %}
-                {% js %}
-                Craft.cp.fetchAlerts();
-                {% endjs %}
-            {% endif %}
-
-            {# notifications #}
-            <div id="notifications-wrapper">
-                <div id="notifications">
-                    {% for type in ['notice', 'error'] %}
-                        {% set message = craft.app.session.getFlash(type) %}
-                        {% if message %}
-                            <div class="notification {{ type }}">{{ message }}</div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-
-            {# crumbs #}
-            <div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
-                <a id="nav-toggle" title="{{ 'Show nav'|t('app') }}"></a>
-                {% if crumbs %}
-                    <nav>
+                    <div class="menu" data-align="right">
                         <ul>
-                            {% for crumb in crumbs %}
-                                <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
-                            {% endfor %}
+                            <li><a href="{{ url('myaccount') }}">{{ 'My Account'|t('app') }}</a></li>
+                            <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
                         </ul>
-                    </nav>
-                {% endif %}
+                    </div>
+                </div>
             </div>
 
-            {# main #}
-            <main id="main" role="main">
+            <div id="main-container">
+                <main {{ attr(mainAttributes) }}>
 
-                {% if fullPageForm -%}
-                    <form {% block mainFormAttributes %}id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate{% endblock %}>
-                        {{- csrfInput() }}
-                {%- endif %}
+                    {% if fullPageForm -%}
+                        <form {% block mainFormAttributes %}{{ attr(mainFormAttributes) }}{% endblock %}>
+                            {{- csrfInput() }}
+                    {%- endif %}
 
-                {# header #}
-                {% if showHeader %}
-                    <header id="header">
-                        {% block header %}
-                            <div class="flex flex-nowrap">
-                                {% block pageTitle %}
-                                    {% if title is defined and title|length %}
-                                        <h1 title="{{ title }}">{{ title }}</h1>
+                    {% if showHeader %}
+                        <div id="header-container">
+                            <header id="header">
+                                {% block header %}
+                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                        {% block pageTitle %}
+                                            {% if title is defined and title|length %}
+                                                <h1 title="{{ title }}">{{ title }}</h1>
+                                            {% endif %}
+                                        {% endblock %}
+                                        {% block contextMenu %}{% endblock %}
+                                    </div>
+                                    {% if toolbar %}
+                                        <div id="toolbar" class="flex flex-nowrap">
+                                            {{ toolbar|raw }}
+                                        </div>
+                                    {% endif %}
+                                    {% if actionButton %}
+                                        <div id="action-button" class="flex">
+                                            {{ actionButton|raw }}
+                                        </div>
                                     {% endif %}
                                 {% endblock %}
-                                {% block contextMenu %}{% endblock %}
-                            </div>
-                            <div class="flex">
-                                {% block actionButton %}
-                                    {% if fullPageForm %}
-                                        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                                    {% endif %}
-                                {% endblock %}
-                            </div>
-                        {% endblock %}
-                    </header>
-                {% endif %}
+                            </header><!-- #header -->
+                        </div>
+                    {% endif %}
 
-                {# main-content #}
-                <div id="main-content" class="{% if sidebar %}has-sidebar{% endif %} {% if details %}has-details{% endif %}">
-                    {% block main %}
+                    <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
                         {# sidebar #}
-                        {% if sidebar is not empty %}
-                            <a id="sidebar-toggle"><span id="selected-sidebar-item-label"></span>&nbsp;<span data-icon="downangle"></span></a>
-                            <div id="sidebar" class="sidebar">
-                                {{ sidebar|raw }}
+                        {% if sidebar %}
+                            <div id="sidebar-toggle-container">
+                                <a id="sidebar-toggle" class="btn"><span id="selected-sidebar-item-label"></span></a>
+                            </div>
+                            <div id="sidebar-container">
+                                <div id="sidebar" class="sidebar">
+                                    {{ sidebar|raw }}
+                                </div>
                             </div>
                         {% endif %}
 
                         {# content-container #}
                         <div id="content-container">
-                            {% block tabs %}
-                                {% if tabs is defined and tabs %}
-                                    {% include "_includes/tabs" %}
-                                {% endif %}
-                            {% endblock %}
-
-                            <div id="content">
-                                {% block content %}
-                                    {{ content is defined ? content }}
+                            {% block main %}
+                                {% block tabs %}
+                                    {% if tabs %}
+                                        {% include "_includes/tabs" %}
+                                    {% endif %}
                                 {% endblock %}
-                            </div>
 
-                            {# footer #}
-                            {% if footer is not empty %}
-                                <div id="footer" class="flex">
-                                    {{ footer|raw }}
+                                <div id="content" class="content-pane">
+                                    {% block content %}
+                                        {{ content is defined ? content }}
+                                    {% endblock %}
+
+                                    {# footer #}
+                                    {% if footer %}
+                                        <div id="footer" class="flex">
+                                            {{ footer|raw }}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            {% endif %}
-                        </div>
+                            {% endblock %}
+                        </div><!-- #content-container -->
 
-                        {# details #}
                         {% if details is not empty %}
-                            <div id="details">
-                                {{ details|raw }}
+                            <div id="details-container">
+                                <div id="details">
+                                    {{ details|raw }}
+                                </div>
                             </div>
                         {% endif %}
-                    {% endblock %}
-                </div>
+                    </div><!-- #main-content -->
 
-                {% if fullPageForm -%}
-                    </form><!-- #main-form -->
-                {%- endif %}
-            </main><!-- #main -->
-        </div><!-- #main-container -->
+                    {% if fullPageForm -%}
+                        </form><!-- #main-form -->
+                    {%- endif %}
+                </main><!-- #main -->
+            </div><!-- #main-container -->
+        </div><!-- #page-container -->
     </div><!-- #global-container -->
+{% endblock %}
+
+
+{% block actionButton %}
+    {% if fullPageForm %}
+        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+    {% endif %}
 {% endblock %}
 
 

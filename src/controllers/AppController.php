@@ -37,18 +37,12 @@ use yii\web\ServerErrorHttpException;
  */
 class AppController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -307,7 +301,7 @@ class AppController extends Controller
     }
 
     /**
-     * Loads any CP alerts.
+     * Returns any alerts that should be displayed in the control panel.
      *
      * @return Response
      */
@@ -325,7 +319,7 @@ class AppController extends Controller
     }
 
     /**
-     * Shuns a CP alert for 24 hours.
+     * Shuns a control panel alert for 24 hours.
      *
      * @return Response
      */
@@ -346,7 +340,7 @@ class AppController extends Controller
             ]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 
     /**
@@ -448,9 +442,6 @@ class AppController extends Controller
         // Return the new plugin license info
         return $this->asJson(1);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.

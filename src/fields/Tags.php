@@ -30,9 +30,6 @@ use GraphQL\Type\Definition\Type;
  */
 class Tags extends BaseRelationField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -65,9 +62,6 @@ class Tags extends BaseRelationField
         return TagQuery::class;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -82,9 +76,6 @@ class Tags extends BaseRelationField
      * @var
      */
     private $_tagGroupId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -154,9 +145,6 @@ class Tags extends BaseRelationField
 
         return ['groupId' => array_values($tagGroupIds)];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the tag group associated with this field.

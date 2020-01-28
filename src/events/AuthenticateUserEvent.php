@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class AuthenticateUserEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The password that was submitted
      */

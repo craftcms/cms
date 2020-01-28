@@ -19,9 +19,6 @@ use yii\web\NotFoundHttpException;
  */
 class RequireEditionNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

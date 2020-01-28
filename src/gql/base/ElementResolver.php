@@ -7,7 +7,11 @@
 
 namespace craft\gql\base;
 
+use craft\base\Element;
 use craft\elements\db\ElementQuery;
+use craft\helpers\Gql as GqlHelper;
+use craft\helpers\StringHelper;
+use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -29,9 +33,41 @@ abstract class ElementResolver extends Resolver
     }
 
     /**
+     * Resolve an element query to a single result.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return Element|null|mixed
+     */
+    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        $value = $query instanceof ElementQuery ? $query->one() : $query;
+        return GqlHelper::applyDirectives($source, $resolveInfo, $value);
+    }
+
+    /**
      * @inheritdoc
      */
     public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        $value = $query instanceof ElementQuery ? $query->all() : $query;
+        return GqlHelper::applyDirectives($source, $resolveInfo, $value);
+    }
+
+    /**
+     * Prepare an element query for given resolution argument set.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return ElementQuery|array
+     */
+    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $arguments = self::prepareArguments($arguments);
         $fieldName = $resolveInfo->fieldName;
@@ -47,8 +83,26 @@ abstract class ElementResolver extends Resolver
         $preloadNodes = self::extractEagerLoadCondition($resolveInfo);
         $eagerLoadConditions = [];
 
-        // Set up the preload con
+        $relationCountFields = [];
+
+        // Set up the preload count
         foreach ($preloadNodes as $element => $parameters) {
+            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
+                if (isset($parameters['field'])) {
+                    $relationCountFields[$parameters['field']] = true;
+                }
+            }
+        }
+
+        foreach ($preloadNodes as $element => $parameters) {
+            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
+                continue;
+            }
+
+            if (!empty($relationCountFields[$element])) {
+                $parameters['count'] = true;
+            }
+
             if (empty($parameters)) {
                 $eagerLoadConditions[] = $element;
             } else {
@@ -56,7 +110,7 @@ abstract class ElementResolver extends Resolver
             }
         }
 
-        return $query->with($eagerLoadConditions)->all();
+        return $query->with($eagerLoadConditions);
     }
 
     /**

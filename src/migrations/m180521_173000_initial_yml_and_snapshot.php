@@ -22,8 +22,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(Table::INFO, 'config', $this->mediumText()->null()->after('maintenance'));
-        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('config'));
+        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('maintenance'));
 
         $projectConfig = Craft::$app->getProjectConfig();
 

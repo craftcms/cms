@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class DefineEagerLoadingMapEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface[] An array of the source elements
      */

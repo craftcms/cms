@@ -20,9 +20,6 @@ use yii\db\ColumnSchemaBuilder;
  */
 abstract class Migration extends \yii\db\Migration
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event \yii\base\Event The event that is triggered after the migration is executed
      * @since 3.0.6
@@ -34,9 +31,6 @@ abstract class Migration extends \yii\db\Migration
      * @since 3.0.6
      */
     const EVENT_AFTER_DOWN = 'afterDown';
-
-    // Public Methods
-    // =========================================================================
 
     // Execution Methods
     // -------------------------------------------------------------------------
@@ -428,9 +422,6 @@ abstract class Migration extends \yii\db\Migration
             ->execute();
         echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param \Throwable|\Exception $e

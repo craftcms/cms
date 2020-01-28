@@ -8,28 +8,25 @@
 namespace craft\db\mysql;
 
 use Craft;
+use craft\db\Connection;
 use craft\db\TableSchema;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception;
 
 /**
  * @inheritdoc
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
+ * @property Connection $db
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Schema extends \yii\db\mysql\Schema
 {
-    // Constants
-    // =========================================================================
-
     const TYPE_TINYTEXT = 'tinytext';
     const TYPE_MEDIUMTEXT = 'mediumtext';
     const TYPE_LONGTEXT = 'longtext';
     const TYPE_ENUM = 'enum';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -40,9 +37,6 @@ class Schema extends \yii\db\mysql\Schema
      * @var int The maximum length that objects' names can be.
      */
     public $maxObjectNameLength = 64;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -139,11 +133,12 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * Returns the default backup command to execute.
      *
+     * @param string[]|null The table names whose data should be excluded from the backup
      * @return string The command to execute
      * @throws \yii\base\ErrorException
      * @throws \yii\base\NotSupportedException
      */
-    public function getDefaultBackupCommand(): string
+    public function getDefaultBackupCommand(array $ignoreTables = null): string
     {
         $defaultArgs =
             ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
@@ -156,8 +151,12 @@ class Schema extends \yii\db\mysql\Schema
             ' --set-charset' .
             ' --triggers';
 
+        if ($ignoreTables === null) {
+            $ignoreTables = $this->db->getIgnoredBackupTables();
+        }
         $ignoreTableArgs = [];
-        foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
+        foreach ($ignoreTables as $table) {
+            $table = $this->getRawTableName($table);
             $ignoreTableArgs[] = "--ignore-table={database}.{$table}";
         }
 
@@ -230,9 +229,6 @@ class Schema extends \yii\db\mysql\Schema
         return $indexes;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Loads the metadata for the specified table.
      *
@@ -297,9 +293,6 @@ SQL;
         }
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Creates a temporary my.cnf file based on the DB config settings.
      *
@@ -310,15 +303,17 @@ SQL;
     {
         $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'my.cnf';
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        $parsed = Db::parseDsn($this->db->dsn);
+        $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;
+        $password = $this->db->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->db->password;
         $contents = '[client]' . PHP_EOL .
-            'user=' . $dbConfig->user . PHP_EOL .
-            'password="' . addslashes($dbConfig->password) . '"' . PHP_EOL .
-            'host=' . $dbConfig->server . PHP_EOL .
-            'port=' . $dbConfig->port;
+            'user=' . $username . PHP_EOL .
+            'password="' . addslashes($password) . '"' . PHP_EOL .
+            'host=' . ($parsed['host'] ?? '') . PHP_EOL .
+            'port=' . ($parsed['port'] ?? '');
 
-        if ($dbConfig->unixSocket) {
-            $contents .= PHP_EOL . 'socket=' . $dbConfig->unixSocket;
+        if (isset($parsed['unix_socket'])) {
+            $contents .= PHP_EOL . 'socket=' . $parsed['unix_socket'];
         }
 
         FileHelper::writeToFile($filePath, $contents);

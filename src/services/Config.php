@@ -32,14 +32,8 @@ use yii\base\InvalidConfigException;
  */
 class Config extends Component
 {
-    // Constants
-    // =========================================================================
-
     const CATEGORY_DB = 'db';
     const CATEGORY_GENERAL = 'general';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The environment ID Craft is currently running in.
@@ -75,9 +69,6 @@ class Config extends Component
      * @var bool|null
      */
     private $_dotEnvPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the config settings for a given category.

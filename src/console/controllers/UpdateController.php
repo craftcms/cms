@@ -29,9 +29,6 @@ use yii\console\ExitCode;
  */
 class UpdateController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -56,9 +53,6 @@ class UpdateController extends Controller
      * @var string|null The path to the database backup
      */
     private $_backupPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -206,9 +200,6 @@ class UpdateController extends Controller
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether updates are allowed.

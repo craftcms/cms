@@ -8,6 +8,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         $revisionBtn: null,
         $revisionLabel: null,
         $spinner: null,
+        $expandSiteStatusesBtn: null,
         $statusIcon: null,
 
         $editMetaBtn: null,
@@ -17,10 +18,11 @@ Craft.DraftEditor = Garnish.Base.extend(
         $saveMetaBtn: null,
 
         lastSerializedValue: null,
+        listeningForChanges: false,
         timeout: null,
         saving: false,
         saveXhr: null,
-        checkFormAfterUpdate: false,
+        queue: null,
         submittingForm: false,
 
         duplicatedElements: null,
@@ -32,12 +34,19 @@ Craft.DraftEditor = Garnish.Base.extend(
         init: function(settings) {
             this.setSettings(settings, Craft.DraftEditor.defaults);
 
+            this.queue = [];
+
             this.duplicatedElements = {};
 
             this.$revisionBtn = $('#revision-btn');
             this.$revisionLabel = $('#revision-label');
             this.$spinner = $('#revision-spinner');
+            this.$expandSiteStatusesBtn = $('#expand-status-btn');
             this.$statusIcon = $('#revision-status');
+
+            if (this.settings.canEditMultipleSites) {
+                this.addListener(this.$expandSiteStatusesBtn, 'click', 'expandSiteStatuses');
+            }
 
             if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
@@ -68,6 +77,8 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return this.serializeForm(true)
             }.bind(this));
 
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+
             if (this.settings.draftId) {
                 this.initForDraft();
             } else {
@@ -91,9 +102,12 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
         },
 
-        initForDraft: function() {
-            // Create the edit draft button
-            this.createEditMetaBtn();
+        listenForChanges: function() {
+            if (this.listeningForChanges) {
+                return;
+            }
+
+            this.listeningForChanges = true;
 
             this.addListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup', function(ev) {
                 if ($(ev.target).is(this.statusIcons())) {
@@ -107,11 +121,166 @@ Craft.DraftEditor = Garnish.Base.extend(
                     this.checkForm();
                 }
             });
+        },
 
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+        stopListeningForChanges: function() {
+            this.removeListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup');
+            clearTimeout(this.timeout);
+            this.listeningForChanges = false;
+        },
+
+        initForDraft: function() {
+            // Create the edit draft button
+            this.createEditMetaBtn();
+
             this.addListener(this.$statusIcon, 'click', function() {
                 this.showStatusHud(this.$statusIcon);
             }.bind(this));
+
+            this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
+
+            this.listenForChanges();
+        },
+
+        mergeChanges: function() {
+            // Make sure there aren't any unsaved changes
+            this.checkForm();
+
+            // Make sure we aren't currently saving something
+            if (this.saving) {
+                this.queue.push(this.mergeChanges.bind(this));
+                return;
+            }
+
+            this.saving = true;
+            $('#merge-changes-spinner').removeClass('hidden');
+
+            Craft.postActionRequest('drafts/merge-source-changes', {
+                elementType: this.settings.elementType,
+                draftId: this.settings.draftId,
+                siteId: this.settings.siteId,
+            }, function(response, textStatus) {
+                if (textStatus === 'success') {
+                    window.location.reload();
+                } else {
+                    $('#merge-changes-spinner').addClass('hidden');
+                }
+            });
+        },
+
+        expandSiteStatuses: function() {
+            this.removeListener(this.$expandSiteStatusesBtn, 'click');
+            this.$expandSiteStatusesBtn.velocity({opacity: 0}, 'fast', function() {
+                this.$expandSiteStatusesBtn.remove();
+            }.bind(this));
+
+            var $enabledForSiteField = $(`#enabledForSite-${this.settings.siteId}-field`);
+            var $siteStatusPane = $enabledForSiteField.parent();
+            var $newFields = $();
+
+            if (!this.settings.revisionId) {
+                $enabledForSiteField.addClass('nested');
+                var $globalField = Craft.ui.createLightswitchField({
+                    id: 'enabled',
+                    label: Craft.t('app', 'Enabled everywhere'),
+                    name: 'enabled',
+                }).insertBefore($enabledForSiteField);
+                $globalField.find('label').css('font-weight', 'bold');
+                $newFields = $newFields.add($globalField);
+                var $globalLightswitch = $globalField.find('.lightswitch');
+
+                // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
+                var originalEnabledValue = (this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses))
+                    ? '1'
+                    : (this.settings.enabledForSite ? '-' : '');
+                var originalSerializedStatus = encodeURIComponent(`enabledForSite[${this.settings.siteId}]`) +
+                    '=' + (this.settings.enabledForSite ? '1' : '');
+                var serializedStatuses = `enabled=${originalEnabledValue}&${originalSerializedStatus}`;
+            }
+
+            var site, $siteField, $siteLightswitch;
+            var $siteFields = $().add($enabledForSiteField);
+            var $siteLightswitches = $enabledForSiteField.find('.lightswitch');
+
+            for (var i = 0; i < Craft.sites.length; i++) {
+                site = Craft.sites[i];
+                if (site.id != this.settings.siteId && this.settings.siteStatuses.hasOwnProperty(site.id)) {
+                    $siteField = Craft.ui.createLightswitchField({
+                        id: `enabledForSite-${site.id}`,
+                        label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
+                        name: `enabledForSite[${site.id}]`,
+                        on: this.settings.siteStatuses[site.id],
+                        disabled: !!this.settings.revisionId,
+                    });
+                    if (!this.settings.revisionId) {
+                        $siteField.addClass('nested')
+                    }
+                    $siteField.appendTo($siteStatusPane);
+                    $siteFields = $siteFields.add($siteField);
+                    $newFields = $newFields.add($siteField);
+                    $siteLightswitch = $siteField.find('.lightswitch');
+                    $siteLightswitches = $siteLightswitches.add($siteLightswitch);
+                    serializedStatuses += '&' + encodeURIComponent(`enabledForSite[${site.id}]`) +
+                        '=' + $siteLightswitch.data('lightswitch').$input.val();
+                }
+            }
+
+            if (this.settings.revisionId) {
+                return;
+            }
+
+            Craft.cp.$primaryForm.data('initialSerializedValue',
+                Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses));
+
+            $newFields.each(function() {
+                var $field = $(this);
+                var height = $field.height();
+                $field
+                    .css('overflow', 'hidden')
+                    .height(0)
+                    .velocity({height: height}, 'fast', function() {
+                        $field.css({
+                            overflow: '',
+                            height: '',
+                        });
+                    });
+            });
+
+            $globalLightswitch.on('change', function() {
+                var enabled = $globalLightswitch.data('lightswitch').on;
+                $siteLightswitches.each(function() {
+                    if (enabled) {
+                        $(this).data('lightswitch').turnOn(true);
+                    } else {
+                        $(this).data('lightswitch').turnOff(true);
+                    }
+                })
+            });
+
+            var updateGlobalStatus = function() {
+                var allEnabled = true, allDisabled = true;
+                $siteLightswitches.each(function() {
+                    var enabled = $(this).data('lightswitch').on;
+                    if (enabled) {
+                        allDisabled = false;
+                    } else {
+                        allEnabled = false;
+                    }
+                    if (!allEnabled && !allDisabled) {
+                        return false;
+                    }
+                });
+                if (allEnabled) {
+                    $globalLightswitch.data('lightswitch').turnOn(true);
+                } else if (allDisabled) {
+                    $globalLightswitch.data('lightswitch').turnOff(true);
+                } else {
+                    $globalLightswitch.data('lightswitch').turnIndeterminate(true);
+                }
+            };
+
+            updateGlobalStatus();
+            $siteLightswitches.on('change', updateGlobalStatus);
         },
 
         showStatusHud: function(target) {
@@ -235,13 +404,23 @@ Craft.DraftEditor = Garnish.Base.extend(
         getPreview: function() {
             if (!this.preview) {
                 this.preview = new Craft.Preview(this);
+                this.preview.on('open', function() {
+                    if (!this.settings.draftId) {
+                        this.listenForChanges();
+                    }
+                }.bind(this));
+                this.preview.on('close', function() {
+                    if (!this.settings.draftId) {
+                        this.stopListeningForChanges();
+                    }
+                }.bind(this));
             }
             return this.preview;
         },
 
         openPreview: function() {
             return new Promise(function(resolve, reject) {
-                this.ensureIsDraftOrRevision()
+                this.ensureIsDraftOrRevision(true)
                     .then(function() {
                         this.getPreview().open();
                         resolve();
@@ -250,9 +429,17 @@ Craft.DraftEditor = Garnish.Base.extend(
             }.bind(this))
         },
 
-        ensureIsDraftOrRevision: function() {
+        ensureIsDraftOrRevision: function(onlyIfChanged) {
             return new Promise(function(resolve, reject) {
                 if (!this.settings.draftId && !this.settings.revisionId) {
+                    if (
+                        onlyIfChanged &&
+                        this.serializeForm(true) === Craft.cp.$primaryForm.data('initialSerializedValue')
+                    ) {
+                        resolve();
+                        return;
+                    }
+
                     this.createDraft()
                         .then(resolve)
                         .catch(reject);
@@ -280,11 +467,13 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         checkForm: function(force) {
-            // If this isn't a draft, then there's nothing to check
-            if (!this.settings.draftId) {
+            // If this isn't a draft and there's no active preview, then there's nothing to check
+            if (
+                this.settings.revisionId ||
+                (!this.settings.draftId && !this.isPreviewActive())
+            ) {
                 return;
             }
-
             clearTimeout(this.timeout);
             this.timeout = null;
 
@@ -316,7 +505,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                 }
 
                 if (this.saving) {
-                    this.checkFormAfterUpdate = true;
+                    this.queue.push(function() {
+                        this.checkForm()
+                    }.bind(this));
                     return;
                 }
 
@@ -392,7 +583,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                             $saveBtnContainer.replaceWith($('<input/>', {
                                 type: 'submit',
                                 'class': 'btn submit',
-                                value: Craft.t('app', 'Update {type}', {type: this.settings.elementTypeDisplayName})
+                                value: Craft.t('app', 'Publish changes')
                             }));
                         }
 
@@ -470,12 +661,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         prepareData: function(data) {
             // Swap out element IDs with their duplicated ones
-            for (var oldId in this.duplicatedElements) {
-                if (this.duplicatedElements.hasOwnProperty(oldId)) {
-                    data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
-                        '][' + this.duplicatedElements[oldId] + ']');
-                }
-            }
+            data = this.swapDuplicatedElementIds(data);
 
             // Add the draft info
             if (this.settings.draftId) {
@@ -484,7 +670,39 @@ Craft.DraftEditor = Garnish.Base.extend(
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
             }
 
+
+            // Filter out anything that hasn't changed
+            var initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue'));
+            return Craft.findDeltaData(initialData, data, this.getDeltaNames());
+        },
+
+        swapDuplicatedElementIds: function(data) {
+            for (var oldId in this.duplicatedElements) {
+                if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                    data = data
+                        .replace(
+                            new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
+                            '][' + this.duplicatedElements[oldId] + ']'
+                        )
+                        .replace(
+                            new RegExp('=' + oldId + '\\b', 'g'),
+                            '=' + this.duplicatedElements[oldId]
+                        );
+                }
+            }
             return data;
+        },
+
+        getDeltaNames: function() {
+            var deltaNames = Craft.deltaNames.slice(0);
+            for (var i = 0; i < deltaNames.length; i++) {
+                for (var oldId in this.duplicatedElements) {
+                    if (this.duplicatedElements.hasOwnProperty(oldId)) {
+                        deltaNames[i] = deltaNames[i].replace('][' + oldId + ']', '][' + this.duplicatedElements[oldId] + ']');
+                    }
+                }
+            }
+            return deltaNames;
         },
 
         updatePreviewTargets: function(previewTargets) {
@@ -509,9 +727,12 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.trigger('update');
 
-            if (this.checkFormAfterUpdate) {
-                this.checkFormAfterUpdate = false;
-                this.checkForm();
+            this.nextInQueue();
+        },
+
+        nextInQueue: function() {
+            if (this.queue.length) {
+                this.queue.shift()();
             }
         },
 
@@ -660,44 +881,28 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Duplicate the form with normalized data
-            var $form = $('<form/>', {
-                attr: {
-                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
-                    'action': Craft.cp.$primaryForm.attr('action'),
-                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
-                    'method': Craft.cp.$primaryForm.attr('method'),
-                    'target': Craft.cp.$primaryForm.attr('target'),
-                }
-            });
             var data = this.prepareData(this.serializeForm(false));
-            var values = data.split('&');
-            var chunks;
-            for (var i = 0; i < values.length; i++) {
-                chunks = values[i].split('=', 2);
-                $('<input/>', {
-                    type: 'hidden',
-                    name: decodeURIComponent(chunks[0]),
-                    value: decodeURIComponent(chunks[1] || '')
-                }).appendTo($form);
-            }
+            var $form = Craft.createForm(data);
 
-            if (!ev.customTrigger || !ev.customTrigger.data('action')) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'action',
-                    value: this.settings.applyDraftAction
-                }).appendTo($form);
-            }
+            if (this.settings.draftId) {
+                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'action',
+                        value: this.settings.applyDraftAction
+                    }).appendTo($form);
+                }
 
-            if (
-                (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
-                (!ev.customTrigger || !ev.customTrigger.data('redirect'))
-            ) {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'redirect',
-                    value: this.settings.hashedRedirectUrl
-                }).appendTo($form);
+                if (
+                    (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
+                    (!ev.customTrigger || !ev.customTrigger.data('redirect'))
+                ) {
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: 'redirect',
+                        value: this.settings.hashedRedirectUrl
+                    }).appendTo($form);
+                }
             }
 
             $form.appendTo(Garnish.$bod);
@@ -711,6 +916,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             sourceId: null,
             siteId: null,
             isLive: false,
+            siteStatuses: null,
+            enabledGlobally: null,
             cpEditUrl: null,
             draftId: null,
             revisionId: null,

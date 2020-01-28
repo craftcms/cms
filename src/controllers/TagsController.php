@@ -29,9 +29,6 @@ use yii\web\Response;
  */
 class TagsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Called before displaying the tag settings index page.
      *

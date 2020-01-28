@@ -22,9 +22,6 @@ use yii\db\Schema;
  */
 class Email extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -41,16 +38,10 @@ class Email extends Field implements PreviewableFieldInterface
         return 'string|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The input’s placeholder text
      */
     public $placeholder;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

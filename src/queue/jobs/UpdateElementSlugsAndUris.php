@@ -24,9 +24,6 @@ use yii\queue\Queue;
  */
 class UpdateElementSlugsAndUris extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|int[]|null The ID(s) of the element(s) to update
      */
@@ -62,9 +59,6 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private $_totalProcessed;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -79,9 +73,6 @@ class UpdateElementSlugsAndUris extends BaseJob
         $this->_processElements($queue, $query);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -89,9 +80,6 @@ class UpdateElementSlugsAndUris extends BaseJob
     {
         return Craft::t('app', 'Updating element slugs and URIs');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Creates an element query for the configured element type.

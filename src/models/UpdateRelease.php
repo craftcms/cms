@@ -17,9 +17,6 @@ use craft\base\Model;
  */
 class UpdateRelease extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string Version
      */
@@ -39,9 +36,6 @@ class UpdateRelease extends Model
      * @var string|null Notes
      */
     public $notes;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

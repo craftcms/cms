@@ -162,7 +162,6 @@
                         }
                     }
                 }
-
             },
 
             canAddMoreBlocks: function() {
@@ -209,8 +208,9 @@
 
                 var html =
                     '<div class="matrixblock" data-id="' + id + '" data-type="' + type + '">' +
-                    '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][type]" value="' + type + '"/>' +
-                    '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][enabled]" value="1"/>' +
+                    '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '"/>' +
+                    '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][type]" value="' + type + '"/>' +
+                    '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][enabled]" value="1"/>' +
                     '<div class="titlebar">' +
                     '<div class="blocktype">' + this.getBlockTypeByHandle(type).name + '</div>' +
                     '<div class="preview"></div>' +
@@ -517,7 +517,7 @@
                 }
                 else {
                     if (!this.$collapsedInput) {
-                        this.$collapsedInput = $('<input type="hidden" name="' + this.matrix.inputNamePrefix + '[' + this.id + '][collapsed]" value="1"/>').appendTo(this.$container);
+                        this.$collapsedInput = $('<input type="hidden" name="' + this.matrix.inputNamePrefix + '[blocks][' + this.id + '][collapsed]" value="1"/>').appendTo(this.$container);
                     }
                     else {
                         this.$collapsedInput.val('1');
@@ -677,6 +677,10 @@
                         window.draftEditor.checkForm();
                     }
                 }, this));
+
+                this.matrix.trigger('blockDeleted', {
+                    $block: this.$container,
+                });
             }
         });
 })(jQuery);

@@ -41,9 +41,6 @@ use yii\db\Connection;
  */
 class CategoryQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -59,9 +56,6 @@ class CategoryQuery extends ElementQuery
      * @used-by groupId()
      */
     public $groupId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -189,9 +183,6 @@ class CategoryQuery extends ElementQuery
         return $this;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -214,9 +205,6 @@ class CategoryQuery extends ElementQuery
 
         return parent::beforePrepare();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'editable' param to the query being prepared.

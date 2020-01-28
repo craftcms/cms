@@ -91,9 +91,6 @@ use yii\mutex\Mutex;
  */
 class TestSetup
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The seed project config from the file specified in codeception.yml
      */
@@ -103,9 +100,6 @@ class TestSetup
      * @var array The result of running self::$_yamlParsedConfig through Yaml::parse().
      */
     private static $_parsedProjectConfig = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.

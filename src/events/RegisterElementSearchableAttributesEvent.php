@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementSearchableAttributesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered searchable attributes for the element type.
      */

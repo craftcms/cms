@@ -1,6 +1,15 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t('app') %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Manage categories",
+    "No category groups exist yet.",
+]) %}
+
 {% block actionButton %}
     <a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New category group"|t('app') }}</a>
 {% endblock %}
@@ -9,40 +18,46 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-
 {% block content %}
-    <div id="nocategorygroups"{% if categoryGroups|length %} class="hidden"{% endif %}>
-        <p>{{ "No category groups exist yet."|t('app') }}</p>
-    </div>
-
-    {% if categoryGroups|length %}
-        <table id="categorygroups" class="data collapsible">
-            <thead>
-                <th scope="col">{{ "Name"|t('app') }}</th>
-                <th scope="col">{{ "Handle"|t('app') }}</th>
-                <td></td>
-                <td class="thin"></td>
-            </thead>
-            <tbody>
-                {% for group in categoryGroups %}
-                    <tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
-                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
-                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-                        <td><a href="{{ url('categories/'~group.handle) }}">{{ "Manage categories"|t('app') }}</a></td>
-                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <div id="categorygroups-vue-admin-table"></div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for group in categoryGroups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: group.name|t('site')|e,
+        url: url('settings/categories/' ~ group.id),
+        name: group.name|t('site')|e,
+        handle: group.handle,
+        manageCategories: url('categories/'~group.handle),
+    }]) %}
+{% endfor %}
 
 {% js %}
-    new Craft.AdminTable({
-        tableSelector: '#categorygroups',
-        noItemsSelector: '#nocategorygroups',
+    var columns = [
+        {
+            name: '__slot:title',
+            title: Craft.t('app', 'Name'),
+        },
+        {
+            name: '__slot:handle',
+            title: Craft.t('app', 'Handle'),
+        },
+        {
+            name: 'manageCategories',
+            title: "",
+            callback: function(value) {
+                return '<a href="'+value+'">' + Craft.escapeHtml(Craft.t('app', "Manage categories")) + '</a>';
+            }
+        },
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#categorygroups-vue-admin-table',
         deleteAction: 'categories/delete-category-group',
-        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its categories?"|t('app') }}',
+        emptyMessage: Craft.t('app', 'No category groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
     });
 {% endjs %}

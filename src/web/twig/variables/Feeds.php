@@ -20,9 +20,6 @@ use craft\helpers\Template;
  */
 class Feeds
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param string $url
      * @param int $limit

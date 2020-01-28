@@ -18,9 +18,6 @@ use craft\helpers\StringHelper;
  */
 class UrlRule extends \yii\web\UrlRule
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Pattern tokens that will be swapped out at runtime.
      */
@@ -30,9 +27,6 @@ class UrlRule extends \yii\web\UrlRule
      * @var array Parameters that should be passed to the controller.
      */
     public $params = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.

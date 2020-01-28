@@ -21,9 +21,6 @@ use yii\web\Response;
  */
 class RoutesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

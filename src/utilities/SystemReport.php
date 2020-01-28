@@ -26,9 +26,6 @@ use yii\base\Module;
  */
 class SystemReport extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

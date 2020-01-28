@@ -20,9 +20,6 @@ use craft\models\CategoryGroup;
  */
 class CategoryGroups
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all of the group IDs.
      *

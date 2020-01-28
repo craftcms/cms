@@ -17,16 +17,10 @@ use Twig\Error\LoaderError;
  */
 class TemplateLoaderException extends LoaderError
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
     public $template;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param string $template The requested template

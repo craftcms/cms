@@ -24,19 +24,10 @@ use yii\base\InvalidConfigException;
  */
 class FileHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @throws ErrorException
@@ -294,9 +285,6 @@ class FileHelperTest extends Unit
         });
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -399,9 +387,6 @@ class FileHelperTest extends Unit
 
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

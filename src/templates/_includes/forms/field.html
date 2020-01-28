@@ -1,8 +1,10 @@
 {%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
+{%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
+{%- set required = required ?? false %}
 {%- set instructions = instructions ?? block('instructions') ?? null %}
 {%- set tip = tip ?? block('tip') ?? null %}
 {%- set warning = warning ?? block('warning') ?? null %}
@@ -16,32 +18,72 @@
     (fieldClass is defined and fieldClass ? fieldClass : null)
 ]|filter|join(' ') %}
 
-<div class="{{ fieldClass }}"
-        {%- if fieldId %} id="{{ fieldId }}"{% endif %}
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{%- set fieldAttributes = {
+    class: fieldClass,
+    id: fieldId,
+}|merge(fieldAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set fieldAttributes = fieldAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{%- set inputAttributes = {
+    class: ['input', orientation, errors ? 'errors']|filter,
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+<div {{ attr(fieldAttributes) }}>
+    {% if status %}
+        {{ tag('div', {
+            class: ['status-badge', status[0]],
+            text: status[1][0:1]|upper,
+            title: status[1],
+        }) }}
+    {% endif %}
     {% if label or instructions %}
         <div class="heading">
             {% if label %}
-                <label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
+                {%- set labelAttributes = {
+                    id: labelId,
+                    class: required ? ['required'],
+                    for: id ?? null,
+                }|merge(labelAttributes ?? [], recursive=true) %}
+                <label {{ attr(labelAttributes) }}>
                     {{- label|raw -}}
-                    {%- if translatable %} <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.'|t('app') }}"></span>{% endif -%}
+                    {%- if translatable %}
+                        {{ tag('span', {
+                            class: ['extralight'],
+                            data: {
+                                icon: 'language',
+                            },
+                            title: translationDescription ?? 'This field is translatable.'|t('app'),
+                        }) }}
+                    {% endif -%}
                 </label>
             {% endif %}
             {% if instructions %}
-                <div class="instructions">{{ instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
+                {{ tag('div', {
+                    class: ['instructions'],
+                    html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
+                }) }}
             {% endif %}
         </div>
     {% endif %}
-    <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
+    <div {{ attr(inputAttributes) }}>
         {% block input %}
             {{ input|raw }}
         {% endblock %}
     </div>
     {% if tip %}
-        <p class="notice">{{ tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+        {{ tag('p', {
+            class: ['notice'],
+            html: tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;'),
+        }) }}
     {% endif %}
     {% if warning %}
-        <p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+        {{ tag('p', {
+            class: 'warning',
+            html: warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;'),
+        }) }}
     {% endif %}
     {% include "_includes/forms/errorList" with { errors: errors } %}
 </div>

@@ -19,9 +19,6 @@ use craft\helpers\Json;
  */
 class NewChild extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
@@ -36,9 +33,6 @@ class NewChild extends ElementAction
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
     public $newChildUrl;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -75,9 +75,6 @@ class m160804_110002_userphotos_to_assets extends Migration
         return false;
     }
 
-    // Private methods
-    // =========================================================================
-
     /**
      * Move user photos from subfolders to root.
      *

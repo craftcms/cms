@@ -50,9 +50,6 @@ use yii\db\Exception as DbException;
  */
 class Sites extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SiteGroupEvent The event that is triggered before a site group is saved.
      */
@@ -125,9 +122,6 @@ class Sites extends Component
     const CONFIG_SITEGROUP_KEY = 'siteGroups';
     const CONFIG_SITES_KEY = 'sites';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var SiteGroup[]
      */
@@ -169,9 +163,6 @@ class Sites extends Component
      * @see getPrimarySite()
      */
     private $_primarySite;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -257,7 +248,7 @@ class Sites extends Component
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData);
+        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData, "Save the “{$group->name}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
@@ -387,7 +378,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” site group");
         return true;
     }
 
@@ -678,7 +669,7 @@ class Sites extends Component
         }
 
         $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save the “{$site->handle}” site");
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
@@ -768,7 +759,7 @@ class Sites extends Component
             if (is_array($existingCategorySettings)) {
                 foreach ($existingCategorySettings as $categoryUid => $settings) {
                     $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
-                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings);
+                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings, 'Copy site settings for category groups');
                 }
             }
 
@@ -829,7 +820,7 @@ class Sites extends Component
         foreach ($siteIds as $sortOrder => $siteId) {
             if (!empty($uidsByIds[$siteId])) {
                 $siteUid = $uidsByIds[$siteId];
-                $projectConfig->set(self::CONFIG_SITES_KEY . '.' . $siteUid . '.sortOrder', $sortOrder + 1);
+                $projectConfig->set(self::CONFIG_SITES_KEY . '.' . $siteUid . '.sortOrder', $sortOrder + 1, 'Reorder sites');
             }
         }
 
@@ -930,7 +921,7 @@ class Sites extends Component
                 foreach ($projectConfig->get(Sections::CONFIG_SECTIONS_KEY) as $sectionUid => $sectionConfig) {
                     if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
                         $sectionConfig['siteSettings'][$transferContentToSite->uid] = ArrayHelper::remove($sectionConfig['siteSettings'], $site->uid);
-                        $projectConfig->set(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid, $sectionConfig);
+                        $projectConfig->set(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid, $sectionConfig, 'Prune site settings');
                     }
                 }
                 $projectConfig->muteEvents = $muteEvents;
@@ -1044,7 +1035,7 @@ class Sites extends Component
             }
         }
 
-        $projectConfig->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
+        $projectConfig->remove(self::CONFIG_SITES_KEY . '.' . $site->uid, "Delete the “{$site->handle}” site");
         return true;
     }
 
@@ -1118,9 +1109,6 @@ class Sites extends Component
             ->execute();
         return (bool)$affectedRows;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Refresh the status of all sites based on the DB data.

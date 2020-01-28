@@ -20,117 +20,119 @@
 
 {% block content %}
     {% if info|length %}
-        <table id="plugins" class="data fullwidth collapsible">
-            <tbody>
-                {% for handle, config in info %}
-                    {% set pluginStoreUrl = url('plugin-store/' ~ handle) %}
-                    <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
-                        <th>
-                            <div class="plugin-infos">
-                                <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
-                                    {{ svg(craft.app.plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
-                                    {% if config.licenseKeyStatus == 'valid' or config.licenseIssues is not empty %}
-                                        <span class="license-key-status {{ config.licenseIssues is empty ? 'valid' }}"></span>
-                                    {% endif %}
-                                </a>
-                                <div class="details">
-                                    <div class="plugin-id">
-                                        <h2>{{ config.name }}</h2>
-                                        {% if config.hasMultipleEditions or config.isTrial %}
-                                            {{ (config.upgradeAvailable ? '<a href="' ~ pluginStoreUrl ~ '"' : '<div')|raw }} class="edition">
-                                                {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
-                                                {% if config.isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
-                                            {{ (config.upgradeAvailable ? '</a>' : '</div>')|raw }}
+        <div class="tablepane">
+            <table id="plugins" class="data fullwidth">
+                <tbody>
+                    {% for handle, config in info %}
+                        {% set pluginStoreUrl = url('plugin-store/' ~ handle) %}
+                        <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
+                            <th>
+                                <div class="plugin-infos">
+                                    <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
+                                        {{ svg(craft.app.plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
+                                        {% if config.licenseKeyStatus == 'valid' or config.licenseIssues is not empty %}
+                                            <span class="license-key-status {{ config.licenseIssues is empty ? 'valid' }}"></span>
                                         {% endif %}
-                                        <span class="version">{{ config.version }}</span>
-                                    </div>
-                                    {% if config.description %}
-                                        <p>{{ config.description }}</p>
-                                    {% endif %}
-                                    {% if config.developerUrl or config.developer or config.hasCpSettings or config.documentationUrl %}
-                                        <p class="links">
-                                            {%- spaceless %}
-                                            {% if config.documentationUrl %}
-                                                <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
+                                    </a>
+                                    <div class="details">
+                                        <div class="plugin-id">
+                                            <h2>{{ config.name }}</h2>
+                                            {% if config.hasMultipleEditions or config.isTrial %}
+                                                {{ (config.upgradeAvailable ? '<a href="' ~ pluginStoreUrl ~ '"' : '<div')|raw }} class="edition">
+                                                    {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
+                                                    {% if config.isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
+                                                {{ (config.upgradeAvailable ? '</a>' : '</div>')|raw }}
                                             {% endif %}
-                                            {% if config.hasCpSettings %}
-                                                <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>
-                                            {% endif %}
-                                            {% endspaceless -%}
-                                        </p>
-                                    {% endif %}
-                                    {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
-                                    <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
-                                        <div class="pane">
-                                            <input class="text code{% if config.licenseIssues is not empty %} error{% endif %}" size="29" value="{{ config.licenseKey[0:1] == '$' ? config.licenseKey : (config.licenseKey|replace('/.{4}/', '$0-')|trim('-')) }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
+                                            <span class="version">{{ config.version }}</span>
                                         </div>
-                                        <a class="btn{% if config.licenseIssues is not empty %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle~'/'~config.edition)}}">{{ "Buy now"|t('app') }}</a>
-                                        <div class="spinner hidden"></div>
-                                    </div>
-                                    {% for issue in config.licenseIssues %}
-                                        <p class="error">
-                                            {% switch issue %}
-                                                {% case 'wrong_edition' %}
-                                                    {{ 'This license is for the {name} edition.'|t('app', {
-                                                        name: config.licensedEdition|ucfirst
-                                                    }) }}
-                                                {% case 'mismatched' %}
-                                                    {{ 'This license is tied to another Craft install. Visit {url} to resolve.'|t('app', {
-                                                        url: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>'
-                                                    })|raw }}
-                                                {% case 'astray' %}
-                                                    {{ 'This license isn’t allowed to run version {version}.'|t('app', {
-                                                        version: config.version
-                                                    }) }}
-                                                {% case 'required' %}
-                                                    {{ 'A license key is required.'|t('app') }}
-                                                {% default %}
-                                                    {{ 'Your license key is invalid.'|t('app') }}
-                                            {% endswitch %}
-                                        </p>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </th>
-                        <td class="nowrap" data-title="{{ 'Status'|t('app') }}">
-                            {% if config.isEnabled %}
-                                <span class="status on"></span>{{ "Installed"|t('app') }}
-                            {% elseif config.isInstalled %}
-                                <span class="status off"></span>{{ "Disabled"|t('app') }}
-                            {% else %}
-                                <span class="status"></span><span class="light">{{ "Not installed"|t('app') }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="nowrap thin" data-title="{{ 'Action'|t('app') }}">
-                            <form method="post" accept-charset="UTF-8">
-                                {{ hiddenInput('pluginHandle', handle) }}
-                                {{ csrfInput() }}
-                                <div class="btngroup">
-                                    <div class="btn menubtn" data-icon="settings"></div>
-                                    <div class="menu" data-align="right">
-                                        <ul>
-                                            {% if not config.isInstalled %}
-                                                <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
-                                                <li><a class="formsubmit error" data-action="pluginstore/remove" data-param="packageName" data-value="{{ config.packageName }}">{{ 'Remove'|t('app') }}</a></li>
-                                            {% else %}
-                                                {% if config.isEnabled %}
-                                                    <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
-                                                    <li><a class="formsubmit error" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</a></li>
-                                                {% elseif handle in disabledPlugins %}
-                                                    <li><a class="disabled" title="{{ '{plugin} is disabled by the {setting} config setting.'|t({plugin: config.name, setting: 'disabledPlugins'}) }}">{{ 'Enable'|t('app') }}</a></li>
-                                                {% else %}
-                                                    <li><a class="formsubmit" data-action="plugins/enable-plugin">{{ 'Enable'|t('app') }}</a></li>
+                                        {% if config.description %}
+                                            <p>{{ config.description }}</p>
+                                        {% endif %}
+                                        {% if config.developerUrl or config.developer or config.hasCpSettings or config.documentationUrl %}
+                                            <p class="links">
+                                                {%- spaceless %}
+                                                {% if config.documentationUrl %}
+                                                    <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
                                                 {% endif %}
-                                            {% endif %}
-                                        </ul>
+                                                {% if config.hasCpSettings %}
+                                                    <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>
+                                                {% endif %}
+                                                {% endspaceless -%}
+                                            </p>
+                                        {% endif %}
+                                        {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
+                                        <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
+                                            <div class="pane">
+                                                <input class="text code{% if config.licenseIssues is not empty %} error{% endif %}" size="29" value="{{ config.licenseKey[0:1] == '$' ? config.licenseKey : (config.licenseKey|replace('/.{4}/', '$0-')|trim('-')) }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
+                                            </div>
+                                            <a class="btn{% if config.licenseIssues is not empty %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle~'/'~config.edition)}}">{{ "Buy now"|t('app') }}</a>
+                                            <div class="spinner hidden"></div>
+                                        </div>
+                                        {% for issue in config.licenseIssues %}
+                                            <p class="error">
+                                                {% switch issue %}
+                                                    {% case 'wrong_edition' %}
+                                                        {{ 'This license is for the {name} edition.'|t('app', {
+                                                            name: config.licensedEdition|ucfirst
+                                                        }) }}
+                                                    {% case 'mismatched' %}
+                                                        {{ 'This license is tied to another Craft install. Visit {url} to resolve.'|t('app', {
+                                                            url: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>'
+                                                        })|raw }}
+                                                    {% case 'astray' %}
+                                                        {{ 'This license isn’t allowed to run version {version}.'|t('app', {
+                                                            version: config.version
+                                                        }) }}
+                                                    {% case 'required' %}
+                                                        {{ 'A license key is required.'|t('app') }}
+                                                    {% default %}
+                                                        {{ 'Your license key is invalid.'|t('app') }}
+                                                {% endswitch %}
+                                            </p>
+                                        {% endfor %}
                                     </div>
                                 </div>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            </th>
+                            <td class="nowrap" data-title="{{ 'Status'|t('app') }}">
+                                {% if config.isEnabled %}
+                                    <span class="status on"></span>{{ "Installed"|t('app') }}
+                                {% elseif config.isInstalled %}
+                                    <span class="status off"></span>{{ "Disabled"|t('app') }}
+                                {% else %}
+                                    <span class="status"></span><span class="light">{{ "Not installed"|t('app') }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="nowrap thin" data-title="{{ 'Action'|t('app') }}">
+                                <form method="post" accept-charset="UTF-8">
+                                    {{ hiddenInput('pluginHandle', handle) }}
+                                    {{ csrfInput() }}
+                                    <div class="btngroup">
+                                        <div class="btn menubtn" data-icon="settings"></div>
+                                        <div class="menu" data-align="right">
+                                            <ul>
+                                                {% if not config.isInstalled %}
+                                                    <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
+                                                    <li><a class="formsubmit error" data-action="pluginstore/remove" data-param="packageName" data-value="{{ config.packageName }}">{{ 'Remove'|t('app') }}</a></li>
+                                                {% else %}
+                                                    {% if config.isEnabled %}
+                                                        <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
+                                                        <li><a class="formsubmit error" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</a></li>
+                                                    {% elseif handle in disabledPlugins %}
+                                                        <li><a class="disabled" title="{{ '{plugin} is disabled by the {setting} config setting.'|t({plugin: config.name, setting: 'disabledPlugins'}) }}">{{ 'Enable'|t('app') }}</a></li>
+                                                    {% else %}
+                                                        <li><a class="formsubmit" data-action="plugins/enable-plugin">{{ 'Enable'|t('app') }}</a></li>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
         <p id="no-plugins">{{ "There are no available plugins."|t('app') }}
     {% endif %}

@@ -15,9 +15,6 @@ namespace craft\base;
  */
 abstract class Component extends Model implements ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the display name of this class.
      *

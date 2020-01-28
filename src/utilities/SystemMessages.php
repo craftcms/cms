@@ -19,9 +19,6 @@ use craft\web\assets\systemmessages\SystemMessagesAsset;
  */
 class SystemMessages extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -40,7 +40,6 @@
                             $td.html(widgetHtml);
                         }
                     }
-
                 }, this));
             }
         });

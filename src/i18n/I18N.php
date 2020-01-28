@@ -19,9 +19,6 @@ use yii\base\Exception;
  */
 class I18N extends \yii\i18n\I18N
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
      */
@@ -49,9 +46,6 @@ class I18N extends \yii\i18n\I18N
      * @var bool|null Whether [[translate()]] should wrap translations with `@` characters
      */
     private $_translationDebugOutput;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -351,9 +345,6 @@ class I18N extends \yii\i18n\I18N
 
         return $translation;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether [[translate()]] should wrap translations with `@` characters,

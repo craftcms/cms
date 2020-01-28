@@ -15,9 +15,6 @@ namespace craft\helpers;
  */
 class Path
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Ensures that a relative path never goes deeper than its root directory.
      *

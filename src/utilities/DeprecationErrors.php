@@ -19,9 +19,6 @@ use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
  */
 class DeprecationErrors extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

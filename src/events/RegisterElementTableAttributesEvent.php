@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementTableAttributesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered table attributes for the element type.
      */

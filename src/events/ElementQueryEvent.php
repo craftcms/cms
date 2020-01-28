@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class ElementQueryEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementQueryInterface The element query.
      */

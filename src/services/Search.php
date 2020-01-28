@@ -34,9 +34,6 @@ use yii\db\Schema;
  */
 class Search extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
@@ -46,9 +43,6 @@ class Search extends Component
      * @event SearchEvent The event that is triggered after a search is performed.
      */
     const EVENT_AFTER_SEARCH = 'afterSearch';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int The minimum word length that keywords must be in order to use a full-text search.
@@ -78,9 +72,6 @@ class Search extends Component
      */
     public $maxPostgresKeywordLength = 2450;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -101,10 +92,12 @@ class Search extends Component
      * Indexes the attributes of a given element defined by its element type.
      *
      * @param ElementInterface $element
+     * @param string[]|null $fieldHandles The field handles that should be indexed,
+     * or `null` if all fields should be indexed.
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element): bool
+    public function indexElementAttributes(ElementInterface $element, array $fieldHandles = null): bool
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
@@ -116,43 +109,57 @@ class Search extends Component
             return true;
         }
 
+        // Figure out which fields to update, and which to ignore
+        /** @var Field[] $updateFields */
+        $updateFields = [];
+        /** @var string[] $ignoreFieldIds */
+        $ignoreFieldIds = [];
+        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+            if ($fieldHandles !== null) {
+                $fieldHandles = array_flip($fieldHandles);
+            }
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field->searchable) {
+                    // Are we updating this field's keywords?
+                    if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
+                        $updateFields[] = $field;
+                    } else {
+                        // Leave its existing keywords alone
+                        $ignoreFieldIds[] = (string)$field->id;
+                    }
+                }
+            }
+        }
+
         // Clear the element's current search keywords
+        $deleteCondition = [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+        ];
+        if (!empty($ignoreFieldIds)) {
+            $deleteCondition = ['and', $deleteCondition, ['not', ['fieldId' => $ignoreFieldIds]]];
+        }
         Craft::$app->getDb()->createCommand()
-            ->delete(Table::SEARCHINDEX, [
-                'elementId' => $element->id,
-                'siteId' => $element->siteId,
-            ])
+            ->delete(Table::SEARCHINDEX, $deleteCondition)
             ->execute();
 
-        // Does it have any searchable attributes?
+        // Update the element attributes' keywords
         $searchableAttributes = array_flip($element::searchableAttributes());
-
         $searchableAttributes['slug'] = true;
-
         if ($element::hasTitles()) {
             $searchableAttributes['title'] = true;
         }
-
         foreach (array_keys($searchableAttributes) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
-        // Custom fields too?
-        if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
-            $keywords = [];
-
-            foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
-                if ($field->searchable) {
-                    // Set the keywords for the content's site
-                    $fieldValue = $element->getFieldValue($field->handle);
-                    $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                    $keywords[$field->id] = $fieldSearchKeywords;
-                }
-            }
-
-            $this->indexElementFields($element->id, $element->siteId, $keywords);
+        // Update the custom fields' keywords
+        foreach ($updateFields as $field) {
+            $fieldValue = $element->getFieldValue($field->handle);
+            $keywords = $field->getSearchKeywords($fieldValue, $element);
+            $this->_indexElementKeywords($element->id, 'field', (string)$field->id, $element->siteId, $keywords);
         }
 
         // Release the lock
@@ -169,6 +176,7 @@ class Search extends Component
      * @param array $fields The field values, indexed by field ID.
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
+     * @deprecated in 3.4.0. Use [[indexFields()]] instead.
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
@@ -340,9 +348,6 @@ SQL;
         }
         $db->createCommand($sql)->execute();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Indexes keywords for a specific element attribute/field.
@@ -627,7 +632,6 @@ SQL;
                 if (!$isMysql && $term->phrase) {
                     $sql = $this->_sqlPhraseExactMatch($keywords, $term->exact);
                 } else {
-
                     // Create fulltext clause from term
                     if ($this->_doFullTextSearch($keywords, $term)) {
                         if ($term->subRight) {
@@ -824,7 +828,15 @@ SQL;
      */
     private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
-        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude && strlen($keywords) >= $this->minFullTextWordLength;
+        return
+            $keywords !== '' &&
+            !$term->subLeft &&
+            !$term->exact &&
+            !$term->exclude &&
+            strlen($keywords) >= $this->minFullTextWordLength &&
+            // Workaround on MySQL until this gets fixed: https://bugs.mysql.com/bug.php?id=78485
+            // Related issue: https://github.com/craftcms/cms/issues/3862
+            strpos($keywords, ' ') === false;
     }
 
     /**

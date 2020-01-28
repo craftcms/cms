@@ -1,22 +1,43 @@
-{%- set on = (on is defined ? on : false) %}
-{%- set value = (value is defined ? value : '1') %}
-{%- set small = (small is defined ? small : false) %}
-{%- set toggle = (toggle is defined ? toggle : false) %}
-{%- set reverseToggle = (reverseToggle is defined ? reverseToggle : false) %}
-{%- set disabled = (disabled is defined and disabled ? true : false) %}
+{%- set on = on ?? false %}
+{%- set indeterminate = not on and (indeterminate ?? false) %}
+{%- set value = value ?? '1' %}
+{%- set indeterminateValue = indeterminateValue ?? '-' %}
+{%- set small = small ?? false %}
+{%- set toggle = toggle ?? null %}
+{%- set reverseToggle = reverseToggle ?? null %}
+{%- set disabled = disabled ?? false %}
 
-<div class="lightswitch{% if on %} on{% endif %}{% if small %} small{% endif %}{% if toggle or reverseToggle %} fieldtoggle{% endif %}{% if disabled %} disabled{% endif %}" tabindex="0" data-value="{{ value }}"
-    {%- if id is defined %} id="{{ id }}"{% endif %}
-    {%- if labelId is defined %} aria-labelledby="{{ labelId }}"{% endif %}
-    {%- if toggle %} data-target="{{ toggle }}"{% endif %}
-    {%- if reverseToggle %} data-reverse-target="{{ reverseToggle }}"{% endif %}
-    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{%- set containerAttributes = {
+    id: id ?? null,
+    class: [
+        'lightswitch',
+        on ? 'on',
+        indeterminate ? 'indeterminate',
+        small ? 'small',
+        toggle or reverseToggle ? 'fieldtoggle',
+        disabled ? 'disabled',
+    ]|filter,
+    tabindex: '0',
+    data: {
+        'value': value != '1' ? value : false,
+        'indeterminate-value': indeterminateValue != '-' ? indeterminateValue : false,
+        'target': toggle ?: false,
+        'reverse-target': reverseToggle ?: false,
+    },
+    aria: {
+        labelledby: labelId ?? null,
+    },
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+<div {{ attr(containerAttributes) }}>
     <div class="lightswitch-container">
-        <div class="label on"></div>
         <div class="handle"></div>
-        <div class="label off"></div>
     </div>
     {% if name is defined -%}
-        {{ hiddenInput(name, on ? value : '', {disabled: disabled}) }}
+        {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
     {%- endif %}
 </div>

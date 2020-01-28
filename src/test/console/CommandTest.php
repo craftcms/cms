@@ -22,18 +22,12 @@ use yii\base\InvalidConfigException;
  * @since 3.2.0
  */
 class CommandTest
-{
-    // Constants
-    // =========================================================================
-    const STD_OUT = 'stdOut';
+{    const STD_OUT = 'stdOut';
     const STD_ERR = 'stderr';
     const PROMPT = 'prompt';
     const CONFIRM = 'confirm';
     const SELECT = 'select';
     const OUTPUT_COMMAND = 'outputCommand';
-
-    // Public properties
-    // =========================================================================
 
     /**
      * @var ConsoleTest
@@ -94,9 +88,6 @@ class CommandTest
      * @var int
      */
     protected $eventChainItemsHandled = 0;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * CommandTest constructor.
@@ -226,9 +217,6 @@ class CommandTest
             'returnValue' => $returnValue
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @throws InvalidConfigException

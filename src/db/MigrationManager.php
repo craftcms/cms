@@ -35,9 +35,6 @@ class MigrationManager extends Component
     const TYPE_PLUGIN = 'plugin';
     const TYPE_CONTENT = 'content';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      */
@@ -67,9 +64,6 @@ class MigrationManager extends Component
      * @var string The migrations table name
      */
     public $migrationTable = Table::MIGRATIONS;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -439,9 +433,6 @@ class MigrationManager extends Component
 
         return $migrations;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Ensures that [[pluginId]] is set properly.

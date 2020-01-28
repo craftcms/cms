@@ -21,9 +21,6 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class EmailMessages
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all of the system email messages.
      *

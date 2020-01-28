@@ -20,9 +20,6 @@ use yii\base\InvalidConfigException;
  */
 class Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a component class exists, is an instance of a given interface,
      * and doesn't belong to a disabled plugin.

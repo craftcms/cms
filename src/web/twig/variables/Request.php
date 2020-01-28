@@ -20,9 +20,6 @@ use yii\web\Cookie;
  */
 class Request
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether this is a GET request.
      *

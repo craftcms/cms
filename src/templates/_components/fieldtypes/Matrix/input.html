@@ -9,11 +9,14 @@
                 {% set totalNewBlocks = totalNewBlocks + 1 %}
                 {% set blockId = 'new'~totalNewBlocks %}
             {% endif %}
+            {% set baseInputName = "#{name}[blocks][#{blockId}]" %}
 
             <div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %} data-type="{{ block.getType().handle }}">
                 {% if not static %}
-                    {{ hiddenInput("#{name}[#{blockId}][type]", block.getType().handle) }}
-                    {{ hiddenInput("#{name}[#{blockId}][enabled]", block.enabled ? '1' : '') }}
+                    {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
+                    {% do view.registerDeltaName(baseInputName) %}
+                    {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
+                    {{ hiddenInput("#{baseInputName}[enabled]", block.enabled ? '1' : '') }}
                     <div class="titlebar">
                         <div class="blocktype{% if block.hasErrors() %} error{% endif %}">
                             {{ block.getType().name|t('site') }}
@@ -50,10 +53,11 @@
                 {% endif %}
                 <div class="fields">
                     {% include "_includes/fields" with {
-                        namespace: name~'['~blockId~'][fields]',
+                        namespace: "#{baseInputName}[fields]",
                         element: block,
                         fields: block.getType().getFieldLayout().getFields(),
-                        static: static
+                        static: static,
+                        registerDeltas: true,
                     } %}
                 </div>
             </div>
@@ -63,11 +67,11 @@
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}
-                    <div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</div>
+                    <div class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</div>
                 {% endfor %}
             </div>
 
-            <div class="btn add icon menubtn hidden">{{ "Add a block"|t('app') }}</div>
+            <div class="btn dashed add icon menubtn hidden">{{ "Add a block"|t('app') }}</div>
             <div class="menu">
                 <ul>
                     {% for blockType in blockTypes %}

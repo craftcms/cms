@@ -12,9 +12,11 @@ use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use yii\base\InvalidArgumentException;
 use yii\db\Connection;
 
 /**
@@ -36,8 +38,27 @@ use yii\db\Connection;
  */
 class AssetQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @var bool
+     * @see _supportsUploaderParam()
+     */
+    private static $_supportsUploaderParam;
+
+    /**
+     * Returns whether the `uploader` param is supported yet.
+     *
+     * @return bool
+     * @todo remove after next beakpoint
+     */
+    private static function _supportsUploaderParam(): bool
+    {
+        if (self::$_supportsUploaderParam !== null) {
+            return self::$_supportsUploaderParam;
+        }
+
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+        return self::$_supportsUploaderParam = version_compare($schemaVersion, '3.4.5', '>=');
+    }
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -67,6 +88,13 @@ class AssetQuery extends ElementQuery
      * @used-by folderId()
      */
     public $folderId;
+
+    /**
+     * @var int|null The user ID that the resulting assets must have been uploaded by.
+     * @used-by uploader()
+     * @since 3.4.0
+     */
+    public $uploaderId;
 
     /**
      * @var string|string[]|null The filename(s) that the resulting assets must have.
@@ -196,9 +224,6 @@ class AssetQuery extends ElementQuery
      * @used-by withTransforms()
      */
     public $withTransforms;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -370,6 +395,49 @@ class AssetQuery extends ElementQuery
     public function folderId($value)
     {
         $this->folderId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the user the assets were uploaded by, per the user’s IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches assets…
+     * | - | -
+     * | `1` | uploaded by the user with an ID of 1.
+     * | a [[User]] object | uploaded by the user represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch assets uploaded by the user with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *     .uploader(1)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch assets uploaded by the user with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->uploader(1)
+     *     ->all();
+     * ```
+     *
+     * @param int|User|null $value The property value
+     * @return static self reference
+     * @uses $uploaderId
+     * @since 3.4.0
+     */
+    public function uploader($value)
+    {
+        if ($value instanceof User) {
+            $this->uploaderId = $value->id;
+        } else if (is_numeric($value)) {
+            $this->uploaderId = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid uploader value');
+        }
         return $this;
     }
 
@@ -720,9 +788,6 @@ class AssetQuery extends ElementQuery
         return $elements;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -750,6 +815,10 @@ class AssetQuery extends ElementQuery
             'volumeFolders.path AS folderPath'
         ]);
 
+        if (self::_supportsUploaderParam()) {
+            $this->query->addSelect('assets.uploaderId');
+        }
+
         if ($this->volumeId) {
             $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId));
         }
@@ -762,6 +831,10 @@ class AssetQuery extends ElementQuery
                 $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }
             $this->subQuery->andWhere($folderCondition);
+        }
+
+        if (self::_supportsUploaderParam() && $this->uploaderId) {
+            $this->subQuery->andWhere(['uploaderId' => $this->uploaderId]);
         }
 
         if ($this->filename) {

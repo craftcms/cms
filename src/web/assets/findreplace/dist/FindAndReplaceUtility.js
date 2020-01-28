@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.FindAndReplaceUtility = Garnish.Base.extend(
         {
             $trigger: null,
@@ -47,12 +46,10 @@
                                         this.updateProgressBar();
 
                                         setTimeout($.proxy(this, 'onComplete'), 300);
-
                                     }, this),
                                     {
                                         complete: $.noop
                                     });
-
                             }, this)
                         });
 
@@ -88,5 +85,4 @@
                 Craft.cp.trackJobProgress(false, true);
             }
         });
-
 })(jQuery);

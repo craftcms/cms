@@ -28,9 +28,6 @@ use yii\db\ActiveQueryInterface;
  */
 class GlobalSet extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

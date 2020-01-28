@@ -38,6 +38,12 @@ class Asset extends Query
                 'resolve' => AssetResolver::class . '::resolve',
                 'description' => 'This query is used to query for assets.'
             ],
+            'asset' => [
+                'type' => AssetInterface::getType(),
+                'args' => AssetArguments::getArguments(),
+                'resolve' => AssetResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for a single asset.'
+            ],
         ];
     }
 }

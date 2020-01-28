@@ -21,16 +21,10 @@ use yii\base\Exception;
  */
 class CopyReferenceTag extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The element type associated with this action
      */
     public $elementType;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

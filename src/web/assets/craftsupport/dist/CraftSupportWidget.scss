@@ -7,10 +7,6 @@
       padding: 0;
       overflow: hidden;
 
-      & > h2 {
-        display: none;
-      }
-
       .cs-screen {
         position: relative;
         box-sizing: border-box;
@@ -26,7 +22,7 @@
             margin: 0 auto 14px;
             width: 50px;
             height: 50px;
-            @include svg-mask($bgColor);
+            @include svg-mask($grey200);
           }
         }
       }
@@ -43,7 +39,7 @@
           }
 
           &:not(:first-child) {
-            border-top: 1px solid $lightBgColor;
+            border-top: 1px solid $grey050;
           }
 
           &:last-child {
@@ -51,7 +47,7 @@
           }
 
           &:hover {
-            background: $lightBgColor;
+            background: $grey050;
           }
 
           h2 {
@@ -78,8 +74,8 @@
           padding: 0 24px;
           max-height: 250px;
           overflow: scroll;
-          background: $lightBgColor;
-          box-shadow: inset 0 2px 2px -2px rgba(0, 0, 0, .1), inset 0 -2px 2px -2px rgba(0, 0, 0, .1);
+          background: $grey050;
+          box-shadow: inset 0 2px 2px -2px transparentize($grey800, 0.9), inset 0 -2px 2px -2px transparentize($grey800, 0.9);
 
           .cs-search-icon {
             padding-top: 10px;

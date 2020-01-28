@@ -23,9 +23,6 @@ use yii\base\ErrorException;
  */
 class DateTimeHelper
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @var int Number of seconds in a minute.
      */
@@ -55,16 +52,10 @@ class DateTimeHelper
      */
     const SECONDS_YEAR = 31556874;
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Translation pairs for [[translateDate()]]
      */
     private static $_translationPairs;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Converts a value into a DateTime object.
@@ -331,23 +322,23 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($weeks) {
-            $timeComponents[] = $weeks == 1 ? Craft::t('app', '1 week') : Craft::t('app', '{num} weeks', ['num' => $weeks]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $weeks]);
         }
 
         if ($days) {
-            $timeComponents[] = $days == 1 ? Craft::t('app', '1 day') : Craft::t('app', '{num} days', ['num' => $days]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $days]);
         }
 
         if ($hours) {
-            $timeComponents[] = $hours == 1 ? Craft::t('app', '1 hour') : Craft::t('app', '{num} hours', ['num' => $hours]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', ['num' => $hours]);
         }
 
         if ($minutes || (!$showSeconds && !$weeks && !$days && !$hours)) {
-            $timeComponents[] = $minutes == 1 ? Craft::t('app', '1 minute') : Craft::t('app', '{num} minutes', ['num' => $minutes]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
         }
 
         if ($seconds || ($showSeconds && !$weeks && !$days && !$hours && !$minutes)) {
-            $timeComponents[] = $seconds == 1 ? Craft::t('app', '1 second') : Craft::t('app', '{num} seconds', ['num' => $seconds]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $seconds]);
         }
 
         return implode(', ', $timeComponents);
@@ -532,19 +523,19 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($dateInterval->y) {
-            $timeComponents[] = $dateInterval->y == 1 ? Craft::t('app', '1 year') : Craft::t('app', '{num} years', ['num' => $dateInterval->y]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', ['num' => $dateInterval->y]);
         }
 
         if ($dateInterval->m) {
-            $timeComponents[] = $dateInterval->m == 1 ? Craft::t('app', '1 month') : Craft::t('app', '{num} months', ['num' => $dateInterval->m]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', ['num' => $dateInterval->m]);
         }
 
         if ($dateInterval->d) {
-            $timeComponents[] = $dateInterval->d == 1 ? Craft::t('app', '1 day') : Craft::t('app', '{num} days', ['num' => $dateInterval->d]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
         }
 
         if ($dateInterval->h) {
-            $timeComponents[] = $dateInterval->h == 1 ? Craft::t('app', '1 hour') : Craft::t('app', '{num} hours', ['num' => $dateInterval->h]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', ['num' => $dateInterval->h]);
         }
 
         $minutes = $dateInterval->i;
@@ -558,11 +549,11 @@ class DateTimeHelper
         }
 
         if ($minutes) {
-            $timeComponents[] = $minutes == 1 ? Craft::t('app', '1 minute') : Craft::t('app', '{num} minutes', ['num' => $minutes]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
         }
 
         if ($showSeconds && $dateInterval->s) {
-            $timeComponents[] = $dateInterval->s == 1 ? Craft::t('app', '1 second') : Craft::t('app', '{num} seconds', ['num' => $dateInterval->s]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $dateInterval->s]);
         }
 
         $last = array_pop($timeComponents);
@@ -578,9 +569,6 @@ class DateTimeHelper
         $string .= $last;
         return $string;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Normalizes and returns a date string along with the format it was set in.

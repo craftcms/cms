@@ -18,7 +18,6 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
-use craft\web\assets\editcategory\EditCategoryAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -37,16 +36,10 @@ use yii\web\ServerErrorHttpException;
  */
 class CategoriesController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
      */
     const EVENT_PREVIEW_CATEGORY = 'previewCategory';
-
-    // Public Methods
-    // =========================================================================
 
     // Category Groups
     // -------------------------------------------------------------------------
@@ -415,8 +408,6 @@ class CategoriesController extends Controller
         $variables['nextCategoryUrl'] = "categories/{$variables['group']->handle}/new{$siteSegment}";
 
         // Render the template!
-        $this->getView()->registerAssetBundle(EditCategoryAsset::class);
-
         return $this->renderTemplate('categories/_edit', $variables);
     }
 
@@ -642,9 +633,6 @@ class CategoriesController extends Controller
 
         return $this->_showCategory($category);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Preps category category variables.

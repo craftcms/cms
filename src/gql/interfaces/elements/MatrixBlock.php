@@ -10,6 +10,7 @@ namespace craft\gql\interfaces\elements;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
+use craft\gql\TypeManager;
 use craft\gql\types\generators\MatrixBlockType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -66,7 +67,7 @@ class MatrixBlock extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
@@ -92,6 +93,6 @@ class MatrixBlock extends Element
                 'type' => Type::int(),
                 'description' => 'The sort order of the matrix block within the owner element field.'
             ],
-        ]);
+        ]), self::getName());
     }
 }

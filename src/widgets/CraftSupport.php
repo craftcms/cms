@@ -22,9 +22,6 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
  */
 class CraftSupport extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -58,8 +55,13 @@ class CraftSupport extends Widget
         return Craft::getAlias('@app/icons/buoey.svg');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getTitle(): string
+    {
+        return '';
+    }
 
     /**
      * @inheritdoc

@@ -38,6 +38,12 @@ class GlobalSet extends Query
                 'resolve' => GlobalSetResolver::class . '::resolve',
                 'description' => 'This query is used to query for global sets.'
             ],
+            'globalSet' => [
+                'type' => GlobalSetInterface::getType(),
+                'args' => GlobalSetArguments::getArguments(),
+                'resolve' => GlobalSetResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for a single global set.'
+            ],
         ];
     }
 }

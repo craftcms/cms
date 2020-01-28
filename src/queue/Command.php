@@ -9,6 +9,7 @@ namespace craft\queue;
 
 use craft\helpers\Console;
 use yii\console\ExitCode;
+use yii\db\Exception as YiiDbException;
 
 /**
  * Manages the queue
@@ -19,9 +20,6 @@ use yii\console\ExitCode;
  */
 class Command extends \yii\queue\cli\Command
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Queue
      */
@@ -39,9 +37,6 @@ class Command extends \yii\queue\cli\Command
         'class' => VerboseBehavior::class,
     ];
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -49,9 +44,6 @@ class Command extends \yii\queue\cli\Command
     {
         return in_array($actionID, ['run', 'listen'], true);
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -116,6 +108,28 @@ class Command extends \yii\queue\cli\Command
         } else {
             $this->stdout('Re-adding 1 failed job back into the queue ... ');
             $this->queue->retry($job);
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * @param string $job The job ID to release. Pass `all` to release all jobs.
+     * @return int
+     * @throws YiiDbException
+     * @since 3.4.0
+     */
+    public function actionRelease($job): int
+    {
+        if (strtolower($job) === 'all') {
+            $this->stdout('Releasing all queue jobs ... ');
+            $this->queue->releaseAll();
+        } else {
+            $this->stdout('Releasing job ');
+            $this->stdout($job, Console::FG_YELLOW);
+            $this->stdout(' ... ');
+            $this->queue->release($job);
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);

@@ -19,16 +19,10 @@ use craft\helpers\Json;
  */
 class EditImage extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

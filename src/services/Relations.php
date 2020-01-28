@@ -23,9 +23,6 @@ use yii\base\Component;
  */
 class Relations extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Saves some relations for a field.
      *

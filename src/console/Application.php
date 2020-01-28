@@ -33,13 +33,7 @@ use yii\console\Response;
  */
 class Application extends \yii\console\Application
 {
-    // Traits
-    // =========================================================================
-
     use ApplicationTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.

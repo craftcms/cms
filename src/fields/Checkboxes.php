@@ -19,9 +19,6 @@ use craft\fields\data\MultiOptionsFieldData;
  */
 class Checkboxes extends BaseOptionsField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,16 +35,10 @@ class Checkboxes extends BaseOptionsField
         return MultiOptionsFieldData::class;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $multi = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -69,9 +60,6 @@ class Checkboxes extends BaseOptionsField
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

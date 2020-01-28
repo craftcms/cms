@@ -39,7 +39,7 @@ class TypeResolverTest extends Unit
     protected function _before()
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
     }
 
@@ -63,14 +63,11 @@ class TypeResolverTest extends Unit
             'globalSets' => [
                 'class' => GlobalSetFixture::class
             ],
-            'gqlTokens' => [
+            'gqlSchemas' => [
                 'class' => GqlSchemasFixture::class
             ],
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test resolving a related element.
@@ -82,13 +79,11 @@ class TypeResolverTest extends Unit
             // Assets
             [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
             [Asset::class, ['folderId' => 1000], AssetResolver::class],
-            [Asset::class, ['folderId' => 1], AssetResolver::class],
             [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
 
             // Entries
             [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
             [Entry::class, ['title' => StringHelper::randomString(128)], EntryResolver::class],
-            [Entry::class, ['authorId' => [1]], EntryResolver::class],
 
             // Globals
             [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
@@ -106,7 +101,6 @@ class TypeResolverTest extends Unit
             [MatrixBlock::class, ['type' => 'aBlock'], MatrixBlockResolver::class],
             [MatrixBlock::class, ['site' => 'testSite1'], MatrixBlockResolver::class],
             [MatrixBlock::class, ['type' => 'MISSING'], MatrixBlockResolver::class],
-            [MatrixBlock::class, [], MatrixBlockResolver::class],
         ];
 
         foreach ($data as $testData) {
@@ -125,7 +119,6 @@ class TypeResolverTest extends Unit
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
-
         $elementQuery = Craft::configure($elementType::find(), $params);
 
         // Get the ids and elements.
@@ -136,14 +129,6 @@ class TypeResolverTest extends Unit
         $sourceElement->someField = $elementType::find()->id($ids);
 
         $filterParameters = [];
-
-        // If we have more than two results, pick one at random
-        if (count($elementResults) > 2) {
-            $randomEntry = $elementResults[array_rand($elementResults, 1)];
-            $targetId = $randomEntry->id;
-            $filterParameters = ['id' => $targetId];
-            $elementResults = $elementType::find()->id($targetId)->all();
-        }
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField']);
 

@@ -19,9 +19,6 @@ use craft\helpers\StringHelper;
  */
 class Command extends \yii\db\Command
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @param string $table The table that new rows will be inserted into.

@@ -9,9 +9,9 @@ namespace craft\feeds;
 
 use Craft;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
-use Zend\Feed\Reader\Http\ClientInterface as FeedReaderHttpClientInterface;
-use Zend\Feed\Reader\Http\Psr7ResponseDecorator;
-use Zend\Feed\Reader\Http\ResponseInterface;
+use Laminas\Feed\Reader\Http\ClientInterface as FeedReaderHttpClientInterface;
+use Laminas\Feed\Reader\Http\Psr7ResponseDecorator;
+use Laminas\Feed\Reader\Http\ResponseInterface;
 
 /**
  * PSR-7 Guzzle client for the Feeds service.

@@ -17,9 +17,6 @@ use DateTime;
  */
 trait SavableComponentTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|string|null The component’s ID (could be a temporary one: "new:X")
      */

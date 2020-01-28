@@ -33,9 +33,6 @@ use yii\db\Exception as YiiDbException;
  */
 abstract class FieldLayoutFixture extends Fixture
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @throws Throwable
      * @throws YiiBaseException
@@ -182,9 +179,6 @@ abstract class FieldLayoutFixture extends Fixture
 
         return false;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param array $tabs

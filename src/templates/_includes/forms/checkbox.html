@@ -24,6 +24,11 @@
     {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
 
-<label for="{{ id }}">{{ label|raw }}</label>
+<label for="{{ id }}">
+    {{ label|raw }}
+    {% if info ?? null %}
+        <span class="info">{{ info|md|raw }}</span>
+    {% endif %}
+</label>
 
 {% endspaceless -%}

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterEmailMessagesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered email messages. Each message should contain 'key' and optionally 'heading', 'subject', and 'body' keys.
      */

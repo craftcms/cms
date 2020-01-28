@@ -29,9 +29,6 @@ use yii\test\ActiveFixture;
  */
 abstract class ElementFixture extends ActiveFixture
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * @var array
      */
@@ -42,9 +39,6 @@ abstract class ElementFixture extends ActiveFixture
      * @since 3.3.5
      */
     public $unload = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -190,9 +184,6 @@ abstract class ElementFixture extends ActiveFixture
 
         return $query;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * See if an element's handle is a primary key.

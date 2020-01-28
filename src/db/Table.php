@@ -22,6 +22,8 @@ abstract class Table
     const CATEGORIES = '{{%categories}}';
     const CATEGORYGROUPS = '{{%categorygroups}}';
     const CATEGORYGROUPS_SITES = '{{%categorygroups_sites}}';
+    const CHANGEDATTRIBUTES = '{{%changedattributes}}';
+    const CHANGEDFIELDS = '{{%changedfields}}';
     const CONTENT = '{{%content}}';
     const CRAFTIDTOKENS = '{{%craftidtokens}}';
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';
@@ -46,11 +48,14 @@ abstract class Table
     const FIELDS = '{{%fields}}';
     const GLOBALSETS = '{{%globalsets}}';
     const GQLSCHEMAS = '{{%gqlschemas}}';
+    const GQLTOKENS = '{{%gqltokens}}';
     const INFO = '{{%info}}';
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
     const MIGRATIONS = '{{%migrations}}';
+    const PHPSESSIONS = '{{%phpsessions}}';
     const PLUGINS = '{{%plugins}}';
+    const PROJECTCONFIG = '{{%projectconfig}}';
     const QUEUE = '{{%queue}}';
     const RELATIONS = '{{%relations}}';
     const SECTIONS = '{{%sections}}';

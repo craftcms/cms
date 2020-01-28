@@ -17,18 +17,12 @@ use craft\elements\db\ElementQueryInterface;
  */
 interface ElementActionInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether this action is destructive in nature.
      *
      * @return bool Whether this action is destructive in nature.
      */
     public static function isDestructive(): bool;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Sets the element type on the action.

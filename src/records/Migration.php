@@ -25,9 +25,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Migration extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
