@@ -418,6 +418,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 for (var i = 0; i < paths.length; i++) {
                     path += paths[i];
                     var $source = this.getSourceByKey(path);
+
+                    // If the folder can't be found, then just go to the stored instance source.
+                    if (!$source) {
+                        return this.instanceState.selectedSource;
+                    }
+
                     this._expandSource($source);
                     path += '/';
                 }

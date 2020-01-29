@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where plugin settings would get mangled when installing Craft and using an existing `project.yaml` file.
+- Fixed a bug where Assets fields’ selection modals could be blank if the default upload location volume would not be allowed by the field settings. limited to a single folder. ([#5520](https://github.com/craftcms/cms/issues/5520))
 
 ## 3.4.0.2 - 2020-01-28
 
