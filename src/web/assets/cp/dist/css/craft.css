@@ -1761,18 +1761,15 @@ html { -webkit-text-size-adjust: 100%; }
 #global-sidebar > a .icon, #global-sidebar *:not(.has-subnav) > a .icon { -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 #global-sidebar .light { color: #7b8793; }
 
-#system-info { display: -webkit-box; display: -ms-flexbox; display: flex; position: relative; -webkit-box-flex: 0; -ms-flex: 0 0 60px; flex: 0 0 60px; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; background-color: #29333d; }
+#system-info { display: grid; grid-template-columns: 32px auto; grid-gap: 14px; padding: 0 10px; position: relative; -webkit-box-flex: 0; -ms-flex: 0 0 60px; flex: 0 0 60px; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; background-color: #29333d; }
 #system-info:after { display: none; }
 #system-info:focus, #system-info:hover { background-color: #1f272e !important; }
 
-#site-icon { -webkit-box-flex: 0; -ms-flex: 0 0 32px; flex: 0 0 32px; height: 32px; }
-body.ltr #site-icon { margin: 0 14px 0 10px ; }
-body.rtl #site-icon { margin: 0 10px 0 14px ; }
+#site-icon { height: 32px; }
 #site-icon img, #site-icon svg { display: block; width: 32px; height: 32px; border-radius: 4px; }
 #site-icon svg rect, #site-icon svg circle, #site-icon svg ellipse, #site-icon svg line, #site-icon svg polyline, #site-icon svg polygon, #site-icon svg path, #site-icon svg text { fill: #7b8793; stroke-width: 0; -webkit-transition: fill linear 100ms; transition: fill linear 100ms; }
 
-#system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; width: 169px; }
-#system-name h2 { margin: 0; width: 100%; overflow: hidden; max-height: 40px; position: relative; }
+#system-name h2 { margin: 0; width: 100%; overflow: hidden; max-height: 40px; position: relative; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 #system-name h2:after { display: block; content: '.'; font-size: 0; position: absolute; top: 0; width: 14px; background-image: -webkit-gradient(linear, left top, right top, from(rgba(41, 51, 61, 0)), to(#29333d)); background-image: linear-gradient(to right, rgba(41, 51, 61, 0), #29333d); }
 body.ltr #system-name h2:after { right: 0; }
 body.rtl #system-name h2:after { left: 0; }

@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+- Improved the styling of the system name in the global sidebar. ([#5524](https://github.com/craftcms/cms/issues/5524))
 
 ### Fixed
 - Fixed a bug where plugin settings would get mangled when installing Craft and using an existing `project.yaml` file.

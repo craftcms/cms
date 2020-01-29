@@ -84,7 +84,10 @@ $systemInfoBgColor: darken($grey800, 5%);
 $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #system-info {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px auto;
+  grid-gap: 14px;
+  padding: 0 10px;
   position: relative;
   flex: 0 0 60px;
   flex-direction: row;
@@ -102,9 +105,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #site-icon {
-  flex: 0 0 32px;
   height: 32px;
-  @include margin(0, 14px, 0, 10px);
 
   img,
   svg {
@@ -120,15 +121,18 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #system-name {
-  flex: 1;
-  width: $sidebarWidth - 56;
-
   h2 {
     margin: 0;
     width: 100%;
     overflow: hidden;
     max-height: 40px;
     position: relative;
+
+    // Multi-line text overflow ellipsis
+    // (https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp)
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 
     &:after {
       display: block;
