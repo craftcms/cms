@@ -4,6 +4,8 @@
 
 ### Fixed
 - Fixed a bug where installing Craft from the terminal wasn’t setting the `DB_DSN` environment variable in `.env`.
+- Fixed a bug where sections could lose their preview targets when updating to Craft 3.4. ([#5519](https://github.com/craftcms/cms/issues/5519))
+- Fixed a bug where preview target URLs weren’t being normalized to site URLs. ([#5519](https://github.com/craftcms/cms/issues/5519))
 
 ## 3.4.0.1 - 2020-01-28
 

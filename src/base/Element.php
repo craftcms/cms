@@ -1684,6 +1684,7 @@ abstract class Element extends Component implements ElementInterface
                 // No URL, no preview target
                 continue;
             }
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url']);
             if (!isset($previewTarget['refresh'])) {
                 $previewTarget['refresh'] = true;
             }
