@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.1 - 2020-01-29
+
+### Changed
+- Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+- Improved the styling of the system name in the global sidebar. ([#5524](https://github.com/craftcms/cms/issues/5524))
+- The default MySQL backup command will now set the `--default-character-set` argument to the value of the `charset` database config setting. ([#5529](https://github.com/craftcms/cms/issues/5529))
+
+### Fixed
+- Fixed a bug where plugin settings would get mangled when installing Craft using an existing `project.yaml` file.
+- Fixed a bug where Assets fields’ selection modals could be blank if the Default Upload Location setting specified an unpermitted volume. ([#5520](https://github.com/craftcms/cms/issues/5520))
+- Fixed a bug where users’ Week Start Day preference was being ignored if set to Sunday. ([#5513](https://github.com/craftcms/cms/issues/5513))
+
 ## 3.4.0.2 - 2020-01-28
 
 ### Fixed
@@ -495,7 +507,6 @@
 - Improved Plugin Store performance.
 - Craft now makes most of its API requests from JavaScript rather than PHP, so servers with maxed-out HTTP connections won’t get hung up waiting for the API response before serving additional requests. ([#5194](https://github.com/craftcms/cms/issues/5194), [#5232](https://github.com/craftcms/cms/issues/5232))
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
-- Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
 - The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
 - Improved the error message when failing to sync global set. ([#5257](https://github.com/craftcms/cms/issues/5257))
 - It’s now easier to send JSON requests with `Craft.postActionRequest()`, by passing `contentType: 'json'` in the `options` argument.

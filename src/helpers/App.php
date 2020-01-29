@@ -533,7 +533,8 @@ class App
         }
 
         // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-        if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
+        if (!$generalConfig->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
         }
 

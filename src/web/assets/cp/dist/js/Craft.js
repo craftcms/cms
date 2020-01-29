@@ -1,4 +1,4 @@
-/*!   - 2020-01-27 */
+/*!   - 2020-01-29 */
 (function($){
 
 /** global: Craft */
@@ -2174,7 +2174,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Initialize the sources
             // ---------------------------------------------------------------------
-
+            
             if (!this.initSources()) {
                 return;
             }
@@ -2467,6 +2467,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 for (var i = 0; i < paths.length; i++) {
                     path += paths[i];
                     var $source = this.getSourceByKey(path);
+
+                    // If the folder can't be found, then just go to the stored instance source.
+                    if (!$source) {
+                        return this.instanceState.selectedSource;
+                    }
+
                     this._expandSource($source);
                     path += '/';
                 }
@@ -12095,7 +12101,6 @@ Craft.CP = Garnish.Base.extend(
 
                     // Hard-set the minimum content container height
                     this.$contentContainer.css('min-height', 'calc(100vh - ' + (headerHeight + 14 + 48 - 1) + 'px)');
-                    console.log(this.$contentContainer.css('min-height'), 'calc(100vh - ' + (headerHeight + 14 + 48 + 1) + 'px)');
 
                     // Hard-set the header container height
                     this.$headerContainer.height(headerHeight);
