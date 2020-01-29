@@ -328,7 +328,7 @@ JS;
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => ($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?: $generalConfig->defaultWeekStartDay,
+            'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
