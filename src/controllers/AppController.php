@@ -186,7 +186,7 @@ class AppController extends Controller
      * plugin, & content migrations, and syncs `project.yaml` changes in one go.
      *
      * This action can be used as a post-deploy webhook with site deployment
-     * services (like [DeployBot](https://deploybot.com/)) to minimize site
+     * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      *
      * @throws ServerErrorException if something went wrong
