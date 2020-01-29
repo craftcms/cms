@@ -442,7 +442,6 @@ Craft.CP = Garnish.Base.extend(
 
                     // Hard-set the minimum content container height
                     this.$contentContainer.css('min-height', 'calc(100vh - ' + (headerHeight + 14 + 48 - 1) + 'px)');
-                    console.log(this.$contentContainer.css('min-height'), 'calc(100vh - ' + (headerHeight + 14 + 48 + 1) + 'px)');
 
                     // Hard-set the header container height
                     this.$headerContainer.height(headerHeight);
