@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.0.2 - 2020-01-28
 
 ### Fixed
 - Fixed a bug where installing Craft from the terminal wasn’t setting the `DB_DSN` environment variable in `.env`.
