@@ -352,12 +352,9 @@ EOD;
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         if (
-            !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
-            !$this->_setEnvVar('DB_SERVER', $this->server) ||
-            !$this->_setEnvVar('DB_PORT', $this->port) ||
+            !$this->_setEnvVar('DB_DSN', $dbConfig->dsn) ||
             !$this->_setEnvVar('DB_USER', $this->user) ||
             !$this->_setEnvVar('DB_PASSWORD', $this->password) ||
-            !$this->_setEnvVar('DB_DATABASE', $this->database) ||
             !$this->_setEnvVar('DB_SCHEMA', $this->schema) ||
             !$this->_setEnvVar('DB_TABLE_PREFIX', $this->tablePrefix)
         ) {

@@ -31,7 +31,7 @@ class m190913_152146_update_preview_targets extends Migration
             $dirty = false;
 
             // Make sure there are no completely blank preview targets
-            $previewTargets = $sections['previewTargets'] ?? [];
+            $previewTargets = $section['previewTargets'] ?? [];
             foreach ($previewTargets as &$previewTarget) {
                 if (isset($previewTarget['urlFormat']) && $previewTarget['urlFormat'] === '') {
                     $previewTarget['urlFormat'] = '/';

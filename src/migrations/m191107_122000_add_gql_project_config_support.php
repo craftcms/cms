@@ -24,8 +24,9 @@ class m191107_122000_add_gql_project_config_support extends Migration
         $cacheKey = 'migration:add_gql_project_config_support:schemas';
         $cache = Craft::$app->getCache();
 
-        // In case of rollbacks and migration re-runs.
+        // In case this was run in a previous update attempt
         $cache->delete($cacheKey);
+        $this->dropTableIfExists(Table::GQLTOKENS);
 
         $this->createTable(Table::GQLTOKENS, [
             'id' => $this->primaryKey(),
