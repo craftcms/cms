@@ -36,9 +36,10 @@ new Craft.VueAdminTable({...options...});
 
 | Name                      | Type     | Default                                     | Description                                                  |
 | ------------------------- | -------- | ------------------------------------------- | ------------------------------------------------------------ |
-| actions                   | Array    | `[]`                                        | Array of action optinos to create action buttons in the table toolbar. |
+| actions                   | Array    | `[]`                                        | Array of action options to create action buttons in the table toolbar. |
 | checkboxes                | Bool     | `false`                                     | Whether to show the checkbox column or not.                  |
 | columns                   | Array    | `[]`                                        | Used to define the table columns. See column definition.     |
+| container                 | String   | `null`                                      | Used to define the table container.                          |
 | deleteAction              | String   | `null`                                      | The action URL used to post to for deleting an item. Enables the delete buttons when not `null`. |
 | deleteCallback            | Function | `null`                                      | Callback function after the delete action has taken place.   |
 | deleteConfirmationMessage | String   | `Are you sure you want to delete “{name}”?` | Message to be displayed in the confirmation message pop up.  |
@@ -184,7 +185,7 @@ var columns = [
 ];
 
 new Craft.VueAdminTable({
-	columns: columns,
+  columns: columns,
   tableData: data
 });
 ```
@@ -222,7 +223,7 @@ var columns = [
 ];
 
 new Craft.VueAdminTable({
-	columns: columns,
+  columns: columns,
   tableData: data
 });
 ```
