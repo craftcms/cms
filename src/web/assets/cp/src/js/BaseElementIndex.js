@@ -125,7 +125,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Initialize the sources
             // ---------------------------------------------------------------------
-
+            
             if (!this.initSources()) {
                 return;
             }
