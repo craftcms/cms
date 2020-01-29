@@ -7,9 +7,9 @@
 - Improved the styling of the system name in the global sidebar. ([#5524](https://github.com/craftcms/cms/issues/5524))
 - The default MySQL backup command will now set the `--default-character-set` argument to the value of the `charset` database config setting. ([#5529](https://github.com/craftcms/cms/issues/5529))
 
-### Fixed
-- Fixed a bug where plugin settings would get mangled when installing Craft and using an existing `project.yaml` file.
-- Fixed a bug where Assets fields’ selection modals could be blank if the default upload location volume would not be allowed by the field settings. limited to a single folder. ([#5520](https://github.com/craftcms/cms/issues/5520))
+### Fixed
+- Fixed a bug where plugin settings would get mangled when installing Craft using an existing `project.yaml` file.
+- Fixed a bug where Assets fields’ selection modals could be blank if the Default Upload Location setting specified an unpermitted volume. ([#5520](https://github.com/craftcms/cms/issues/5520))
 - Fixed a bug where users’ Week Start Day preference was being ignored if set to Sunday. ([#5513](https://github.com/craftcms/cms/issues/5513))
 
 ## 3.4.0.2 - 2020-01-28
