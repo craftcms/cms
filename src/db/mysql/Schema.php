@@ -148,6 +148,7 @@ class Schema extends \yii\db\mysql\Schema
             ' --dump-date' .
             ' --no-autocommit' .
             ' --routines' .
+            ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
             ' --set-charset' .
             ' --triggers';
 
