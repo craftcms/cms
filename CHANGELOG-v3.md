@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unrelease
+
+### Fixed
+- Fixed a bug where plugin settings would get mangled when installing Craft and using an existing `project.yaml` file.
+
 ## 3.4.0.2 - 2020-01-28
 
 ### Fixed

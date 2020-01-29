@@ -1575,12 +1575,17 @@ trait ApplicationTrait
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
 
-
         // GraphQL Scopes
         $gqlService = $this->getGql();
         $projectConfigService
             ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleDeletedSchema']);
+
+        // Add listeners for plugins, too, to ensure the plugin settings get processed corretly.
+        $projectConfigService
+            ->onAdd('plugins.{uid}', function () {})
+            ->onUpdate('plugins.{uid}', function () {})
+            ->onRemove('plugins.{uid}', function () {});
     }
 }
