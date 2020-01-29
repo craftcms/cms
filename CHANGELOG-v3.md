@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+
 ### Fixed
 - Fixed a bug where plugin settings would get mangled when installing Craft and using an existing `project.yaml` file.
 - Fixed a bug where Assets fields’ selection modals could be blank if the default upload location volume would not be allowed by the field settings. limited to a single folder. ([#5520](https://github.com/craftcms/cms/issues/5520))
@@ -502,7 +505,6 @@
 - Improved Plugin Store performance.
 - Craft now makes most of its API requests from JavaScript rather than PHP, so servers with maxed-out HTTP connections won’t get hung up waiting for the API response before serving additional requests. ([#5194](https://github.com/craftcms/cms/issues/5194), [#5232](https://github.com/craftcms/cms/issues/5232))
 - `errorSummary` is now a reserved field handle. ([#3032](https://github.com/craftcms/cms/issues/3032))
-- Craft now only logs errors and warnings for console requests, when Dev Mode isn’t enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
 - The `project-config/rebuild` command now ignores the `allowAdminChanges` config setting.
 - Improved the error message when failing to sync global set. ([#5257](https://github.com/craftcms/cms/issues/5257))
 - It’s now easier to send JSON requests with `Craft.postActionRequest()`, by passing `contentType: 'json'` in the `options` argument.
