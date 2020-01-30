@@ -703,8 +703,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         /** @var Element $element */
         /** @var MatrixBlockQuery $value */
         $value = $element->getFieldValue($this->handle);
+        $blocks = $value->all();
+        $allBlocksValidate = true;
 
-        foreach ($value->all() as $i => $block) {
+        foreach ($blocks as $i => $block) {
             /** @var MatrixBlock $block */
             if ($block->enabled && $element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
@@ -712,7 +714,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
             if (!$block->validate()) {
                 $element->addModelErrors($block, "{$this->handle}[{$i}]");
+                $allBlocksValidate = false;
             }
+        }
+
+        if (!$allBlocksValidate) {
+            // Just in case the blocks weren't already cached
+            $value->setCachedResult($blocks);
         }
     }
 
