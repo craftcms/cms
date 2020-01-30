@@ -15,6 +15,7 @@
 - Fixed a bug where Asset previews would not work on Craft Solo. ([#5517](https://github.com/craftcms/cms/issues/5517))
 - Fixed a bug where Matrix fields weren’t always showing validation errors.
 - Fixed a bug where unsaved Matrix blocks could be lost if an entry was saved with validation errors, and any unsaved Matrix blocks weren’t modified before reattempting to save the entry. ([#5544](https://github.com/craftcms/cms/issues/5544))
+- Fixed a bug where Table fields weren’t getting initialized properly unless they were located on the initially-selected content tab. ([#5549](https://github.com/craftcms/cms/issues/5549))
 
 ## 3.4.1 - 2020-01-29
 
