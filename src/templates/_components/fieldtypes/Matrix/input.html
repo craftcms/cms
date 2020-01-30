@@ -5,7 +5,8 @@
         {% set totalNewBlocks = 0 %}
         {% for block in blocks %}
             {% set blockId = block.id %}
-            {% if not blockId %}
+            {% set blockIsNew = blockId is empty %}
+            {% if blockIsNew %}
                 {% set totalNewBlocks = totalNewBlocks + 1 %}
                 {% set blockId = 'new'~totalNewBlocks %}
             {% endif %}
@@ -14,7 +15,10 @@
             <div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %} data-type="{{ block.getType().handle }}">
                 {% if not static %}
                     {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
-                    {% do view.registerDeltaName(baseInputName) %}
+                    {# only register a delta name for this black if it's not new #}
+                    {% if not blockIsNew %}
+                        {% do view.registerDeltaName(baseInputName) %}
+                    {% endif %}
                     {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
                     {{ hiddenInput("#{baseInputName}[enabled]", block.enabled ? '1' : '') }}
                     <div class="titlebar">
@@ -57,7 +61,7 @@
                         element: block,
                         fields: block.getType().getFieldLayout().getFields(),
                         static: static,
-                        registerDeltas: true,
+                        registerDeltas: not blockIsNew,
                     } %}
                 </div>
             </div>
