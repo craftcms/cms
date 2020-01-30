@@ -97,6 +97,7 @@
                                 :name="props.rowData.title"
                                 :success-message="deleteSuccessMessage"
                                 :confirmation-message="deleteConfirmationMessage"
+                                :fail-message="deleteFailMessage"
                                 :action-url="deleteAction"
                                 :disabled="!canDelete"
                                 v-on:reload="remove(props.rowIndex)"
@@ -159,6 +160,9 @@
                 type: Function,
             },
             deleteConfirmationMessage: {
+                type: String,
+            },
+            deleteFailMessage: {
                 type: String,
             },
             deleteSuccessMessage: {
@@ -382,10 +386,10 @@
                 if (this.container) {
                     return this.container.replace(/[#.]/g,'');
                 }
-                
+
                 return '';
             },
-            
+
             apiUrl() {
                 if (!this.tableDataEndpoint) {
                     return '';

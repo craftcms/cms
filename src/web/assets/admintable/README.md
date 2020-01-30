@@ -36,12 +36,14 @@ new Craft.VueAdminTable({...options...});
 
 | Name                      | Type     | Default                                     | Description                                                  |
 | ------------------------- | -------- | ------------------------------------------- | ------------------------------------------------------------ |
-| actions                   | Array    | `[]`                                        | Array of action optinos to create action buttons in the table toolbar. |
+| actions                   | Array    | `[]`                                        | Array of action options to create action buttons in the table toolbar. |
 | checkboxes                | Bool     | `false`                                     | Whether to show the checkbox column or not.                  |
 | columns                   | Array    | `[]`                                        | Used to define the table columns. See column definition.     |
+| container                 | String   | `null`                                      | CSS selector for which element the table should mounted on.     |
 | deleteAction              | String   | `null`                                      | The action URL used to post to for deleting an item. Enables the delete buttons when not `null`. |
 | deleteCallback            | Function | `null`                                      | Callback function after the delete action has taken place.   |
 | deleteConfirmationMessage | String   | `Are you sure you want to delete “{name}”?` | Message to be displayed in the confirmation message pop up.  |
+| deleteFailMessage | String | ` Couldn’t delete “{name}”.` | Message to be displayed as the fail error after a delete failure. |
 | deleteSuccessMessage      | String   | `“{name}” deleted.`                         | Message to be displayed as the success notice after successful deletion. |
 | emptyMessage              | String   | `No data available.`                        | Message to be displayed when there are no rows in the table data. |
 | fullPage                  | Bool     | `false`                                     | Set to this to true when the table is the only element on the template. Sets the correct styling classes. |
@@ -184,7 +186,7 @@ var columns = [
 ];
 
 new Craft.VueAdminTable({
-	columns: columns,
+  columns: columns,
   tableData: data
 });
 ```
@@ -222,7 +224,7 @@ var columns = [
 ];
 
 new Craft.VueAdminTable({
-	columns: columns,
+  columns: columns,
   tableData: data
 });
 ```

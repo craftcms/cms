@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the ability to pass a custom failure message to the delete action on admin tables. ([#5507](https://github.com/craftcms/cms/issues/5507))
+
 ### Fixed
 - Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
 
