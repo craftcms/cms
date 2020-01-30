@@ -26,7 +26,7 @@
 {% for group in categoryGroups %}
     {% set tableData = tableData|merge([{
         id: group.id,
-        title: group.name|t('site')|e,
+        title: group.name|t('site'),
         url: url('settings/categories/' ~ group.id),
         name: group.name|t('site')|e,
         handle: group.handle,

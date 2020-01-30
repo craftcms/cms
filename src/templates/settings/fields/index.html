@@ -92,7 +92,7 @@
 
     {% set tableData = tableData|merge([{
         id: field.id,
-        title: field.name|t('site')|e,
+        title: field.name|t('site'),
         url: url('settings/fields/edit/' ~ field.id),
         handle: field.handle,
         type: {
