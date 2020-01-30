@@ -7,6 +7,7 @@
 - `craft\services\ProjectConfig::processConfigChanges()` now has a `$force` argument that defaults to `false`.
 
 ### Changed
+- The `generateTransformsBeforePageLoad` config setting is now automatically enabled for GraphQL API requests. ([#5553](https://github.com/craftcms/cms/issues/5553))
 - Brought back the `_elements/indexcontainer.html` template (though it is deprecated). ([Dolphiq/craft3-plugin-redirect#108](https://github.com/Dolphiq/craft3-plugin-redirect/issues/108))
 
 ### Fixed

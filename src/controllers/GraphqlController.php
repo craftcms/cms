@@ -164,6 +164,9 @@ class GraphqlController extends Controller
             $gqlService->saveToken($token);
         }
 
+        // Generate all transforms immediately
+        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+
         try {
             $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
         } catch (\Throwable $e) {
