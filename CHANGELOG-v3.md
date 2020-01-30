@@ -4,9 +4,11 @@
 
 ### Added
 - Added the ability to pass a custom failure message to the delete action on admin tables. ([#5507](https://github.com/craftcms/cms/issues/5507))
+- `craft\services\ProjectConfig::processConfigChanges()` now has a `$force` argument that defaults to `false`.
 
 ### Fixed
 - Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
+- Fixed an error where Project Config could sometimes not save some values when processing nested paths.
 
 ## 3.4.1 - 2020-01-29
 
