@@ -40,6 +40,8 @@
 {% block details %}
     {{ previewHtml|raw }}
     {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.details" %}
 {% endblock %}
 
 {% block settings %}
