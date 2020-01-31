@@ -7,6 +7,7 @@
 - `craft\services\ProjectConfig::processConfigChanges()` now has a `$force` argument that defaults to `false`.
 - Added the ability for admin table actions to restrict usage if multiple items are selected.
 - Edit Asset pages now have `cp.assets.edit`, `cp.assets.edit.details`, `cp.assets.edit.settings`, and `cp.assets.edit.meta` template hooks. ([#5560](https://github.com/craftcms/cms/pull/5560))
+- Added `craft\queue\jobs\ResaveElements::$updateSearchIndex`.
 
 ### Changed
 - Edit Asset pages now show a “View” button for image, PDF, and text assets. ([#5555](https://github.com/craftcms/cms/issues/5555))
