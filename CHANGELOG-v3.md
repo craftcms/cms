@@ -8,6 +8,7 @@
 - Added the ability for admin table actions to restrict usage if multiple items are selected.
 
 ### Changed
+- Edit Asset pages now show the asset’s location in the meta pane.
 - The `generateTransformsBeforePageLoad` config setting is now automatically enabled for GraphQL API requests. ([#5553](https://github.com/craftcms/cms/issues/5553))
 - Brought back the `_elements/indexcontainer.html` template (though it is deprecated). ([Dolphiq/craft3-plugin-redirect#108](https://github.com/Dolphiq/craft3-plugin-redirect/issues/108))
 

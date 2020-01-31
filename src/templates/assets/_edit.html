@@ -53,6 +53,16 @@
 {% endblock %}
 
 {% block meta %}
+    <div class="data">
+        <h5 class="heading">{{ 'Location'|t('app') }}</h5>
+        <div class="value">
+            {{ volume.name|t('site') }}
+            {% if element.folderPath %}
+                → {{ element.folderPath|trim('/')|replace('/', ' → ') }}
+            {% endif %}
+        </div>
+    </div>
+
     {% if formattedSize %}
         <div class="data">
             <h5 class="heading">{{ 'File size'|t('app') }}</h5>

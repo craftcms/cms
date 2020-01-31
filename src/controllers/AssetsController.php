@@ -153,6 +153,7 @@ class AssetsController extends Controller
 
         return $this->renderTemplate('assets/_edit', [
             'element' => $asset,
+            'volume' => $volume,
             'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
             'previewHtml' => $previewHtml,
