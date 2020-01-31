@@ -21,6 +21,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -310,6 +311,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response|null
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      * @throws ServerErrorHttpException if the entry draft is missing its entry
+     * @throws ForbiddenHttpException if the user doesn't have the necessary permissions
      */
     public function actionPublishDraft()
     {
@@ -356,8 +358,13 @@ class EntryRevisionsController extends BaseEntriesController
         $this->_setDraftAttributesFromPost($draft);
 
         // Even more permission enforcement
-        if ($draft->enabled) {
-            $this->requirePermission('publishEntries:' . $section->uid);
+        if ($draft->enabled && !Craft::$app->getUser()->checkPermission("publishEntries:{$section->uid}")) {
+            if ($draft->getIsUnsavedDraft()) {
+                // Just disable it
+                $draft->enabled = false;
+            } else {
+                throw new ForbiddenHttpException('User is not permitted to perform this action');
+            }
         }
 
         // Populate the field content

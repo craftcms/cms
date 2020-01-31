@@ -22,6 +22,7 @@
 - Fixed a bug where Table fields weren’t getting initialized properly unless they were located on the initially-selected content tab. ([#5549](https://github.com/craftcms/cms/issues/5549))
 - Fixed a bug where the control panel’s login form was off-center vertically when a login page logo was used. ([#5552](https://github.com/craftcms/cms/issues/5552))
 - Fixed a bug where it was impossible to use GraphQL variables in directive arguments. ([#5543](https://github.com/craftcms/cms/issues/5543))
+- Fixed a bug where users with permission to create entries would get a 403 error when attempting to save a new entry.
 
 ## 3.4.1 - 2020-01-29
 
