@@ -42,10 +42,10 @@
             "{{ forms.passwordField({ id: 'password', name: 'password', placeholder: 'Password'|t('app'), autocomplete: 'current-password' })|e('js') }}" +
             '</div>' +
             '<div id="password-fields">' +
-            '<a id="forgot-password">{{ "Forgot your password?"|t('app') }}</a>' +
             {% if craft.app.config.general.rememberedUserSessionDuration %}
             '{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t('app') })|e("js") }}' +
             {% endif %}
+            '<a id="forgot-password">{{ "Forgot your password?"|t('app') }}</a>' +
             '</div>' +
 
             '<div class="buttons">' +
