@@ -4,6 +4,8 @@
 {% set canUpdateSource = canEdit %}
 {% set saveSourceAction = 'assets/save-asset' %}
 
+{% hook "cp.assets.edit" %}
+
 {% block actionButton %}
     <div class="btngroup">
         {% if assetUrl %}
@@ -58,6 +60,8 @@
         value: element.filename,
         errors: element.getErrors('newLocation'),
     }) }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.settings" %}
 {% endblock %}
 
 {% block meta %}
@@ -106,6 +110,9 @@
             <div id="dimensions-value" class="value">{{ dimensions }}</div>
         </div>
     {% endif %}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.meta" %}
 {% endblock %}
 
 {% js on ready %}
