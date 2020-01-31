@@ -250,6 +250,12 @@ class Elements extends Component
     private $_elementTypesByRefHandle = [];
 
     /**
+     * @var bool|null Whether we should be updating search indexes for elements if not told explicitly.
+     * @since 3.1.2
+     */
+    private $_updateSearchIndex;
+
+    /**
      * Creates an element with a given config.
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
@@ -508,14 +514,14 @@ class Elements extends Component
      * @param bool $runValidation Whether the element should be validated
      * @param bool $propagate Whether the element should be saved across all of its supported sites
      * (this can only be disabled when updating an existing element)
-     * @param bool $updateSearchIndex Whether to update the element search index for the element
+     * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Throwable if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = true): bool
+    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
         // Force propagation for new elements
         /** @var Element $element */
@@ -530,12 +536,12 @@ class Elements extends Component
      * @param ElementQueryInterface $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
-     * @param bool $updateSearchIndex Whether to update the element search index for the element
+     * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, $skipRevisions = true, bool $updateSearchIndex = false)
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, $skipRevisions = true, bool $updateSearchIndex = null)
     {
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
@@ -1890,14 +1896,14 @@ class Elements extends Component
      * @param ElementInterface $element The element that is being saved
      * @param bool $runValidation Whether the element should be validated
      * @param bool $propagate Whether the element should be saved across all of its supported sites
-     * @param bool $updateSearchIndex Whether to update the element search index for the element
+     * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Throwable if reasons
      */
-    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = true): bool
+    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
         /** @var Element|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -1977,7 +1983,13 @@ class Elements extends Component
             return false;
         }
 
+        // Figure out whether we will be updating the search index (and memoize that for nested element saves)
+        $oldUpdateSearchIndex = $this->_updateSearchIndex;
+        $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
+
         $transaction = Craft::$app->getDb()->beginTransaction();
+        $e = null;
+
         try {
             // No need to save the element record multiple times
             if (!$element->propagating) {
@@ -2128,6 +2140,11 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+        }
+
+        $this->_updateSearchIndex = $oldUpdateSearchIndex;
+
+        if ($e !== null) {
             throw $e;
         }
 

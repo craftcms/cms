@@ -29,6 +29,7 @@
 - Fixed a bug where users with permission to create entries would get a 403 error when attempting to save a new entry.
 - Fixed a styling issue on the Login page if the `rememberedUserSessionDuration` config setting was set to `0`. ([#5556](https://github.com/craftcms/cms/issues/5556))
 - Fixed an error that occurred when viewing trashed elements in an element index and then changing the selected source. ([#5559](https://github.com/craftcms/cms/issues/5559))
+- Fixed a bug where Craft would update the search index for Matrix blocks and other nested elements, even if the owner element was saved with `$updateSearchIndex = false`.
 
 ## 3.4.1 - 2020-01-29
 
