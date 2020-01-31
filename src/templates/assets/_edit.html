@@ -5,7 +5,13 @@
 {% set saveSourceAction = 'assets/save-asset' %}
 
 {% block actionButton %}
-    <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
+    <div class="btngroup">
+        {% if assetUrl %}
+            <a class="btn" href="{{ assetUrl }}" target="_blank" data-icon="preview">{{ 'View'|t('app') }}</a>
+        {% endif %}
+        <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
+    </div>
+
     {% if canReplaceFile %}
         <div id="replace-btn" class="btn" role="button" data-icon="upload">{{ 'Replace file'|t('app') }}</div>
     {% endif %}
