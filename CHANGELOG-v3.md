@@ -16,9 +16,9 @@
 ### Fixed
 - Fixed an error that could occur when updating to Craft 3.4. ([#5527](https://github.com/craftcms/cms/issues/5527))
 - Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
-- Fixed an error where Project Config could sometimes not save some values when processing nested paths.
+- Fixed an error that could occur when processing new Project Config values.
 - Fixed an error that could occur when saving Project Config values that contained 4+ byte characters.
-- Fixed a bug where Asset previews would not work on Craft Solo. ([#5517](https://github.com/craftcms/cms/issues/5517))
+- Fixed a bug where asset previews weren’t working on Craft Solo. ([#5517](https://github.com/craftcms/cms/issues/5517))
 - Fixed a bug where Matrix fields weren’t always showing validation errors.
 - Fixed a bug where unsaved Matrix blocks could be lost if an entry was saved with validation errors, and any unsaved Matrix blocks weren’t modified before reattempting to save the entry. ([#5544](https://github.com/craftcms/cms/issues/5544))
 - Fixed a bug where Table fields weren’t getting initialized properly unless they were located on the initially-selected content tab. ([#5549](https://github.com/craftcms/cms/issues/5549))
