@@ -245,14 +245,15 @@ Action buttons are provided as an array of objects.
 
 ###Sub buttons
 
-| Name   | Type   | Description                                                  |
-| ------ | ------ | ------------------------------------------------------------ |
-| label  | String | title to show                                                |
-| action | String | action uri to post data to                                   |
-| param  | String | name of the post data parameter                              |
-| value  | String | value of the post data, used with param to post as a key pair |
-| ajax   | Bool   | whether this action should be posted via ajax                |
-| status | string | status icon to pass to the button                            |
+| Name          | Type   | Description                                                  |
+| ------------- | ------ | ------------------------------------------------------------ |
+| label         | String | title to show                                                |
+| action        | String | action uri to post data to                                   |
+| param         | String | name of the post data parameter                              |
+| value         | String | value of the post data, used with param to post as a key pair |
+| ajax          | Bool   | whether this action should be posted via ajax                |
+| status        | string | status icon to pass to the button                            |
+| allowMultiple | Bool   | whether or not to allow the action to be run if multiple items are selected |
 
 ### Example
 
@@ -274,6 +275,13 @@ var actions = [
                 param: 'status',
                 value: 'disabled',
                 status: 'disabled'
+            },
+            {
+                label: Craft.t('app', 'Refresh'),
+                action: 'controller/refresh',
+                param: 'refresh',
+                value: 'all',
+                allowMultiple: false
             }
         ]
     }

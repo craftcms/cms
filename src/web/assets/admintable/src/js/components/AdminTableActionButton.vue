@@ -8,8 +8,8 @@
     <div ref="button" class="btn menubtn" :data-icon="icon">{{label}}</div>
     <div class="menu" v-if="actions.length">
       <ul class="padded">
-        <li v-for="(act,index) in actions" :key="index" v-once>
-          <a href="#" :class="{ error: act.error !== undefined && act.error }" :data-param="act.param" :data-value="act.value" :data-ajax="act.ajax" @click.prevent="handleClick(act.param, act.value, act.action, act.ajax)">
+        <li v-for="(act,index) in actions" :key="index">
+          <a href="#" :class="{ error: act.error !== undefined && act.error, disabled: (act.allowMultiple !== undefined && !act.allowMultiple && hasMultipleSelected) }" :data-param="act.param" :data-value="act.value" :data-ajax="act.ajax" @click.prevent="!(act.allowMultiple !== undefined && !act.allowMultiple && hasMultipleSelected) ? handleClick(act.param, act.value, act.action, act.ajax) : null">
             <span v-if="act.status" :class="'status ' + act.status"></span>{{act.label}}
           </a>
         </li>
@@ -69,7 +69,10 @@
             }
         },
 
-        created() {
+        computed: {
+            hasMultipleSelected() {
+                return (this.ids.length > 1);
+            }
         },
 
         watch: {

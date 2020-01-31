@@ -5,6 +5,7 @@
 ### Added
 - Added the ability to pass a custom failure message to the delete action on admin tables. ([#5507](https://github.com/craftcms/cms/issues/5507))
 - `craft\services\ProjectConfig::processConfigChanges()` now has a `$force` argument that defaults to `false`.
+- Added the ability for admin table actions to restrict usage if multiple items are selected.
 
 ### Changed
 - The `generateTransformsBeforePageLoad` config setting is now automatically enabled for GraphQL API requests. ([#5553](https://github.com/craftcms/cms/issues/5553))
