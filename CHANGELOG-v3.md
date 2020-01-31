@@ -15,7 +15,7 @@
 - Brought back the `_elements/indexcontainer.html` template (though it is deprecated). ([Dolphiq/craft3-plugin-redirect#108](https://github.com/Dolphiq/craft3-plugin-redirect/issues/108))
 
 ### Fixed
-- Fixed an error that could occur when updating to Craft 3.4. ([#5527](https://github.com/craftcms/cms/issues/5527))
+- Fixed a couple of errors that could have occurred when updating to Craft 3.4. ([#5527](https://github.com/craftcms/cms/issues/5527))
 - Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
 - Fixed an error that could occur when processing new Project Config values.
 - Fixed an error that could occur when saving Project Config values that contained 4+ byte characters.
