@@ -26,6 +26,7 @@
 - Fixed a bug where it was impossible to use GraphQL variables in directive arguments. ([#5543](https://github.com/craftcms/cms/issues/5543))
 - Fixed a bug where users with permission to create entries would get a 403 error when attempting to save a new entry.
 - Fixed a styling issue on the Login page if the `rememberedUserSessionDuration` config setting was set to `0`. ([#5556](https://github.com/craftcms/cms/issues/5556))
+- Fixed an error that occurred when viewing trashed elements in an element index and then changing the selected source. ([#5559](https://github.com/craftcms/cms/issues/5559))
 
 ## 3.4.1 - 2020-01-29
 

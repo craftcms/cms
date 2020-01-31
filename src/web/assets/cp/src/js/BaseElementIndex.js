@@ -125,7 +125,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Initialize the sources
             // ---------------------------------------------------------------------
-            
+
             if (!this.initSources()) {
                 return;
             }
@@ -779,6 +779,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             return this.view ? this.view.getSelectedElementIds() : [];
         },
 
+        setStatus: function(status) {
+            // Find the option (and make sure it actually exists)
+            var $option = this.statusMenu.$options.filter('a[data-status="' + status + '"]:first');
+
+            if ($option.length) {
+                this.statusMenu.selectOption($option[0]);
+            }
+        },
+
         getSortAttributeOption: function(attr) {
             return this.$sortAttributesList.find('a[data-attr="' + attr + '"]:first');
         },
@@ -890,6 +899,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.$statusMenuContainer.addClass('hidden');
                 } else {
                     this.$statusMenuContainer.removeClass('hidden');
+                }
+
+                if (this.trashed) {
+                    // Swap to the initial status
+                    var $firstOption = this.statusMenu.$options.first();
+                    this.setStatus($firstOption.data('status'));
                 }
             }
 
