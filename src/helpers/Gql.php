@@ -211,9 +211,15 @@ class Gql
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
                 $arguments = [];
 
+                // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
+                if (!$directiveEntity) {
+                    continue;
+                }
+                
                 if (isset($directive->arguments[0])) {
                     foreach ($directive->arguments as $argument) {
-                        $arguments[$argument->name->value] = $argument->value->value;
+                        $value = $argument->value->kind === 'Variable' ? $resolveInfo->variableValues[$argument->value->name->value] : $argument->value->value;
+                        $arguments[$argument->name->value] = $value;
                     }
                 }
 
