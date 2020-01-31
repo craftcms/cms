@@ -100,19 +100,29 @@ body {
   @include right(14px);
 }
 
+#password-fields {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+}
+
 #rememberMe-field {
-  padding-top: 24px;
+  @include margin-right(14px);
 }
 
 #forgot-password {
   position: relative;
   z-index: 1;
   display: block;
-  @include floatright;
   font-style: normal;
   font-size: 11px;
   color: $mediumTextColor;
-  margin-top: 24px;
+
+  &:only-child {
+    width: 100%;
+    text-align: center;
+    margin-top: -20px;
+  }
 }
 
 #forgot-password:hover {

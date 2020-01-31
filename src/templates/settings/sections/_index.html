@@ -40,7 +40,7 @@
     {% set tableData = tableData|merge([{
         id: section.id,
         name: section.name|t('site')|e,
-        title: section.name|t('site')|e,
+        title: section.name|t('site'),
         url: url('settings/sections/' ~ section.id),
         handle: section.handle,
         type: section.type|title|t('app')|e,

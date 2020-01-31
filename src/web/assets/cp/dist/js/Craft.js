@@ -1,4 +1,4 @@
-/*!   - 2020-01-29 */
+/*!   - 2020-01-31 */
 (function($){
 
 /** global: Craft */
@@ -2174,7 +2174,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Initialize the sources
             // ---------------------------------------------------------------------
-            
+
             if (!this.initSources()) {
                 return;
             }
@@ -2828,6 +2828,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             return this.view ? this.view.getSelectedElementIds() : [];
         },
 
+        setStatus: function(status) {
+            // Find the option (and make sure it actually exists)
+            var $option = this.statusMenu.$options.filter('a[data-status="' + status + '"]:first');
+
+            if ($option.length) {
+                this.statusMenu.selectOption($option[0]);
+            }
+        },
+
         getSortAttributeOption: function(attr) {
             return this.$sortAttributesList.find('a[data-attr="' + attr + '"]:first');
         },
@@ -2939,6 +2948,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.$statusMenuContainer.addClass('hidden');
                 } else {
                     this.$statusMenuContainer.removeClass('hidden');
+                }
+
+                if (this.trashed) {
+                    // Swap to the initial status
+                    var $firstOption = this.statusMenu.$options.first();
+                    this.setStatus($firstOption.data('status'));
                 }
             }
 
@@ -11980,9 +11995,6 @@ Craft.CP = Garnish.Base.extend(
             this._selectTab($tab, this.$tabs.index($tab.parent()));
             this.updateTabs();
             this.$overflowTabBtn.data('menubtn').menu.hide();
-
-            // Fixes Redactor fixed toolbars on previously hidden panes
-            Garnish.$doc.trigger('scroll');
         },
 
         _selectTab: function($tab, index) {
@@ -11993,6 +12005,10 @@ Craft.CP = Garnish.Base.extend(
             } else {
                 $('#content').removeClass('square');
             }
+
+            Garnish.$win.trigger('resize');
+            // Fixes Redactor fixed toolbars on previously hidden panes
+            Garnish.$doc.trigger('scroll');
         },
 
         deselectTab: function() {

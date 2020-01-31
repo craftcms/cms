@@ -25,7 +25,7 @@
 {% for tagGroup in tagGroups %}
     {% set tableData = tableData|merge([{
         id: tagGroup.id,
-        title: tagGroup.name|t('site')|e,
+        title: tagGroup.name|t('site'),
         url: url('settings/tags/' ~ tagGroup.id),
         name: tagGroup.name|t('site')|e,
         handle: tagGroup.handle,

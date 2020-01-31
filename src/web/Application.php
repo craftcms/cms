@@ -528,7 +528,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            if (YII_DEBUG) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();

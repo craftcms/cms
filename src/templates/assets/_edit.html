@@ -4,8 +4,16 @@
 {% set canUpdateSource = canEdit %}
 {% set saveSourceAction = 'assets/save-asset' %}
 
+{% hook "cp.assets.edit" %}
+
 {% block actionButton %}
-    <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
+    <div class="btngroup">
+        {% if assetUrl %}
+            <a class="btn" href="{{ assetUrl }}" target="_blank" data-icon="preview">{{ 'View'|t('app') }}</a>
+        {% endif %}
+        <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
+    </div>
+
     {% if canReplaceFile %}
         <div id="replace-btn" class="btn" role="button" data-icon="upload">{{ 'Replace file'|t('app') }}</div>
     {% endif %}
@@ -40,6 +48,8 @@
 {% block details %}
     {{ previewHtml|raw }}
     {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.details" %}
 {% endblock %}
 
 {% block settings %}
@@ -50,9 +60,21 @@
         value: element.filename,
         errors: element.getErrors('newLocation'),
     }) }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.settings" %}
 {% endblock %}
 
 {% block meta %}
+    <div class="data">
+        <h5 class="heading">{{ 'Location'|t('app') }}</h5>
+        <div class="value">
+            {{ volume.name|t('site') }}
+            {% if element.folderPath %}
+                → {{ element.folderPath|trim('/')|replace('/', ' → ') }}
+            {% endif %}
+        </div>
+    </div>
+
     {% if formattedSize %}
         <div class="data">
             <h5 class="heading">{{ 'File size'|t('app') }}</h5>
@@ -88,6 +110,9 @@
             <div id="dimensions-value" class="value">{{ dimensions }}</div>
         </div>
     {% endif %}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.meta" %}
 {% endblock %}
 
 {% js on ready %}

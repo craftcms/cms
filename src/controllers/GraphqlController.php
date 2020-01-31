@@ -164,15 +164,18 @@ class GraphqlController extends Controller
             $gqlService->saveToken($token);
         }
 
+        // Generate all transforms immediately
+        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+
         try {
-            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, Craft::$app->getConfig()->getGeneral()->devMode);
+            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
             $result = [
                 'errors' => [
                     [
-                        'message' => Craft::$app->getConfig()->getGeneral()->devMode ? $e->getMessage() : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
+                        'message' => YII_DEBUG ? $e->getMessage() : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
                     ]
                 ],
             ];

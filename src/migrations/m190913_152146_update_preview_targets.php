@@ -40,7 +40,7 @@ class m190913_152146_update_preview_targets extends Migration
             }
 
             // If the section has URLs (in any site) then add the Primary Page target
-            if (!empty($section['siteSettings']) && ArrayHelper::firstWhere($section['siteSettings'], 'hasUrls') !== null) {
+            if (!empty($section['siteSettings']) && ArrayHelper::contains($section['siteSettings'], 'hasUrls')) {
                 array_unshift($previewTargets, [
                     'label' => Craft::t('app', 'Primary {type} page', [
                         'type' => StringHelper::toLowerCase(Entry::displayName()),

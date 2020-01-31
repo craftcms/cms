@@ -33,11 +33,13 @@ body.rtl #password { padding: 14px 16px 14px 5em ; }
 body.ltr #password-field .passwordwrapper .password-toggle { right: 14px; }
 body.rtl #password-field .passwordwrapper .password-toggle { left: 14px; }
 
-#rememberMe-field { padding-top: 24px; }
+#password-fields { margin-top: 24px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; }
 
-#forgot-password { position: relative; z-index: 1; display: block; font-style: normal; font-size: 11px; color: #7b8793; margin-top: 24px; }
-body.ltr #forgot-password { float: right; }
-body.rtl #forgot-password { float: left; }
+body.ltr #rememberMe-field { margin-right: 14px; }
+body.rtl #rememberMe-field { margin-left: 14px; }
+
+#forgot-password { position: relative; z-index: 1; display: block; font-style: normal; font-size: 11px; color: #7b8793; }
+#forgot-password:only-child { width: 100%; text-align: center; margin-top: -20px; }
 
 #forgot-password:hover { color: #0B69A3; text-decoration: none; }
 

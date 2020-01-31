@@ -1581,11 +1581,5 @@ trait ApplicationTrait
             ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleDeletedSchema']);
-
-        // Add listeners for plugins, too, to ensure the plugin settings get processed corretly.
-        $projectConfigService
-            ->onAdd('plugins.{uid}', function () {})
-            ->onUpdate('plugins.{uid}', function () {})
-            ->onRemove('plugins.{uid}', function () {});
     }
 }

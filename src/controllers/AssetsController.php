@@ -151,8 +151,16 @@ class AssetsController extends Controller
             ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
         );
 
+        if (in_array($asset->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT])) {
+            $assetUrl = $asset->getUrl();
+        } else {
+            $assetUrl = null;
+        }
+
         return $this->renderTemplate('assets/_edit', [
             'element' => $asset,
+            'volume' => $volume,
+            'assetUrl' => $assetUrl,
             'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
             'previewHtml' => $previewHtml,

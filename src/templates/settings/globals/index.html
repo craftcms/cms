@@ -29,7 +29,7 @@
 {% for globalSet in globalSets %}
     {% set tableData = tableData|merge([{
         id: globalSet.id,
-        title: globalSet.name|t('site')|e,
+        title: globalSet.name|t('site'),
         url: url('settings/globals/' ~ globalSet.id),
         handle: globalSet.handle,
     }]) %}

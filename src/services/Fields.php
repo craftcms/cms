@@ -661,7 +661,7 @@ class Fields extends Component
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
     {
-        return ArrayHelper::firstWhere($this->getAllFields($context), 'handle', $handle, true) !== null;
+        return ArrayHelper::contains($this->getAllFields($context), 'handle', $handle, true);
     }
 
     /**

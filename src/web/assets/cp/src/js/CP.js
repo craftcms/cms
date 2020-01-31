@@ -321,9 +321,6 @@ Craft.CP = Garnish.Base.extend(
             this._selectTab($tab, this.$tabs.index($tab.parent()));
             this.updateTabs();
             this.$overflowTabBtn.data('menubtn').menu.hide();
-
-            // Fixes Redactor fixed toolbars on previously hidden panes
-            Garnish.$doc.trigger('scroll');
         },
 
         _selectTab: function($tab, index) {
@@ -334,6 +331,10 @@ Craft.CP = Garnish.Base.extend(
             } else {
                 $('#content').removeClass('square');
             }
+
+            Garnish.$win.trigger('resize');
+            // Fixes Redactor fixed toolbars on previously hidden panes
+            Garnish.$doc.trigger('scroll');
         },
 
         deselectTab: function() {

@@ -1000,6 +1000,14 @@ class Asset extends Element
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getPreviewTargets(): array
+    {
+        return [];
+    }
+
+    /**
      * Returns the file name, with or without the extension.
      *
      * @param bool $withExtension

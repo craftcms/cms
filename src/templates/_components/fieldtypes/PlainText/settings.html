@@ -19,7 +19,7 @@
     {% import "_includes/forms" as forms %}
     {% block input %}
         <div class="flex">
-            {{ forms.textField({
+            {{ forms.text({
                 id: 'fieldLimit',
                 name: 'fieldLimit',
                 value: field.charLimit ?? field.byteLimit,

@@ -615,10 +615,11 @@ class ProjectConfig extends Component
      * @param string $path The config item path
      * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
      * @param string|null $message The message describing changes, if modifications are made.
+     * @param bool $force Whether the config change should be processed regardless of previous records
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null)
+    public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null, bool $force = false)
     {
-        if (!empty($this->_parsedChanges[$path])) {
+        if (!$force && !empty($this->_parsedChanges[$path])) {
             return;
         }
 
@@ -751,7 +752,7 @@ class ProjectConfig extends Component
                         // Prepare for storage
                         $dbValue = Json::encode($value);
                         if (!mb_check_encoding($value, 'UTF-8') || ($isMysql && StringHelper::containsMb4($dbValue))) {
-                            $value = 'base64:' . base64_encode($dbValue);
+                            $dbValue = 'base64:' . base64_encode($dbValue);
                         }
                         $batch[] = [$key, $dbValue];
                         $pathsToInsert[] = $key;
@@ -1168,21 +1169,21 @@ class ProjectConfig extends Component
         if (!empty($changes['removedItems'])) {
             Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
             foreach ($changes['removedItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath);
+                $this->processConfigChanges($itemPath, false, null, true);
             }
         }
 
         if (!empty($changes['changedItems'])) {
             Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
             foreach ($changes['changedItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath);
+                $this->processConfigChanges($itemPath, false, null, true);
             }
         }
 
         if (!empty($changes['newItems'])) {
             Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
             foreach ($changes['newItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath);
+                $this->processConfigChanges($itemPath, false, null, true);
             }
         }
 
@@ -1715,7 +1716,7 @@ class ProjectConfig extends Component
                 if (strpos($config, '{') === 0) {
                     $data = Json::decode($config);
                 } else {
-                    $data = Json::decode($config);
+                    $data = unserialize($config, ['allowed_classes' => false]);
                 }
             }
 

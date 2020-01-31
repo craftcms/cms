@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.2 - 2019-01-31
+
+### Added
+- Added the ability to pass a custom failure message to the delete action on admin tables. ([#5507](https://github.com/craftcms/cms/issues/5507))
+- `craft\services\ProjectConfig::processConfigChanges()` now has a `$force` argument that defaults to `false`.
+- Added the ability for admin table actions to restrict usage if multiple items are selected.
+- Edit Asset pages now have `cp.assets.edit`, `cp.assets.edit.details`, `cp.assets.edit.settings`, and `cp.assets.edit.meta` template hooks. ([#5560](https://github.com/craftcms/cms/pull/5560))
+- Added `craft\queue\jobs\ResaveElements::$updateSearchIndex`.
+
+### Changed
+- Edit Asset pages now show a “View” button for image, PDF, and text assets. ([#5555](https://github.com/craftcms/cms/issues/5555))
+- Edit Asset pages now show the asset’s location in the meta pane.
+- The `generateTransformsBeforePageLoad` config setting is now automatically enabled for GraphQL API requests. ([#5553](https://github.com/craftcms/cms/issues/5553))
+- Brought back the `_elements/indexcontainer.html` template (though it is deprecated). ([Dolphiq/craft3-plugin-redirect#108](https://github.com/Dolphiq/craft3-plugin-redirect/issues/108))
+
+### Fixed
+- Fixed a couple errors that could have occurred when updating to Craft 3.4. ([#5527](https://github.com/craftcms/cms/issues/5527))
+- Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
+- Fixed an error that could occur when processing new Project Config values.
+- Fixed an error that could occur when saving Project Config values that contained 4+ byte characters.
+- Fixed a bug where asset previews weren’t working on Craft Solo. ([#5517](https://github.com/craftcms/cms/issues/5517))
+- Fixed a bug where Matrix fields weren’t always showing validation errors.
+- Fixed a bug where unsaved Matrix blocks could be lost if an entry was saved with validation errors, and any unsaved Matrix blocks weren’t modified before reattempting to save the entry. ([#5544](https://github.com/craftcms/cms/issues/5544))
+- Fixed a bug where Table fields weren’t getting initialized properly unless they were located on the initially-selected content tab. ([#5549](https://github.com/craftcms/cms/issues/5549))
+- Fixed a bug where the control panel’s login form was off-center vertically when a login page logo was used. ([#5552](https://github.com/craftcms/cms/issues/5552))
+- Fixed a bug where it was impossible to use GraphQL variables in directive arguments. ([#5543](https://github.com/craftcms/cms/issues/5543))
+- Fixed a bug where users with permission to create entries would get a 403 error when attempting to save a new entry.
+- Fixed a styling issue on the Login page if the `rememberedUserSessionDuration` config setting was set to `0`. ([#5556](https://github.com/craftcms/cms/issues/5556))
+- Fixed an error that occurred when viewing trashed elements in an element index and then changing the selected source. ([#5559](https://github.com/craftcms/cms/issues/5559))
+- Fixed a bug where Craft would update the search index for Matrix blocks and other nested elements, even if the owner element was saved with `$updateSearchIndex = false`.
+
 ## 3.4.1 - 2020-01-29
 
 ### Changed
