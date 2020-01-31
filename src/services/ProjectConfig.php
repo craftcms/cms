@@ -1716,7 +1716,7 @@ class ProjectConfig extends Component
                 if (strpos($config, '{') === 0) {
                     $data = Json::decode($config);
                 } else {
-                    $data = Json::decode($config);
+                    $data = unserialize($config, ['allowed_classes' => false]);
                 }
             }
 
