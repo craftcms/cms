@@ -11,6 +11,7 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Pdf;
+use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandler;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Volume;
@@ -1055,6 +1056,8 @@ class Assets extends Component
                 return new ImagePreview($asset);
             case Asset::KIND_PDF:
                 return new Pdf($asset);
+            case Asset::KIND_VIDEO:
+                return new Video($asset);
             case Asset::KIND_HTML:
             case Asset::KIND_JAVASCRIPT:
             case Asset::KIND_JSON:
