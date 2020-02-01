@@ -1,9 +1,21 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ * @since 3.4.x
+ */
 namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
 
+/**
+ * Provides functionality to preview videos
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.4.x
+ */
 class Video extends AssetPreviewHandler
 {
     /**
