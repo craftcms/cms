@@ -11,7 +11,6 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Pdf;
-use craft\base\AssetPreviewHandler;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
