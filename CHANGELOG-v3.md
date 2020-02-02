@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where the `update` command was backing up the database twice.
+- Fixed a bug where the “Duplicate” element action was available for users who didn’t have permission to create new entries in the section. ([#5566](https://github.com/craftcms/cms/issues/5566))
 
 ## 3.4.2 - 2019-01-31
 
