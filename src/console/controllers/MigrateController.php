@@ -63,7 +63,13 @@ class MigrateController extends BaseMigrateController
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent;
+    public $noContent = false;
+
+    /**
+     * @var bool Skip backing up the database.
+     * @since 3.4.3
+     */
+    public $noBackup = false;
 
     /**
      * @var MigrationManager|null The migration manager that will be used in this request
@@ -106,6 +112,7 @@ class MigrateController extends BaseMigrateController
         $options[] = 'plugin';
 
         if ($actionID === 'all') {
+            $options[] = 'noBackup';
             $options[] = 'noContent';
         }
 
@@ -237,15 +244,12 @@ class MigrateController extends BaseMigrateController
             Craft::$app->enableMaintenanceMode();
 
             // Backup the DB?
-            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-            if ($backup) {
+            if (!$this->noBackup && Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate()) {
                 try {
                     $backupPath = $db->backup();
                 } catch (\Throwable $e) {
                     Craft::$app->disableMaintenanceMode();
                     $this->stderr("Error backing up the database: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
-                    Craft::error("Error backing up the database: {$e->getMessage()}", __METHOD__);
-                    Craft::$app->getErrorHandler()->logException($e);
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
             }

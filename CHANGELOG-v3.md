@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `--no-backup` option to the `migrate/all` command.
+
+### Fixed
+- Fixed a bug where the `update` command was backing up the database twice.
+
 ## 3.4.2 - 2019-01-31
 
 ### Added
