@@ -6,6 +6,9 @@
 - It’s now possible to preview video files. ([#5565](https://github.com/craftcms/cms/pull/5565))
 - Added the `--no-backup` option to the `migrate/all` command.
 
+### Changed
+- Craft now logs full exception reports when an exception is thrown from a queue job.
+
 ### Fixed
 - Fixed a bug where the `update` command was backing up the database twice.
 - Fixed a bug where the “Duplicate” element action was available for users who didn’t have permission to create new entries in the section. ([#5566](https://github.com/craftcms/cms/issues/5566))
