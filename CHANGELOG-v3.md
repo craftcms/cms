@@ -13,6 +13,7 @@
 - Fixed a bug where the `update` command was backing up the database twice.
 - Fixed a bug where the “Duplicate” element action was available for users who didn’t have permission to create new entries in the section. ([#5566](https://github.com/craftcms/cms/issues/5566))
 - Fixed a bug where using directives in GraphQL could make the field return unexpected results. ([#5569](https://github.com/craftcms/cms/issues/5569))
+- Fixed a bug where the active queue job could be missing from the global sidebar and Queue Manager if there were 50 or more pending jobs with higher priorities. ([#5506](https://github.com/craftcms/cms/issues/5506))
 
 ## 3.4.2 - 2020-01-31
 
