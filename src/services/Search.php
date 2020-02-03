@@ -176,7 +176,7 @@ class Search extends Component
      * @param array $fields The field values, indexed by field ID.
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
-     * @deprecated in 3.4.0. Use [[indexFields()]] instead.
+     * @deprecated in 3.4.0. Use [[indexElementAttributes()]] instead.
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
