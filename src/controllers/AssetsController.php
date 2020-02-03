@@ -1160,12 +1160,16 @@ class AssetsController extends Controller
             return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
         }
 
-        $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);
+        $previewHtml = null;
 
+        // todo: we should be passing the asset into getPreviewHtml(), not the constructor
+        $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);
         if ($previewHandler) {
-            $previewHtml = $previewHandler->getPreviewHtml();
-        } else {
-            $previewHtml = null;
+            try {
+                $previewHtml = $previewHandler->getPreviewHtml();
+            } catch (NotSupportedException $e) {
+                // No big deal
+            }
         }
 
         $view = $this->getView();

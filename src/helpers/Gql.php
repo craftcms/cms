@@ -215,11 +215,11 @@ class Gql
                 if (!$directiveEntity) {
                     continue;
                 }
-                
+
                 if (isset($directive->arguments[0])) {
                     foreach ($directive->arguments as $argument) {
-                        $value = $argument->value->kind === 'Variable' ? $resolveInfo->variableValues[$argument->value->name->value] : $argument->value->value;
-                        $arguments[$argument->name->value] = $value;
+                        $argumentValue = $argument->value->kind === 'Variable' ? $resolveInfo->variableValues[$argument->value->name->value] : $argument->value->value;
+                        $arguments[$argument->name->value] = $argumentValue;
                     }
                 }
 

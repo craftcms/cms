@@ -108,6 +108,7 @@ Columns are provided as an array of objects in the component options. Each objec
 | titleClass (optional) | Class added to the cell in the header row                    |
 | dataClass (optional)  | Class added to the cell in the data row                      |
 | callback              | Callback function allowing the manipulation of the output of the data in the cell. See column callback. |
+| sortField (optional)  | Field name on which the sorting takes place. This is only available when using the `tableDataEndpoint`. Data is passed to the endpoint as `{field}|{direction}` e.g. `email|asc` |
 
 ### Special Columns
 
