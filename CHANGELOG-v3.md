@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to preview video files. ([#5565](https://github.com/craftcms/cms/pull/5565))
 - Added the `--no-backup` option to the `migrate/all` command.
 
 ### Fixed

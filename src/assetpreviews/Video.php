@@ -3,8 +3,8 @@
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
- * @since 3.4.x
  */
+
 namespace craft\assetpreviews;
 
 use Craft;
@@ -15,7 +15,7 @@ use yii\base\NotSupportedException;
  * Provides functionality to preview videos
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.x
+ * @since 3.4.3
  */
 class Video extends AssetPreviewHandler
 {
@@ -24,12 +24,9 @@ class Video extends AssetPreviewHandler
      */
     public function getPreviewHtml(): string
     {
-        /** @var Volume $volume */
-        $volume = $this->asset->getVolume();
+        $url = $this->asset->getUrl();
 
-        if ($volume->hasUrls) {
-            $url = $this->asset->getUrl();
-        } else {
+        if ($url === null) {
             throw new NotSupportedException('Preview not supported.');
         }
 
