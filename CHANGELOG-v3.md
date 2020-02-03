@@ -11,7 +11,7 @@
 - Fixed a bug where the “Duplicate” element action was available for users who didn’t have permission to create new entries in the section. ([#5566](https://github.com/craftcms/cms/issues/5566))
 - Fixed a bug where using directives in GraphQL could make the field return unexpected results. ([#5569](https://github.com/craftcms/cms/issues/5569))
 
-## 3.4.2 - 2019-01-31
+## 3.4.2 - 2020-01-31
 
 ### Added
 - Added the ability to pass a custom failure message to the delete action on admin tables. ([#5507](https://github.com/craftcms/cms/issues/5507))
