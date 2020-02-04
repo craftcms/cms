@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where data tables weren’t getting horizontal scrollbars in Firefox. ([#5574](https://github.com/craftcms/cms/issues/5574))
+- Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
 
 ## 3.4.3 - 2020-02-03
 
