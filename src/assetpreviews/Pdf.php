@@ -10,6 +10,7 @@ namespace craft\assetpreviews;
 use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\base\Volume;
+use craft\helpers\Html;
 use yii\base\NotSupportedException;
 
 /**
@@ -31,8 +32,10 @@ class Pdf extends AssetPreviewHandler
             throw new NotSupportedException('Preview not supported.');
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/pdf', [
-            'url' => $url
+        return Html::tag('iframe', '', [
+            'width' => '100%',
+            'height' => '100%',
+            'src' => $url,
         ]);
     }
 }
