@@ -2050,7 +2050,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return ElementInterface[]|null The eager-loaded elements, or null
+     * @return ElementInterface|ElementInterface[]|null The eager-loaded element, elements, or null
      */
     public function getEagerLoadedElements(string $handle)
     {
@@ -2060,7 +2060,11 @@ abstract class Element extends Component implements ElementInterface
 
         /** @var ElementInterface[] $elements */
         $elements = $this->_eagerLoadedElements[$handle];
-        ElementHelper::setNextPrevOnElements($elements);
+
+        if (is_array($elements)) {
+            ElementHelper::setNextPrevOnElements($elements);
+        }
+        
         return $elements;
     }
 
@@ -2069,9 +2073,14 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $handle The handle to load the elements with in the future
      * @param ElementInterface[] $elements The eager-loaded elements
+     * @param bool|null $withOne Whether one element should be eager loaded instead of an array
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements, bool $withOne = false)
     {
+        if ($withOne === true) {
+            $elements = $elements[0] ?? null;
+        }
+        
         $this->_eagerLoadedElements[$handle] = $elements;
     }
 
