@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.3 - 2020-02-03
 
 ### Added
 - It’s now possible to preview video files. ([#5565](https://github.com/craftcms/cms/pull/5565))
