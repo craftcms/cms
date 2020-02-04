@@ -144,6 +144,10 @@
                 type: Array,
                 default: () => { return [] },
             },
+            allowMultipleSelections: {
+                type: Boolean,
+                default: true,
+            },
             checkboxes: {
                 type: Boolean,
                 default: false,
@@ -260,7 +264,7 @@
                 this.$nextTick(() => {
                     if (this.$refs.vuetable) {
                         this.selectAll = this.$refs.vuetable.$el.querySelector('.selectallcontainer');
-                        if (this.selectAll) {
+                        if (this.selectAll && this.allowMultipleSelections) {
                             this.selectAll.addEventListener('click', this.handleSelectAll);
                         }
                     }
@@ -306,8 +310,13 @@
 
             addCheck(id) {
                 if (this.checks.indexOf(id) === -1) {
+                    if (this.checks.length >= 1 && !this.allowMultipleSelections) {
+                        this.checks = [];
+                    }
+
                     this.checks.push(id);
                 }
+                this.$emit('onSelect', this.checks);
             },
 
             removeCheck(id) {
@@ -315,6 +324,7 @@
                 if (key >= 0) {
                     this.checks.splice(key, 1);
                 }
+                this.$emit('onSelect', this.checks);
             },
 
             handleSearch: debounce(function() {
@@ -334,6 +344,7 @@
                 } else {
                     this.checks = [];
                 }
+                this.$emit('onSelect', this.checks);
             },
 
             handleDetailRow(id) {
@@ -342,6 +353,7 @@
 
             deselectAll() {
                 this.checks = [];
+                this.$emit('onSelect', this.checks);
             },
 
             reload() {
@@ -421,10 +433,15 @@
 
                 // Enable/Disable checkboxes
                 if (this.showCheckboxes) {
+                    var title = '';
+                    if (this.allowMultipleSelections) {
+                        title = '<div class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0" aria-checked="false"><div class="checkbox"></div></div>';
+                    }
+
                     columns.push({
                         name: '__slot:checkbox',
                         titleClass: 'thin',
-                        title: '<div class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0" aria-checked="false"><div class="checkbox"></div></div>',
+                        title: title,
                         dataClass: 'checkbox-cell'
                     });
                 }
