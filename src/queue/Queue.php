@@ -17,6 +17,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\db\Expression;
 use yii\db\Query;
 use yii\di\Instance;
 use yii\mutex\Mutex;
@@ -405,10 +406,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
+        // Set up the reserved jobs condition
+        $reservedParams = [];
+        $reservedCondition = $this->db->getQueryBuilder()->buildCondition([
+            'and',
+            ['fail' => false],
+            ['not', ['timeUpdated' => null]],
+        ], $reservedParams);
+
         $results = $this->_createJobQuery()
             ->select(['id', 'description', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
             ->andWhere('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
-            ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
+            ->orderBy(new Expression("CASE WHEN $reservedCondition THEN 1 ELSE 0 END DESC", $reservedParams))
+            ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
             ->all();
 

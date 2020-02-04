@@ -8,6 +8,8 @@
 
 namespace craft\base;
 
+use yii\base\NotSupportedException;
+
 /**
  * The AssetPreview interface dictates the requirements to register Asset Preview handlers with Craft
  *
@@ -20,6 +22,7 @@ interface AssetPreviewHandlerInterface
      * Returns the asset preview HTML.
      *
      * @return string The preview modal HTML
+     * @throws NotSupportedException if the asset can’t be previewed
      */
     public function getPreviewHtml(): string;
 }

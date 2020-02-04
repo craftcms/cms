@@ -1189,19 +1189,19 @@ class Request extends \yii\web\Request
             }
 
             // It's a possible match!
-            $scores[$i] = 8 + strlen($parsedPath);
+            $scores[$i] = 1000 + strlen($parsedPath) * 100;
 
             $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
             $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
 
             // Do the ports match?
             if ($parsedPort == $port) {
-                $scores[$i] += 4;
+                $scores[$i] += 100;
             }
 
             // Do the schemes match?
             if ($parsedScheme === $scheme) {
-                $scores[$i] += 2;
+                $scores[$i] += 10;
             }
 
             // One Pence point if it's the primary site in case we need a tiebreaker
