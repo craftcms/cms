@@ -700,18 +700,20 @@ class GeneralConfig extends BaseObject
      */
     public $rotateImagesOnUploadByExifData = true;
     /**
-     * @var bool Whether Craft should run pending queue jobs automatically over HTTP requests.
+     * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
      *
+     * If disabled, an alternate queue worker *must* be set up separately, either as an
+     * [always-running daemon](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/worker.md), or a
+     * cron job that runs the `queue/run` command every minute:
+     *
+     * ```cron
+     * * * * * * /path/to/project/craft queue/run
+     * ```
+     *
+     * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
-     *
-     * If disabled, an alternate queue runner *must* be set up separately.
-     *
-     * Here is an example of how you would setup a queue runner from a cron job that ran every minute:
-     *
-     * ```text
-     * /1 * * * * /path/to/project/root/craft queue/run
-     * ```
+     * :::
      */
     public $runQueueAutomatically = true;
     /**
