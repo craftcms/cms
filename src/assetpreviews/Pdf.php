@@ -10,6 +10,8 @@ namespace craft\assetpreviews;
 use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\base\Volume;
+use craft\helpers\Html;
+use yii\base\NotSupportedException;
 
 /**
  * Provides functionality to preview PDFs
@@ -24,17 +26,16 @@ class Pdf extends AssetPreviewHandler
      */
     public function getPreviewHtml(): string
     {
-        /** @var Volume $volume */
-        $volume = $this->asset->getVolume();
+        $url = $this->asset->getUrl();
 
-        if ($volume->hasUrls) {
-            $url = $this->asset->getUrl();
-        } else {
-            $url = $this->asset->getCopyOfFile();
+        if ($url === null) {
+            throw new NotSupportedException('Preview not supported.');
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/pdf', [
-            'url' => $url
+        return Html::tag('iframe', '', [
+            'width' => '100%',
+            'height' => '100%',
+            'src' => $url,
         ]);
     }
 }

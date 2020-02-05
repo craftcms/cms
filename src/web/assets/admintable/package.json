@@ -34,5 +34,10 @@
     "sass-loader": "^7.0.1",
     "vue-template-compiler": "^2.5.17",
     "webpack-manifest-plugin": "^2.0.4"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
   }
 }

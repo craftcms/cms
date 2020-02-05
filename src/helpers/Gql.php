@@ -218,7 +218,7 @@ class Gql
 
                 if (isset($directive->arguments[0])) {
                     foreach ($directive->arguments as $argument) {
-                        $argumentValue = $argument->value->kind === 'Variable' ? $resolveInfo->variableValues[$argument->value->name->value] : $argument->value->value;
+                        $argumentValue = (!empty($argument->value->kind) && $argument->value->kind === 'Variable') ? $resolveInfo->variableValues[$argument->value->name->value] : $argument->value->value;
                         $arguments[$argument->name->value] = $argumentValue;
                     }
                 }

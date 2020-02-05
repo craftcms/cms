@@ -88,6 +88,10 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
+        if ($action->id !== 'export') {
+            $this->requireAcceptsJson();
+        }
+
         $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
@@ -258,41 +262,53 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Exports element data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.4.4
+     */
+    public function actionExport(): Response
+    {
+        $exporter = $this->_exporter();
+        $exporter->setElementType($this->elementType);
+
+        $request = Craft::$app->getRequest();
+        $response = Craft::$app->getResponse();
+
+        $response->data = $exporter->export($this->elementQuery);
+        $response->format = $request->getBodyParam('format', 'csv');
+        $response->setDownloadHeaders($exporter->getFilename() . ".{$response->format}");
+
+        switch ($response->format) {
+            case Response::FORMAT_JSON:
+                $response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                break;
+            case Response::FORMAT_XML:
+                Craft::$app->language = 'en-US';
+                /** @var string|ElementInterface $elementType */
+                $elementType = $this->elementType;
+                $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                $response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
+                break;
+        }
+
+        return $response;
+    }
+
+    /**
      * Creates an export token.
      *
      * @return Response
      * @throws BadRequestHttpException
      * @throws ServerErrorHttpException
      * @since 3.2.0
+     * @deprecated in 3.4.4
      */
     public function actionCreateExportToken(): Response
     {
-        if (!$this->sourceKey) {
-            throw new BadRequestHttpException('Request missing required body param');
-        }
-
-        if ($this->context !== 'index') {
-            throw new BadRequestHttpException('Request missing index context');
-        }
-
+        $exporter = $this->_exporter();
         $request = Craft::$app->getRequest();
-
-        // Find that exporter from the list of available exporters for the source
-        $exporterClass = $request->getBodyParam('type', Raw::class);
-        if (!empty($this->exporters)) {
-            foreach ($this->exporters as $availableExporter) {
-                /** @var ElementAction $availableExporter */
-                if ($exporterClass === get_class($availableExporter)) {
-                    $exporter = $availableExporter;
-                    break;
-                }
-            }
-        }
-
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (!isset($exporter)) {
-            throw new BadRequestHttpException('Element exporter is not supported by the element type');
-        }
 
         $token = Craft::$app->getTokens()->createToken([
             'export/export',
@@ -300,7 +316,7 @@ class ElementIndexesController extends BaseElementsController
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
                 'criteria' => $request->getBodyParam('criteria', []),
-                'exporter' => $exporterClass,
+                'exporter' => get_class($exporter),
                 'format' => $request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
@@ -310,6 +326,35 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $this->asJson(compact('token'));
+    }
+
+    /**
+     * Returns the exporter for the request.
+     *
+     * @throws BadRequestHttpException
+     * @return ElementExporterInterface
+     */
+    private function _exporter(): ElementExporterInterface
+    {
+        if (!$this->sourceKey) {
+            throw new BadRequestHttpException('Request missing required body param');
+        }
+
+        if ($this->context !== 'index') {
+            throw new BadRequestHttpException('Request missing index context');
+        }
+
+        // Find that exporter from the list of available exporters for the source
+        $exporterClass = Craft::$app->getRequest()->getBodyParam('type', Raw::class);
+        if (!empty($this->exporters)) {
+            foreach ($this->exporters as $exporter) {
+                if ($exporterClass === get_class($exporter)) {
+                    return $exporter;
+                }
+            }
+        }
+
+        throw new BadRequestHttpException('Element exporter is not supported by the element type');
     }
 
     /**

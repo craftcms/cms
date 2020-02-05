@@ -29,7 +29,6 @@ abstract class BaseElementsController extends Controller
      */
     public function init()
     {
-        $this->requireAcceptsJson();
         $this->requireCpRequest();
         parent::init();
     }

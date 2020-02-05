@@ -34,6 +34,11 @@ class Image
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
     {
+        // If neither were supplied, just use the source dimensions
+        if (empty($targetWidth) && empty($targetHeight)) {
+            return [(int)$sourceWidth, (int)$sourceHeight];
+        }
+
         $factor = $sourceWidth / $sourceHeight;
 
         if (empty($targetHeight)) {

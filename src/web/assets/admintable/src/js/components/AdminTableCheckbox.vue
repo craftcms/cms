@@ -1,9 +1,9 @@
 <template>
     <div
-      class="checkbox"
-      :class="{ checked: isChecked }"
-      v-on:click.prevent="handleClick"
-      :title="title"></div>
+        class="checkbox"
+        :class="{ checked: isChecked }"
+        v-on:click.prevent="handleClick"
+        :title="title"></div>
 </template>
 
 <script>

@@ -1941,9 +1941,9 @@ body.rtl #sidebar-container { margin-right: -24px; }
 #sidebar nav li a.sel { background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; }
 
 #content-container { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
-#main-content.has-sidebar #content-container { width: calc(100% - 225px - 24px); }
-#main-content.has-details #content-container { width: calc(100% - 350px - 14px); }
-#content-container #main-content.has-sidebar.has-details { width: calc(100% - 225px - 350px - 38px); }
+#main-content.has-sidebar #content-container { width: calc(100% - 225px - 24px); max-width: calc(100% - 225px - 24px); }
+#main-content.has-details #content-container { width: calc(100% - 350px - 14px); max-width: calc(100% - 350px - 14px); }
+#content-container #main-content.has-sidebar.has-details { width: calc(100% - 225px - 350px - 38px); max-width: calc(100% - 225px - 350px - 38px); }
 
 #tabs { margin: -10px -12px 0; padding: 10px 12px 0; overflow: hidden; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
 #tabs ul { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; max-width: calc(100% - 40px); }
@@ -2034,7 +2034,7 @@ body.rtl #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
   body:not(.showing-sidebar) #sidebar { display: none; }
   body.ltr #details-container { margin-right: 0; }
   body.rtl #details-container { margin-left: 0; }
-  #content-container { width: auto !important; }
+  #content-container { width: auto !important; max-width: none !important; }
   #details { padding: 0 !important; margin-top: 14px; } }
 @media only screen and (max-width: 767px) { #crumbs, #header, #main-content { padding-left: 10px; padding-right: 10px; }
   #tabs ul li a { padding-left: 14px; padding-right: 14px; }

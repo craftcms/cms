@@ -52,6 +52,7 @@
                             @vuetable:loaded="init"
                             @vuetable:loading="loading"
                             @vuetable:pagination-data="onPaginationData"
+                            @vuetable:load-success="onLoadSuccess"
                     >
                         <template slot="checkbox" slot-scope="props">
                             <admin-table-checkbox
@@ -143,6 +144,10 @@
             actions: {
                 type: Array,
                 default: () => { return [] },
+            },
+            allowMultipleSelections: {
+                type: Boolean,
+                default: true,
             },
             checkboxes: {
                 type: Boolean,
@@ -260,11 +265,15 @@
                 this.$nextTick(() => {
                     if (this.$refs.vuetable) {
                         this.selectAll = this.$refs.vuetable.$el.querySelector('.selectallcontainer');
-                        if (this.selectAll) {
+                        if (this.selectAll && this.allowMultipleSelections) {
                             this.selectAll.addEventListener('click', this.handleSelectAll);
                         }
                     }
                 });
+
+                if (this.tableData && this.tableData.length && !this.tableDataEndpoint) {
+                    this.$emit('data', this.tableData);
+                }
 
                 this.isLoading = false;
             },
@@ -306,8 +315,13 @@
 
             addCheck(id) {
                 if (this.checks.indexOf(id) === -1) {
+                    if (this.checks.length >= 1 && !this.allowMultipleSelections) {
+                        this.checks = [];
+                    }
+
                     this.checks.push(id);
                 }
+                this.$emit('onSelect', this.checks);
             },
 
             removeCheck(id) {
@@ -315,6 +329,7 @@
                 if (key >= 0) {
                     this.checks.splice(key, 1);
                 }
+                this.$emit('onSelect', this.checks);
             },
 
             handleSearch: debounce(function() {
@@ -334,6 +349,7 @@
                 } else {
                     this.checks = [];
                 }
+                this.$emit('onSelect', this.checks);
             },
 
             handleDetailRow(id) {
@@ -342,6 +358,7 @@
 
             deselectAll() {
                 this.checks = [];
+                this.$emit('onSelect', this.checks);
             },
 
             reload() {
@@ -368,13 +385,19 @@
               this.isLoading = false;
             },
 
-            onPaginationData (paginationData) {
+            onLoadSuccess(data) {
+                if (data && data.data && data.data.data) {
+                    this.$emit('data', data.data.data);
+                }
+            },
+
+            onPaginationData(paginationData) {
                 this.currentPage = paginationData.current_page;
                 this.$refs.pagination.setPaginationData(paginationData)
                 this.deselectAll();
             },
 
-            onChangePage (page) {
+            onChangePage(page) {
                 this.$refs.vuetable.changePage(page)
                 this.deselectAll();
             },
@@ -420,11 +443,16 @@
                 let columns = [];
 
                 // Enable/Disable checkboxes
-                if (this.showCheckboxes) {
+                if (this.checkboxes) {
+                    var title = '';
+                    if (this.allowMultipleSelections) {
+                        title = '<div class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0" aria-checked="false"><div class="checkbox"></div></div>';
+                    }
+
                     columns.push({
                         name: '__slot:checkbox',
                         titleClass: 'thin',
-                        title: '<div class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0" aria-checked="false"><div class="checkbox"></div></div>',
+                        title: title,
                         dataClass: 'checkbox-cell'
                     });
                 }
@@ -463,10 +491,6 @@
 
             searchPlaceholderText() {
               return Craft.escapeHtml(this.searchPlaceholder);
-            },
-
-            showCheckboxes() {
-              return (this.actions.length && this.checkboxes);
             },
 
             showToolbar() {

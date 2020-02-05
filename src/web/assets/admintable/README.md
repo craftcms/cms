@@ -37,6 +37,7 @@ new Craft.VueAdminTable({...options...});
 | Name                      | Type     | Default                                     | Description                                                  |
 | ------------------------- | -------- | ------------------------------------------- | ------------------------------------------------------------ |
 | actions                   | Array    | `[]`                                        | Array of action options to create action buttons in the table toolbar. |
+| allowMultipleSelections | Bool | true | When using checkboxes, determines whether or not multiple selections are allowed. When set to `false` the select all checkbox is hidden. |
 | checkboxes                | Bool     | `false`                                     | Whether to show the checkbox column or not.                  |
 | columns                   | Array    | `[]`                                        | Used to define the table columns. See column definition.     |
 | container                 | String   | `null`                                      | CSS selector for which element the table should mounted on.     |
@@ -57,6 +58,13 @@ new Craft.VueAdminTable({...options...});
 | searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
+
+### Events
+
+| Name     | Data             | Scenario                                                  |
+| -------- | ---------------- | --------------------------------------------------------- |
+| onSelect | Array of IDs     | When a checkbox or select all is selected or de-selected. |
+| data     | Array of objects | On successful load or page change.                        |
 
 ## Table Data
 

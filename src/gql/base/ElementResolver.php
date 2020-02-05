@@ -94,6 +94,12 @@ abstract class ElementResolver extends Resolver
             }
         }
 
+        foreach ($relationCountFields as $fieldName => $dud) {
+            if (!array_key_exists($fieldName, $preloadNodes)) {
+                $preloadNodes[$fieldName] = [];
+            }
+        }
+
         foreach ($preloadNodes as $element => $parameters) {
             if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
                 continue;

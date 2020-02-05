@@ -1815,19 +1815,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     }
                 }
 
-                Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
-                    submitting = false;
-                    $spinner.addClass('hidden');
-
-                    if (textStatus === 'success') {
-                        var params = {};
-                        params[Craft.tokenParam] = response.token;
-                        var url = Craft.getCpUrl('', params);
-                        document.location.href = url;
-                    } else {
+                Craft.downloadFromUrl('POST', Craft.getActionUrl('element-indexes/export'), params)
+                    .then(function() {
+                        submitting = false;
+                        $spinner.addClass('hidden');
+                    })
+                    .catch(function() {
+                        submitting = false;
+                        $spinner.addClass('hidden');
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
-                    }
-                }, this));
+                    });
             });
         },
 

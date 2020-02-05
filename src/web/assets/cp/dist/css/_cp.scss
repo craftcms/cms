@@ -810,14 +810,17 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   #main-content.has-sidebar & {
     width: calc(100% - #{$sidebarWidth} - 24px);
+    max-width: calc(100% - #{$sidebarWidth} - 24px);
   }
 
   #main-content.has-details & {
     width: calc(100% - #{$detailsWidth} - 14px);
+    max-width: calc(100% - #{$detailsWidth} - 14px);
   }
 
   #main-content.has-sidebar.has-details {
     width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
+    max-width: calc(100% - #{$sidebarWidth} - #{$detailsWidth} - 38px);
   }
 }
 
@@ -1167,6 +1170,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   #content-container {
     width: auto !important;
+    max-width: none !important;
   }
 
   #details {
