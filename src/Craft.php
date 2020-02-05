@@ -276,7 +276,7 @@ EOD;
             $fileContents);
 
         if ($write) {
-            $tmpFile = tempnam(dirname($filePath), basename($filePath));
+            $tmpFile = dirname($filePath) . DIRECTORY_SEPARATOR . uniqid(pathinfo($filePath, PATHINFO_FILENAME), true) . '.php';
             FileHelper::writeToFile($tmpFile, $fileContents);
             rename($tmpFile, $filePath);
             FileHelper::invalidate($filePath);
