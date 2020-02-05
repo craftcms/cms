@@ -227,13 +227,15 @@ class ElementsController extends BaseElementsController
         $siteId = $request->getBodyParam('siteId', null);
         $size = $request->getBodyParam('size', null);
         $viewMode = $request->getBodyParam('viewMode', null);
+        $context = $request->getBodyParam('context', 'field');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
         $html = $view->renderTemplate('_elements/element', compact(
             'element',
             'size',
-            'viewMode'
+            'viewMode',
+            'context'
         ));
 
         return $this->asJson([
