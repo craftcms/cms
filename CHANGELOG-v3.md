@@ -22,6 +22,7 @@
 - Fixed a bug where assets that had been drag-uploaded to an Assets field would be hyperlinked. ([#5584](https://github.com/craftcms/cms/issues/5584))
 - Fixed a bug where `CustomFieldBehavior.php` was getting created with restricted permissions. ([#5570](https://github.com/craftcms/cms/issues/5570))
 - Fixed a bug where element exporting would redirect the browser window if the export request didn’t immediately return the export data. ([#5558](https://github.com/craftcms/cms/issues/5558))
+- Fixed a “Division by zero” error that occurred if an image transform didn’t specify a width or a height. ([#5590](https://github.com/craftcms/cms/issues/5590))
 
 ## 3.4.3 - 2020-02-03
 
