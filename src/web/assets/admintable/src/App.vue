@@ -432,7 +432,7 @@
                 let columns = [];
 
                 // Enable/Disable checkboxes
-                if (this.showCheckboxes) {
+                if (this.checkboxes) {
                     var title = '';
                     if (this.allowMultipleSelections) {
                         title = '<div class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0" aria-checked="false"><div class="checkbox"></div></div>';
@@ -480,10 +480,6 @@
 
             searchPlaceholderText() {
               return Craft.escapeHtml(this.searchPlaceholder);
-            },
-
-            showCheckboxes() {
-              return (this.actions.length && this.checkboxes);
             },
 
             showToolbar() {
