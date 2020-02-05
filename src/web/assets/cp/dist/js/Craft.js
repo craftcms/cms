@@ -1,4 +1,4 @@
-/*!   - 2020-01-31 */
+/*!   - 2020-02-05 */
 (function($){
 
 /** global: Craft */
@@ -610,6 +610,55 @@ $.extend(Craft,
                         .catch(reject);
                 }.bind(this));
             }.bind(this));
+        },
+
+        /**
+         * Requests a URL and downloads the response.
+         *
+         * @param {string} method the request method to use
+         * @param {string} url the URL
+         * @param {string|Object} [body] the request body, if method = POST
+         * @return {Promise}
+         */
+        downloadFromUrl: function(method, url, body) {
+            return new Promise((resolve, reject) => {
+                // h/t https://nehalist.io/downloading-files-from-post-requests/
+                let request = new XMLHttpRequest();
+                request.open(method, url, true);
+                if (typeof body === 'object') {
+                    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                    body = JSON.stringify(body);
+                } else {
+                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                }
+                request.responseType = 'blob';
+
+                request.onload = function() {
+                    // Only handle status code 200
+                    if (request.status === 200) {
+                        // Try to find out the filename from the content disposition `filename` value
+                        let disposition = request.getResponseHeader('content-disposition');
+                        let matches = /"([^"]*)"/.exec(disposition);
+                        let filename = (matches != null && matches[1] ? matches[1] : 'Download');
+
+                        // Encode the download into an anchor href
+                        let contentType = request.getResponseHeader('content-type');
+                        let blob = new Blob([request.response], {type: contentType});
+                        let link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                }.bind(this);
+
+                request.send(body);
+            });
         },
 
         /**
@@ -3864,19 +3913,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     }
                 }
 
-                Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
-                    submitting = false;
-                    $spinner.addClass('hidden');
-
-                    if (textStatus === 'success') {
-                        var params = {};
-                        params[Craft.tokenParam] = response.token;
-                        var url = Craft.getCpUrl('', params);
-                        document.location.href = url;
-                    } else {
+                Craft.downloadFromUrl('POST', Craft.getActionUrl('element-indexes/export'), params)
+                    .then(function() {
+                        submitting = false;
+                        $spinner.addClass('hidden');
+                    })
+                    .catch(function() {
+                        submitting = false;
+                        $spinner.addClass('hidden');
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
-                    }
-                }, this));
+                    });
             });
         },
 

@@ -31,6 +31,20 @@ use yii\web\Response;
 class ElementsController extends BaseElementsController
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
+
+    /**
      * Renders and returns the body of an ElementSelectorModal.
      *
      * @return Response
