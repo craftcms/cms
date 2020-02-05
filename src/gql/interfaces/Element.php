@@ -61,7 +61,7 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(static::getDraftFieldDefinitions(), parent::getFieldDefinitions(), [
             Gql::GRAPHQL_COUNT_FIELD => [
                 'name' => Gql::GRAPHQL_COUNT_FIELD,
                 'type' => Type::int(),
@@ -130,6 +130,42 @@ class Element extends InterfaceType
                 'description' => 'The date the element was last updated.'
             ],
         ]), self::getName());
+    }
+
+    /**
+     * List the draft field definitions.
+     *
+     * @return array
+     */
+    public static function getDraftFieldDefinitions(): array
+    {
+       return [
+           'isDraft' => [
+               'name' => 'isDraft',
+               'type' => Type::boolean(),
+               'description' => 'Returns whether this is a draft.',
+           ],
+           'isRevision' => [
+               'name' => 'isRevision',
+               'type' => Type::boolean(),
+               'description' => 'Returns whether this is a revision.',
+           ],
+           'sourceId' => [
+               'name' => 'sourceId',
+               'type' => Type::int(),
+               'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
+           ],
+           'sourceUid' => [
+               'name' => 'sourceUid',
+               'type' => Type::string(),
+               'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
+           ],
+           'isUnsavedDraft' => [
+               'name' => 'isUnsavedDraft',
+               'type' => Type::boolean(),
+               'description' => 'Returns whether this is a draft.',
+           ],
+       ];
     }
 
     /**
