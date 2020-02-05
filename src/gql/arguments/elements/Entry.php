@@ -27,7 +27,7 @@ class Entry extends StructureElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getDraftArguments(), parent::getArguments(), self::getContentArguments(), [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'editable' => [
                 'name' => 'editable',
                 'type' => Type::boolean(),

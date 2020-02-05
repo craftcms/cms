@@ -23,7 +23,7 @@ abstract class ElementArguments extends Arguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), static::getDraftArguments(), [
             'status' => [
                 'name' => 'status',
                 'type' => Type::listOf(Type::string()),
