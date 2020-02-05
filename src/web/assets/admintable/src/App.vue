@@ -52,6 +52,7 @@
                             @vuetable:loaded="init"
                             @vuetable:loading="loading"
                             @vuetable:pagination-data="onPaginationData"
+                            @vuetable:load-success="onLoadSuccess"
                     >
                         <template slot="checkbox" slot-scope="props">
                             <admin-table-checkbox
@@ -270,6 +271,10 @@
                     }
                 });
 
+                if (this.tableData && this.tableData.length && !this.tableDataEndpoint) {
+                    this.$emit('data', this.tableData);
+                }
+
                 this.isLoading = false;
             },
 
@@ -380,13 +385,19 @@
               this.isLoading = false;
             },
 
-            onPaginationData (paginationData) {
+            onLoadSuccess(data) {
+                if (data && data.data && data.data.data) {
+                    this.$emit('data', data.data.data);
+                }
+            },
+
+            onPaginationData(paginationData) {
                 this.currentPage = paginationData.current_page;
                 this.$refs.pagination.setPaginationData(paginationData)
                 this.deselectAll();
             },
 
-            onChangePage (page) {
+            onChangePage(page) {
                 this.$refs.vuetable.changePage(page)
                 this.deselectAll();
             },

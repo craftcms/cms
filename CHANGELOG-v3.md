@@ -4,7 +4,8 @@
 
 ### Added
 - Added the ability to limit multiple selections in admin tables.
-- Added an emit event to admin tables when selections are changed.
+- Added an event to admin tables when selections are changed.
+- Added an event to admin tables to retrieve currently visible data.
 
 ### Fixed
 - Fixed a bug where data tables weren’t getting horizontal scrollbars in Firefox. ([#5574](https://github.com/craftcms/cms/issues/5574))
