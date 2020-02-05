@@ -12,6 +12,7 @@
 - Fixed a bug where HTML was being escaped twice in some admin tables. ([#5532](https://github.com/craftcms/cms/issues/5532))
 - Fixed a 404 error that would occur when attempting to preview a PDF file in a volume that didn’t have a base URL. ([#5581](https://github.com/craftcms/cms/issues/5581))
 - Fixed a bug where sometimes the progress bar would not be hidden after indexing assets.
+- Fixed a bug where the `_count` field would sometimes not work correctly when using GraphQL. ([#4847](https://github.com/craftcms/cms/issues/4847))
 
 ## 3.4.3 - 2020-02-03
 
