@@ -140,6 +140,7 @@
 
                 this.addListener($cancelBtn, 'click', function() {
                     modal.hide();
+                    this.onComplete();
                 });
 
                 this.addListener($modal, 'submit', function(ev) {
