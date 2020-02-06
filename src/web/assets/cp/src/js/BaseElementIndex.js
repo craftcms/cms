@@ -598,6 +598,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 params.collapsedElementIds = this.instanceState.collapsedElementIds;
             }
 
+            // Give plugins a chance to hook in here
+            this.trigger('registerViewParams', {
+                params: params,
+            });
+
             return params;
         },
 
