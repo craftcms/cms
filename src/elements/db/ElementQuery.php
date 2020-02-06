@@ -2565,10 +2565,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyOrderByParams(Connection $db)
     {
+        $hasScore = is_array($this->orderBy) && array_key_exists('score', $this->orderBy);
         if (
             $this->orderBy === null ||
-            $this->orderBy === ['score' => SORT_ASC] ||
-            $this->orderBy === ['score' => SORT_DESC] ||
+            $hasScore ||
             !empty($this->query->orderBy)
         ) {
             return;
