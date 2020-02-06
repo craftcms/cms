@@ -457,27 +457,27 @@ class Gql extends Component
     }
 
     /**
-     * Returns the public schema. If it does not exist, it will be created.
+     * Returns the public schema. If it does not exist and admin changes are allowed, it will be created.
      *
-     * @return GqlSchema
+     * @return GqlSchema|null
      * @throws Exception
      */
-    public function getPublicSchema(): GqlSchema
+    public function getPublicSchema()
     {
         $result = $this->_createTokenQuery()
             ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
             ->one();
 
-        if ($result) {
-            if ($result['schemaId']) {
-                $token = new GqlToken($result);
-                return $token->getSchema();
-            } else {
-                return $this->_createPublicSchema($result['id']);
-            }
+        if ($result && $result['schemaId']) {
+            return (new GqlToken($result))->getSchema();
         }
 
-        return $this->_createPublicSchema();
+        // If admin changes aren't currently supported, return null
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            return null;
+        }
+
+        return $this->_createPublicSchema($result ? $result['id'] : null);
     }
 
     /**
