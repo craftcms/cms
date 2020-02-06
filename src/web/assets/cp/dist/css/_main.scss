@@ -3841,6 +3841,7 @@ textarea.text.fullwidth {
   }
 
   & > .heading {
+    margin-top: -5px;
     margin-bottom: 5px;
 
     & > label {
@@ -4724,19 +4725,18 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
-  padding: 0 14px 14px;
+  padding: 14px;
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
   outline: none;
 
   & > .titlebar {
-    margin: 0 -14px 14px;
+    margin: -14px -14px 14px;
     width: calc(100% + 28px);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 35px);
-    border-bottom: 1px solid $hairlineColor;
     background-color: $grey050;
     color: $lightTextColor;
     overflow: hidden;
@@ -4804,6 +4804,8 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     top: 4px;
     @include right(5px);
     cursor: default;
+    opacity: 0;
+    transition: opacity linear 100ms;
 
     & > .status {
       &.off {
@@ -4829,6 +4831,14 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
       &.settings:after {
         @include margin-left(3px);
       }
+    }
+  }
+
+  &:hover,
+  &.active,
+  &.draghelper {
+    & > .actions {
+      opacity: 1;
     }
   }
 

@@ -412,6 +412,13 @@
 
                 menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
 
+                menuBtn.menu.on('show', () => {
+                    this.$container.addClass('active');
+                });
+                menuBtn.menu.on('hide', () => {
+                    this.$container.removeClass('active');
+                });
+
                 // Was this block already collapsed?
                 if (Garnish.hasAttr(this.$container, 'data-collapsed')) {
                     this.collapse();

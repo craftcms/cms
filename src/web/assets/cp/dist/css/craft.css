@@ -1280,7 +1280,7 @@ body.rtl .field > .status-badge { right: -19px; }
 .field > .status-badge.modified { background-color: #1992D4; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
 .field > .status-badge.outdated { background-color: #FADB5F; }
 .field > .status-badge.conflicted { background-color: #CF1124; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
-.field > .heading { margin-bottom: 5px; }
+.field > .heading { margin-top: -5px; margin-bottom: 5px; }
 .field > .heading > label { position: relative; font-weight: bold; color: #606d7b; }
 .field > .heading > label > .site { display: inline-block; border-radius: 4px; padding: 0 4px; font-size: 11px; color: #7b8793; background-color: #e4edf6; }
 body.ltr .field > .heading > label > .site { margin-left: 7px; }
@@ -1642,8 +1642,8 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 /* Matrix fields */
 .matrix > .buttons { margin-top: 10px; }
 
-.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
-.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.matrixblock { position: relative; margin-bottom: 10px; padding: 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
+.matrixblock > .titlebar { margin: -14px -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; background-color: #f3f7fc; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 35px ; }
 body.rtl .matrixblock > .titlebar { padding: 5px 35px 5px 70px ; }
 .matrixblock > .titlebar > .blocktype { display: inline; color: #7b8793; }
@@ -1664,7 +1664,7 @@ body.rtl .matrixblock.disabled > .actions > .status.off { margin: 6px 0 0 10px ;
 .matrixblock > .checkbox { position: absolute; top: 7px; }
 body.ltr .matrixblock > .checkbox { left: 14px; }
 body.rtl .matrixblock > .checkbox { right: 14px; }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 body.ltr .matrixblock > .actions { right: 5px; }
 body.rtl .matrixblock > .actions { left: 5px; }
 .matrixblock > .actions > .status.off { display: none; }
@@ -1674,6 +1674,7 @@ body.rtl .matrixblock > .actions a { margin-left: 2px; }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: #0B69A3; }
 body.ltr .matrixblock > .actions a.settings:after { margin-left: 3px; }
 body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
+.matrixblock:hover > .actions, .matrixblock.active > .actions, .matrixblock.draghelper > .actions { opacity: 1; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 
