@@ -14,6 +14,7 @@
 ### Fixed
 - Fixed an error that occurred when working with GraphQL on an environment with `allowAdminChanges` disabled, if the public schema didn’t exist yet. ([#5588](https://github.com/craftcms/cms/issues/5588))
 - Fixed a bug where static Matrix blocks weren’t getting any top padding. ([#5609](https://github.com/craftcms/cms/issues/5609))
+- Fixed a bug where static text cells within editable tables were getting cut off. ([#5611](https://github.com/craftcms/cms/issues/5611))
 
 ## 3.4.4.1 - 2020-02-06
 

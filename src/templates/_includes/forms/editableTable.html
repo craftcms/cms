@@ -124,7 +124,11 @@
                                             disabled: static
                                         } only %}
                                     {%- default -%}
-                                        <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                        {% if static %}
+                                            <pre>{{ value }}</pre>
+                                        {% else %}
+                                            <textarea name="{{ cellName }}" rows="1"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                        {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
                         </td>

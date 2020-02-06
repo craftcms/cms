@@ -841,6 +841,8 @@ body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px s
 table.editable tbody tr td { vertical-align: middle; text-align: center; background-color: #fff; }
 table.editable tbody tr td.textual { vertical-align: top; }
 table.editable tbody tr td.textual textarea { resize: none; }
+body.ltr table.editable tbody tr td.textual pre { text-align: left; }
+body.rtl table.editable tbody tr td.textual pre { text-align: right; }
 table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
 table.editable tbody tr td.textual { padding: 0; }
 table.editable tbody tr td.error { -webkit-box-shadow: inset 0 0 0 1px #EF4E4E; box-shadow: inset 0 0 0 1px #EF4E4E; }
@@ -852,8 +854,8 @@ body.rtl table.editable tbody tr td.action + td.action { border-right: none; }
 body.ltr table.editable tbody tr td.action + td.action { padding-left: 0; }
 body.rtl table.editable tbody tr td.action + td.action { padding-right: 0; }
 table.editable tbody tr td .flex > * { margin-bottom: 0; }
-table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text { display: block; width: 100%; border: none; -webkit-box-shadow: none; box-shadow: none; border-radius: 0; padding: 7px 10px; background-color: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
-table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus { border: 1px solid rgba(51, 64, 77, 0.1); padding: 6px 9px; outline: none; }
+table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text, table.editable tbody pre { display: block; width: 100%; border: none; -webkit-box-shadow: none; box-shadow: none; border-radius: 0; padding: 7px 10px; background-color: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
+table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus, table.editable tbody pre:focus { border: 1px solid rgba(51, 64, 77, 0.1); padding: 6px 9px; outline: none; }
 table.editable tbody .color-container { display: block; position: relative; }
 table.editable tbody .color-container > .color, table.editable tbody .color-container > .color-input { margin-bottom: 0; }
 table.editable tbody .color-container > .color { position: absolute; top: calc(50% - 8px); }

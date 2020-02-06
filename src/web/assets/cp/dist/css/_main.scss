@@ -2333,6 +2333,10 @@ table.editable {
           textarea {
             resize: none;
           }
+
+          pre {
+            @include alignleft;
+          }
         }
 
         &:not(.textual) {
@@ -2381,7 +2385,8 @@ table.editable {
 
     textarea,
     textarea.text,
-    input.text {
+    input.text,
+    pre {
       display: block;
       width: 100%;
       border: none;
