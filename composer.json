@@ -41,7 +41,8 @@
         "yiisoft/yii": "1.1.22.0",
         "enshrined/svg-sanitize": "0.9.0",
         "pclzip/pclzip": "2.8.2.1",
-        "elvanto/litemoji": "1.4.4"
+        "elvanto/litemoji": "1.4.4",
+        "phpseclib/mcrypt_compat": "1.0.11"
     },
     "require-dev": {
         "phpunit/phpunit": "4.8.16",
