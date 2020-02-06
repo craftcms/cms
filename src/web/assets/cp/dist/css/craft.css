@@ -1350,7 +1350,7 @@ body.rtl .checkboxfield.has-instructions .instructions { padding-right: 21px; }
 .multiselect > select:focus { outline: none; border-color: rgba(96, 125, 159, 0.8); }
 .multiselect > select option { padding: 1px 8px; }
 
-.text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input { padding: 6px 13px; }
+.text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input { padding: 6px 9px; }
 
 .text { background-color: #fff; }
 .text.small { padding: 3px; }
