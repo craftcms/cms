@@ -194,6 +194,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         buttonContainer: this.$secondaryButtons,
                         onSelectionChange: $.proxy(this, 'onSelectionChange'),
                         hideSidebar: this.settings.hideSidebar,
+                        defaultSiteId: this.settings.defaultSiteId,
                         defaultSource: this.settings.defaultSource
                     });
 
@@ -223,6 +224,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             onCancel: $.noop,
             onSelect: $.noop,
             hideSidebar: false,
+            defaultSiteId: null,
             defaultSource: null
         }
     });

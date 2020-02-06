@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.4.1 - 2020-02-06
+
+### Changed
+- Plugins can now modify the params sent with element index Ajax requests by hooking into the new `registerViewParams` event triggered by `Craft.BaseElementIndex`.
+
+### Fixed
+- Fixed an error that occurred when searching for elements from element indexes. ([#5599](https://github.com/craftcms/cms/issues/5599))
+
 ## 3.4.4 - 2020-02-05
 
 ### Added
