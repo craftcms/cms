@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 2.x
 
+## 2.9.1 - 2020-02-06
+
+### Fixed
+- Fixed a bug where the mcrypt_compat library was accidentally removed. ([#5602](https://github.com/craftcms/cms/issues/5602))
+
+### Changed
+- Updated the mcrypt_compat library to 1.0.11.
+
 ## 2.9.0 - 2020-01-31
 
 ### Changed
