@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d3a40e05b98ec48e2af49c09d1cc4947",
+    "content-hash": "68a61d6728489269fa26c9eb5e312133",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -677,16 +677,16 @@
         },
         {
             "name": "enshrined/svg-sanitize",
-            "version": "0.13.2",
+            "version": "0.13.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/darylldoyle/svg-sanitizer.git",
-                "reference": "19e85021505b29f3055c1f57a620ee4aa5c24113"
+                "reference": "bc66593f255b7d2613d8f22041180036979b6403"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/19e85021505b29f3055c1f57a620ee4aa5c24113",
-                "reference": "19e85021505b29f3055c1f57a620ee4aa5c24113",
+                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/bc66593f255b7d2613d8f22041180036979b6403",
+                "reference": "bc66593f255b7d2613d8f22041180036979b6403",
                 "shasum": ""
             },
             "require": {
@@ -714,7 +714,7 @@
                 }
             ],
             "description": "An SVG sanitizer for PHP",
-            "time": "2019-12-09T09:24:04+00:00"
+            "time": "2020-01-20T01:34:17+00:00"
         },
         {
             "name": "ezyang/htmlpurifier",
@@ -1382,16 +1382,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "1.0.63",
+            "version": "1.0.64",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "8132daec326565036bc8e8d1876f77ec183a7bd6"
+                "reference": "d13c43dbd4b791f815215959105a008515d1a2e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/8132daec326565036bc8e8d1876f77ec183a7bd6",
-                "reference": "8132daec326565036bc8e8d1876f77ec183a7bd6",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/d13c43dbd4b791f815215959105a008515d1a2e0",
+                "reference": "d13c43dbd4b791f815215959105a008515d1a2e0",
                 "shasum": ""
             },
             "require": {
@@ -1403,7 +1403,7 @@
             },
             "require-dev": {
                 "phpspec/phpspec": "^3.4",
-                "phpunit/phpunit": "^5.7.10"
+                "phpunit/phpunit": "^5.7.26"
             },
             "suggest": {
                 "ext-fileinfo": "Required for MimeType",
@@ -1462,7 +1462,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2020-01-04T16:30:31+00:00"
+            "time": "2020-02-05T18:14:17+00:00"
         },
         {
             "name": "league/oauth2-client",
@@ -2746,16 +2746,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "e9ee09d087e2c88eaf6e5fc0f5c574f64d100e4f"
+                "reference": "f512001679f37e6a042b51897ed24a2f05eba656"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/e9ee09d087e2c88eaf6e5fc0f5c574f64d100e4f",
-                "reference": "e9ee09d087e2c88eaf6e5fc0f5c574f64d100e4f",
+                "url": "https://api.github.com/repos/symfony/console/zipball/f512001679f37e6a042b51897ed24a2f05eba656",
+                "reference": "f512001679f37e6a042b51897ed24a2f05eba656",
                 "shasum": ""
             },
             "require": {
@@ -2818,11 +2818,11 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2020-01-10T21:54:01+00:00"
+            "time": "2020-01-25T12:44:29+00:00"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
@@ -2872,7 +2872,7 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
@@ -3395,7 +3395,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -3502,16 +3502,16 @@
         },
         {
             "name": "symfony/var-dumper",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "7cfa470bc3b1887a7b2a47c0a702a84ad614fa92"
+                "reference": "46b53fd714568af343953c039ff47b67ce8af8d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/7cfa470bc3b1887a7b2a47c0a702a84ad614fa92",
-                "reference": "7cfa470bc3b1887a7b2a47c0a702a84ad614fa92",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/46b53fd714568af343953c039ff47b67ce8af8d6",
+                "reference": "46b53fd714568af343953c039ff47b67ce8af8d6",
                 "shasum": ""
             },
             "require": {
@@ -3574,11 +3574,11 @@
                 "debug",
                 "dump"
             ],
-            "time": "2020-01-04T13:00:46+00:00"
+            "time": "2020-01-25T12:44:29+00:00"
         },
         {
             "name": "symfony/yaml",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
@@ -3801,16 +3801,16 @@
         },
         {
             "name": "voku/anti-xss",
-            "version": "4.1.21",
+            "version": "4.1.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/voku/anti-xss.git",
-                "reference": "a96c8d4e688128dd9b98d2796c9cfcad399c25db"
+                "reference": "4c23b8b88430834ee3eaee30d2bc373ef1ba19eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/voku/anti-xss/zipball/a96c8d4e688128dd9b98d2796c9cfcad399c25db",
-                "reference": "a96c8d4e688128dd9b98d2796c9cfcad399c25db",
+                "url": "https://api.github.com/repos/voku/anti-xss/zipball/4c23b8b88430834ee3eaee30d2bc373ef1ba19eb",
+                "reference": "4c23b8b88430834ee3eaee30d2bc373ef1ba19eb",
                 "shasum": ""
             },
             "require": {
@@ -3854,7 +3854,7 @@
                 "security",
                 "xss"
             ],
-            "time": "2019-12-30T14:57:06+00:00"
+            "time": "2020-02-06T14:46:13+00:00"
         },
         {
             "name": "voku/arrayy",
@@ -3968,16 +3968,16 @@
         },
         {
             "name": "voku/portable-ascii",
-            "version": "1.4.6",
+            "version": "1.4.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/voku/portable-ascii.git",
-                "reference": "8b23920025c9b040301e3d1443b302547560f48d"
+                "reference": "a3801f5facf187a28cc2cae7b98a540c36406dc4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/voku/portable-ascii/zipball/8b23920025c9b040301e3d1443b302547560f48d",
-                "reference": "8b23920025c9b040301e3d1443b302547560f48d",
+                "url": "https://api.github.com/repos/voku/portable-ascii/zipball/a3801f5facf187a28cc2cae7b98a540c36406dc4",
+                "reference": "a3801f5facf187a28cc2cae7b98a540c36406dc4",
                 "shasum": ""
             },
             "require": {
@@ -4013,20 +4013,20 @@
                 "clean",
                 "php"
             ],
-            "time": "2019-12-23T12:30:26+00:00"
+            "time": "2020-02-06T21:46:48+00:00"
         },
         {
             "name": "voku/portable-utf8",
-            "version": "5.4.38",
+            "version": "5.4.39",
             "source": {
                 "type": "git",
                 "url": "https://github.com/voku/portable-utf8.git",
-                "reference": "0991729d5ca364078b00fe0e107f87ec0d53b0d7"
+                "reference": "e462e8985a80cbd927765fd7e09f52bb103c9797"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/voku/portable-utf8/zipball/0991729d5ca364078b00fe0e107f87ec0d53b0d7",
-                "reference": "0991729d5ca364078b00fe0e107f87ec0d53b0d7",
+                "url": "https://api.github.com/repos/voku/portable-utf8/zipball/e462e8985a80cbd927765fd7e09f52bb103c9797",
+                "reference": "e462e8985a80cbd927765fd7e09f52bb103c9797",
                 "shasum": ""
             },
             "require": {
@@ -4087,7 +4087,7 @@
                 "utf-8",
                 "utf8"
             ],
-            "time": "2020-01-14T13:30:41+00:00"
+            "time": "2020-01-30T15:12:06+00:00"
         },
         {
             "name": "voku/stop-words",
@@ -7224,7 +7224,7 @@
         },
         {
             "name": "symfony/browser-kit",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/browser-kit.git",
@@ -7283,7 +7283,7 @@
         },
         {
             "name": "symfony/css-selector",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/css-selector.git",
@@ -7336,7 +7336,7 @@
         },
         {
             "name": "symfony/dom-crawler",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/dom-crawler.git",
@@ -7397,7 +7397,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v4.4.3",
+            "version": "v4.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
