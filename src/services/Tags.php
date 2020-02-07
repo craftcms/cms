@@ -26,7 +26,7 @@ use yii\base\Component;
 
 /**
  * Tags service.
- * An instance of the Tags service is globally accessible in Craft via [[craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
+ * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

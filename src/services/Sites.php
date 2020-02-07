@@ -37,7 +37,7 @@ use yii\db\Exception as DbException;
 
 /**
  * Sites service.
- * An instance of the Sites service is globally accessible in Craft via [[craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
+ * An instance of the Sites service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
  *
  * @property int[] $allSiteIds all of the site IDs
  * @property Site|null $currentSite the current site

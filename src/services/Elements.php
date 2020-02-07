@@ -59,7 +59,7 @@ use yii\db\Exception as DbException;
 
 /**
  * The Elements service provides APIs for managing elements.
- * An instance of the Elements service is globally accessible in Craft via [[craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
+ * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -118,7 +118,7 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
@@ -140,7 +140,7 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php

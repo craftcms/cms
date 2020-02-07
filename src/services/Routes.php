@@ -16,7 +16,7 @@ use yii\base\Component;
 
 /**
  * Routes service.
- * An instance of the Routes service is globally accessible in Craft via [[craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
+ * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -94,7 +94,7 @@ class Routes extends Component
      * Returns the routes defined in the control panel.
      *
      * @return array
-     * @deprecated in 3.1.0. Use [[craft\services\Routes::getProjectConfigRoutes()]] instead.
+     * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
      */
     public function getDbRoutes(): array
     {
