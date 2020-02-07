@@ -343,8 +343,13 @@ class Table extends Field
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
-            foreach ($value as $row) {
+            foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
                     if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
                     }
