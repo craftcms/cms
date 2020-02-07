@@ -30,7 +30,7 @@ use yii\base\Exception;
 
 /**
  * Dashboard service.
- * An instance of the Dashboard service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDashboard()|`Craft::$app->dashboard`]].
+ * An instance of the Dashboard service is globally accessible in Craft via [[craft\base\ApplicationTrait::getDashboard()|`Craft::$app->dashboard`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

@@ -34,7 +34,7 @@ class ConfigEvent extends Event
 
     /**
      * @var string[]|null Any parts of the path that were matched by `{uid}` tokens.
-     * This wil be populated if the handler was registered using [[\craft\services\ProjectConfig::registerChangeEventHandler()]],
+     * This wil be populated if the handler was registered using [[craft\services\ProjectConfig::registerChangeEventHandler()]],
      * or one of its shortcut methods.
      */
     public $tokenMatches;

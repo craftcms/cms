@@ -102,7 +102,7 @@ class UploadedFile extends \yii\web\UploadedFile
     }
 
     /**
-     * Returns the MIME type of the file, based on [[\craft\helpers\FileHelper::getMimeType()]] rather than what the
+     * Returns the MIME type of the file, based on [[craft\helpers\FileHelper::getMimeType()]] rather than what the
      * request told us.
      *
      * @param string|null $magicFile name of the optional magic database file (or alias).

@@ -37,7 +37,7 @@ use yii\base\Exception;
 
 /**
  * The Matrix service provides APIs for managing Matrix fields.
- * An instance of the Matrix service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMatrix()|`Craft::$app->matrix`]].
+ * An instance of the Matrix service is globally accessible in Craft via [[craft\base\ApplicationTrait::getMatrix()|`Craft::$app->matrix`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -46,7 +46,7 @@ class Matrix extends Component
 {
     /**
      * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
+     * @deprecated in 3.1.2. Use [[craft\services\ProjectConfig::$muteEvents]] instead.
      */
     public $ignoreProjectConfigChanges = false;
 

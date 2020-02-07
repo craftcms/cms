@@ -320,9 +320,9 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [[\craft\config\GeneralConfig::cpTrigger|control panel trigger]]
-     * if it’s a control panel request, or the [[\craft\config\GeneralConfig::pageTrigger|page trigger]] or page
-     * number if it’s a paginated request.
+     * Note that the segments will not include the [control panel trigger](config:cpTrigger)
+     * if it’s a control panel request, or the [page trigger](config:pageTrigger)
+     * or page number if it’s a paginated request.
      * :::
      *
      * ---
@@ -395,8 +395,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
+     * Tokens must be sent either as a query string param named after the <config:tokenParam> config setting (`token` by
+     * default), or an `X-Craft-Token` HTTP header on the request.
+     *
      * @return string|null The token, or `null` if there isn’t one.
      * @throws BadRequestHttpException if an invalid token is supplied
+     * @see \craft\services\Tokens::createToken()
+     * @see Controller::requireToken()
      */
     public function getToken()
     {
@@ -418,7 +423,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [[\craft\config\GeneralConfig::cpTrigger|control panel trigger]].
+     * [control panel trigger](config:cpTrigger).
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
@@ -443,9 +448,9 @@ class Request extends \yii\web\Request
      * Returns whether a specific controller action was requested.
      *
      * There are several ways that this method could return `true`:
-     * - If the first segment in the Craft path matches the
-     *   [[\craft\config\GeneralConfig::actionTrigger|action trigger]]
-     * - If there is an 'action' param in either the POST data or query string
+     *
+     * - If the first segment in the Craft path matches the [action trigger](config:actionTrigger)
+     * - If there is an `action` param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
      * @return bool Whether the current request should be routed to a controller action.

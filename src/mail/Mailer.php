@@ -18,7 +18,7 @@ use yii\mail\MessageInterface;
 
 /**
  * The Mailer component provides APIs for sending email in Craft.
- * An instance of the Mailer component is globally accessible in Craft via [[\craft\web\Application::mailer|`Craft::$app->mailer`]].
+ * An instance of the Mailer component is globally accessible in Craft via [[craft\web\Application::mailer|`Craft::$app->mailer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

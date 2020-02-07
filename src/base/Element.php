@@ -207,7 +207,7 @@ abstract class Element extends Component implements ElementInterface
      * @event ModelEvent The event that is triggered before the element is saved
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
@@ -234,7 +234,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event ModelEvent The event that is triggered after the element is saved
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
@@ -261,7 +261,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php

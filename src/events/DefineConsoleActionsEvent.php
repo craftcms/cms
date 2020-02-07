@@ -20,7 +20,7 @@ class DefineConsoleActionsEvent extends Event
     /**
      * @var array The additional actions that should be available to console controllers.
      *
-     * See [[\craft\console\Controller::defineActions()]] for details on what to set on this.
+     * See [[craft\console\Controller::defineActions()]] for details on what to set on this.
      */
     public $actions = [];
 }
