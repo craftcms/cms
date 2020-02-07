@@ -225,14 +225,14 @@ interface ElementInterface extends ComponentInterface
      * Returns all of the possible statuses that elements of this type may have.
      *
      * This method will be called when populating the Status menu on element indexes, for element types whose
-     * [[hasStatuses()]] method returns `true`. It will also be called when [[craft\elements\db\ElementQuery]] is querying for
+     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\db\ElementQuery]] is querying for
      * elements, to ensure that its “status” parameter is set to a valid status.
      * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
      * with the following keys:
      * - **`label`** – The human-facing status label.
      * - **`color`** – The status color (green, orange, red, yellow, pink, purple, blue, turquoise, light, grey, black, or white)
      * You can customize the database query condition that should be applied for your custom statuses from
-     * [[craft\elements\db\ElementQuery::statusCondition()]].
+     * [[\craft\elements\db\ElementQuery::statusCondition()]].
      *
      * @return array
      * @see hasStatuses()
@@ -268,7 +268,7 @@ interface ElementInterface extends ComponentInterface
      *   as top-level sources.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::defineSources()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineSources()]]
      * instead of this method.
      * :::
      *
@@ -285,7 +285,7 @@ interface ElementInterface extends ComponentInterface
      * set to a `type` key, or by an instantiated element action object.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::defineActions()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineActions()]]
      * instead of this method.
      * :::
      *
@@ -301,7 +301,7 @@ interface ElementInterface extends ComponentInterface
      * set to a `type` key, or by an instantiated element exporter object.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::defineExporters()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineExporters()]]
      * instead of this method.
      * :::
      *
@@ -315,7 +315,7 @@ interface ElementInterface extends ComponentInterface
      * Defines which element attributes should be searchable.
      *
      * This method should return an array of attribute names that can be accessed on your elements.
-     * [[craft\services\Search]] will call this method when it is indexing keywords for one of your elements,
+     * [[\craft\services\Search]] will call this method when it is indexing keywords for one of your elements,
      * and for each attribute it returns, it will fetch the corresponding property’s value on the element.
      * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
      *
@@ -332,8 +332,8 @@ interface ElementInterface extends ComponentInterface
      * those are indexed automatically.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override
-     * [[craft\base\Element::defineSearchableAttributes()]] instead of this method.
+     * Element types that extend [[\craft\base\Element]] should override
+     * [[\craft\base\Element::defineSearchableAttributes()]] instead of this method.
      * :::
      *
      * @return string[] The element attributes that should be searchable
@@ -454,7 +454,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return int|null
      * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
-     * go here rather than only in [[craft\elements\User]].
+     * go here rather than only in [[\craft\elements\User]].
      */
     public function getId();
 
@@ -538,7 +538,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the route that should be used when the element’s URI is requested.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::route()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::route()]]
      * instead of this method.
      * :::
      *
@@ -607,7 +607,7 @@ interface ElementInterface extends ComponentInterface
      * - `refresh` – Whether preview frames should be automatically refreshed when content changes (`true` by default).
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::previewTargets()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
      * instead of this method.
      * :::
      *
@@ -1035,7 +1035,7 @@ interface ElementInterface extends ComponentInterface
      * Returns any attributes that should be included in the element’s DOM representation in the control panel.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::htmlAttributes()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]
      * instead of this method.
      * :::
      *
@@ -1048,7 +1048,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
      * ::: tip
-     * Element types that extend [[craft\base\Element]] should override [[craft\base\Element::tableAttributeHtml()]]
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::tableAttributeHtml()]]
      * instead of this method.
      * :::
      *
@@ -1094,7 +1094,7 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is fully saved and propagated to other sites.
      *
      * ::: tip
-     * This will get called regardless of whether `$propagate` is `true` or `false` for [[craft\services\Elements::saveElement()]].
+     * This will get called regardless of whether `$propagate` is `true` or `false` for [[\craft\services\Elements::saveElement()]].
      * :::
      *
      * @param bool $isNew Whether the element is brand new

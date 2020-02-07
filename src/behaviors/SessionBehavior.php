@@ -75,7 +75,7 @@ class SessionBehavior extends Behavior
      * Queues up an asset bundle to be registered on a future request.
      *
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
-     * [[craft\web\View::getBodyHtml()]].
+     * [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $name the class name of the asset bundle (without the leading backslash)
      * @param integer|null $position if set, this forces a minimum position for javascript files.
@@ -109,7 +109,7 @@ class SessionBehavior extends Behavior
      * Stores JS in the user’s flash data.
      *
      * The JavaScript code will be stored on the session, and can be retrieved
-     * by calling [[getJsFlashes()]] or [[craft\web\View::getBodyHtml()]].
+     * by calling [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $js the JS code block to be registered
      * @param integer $position the position at which the JS script tag should

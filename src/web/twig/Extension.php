@@ -859,7 +859,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Duplicates an array and sorts it with [[craft\helpers\ArrayHelper::multisort()]].
+     * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
      *
      * @param mixed $array the array to be sorted. The array will be modified after calling this method.
      * @param string|\Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array

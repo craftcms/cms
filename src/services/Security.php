@@ -15,7 +15,7 @@ use yii\helpers\Inflector;
 
 /**
  * Security component.
- * An instance of the Security component is globally accessible in Craft via [[craft\base\ApplicationTrait::getSecurity()|`Craft::$app->security`]].
+ * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|`Craft::$app->security`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -70,10 +70,10 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Deprecated wrapper for [[craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]].
+     * Deprecated wrapper for [[\craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]].
      *
      * @return string
-     * @deprecated in 3.0.0-beta.27. Use [[craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]] instead.
+     * @deprecated in 3.0.0-beta.27. Use [[\craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]] instead.
      */
     public function getValidationKey(): string
     {

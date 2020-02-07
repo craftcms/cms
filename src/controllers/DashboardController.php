@@ -32,7 +32,7 @@ use ZipArchive;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
- * widgets, getting [[craft\widgets\Feed]] feeds and sending [[craft\widgets\CraftSupport]] support ticket requests.
+ * widgets, getting [[\craft\widgets\Feed]] feeds and sending [[\craft\widgets\CraftSupport]] support ticket requests.
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

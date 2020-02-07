@@ -26,7 +26,7 @@ use yii\base\Component;
 
 /**
  * The Utilities service provides APIs for managing utilities.
- * An instance of the Utilities service is globally accessible in Craft via [[craft\base\ApplicationTrait::getUtilities()|`Craft::$app->utilities()`]].
+ * An instance of the Utilities service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->utilities()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -36,7 +36,7 @@ class Utilities extends Component
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
      *
-     * Utility types must implement [[UtilityInterface]]. [[craft\base\Utility]] provides a base implementation.
+     * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
      * See [Utility Types](https://docs.craftcms.com/v3/utility-types.html) for documentation on creating utility types.
      * ---

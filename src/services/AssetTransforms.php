@@ -41,7 +41,7 @@ use yii\base\InvalidArgumentException;
 
 /**
  * Asset Transforms service.
- * An instance of the Asset Transforms service is globally accessible in Craft via [[craft\base\ApplicationTrait::getAssetTransforms()|`Craft::$app->assetTransforms`]].
+ * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|`Craft::$app->assetTransforms`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
