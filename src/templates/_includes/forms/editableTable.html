@@ -128,7 +128,7 @@
                                         } only %}
                                     {%- default -%}
                                         {% if static %}
-                                            <pre>{{ value }}</pre>
+                                            <pre class="disabled">{{ value }}</pre>
                                         {% else %}
                                             <textarea name="{{ cellName }}" rows="1"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
