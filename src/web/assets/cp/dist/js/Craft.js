@@ -503,7 +503,7 @@ $.extend(Craft,
                 'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
             };
 
-            if (Craft.csrfTokenValue && Craft.csrfTokenName) {
+            if (Craft.csrfTokenValue) {
                 headers['X-CSRF-Token'] = Craft.csrfTokenValue;
             }
 
@@ -3916,6 +3916,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     if (limit && !isNaN(limit)) {
                         params.criteria.limit = limit;
                     }
+                }
+
+                if (Craft.csrfTokenValue) {
+                    params[Craft.csrfTokenName] = Craft.csrfTokenValue;
                 }
 
                 Craft.downloadFromUrl('POST', Craft.getActionUrl('element-indexes/export'), params)
