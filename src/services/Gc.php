@@ -15,7 +15,7 @@ use yii\base\Component;
 
 /**
  * Garbage collection service.
- * An instance of the GC service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->gc`]].
+ * An instance of the GC service is globally accessible in Craft via [[craft\base\ApplicationTrait::getGc()|`Craft::$app->gc`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
@@ -38,7 +38,7 @@ class Gc extends Component
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready for hard-deletion
-     * per the [[\craft\config\GeneralConfig::softDeleteDuration]] config setting.
+     * per the [[craft\config\GeneralConfig::softDeleteDuration]] config setting.
      */
     public $deleteAllTrashed = false;
 

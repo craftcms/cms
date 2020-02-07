@@ -18,7 +18,7 @@ use craft\base\SavableComponentInterface;
 interface TransportAdapterInterface extends SavableComponentInterface
 {
     /**
-     * Returns the config array or \Swift_Transport object that should be passed to [[\craft\mail\Mailer::setTransport()]].
+     * Returns the config array or \Swift_Transport object that should be passed to [[craft\mail\Mailer::setTransport()]].
      *
      * @return array|\Swift_Transport
      */

@@ -320,8 +320,8 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [[\craft\config\GeneralConfig::cpTrigger|control panel trigger]]
-     * if it’s a control panel request, or the [[\craft\config\GeneralConfig::pageTrigger|page trigger]] or page
+     * Note that the segments will not include the [[craft\config\GeneralConfig::cpTrigger|control panel trigger]]
+     * if it’s a control panel request, or the [[craft\config\GeneralConfig::pageTrigger|page trigger]] or page
      * number if it’s a paginated request.
      * :::
      *
@@ -418,7 +418,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [[\craft\config\GeneralConfig::cpTrigger|control panel trigger]].
+     * [[craft\config\GeneralConfig::cpTrigger|control panel trigger]].
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
@@ -444,7 +444,7 @@ class Request extends \yii\web\Request
      *
      * There are several ways that this method could return `true`:
      * - If the first segment in the Craft path matches the
-     *   [[\craft\config\GeneralConfig::actionTrigger|action trigger]]
+     *   [[craft\config\GeneralConfig::actionTrigger|action trigger]]
      * - If there is an 'action' param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
