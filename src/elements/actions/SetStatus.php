@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -81,7 +82,9 @@ class SetStatus extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        $isLocalized = $this->elementType::isLocalized() && Craft::$app->getIsMultiSite();
+        /** @var ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $isLocalized = $elementType::isLocalized() && Craft::$app->getIsMultiSite();
         $elementsService = Craft::$app->getElements();
 
         /** @var Element[] $elements */
