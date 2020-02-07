@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.5 - 2020-02-07
 
 ### Added
 - Added `craft\models\GqlToken::getIsExpired()`.
@@ -15,7 +15,7 @@
 - Improved GraphQL API performance. ([#5607](https://github.com/craftcms/cms/issues/5607))
 - Updated Garnish to 0.1.33.
 
-### Deprecated
+### Deprecated
 - Deprecated `craft\gql\base\Arguments::buildContentArguments()`.
 
 ### Fixed
@@ -24,6 +24,7 @@
 - Fixed a bug where static text cells within editable tables were getting cut off. ([#5611](https://github.com/craftcms/cms/issues/5611))
 - Fixed an error that occurred when saving an element with an Assets field set to restrict files to a single folder, if any of the selected assets’ files didn’t exist.
 - Fixed an error that occurred when attempting to export elements. ([#5617](https://github.com/craftcms/cms/issues/5617))
+- Fixed a bug where HTTP exceptions were getting lost if triggered from a template via an `{% exit %}` tag.
 
 ## 3.4.4.1 - 2020-02-06
 
