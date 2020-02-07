@@ -540,7 +540,7 @@ body.rtl .btngroup .btn.dashed:not(:last-child) { margin-left: -1px; }
 
 .color { display: inline-block; position: relative; vertical-align: middle; width: 34px; height: 34px; border-radius: 17px; padding: 0; background-color: url(../images/checkers.png); }
 .color:not(.static) { cursor: pointer; }
-.color.small { width: 15px; height: 15px; background-size: 16px; }
+.color.small { width: 16px; height: 16px; background-size: 16px; }
 .color .color-preview { top: 0; width: 100%; height: 100%; border-radius: 17px; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
 body.ltr .color .color-preview { left: 0; }
 body.rtl .color .color-preview { right: 0; }
@@ -838,11 +838,16 @@ body.ltr table.editable tbody tr td:not(:first-child), body.ltr table.editable t
 body.rtl table.editable tbody tr td:not(:first-child), body.rtl table.editable tbody tr th ~ td:not(.hidden) ~ td { border-right: 1px solid rgba(51, 64, 77, 0.1); }
 body.ltr table.editable tbody tr th ~ td:not(:first-child) { border-left: 1px solid #dbdddf; }
 body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px solid #dbdddf; }
-table.editable tbody tr td { vertical-align: middle; text-align: center; background-color: #fff; }
-table.editable tbody tr td.textual { vertical-align: top; }
-table.editable tbody tr td.textual textarea { resize: none; }
-table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
+table.editable tbody tr td { vertical-align: top; text-align: center; background-color: #fff; padding: 4px 10px; }
+table.editable tbody tr td.focus { -webkit-box-shadow: inset 0 0 0 1px rgba(51, 64, 77, 0.1); box-shadow: inset 0 0 0 1px rgba(51, 64, 77, 0.1); }
 table.editable tbody tr td.textual { padding: 0; }
+table.editable tbody tr td.textual textarea { resize: none; }
+body.ltr table.editable tbody tr td.textual pre { text-align: left; }
+body.rtl table.editable tbody tr td.textual pre { text-align: right; }
+table.editable tbody tr td.lightswitch-cell { padding-top: 9px; padding-bottom: 9px; }
+table.editable tbody tr td.lightswitch-cell .lightswitch { display: block; margin: 0 auto; }
+table.editable tbody tr td.checkbox-cell { padding-top: 10px; padding-bottom: 10px; }
+table.editable tbody tr td.checkbox-cell .checkbox-wrapper { display: block; margin: -2px auto 0; width: 16px; height: 16px; }
 table.editable tbody tr td.error { -webkit-box-shadow: inset 0 0 0 1px #EF4E4E; box-shadow: inset 0 0 0 1px #EF4E4E; }
 table.editable tbody tr td.disabled { position: relative; opacity: 1; }
 table.editable tbody tr td.disabled:after { content: '.'; font-size: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(243, 247, 252, 0.75); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
@@ -852,20 +857,20 @@ body.rtl table.editable tbody tr td.action + td.action { border-right: none; }
 body.ltr table.editable tbody tr td.action + td.action { padding-left: 0; }
 body.rtl table.editable tbody tr td.action + td.action { padding-right: 0; }
 table.editable tbody tr td .flex > * { margin-bottom: 0; }
-table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text { display: block; width: 100%; border: none; -webkit-box-shadow: none; box-shadow: none; border-radius: 0; padding: 7px 10px; background-color: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
-table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus { border: 1px solid rgba(51, 64, 77, 0.1); padding: 6px 9px; outline: none; }
+table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text, table.editable tbody pre { display: block; width: 100%; border: none; -webkit-box-shadow: none; box-shadow: none; border-radius: 0; padding: 7px 10px; background-color: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
+table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus, table.editable tbody pre:focus { outline: none; }
 table.editable tbody .color-container { display: block; position: relative; }
 table.editable tbody .color-container > .color, table.editable tbody .color-container > .color-input { margin-bottom: 0; }
-table.editable tbody .color-container > .color { position: absolute; top: calc(50% - 8px); }
+table.editable tbody .color-container > .color { position: absolute; top: 10px; }
 body.ltr table.editable tbody .color-container > .color { left: 10px; }
 body.rtl table.editable tbody .color-container > .color { right: 10px; }
 body.ltr table.editable tbody .color-container > .color-input { padding-left: 35px; }
 body.rtl table.editable tbody .color-container > .color-input { padding-right: 35px; }
-body.ltr table.editable tbody .color-container > .color-input:focus { padding-left: 34px; }
-body.rtl table.editable tbody .color-container > .color-input:focus { padding-right: 34px; }
-table.editable tbody .datewrapper, table.editable tbody .timewrapper { width: 100%; }
+table.editable tbody .datewrapper, table.editable tbody .timewrapper { display: block; width: 100%; }
+table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { top: 6px; }
 body.ltr table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.ltr table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { left: 10px; }
 body.rtl table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.rtl table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { right: 10px; }
+table.editable:not(.static) td.textual { cursor: text; }
 table.editable + .btn.add { display: block; border-radius: 0 0 4px 4px; border: 1px dashed rgba(81, 95, 108, 0.25); border-top-width: 0; background-color: transparent; -webkit-box-shadow: none; box-shadow: none; }
 table.editable + .btn.add:focus { border-style: solid; border-color: #1992D4; }
 
@@ -1280,7 +1285,7 @@ body.rtl .field > .status-badge { right: -19px; }
 .field > .status-badge.modified { background-color: #1992D4; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
 .field > .status-badge.outdated { background-color: #FADB5F; }
 .field > .status-badge.conflicted { background-color: #CF1124; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
-.field > .heading { margin-bottom: 5px; }
+.field > .heading { margin-top: -5px; margin-bottom: 5px; }
 .field > .heading > label { position: relative; font-weight: bold; color: #606d7b; }
 .field > .heading > label > .site { display: inline-block; border-radius: 4px; padding: 0 4px; font-size: 11px; color: #7b8793; background-color: #e4edf6; }
 body.ltr .field > .heading > label > .site { margin-left: 7px; }
@@ -1350,7 +1355,7 @@ body.rtl .checkboxfield.has-instructions .instructions { padding-right: 21px; }
 .multiselect > select:focus { outline: none; border-color: rgba(96, 125, 159, 0.8); }
 .multiselect > select option { padding: 1px 8px; }
 
-.text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input { padding: 6px 13px; }
+.text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input { padding: 6px 9px; }
 
 .text { background-color: #fff; }
 .text.small { padding: 3px; }
@@ -1642,8 +1647,8 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 /* Matrix fields */
 .matrix > .buttons { margin-top: 10px; }
 
-.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
-.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.matrixblock { position: relative; margin-bottom: 10px; padding: 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
+.matrixblock > .titlebar { margin: -14px -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; background-color: #f3f7fc; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 35px ; }
 body.rtl .matrixblock > .titlebar { padding: 5px 35px 5px 70px ; }
 .matrixblock > .titlebar > .blocktype { display: inline; color: #7b8793; }
@@ -1664,7 +1669,7 @@ body.rtl .matrixblock.disabled > .actions > .status.off { margin: 6px 0 0 10px ;
 .matrixblock > .checkbox { position: absolute; top: 7px; }
 body.ltr .matrixblock > .checkbox { left: 14px; }
 body.rtl .matrixblock > .checkbox { right: 14px; }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 body.ltr .matrixblock > .actions { right: 5px; }
 body.rtl .matrixblock > .actions { left: 5px; }
 .matrixblock > .actions > .status.off { display: none; }
@@ -1674,6 +1679,7 @@ body.rtl .matrixblock > .actions a { margin-left: 2px; }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: #0B69A3; }
 body.ltr .matrixblock > .actions a.settings:after { margin-left: 3px; }
 body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
+.matrixblock:hover > .actions, .matrixblock.active > .actions, .matrixblock.draghelper > .actions { opacity: 1; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 

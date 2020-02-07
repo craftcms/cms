@@ -25,6 +25,7 @@ use craft\web\twig\TemplateLoader;
 use JSMin\JSMin;
 use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Error\RuntimeError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
@@ -396,7 +397,7 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
@@ -459,7 +460,7 @@ class View extends \yii\web\View
         $output = ob_get_clean();
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
@@ -506,7 +507,7 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         return (string)$output;
@@ -549,7 +550,7 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         return $result;
@@ -650,7 +651,7 @@ class View extends \yii\web\View
         }
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         return $output;

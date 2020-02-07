@@ -119,16 +119,21 @@ class GraphqlController extends Controller
             } catch (GqlException $exception) {
                 // Ensure a public schema and get the public access token for validation
                 $schema = $gqlService->getPublicSchema();
-                $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+                if ($schema === null) {
+                    throw new BadRequestHttpException('Invalid access token');
+                }
+                try {
+                    $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+                } catch (InvalidArgumentException $e) {
+                    throw new BadRequestHttpException('Invalid access token');
+                }
             }
         }
 
-        // If this is purely a token match, check token settings.
         if ($token) {
-            $schemaExpired = $token && $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
-
-            if (!$token || !$token->enabled || $schemaExpired) {
-                throw new BadRequestHttpException('Invalid Authorization header');
+            // Make sure the token is active
+            if (!$token->enabled || $token->getIsExpired()) {
+                throw new BadRequestHttpException('Invalid access token');
             }
 
             // Don't re-fetch public schema
@@ -281,7 +286,7 @@ class GraphqlController extends Controller
         $publicSchema = $gqlService->getPublicSchema();
 
         foreach ($schemas as $schema) {
-            if ($schema->id !== $publicSchema->id) {
+            if (!$publicSchema || $schema->id !== $publicSchema->id) {
                 $schemaOptions[] = [
                     'label' => $schema->name,
                     'value' => $schema->id

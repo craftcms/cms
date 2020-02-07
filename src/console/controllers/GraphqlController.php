@@ -53,11 +53,14 @@ class GraphqlController extends Controller
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
 
-        if ($schema !== null) {
-            $schemaDef = $gqlService->getSchemaDef($schema, true);
-            // Output the schema
-            echo SchemaPrinter::doPrint($schemaDef);
+        if (!$schema) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        $schemaDef = $gqlService->getSchemaDef($schema, true);
+
+        // Output the schema
+        echo SchemaPrinter::doPrint($schemaDef);
 
         return ExitCode::OK;
     }
@@ -72,15 +75,17 @@ class GraphqlController extends Controller
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
 
-        if ($schema !== null) {
-            $schemaDef = $gqlService->getSchemaDef($schema, true);
-            // Output the schema
-            $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
-            $schemaDump = SchemaPrinter::doPrint($schemaDef);
-            $result = file_put_contents($filename, $schemaDump);
-            $this->stdout('Dumping GraphQL schema to file: ', Console::FG_YELLOW);
-            $this->stdout($filename . PHP_EOL);
+        if (!$schema) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        $schemaDef = $gqlService->getSchemaDef($schema, true);
+        // Output the schema
+        $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
+        $schemaDump = SchemaPrinter::doPrint($schemaDef);
+        $this->stdout("Dumping GraphQL schema to {$filename} ... ", Console::FG_YELLOW);
+        file_put_contents($filename, $schemaDump);
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
     }
@@ -100,24 +105,34 @@ class GraphqlController extends Controller
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
-                $this->stdout('Invalid authorization token: ', Console::FG_RED);
-                $this->stdout($this->token . PHP_EOL, Console::FG_YELLOW);
+                $this->stderr("Invalid authorization token: {$this->token}" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 
             $schema = $token->getSchema();
+
+            if (!$schema) {
+                $this->stderr("No schema selected for token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                return null;
+            }
+
+            return $schema;
         }
 
         // Next look up the active token
-        if ($token === null) {
-            try {
-                $schema = $gqlService->getActiveSchema();
-            } catch (GqlException $exception) {
-                // Well, go for the public token then.
-                $schema = $gqlService->getPublicSchema();
-            }
-        }
+        try {
+            return $gqlService->getActiveSchema();
+        } catch (GqlException $exception) {
+            // Well, go for the public token then.
+            $schema = $gqlService->getPublicSchema();
 
-        return $schema;
+            if (!$schema) {
+                $this->stderr('No public schema exists, and one can’t be created because allowAdminChanges is disabled.' .
+                    PHP_EOL, Console::FG_RED);
+                return null;
+            }
+
+            return $schema;
+        }
     }
 }

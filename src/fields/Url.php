@@ -118,6 +118,7 @@ class Url extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
+            ['trim'],
             [UrlValidator::class],
         ];
     }

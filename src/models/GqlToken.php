@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\DateTimeHelper;
 use craft\records\GqlToken as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
 
@@ -136,6 +137,17 @@ class GqlToken extends Model
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    /**
+     * Returns whether the token has expired.
+     *
+     * @return bool
+     * @since 3.4.5
+     */
+    public function getIsExpired(): bool
+    {
+        return $this->expiryDate && $this->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
     }
 
     /**

@@ -1,5 +1,31 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.5 - 2020-02-07
+
+### Added
+- Added `craft\models\GqlToken::getIsExpired()`.
+
+### Changed
+- `craft\services\Gql::getPublicSchema()` now returns `null` if the public schema doesn’t exist yet and `allowAdminChanges` is disabled.
+- Tightened up the horizontal padding on text inputs. ([#5608](https://github.com/craftcms/cms/issues/5608))
+- Improved the look of Matrix blocks.
+- Improved the look of editable tables. ([#5615](https://github.com/craftcms/cms/issues/5615))
+- URL and Email fields now trim leading/trailing whitespace from their values before validating. ([#5614](https://github.com/craftcms/cms/issues/5614))
+- Table fields now trim leading/trailing whitespace from textual cell values before validating.
+- Improved GraphQL API performance. ([#5607](https://github.com/craftcms/cms/issues/5607))
+- Updated Garnish to 0.1.33.
+
+### Deprecated
+- Deprecated `craft\gql\base\Arguments::buildContentArguments()`.
+
+### Fixed
+- Fixed an error that occurred when working with GraphQL on an environment with `allowAdminChanges` disabled, if the public schema didn’t exist yet. ([#5588](https://github.com/craftcms/cms/issues/5588))
+- Fixed a bug where static Matrix blocks weren’t getting any top padding. ([#5609](https://github.com/craftcms/cms/issues/5609))
+- Fixed a bug where static text cells within editable tables were getting cut off. ([#5611](https://github.com/craftcms/cms/issues/5611))
+- Fixed an error that occurred when saving an element with an Assets field set to restrict files to a single folder, if any of the selected assets’ files didn’t exist.
+- Fixed an error that occurred when attempting to export elements. ([#5617](https://github.com/craftcms/cms/issues/5617))
+- Fixed a bug where HTTP exceptions were getting lost if triggered from a template via an `{% exit %}` tag.
+
 ## 3.4.4.1 - 2020-02-06
 
 ### Changed

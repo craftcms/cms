@@ -8,6 +8,8 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\GqlInlineFragmentFieldInterface;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
 use craft\errors\GqlException;
@@ -47,6 +49,7 @@ use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Db;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -54,6 +57,7 @@ use craft\models\GqlToken;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
@@ -240,6 +244,11 @@ class Gql extends Component
      * @see setActiveSchema()
      */
     private $_schema;
+
+    /**
+     * @var array Cache of content fields by element class
+     */
+    private $_contentFieldCache = [];
 
     /**
      * Returns the GraphQL schema.
@@ -457,27 +466,27 @@ class Gql extends Component
     }
 
     /**
-     * Returns the public schema. If it does not exist, it will be created.
+     * Returns the public schema. If it does not exist and admin changes are allowed, it will be created.
      *
-     * @return GqlSchema
+     * @return GqlSchema|null
      * @throws Exception
      */
-    public function getPublicSchema(): GqlSchema
+    public function getPublicSchema()
     {
         $result = $this->_createTokenQuery()
             ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
             ->one();
 
-        if ($result) {
-            if ($result['schemaId']) {
-                $token = new GqlToken($result);
-                return $token->getSchema();
-            } else {
-                return $this->_createPublicSchema($result['id']);
-            }
+        if ($result && $result['schemaId']) {
+            return (new GqlToken($result))->getSchema();
         }
 
-        return $this->_createPublicSchema();
+        // If admin changes aren't currently supported, return null
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            return null;
+        }
+
+        return $this->_createPublicSchema($result ? $result['id'] : null);
     }
 
     /**
@@ -533,6 +542,7 @@ class Gql extends Component
     {
         $this->_schema = null;
         $this->_schemaDef = null;
+        $this->_contentFieldCache = [];
         TypeLoader::flush();
         GqlEntityRegistry::flush();
         TypeManager::flush();
@@ -879,6 +889,40 @@ class Gql extends Component
         }
 
         return $scopes;
+    }
+
+
+    /**
+     * Return the content arguments based on an element class and contexts for it.
+     *
+     * @param FieldLayoutBehavior[] $contexts
+     * @param string $elementClass
+     * @return array
+     */
+    public function getContentArguments(array $contexts, $elementClass): array
+    {
+        if (!array_key_exists($elementClass, $this->_contentFieldCache)) {
+            $contentArguments = [];
+
+            foreach ($contexts as $context) {
+                if (!GqlHelper::isSchemaAwareOf($elementClass::gqlScopesByContext($context))) {
+                    continue;
+                }
+
+                foreach ($context->getFields() as $contentField) {
+                    if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
+                        $contentArguments[$contentField->handle] = [
+                            'name' => $contentField->handle,
+                            'type' => Type::listOf(QueryArgument::getType()),
+                        ];
+                    }
+                }
+            }
+
+            $this->_contentFieldCache[$elementClass] = $contentArguments;
+        }
+
+        return $this->_contentFieldCache[$elementClass];
     }
 
     /**

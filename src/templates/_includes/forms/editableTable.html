@@ -14,12 +14,14 @@
 
 {% macro cellClass(fullWidth, col, class) %}
     {{- (class is iterable ? class : [class])|merge([
+        "#{col.type}-cell",
+        col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'] ? 'textual',
         fullWidth and (col.thin ?? false) ? 'thin',
         col.info is defined ? 'has-info',
     ]|filter)|join(' ') -}}
 {% endmacro %}
 
-<table id="{{ id }}" class="editable{% if fullWidth %} fullwidth{% endif %}"
+<table id="{{ id }}" class="editable{% if fullWidth %} fullwidth{% endif %}{% if static %} static{% endif %}"
        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
@@ -61,18 +63,19 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
-                        <td class="{% if textual %}textual{% endif %} {{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
+                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}
-                                        {% include "_includes/forms/checkbox" with {
-                                            name: cellName,
-                                            value:  col.value ?? 1,
-                                            checked: value is not empty,
-                                            disabled: static
-                                        } only %}
+                                        <div class="checkbox-wrapper">
+                                            {% include "_includes/forms/checkbox" with {
+                                                name: cellName,
+                                                value:  col.value ?? 1,
+                                                checked: value is not empty,
+                                                disabled: static
+                                            } only %}
+                                        </div>
                                     {%- case 'color' -%}
                                         {% include "_includes/forms/color" with {
                                             name: cellName,
@@ -124,7 +127,11 @@
                                             disabled: static
                                         } only %}
                                     {%- default -%}
-                                        <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                        {% if static %}
+                                            <pre class="disabled">{{ value }}</pre>
+                                        {% else %}
+                                            <textarea name="{{ cellName }}" rows="1"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                        {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
                         </td>

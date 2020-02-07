@@ -45,7 +45,7 @@ class Tag extends ElementArguments
      */
     public static function getContentArguments(): array
     {
-        $tagGroupFieldArguments = static::buildContentArguments(Craft::$app->getTags()->getAllTagGroups(), TagElement::class);
+        $tagGroupFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getTags()->getAllTagGroups(), TagElement::class);
         return array_merge(parent::getContentArguments(), $tagGroupFieldArguments);
     }
 }

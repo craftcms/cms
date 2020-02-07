@@ -500,7 +500,7 @@ $.extend(Craft,
                 'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
             };
 
-            if (Craft.csrfTokenValue && Craft.csrfTokenName) {
+            if (Craft.csrfTokenValue) {
                 headers['X-CSRF-Token'] = Craft.csrfTokenValue;
             }
 

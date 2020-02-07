@@ -85,7 +85,7 @@ class Asset extends ElementArguments
      */
     public static function getContentArguments(): array
     {
-        $volumeFieldArguments = static::buildContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
+        $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
         return array_merge(parent::getContentArguments(), $volumeFieldArguments);
     }
 }

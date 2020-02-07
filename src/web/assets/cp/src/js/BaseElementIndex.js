@@ -1820,6 +1820,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     }
                 }
 
+                if (Craft.csrfTokenValue) {
+                    params[Craft.csrfTokenName] = Craft.csrfTokenValue;
+                }
+
                 Craft.downloadFromUrl('POST', Craft.getActionUrl('element-indexes/export'), params)
                     .then(function() {
                         submitting = false;

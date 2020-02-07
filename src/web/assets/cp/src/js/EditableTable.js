@@ -270,15 +270,14 @@ Craft.EditableTable = Garnish.Base.extend(
                         'html': value
                     });
                 } else {
-                    var name = baseName + '[' + rowId + '][' + colId + ']',
-                        textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
+                    var name = baseName + '[' + rowId + '][' + colId + ']';
 
                     $cell = $('<td/>', {
-                        'class': col['class'],
+                        'class': `${col['class'] || ''} ${col['type']}-cell`,
                         'width': col.width
                     });
 
-                    if (textual) {
+                    if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
                         $cell.addClass('textual');
                     }
 
@@ -288,11 +287,14 @@ Craft.EditableTable = Garnish.Base.extend(
 
                     switch (col.type) {
                         case 'checkbox':
-                            Craft.ui.createCheckbox({
-                                name: name,
-                                value: col.value || '1',
-                                checked: !!value
-                            }).appendTo($cell);
+                            $('<div class="checkbox-wrapper"/>')
+                                .append(Craft.ui.createCheckbox({
+                                        name: name,
+                                        value: col.value || '1',
+                                        checked: !!value
+                                    })
+                                )
+                                .appendTo($cell);
                             break;
 
                         case 'color':
@@ -434,7 +436,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 td = this.tds[colId] = this.$tds[i];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    $textarea = $('textarea, input.text', td);
+                    $textarea = $('textarea', td);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -465,6 +467,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                             this.applyToggleCheckbox(ev.data.colId);
                         });
                     }
+                }
+
+                if (!$(td).hasClass('disabled')) {
+                    this.addListener(td, 'click', {td: td}, function(ev) {
+                        if (ev.target === ev.data.td) {
+                            $(ev.data.td).find('textarea,input,select,.lightswitch').focus();
+                        }
+                    });
                 }
 
                 i++;
@@ -501,6 +511,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             var $deleteBtn = this.$tr.children().last().find('.delete');
             this.addListener($deleteBtn, 'click', 'deleteRow');
+
+            var $inputs = this.$tr.find('input,textarea,select,.lightswitch');
+            this.addListener($inputs, 'focus', function(ev) {
+                $(ev.currentTarget).closest('td:not(.disabled)').addClass('focus');
+            });
+            this.addListener($inputs, 'blur', function(ev) {
+                $(ev.currentTarget).closest('td').removeClass('focus');
+            });
         },
 
         onTextareaFocus: function(ev) {
@@ -537,7 +555,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 if (neg = colId[0] === '!') {
                     colId = colId.substr(1);
                 }
-                if ((checked && !neg) || (!checked && neg))  {
+                if ((checked && !neg) || (!checked && neg)) {
                     $(this.tds[colId])
                         .removeClass('disabled')
                         .find('textarea, input').prop('disabled', false);
@@ -587,12 +605,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
                 if (match !== null) {
                     safeValue = match[1];
-                }
-                else {
+                } else {
                     safeValue = '';
                 }
-            }
-            else {
+            } else {
                 // Just strip any newlines
                 safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
             }

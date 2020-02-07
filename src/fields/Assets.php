@@ -17,6 +17,7 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
+use craft\errors\VolumeObjectNotFoundException;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -533,7 +534,13 @@ class Assets extends BaseRelationField
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
                     $asset->avoidFilenameConflicts = true;
-                    $assetsService->moveAsset($asset, $folder);
+                    try {
+                        $assetsService->moveAsset($asset, $folder);
+                    } catch (VolumeObjectNotFoundException $e) {
+                        // Don't freak out about that.
+                        Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
+                        Craft::$app->getErrorHandler()->logException($e);
+                    }
                 }
             }
         }

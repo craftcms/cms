@@ -1312,8 +1312,8 @@ div.btn.submit input {
   }
 
   &.small {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     background-size: 16px;
   }
 
@@ -2323,24 +2323,47 @@ table.editable {
       }
 
       td {
-        vertical-align: middle;
+        vertical-align: top;
         text-align: center;
         background-color: $white;
+        padding: 4px 10px;
 
-        &.textual {
-          vertical-align: top;
-
-          textarea {
-            resize: none;
-          }
-        }
-
-        &:not(.textual) {
-          padding: 4px 10px;
+        &.focus {
+          box-shadow: inset 0 0 0 1px $hairlineColor;
         }
 
         &.textual {
           padding: 0;
+
+          textarea {
+            resize: none;
+          }
+
+          pre {
+            @include alignleft;
+          }
+        }
+
+        &.lightswitch-cell {
+          padding-top: 9px;
+          padding-bottom: 9px;
+
+          .lightswitch {
+            display: block;
+            margin: 0 auto;
+          }
+        }
+
+        &.checkbox-cell {
+          padding-top: 10px;
+          padding-bottom: 10px;
+
+          .checkbox-wrapper {
+            display: block;
+            margin: -2px auto 0;
+            width: 16px;
+            height: 16px;
+          }
         }
 
         &.error {
@@ -2381,7 +2404,8 @@ table.editable {
 
     textarea,
     textarea.text,
-    input.text {
+    input.text,
+    pre {
       display: block;
       width: 100%;
       border: none;
@@ -2393,8 +2417,6 @@ table.editable {
       transition: none;
 
       &:focus {
-        border: 1px solid $hairlineColor;
-        padding: 6px 9px;
         outline: none;
       }
     }
@@ -2410,26 +2432,30 @@ table.editable {
 
       & > .color {
         position: absolute;
-        top: calc(50% - 8px);
+        top: 10px;
         @include left(10px);
       }
 
       & > .color-input {
         @include padding-left(35px);
-
-        &:focus {
-          @include padding-left(34px);
-        }
       }
     }
 
     .datewrapper,
     .timewrapper {
+      display: block;
       width: 100%;
 
       .text:placeholder-shown + div[data-icon] {
+        top: 6px;
         @include left(10px);
       }
+    }
+  }
+
+  &:not(.static) {
+    td.textual {
+      cursor: text;
     }
   }
 
@@ -3841,6 +3867,7 @@ textarea.text.fullwidth {
   }
 
   & > .heading {
+    margin-top: -5px;
     margin-bottom: 5px;
 
     & > label {
@@ -4059,7 +4086,7 @@ input.checkbox:focus + label:before,
 
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
-  padding: 6px 13px;
+  padding: 6px 9px;
 }
 
 .text {
@@ -4724,19 +4751,18 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
-  padding: 0 14px 14px;
+  padding: 14px;
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
   outline: none;
 
   & > .titlebar {
-    margin: 0 -14px 14px;
+    margin: -14px -14px 14px;
     width: calc(100% + 28px);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 35px);
-    border-bottom: 1px solid $hairlineColor;
     background-color: $grey050;
     color: $lightTextColor;
     overflow: hidden;
@@ -4804,6 +4830,8 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     top: 4px;
     @include right(5px);
     cursor: default;
+    opacity: 0;
+    transition: opacity linear 100ms;
 
     & > .status {
       &.off {
@@ -4829,6 +4857,14 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
       &.settings:after {
         @include margin-left(3px);
       }
+    }
+  }
+
+  &:hover,
+  &.active,
+  &.draghelper {
+    & > .actions {
+      opacity: 1;
     }
   }
 
