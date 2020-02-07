@@ -12,7 +12,11 @@
 - Improved the look of editable tables. ([#5615](https://github.com/craftcms/cms/issues/5615))
 - URL and Email fields now trim leading/trailing whitespace from their values before validating. ([#5614](https://github.com/craftcms/cms/issues/5614))
 - Table fields now trim leading/trailing whitespace from textual cell values before validating.
+- Improved GraphQL API performance. ([#5607](https://github.com/craftcms/cms/issues/5607))
 - Updated Garnish to 0.1.33.
+
+### Deprecated
+- Deprecated `craft\gql\base\Arguments::buildContentArguments()`.
 
 ### Fixed
 - Fixed an error that occurred when working with GraphQL on an environment with `allowAdminChanges` disabled, if the public schema didn’t exist yet. ([#5588](https://github.com/craftcms/cms/issues/5588))

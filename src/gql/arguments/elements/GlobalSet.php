@@ -39,7 +39,7 @@ class GlobalSet extends ElementArguments
      */
     public static function getContentArguments(): array
     {
-        $globalSetFieldArgument = static::buildContentArguments(Craft::$app->getGlobals()->getAllSets(), GlobalSetElement::class);
+        $globalSetFieldArgument = Craft::$app->getGql()->getContentArguments(Craft::$app->getGlobals()->getAllSets(), GlobalSetElement::class);
         return array_merge(parent::getContentArguments(), $globalSetFieldArgument);
     }
 }
