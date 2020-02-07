@@ -307,7 +307,7 @@ class GeneralConfig extends BaseObject
      * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is
      * automatically invalidated any time an element is saved, the site structure is updated, or a GraphQL schema is saved.
      *
-     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide
+     * This setting will have no effect if a plugin is using the [[craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide
      * its own caching logic and setting the `result` property.
      *
      * @since 3.3.12
@@ -420,7 +420,7 @@ class GeneralConfig extends BaseObject
      *
      * See [[\yii\web\Request::ipHeaders]] for more details.
      *
-     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
+     * If not set, the default [[craft\web\Request::ipHeaders]] value will be used.
      */
     public $ipHeaders;
     /**
@@ -736,7 +736,7 @@ class GeneralConfig extends BaseObject
     public $sanitizeSvgUploads = true;
     /**
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
-     * data in [[\craft\services\Security]].
+     * data in [[craft\services\Security]].
      *
      * This value should be the same across all environments. Note that if this key ever changes, any data that
      * was encrypted with it will be inaccessible.

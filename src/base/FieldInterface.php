@@ -97,7 +97,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the field’s translation key, based on a given element.
      *
-     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[craft\services\Elements::saveElement()]],
      * then `getTranslationKey()` will be called for each custom field and for each site the element should be propagated to.
      * If the method returns the same value as it did for the initial site, then the initial site’s value will be copied over
      * to the target site.
@@ -117,7 +117,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * For more complex inputs, you might prefer to create a template, and render it via
-     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
+     * [[craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
      * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php
@@ -128,7 +128,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
+     * attributes within the returned HTML will probably get [[craft\web\View::namespaceInputs()|namespaced]],
      * however your JavaScript code will be left untouched.
      * For example, if getInputHtml() returns the following HTML:
      *
@@ -154,11 +154,11 @@ interface FieldInterface extends SavableComponentInterface
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\web\View]] provides a couple handy methods that can help you deal with this:
+     * Thankfully, [[craft\web\View]] provides a couple handy methods that can help you deal with this:
      *
-     * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
-     * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
+     * - [[craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
+     * - [[craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
+     * - [[craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
      *
@@ -189,7 +189,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * The same principles also apply if you’re including your JavaScript code with
-     * [[\craft\web\View::registerJs()]].
+     * [[craft\web\View::registerJs()]].
      *
      * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
      * raw POST data (i.e. if there was a validation error), or null
@@ -253,7 +253,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the search keywords that should be associated with this field.
      *
-     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
+     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[craft\services\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
      * @param mixed $value The field’s value

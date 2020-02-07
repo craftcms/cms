@@ -111,8 +111,8 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Returns ASCII character mappings, merging in any custom defined mappings from the
-     * [[\craft\config\GeneralConfig::customAsciiCharMappings|customAsciiCharMappings]] config setting.
+     * Returns ASCII character mappings, merging in any custom defined mappings
+     * from the <config:customAsciiCharMappings> config setting.
      *
      * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
@@ -1012,7 +1012,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
      * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
+     * [[craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
      * @param int $length The length of the random string. Defaults to 36.
      * @param bool $extendedChars Whether to include symbols in the random string.
@@ -1033,7 +1033,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Generates a random string of characters. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
+     * [[craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
      * @param string $validChars A string containing the valid characters
      * @param int $length The length of the random string

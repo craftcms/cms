@@ -26,7 +26,7 @@ use yii\db\Exception as DbException;
 
 /**
  * Drafts service.
- * An instance of the Drafts service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
+ * An instance of the Drafts service is globally accessible in Craft via [[craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
@@ -433,10 +433,10 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * This method will check the
-     * [[\craft\config\GeneralConfig::purgeUnsavedDraftsDuration|purgeUnsavedDraftsDuration]] config
-     * setting, and if it is set to a valid duration, it will delete any sourceless drafts that were created that
-     * duration ago, and have still not been formally saved.
+     * This method will check the <config:purgeUnsavedDraftsDuration> config
+     * setting, and if it is set to a valid duration, it will delete any
+     * sourceless drafts that were created that duration ago, and have still not
+     * been formally saved.
      */
     public function purgeUnsavedDrafts()
     {
