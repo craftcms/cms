@@ -15,7 +15,7 @@
 - Improved GraphQL API performance. ([#5607](https://github.com/craftcms/cms/issues/5607))
 - Updated Garnish to 0.1.33.
 
-### Deprecated
+### Deprecated
 - Deprecated `craft\gql\base\Arguments::buildContentArguments()`.
 
 ### Fixed

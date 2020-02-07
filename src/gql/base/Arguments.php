@@ -8,9 +8,7 @@
 namespace craft\gql\base;
 
 use Craft;
-use craft\fields\Matrix;
 use craft\gql\types\QueryArgument;
-use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -58,7 +56,7 @@ abstract class Arguments
      * @param array $contexts
      * @param string $elementClass
      * @return array
-     * @deprecated Deprecated since 3.4.5. Use `Craft::$app->getGql()->getContentArguments()` instead.
+     * @deprecated in 3.4.5. Use [[\craft\services\Gql::getContentArguments()]] instead.
      */
     protected static function buildContentArguments(array $contexts, string $elementClass)
     {
