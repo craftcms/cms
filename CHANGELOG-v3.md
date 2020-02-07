@@ -10,7 +10,7 @@
 - Tightened up the horizontal padding on text inputs. ([#5608](https://github.com/craftcms/cms/issues/5608))
 - Improved the look of Matrix blocks.
 - Improved the look of editable tables. ([#5615](https://github.com/craftcms/cms/issues/5615))
-- URL fields now trim leading/trailing whitespace from their values before validating. ([#5614](https://github.com/craftcms/cms/issues/5614))
+- URL and Email fields now trim leading/trailing whitespace from their values before validating. ([#5614](https://github.com/craftcms/cms/issues/5614))
 - Table fields now trim leading/trailing whitespace from textual cell values before validating.
 - Updated Garnish to 0.1.33.
 
