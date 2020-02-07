@@ -34,7 +34,7 @@ class ChartHelper
      *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
      * @param Query $query The DB query that should be used. It will be executed for each time interval,
-     * with additional conditions on the $dateColumn, via [[craft\db\Query::scalar()]].
+     * with additional conditions on the $dateColumn, via [[\craft\db\Query::scalar()]].
      * @param DateTime $startDate The start of the time duration to select (inclusive)
      * @param DateTime $endDate The end of the time duration to select (exclusive)
      * @param string $dateColumn The column that represents the date

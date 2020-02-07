@@ -21,7 +21,7 @@ use yii\base\Exception;
 
 /**
  * Service for image operations.
- * An instance of the Images service is globally accessible in Craft via [[craft\base\ApplicationTrait::getImages()|`Craft::$app->images`]].
+ * An instance of the Images service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->images`]].
  *
  * @property bool $isGd Whether image manipulations will be performed using GD or not
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not

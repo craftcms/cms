@@ -24,7 +24,7 @@ use yii\db\IntegrityException;
 
 /**
  * Deprecator service.
- * An instance of the Deprecator service is globally accessible in Craft via [[craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->deprecator`]].
+ * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->deprecator`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -305,7 +305,7 @@ class Deprecator extends Component
     }
 
     /**
-     * Returns whether the given trace is a call to [[craft\heplers\Template::attribute()]]
+     * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
      * @param int $index The trace index to check
