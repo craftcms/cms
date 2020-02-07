@@ -1312,8 +1312,8 @@ div.btn.submit input {
   }
 
   &.small {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     background-size: 16px;
   }
 
@@ -2323,12 +2323,17 @@ table.editable {
       }
 
       td {
-        vertical-align: middle;
+        vertical-align: top;
         text-align: center;
         background-color: $white;
+        padding: 4px 10px;
+
+        &.focus {
+          box-shadow: inset 0 0 0 1px $hairlineColor;
+        }
 
         &.textual {
-          vertical-align: top;
+          padding: 0;
 
           textarea {
             resize: none;
@@ -2339,12 +2344,26 @@ table.editable {
           }
         }
 
-        &:not(.textual) {
-          padding: 4px 10px;
+        &.lightswitch-cell {
+          padding-top: 9px;
+          padding-bottom: 9px;
+
+          .lightswitch {
+            display: block;
+            margin: 0 auto;
+          }
         }
 
-        &.textual {
-          padding: 0;
+        &.checkbox-cell {
+          padding-top: 10px;
+          padding-bottom: 10px;
+
+          .checkbox-wrapper {
+            display: block;
+            margin: -2px auto 0;
+            width: 16px;
+            height: 16px;
+          }
         }
 
         &.error {
@@ -2398,8 +2417,6 @@ table.editable {
       transition: none;
 
       &:focus {
-        border: 1px solid $hairlineColor;
-        padding: 6px 9px;
         outline: none;
       }
     }
@@ -2415,26 +2432,30 @@ table.editable {
 
       & > .color {
         position: absolute;
-        top: calc(50% - 8px);
+        top: 10px;
         @include left(10px);
       }
 
       & > .color-input {
         @include padding-left(35px);
-
-        &:focus {
-          @include padding-left(34px);
-        }
       }
     }
 
     .datewrapper,
     .timewrapper {
+      display: block;
       width: 100%;
 
       .text:placeholder-shown + div[data-icon] {
+        top: 6px;
         @include left(10px);
       }
+    }
+  }
+
+  &:not(.static) {
+    td.textual {
+      cursor: text;
     }
   }
 

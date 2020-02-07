@@ -9,6 +9,7 @@
 - `craft\services\Gql::getPublicSchema()` now returns `null` if the public schema doesn’t exist yet and `allowAdminChanges` is disabled.
 - Tightened up the horizontal padding on text inputs. ([#5608](https://github.com/craftcms/cms/issues/5608))
 - Improved the look of Matrix blocks.
+- Improved the look of editable tables. ([#5615](https://github.com/craftcms/cms/issues/5615))
 - Updated Garnish to 0.1.33.
 
 ### Fixed
