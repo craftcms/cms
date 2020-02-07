@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.5 - 2020-02-07
 
 ### Added
 - Added `craft\models\GqlToken::getIsExpired()`.
