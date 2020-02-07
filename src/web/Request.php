@@ -395,8 +395,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
+     * Tokens must be sent either as a query string param named after the <config:tokenParam> config setting (`token` by
+     * default), or an `X-Craft-Token` HTTP header on the request.
+     *
      * @return string|null The token, or `null` if there isn’t one.
      * @throws BadRequestHttpException if an invalid token is supplied
+     * @see \craft\services\Tokens::createToken()
+     * @see Controller::requireToken()
      */
     public function getToken()
     {
