@@ -433,10 +433,10 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * This method will check the
-     * [[craft\config\GeneralConfig::purgeUnsavedDraftsDuration|purgeUnsavedDraftsDuration]] config
-     * setting, and if it is set to a valid duration, it will delete any sourceless drafts that were created that
-     * duration ago, and have still not been formally saved.
+     * This method will check the <config:purgeUnsavedDraftsDuration> config
+     * setting, and if it is set to a valid duration, it will delete any
+     * sourceless drafts that were created that duration ago, and have still not
+     * been formally saved.
      */
     public function purgeUnsavedDrafts()
     {
