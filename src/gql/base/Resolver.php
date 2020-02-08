@@ -11,6 +11,7 @@ use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\fields\BaseRelationField;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
 use GraphQL\Language\AST\FieldNode;
@@ -202,7 +203,18 @@ abstract class Resolver
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {
                             $traversePrefix = $prefix . ($field ? $field->handle : 'children');
-                            $traverseContext = $field ? $field->context : $context;
+
+                            if ($field) {
+                                // Relational fields should reset context to global.
+                                if ($field instanceof BaseRelationField) {
+                                    $traverseContext = 'global';
+                                } else {
+                                    $traverseContext = $field->context;
+                                }
+                            } else {
+                                $traverseContext = $context;
+                            }
+
                             $eagerLoadNodes += $traverseNodes($subNode, $traversePrefix . '.', $traverseContext, $field);
                         }
                     }
