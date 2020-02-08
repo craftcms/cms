@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Fixed
+### Fixed
 - Fixed a bug where content would not be loaded correctly for some parts of queries when using GraphQL API in some instances. ([#5548](https://github.com/craftcms/cms/issues/5548))
 
 ## 3.4.5 - 2020-02-07
