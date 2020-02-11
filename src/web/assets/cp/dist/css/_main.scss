@@ -2341,6 +2341,7 @@ table.editable {
 
           pre {
             @include alignleft;
+            white-space: pre-wrap;
           }
         }
 
@@ -2415,6 +2416,7 @@ table.editable {
       background-color: transparent;
       overflow: hidden;
       transition: none;
+      box-sizing: border-box;
 
       &:focus {
         outline: none;
