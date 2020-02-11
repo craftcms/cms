@@ -34,6 +34,8 @@ class Search
         }
 
         // Get rid of tags
+        $str = preg_replace('/<br\s*\/?>/i', ' ', $str);
+        $str = preg_replace('/<\/\w+>/', ' $1', $str);
         $str = strip_tags($str);
 
         // Convert non-breaking spaces entities to regular ones
