@@ -93,7 +93,7 @@ class GraphqlController extends Controller
         $token = null;
         $schema = null;
 
-        if ($requestHeaders->has('authorization')) {
+        if (!empty($requestHeaders->get('authorization'))) {
             if (!preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
                 throw new BadRequestHttpException('Invalid Authorization header');
             }
