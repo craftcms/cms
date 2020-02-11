@@ -210,14 +210,14 @@ class Elements extends Component
     const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
 
     /**
-     * @event ElementActionEvent The event that is triggered before an element action is performed.
+     * @event \craft\events\ElementActionEvent The event that is triggered before an element action is performed.
      *
-     * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     * You may set [[\craft\events\ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
 
     /**
-     * @event ElementActionEvent The event that is triggered after an element action is performed.
+     * @event \craft\events\ElementActionEvent The event that is triggered after an element action is performed.
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 

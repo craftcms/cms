@@ -299,13 +299,11 @@ class Request extends \yii\web\Request
     /**
      * Returns the requested path, sans control panel trigger and pagination info.
      *
-     * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
+     * If $returnRealPathInfo is returned, then [[\yii\web\Request::getPathInfo()]] will be returned.
      *
      * @param bool $returnRealPathInfo Whether the real path info should be returned instead.
      * @return string The requested path, or the path info.
      * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
-     * @see \yii\web\UrlManager::processRequest()
-     * @see \yii\web\UrlRule::processRequest()
      */
     public function getPathInfo(bool $returnRealPathInfo = false): string
     {

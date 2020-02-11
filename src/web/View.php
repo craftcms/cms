@@ -1124,7 +1124,7 @@ class View extends \yii\web\View
      * available for `Craft.t()` calls in the control panel.
      * Note this should always be called *before* any JavaScript is registered
      * that will need to use the translations, unless the JavaScript is
-     * registered at [[self::POS_READY]].
+     * registered at [[\yii\web\View::POS_READY]].
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
@@ -1453,7 +1453,7 @@ JS;
     /**
      * Queues up a method to be called by a given template hook.
      *
-     * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
+     * For example, if you place this in your plugin’s [[\craft\base\Plugin::init()|init()]] method:
      *
      * ```php
      * Craft::$app->view->hook('myAwesomeHook', function(&$context) {
