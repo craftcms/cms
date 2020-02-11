@@ -113,14 +113,14 @@ class Users extends Component
     const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
     /**
-     * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
+     * @event UserGroupsAssignEvent The event that is triggered before a user is assigned to some user groups.
      *
-     * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
+     * You may set [[UserGroupsAssignEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
 
     /**
-     * @event AssignUserGroupEvent The event that is triggered after a user is assigned to some user groups.
+     * @event UserGroupsAssignEvent The event that is triggered after a user is assigned to some user groups.
      */
     const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
 

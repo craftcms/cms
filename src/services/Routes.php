@@ -221,7 +221,7 @@ class Routes extends Component
     /**
      * Deletes a route by its ID.
      *
-     * @param int $routeId
+     * @param string $routeUid
      * @return bool
      * @since 3.1.0
      */

@@ -1272,7 +1272,7 @@ class Asset extends Element
      * Returns whether this asset can be previewed.
      *
      * @return bool
-     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreview]] instead.
+     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreviewHandler]] instead.
      */
     public function getSupportsPreview(): bool
     {
