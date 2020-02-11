@@ -1938,13 +1938,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the fields that should take part in an upcoming elements query.
      *
-     * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
-     * their field types will each have an opportunity to help build the element query, and their columns in the content
-     * table will be selected by the query (for those that have one).
-     * If a field has its own column in the content table, but the column name is prefixed with something besides
-     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\base\Field]], so
-     * [[\craft\services\Elements::buildElementsQuery()]] knows which column to select.
-     *
      * @return FieldInterface[] The fields that should take part in the upcoming elements query
      */
     protected function customFields(): array

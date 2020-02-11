@@ -75,7 +75,7 @@ class Feeds extends Component
      * ```
      *
      * @param string $url The feed’s URL.
-     * @param mixed|null $cacheDuration How long to cache the results. See [[Config::timeInSeconds()]] for possible values.
+     * @param mixed|null $cacheDuration How long to cache the results. See [[ConfigHelper::durationInSeconds()]] for possible values.
      * @return array The feed info
      * @throws MissingComponentException
      * @throws InvalidConfigException
@@ -180,7 +180,7 @@ class Feeds extends Component
      * @param string $url The feed’s URL.
      * @param int|null $limit The maximum number of items to return. Default is 0 (no limit).
      * @param int|null $offset The number of items to skip. Defaults to 0.
-     * @param mixed|null $cacheDuration How long to cache the results. See [[Config::timeInSeconds()]] for possible values.
+     * @param mixed|null $cacheDuration How long to cache the results. See [[ConfigHelper::durationInSeconds()]] for possible values.
      * @return array The list of feed items.
      * @throws InvalidConfigException
      * @throws MissingComponentException

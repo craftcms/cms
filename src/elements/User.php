@@ -61,7 +61,7 @@ class User extends Element implements IdentityInterface
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
-     * You may set [[AuthenticateUserEvent::isValid]] to `false` to prevent the user from getting authenticated
+     * You may set [[AuthenticateUserEvent::performAuthentication]] to `false` to prevent the user from getting authenticated
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
