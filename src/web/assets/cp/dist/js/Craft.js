@@ -1,4 +1,4 @@
-/*!   - 2020-02-11 */
+/*!   - 2020-02-12 */
 (function($){
 
 /** global: Craft */
@@ -591,7 +591,10 @@ $.extend(Craft,
 
                     options = options || {};
                     headers = $.extend(headers, options.headers || {});
-                    var params = $.extend(Craft.apiParams || {}, options.params || {});
+                    var params = $.extend(Craft.apiParams || {}, options.params || {}, {
+                        // Force Safari to not load from cache
+                        v: new Date().getTime(),
+                    });
 
                     axios.request($.extend({}, options, {
                             url: uri,
