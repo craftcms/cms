@@ -871,6 +871,9 @@ JS;
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,
             'prevalidate' => $this->validateRelatedElements,
+            'modalSettings' => [
+                'defaultSiteId' => $element->siteId ?? null,
+            ],
         ];
     }
 
