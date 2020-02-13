@@ -17,6 +17,7 @@
 - Fixed an error that could occur after updating to Craft 3.4. ([#5633](https://github.com/craftcms/cms/issues/5633))
 - Fixed a bug where Dropdown field values weren’t getting saved if the first option was selected. ([#5632](https://github.com/craftcms/cms/issues/5632))
 - Fixed a bug where sections’ preview targets weren’t getting saved in the user-defined order. ([#5634](https://github.com/craftcms/cms/issues/5634))
+- Fixed a bug where querying for Matrix blocks on a newly-created element’s Matrix field value would yield no results. ([#5618](https://github.com/craftcms/cms/issues/5618))
 
 ## 3.4.5 - 2020-02-07
 

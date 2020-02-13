@@ -492,6 +492,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         /** @var Element|null $element */
         if ($element && $element->id) {
             $query->ownerId = $element->id;
+
+            // Clear out id=false if this query was populated previously
+            if ($query->id === false) {
+                $query->id = null;
+            }
         } else {
             $query->id = false;
         }
