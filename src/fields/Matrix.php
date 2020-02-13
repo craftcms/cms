@@ -491,9 +491,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Existing element?
         /** @var Element|null $element */
         if ($element && $element->id) {
-            $query->ownerId($element->id);
+            $query->ownerId = $element->id;
         } else {
-            $query->id(false);
+            $query->id = false;
         }
 
         $query
