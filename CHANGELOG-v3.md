@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\web\View::getInitialDeltaValue()`.
 - Added `craft\web\View::setInitialDeltaValue()`.
+- Craft now caches the state of Project Config instead of always retrieving it from the database. ([#5630]https://github.com/craftcms/cms/issues/5630))
 
 ### Changed
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.

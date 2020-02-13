@@ -1723,33 +1723,48 @@ class ProjectConfig extends Component
             return $data;
         }
 
-        $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
+        // See if we can get away with using the cached data
+        $dateModified =  $this->_createProjectConfigQuery()->where(['path' => 'dateModified'])->pairs()['dateModified'];
+        $cache = Craft::$app->getCache();
+        $configModifiedCacheKey = 'project.config.dateModified';
+        $internalStateCacheKey = 'project.config.internalState';
+        $cachedDateModified = $cache->get($configModifiedCacheKey);
 
-        $current = &$data;
+        $start = microtime(true);
+        if (!$cachedDateModified || $cachedDateModified < $dateModified || !($data = $cache->get($internalStateCacheKey, $data))) {
+            // Load the project config data
+            $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
 
-        foreach ($rows as $path => $value) {
             $current = &$data;
-            $segments = explode('.', $path);
 
-            foreach ($segments as $segment) {
-                // If we're still traversing, enforce array to avoid errors.
-                if (!is_array($current)) {
-                    $current = [];
+            foreach ($rows as $path => $value) {
+                $current = &$data;
+                $segments = explode('.', $path);
+
+                foreach ($segments as $segment) {
+                    // If we're still traversing, enforce array to avoid errors.
+                    if (!is_array($current)) {
+                        $current = [];
+                    }
+
+                    if (!array_key_exists($segment, $current)) {
+                        $current[$segment] = [];
+                    }
+
+                    $current = &$current[$segment];
                 }
 
-                if (!array_key_exists($segment, $current)) {
-                    $current[$segment] = [];
-                }
-
-                $current = &$current[$segment];
+                $current = Json::decode(StringHelper::decdec($value));
             }
 
-            $current = Json::decode(StringHelper::decdec($value));
-        }
+            if (is_array($data)) {
+                $data = ProjectConfigHelper::cleanupConfig($data);
+            }
 
-        if (is_array($data)) {
-            $data = ProjectConfigHelper::cleanupConfig($data);
         }
+        // Cachce the data for next time.
+        $cache->set($internalStateCacheKey, $data, self::CACHE_DURATION);
+        $cache->set($configModifiedCacheKey, $dateModified, self::CACHE_DURATION);
 
         return $data;
     }
