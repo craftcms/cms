@@ -1762,7 +1762,8 @@ class ProjectConfig extends Component
             }
 
         }
-        // Cachce the data for next time.
+
+        // Cache the data for next time.
         $cache->set($internalStateCacheKey, $data, self::CACHE_DURATION);
         $cache->set($configModifiedCacheKey, $dateModified, self::CACHE_DURATION);
 
