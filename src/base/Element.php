@@ -919,11 +919,6 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        // Always sort by ID as the last sort attribute, so element order stays consistent between pages
-        if (!isset($result['score'])) {
-            $result['elements.id'] = SORT_DESC;
-        }
-
         return $result;
     }
 
