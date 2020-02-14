@@ -1731,7 +1731,7 @@ class ProjectConfig extends Component
         $cachedDateModified = $cache->get($configModifiedCacheKey);
 
         $start = microtime(true);
-        if (!$cachedDateModified || $cachedDateModified < $dateModified || !($data = $cache->get($internalStateCacheKey, $data))) {
+        if (!$cachedDateModified || $cachedDateModified !== $dateModified || !($data = $cache->get($internalStateCacheKey, $data))) {
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
 
