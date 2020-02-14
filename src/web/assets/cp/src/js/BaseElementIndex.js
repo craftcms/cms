@@ -62,8 +62,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewMode: null,
         view: null,
         _autoSelectElements: null,
+        $countSpinner: null,
         $countContainer: null,
         page: 1,
+        resultSet: null,
+        totalResults: null,
         $exportBtn: null,
 
         actions: null,
@@ -114,6 +117,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
+            this.$countSpinner = this.$container.find('#count-spinner');
             this.$countContainer = this.$container.find('#count-container');
             this.$exportBtn = this.$container.find('#export-btn');
 
@@ -557,6 +561,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             history.replaceState({}, '', url);
         },
 
+        _resetCount: function() {
+            this.resultSet = null;
+            this.totalResults = null;
+        },
+
         /**
          * Returns the data that should be passed to the elementIndex/getElements controller action
          * when loading elements.
@@ -622,6 +631,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (preservePagination !== true) {
                 this.setPage(1);
+                this._resetCount();
             }
 
             var params = this.getViewParams();
@@ -630,14 +640,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.setIndexAvailable();
 
                 if (textStatus === 'success') {
-                    // Have we gone too far?
-                    var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
-                    if (this.page > totalPages) {
-                        this.setPage(totalPages);
-                        this.updateElements(true);
-                        return;
-                    }
-
                     this._updateView(params, response);
                 } else {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
@@ -714,6 +716,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (textStatus === 'success') {
                     if (response.success) {
+                        // Update the count text too
+                        this._resetCount();
                         this._updateView(viewParams, response);
 
                         if (response.message) {
@@ -1529,47 +1533,74 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Update the count text
             // -------------------------------------------------------------
 
-            this.$countContainer.html('');
+            if (this.$countContainer.length) {
+                this.$countSpinner.removeClass('hidden');
+                this.$countContainer.html('');
 
-            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
-                this.$countContainer.text(response.countLabel);
-            } else {
-                var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
-                var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+                this._countResults()
+                    .then((total) => {
+                        this.$countSpinner.addClass('hidden');
 
-                var $prevBtn = $('<div/>', {
-                    'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
-                    'data-icon': 'leftangle',
-                    title: Craft.t('app', 'Previous Page')
-                }).appendTo($paginationContainer);
-                var $nextBtn = $('<div/>', {
-                    'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
-                    'data-icon': 'rightangle',
-                    title: Craft.t('app', 'Next Page')
-                }).appendTo($paginationContainer);
+                        let itemLabel = Craft.elementTypeNames[this.elementType] ? Craft.elementTypeNames[this.elementType][2] : 'element';
+                        let itemsLabel = Craft.elementTypeNames[this.elementType] ? Craft.elementTypeNames[this.elementType][3] : 'elements';
 
-                $('<div/>', {
-                    'class': 'page-info',
-                    text: response.countLabel
-                }).appendTo($paginationContainer);
+                        if (!this._isViewPaginated()) {
+                            let countLabel = Craft.t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', {
+                                total: total,
+                                item: itemLabel,
+                                items: itemsLabel,
+                            });
+                            this.$countContainer.text(countLabel);
+                        } else {
+                            let first = Math.min(this.settings.batchSize * (this.page - 1) + 1, total);
+                            let last = Math.min(first + (this.settings.batchSize - 1), total);
+                            let countLabel = Craft.t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', {
+                                first: first,
+                                last: last,
+                                total: total,
+                                item: itemLabel,
+                                items: itemsLabel,
+                            });
 
-                if (this.page > 1) {
-                    this.addListener($prevBtn, 'click', function() {
-                        this.removeListener($prevBtn, 'click');
-                        this.removeListener($nextBtn, 'click');
-                        this.setPage(this.page - 1);
-                        this.updateElements(true);
-                    });
-                }
+                            let $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
+                            let totalPages = Math.max(Math.ceil(total / this.settings.batchSize), 1);
 
-                if (this.page < totalPages) {
-                    this.addListener($nextBtn, 'click', function() {
-                        this.removeListener($prevBtn, 'click');
-                        this.removeListener($nextBtn, 'click');
-                        this.setPage(this.page + 1);
-                        this.updateElements(true);
-                    });
-                }
+                            let $prevBtn = $('<div/>', {
+                                'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
+                                'data-icon': 'leftangle',
+                                title: Craft.t('app', 'Previous Page')
+                            }).appendTo($paginationContainer);
+                            let $nextBtn = $('<div/>', {
+                                'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
+                                'data-icon': 'rightangle',
+                                title: Craft.t('app', 'Next Page')
+                            }).appendTo($paginationContainer);
+
+                            $('<div/>', {
+                                'class': 'page-info',
+                                text: countLabel
+                            }).appendTo($paginationContainer);
+
+                            if (this.page > 1) {
+                                this.addListener($prevBtn, 'click', function() {
+                                    this.removeListener($prevBtn, 'click');
+                                    this.removeListener($nextBtn, 'click');
+                                    this.setPage(this.page - 1);
+                                    this.updateElements(true);
+                                });
+                            }
+
+                            if (this.page < totalPages) {
+                                this.addListener($nextBtn, 'click', function() {
+                                    this.removeListener($prevBtn, 'click');
+                                    this.removeListener($nextBtn, 'click');
+                                    this.setPage(this.page + 1);
+                                    this.updateElements(true);
+                                });
+                            }
+                        }
+                    })
+                    .catch(() => {});
             }
 
             // Update the view with the new container + elements HTML
@@ -1666,6 +1697,33 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.onUpdateElements();
+        },
+
+        _countResults: function() {
+            return new Promise((resolve, reject) => {
+                if (this.totalResults !== null) {
+                    resolve(this.totalResults);
+                } else {
+                    var params = this.getViewParams();
+                    delete params.criteria.offset;
+                    delete params.criteria.limit;
+
+                    // Make sure we've got an active result set ID
+                    if (this.resultSet === null) {
+                        this.resultSet = Math.floor(Math.random() * 100000000);
+                    }
+                    params.resultSet = this.resultSet;
+
+                    Craft.postActionRequest(this.settings.countElementsAction, params, (response, textStatus) => {
+                        if (textStatus === 'success' && response.resultSet == this.resultSet) {
+                            this.totalResults = response.count;
+                            resolve(response.count);
+                        } else {
+                            reject();
+                        }
+                    });
+                }
+            });
         },
 
         _createTriggers: function() {
@@ -1870,6 +1928,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             toolbarSelector: '.toolbar:first',
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
+            countElementsAction: 'element-indexes/count-elements',
             submitActionsAction: 'element-indexes/perform-action',
             defaultSiteId: null,
             defaultSource: null,

@@ -20,6 +20,7 @@ use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -61,6 +62,7 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * @var bool
+     * @deprecated in 3.4.6
      */
     protected $paginated = false;
 
@@ -133,7 +135,6 @@ class ElementIndexesController extends BaseElementsController
     public function actionGetElements(): Response
     {
         $responseData = $this->elementResponseData(true, $this->includeActions());
-
         return $this->asJson($responseData);
     }
 
@@ -145,8 +146,23 @@ class ElementIndexesController extends BaseElementsController
     public function actionGetMoreElements(): Response
     {
         $responseData = $this->elementResponseData(false, false);
-
         return $this->asJson($responseData);
+    }
+
+    /**
+     * Returns the total number of elements that match the current criteria.
+     *
+     * @return Response
+     * @since 3.4.6
+     */
+    public function actionCountElements(): Response
+    {
+        return $this->asJson([
+            'resultSet' => Craft::$app->getRequest()->getParam('resultSet'),
+            'count' => (int)$this->elementQuery
+                ->select(new Expression('1'))
+                ->count(),
+        ]);
     }
 
     /**
@@ -493,30 +509,7 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $count = (int)$this->elementQuery->count();
-
-        $responseData = [
-            'count' => $count,
-        ];
-
-        if (!$this->paginated || !$this->elementQuery->limit || $count < $this->elementQuery->limit) {
-            $responseData['countLabel'] = Craft::t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', [
-                'total' => $count,
-                'item' => $elementType::lowerDisplayName(),
-                'items' => $elementType::pluralLowerDisplayName(),
-            ]);
-        } else {
-            $first = min(($this->elementQuery->offset ?: 0) + 1, $count);
-            $last = min($first + ($this->elementQuery->limit - 1), $count);
-            $responseData['countLabel'] = Craft::t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', [
-                'first' => $first,
-                'last' => $last,
-                'total' => $count,
-                'item' => $elementType::lowerDisplayName(),
-                'items' => $elementType::pluralLowerDisplayName(),
-            ]);
-        }
-
+        $responseData = [];
         $view = $this->getView();
 
         // Get the action head/foot HTML before any more is added to it from the element HTML
