@@ -66,12 +66,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @var bool
-     * @see _supportsRevisionParams()
-     */
-    private static $_supportsRevisionParams;
-
-    /**
      * Returns whether querying for drafts/revisions is supported yet.
      *
      * @return bool
@@ -79,12 +73,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private static function _supportsRevisionParams(): bool
     {
-        if (self::$_supportsRevisionParams !== null) {
-            return self::$_supportsRevisionParams;
-        }
-
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        return self::$_supportsRevisionParams = version_compare($schemaVersion, '3.2.6', '>=');
+        return Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'draftId');
     }
 
     /**
