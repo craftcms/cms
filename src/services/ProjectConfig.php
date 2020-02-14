@@ -1739,8 +1739,6 @@ class ProjectConfig extends Component
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
 
-            $current = &$data;
-
             foreach ($rows as $path => $value) {
                 $current = &$data;
                 $segments = explode('.', $path);
