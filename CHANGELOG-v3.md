@@ -6,11 +6,11 @@
 - Added `craft\controllers\ElementIndexesController::actionCountElements()`.
 - Added `craft\web\View::getInitialDeltaValue()`.
 - Added `craft\web\View::setInitialDeltaValue()`.
-- Craft now caches the state of Project Config instead of always retrieving it from the database. ([#5630]https://github.com/craftcms/cms/issues/5630))
 
 ### Changed
 - Improved the performance of element indexes.
 - Improved the performance of element queries on single-site installs.
+- Improved the performance of loading the stored project config data. ([#5630](https://github.com/craftcms/cms/issues/5630))
 - Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
