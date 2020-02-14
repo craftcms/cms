@@ -1724,14 +1724,20 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $dateModified =  $this->_createProjectConfigQuery()->where(['path' => 'dateModified'])->pairs()['dateModified'];
         $cache = Craft::$app->getCache();
         $configModifiedCacheKey = 'project.config.dateModified';
         $internalStateCacheKey = 'project.config.internalState';
+
+        $result =  $this->_createProjectConfigQuery()->where(['path' => 'dateModified'])->pairs();
+
+        $dateModified = null;
+        if ($result) {
+            $dateModified = $result['dateModified'];
+        }
+
         $cachedDateModified = $cache->get($configModifiedCacheKey);
 
-        $start = microtime(true);
-        if (!$cachedDateModified || $cachedDateModified !== $dateModified || !($data = $cache->get($internalStateCacheKey, $data))) {
+        if (!$dateModified || !$cachedDateModified || $cachedDateModified !== $dateModified || !($data = $cache->get($internalStateCacheKey, $data))) {
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
 
@@ -1760,7 +1766,6 @@ class ProjectConfig extends Component
             if (is_array($data)) {
                 $data = ProjectConfigHelper::cleanupConfig($data);
             }
-
         }
 
         // Cache the data for next time.
