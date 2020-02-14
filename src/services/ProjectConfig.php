@@ -28,6 +28,7 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
+use yii\caching\DbQueryDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -45,7 +46,6 @@ class ProjectConfig extends Component
 
     const CACHE_KEY = 'projectConfig:files';
     const STORED_CACHE_KEY = 'projectConfig:internal';
-    const MODIFIED_CACHE_KEY = 'projectConfig:modified';
     const CACHE_DURATION = 2592000; // 30 days
 
     // Array key to use if not using config files.
@@ -1726,49 +1726,35 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $cache = Craft::$app->getCache();
+        $dependency = new DbQueryDependency([
+            'db' => Craft::$app->getDb(),
+            'query' => $this->_createProjectConfigQuery()
+                ->select(['value'])
+                ->where(['path' => 'dateModified']),
+            'method' => 'scalar'
+        ]);
 
-        $dateModified =  $this->_createProjectConfigQuery()
-            ->select(['value'])
-            ->where(['path' => 'dateModified'])
-            ->scalar();
-
-        $cachedDateModified = $cache->get(self::MODIFIED_CACHE_KEY);
-
-        if (!$dateModified || !$cachedDateModified || $cachedDateModified !== $dateModified || ($data = $cache->get(self::STORED_CACHE_KEY)) === false) {
+        return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
+            $data = [];
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
-
             foreach ($rows as $path => $value) {
                 $current = &$data;
                 $segments = explode('.', $path);
-
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
                     if (!is_array($current)) {
                         $current = [];
                     }
-
                     if (!array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }
-
                     $current = &$current[$segment];
                 }
-
                 $current = Json::decode(StringHelper::decdec($value));
             }
-
-            if (is_array($data)) {
-                $data = ProjectConfigHelper::cleanupConfig($data);
-            }
-        }
-
-        // Cache the data for next time.
-        $cache->set(self::STORED_CACHE_KEY, $data, self::CACHE_DURATION);
-        $cache->set(self::MODIFIED_CACHE_KEY, $dateModified, self::CACHE_DURATION);
-
-        return $data;
+            return ProjectConfigHelper::cleanupConfig($data);
+        }, null, $dependency);
     }
 
     /**
