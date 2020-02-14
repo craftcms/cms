@@ -10,6 +10,7 @@
 
 ### Changed
 - Improved the performance of element indexes.
+- Element indexes now cancel current Ajax requests before sending new ones. ([#5655](https://github.com/craftcms/cms/issues/5655))
 - Improved the performance of element queries on single-site installs.
 - Improved the performance of loading the stored project config data. ([#5630](https://github.com/craftcms/cms/issues/5630))
 - Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))

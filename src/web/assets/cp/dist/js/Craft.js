@@ -2218,6 +2218,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _$detachedToolbarItems: null,
         _$triggers: null,
 
+        _ignoreFailedRequest: false,
+        _cancelToken: null,
+
         /**
          * Constructor
          */
@@ -2423,6 +2426,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.onAfterInit();
         },
 
+        _createCancelToken: function() {
+            this._cancelToken = axios.CancelToken.source();
+            return this._cancelToken.token;
+        },
+
+        _cancelRequests: function() {
+            if (this._cancelToken) {
+                this._ignoreFailedRequest = true;
+                this._cancelToken.cancel();
+                Garnish.requestAnimationFrame(() => {
+                    this._ignoreFailedRequest = false;
+                });
+            }
+        },
+
         getSourceContainer: function() {
             return this.$sidebar.find('nav>ul');
         },
@@ -2492,17 +2510,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
-            Craft.postActionRequest(this.settings.refreshSourcesAction, params, $.proxy(function(response, textStatus) {
+            Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
+                data: params,
+            }).then((response) => {
                 this.setIndexAvailable();
-
-                if (textStatus === 'success') {
-                    this.getSourceContainer().replaceWith(response.html);
-                    this.initSources();
-                    this.selectDefaultSource();
-                } else {
+                this.getSourceContainer().replaceWith(response.data.html);
+                this.initSources();
+                this.selectDefaultSource();
+            }).catch(() => {
+                this.setIndexAvailable();
+                if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-            }, this));
+            });
         },
 
         initSource: function($source) {
@@ -2760,6 +2780,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            // Cancel any ongoing requests
+            this._cancelRequests();
+
             this.setIndexBusy();
 
             // Kill the old view class
@@ -2775,15 +2798,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             var params = this.getViewParams();
 
-            Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
+            Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
+                data: params,
+                cancelToken: this._createCancelToken(),
+            }).then((response) => {
                 this.setIndexAvailable();
-
-                if (textStatus === 'success') {
-                    this._updateView(params, response);
-                } else {
+                this._updateView(params, response.data);
+            }).catch(() => {
+                this.setIndexAvailable();
+                if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-            }, this));
+            });
         },
 
         updateElementsIfSearchTextChanged: function() {
@@ -2838,6 +2864,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            // Cancel any ongoing requests
+            this._cancelRequests();
+
             // Get ready to submit
             var viewParams = this.getViewParams();
 
@@ -2850,25 +2879,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.setIndexBusy();
             this._autoSelectElements = selectedElementIds;
 
-            Craft.postActionRequest(this.settings.submitActionsAction, params, $.proxy(function(response, textStatus) {
+            Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
+                data: params,
+                cancelToken: this._createCancelToken(),
+            }).then((response) => {
                 this.setIndexAvailable();
+                if (response.data.success) {
+                    // Update the count text too
+                    this._resetCount();
+                    this._updateView(viewParams, response.data);
 
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        // Update the count text too
-                        this._resetCount();
-                        this._updateView(viewParams, response);
-
-                        if (response.message) {
-                            Craft.cp.displayNotice(response.message);
-                        }
-
-                        this.afterAction(action, params);
-                    } else {
-                        Craft.cp.displayError(response.message);
+                    if (response.data.message) {
+                        Craft.cp.displayNotice(response.data.message);
                     }
+
+                    this.afterAction(action, params);
+                } else {
+                    Craft.cp.displayError(response.data.message);
                 }
-            }, this));
+            }).catch(() => {
+                this.setIndexAvailable();
+            });
         },
 
         afterAction: function(action, params) {
@@ -3739,7 +3770,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             }
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => {
+                        this.$countSpinner.addClass('hidden');
+                    });
             }
 
             // Update the view with the new container + elements HTML
@@ -3853,14 +3886,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     }
                     params.resultSet = this.resultSet;
 
-                    Craft.postActionRequest(this.settings.countElementsAction, params, (response, textStatus) => {
-                        if (textStatus === 'success' && response.resultSet == this.resultSet) {
-                            this.totalResults = response.count;
-                            resolve(response.count);
+                    Craft.sendActionRequest('POST', this.settings.countElementsAction, {
+                        data: params,
+                        cancelToken: this._createCancelToken(),
+                    }).then((response) => {
+                        if (response.data.resultSet == this.resultSet) {
+                            this.totalResults = response.data.count;
+                            resolve(response.data.count);
                         } else {
                             reject();
                         }
-                    });
+                    }).catch(reject);
                 }
             });
         },
@@ -4029,7 +4065,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     .catch(function() {
                         submitting = false;
                         $spinner.addClass('hidden');
-                        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                        if (!this._ignoreFailedRequest) {
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                        }
                     });
             });
         },
