@@ -770,6 +770,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);

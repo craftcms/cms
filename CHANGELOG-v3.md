@@ -8,7 +8,11 @@
 - Craft now caches the state of Project Config instead of always retrieving it from the database. ([#5630]https://github.com/craftcms/cms/issues/5630))
 
 ### Changed
+- Improved the performance of element index queries.
+- Improved the performance of element queries on single-site installs.
+- Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
+- `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
 
 ### Fixed
 - Fixed a bug where content would not be loaded correctly for some parts of queries when using GraphQL API in some instances. ([#5548](https://github.com/craftcms/cms/issues/5548))
@@ -17,6 +21,9 @@
 - Fixed a bug where search keywords weren’t being extracted from HTML field values properly. ([#5631](https://github.com/craftcms/cms/issues/5631))
 - Fixed an error that could occur after updating to Craft 3.4. ([#5633](https://github.com/craftcms/cms/issues/5633))
 - Fixed a bug where Dropdown field values weren’t getting saved if the first option was selected. ([#5632](https://github.com/craftcms/cms/issues/5632))
+- Fixed a bug where sections’ preview targets weren’t getting saved in the user-defined order. ([#5634](https://github.com/craftcms/cms/issues/5634))
+- Fixed a bug where querying for Matrix blocks on a newly-created element’s Matrix field value would yield no results. ([#5618](https://github.com/craftcms/cms/issues/5618))
+- Fixed a bug where changing the focal point on an Asset would not invalidate its cached transforms. ([#3685](https://github.com/craftcms/cms/issues/3685))
 
 ## 3.4.5 - 2020-02-07
 
