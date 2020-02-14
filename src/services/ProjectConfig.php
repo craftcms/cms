@@ -44,6 +44,8 @@ class ProjectConfig extends Component
     // -------------------------------------------------------------------------
 
     const CACHE_KEY = 'projectConfig:files';
+    const STORED_CACHE_KEY = 'projectConfig:internal';
+    const MODIFIED_CACHE_KEY = 'projectConfig:modified';
     const CACHE_DURATION = 2592000; // 30 days
 
     // Array key to use if not using config files.
@@ -1725,17 +1727,15 @@ class ProjectConfig extends Component
 
         // See if we can get away with using the cached data
         $cache = Craft::$app->getCache();
-        $configModifiedCacheKey = 'project.config.dateModified';
-        $internalStateCacheKey = 'project.config.internalState';
 
         $dateModified =  $this->_createProjectConfigQuery()
             ->select(['value'])
             ->where(['path' => 'dateModified'])
             ->scalar();
 
-        $cachedDateModified = $cache->get($configModifiedCacheKey);
+        $cachedDateModified = $cache->get(self::MODIFIED_CACHE_KEY);
 
-        if (!$dateModified || !$cachedDateModified || $cachedDateModified !== $dateModified || !($data = $cache->get($internalStateCacheKey, $data))) {
+        if (!$dateModified || !$cachedDateModified || $cachedDateModified !== $dateModified || ($data = $cache->get(self::STORED_CACHE_KEY)) === false) {
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
 
@@ -1767,8 +1767,8 @@ class ProjectConfig extends Component
         }
 
         // Cache the data for next time.
-        $cache->set($internalStateCacheKey, $data, self::CACHE_DURATION);
-        $cache->set($configModifiedCacheKey, $dateModified, self::CACHE_DURATION);
+        $cache->set(self::STORED_CACHE_KEY, $data, self::CACHE_DURATION);
+        $cache->set(self::MODIFIED_CACHE_KEY, $dateModified, self::CACHE_DURATION);
 
         return $data;
     }
