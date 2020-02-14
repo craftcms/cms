@@ -1728,12 +1728,10 @@ class ProjectConfig extends Component
         $configModifiedCacheKey = 'project.config.dateModified';
         $internalStateCacheKey = 'project.config.internalState';
 
-        $result =  $this->_createProjectConfigQuery()->where(['path' => 'dateModified'])->pairs();
-
-        $dateModified = null;
-        if ($result) {
-            $dateModified = $result['dateModified'];
-        }
+        $dateModified =  $this->_createProjectConfigQuery()
+            ->select(['value'])
+            ->where(['path' => 'dateModified'])
+            ->scalar();
 
         $cachedDateModified = $cache->get($configModifiedCacheKey);
 
