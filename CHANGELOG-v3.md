@@ -8,8 +8,10 @@
 
 ### Changed
 - Improved the performance of element index queries.
+- Improved the performance of element queries on single-site installs.
 - Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
+- `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
 
 ### Fixed
 - Fixed a bug where content would not be loaded correctly for some parts of queries when using GraphQL API in some instances. ([#5548](https://github.com/craftcms/cms/issues/5548))

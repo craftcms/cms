@@ -1344,7 +1344,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->limit($this->limit)
             ->addParams($this->params);
 
-        if ($this->siteId !== '*') {
+        if ($this->siteId !== '*' && Craft::$app->getIsMultiSite(false, true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
@@ -2068,12 +2068,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         /** @var ElementInterface|string $class */
         // Join in the content table on both queries
+        $joinCondition = [
+            'and',
+            '[[content.elementId]] = [[elements.id]]',
+        ];
+        if (Craft::$app->getIsMultiSite(false, false)) {
+            $joinCondition[] = '[[content.siteId]] = [[elements_sites.siteId]]';
+        }
         $this->subQuery
-            ->innerJoin($this->contentTable . ' content', [
-                'and',
-                '[[content.elementId]] = [[elements.id]]',
-                '[[content.siteId]] = [[elements_sites.siteId]]',
-            ])
+            ->innerJoin($this->contentTable . ' content', $joinCondition)
             ->addSelect(['contentId' => 'content.id']);
 
         $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
@@ -2705,11 +2708,15 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyUniqueParam(Connection $db)
     {
-        if (!$this->unique || (
+        if (
+            !$this->unique ||
+            !Craft::$app->getIsMultiSite(false, false) ||
+            (
                 $this->siteId &&
                 $this->siteId !== '*' &&
                 (!is_array($this->siteId) || count($this->siteId) === 1)
-            )) {
+            )
+        ) {
             return;
         }
 

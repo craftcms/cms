@@ -51,6 +51,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\caching\Cache;
 use yii\db\Exception as DbException;
+use yii\db\Expression;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -174,9 +175,16 @@ trait ApplicationTrait
     private $_isInitialized = false;
 
     /**
-     * @var
+     * @var bool
+     * @see getIsMultiSite()
      */
     private $_isMultiSite;
+
+    /**
+     * @var bool
+     * @see getIsMultiSite()
+     */
+    private $_isMultiSiteWithTrashed;
 
     /**
      * @var
@@ -312,15 +320,32 @@ trait ApplicationTrait
      * Returns whether this Craft install has multiple sites.
      *
      * @param bool $refresh Whether to ignore the cached result and check again
+     * @param bool $withTrashed Whether to factor in soft-deleted sites
      * @return bool
      */
-    public function getIsMultiSite(bool $refresh = false): bool
+    public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
+        if ($withTrashed) {
+            if (!$refresh && $this->_isMultiSiteWithTrashed !== null) {
+                return $this->_isMultiSiteWithTrashed;
+            }
+            // This is a ridiculous microoptimization for the `sites` table, but all we need to know is whether there is
+            // 1 or "more than 1" rows, and this is the fastest way to do it.
+            // (https://stackoverflow.com/a/14916838/1688568)
+            return $this->_isMultiSiteWithTrashed = (new Query())
+                ->from([
+                    'x' => (new Query)
+                        ->select([new Expression('1')])
+                        ->from([Table::SITES])
+                        ->limit(2)
+                ])
+                ->count() != 1;
+        }
+
         if (!$refresh && $this->_isMultiSite !== null) {
             return $this->_isMultiSite;
         }
-
         return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
     }
 
