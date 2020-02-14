@@ -480,6 +480,7 @@ $.extend(Craft,
          * @param {function|undefined} callback
          * @param {object|undefined} options
          * @return jqXHR
+         * @deprecated in 3.4.6. sendActionRequest() should be used instead
          */
         postActionRequest: function(action, data, callback, options) {
             // Make 'data' optional
@@ -498,20 +499,11 @@ $.extend(Craft,
                 options.contentType = 'application/json; charset=utf-8';
             }
 
-            var headers = {
-                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
-                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
-            };
-
-            if (Craft.csrfTokenValue) {
-                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
-            }
-
             var jqXHR = $.ajax($.extend({
                 url: Craft.getActionUrl(action),
                 type: 'POST',
                 dataType: 'json',
-                headers: headers,
+                headers: this._actionHeaders(),
                 data: data,
                 success: callback,
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -580,39 +572,77 @@ $.extend(Craft,
             }, args[3]);
         },
 
-        sendApiRequest: function(method, uri, options) {
-            return new Promise(function(resolve, reject) {
-                // Get the latest headers
-                this.postActionRequest('app/api-headers', function(headers, textStatus) {
-                    if (textStatus !== 'success') {
-                        reject();
-                        return;
-                    }
+        _actionHeaders: function() {
+            let headers = {
+                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
+                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
+            };
 
-                    options = options || {};
-                    headers = $.extend(headers, options.headers || {});
-                    var params = $.extend(Craft.apiParams || {}, options.params || {}, {
+            if (Craft.csrfTokenValue) {
+                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
+            }
+
+            return headers;
+        },
+
+        /**
+         * Sends a request to a Craft/plugin action
+         * @param {string} method The request action to use ('GET' or 'POST')
+         * @param {string} action The action to request
+         * @param {Object} options Axios request options
+         * @returns {Promise}
+         * @since 3.4.6
+         */
+        sendActionRequest: function(method, action, options) {
+            return new Promise((resolve, reject) => {
+                options = options ? $.extend({}, options) : {};
+                options.method = method;
+                options.url = Craft.getActionUrl(action);
+                options.headers = $.extend({}, options.headers || {}, this._actionHeaders());
+                options.params = $.extend({}, options.params || {}, {
+                    // Force Safari to not load from cache
+                    v: new Date().getTime(),
+                });
+                axios.request(options).then(resolve).catch(reject);
+            });
+        },
+
+        /**
+         * Sends a request to the Craftnet API.
+         * @param {string} method The request action to use ('GET' or 'POST')
+         * @param {string} uri The API endpoint URI
+         * @param {Object} options Axios request options
+         * @returns {Promise}
+         * @since 3.3.16
+         */
+        sendApiRequest: function(method, uri, options) {
+            return new Promise((resolve, reject) => {
+                options = options ? $.extend({}, options) : {};
+                // Get the latest headers
+                this.sendActionRequest('POST', 'app/api-headers', {
+                    cancelToken: options.cancelToken || null,
+                }).then((headerResponse) => {
+                    options.method = method;
+                    options.baseURL = Craft.baseApiUrl;
+                    options.url = uri;
+                    options.headers = $.extend(headerResponse.data, options.headers || {});
+                    options.params = $.extend(Craft.apiParams || {}, options.params || {}, {
                         // Force Safari to not load from cache
                         v: new Date().getTime(),
                     });
 
-                    axios.request($.extend({}, options, {
-                            url: uri,
-                            method: method,
-                            baseURL: Craft.baseApiUrl,
-                            headers: headers,
-                            params: params,
-                        }))
-                        .then(function(response) {
-                            Craft.postActionRequest('app/process-api-response-headers', {
-                                headers: response.headers,
-                            }, function() {
-                                resolve(response.data);
-                            });
-                        })
-                        .catch(reject);
-                }.bind(this));
-            }.bind(this));
+                    axios.request(options).then((apiResponse) => {
+                        this.sendActionRequest('POST', 'app/process-api-response-headers', {
+                            data: {
+                                headers: apiResponse.headers,
+                            },
+                            cancelToken: options.cancelToken || null,
+                        }).then(() => {
+                            resolve(apiResponse.data);
+                        }).catch(reject);
+                    }).catch(reject);
+                }).catch(reject);
+            });
         },
 
         /**

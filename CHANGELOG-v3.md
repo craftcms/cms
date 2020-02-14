@@ -6,6 +6,7 @@
 - Added `craft\controllers\ElementIndexesController::actionCountElements()`.
 - Added `craft\web\View::getInitialDeltaValue()`.
 - Added `craft\web\View::setInitialDeltaValue()`.
+- Added the `Craft.sendActionRequest()` JavaScript method, which is a Promise-based, cancelable alternative to `Craft.postActionRequest()`.
 
 ### Changed
 - Improved the performance of element indexes.
@@ -17,6 +18,7 @@
 
 ### Deprecated
 - Deprecated `craft\controllers\ElementIndexesController::$paginated`.
+- Deprecated the `Craft.postActionRequest()` JavaScript method.
 
 ### Fixed
 - Fixed a bug where content would not be loaded correctly for some parts of queries when using GraphQL API in some instances. ([#5548](https://github.com/craftcms/cms/issues/5548))
