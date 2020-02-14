@@ -43,7 +43,7 @@ class ProjectConfig extends Component
     // Cache settings
     // -------------------------------------------------------------------------
 
-    const CACHE_KEY = 'project.config.files';
+    const CACHE_KEY = 'projectConfig:files';
     const CACHE_DURATION = 2592000; // 30 days
 
     // Array key to use if not using config files.
