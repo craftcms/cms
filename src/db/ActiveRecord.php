@@ -112,6 +112,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @param mixed $value The attribute value
      * @return mixed The prepared value
      * @since 3.4.0
+     * @todo look into whether this is even necessary in Craft 4 - https://www.yiiframework.com/doc/guide/2.0/en/db-active-record#json-in-mysql-and-postgresql
      */
     private function _prepareValue(string $name, $value)
     {
