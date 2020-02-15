@@ -680,7 +680,8 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 .element.sel.loading:after, li.sel .element.loading:after { background-image: url(../images/spinner_element.gif); }
 .element.hasthumb .elementthumb img { display: block; width: 100%; height: 100%; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
 .element .label { display: inline-block; }
-.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; }
+.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; max-width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; }
+.element.small .label, .element.large:not(.hasthumb) .label { display: block; max-width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 body.ltr .element.small.hasstatus, body.ltr .element.large:not(.hasthumb).hasstatus { padding-left: 22px; }
 body.rtl .element.small.hasstatus, body.rtl .element.large:not(.hasthumb).hasstatus { padding-right: 22px; }
 .element.small.hasstatus .status, .element.large:not(.hasthumb).hasstatus .status { position: absolute; top: calc(50% - 5px); }

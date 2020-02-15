@@ -32,6 +32,7 @@
 - Fixed a bug where querying for Matrix blocks on a newly-created element’s Matrix field value would yield no results. ([#5618](https://github.com/craftcms/cms/issues/5618))
 - Fixed a bug where changing the focal point on an Asset would not invalidate its cached transforms. ([#3685](https://github.com/craftcms/cms/issues/3685))
 - Fixed a migration error that could occur when updating from prior to Craft 3.2.6.
+- Fixed a bug where element labels could wrap multiple lines in the control panel. ([#5646](https://github.com/craftcms/cms/issues/5646))
 
 ## 3.4.5 - 2020-02-07
 
