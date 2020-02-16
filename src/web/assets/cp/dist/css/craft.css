@@ -825,7 +825,7 @@ body.rtl .elementselect .caboose { float: right; }
 /* editable tables */
 table.editable { border-radius: 5px; border: 1px solid #cdd8e4; }
 table.editable th, table.editable td.action { color: #7b8793; font-weight: normal; background-color: #f3f7fc; }
-table.editable thead tr th, table.editable tbody tr th { padding: 6px 10px; white-space: nowrap; }
+table.editable thead tr th, table.editable tbody tr th { padding: 6px 10px; }
 table.editable thead tr th { border-bottom: 1px solid rgba(51, 64, 77, 0.1); }
 body.ltr table.editable thead tr th.has-info { padding-right: calc(15px + 1em); }
 body.rtl table.editable thead tr th.has-info { padding-left: calc(15px + 1em); }

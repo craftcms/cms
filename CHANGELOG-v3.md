@@ -25,6 +25,7 @@
 - Fixed a bug where content would not be loaded correctly for some parts of queries when using GraphQL API in some instances. ([#5548](https://github.com/craftcms/cms/issues/5548))
 - Fixed a bug where the built-in GraphQL client would not work on some environments.
 - Fixed a bug where text cells weren’t wrapping in static editable tables. ([#5611](https://github.com/craftcms/cms/issues/5611))
+- Fixed a bug where header cells weren’t wrapping in editable tables. ([#5656](https://github.com/craftcms/cms/issues/5656))
 - Fixed a bug where search keywords weren’t being extracted from HTML field values properly. ([#5631](https://github.com/craftcms/cms/issues/5631))
 - Fixed an error that could occur after updating to Craft 3.4. ([#5633](https://github.com/craftcms/cms/issues/5633))
 - Fixed a bug where Dropdown field values weren’t getting saved if the first option was selected. ([#5632](https://github.com/craftcms/cms/issues/5632))
