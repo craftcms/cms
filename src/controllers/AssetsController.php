@@ -212,13 +212,25 @@ class AssetsController extends Controller
 
         $request = Craft::$app->getRequest();
         $assetId = $request->getRequiredParam('assetId');
-        $asset = Asset::findOne($assetId);
+        $siteId = $request->getBodyParam('siteId');
+
+        /** @var Asset|null $asset */
+        $asset = Asset::find()
+            ->id($assetId)
+            ->siteId($siteId)
+            ->one();
+
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
         }
 
         $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
         $this->_requirePeerPermissionByAsset('editPeerFilesInVolume', $asset);
+
+        if (Craft::$app->getIsMultiSite()) {
+            // Make sure they have access to this site
+            $this->requirePermission('editSite:' . $asset->getSite()->uid);
+        }
 
         $asset->title = $request->getParam('title') ?? $asset->title;
         $asset->newFilename = $request->getParam('filename');
