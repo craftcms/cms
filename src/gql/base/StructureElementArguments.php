@@ -68,6 +68,26 @@ abstract class StructureElementArguments extends ElementArguments
                 'type' => Type::boolean(),
                 'description' => 'Narrows the query results based on whether the elements are “leaves” (element with no descendants).'
             ],
+            'nextSiblingOf' => [
+                'name' => 'nextSiblingOf',
+                'type' => Type::int(),
+                'description' => 'Narrows the query results to only the entry that comes immediately after another element.'
+            ],
+            'prevSiblingOf' => [
+                'name' => 'prevSiblingOf',
+                'type' => Type::int(),
+                'description' => 'Narrows the query results to only the entry that comes immediately before another element.'
+            ],
+            'positionedAfter' => [
+                'name' => 'positionedAfter',
+                'type' => Type::int(),
+                'description' => 'Narrows the query results to only entries that are positioned after another element.'
+            ],
+            'positionedBefore' => [
+                'name' => 'positionedBefore',
+                'type' => Type::int(),
+                'description' => 'Narrows the query results to only entries that are positioned before another element.'
+            ],
         ]);
     }
 }

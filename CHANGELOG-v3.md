@@ -9,6 +9,7 @@
 - Added `craft\web\View::getInitialDeltaValue()`.
 - Added `craft\web\View::setInitialDeltaValue()`.
 - Added the boolean `label` argument to the Checkbox, Dropdown, and Multi-select GraphQL API fields which can be used to specify the label(s) of selected option(s) should be returned instead. ([#5514](https://github.com/craftcms/cms/issues/5514))
+- Added the `nextSiblingOf`, `prevSiblingOf`, `positionedAfter`, and `positionedBefore` arguments to Entry and Category GraphQL queries. ([#5627](https://github.com/craftcms/cms/issues/5627))
 - Added the `Craft.sendActionRequest()` JavaScript method, which is a Promise-based, cancelable alternative to `Craft.postActionRequest()`.
 
 ### Changed
