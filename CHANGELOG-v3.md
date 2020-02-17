@@ -19,6 +19,8 @@
 - Improved the performance of loading the stored project config data. ([#5630](https://github.com/craftcms/cms/issues/5630))
 - Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))
 - Assets, categories, entries, and users can now be sorted by their IDs in the control panel.
+- Element URIs are now longer required to be unique for disabled elements.
+- Duplicated elements are now automatically saved as disabled, if a unique URI cannot be generated for them.
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
 
@@ -41,6 +43,7 @@
 - Fixed a bug where element labels could wrap multiple lines in the control panel. ([#5646](https://github.com/craftcms/cms/issues/5646))
 - Fixed a bug where meta field labels weren’t aligned with their values. ([#5647](https://github.com/craftcms/cms/issues/5647))
 - Fixed a bug where saving an asset from an Edit Asset page would save the content for the primary site, regardless of which site was selected. ([#5659](https://github.com/craftcms/cms/issues/5659))
+- Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
 
 ## 3.4.5 - 2020-02-07
 
@@ -1227,7 +1230,6 @@
 
 ### Fixed
 - Fixed an error that could occur if garbage collection was run while Craft 3.2 migrations were pending. ([#4720](https://github.com/craftcms/cms/issues/4720))
-- Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
 - Fixed a bug where the “Publish live changes for other authors’ entries” permission was being enforced when saving another author’s entry as a new entry. ([#4758](https://github.com/craftcms/cms/issues/4758))
 - Fixed a bug where `craft\helpers\UrlHelper` methods would strip out array params in the query string. ([#4778](https://github.com/craftcms/cms/issues/4778))
 - Fixed a SQL error that occurred when a `{% cache %}` tag was used on a page with a 4-byte character in the URI. ([#4780](https://github.com/craftcms/cms/issues/4780))
