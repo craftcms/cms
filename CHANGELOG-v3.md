@@ -18,6 +18,7 @@
 - Improved the performance of element queries on single-site installs.
 - Improved the performance of loading the stored project config data. ([#5630](https://github.com/craftcms/cms/issues/5630))
 - Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))
+- Assets, categories, entries, and users can now be sorted by their IDs in the control panel.
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
 
