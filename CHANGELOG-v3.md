@@ -8,7 +8,7 @@
 - Added `craft\gql\resolvers\OptionField`.
 - Added `craft\web\View::getInitialDeltaValue()`.
 - Added `craft\web\View::setInitialDeltaValue()`.
-- The Checkbox, Dropdown, and Multi-select GraphQL API fields now support a boolean `label` argument to specify the label(s) of selected option(s) should be returned instead. ([#5514](https://github.com/craftcms/cms/issues/5514))
+- Added the boolean `label` argument to the Checkbox, Dropdown, and Multi-select GraphQL API fields which can be used to specify the label(s) of selected option(s) should be returned instead. ([#5514](https://github.com/craftcms/cms/issues/5514))
 - Added the `Craft.sendActionRequest()` JavaScript method, which is a Promise-based, cancelable alternative to `Craft.postActionRequest()`.
 
 ### Changed
