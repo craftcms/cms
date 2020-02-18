@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\elements\db\ElementQueryInterface;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\Gql as GqlHelper;
@@ -65,6 +66,12 @@ abstract class ObjectType extends GqlObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        return $source->{$resolveInfo->fieldName};
+        $result = $source->{$resolveInfo->fieldName};
+        
+        if ($result instanceof ElementQueryInterface) {
+            return $result->all();
+        }
+
+        return $result;
     }
 }
