@@ -1,4 +1,4 @@
-/*!   - 2020-02-07 */
+/*!   - 2020-02-15 */
 (function($){
 
 /** global: Craft */
@@ -480,6 +480,7 @@ $.extend(Craft,
          * @param {function|undefined} callback
          * @param {object|undefined} options
          * @return jqXHR
+         * @deprecated in 3.4.6. sendActionRequest() should be used instead
          */
         postActionRequest: function(action, data, callback, options) {
             // Make 'data' optional
@@ -498,20 +499,11 @@ $.extend(Craft,
                 options.contentType = 'application/json; charset=utf-8';
             }
 
-            var headers = {
-                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
-                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
-            };
-
-            if (Craft.csrfTokenValue) {
-                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
-            }
-
             var jqXHR = $.ajax($.extend({
                 url: Craft.getActionUrl(action),
                 type: 'POST',
                 dataType: 'json',
-                headers: headers,
+                headers: this._actionHeaders(),
                 data: data,
                 success: callback,
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -580,36 +572,77 @@ $.extend(Craft,
             }, args[3]);
         },
 
+        _actionHeaders: function() {
+            let headers = {
+                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
+                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
+            };
+
+            if (Craft.csrfTokenValue) {
+                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
+            }
+
+            return headers;
+        },
+
+        /**
+         * Sends a request to a Craft/plugin action
+         * @param {string} method The request action to use ('GET' or 'POST')
+         * @param {string} action The action to request
+         * @param {Object} options Axios request options
+         * @returns {Promise}
+         * @since 3.4.6
+         */
+        sendActionRequest: function(method, action, options) {
+            return new Promise((resolve, reject) => {
+                options = options ? $.extend({}, options) : {};
+                options.method = method;
+                options.url = Craft.getActionUrl(action);
+                options.headers = $.extend({}, options.headers || {}, this._actionHeaders());
+                options.params = $.extend({}, options.params || {}, {
+                    // Force Safari to not load from cache
+                    v: new Date().getTime(),
+                });
+                axios.request(options).then(resolve).catch(reject);
+            });
+        },
+
+        /**
+         * Sends a request to the Craftnet API.
+         * @param {string} method The request action to use ('GET' or 'POST')
+         * @param {string} uri The API endpoint URI
+         * @param {Object} options Axios request options
+         * @returns {Promise}
+         * @since 3.3.16
+         */
         sendApiRequest: function(method, uri, options) {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
+                options = options ? $.extend({}, options) : {};
                 // Get the latest headers
-                this.postActionRequest('app/api-headers', function(headers, textStatus) {
-                    if (textStatus !== 'success') {
-                        reject();
-                        return;
-                    }
+                this.sendActionRequest('POST', 'app/api-headers', {
+                    cancelToken: options.cancelToken || null,
+                }).then((headerResponse) => {
+                    options.method = method;
+                    options.baseURL = Craft.baseApiUrl;
+                    options.url = uri;
+                    options.headers = $.extend(headerResponse.data, options.headers || {});
+                    options.params = $.extend(Craft.apiParams || {}, options.params || {}, {
+                        // Force Safari to not load from cache
+                        v: new Date().getTime(),
+                    });
 
-                    options = options || {};
-                    headers = $.extend(headers, options.headers || {});
-                    var params = $.extend(Craft.apiParams || {}, options.params || {});
-
-                    axios.request($.extend({}, options, {
-                            url: uri,
-                            method: method,
-                            baseURL: Craft.baseApiUrl,
-                            headers: headers,
-                            params: params,
-                        }))
-                        .then(function(response) {
-                            Craft.postActionRequest('app/process-api-response-headers', {
-                                headers: response.headers,
-                            }, function() {
-                                resolve(response.data);
-                            });
-                        })
-                        .catch(reject);
-                }.bind(this));
-            }.bind(this));
+                    axios.request(options).then((apiResponse) => {
+                        this.sendActionRequest('POST', 'app/process-api-response-headers', {
+                            data: {
+                                headers: apiResponse.headers,
+                            },
+                            cancelToken: options.cancelToken || null,
+                        }).then(() => {
+                            resolve(apiResponse.data);
+                        }).catch(reject);
+                    }).catch(reject);
+                }).catch(reject);
+            });
         },
 
         /**
@@ -697,8 +730,8 @@ $.extend(Craft,
             });
 
             // Group all of the old & new params by namespace
-            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false);
-            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true);
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false, true);
+            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true, false);
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
@@ -719,7 +752,7 @@ $.extend(Craft,
             return params.join('&');
         },
 
-        _groupParamsByDeltaNames: function(params, deltaNames, withRoot) {
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValue) {
             var grouped = {};
 
             if (withRoot) {
@@ -739,7 +772,15 @@ $.extend(Craft,
                         if (typeof grouped[deltaNames[n]] === 'undefined') {
                             grouped[deltaNames[n]] = [];
                         }
-                        grouped[deltaNames[n]].push(params[p]);
+                        if (
+                            useInitialValue &&
+                            paramName === deltaNames[n] + '=' &&
+                            typeof Craft.initialDeltaValues[deltaNames[n]] !== 'undefined'
+                        ) {
+                            grouped[deltaNames[n]].push(encodeURIComponent(deltaNames[n]) + '=' + $.param(Craft.initialDeltaValues[deltaNames[n]]));
+                        } else {
+                            grouped[deltaNames[n]].push(params[p]);
+                        }
                         continue paramLoop;
                     }
                 }
@@ -2160,8 +2201,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewMode: null,
         view: null,
         _autoSelectElements: null,
+        $countSpinner: null,
         $countContainer: null,
         page: 1,
+        resultSet: null,
+        totalResults: null,
         $exportBtn: null,
 
         actions: null,
@@ -2173,6 +2217,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         exporters: null,
         _$detachedToolbarItems: null,
         _$triggers: null,
+
+        _ignoreFailedRequest: false,
+        _cancelToken: null,
 
         /**
          * Constructor
@@ -2212,6 +2259,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
+            this.$countSpinner = this.$container.find('#count-spinner');
             this.$countContainer = this.$container.find('#count-container');
             this.$exportBtn = this.$container.find('#export-btn');
 
@@ -2378,6 +2426,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.onAfterInit();
         },
 
+        _createCancelToken: function() {
+            this._cancelToken = axios.CancelToken.source();
+            return this._cancelToken.token;
+        },
+
+        _cancelRequests: function() {
+            if (this._cancelToken) {
+                this._ignoreFailedRequest = true;
+                this._cancelToken.cancel();
+                Garnish.requestAnimationFrame(() => {
+                    this._ignoreFailedRequest = false;
+                });
+            }
+        },
+
         getSourceContainer: function() {
             return this.$sidebar.find('nav>ul');
         },
@@ -2447,17 +2510,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
-            Craft.postActionRequest(this.settings.refreshSourcesAction, params, $.proxy(function(response, textStatus) {
+            Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
+                data: params,
+            }).then((response) => {
                 this.setIndexAvailable();
-
-                if (textStatus === 'success') {
-                    this.getSourceContainer().replaceWith(response.html);
-                    this.initSources();
-                    this.selectDefaultSource();
-                } else {
+                this.getSourceContainer().replaceWith(response.data.html);
+                this.initSources();
+                this.selectDefaultSource();
+            }).catch(() => {
+                this.setIndexAvailable();
+                if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-            }, this));
+            });
         },
 
         initSource: function($source) {
@@ -2655,6 +2720,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             history.replaceState({}, '', url);
         },
 
+        _resetCount: function() {
+            this.resultSet = null;
+            this.totalResults = null;
+        },
+
         /**
          * Returns the data that should be passed to the elementIndex/getElements controller action
          * when loading elements.
@@ -2710,6 +2780,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            // Cancel any ongoing requests
+            this._cancelRequests();
+
             this.setIndexBusy();
 
             // Kill the old view class
@@ -2720,27 +2793,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (preservePagination !== true) {
                 this.setPage(1);
+                this._resetCount();
             }
 
             var params = this.getViewParams();
 
-            Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
+            Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
+                data: params,
+                cancelToken: this._createCancelToken(),
+            }).then((response) => {
                 this.setIndexAvailable();
-
-                if (textStatus === 'success') {
-                    // Have we gone too far?
-                    var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
-                    if (this.page > totalPages) {
-                        this.setPage(totalPages);
-                        this.updateElements(true);
-                        return;
-                    }
-
-                    this._updateView(params, response);
-                } else {
+                this._updateView(params, response.data);
+            }).catch(() => {
+                this.setIndexAvailable();
+                if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                 }
-            }, this));
+            });
         },
 
         updateElementsIfSearchTextChanged: function() {
@@ -2795,6 +2864,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            // Cancel any ongoing requests
+            this._cancelRequests();
+
             // Get ready to submit
             var viewParams = this.getViewParams();
 
@@ -2807,23 +2879,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.setIndexBusy();
             this._autoSelectElements = selectedElementIds;
 
-            Craft.postActionRequest(this.settings.submitActionsAction, params, $.proxy(function(response, textStatus) {
+            Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
+                data: params,
+                cancelToken: this._createCancelToken(),
+            }).then((response) => {
                 this.setIndexAvailable();
+                if (response.data.success) {
+                    // Update the count text too
+                    this._resetCount();
+                    this._updateView(viewParams, response.data);
 
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        this._updateView(viewParams, response);
-
-                        if (response.message) {
-                            Craft.cp.displayNotice(response.message);
-                        }
-
-                        this.afterAction(action, params);
-                    } else {
-                        Craft.cp.displayError(response.message);
+                    if (response.data.message) {
+                        Craft.cp.displayNotice(response.data.message);
                     }
+
+                    this.afterAction(action, params);
+                } else {
+                    Craft.cp.displayError(response.data.message);
                 }
-            }, this));
+            }).catch(() => {
+                this.setIndexAvailable();
+            });
         },
 
         afterAction: function(action, params) {
@@ -3627,47 +3703,76 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Update the count text
             // -------------------------------------------------------------
 
-            this.$countContainer.html('');
+            if (this.$countContainer.length) {
+                this.$countSpinner.removeClass('hidden');
+                this.$countContainer.html('');
 
-            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
-                this.$countContainer.text(response.countLabel);
-            } else {
-                var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
-                var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+                this._countResults()
+                    .then((total) => {
+                        this.$countSpinner.addClass('hidden');
 
-                var $prevBtn = $('<div/>', {
-                    'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
-                    'data-icon': 'leftangle',
-                    title: Craft.t('app', 'Previous Page')
-                }).appendTo($paginationContainer);
-                var $nextBtn = $('<div/>', {
-                    'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
-                    'data-icon': 'rightangle',
-                    title: Craft.t('app', 'Next Page')
-                }).appendTo($paginationContainer);
+                        let itemLabel = Craft.elementTypeNames[this.elementType] ? Craft.elementTypeNames[this.elementType][2] : 'element';
+                        let itemsLabel = Craft.elementTypeNames[this.elementType] ? Craft.elementTypeNames[this.elementType][3] : 'elements';
 
-                $('<div/>', {
-                    'class': 'page-info',
-                    text: response.countLabel
-                }).appendTo($paginationContainer);
+                        if (!this._isViewPaginated()) {
+                            let countLabel = Craft.t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', {
+                                total: total,
+                                item: itemLabel,
+                                items: itemsLabel,
+                            });
+                            this.$countContainer.text(countLabel);
+                        } else {
+                            let first = Math.min(this.settings.batchSize * (this.page - 1) + 1, total);
+                            let last = Math.min(first + (this.settings.batchSize - 1), total);
+                            let countLabel = Craft.t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', {
+                                first: first,
+                                last: last,
+                                total: total,
+                                item: itemLabel,
+                                items: itemsLabel,
+                            });
 
-                if (this.page > 1) {
-                    this.addListener($prevBtn, 'click', function() {
-                        this.removeListener($prevBtn, 'click');
-                        this.removeListener($nextBtn, 'click');
-                        this.setPage(this.page - 1);
-                        this.updateElements(true);
+                            let $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
+                            let totalPages = Math.max(Math.ceil(total / this.settings.batchSize), 1);
+
+                            let $prevBtn = $('<div/>', {
+                                'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
+                                'data-icon': 'leftangle',
+                                title: Craft.t('app', 'Previous Page')
+                            }).appendTo($paginationContainer);
+                            let $nextBtn = $('<div/>', {
+                                'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
+                                'data-icon': 'rightangle',
+                                title: Craft.t('app', 'Next Page')
+                            }).appendTo($paginationContainer);
+
+                            $('<div/>', {
+                                'class': 'page-info',
+                                text: countLabel
+                            }).appendTo($paginationContainer);
+
+                            if (this.page > 1) {
+                                this.addListener($prevBtn, 'click', function() {
+                                    this.removeListener($prevBtn, 'click');
+                                    this.removeListener($nextBtn, 'click');
+                                    this.setPage(this.page - 1);
+                                    this.updateElements(true);
+                                });
+                            }
+
+                            if (this.page < totalPages) {
+                                this.addListener($nextBtn, 'click', function() {
+                                    this.removeListener($prevBtn, 'click');
+                                    this.removeListener($nextBtn, 'click');
+                                    this.setPage(this.page + 1);
+                                    this.updateElements(true);
+                                });
+                            }
+                        }
+                    })
+                    .catch(() => {
+                        this.$countSpinner.addClass('hidden');
                     });
-                }
-
-                if (this.page < totalPages) {
-                    this.addListener($nextBtn, 'click', function() {
-                        this.removeListener($prevBtn, 'click');
-                        this.removeListener($nextBtn, 'click');
-                        this.setPage(this.page + 1);
-                        this.updateElements(true);
-                    });
-                }
             }
 
             // Update the view with the new container + elements HTML
@@ -3764,6 +3869,36 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.onUpdateElements();
+        },
+
+        _countResults: function() {
+            return new Promise((resolve, reject) => {
+                if (this.totalResults !== null) {
+                    resolve(this.totalResults);
+                } else {
+                    var params = this.getViewParams();
+                    delete params.criteria.offset;
+                    delete params.criteria.limit;
+
+                    // Make sure we've got an active result set ID
+                    if (this.resultSet === null) {
+                        this.resultSet = Math.floor(Math.random() * 100000000);
+                    }
+                    params.resultSet = this.resultSet;
+
+                    Craft.sendActionRequest('POST', this.settings.countElementsAction, {
+                        data: params,
+                        cancelToken: this._createCancelToken(),
+                    }).then((response) => {
+                        if (response.data.resultSet == this.resultSet) {
+                            this.totalResults = response.data.count;
+                            resolve(response.data.count);
+                        } else {
+                            reject();
+                        }
+                    }).catch(reject);
+                }
+            });
         },
 
         _createTriggers: function() {
@@ -3930,7 +4065,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     .catch(function() {
                         submitting = false;
                         $spinner.addClass('hidden');
-                        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                        if (!this._ignoreFailedRequest) {
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                        }
                     });
             });
         },
@@ -3968,6 +4105,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             toolbarSelector: '.toolbar:first',
             refreshSourcesAction: 'element-indexes/get-source-tree-html',
             updateElementsAction: 'element-indexes/get-elements',
+            countElementsAction: 'element-indexes/count-elements',
             submitActionsAction: 'element-indexes/perform-action',
             defaultSiteId: null,
             defaultSource: null,

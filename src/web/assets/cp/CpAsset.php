@@ -8,6 +8,7 @@
 namespace craft\web\assets\cp;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
@@ -239,8 +240,10 @@ JS;
             'week',
             'weeks',
             '{ctrl}C to copy.',
+            '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
+            '{total, number} {total, plural, =1{{item}} other{{items}}}',
             '“{name}” deleted.',
         ]);
     }
@@ -256,6 +259,18 @@ JS;
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
+        $view = Craft::$app->getView();
+
+        $elementTypeNames = [];
+        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var string|ElementInterface $elementType */
+            $elementTypeNames[$elementType] = [
+                $elementType::displayName(),
+                $elementType::pluralDisplayName(),
+                $elementType::lowerDisplayName(),
+                $elementType::pluralLowerDisplayName(),
+            ];
+        }
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
@@ -271,10 +286,12 @@ JS;
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],
-            'deltaNames' => Craft::$app->getView()->getDeltaNames(),
+            'deltaNames' => $view->getDeltaNames(),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
+            'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
+            'initialDeltaValues' => $view->getInitialDeltaValue(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,

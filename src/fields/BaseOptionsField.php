@@ -11,9 +11,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
+use craft\gql\arguments\OptionField as OptionFieldArguments;
+use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -303,6 +306,30 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     * @since 3.4.6
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        // foo => *"foo"*
+        if ($this->multi) {
+            if (is_string($value)) {
+                if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
+                    $value = "{$match[1]}*\"{$match[2]}\"*";
+                }
+            } else if (is_array($value)) {
+                foreach ($value as &$v) {
+                    if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
+                        $v = "{$match[1]}*\"{$match[2]}\"*";
+                    }
+                }
+            }
+        }
+
+        return parent::modifyElementsQuery($query, $value);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getElementValidationRules(): array
     {
@@ -373,11 +400,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getContentGqlType()
     {
-        if (!$this->multi) {
-            return parent::getContentGqlType();
-        }
-
-        return Type::listOf(Type::string());
+        return [
+            'name' => $this->handle,
+            'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
+            'args' => OptionFieldArguments::getArguments(),
+            'resolve' => OptionFieldResolver::class . '::resolve'
+        ];
     }
 
     /**

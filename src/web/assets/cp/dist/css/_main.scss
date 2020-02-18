@@ -1827,6 +1827,17 @@ $elementInnerSpacing: 5px;
     display: inline-block;
     padding: $baseElementSidePadding;
     border-radius: 17px;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    .label {
+      display: block;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
@@ -2265,7 +2276,6 @@ table.editable {
     tr {
       th {
         padding: 6px 10px;
-        white-space: nowrap;
       }
     }
   }
@@ -2341,6 +2351,7 @@ table.editable {
 
           pre {
             @include alignleft;
+            white-space: pre-wrap;
           }
         }
 
@@ -2415,6 +2426,7 @@ table.editable {
       background-color: transparent;
       overflow: hidden;
       transition: none;
+      box-sizing: border-box;
 
       &:focus {
         outline: none;
@@ -2764,6 +2776,7 @@ ul.tree,
 
     & > .heading {
       flex: 0 0 105px;
+      margin-top: 0;
       margin-bottom: 0;
       line-height: 18px;
     }
@@ -2858,7 +2871,7 @@ ul.tree,
           border-radius: 0;
           box-shadow: none;
           background-color: transparent;
-          border: none;
+          border: none !important;
         }
       }
 

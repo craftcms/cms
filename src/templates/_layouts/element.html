@@ -133,21 +133,25 @@
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
             <div id="save-btn-container" class="btngroup submit">
-                <input type="submit" class="btn submit" value="{{ 'Save'|t('app', { type: element.displayName() }) }}">
+                {{ tag('input', {
+                    type: 'submit',
+                    class: ['btn', 'submit'],
+                    value: isUnsavedDraft ? 'Create'|t('app') : 'Save'|t('app'),
+                }) }}
                 <div class="btn submit menubtn"></div>
                 <div class="menu" data-align="right">
                     <ul>
                         <li>
                             <a class="formsubmit" data-redirect="{{ '{cpEditUrl}'|hash }}">
                                 {{ forms.optionShortcutLabel('S') }}
-                                {{ "Save and continue editing"|t('app') }}
+                                {{ isUnsavedDraft ? 'Create and continue editing'|t('app') : 'Save and continue editing'|t('app') }}
                             </a>
                         </li>
                         {% if canUpdateSource %}
                             {% if canAddAnother and addAnotherRedirectUrl %}
                                 <li>
                                     <a class="formsubmit" data-redirect="{{ addAnotherRedirectUrl|hash }}">
-                                        {{ "Save and add another"|t('app') }}
+                                        {{ isUnsavedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app') }}
                                     </a>
                                 </li>
                             {% endif %}

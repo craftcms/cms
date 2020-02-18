@@ -455,7 +455,7 @@ class Sections extends Component
         ];
 
         if (!empty($section->previewTargets)) {
-            $configData['previewTargets'] = $section->previewTargets;
+            $configData['previewTargets'] = ProjectConfigHelper::packAssociativeArray($section->previewTargets);
         }
 
         if ($section->type === Section::TYPE_STRUCTURE) {
@@ -607,7 +607,9 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
-            $sectionRecord->previewTargets = $data['previewTargets'] ?? null;
+            $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
+                ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
+                : null;
 
             $isNewSection = $sectionRecord->getIsNewRecord();
 

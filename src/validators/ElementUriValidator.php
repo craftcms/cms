@@ -56,8 +56,11 @@ class ElementUriValidator extends UriValidator
         try {
             ElementHelper::setUniqueUri($model);
         } catch (OperationAbortedException $e) {
-            $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
-            return;
+            // Not a big deal if the element isn't enabled yet
+            if ($model->enabled && $model->enabledForSite) {
+                $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
+                return;
+            }
         }
 
         if (!$this->isEmpty($model->uri)) {

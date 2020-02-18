@@ -411,7 +411,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         return [
             'label' => $this->name,
-            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle,
+            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle . ', elements.id',
             'attribute' => 'field:' . $this->id,
         ];
     }
