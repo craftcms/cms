@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
@@ -301,6 +302,30 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return parent::serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.6
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        // foo => *"foo"*
+        if ($this->multi) {
+            if (is_string($value)) {
+                if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
+                    $value = "{$match[1]}*\"{$match[2]}\"*";
+                }
+            } else if (is_array($value)) {
+                foreach ($value as &$v) {
+                    if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
+                        $v = "{$match[1]}*\"{$match[2]}\"*";
+                    }
+                }
+            }
+        }
+
+        return parent::modifyElementsQuery($query, $value);
     }
 
     /**
