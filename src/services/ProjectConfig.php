@@ -605,6 +605,9 @@ class ProjectConfig extends Component
 
         foreach ($changes as $changeType) {
             if (!empty($changeType)) {
+                // Clear the cached config, just in case it conflicts with what we've got here
+                Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+                $this->_loadedConfig = null;
                 return true;
             }
         }
