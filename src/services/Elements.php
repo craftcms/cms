@@ -2154,6 +2154,8 @@ class Elements extends Component
             throw $e;
         }
 
+        $isDraftOrRevision = ElementHelper::isDraftOrRevision($element);
+
         if (!$element->propagating) {
             // Delete the rows that don't need to be there anymore
             if (!$isNewElement) {
@@ -2178,24 +2180,24 @@ class Elements extends Component
                 }
             }
 
-            if (!ElementHelper::isDraftOrRevision($element)) {
-                // Update search index
-                if ($updateSearchIndex) {
-                    if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                        Craft::$app->getSearch()->indexElementAttributes($element);
-                    } else {
-                        Craft::$app->getQueue()->push(new UpdateSearchIndex([
-                            'elementType' => get_class($element),
-                            'elementId' => $element->id,
-                            'siteId' => $propagate ? '*' : $element->siteId,
-                            'fieldHandles' => $element->getDirtyFields(),
-                        ]));
-                    }
-                }
-
+            if (!$isDraftOrRevision) {
                 // Delete any caches involving this element. (Even do this for new elements, since they
                 // might pop up in a cached criteria.)
                 Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+            }
+        }
+
+        // Update search index
+        if ($updateSearchIndex && !$isDraftOrRevision) {
+            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                Craft::$app->getSearch()->indexElementAttributes($element);
+            } else {
+                Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                    'elementType' => get_class($element),
+                    'elementId' => $element->id,
+                    'siteId' => $propagate ? '*' : $element->siteId,
+                    'fieldHandles' => $element->getDirtyFields(),
+                ]));
             }
         }
 
