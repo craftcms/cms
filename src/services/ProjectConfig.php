@@ -526,6 +526,9 @@ class ProjectConfig extends Component
 
         $this->_applyChanges($changes);
 
+        // Kill the cached config data
+        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+
         $mutex->release($lockName);
     }
 
