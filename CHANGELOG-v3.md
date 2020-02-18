@@ -183,7 +183,7 @@
 
 > {warning} There have been some changes in behavior that plugin developers should be aware of! See [Updating Plugins for Craft 3.4](https://craftcms.com/guides/updating-plugins-for-craft-34) for details.
 
-> {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal after updating.
+> {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal **after** you’ve finished updating.
 >
 > ```bash
 > > ./craft resave/entries --update-search-index
