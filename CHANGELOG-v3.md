@@ -21,7 +21,7 @@
 - The Edit Entry page now has a “Create” button rather than “Save”, if the entry has never been fully saved. ([#5661](https://github.com/craftcms/cms/issues/5661))
 - Assets, categories, entries, and users can now be sorted by their IDs in the control panel.
 - Element URIs are now longer required to be unique for disabled elements.
-- Duplicated elements are now automatically saved as disabled, if a unique URI cannot be generated for them.
+- Duplicated elements are now automatically saved as disabled, if a unique URI cannot be generated for them. ([#5510](https://github.com/craftcms/cms/issues/5510))
 - It’s now possible to query for elements by their Checkboxes/Multi-select field values using a simplified query param syntax. ([#5639](https://github.com/craftcms/cms/issues/5639))
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
