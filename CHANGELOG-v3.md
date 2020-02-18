@@ -18,6 +18,7 @@
 - Improved the performance of element queries on single-site installs.
 - Improved the performance of loading the stored project config data. ([#5630](https://github.com/craftcms/cms/issues/5630))
 - Relational fields’ element selection modals now default to the source element’s site. ([#5643](https://github.com/craftcms/cms/issues/5643))
+- The Edit Entry page now has a “Create” button rather than “Save”, if the entry has never been fully saved. ([#5661](https://github.com/craftcms/cms/issues/5661))
 - Assets, categories, entries, and users can now be sorted by their IDs in the control panel.
 - Element URIs are now longer required to be unique for disabled elements.
 - Duplicated elements are now automatically saved as disabled, if a unique URI cannot be generated for them.
