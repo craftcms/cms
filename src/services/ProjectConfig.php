@@ -1348,7 +1348,7 @@ class ProjectConfig extends Component
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configData['dateModified'], $currentConfig['dateModified'], $configData['imports'], $currentConfig['imports']);
+        unset($configData['imports'], $currentConfig['imports']);
 
         // flatten both configs so we can compare them.
         ProjectConfigHelper::flattenConfigArray($configData, '', $flatConfig);
