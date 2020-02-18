@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.6 - 2020-02-18
 
 ### Added
 - Added `craft\controllers\ElementIndexesController::actionCountElements()`.
