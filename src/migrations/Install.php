@@ -16,6 +16,7 @@ use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -1179,6 +1180,7 @@ class Install extends Migration
         $siteGroupUid = StringHelper::UUID();
 
         return [
+            'dateModified' => DateTimeHelper::currentTimeStamp(),
             'fieldGroups' => [
                 StringHelper::UUID() => [
                     'name' => 'Common',
