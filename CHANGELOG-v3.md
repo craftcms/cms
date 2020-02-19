@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed an error that could occur in some cases when updating Craft from a previous 3.4.x version.
 - Fixed an error where the `dateModified` key would be missing from the project config when installing from scratch.
+- Fixed a bug where it was impossible to use GraphQL variables in sub-queries. ([#5645](https://github.com/craftcms/cms/issues/5645))
 
 ## 3.4.6.1 - 2020-02-18
 
