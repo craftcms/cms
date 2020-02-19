@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Fixed
+### Fixed
 - Fixed an error that could occur in some cases when updating Craft from a previous 3.4.x version.
 - Fixed an error where the `dateModified` key would be missing from the project config when installing from scratch.
 
