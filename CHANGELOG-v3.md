@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.7.1 - 2020-02-20
 
 ### Fixed
 - Fixed an error that could occur on the Dashboard if there was a Quick Post widget that contained a Matrix field which contained an Assets field.
