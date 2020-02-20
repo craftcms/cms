@@ -749,7 +749,7 @@ $.extend(Craft,
             return params.join('&');
         },
 
-        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValue) {
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValues) {
             var grouped = {};
 
             if (withRoot) {
@@ -769,21 +769,22 @@ $.extend(Craft,
                         if (typeof grouped[deltaNames[n]] === 'undefined') {
                             grouped[deltaNames[n]] = [];
                         }
-                        if (
-                            useInitialValue &&
-                            paramName === deltaNames[n] + '=' &&
-                            typeof Craft.initialDeltaValues[deltaNames[n]] !== 'undefined'
-                        ) {
-                            grouped[deltaNames[n]].push(encodeURIComponent(deltaNames[n]) + '=' + $.param(Craft.initialDeltaValues[deltaNames[n]]));
-                        } else {
-                            grouped[deltaNames[n]].push(params[p]);
-                        }
+                        grouped[deltaNames[n]].push(params[p]);
                         continue paramLoop;
                     }
                 }
 
                 if (withRoot) {
                     grouped.__root__.push(params[p]);
+                }
+            }
+
+            if (useInitialValues) {
+                debugger;
+                for (let name in Craft.initialDeltaValues) {
+                    if (Craft.initialDeltaValues.hasOwnProperty(name)) {
+                        grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
+                    }
                 }
             }
 

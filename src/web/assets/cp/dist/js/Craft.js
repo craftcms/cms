@@ -802,7 +802,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       return params.join('&');
     },
-    _groupParamsByDeltaNames: function _groupParamsByDeltaNames(params, deltaNames, withRoot, useInitialValue) {
+    _groupParamsByDeltaNames: function _groupParamsByDeltaNames(params, deltaNames, withRoot, useInitialValues) {
       var grouped = {};
 
       if (withRoot) {
@@ -821,18 +821,23 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               grouped[deltaNames[n]] = [];
             }
 
-            if (useInitialValue && paramName === deltaNames[n] + '=' && typeof Craft.initialDeltaValues[deltaNames[n]] !== 'undefined') {
-              grouped[deltaNames[n]].push(encodeURIComponent(deltaNames[n]) + '=' + $.param(Craft.initialDeltaValues[deltaNames[n]]));
-            } else {
-              grouped[deltaNames[n]].push(params[p]);
-            }
-
+            grouped[deltaNames[n]].push(params[p]);
             continue paramLoop;
           }
         }
 
         if (withRoot) {
           grouped.__root__.push(params[p]);
+        }
+      }
+
+      if (useInitialValues) {
+        debugger;
+
+        for (var name in Craft.initialDeltaValues) {
+          if (Craft.initialDeltaValues.hasOwnProperty(name)) {
+            grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
+          }
         }
       }
 

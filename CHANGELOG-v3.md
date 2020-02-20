@@ -17,6 +17,7 @@
 - Fixed a bug where element queries could return duplicate results on single-site installs that had a soft-deleted site. ([#5678](https://github.com/craftcms/cms/issues/5678))
 - Fixed an error that could occur during garbage collection if any unsaved entry drafts were missing their row in the `entries` table. ([#5684](https://github.com/craftcms/cms/issues/5684))
 - Fixed JavaScript errors that occurred in Safari 9 and 10. ([#5671](https://github.com/craftcms/cms/issues/5671))
+- Fixed a bug where some fields’ default values weren’t getting saved when creating new entries. ([#5455](https://github.com/craftcms/cms/issues/5455))
 
 ## 3.4.6.1 - 2020-02-18
 
