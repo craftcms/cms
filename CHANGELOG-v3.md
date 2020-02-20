@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event can now modify the query variables and the operation name.
+
 ### Fixed
 - Fixed an error that could occur in some cases when updating Craft from a previous 3.4.x version.
 - Fixed an error where the `dateModified` key would be missing from the project config when installing from scratch.
