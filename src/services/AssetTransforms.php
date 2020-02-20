@@ -860,11 +860,7 @@ class AssetTransforms extends Component
      */
     public function getUrlForTransformByAssetAndTransformIndex(Asset $asset, AssetTransformIndex $transformIndexModel): string
     {
-        $volume = $asset->getVolume();
-        $baseUrl = $volume->getRootUrl();
-        $appendix = AssetsHelper::urlAppendix($volume, $asset);
-
-        return $baseUrl . $asset->getFolder()->path . $this->getTransformUri($asset, $transformIndexModel) . $appendix;
+        return AssetsHelper::generateUrl($asset->getVolume(), $asset, $this->getTransformUri($asset, $transformIndexModel));
     }
 
     /**
