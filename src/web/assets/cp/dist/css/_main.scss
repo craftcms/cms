@@ -1827,17 +1827,7 @@ $elementInnerSpacing: 5px;
     display: inline-block;
     padding: $baseElementSidePadding;
     border-radius: 17px;
-    max-width: 100%;
     box-sizing: border-box;
-
-    .label {
-      display: block;
-      max-width: 100%;
-      box-sizing: border-box;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
@@ -2252,6 +2242,19 @@ $checkboxPadding: $checkboxSize + 4;
 
   .element {
     z-index: 1;
+
+    &.small {
+      max-width: 100%;
+
+      .label {
+        display: block;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
   .caboose {
