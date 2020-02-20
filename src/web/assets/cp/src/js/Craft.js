@@ -51,7 +51,7 @@ $.extend(Craft,
             if ((start = pos = chars.indexOf('{')) === -1) {
                 return [pattern];
             }
-            tokens = [chars.slice(0, pos).join('')];
+            let tokens = [chars.slice(0, pos).join('')];
             while (true) {
                 let open = chars.indexOf('{', pos + 1);
                 let close = chars.indexOf('}', pos + 1);
@@ -128,7 +128,7 @@ $.extend(Craft,
                     if (typeof token[2] === 'undefined') {
                         return false;
                     }
-                    plural = this._tokenizePattern(token[2]);
+                    let plural = this._tokenizePattern(token[2]);
                     const c = plural.length;
                     let message = false;
                     let offset = 0;
