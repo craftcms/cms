@@ -357,13 +357,13 @@ class Gql extends Component
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
 
         if ($event->result === null) {
-            $cacheKey = $this->_getCacheKey($schema, $query, $event->rootValue, $event->context, $variables, $operationName);
+            $cacheKey = $this->_getCacheKey($schema, $query, $event->rootValue, $event->context, $event->variables, $event->operationName);
 
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey))) {
                 $event->result = $cachedResult;
             } else {
                 $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
-                $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $variables, $operationName, null, $this->getValidationRules($debugMode))->toArray(true);
+                $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $event->variables, $event->operationName, null, $this->getValidationRules($debugMode))->toArray(true);
 
                 if (empty($event->result['errors']) && $cacheKey) {
                     $this->setCachedResult($cacheKey, $event->result);

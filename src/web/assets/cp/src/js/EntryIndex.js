@@ -160,7 +160,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
                 var uri = 'entries/' + section.handle + '/new';
-                params = {};
+                let params = {};
                 if (this.siteId) {
                     for (var i = 0; i < Craft.sites.length; i++) {
                         if (Craft.sites[i].id == this.siteId) {

@@ -1345,16 +1345,18 @@ class ProjectConfig extends Component
         $newItems = [];
         $changedItems = [];
 
+        $currentConfig = $this->_getLoadedConfig() ?? [];
+
         if ($configData === null) {
             $configData = $this->_getConfigurationFromYaml() ?? [];
+            unset($configData['dateModified'], $currentConfig['dateModified']);
         }
 
-        $currentConfig = $this->_getLoadedConfig() ?? [];
+        unset($configData['imports'], $currentConfig['imports']);
 
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configData['imports'], $currentConfig['imports']);
 
         // flatten both configs so we can compare them.
         ProjectConfigHelper::flattenConfigArray($configData, '', $flatConfig);

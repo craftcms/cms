@@ -680,8 +680,7 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 .element.sel.loading:after, li.sel .element.loading:after { background-image: url(../images/spinner_element.gif); }
 .element.hasthumb .elementthumb img { display: block; width: 100%; height: 100%; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
 .element .label { display: inline-block; }
-.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; max-width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; }
-.element.small .label, .element.large:not(.hasthumb) .label { display: block; max-width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 body.ltr .element.small.hasstatus, body.ltr .element.large:not(.hasthumb).hasstatus { padding-left: 22px; }
 body.rtl .element.small.hasstatus, body.rtl .element.large:not(.hasthumb).hasstatus { padding-right: 22px; }
 .element.small.hasstatus .status, .element.large:not(.hasthumb).hasstatus .status { position: absolute; top: calc(50% - 5px); }
@@ -819,6 +818,8 @@ body.ltr .elementselect .element, body.ltr .elementselect .btn { margin: 7px 7px
 body.rtl .elementselect .element, body.rtl .elementselect .btn { margin: 7px 0 0 7px ; }
 .elementselect .element.small, .elementselect .btn { clear: both; }
 .elementselect .element { z-index: 1; }
+.elementselect .element.small { max-width: 100%; }
+.elementselect .element.small .label { display: block; max-width: 100%; -webkit-box-sizing: border-box; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 body.ltr .elementselect .caboose { float: left; }
 body.rtl .elementselect .caboose { float: right; }
 
@@ -1649,10 +1650,12 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 /* Matrix fields */
 .matrix > .buttons { margin-top: 10px; }
 
-.matrixblock { position: relative; margin-bottom: 10px; padding: 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
-.matrixblock > .titlebar { margin: -14px -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; background-color: #f3f7fc; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 5px; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; outline: none; }
+.matrixblock.static { padding-top: 14px; }
+.matrixblock > .titlebar { margin: 0 -14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; color: #9aa5b1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; position: relative; }
 body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 35px ; }
 body.rtl .matrixblock > .titlebar { padding: 5px 35px 5px 70px ; }
+.matrixblock > .titlebar:after { display: block; content: ''; position: absolute; bottom: -1px; left: 14px; width: calc(100% - 28px); height: 1px; background-color: rgba(51, 64, 77, 0.1); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: #7b8793; }
 .matrixblock > .titlebar > .preview { display: inline; opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 body.ltr .matrixblock > .titlebar > .preview { margin-left: 7px; }
@@ -1671,17 +1674,17 @@ body.rtl .matrixblock.disabled > .actions > .status.off { margin: 6px 0 0 10px ;
 .matrixblock > .checkbox { position: absolute; top: 7px; }
 body.ltr .matrixblock > .checkbox { left: 14px; }
 body.rtl .matrixblock > .checkbox { right: 14px; }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
-body.ltr .matrixblock > .actions { right: 5px; }
-body.rtl .matrixblock > .actions { left: 5px; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; }
+body.ltr .matrixblock > .actions { right: 14px; }
+body.rtl .matrixblock > .actions { left: 14px; }
 .matrixblock > .actions > .status.off { display: none; }
-.matrixblock > .actions a { padding: 0; width: 15px; height: 20px; text-align: center; color: rgba(123, 135, 147, 0.5); }
+.matrixblock > .actions a { padding: 0 !important; width: 15px; height: 20px; text-align: center; color: rgba(123, 135, 147, 0.5); }
 body.ltr .matrixblock > .actions a { margin-right: 2px; }
 body.rtl .matrixblock > .actions a { margin-left: 2px; }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: #0B69A3; }
 body.ltr .matrixblock > .actions a.settings:after { margin-left: 3px; }
 body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
-.matrixblock:hover > .actions, .matrixblock.active > .actions, .matrixblock.draghelper > .actions { opacity: 1; }
+.matrixblock:not(.static) > .fields { border-top: 1px solid rgba(51, 64, 77, 0.1); padding-top: 14px; }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 

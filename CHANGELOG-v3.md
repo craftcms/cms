@@ -1,5 +1,24 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.7 - 2020-02-20
+
+### Added
+- Plugins can now modify GraphQL query variables and the operation name using the `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event.
+
+### Changed
+- Improved the look of Matrix fields. ([#5652](https://github.com/craftcms/cms/issues/5652))
+
+### Fixed
+- Fixed an error that could occur in some cases when updating Craft from a previous 3.4.x version.
+- Fixed an error where the `dateModified` key would be missing from the project config when installing from scratch.
+- Fixed a bug where it wasn’t possible to use GraphQL variables in sub-queries. ([#5645](https://github.com/craftcms/cms/issues/5645))
+- Fixed a bug where scalar database queries weren’t reverting the query’s `select`, `orderBy`, `limit`, and `offset` params back to their original values if an exception was thrown. ([#5690](https://github.com/craftcms/cms/issues/5690))
+- Fixed a bug where element titles within table views weren’t wrapping. ([#5681](https://github.com/craftcms/cms/issues/5681))
+- Fixed a bug where element queries could return duplicate results on single-site installs that had a soft-deleted site. ([#5678](https://github.com/craftcms/cms/issues/5678))
+- Fixed an error that could occur during garbage collection if any unsaved entry drafts were missing their row in the `entries` table. ([#5684](https://github.com/craftcms/cms/issues/5684))
+- Fixed JavaScript errors that occurred in Safari 9 and 10. ([#5671](https://github.com/craftcms/cms/issues/5671))
+- Fixed a bug where some fields’ default values weren’t getting saved when creating new entries. ([#5455](https://github.com/craftcms/cms/issues/5455))
+
 ## 3.4.6.1 - 2020-02-18
 
 ### Fixed

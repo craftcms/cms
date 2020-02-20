@@ -117,7 +117,7 @@ abstract class Resolver
          * @param null $parentField the current parent field, that we are in.
          * @return array
          */
-        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments, $eagerLoadableFieldsByContext) {
+        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments, $eagerLoadableFieldsByContext, $resolveInfo) {
             $eagerLoadNodes = [];
             $subNodes = $parentNode->selectionSet->selections ?? [];
 
@@ -146,7 +146,7 @@ abstract class Resolver
 
                                 $arguments[$argumentNode->name->value] = $values;
                             } else {
-                                $arguments[$argumentNode->name->value] = $argumentNode->value->value ?? null;
+                                $arguments[$argumentNode->name->value] = $argumentNode->value->kind === 'Variable' ? $resolveInfo->variableValues[$argumentNode->value->name->value] : ($argumentNode->value->value ?? null);
                             }
                         }
 

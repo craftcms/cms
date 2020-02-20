@@ -1827,17 +1827,7 @@ $elementInnerSpacing: 5px;
     display: inline-block;
     padding: $baseElementSidePadding;
     border-radius: 17px;
-    max-width: 100%;
     box-sizing: border-box;
-
-    .label {
-      display: block;
-      max-width: 100%;
-      box-sizing: border-box;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
@@ -2252,6 +2242,19 @@ $checkboxPadding: $checkboxSize + 4;
 
   .element {
     z-index: 1;
+
+    &.small {
+      max-width: 100%;
+
+      .label {
+        display: block;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
   .caboose {
@@ -4764,19 +4767,22 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
-  padding: 14px;
+  padding: 0 14px 14px;
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
   outline: none;
 
+  &.static {
+    padding-top: 14px;
+  }
+
   & > .titlebar {
-    margin: -14px -14px 14px;
+    margin: 0 -14px;
     width: calc(100% + 28px);
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 35px);
-    background-color: $grey050;
     color: $lightTextColor;
     overflow: hidden;
     white-space: nowrap;
@@ -4784,6 +4790,18 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     word-wrap: normal;
     cursor: default;
     user-select: none;
+    position: relative;
+
+    &:after {
+      display: block;
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 14px;
+      width: calc(100% - 28px);
+      height: 1px;
+      background-color: $hairlineColor;
+    }
 
     & > .blocktype {
       display: inline;
@@ -4841,10 +4859,8 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     position: absolute;
     z-index: 1;
     top: 4px;
-    @include right(5px);
+    @include right(14px);
     cursor: default;
-    opacity: 0;
-    transition: opacity linear 100ms;
 
     & > .status {
       &.off {
@@ -4853,7 +4869,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     }
 
     a {
-      padding: 0;
+      padding: 0 !important;
       @include margin-right(2px);
       width: 15px;
       height: 20px;
@@ -4873,11 +4889,10 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     }
   }
 
-  &:hover,
-  &.active,
-  &.draghelper {
-    & > .actions {
-      opacity: 1;
+  &:not(.static) {
+    & > .fields {
+      border-top: 1px solid $hairlineColor;
+      padding-top: 14px;
     }
   }
 

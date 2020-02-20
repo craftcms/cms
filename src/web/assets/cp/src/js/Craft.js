@@ -51,7 +51,7 @@ $.extend(Craft,
             if ((start = pos = chars.indexOf('{')) === -1) {
                 return [pattern];
             }
-            tokens = [chars.slice(0, pos).join('')];
+            let tokens = [chars.slice(0, pos).join('')];
             while (true) {
                 let open = chars.indexOf('{', pos + 1);
                 let close = chars.indexOf('}', pos + 1);
@@ -128,7 +128,7 @@ $.extend(Craft,
                     if (typeof token[2] === 'undefined') {
                         return false;
                     }
-                    plural = this._tokenizePattern(token[2]);
+                    let plural = this._tokenizePattern(token[2]);
                     const c = plural.length;
                     let message = false;
                     let offset = 0;
@@ -749,7 +749,7 @@ $.extend(Craft,
             return params.join('&');
         },
 
-        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValue) {
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValues) {
             var grouped = {};
 
             if (withRoot) {
@@ -769,21 +769,22 @@ $.extend(Craft,
                         if (typeof grouped[deltaNames[n]] === 'undefined') {
                             grouped[deltaNames[n]] = [];
                         }
-                        if (
-                            useInitialValue &&
-                            paramName === deltaNames[n] + '=' &&
-                            typeof Craft.initialDeltaValues[deltaNames[n]] !== 'undefined'
-                        ) {
-                            grouped[deltaNames[n]].push(encodeURIComponent(deltaNames[n]) + '=' + $.param(Craft.initialDeltaValues[deltaNames[n]]));
-                        } else {
-                            grouped[deltaNames[n]].push(params[p]);
-                        }
+                        grouped[deltaNames[n]].push(params[p]);
                         continue paramLoop;
                     }
                 }
 
                 if (withRoot) {
                     grouped.__root__.push(params[p]);
+                }
+            }
+
+            if (useInitialValues) {
+                debugger;
+                for (let name in Craft.initialDeltaValues) {
+                    if (Craft.initialDeltaValues.hasOwnProperty(name)) {
+                        grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
+                    }
                 }
             }
 

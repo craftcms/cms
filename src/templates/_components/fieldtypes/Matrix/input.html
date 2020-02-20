@@ -11,8 +11,20 @@
                 {% set blockId = 'new'~totalNewBlocks %}
             {% endif %}
             {% set baseInputName = "#{name}[blocks][#{blockId}]" %}
+            {% set blockAttributes = {
+                class: [
+                    'matrixblock',
+                    not block.enabled ? 'disabled',
+                    static ? 'static',
+                ]|filter,
+                data: {
+                    id: blockId,
+                    type: block.getType().handle,
+                    collapsed: block.collapsed,
+                },
+            } %}
 
-            <div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %} data-type="{{ block.getType().handle }}">
+            <div {{ attr(blockAttributes) }}>
                 {% if not static %}
                     {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                     {# only register a delta name for this black if it's not new #}

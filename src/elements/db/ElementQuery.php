@@ -2061,7 +2061,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             'and',
             '[[content.elementId]] = [[elements.id]]',
         ];
-        if (Craft::$app->getIsMultiSite(false, false)) {
+        if (Craft::$app->getIsMultiSite(false, true)) {
             $joinCondition[] = '[[content.siteId]] = [[elements_sites.siteId]]';
         }
         $this->subQuery
@@ -2699,7 +2699,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (
             !$this->unique ||
-            !Craft::$app->getIsMultiSite(false, false) ||
+            !Craft::$app->getIsMultiSite(false, true) ||
             (
                 $this->siteId &&
                 $this->siteId !== '*' &&
