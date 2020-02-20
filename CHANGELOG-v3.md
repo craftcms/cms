@@ -2,13 +2,13 @@
 
 ## Unreleased
 
-### Changed
-- The `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event can now modify the query variables and the operation name.
+### Added
+- Plugins can now modify GraphQL query variables and the operation name using the `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event.
 
 ### Fixed
 - Fixed an error that could occur in some cases when updating Craft from a previous 3.4.x version.
 - Fixed an error where the `dateModified` key would be missing from the project config when installing from scratch.
-- Fixed a bug where it was impossible to use GraphQL variables in sub-queries. ([#5645](https://github.com/craftcms/cms/issues/5645))
+- Fixed a bug where it wasn’t possible to use GraphQL variables in sub-queries. ([#5645](https://github.com/craftcms/cms/issues/5645))
 - Fixed a bug where scalar database queries weren’t reverting the query’s `select`, `orderBy`, `limit`, and `offset` params back to their original values if an exception was thrown.
 - Fixed a bug where element titles within table views weren’t wrapping. ([#5681](https://github.com/craftcms/cms/issues/5681))
 
