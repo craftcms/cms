@@ -14,7 +14,7 @@
     {% set registerDeltas = isDeltaRegistrationActive and (registerDeltas ?? false) %}
     {% do view.setIsDeltaRegistrationActive(registerDeltas) %}
     {% do view.registerDeltaName(field.handle) %}
-    {% if not element or element.isFieldEmpty(field.handle) %}
+    {% if not element or not element.id or element.isFieldEmpty(field.handle) %}
         {% do view.setInitialDeltaValue(field.handle, null) %}
     {% endif %}
     {% set input = field.getInputHtml(value, element) %}
