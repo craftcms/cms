@@ -4,6 +4,11 @@
 
 ### Added
 - Added the `withTransforms` argument to asset GraphQL queries, which can be used to specify image transforms that should be eager-loaded.
+- Added `craft\controllers\AssetsController::asBrokenImage()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requirePeerVolumePermissionByAsset()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requireVolumePermission()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requireVolumePermissionByAsset()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requireVolumePermissionByFolder()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
 
 ### Changed
 - Craft now sends `X-Robots-Tag: none` headers back for all tokenized requests. ([#5698](https://github.com/craftcms/cms/issues/5698))

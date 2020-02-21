@@ -96,8 +96,8 @@ class AssetsController extends Controller
             }
         }
 
-        $this->_requirePermissionByAsset('viewVolume', $asset);
-        $this->_requirePeerPermissionByAsset('viewPeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByAsset('viewVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
 
         /** @var Volume $volume */
         $volume = $asset->getVolume();
@@ -224,8 +224,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
         }
 
-        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-        $this->_requirePeerPermissionByAsset('editPeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByAsset('saveAssetInVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerFilesInVolume', $asset);
 
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
@@ -324,7 +324,7 @@ class AssetsController extends Controller
             }
 
             // Check the permissions to upload in the resolved folder.
-            $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
+            $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
 
@@ -409,9 +409,9 @@ class AssetsController extends Controller
             throw new NotFoundHttpException('Asset not found.');
         }
 
-        $this->_requirePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
-        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace ?: $sourceAsset);
-        $this->_requirePeerPermissionByAsset('replacePeerFilesInVolume', $assetToReplace ?: $sourceAsset);
+        $this->requireVolumePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
+        $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace ?: $sourceAsset);
+        $this->requirePeerVolumePermissionByAsset('replacePeerFilesInVolume', $assetToReplace ?: $sourceAsset);
 
         try {
             // Handle the Element Action
@@ -492,7 +492,7 @@ class AssetsController extends Controller
 
         try {
             // Check if it's possible to create subfolders in target Volume.
-            $this->_requirePermissionByFolder('createFoldersInVolume', $parentFolder);
+            $this->requireVolumePermissionByFolder('createFoldersInVolume', $parentFolder);
 
             $folderModel = new VolumeFolder();
             $folderModel->name = $folderName;
@@ -535,7 +535,7 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
+        $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
         } catch (AssetException $exception) {
@@ -565,8 +565,8 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target Volume.
-        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-        $this->_requirePeerPermissionByAsset('deletePeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
 
         try {
             Craft::$app->getElements()->deleteElement($asset);
@@ -599,8 +599,8 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects and create folders in target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
-        $this->_requirePermissionByFolder('createFoldersInVolume', $folder);
+        $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
+        $this->requireVolumePermissionByFolder('createFoldersInVolume', $folder);
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId,
@@ -647,10 +647,10 @@ class AssetsController extends Controller
         $filename = $request->getBodyParam('filename', $asset->filename);
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
-        $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
-        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-        $this->_requirePeerPermissionByAsset('editPeerFilesInVolume', $asset);
-        $this->_requirePeerPermissionByAsset('deletePeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
+        $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerFilesInVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
 
         if ($request->getBodyParam('force')) {
             // Check for a conflicting Asset
@@ -716,9 +716,9 @@ class AssetsController extends Controller
 
         // Check if it's possible to delete objects in source Volume, create folders
         // in target Volume and save Assets in target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folderToMove);
-        $this->_requirePermissionByFolder('createFoldersInVolume', $destinationFolder);
-        $this->_requirePermissionByFolder('saveAssetInVolume', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folderToMove);
+        $this->requireVolumePermissionByFolder('createFoldersInVolume', $destinationFolder);
+        $this->requireVolumePermissionByFolder('saveAssetInVolume', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
@@ -889,8 +889,8 @@ class AssetsController extends Controller
 
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
-                $this->_requirePermissionByAsset('editImagesInVolume', $asset);
-                $this->_requirePeerPermissionByAsset('editPeerImagesInVolume', $asset);
+                $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
+                $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
             }
 
             // Verify parameter adequacy
@@ -1034,8 +1034,8 @@ class AssetsController extends Controller
         }
 
         foreach ($assets as $asset) {
-            $this->_requirePermissionByAsset('viewVolume', $asset);
-            $this->_requirePeerPermissionByAsset('viewPeerFilesInVolume', $asset);
+            $this->requireVolumePermissionByAsset('viewVolume', $asset);
+            $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
         }
 
         // If only one asset was selected, send it back unzipped
@@ -1096,13 +1096,16 @@ class AssetsController extends Controller
         $asset = Asset::find()->uid($uid)->one();
 
         if (!$asset) {
-            return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: ' . $uid));
+            $e = new NotFoundHttpException('Invalid asset UID: ' . $uid);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asBrokenImage($e);
         }
 
         try {
             $path = Craft::$app->getAssets()->getThumbPath($asset, $width, $height, true);
         } catch (\Throwable $e) {
-            return $this->_handleImageException($e);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asBrokenImage($e);
         }
 
         return Craft::$app->getResponse()
@@ -1196,14 +1199,14 @@ class AssetsController extends Controller
     }
 
     /**
-     * Handles an error when generating a thumb/transform.
+     * Sends a broken image response based on a given exception.
      *
-     * @param \Exception $e The exception that was thrown
+     * @param \Throwable|null $e The exception that was thrown
      * @return Response
+     * @since 3.4.8
      */
-    private function _handleImageException(\Exception $e): Response
+    protected function asBrokenImage(\Throwable $e = null): Response
     {
-        Craft::$app->getErrorHandler()->logException($e);
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
         return Craft::$app->getResponse()
             ->sendFile(Craft::getAlias('@app/icons/broken-image.svg'), 'nope.svg', [
@@ -1214,13 +1217,14 @@ class AssetsController extends Controller
     }
 
     /**
-     * Require an Assets permissions.
+     * Requires a volume permission by a given asset.
      *
-     * @param string $permissionName Name of the permission to require.
-     * @param Asset $asset Asset on the Volume on which to require the permission.
+     * @param string $permissionName The name of the permission to require (sans `:<volume-uid>` suffix)
+     * @param Asset $asset The asset whose volume should be checked
      * @throws ForbiddenHttpException
+     * @since 3.4.8
      */
-    private function _requirePermissionByAsset(string $permissionName, Asset $asset)
+    protected function requireVolumePermissionByAsset(string $permissionName, Asset $asset)
     {
         if (!$asset->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
@@ -1233,34 +1237,36 @@ class AssetsController extends Controller
 
         /** @var Volume $volume */
         $volume = $asset->getVolume();
-        $this->_requirePermissionByVolumeId($permissionName, $volume->uid);
+        $this->requireVolumePermission($permissionName, $volume->uid);
     }
 
     /**
-     * Require a peer volume permission, if an asset wasn't uploaded by the current user.
+     * Requires a volume permission by a given asset, only if it wasn't uploaded by the current user.
      *
-     * @param string $permissionName Name of the permission to require.
-     * @param Asset $asset Asset on the volume on which to require the permission.
+     * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
+     * @param Asset $asset The asset whose volume should be checked
      * @throws ForbiddenHttpException
+     * @since 3.4.8
      */
-    private function _requirePeerPermissionByAsset(string $permissionName, Asset $asset)
+    protected function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset)
     {
         if ($asset->volumeId) {
             $userId = Craft::$app->getUser()->getId();
             if ($asset->uploaderId != $userId) {
-                $this->_requirePermissionByAsset($permissionName, $asset);
+                $this->requireVolumePermissionByAsset($permissionName, $asset);
             }
         }
     }
 
     /**
-     * Require an Assets permissions.
+     * Requires a volume permission by a given folder.
      *
-     * @param string $permissionName Name of the permission to require.
-     * @param VolumeFolder $folder Folder on the Volume on which to require the permission.
+     * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
+     * @param VolumeFolder $folder The folder whose volume should be checked
      * @throws ForbiddenHttpException
+     * @since 3.4.8
      */
-    private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
+    protected function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
         if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
@@ -1273,17 +1279,18 @@ class AssetsController extends Controller
 
         /** @var Volume $volume */
         $volume = $folder->getVolume();
-        $this->_requirePermissionByVolumeId($permissionName, $volume->uid);
+        $this->requireVolumePermission($permissionName, $volume->uid);
     }
 
     /**
-     * Require an Assets permissions.
+     * Requires a volume permission by its UID.
      *
-     * @param string $permissionName Name of the permission to require.
-     * @param string $volumeUid The volume uid on which to require the permission.
+     * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
+     * @param string $volumeUid The volume’s UID
      * @throws ForbiddenHttpException
+     * @since 3.4.8
      */
-    private function _requirePermissionByVolumeId(string $permissionName, string $volumeUid)
+    protected function requireVolumePermission(string $permissionName, string $volumeUid)
     {
         $this->requirePermission($permissionName . ':' . $volumeUid);
     }
