@@ -5,6 +5,9 @@
 ### Added
 - Added the `withTransforms` argument to asset GraphQL queries, which can be used to specify image transforms that should be eager-loaded.
 
+### Changed
+- Craft now sends `X-Robots-Tag: none` headers back for all tokenized requests. ([#5698](https://github.com/craftcms/cms/issues/5698))
+
 ### Fixed
 - Fixed a bug where Craft could get itself in an unrecoverable state if a custom field’s handle *and* type were changed at the same time, but the new field type’s content column was incompatible with the existing field data.
 

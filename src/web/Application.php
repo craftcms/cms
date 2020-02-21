@@ -162,12 +162,13 @@ class Application extends \yii\web\Application
 
         $headers = $this->getResponse()->getHeaders();
 
-        if ($request->getIsCpRequest()) {
-            // Prevent robots from indexing/following the page
-            // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
+        // Tell bots not to index/follow CP and tokenized pages
+        if ($request->getIsCpRequest() || $request->getToken() !== null) {
             $headers->set('X-Robots-Tag', 'none');
+        }
 
-            // Prevent some possible XSS attack vectors
+        // Prevent some possible XSS attack vectors
+        if ($request->getIsCpRequest()) {
             $headers->set('X-Frame-Options', 'SAMEORIGIN');
             $headers->set('X-Content-Type-Options', 'nosniff');
         }
