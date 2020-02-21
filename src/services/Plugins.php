@@ -1164,7 +1164,11 @@ class Plugins extends Component
      */
     public function normalizePluginLicenseKey(string $licenseKey = null)
     {
-        if ($licenseKey === null || strpos($licenseKey, '$') === 0) {
+        if (empty($licenseKey)) {
+            return null;
+        }
+
+        if (strpos($licenseKey, '$') === 0) {
             return $licenseKey;
         }
 

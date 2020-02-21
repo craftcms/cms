@@ -65,6 +65,11 @@ class ExtractEagerLoadingParameterTest extends Unit
                         'context' => 'matrix',
                         'getEagerLoadingGqlConditions' => []
                     ]),
+                    $this->make(Entries::class, [
+                        'handle' => 'linkedEntriesThroughMatrix',
+                        'context' => 'global',
+                        'getEagerLoadingGqlConditions' => []
+                    ]),
                     $this->make(Assets::class, [
                         'handle' => 'image',
                         'context' => 'matrix',
@@ -152,6 +157,11 @@ class ExtractEagerLoadingParameterTest extends Unit
         ... on articleBody_linkedEntries_BlockType {
           entriesInMatrix (id: 80) {
             title
+            ... on articles_news_Entry {
+                linkedEntriesThroughMatrix (id: 99) {
+                    title
+                }
+            }
           }
         }
       }
@@ -170,6 +180,7 @@ GQL;
             'matrixField',
             ['matrixField.mockedBlockHandle:image', ['volumeId' => 2]],
             ['matrixField.mockedBlockHandle:entriesInMatrix', ['id' => 80]],
+            ['matrixField.mockedBlockHandle:entriesInMatrix.linkedEntriesThroughMatrix', ['id' => 99]],
             ['entryField', ['sectionId' => [5], 'typeId' => [2]]],
             ['assetField', ['volumeId' => [5]]],
         ];

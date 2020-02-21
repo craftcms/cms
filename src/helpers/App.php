@@ -273,8 +273,8 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, and gives
-     * the script an unlimited amount of time to execute.
+     * <config:phpMaxMemoryLimit> config setting, and gives the script an
+     * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain()
     {

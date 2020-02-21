@@ -67,6 +67,9 @@ class SearchHelperTest extends Unit
             // https://github.com/craftcms/cms/issues/5214
             ['a doggs tale', 'A Dogg’s Tale'],
             ['a doggs tale', 'A Dogg\'s Tale'],
+
+            // https://github.com/craftcms/cms/issues/5631
+            ['foo bar baz', '<p>Foo</p><p>Bar<br>Baz</p>'],
         ];
     }
 }

@@ -20,6 +20,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
+ * @deprecated in 3.4.4
  */
 class ExportController extends Controller
 {

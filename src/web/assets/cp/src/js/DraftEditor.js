@@ -303,7 +303,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             var hud = new Garnish.HUD(target, bodyHtml, {
                 onHide: function() {
                     hud.destroy();
-                    delete hud;
                 }
             });
         },

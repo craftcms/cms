@@ -77,6 +77,11 @@ class Asset extends ElementArguments
                 'type' => Type::boolean(),
                 'description' => 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.'
             ],
+            'withTransforms' => [
+                'name' => 'withTransforms',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'A list of transform handles to preload.'
+            ]
         ]);
     }
 
@@ -85,7 +90,7 @@ class Asset extends ElementArguments
      */
     public static function getContentArguments(): array
     {
-        $volumeFieldArguments = static::buildContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
+        $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
         return array_merge(parent::getContentArguments(), $volumeFieldArguments);
     }
 }

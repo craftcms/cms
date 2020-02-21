@@ -7,9 +7,8 @@
 
 namespace craft\gql\base;
 
-use craft\fields\Matrix;
+use Craft;
 use craft\gql\types\QueryArgument;
-use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -57,26 +56,10 @@ abstract class Arguments
      * @param array $contexts
      * @param string $elementClass
      * @return array
+     * @deprecated in 3.4.5. Use [[\craft\services\Gql::getContentArguments()]] instead.
      */
     protected static function buildContentArguments(array $contexts, string $elementClass)
     {
-        $contentArguments = [];
-
-        foreach ($contexts as $context) {
-            if (!Gql::isSchemaAwareOf($elementClass::gqlScopesByContext($context))) {
-                continue;
-            }
-
-            foreach ($context->getFields() as $contentField) {
-                if (!$contentField instanceof Matrix) {
-                    $contentArguments[$contentField->handle] = [
-                        'name' => $contentField->handle,
-                        'type' => Type::listOf(QueryArgument::getType()),
-                    ];
-                }
-            }
-        }
-
-        return $contentArguments;
+        return Craft::$app->getGql()->getContentArguments($contexts, $elementClass);
     }
 }

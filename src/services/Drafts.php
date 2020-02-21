@@ -433,10 +433,10 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * This method will check the
-     * [[\craft\config\GeneralConfig::purgeUnsavedDraftsDuration|purgeUnsavedDraftsDuration]] config
-     * setting, and if it is set to a valid duration, it will delete any sourceless drafts that were created that
-     * duration ago, and have still not been formally saved.
+     * This method will check the <config:purgeUnsavedDraftsDuration> config
+     * setting, and if it is set to a valid duration, it will delete any
+     * sourceless drafts that were created that duration ago, and have still not
+     * been formally saved.
      */
     public function purgeUnsavedDrafts()
     {
@@ -459,6 +459,7 @@ class Drafts extends Component
             ->all();
 
         $elementsService = Craft::$app->getElements();
+        $db = Craft::$app->getDb();
 
         foreach ($drafts as $draftInfo) {
             /** @var ElementInterface|string $elementType */
@@ -468,7 +469,18 @@ class Drafts extends Component
                 ->anyStatus()
                 ->siteId('*')
                 ->one();
-            $elementsService->deleteElement($draft, true);
+
+            if ($draft) {
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Perhaps the draft's row in the `entries` table was deleted manually or something.
+                // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
+                // still have rows for the draft.
+                $db->createCommand()
+                    ->delete(Table::DRAFTS, ['id' => $draftInfo['draftId']])
+                    ->execute();
+            }
+
             Craft::info("Just deleted unsaved draft ID {$draftInfo['draftId']}", __METHOD__);
         }
     }

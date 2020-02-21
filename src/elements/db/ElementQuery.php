@@ -66,12 +66,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @var bool
-     * @see _supportsRevisionParams()
-     */
-    private static $_supportsRevisionParams;
-
-    /**
      * Returns whether querying for drafts/revisions is supported yet.
      *
      * @return bool
@@ -79,12 +73,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private static function _supportsRevisionParams(): bool
     {
-        if (self::$_supportsRevisionParams !== null) {
-            return self::$_supportsRevisionParams;
-        }
-
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        return self::$_supportsRevisionParams = version_compare($schemaVersion, '3.2.6', '>=');
+        return Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'draftId');
     }
 
     /**
@@ -1344,7 +1333,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->limit($this->limit)
             ->addParams($this->params);
 
-        if ($this->siteId !== '*') {
+        if ($this->siteId !== '*' && Craft::$app->getIsMultiSite(false, true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
@@ -1938,13 +1927,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the fields that should take part in an upcoming elements query.
      *
-     * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
-     * their field types will each have an opportunity to help build the element query, and their columns in the content
-     * table will be selected by the query (for those that have one).
-     * If a field has its own column in the content table, but the column name is prefixed with something besides
-     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\base\Field]], so
-     * [[\craft\services\Elements::buildElementsQuery()]] knows which column to select.
-     *
      * @return FieldInterface[] The fields that should take part in the upcoming elements query
      */
     protected function customFields(): array
@@ -2075,12 +2057,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         /** @var ElementInterface|string $class */
         // Join in the content table on both queries
+        $joinCondition = [
+            'and',
+            '[[content.elementId]] = [[elements.id]]',
+        ];
+        if (Craft::$app->getIsMultiSite(false, true)) {
+            $joinCondition[] = '[[content.siteId]] = [[elements_sites.siteId]]';
+        }
         $this->subQuery
-            ->innerJoin($this->contentTable . ' content', [
-                'and',
-                '[[content.elementId]] = [[elements.id]]',
-                '[[content.siteId]] = [[elements_sites.siteId]]',
-            ])
+            ->innerJoin($this->contentTable . ' content', $joinCondition)
             ->addSelect(['contentId' => 'content.id']);
 
         $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
@@ -2712,11 +2697,15 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyUniqueParam(Connection $db)
     {
-        if (!$this->unique || (
+        if (
+            !$this->unique ||
+            !Craft::$app->getIsMultiSite(false, true) ||
+            (
                 $this->siteId &&
                 $this->siteId !== '*' &&
                 (!is_array($this->siteId) || count($this->siteId) === 1)
-            )) {
+            )
+        ) {
             return;
         }
 

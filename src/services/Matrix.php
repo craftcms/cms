@@ -699,7 +699,7 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
-     * @deprecated in 3.0.23. Use [[MatrixField::contentTableName]] instead.
+     * @deprecated in 3.0.23. Use [[MatrixField::$contentTable]] instead.
      */
     public function getContentTableName(MatrixField $matrixField)
     {

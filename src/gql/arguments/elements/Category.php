@@ -50,7 +50,7 @@ class Category extends StructureElementArguments
      */
     public static function getContentArguments(): array
     {
-        $categoryGroupFieldArguments = static::buildContentArguments(Craft::$app->getCategories()->getAllGroups(), CategoryElement::class);
+        $categoryGroupFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getCategories()->getAllGroups(), CategoryElement::class);
         return array_merge(parent::getContentArguments(), $categoryGroupFieldArguments);
     }
 }

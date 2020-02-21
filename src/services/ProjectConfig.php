@@ -28,11 +28,12 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
+use yii\caching\DbQueryDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
  * Project config service.
- * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
+ * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getProjectConfig()|`Craft::$app->projectConfig`]].
  *
  * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -43,7 +44,8 @@ class ProjectConfig extends Component
     // Cache settings
     // -------------------------------------------------------------------------
 
-    const CACHE_KEY = 'project.config.files';
+    const CACHE_KEY = 'projectConfig:files';
+    const STORED_CACHE_KEY = 'projectConfig:internal';
     const CACHE_DURATION = 2592000; // 30 days
 
     // Array key to use if not using config files.
@@ -524,6 +526,9 @@ class ProjectConfig extends Component
 
         $this->_applyChanges($changes);
 
+        // Kill the cached config data
+        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+
         $mutex->release($lockName);
     }
 
@@ -600,6 +605,9 @@ class ProjectConfig extends Component
 
         foreach ($changes as $changeType) {
             if (!empty($changeType)) {
+                // Clear the cached config, just in case it conflicts with what we've got here
+                Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+                $this->_loadedConfig = null;
                 return true;
             }
         }
@@ -1337,16 +1345,18 @@ class ProjectConfig extends Component
         $newItems = [];
         $changedItems = [];
 
+        $currentConfig = $this->_getLoadedConfig() ?? [];
+
         if ($configData === null) {
             $configData = $this->_getConfigurationFromYaml() ?? [];
+            unset($configData['dateModified'], $currentConfig['dateModified']);
         }
 
-        $currentConfig = $this->_getLoadedConfig() ?? [];
+        unset($configData['imports'], $currentConfig['imports']);
 
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configData['dateModified'], $currentConfig['dateModified'], $configData['imports'], $currentConfig['imports']);
 
         // flatten both configs so we can compare them.
         ProjectConfigHelper::flattenConfigArray($configData, '', $flatConfig);
@@ -1723,35 +1733,36 @@ class ProjectConfig extends Component
             return $data;
         }
 
-        $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
+        // See if we can get away with using the cached data
+        $dependency = new DbQueryDependency([
+            'db' => Craft::$app->getDb(),
+            'query' => $this->_createProjectConfigQuery()
+                ->select(['value'])
+                ->where(['path' => 'dateModified']),
+            'method' => 'scalar'
+        ]);
 
-        $current = &$data;
-
-        foreach ($rows as $path => $value) {
-            $current = &$data;
-            $segments = explode('.', $path);
-
-            foreach ($segments as $segment) {
-                // If we're still traversing, enforce array to avoid errors.
-                if (!is_array($current)) {
-                    $current = [];
+        return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
+            $data = [];
+            // Load the project config data
+            $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
+            foreach ($rows as $path => $value) {
+                $current = &$data;
+                $segments = explode('.', $path);
+                foreach ($segments as $segment) {
+                    // If we're still traversing, enforce array to avoid errors.
+                    if (!is_array($current)) {
+                        $current = [];
+                    }
+                    if (!array_key_exists($segment, $current)) {
+                        $current[$segment] = [];
+                    }
+                    $current = &$current[$segment];
                 }
-
-                if (!array_key_exists($segment, $current)) {
-                    $current[$segment] = [];
-                }
-
-                $current = &$current[$segment];
+                $current = Json::decode(StringHelper::decdec($value));
             }
-
-            $current = Json::decode(StringHelper::decdec($value));
-        }
-
-        if (is_array($data)) {
-            $data = ProjectConfigHelper::cleanupConfig($data);
-        }
-
-        return $data;
+            return ProjectConfigHelper::cleanupConfig($data);
+        }, null, $dependency);
     }
 
     /**

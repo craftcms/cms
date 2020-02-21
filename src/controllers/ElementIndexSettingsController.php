@@ -20,6 +20,20 @@ use yii\web\Response;
 class ElementIndexSettingsController extends BaseElementsController
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
+
+    /**
      * Returns all the info needed by the Customize Sources modal.
      *
      * @return Response

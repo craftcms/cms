@@ -96,7 +96,7 @@ class Entry extends StructureElementArguments
      */
     public static function getContentArguments(): array
     {
-        $entryTypeFieldArguments = static::buildContentArguments(Craft::$app->getSections()->getAllEntryTypes(), EntryElement::class);
+        $entryTypeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getSections()->getAllEntryTypes(), EntryElement::class);
 
         return array_merge(parent::getContentArguments(), $entryTypeFieldArguments);
     }

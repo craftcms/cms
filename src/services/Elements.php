@@ -210,14 +210,14 @@ class Elements extends Component
     const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
 
     /**
-     * @event ElementActionEvent The event that is triggered before an element action is performed.
+     * @event \craft\events\ElementActionEvent The event that is triggered before an element action is performed.
      *
-     * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     * You may set [[\craft\events\ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
 
     /**
-     * @event ElementActionEvent The event that is triggered after an element action is performed.
+     * @event \craft\events\ElementActionEvent The event that is triggered after an element action is performed.
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 
@@ -758,10 +758,15 @@ class Elements extends Component
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
-        // Validate, ignoring any URI errors
+        // Validate
         $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
         $mainClone->validate();
-        $mainClone->clearErrors('uri');
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($mainClone->hasErrors('uri') && $mainClone->enabled) {
+            $mainClone->enabled = false;
+            $mainClone->validate();
+        }
 
         if ($mainClone->hasErrors()) {
             throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
@@ -806,6 +811,7 @@ class Elements extends Component
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
                     $siteClone->uid = $mainClone->uid;
+                    $siteClone->enabled = $mainClone->enabled;
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = null;
 
@@ -2148,6 +2154,8 @@ class Elements extends Component
             throw $e;
         }
 
+        $isDraftOrRevision = ElementHelper::isDraftOrRevision($element);
+
         if (!$element->propagating) {
             // Delete the rows that don't need to be there anymore
             if (!$isNewElement) {
@@ -2172,24 +2180,24 @@ class Elements extends Component
                 }
             }
 
-            if (!ElementHelper::isDraftOrRevision($element)) {
-                // Update search index
-                if ($updateSearchIndex) {
-                    if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                        Craft::$app->getSearch()->indexElementAttributes($element);
-                    } else {
-                        Craft::$app->getQueue()->push(new UpdateSearchIndex([
-                            'elementType' => get_class($element),
-                            'elementId' => $element->id,
-                            'siteId' => $propagate ? '*' : $element->siteId,
-                            'fieldHandles' => $element->getDirtyFields(),
-                        ]));
-                    }
-                }
-
+            if (!$isDraftOrRevision) {
                 // Delete any caches involving this element. (Even do this for new elements, since they
                 // might pop up in a cached criteria.)
                 Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+            }
+        }
+
+        // Update search index
+        if ($updateSearchIndex && !$isDraftOrRevision) {
+            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                Craft::$app->getSearch()->indexElementAttributes($element);
+            } else {
+                Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                    'elementType' => get_class($element),
+                    'elementId' => $element->id,
+                    'siteId' => $propagate ? '*' : $element->siteId,
+                    'fieldHandles' => $element->getDirtyFields(),
+                ]));
             }
         }
 

@@ -162,22 +162,20 @@ abstract class FieldLayoutFixture extends Fixture
             ->select(['layoutId'])
             ->from([Table::FIELDLAYOUTFIELDS])
             ->where(['fieldId' => $field->id])
-            ->column();
+            ->scalar();
 
-        if ($layoutId) {
-            $layoutId = ArrayHelper::firstValue($layoutId);
-
-            foreach (Craft::$app->getFields()->getLayoutById($layoutId)->getTabs() as $tab) {
-                foreach ($tab->getFields() as $field) {
-                    if (!Craft::$app->getFields()->deleteField($field)) {
-                        $this->throwModelError($field);
-                    }
-                }
-            }
-            return Craft::$app->getFields()->deleteLayoutById($layoutId);
+        if ($layoutId === false) {
+            return false;
         }
 
-        return false;
+        foreach (Craft::$app->getFields()->getLayoutById($layoutId)->getTabs() as $tab) {
+            foreach ($tab->getFields() as $field) {
+                if (!Craft::$app->getFields()->deleteField($field)) {
+                    $this->throwModelError($field);
+                }
+            }
+        }
+        return Craft::$app->getFields()->deleteLayoutById($layoutId);
     }
 
     /**

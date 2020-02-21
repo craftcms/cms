@@ -25,6 +25,7 @@ use craft\web\twig\TemplateLoader;
 use JSMin\JSMin;
 use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Error\RuntimeError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
@@ -197,6 +198,12 @@ class View extends \yii\web\View
      * @see registerDeltaName()
      */
     private $_deltaNames = [];
+
+    /**
+     * @var mixed[] The initial delta input values.
+     * @see setInitialDeltaValue()
+     */
+    private $_initialDeltaValues = [];
 
     /**
      * @var array
@@ -396,7 +403,7 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
@@ -459,7 +466,7 @@ class View extends \yii\web\View
         $output = ob_get_clean();
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
@@ -506,7 +513,7 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         return (string)$output;
@@ -549,7 +556,7 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         return $result;
@@ -650,7 +657,7 @@ class View extends \yii\web\View
         }
 
         if ($e !== null) {
-            throw YII_DEBUG ? $e : new \RuntimeException('An error occurred when rendering a template.', 0, $e);
+            throw $e;
         }
 
         return $output;
@@ -731,9 +738,9 @@ class View extends \yii\web\View
      * - TemplateName/index.html
      * - TemplateName/index.twig
      *
-     * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [[\craft\config\GeneralConfig::defaultTemplateExtensions|defaultTemplateExtensions]] and
-     * [[\craft\config\GeneralConfig::indexTemplateFilenames|indexTemplateFilenames]] config settings.
+     * If this is a front-end request, the actual list of file extensions and
+     * index filenames are configurable via the <config:defaultTemplateExtensions>
+     * and <config:indexTemplateFilenames> config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -1123,7 +1130,7 @@ class View extends \yii\web\View
      * available for `Craft.t()` calls in the control panel.
      * Note this should always be called *before* any JavaScript is registered
      * that will need to use the translations, unless the JavaScript is
-     * registered at [[self::POS_READY]].
+     * registered at [[\yii\web\View::POS_READY]].
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
@@ -1202,6 +1209,33 @@ JS;
     {
         if ($this->_registerDeltaNames) {
             $this->_deltaNames[] = $this->namespaceInputName($inputName);
+        }
+    }
+
+    /**
+     * Returns the initial values of delta inputs.
+     *
+     * @return mixed[]
+     * @see setInitialDeltaValue()
+     * @since 3.4.6
+     */
+    public function getInitialDeltaValue()
+    {
+        return $this->_initialDeltaValues;
+    }
+
+    /**
+     * Sets the initial value of a delta input name.
+     *
+     * @param string $inputName
+     * @param mixed $value
+     * @see getInitialDeltaValue()
+     * @since 3.4.6
+     */
+    public function setInitialDeltaValue(string $inputName, $value)
+    {
+        if ($this->_registerDeltaNames) {
+            $this->_initialDeltaValues[$this->namespaceInputName($inputName)] = $value;
         }
     }
 
@@ -1452,7 +1486,7 @@ JS;
     /**
      * Queues up a method to be called by a given template hook.
      *
-     * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
+     * For example, if you place this in your plugin’s [[\craft\base\Plugin::init()|init()]] method:
      *
      * ```php
      * Craft::$app->view->hook('myAwesomeHook', function(&$context) {

@@ -366,6 +366,11 @@ class Asset extends Element
                 'orderBy' => 'elements.dateUpdated',
                 'attribute' => 'dateUpdated'
             ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'orderBy' => 'elements.id',
+                'attribute' => 'id',
+            ],
         ];
     }
 
@@ -1272,7 +1277,7 @@ class Asset extends Element
      * Returns whether this asset can be previewed.
      *
      * @return bool
-     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreview]] instead.
+     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreviewHandler]] instead.
      */
     public function getSupportsPreview(): bool
     {

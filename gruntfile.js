@@ -15,7 +15,7 @@ module.exports = function(grunt) {
             },
             cpjs: {
                 files: ['src/web/assets/cp/src/js/*.js'],
-                tasks: ['concat', 'uglify:cpjs']
+                tasks: ['cpjs']
             },
             otherjs: {
                 files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js', '!src/web/assets/pluginstore/**/*.js'],
@@ -65,6 +65,17 @@ module.exports = function(grunt) {
                     '!admintable/**/*.css'
                 ],
                 dest: 'src/web/assets'
+            }
+        },
+        babel: {
+            options: {
+                presets: ['@babel/preset-env'],
+                compact: false,
+            },
+            dist: {
+                files: {
+                    'src/web/assets/cp/dist/js/Craft.js': 'src/web/assets/cp/dist/js/Craft.js'
+                }
             }
         },
         concat: {
@@ -143,12 +154,13 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify-es');
+    grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
     grunt.registerTask('css', ['sass', 'postcss']);
     grunt.registerTask('js', ['jshint:beforeconcat', 'concat', 'jshint:afterconcat', 'uglify']);
-    grunt.registerTask('cpjs', ['concat', 'uglify:cpjs']);
+    grunt.registerTask('cpjs', ['concat', 'babel', 'uglify:cpjs']);
     grunt.registerTask('default', ['css', 'js']);
 };

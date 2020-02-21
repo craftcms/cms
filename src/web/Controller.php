@@ -271,7 +271,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @param bool $requireAdminChanges Whether the [[\craft\config\GeneralConfig::$allowAdminChanges|`allowAdminChanges`]]
+     * @param bool $requireAdminChanges Whether the <config:allowAdminChanges>
      * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
@@ -357,6 +357,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 400 error if the current request doesn’t have a valid Craft token.
      *
      * @throws BadRequestHttpException if the request does not have a valid Craft token
+     * @see Request::getToken()
      */
     public function requireToken()
     {

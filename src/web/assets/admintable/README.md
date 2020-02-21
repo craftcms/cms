@@ -61,9 +61,10 @@ new Craft.VueAdminTable({...options...});
 
 ### Events
 
-| Name     | Data         | Scenario                                                  |
-| -------- | ------------ | --------------------------------------------------------- |
-| onSelect | Array of IDs | When a checkbox or select all is selected or de-selected. |
+| Name     | Data             | Scenario                                                  |
+| -------- | ---------------- | --------------------------------------------------------- |
+| onSelect | Array of IDs     | When a checkbox or select all is selected or de-selected. |
+| data     | Array of objects | On successful load or page change.                        |
 
 ## Table Data
 

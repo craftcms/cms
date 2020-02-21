@@ -51,7 +51,7 @@ $.extend(Craft,
             if ((start = pos = chars.indexOf('{')) === -1) {
                 return [pattern];
             }
-            tokens = [chars.slice(0, pos).join('')];
+            let tokens = [chars.slice(0, pos).join('')];
             while (true) {
                 let open = chars.indexOf('{', pos + 1);
                 let close = chars.indexOf('}', pos + 1);
@@ -128,7 +128,7 @@ $.extend(Craft,
                     if (typeof token[2] === 'undefined') {
                         return false;
                     }
-                    plural = this._tokenizePattern(token[2]);
+                    let plural = this._tokenizePattern(token[2]);
                     const c = plural.length;
                     let message = false;
                     let offset = 0;
@@ -477,6 +477,7 @@ $.extend(Craft,
          * @param {function|undefined} callback
          * @param {object|undefined} options
          * @return jqXHR
+         * @deprecated in 3.4.6. sendActionRequest() should be used instead
          */
         postActionRequest: function(action, data, callback, options) {
             // Make 'data' optional
@@ -495,20 +496,11 @@ $.extend(Craft,
                 options.contentType = 'application/json; charset=utf-8';
             }
 
-            var headers = {
-                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
-                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
-            };
-
-            if (Craft.csrfTokenValue && Craft.csrfTokenName) {
-                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
-            }
-
             var jqXHR = $.ajax($.extend({
                 url: Craft.getActionUrl(action),
                 type: 'POST',
                 dataType: 'json',
-                headers: headers,
+                headers: this._actionHeaders(),
                 data: data,
                 success: callback,
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -577,36 +569,126 @@ $.extend(Craft,
             }, args[3]);
         },
 
+        _actionHeaders: function() {
+            let headers = {
+                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
+                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
+            };
+
+            if (Craft.csrfTokenValue) {
+                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
+            }
+
+            return headers;
+        },
+
+        /**
+         * Sends a request to a Craft/plugin action
+         * @param {string} method The request action to use ('GET' or 'POST')
+         * @param {string} action The action to request
+         * @param {Object} options Axios request options
+         * @returns {Promise}
+         * @since 3.4.6
+         */
+        sendActionRequest: function(method, action, options) {
+            return new Promise((resolve, reject) => {
+                options = options ? $.extend({}, options) : {};
+                options.method = method;
+                options.url = Craft.getActionUrl(action);
+                options.headers = $.extend({}, options.headers || {}, this._actionHeaders());
+                options.params = $.extend({}, options.params || {}, {
+                    // Force Safari to not load from cache
+                    v: new Date().getTime(),
+                });
+                axios.request(options).then(resolve).catch(reject);
+            });
+        },
+
+        /**
+         * Sends a request to the Craftnet API.
+         * @param {string} method The request action to use ('GET' or 'POST')
+         * @param {string} uri The API endpoint URI
+         * @param {Object} options Axios request options
+         * @returns {Promise}
+         * @since 3.3.16
+         */
         sendApiRequest: function(method, uri, options) {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
+                options = options ? $.extend({}, options) : {};
                 // Get the latest headers
-                this.postActionRequest('app/api-headers', function(headers, textStatus) {
-                    if (textStatus !== 'success') {
+                this.sendActionRequest('POST', 'app/api-headers', {
+                    cancelToken: options.cancelToken || null,
+                }).then((headerResponse) => {
+                    options.method = method;
+                    options.baseURL = Craft.baseApiUrl;
+                    options.url = uri;
+                    options.headers = $.extend(headerResponse.data, options.headers || {});
+                    options.params = $.extend(Craft.apiParams || {}, options.params || {}, {
+                        // Force Safari to not load from cache
+                        v: new Date().getTime(),
+                    });
+
+                    axios.request(options).then((apiResponse) => {
+                        this.sendActionRequest('POST', 'app/process-api-response-headers', {
+                            data: {
+                                headers: apiResponse.headers,
+                            },
+                            cancelToken: options.cancelToken || null,
+                        }).then(() => {
+                            resolve(apiResponse.data);
+                        }).catch(reject);
+                    }).catch(reject);
+                }).catch(reject);
+            });
+        },
+
+        /**
+         * Requests a URL and downloads the response.
+         *
+         * @param {string} method the request method to use
+         * @param {string} url the URL
+         * @param {string|Object} [body] the request body, if method = POST
+         * @return {Promise}
+         */
+        downloadFromUrl: function(method, url, body) {
+            return new Promise((resolve, reject) => {
+                // h/t https://nehalist.io/downloading-files-from-post-requests/
+                let request = new XMLHttpRequest();
+                request.open(method, url, true);
+                if (typeof body === 'object') {
+                    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                    body = JSON.stringify(body);
+                } else {
+                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                }
+                request.responseType = 'blob';
+
+                request.onload = function() {
+                    // Only handle status code 200
+                    if (request.status === 200) {
+                        // Try to find out the filename from the content disposition `filename` value
+                        let disposition = request.getResponseHeader('content-disposition');
+                        let matches = /"([^"]*)"/.exec(disposition);
+                        let filename = (matches != null && matches[1] ? matches[1] : 'Download');
+
+                        // Encode the download into an anchor href
+                        let contentType = request.getResponseHeader('content-type');
+                        let blob = new Blob([request.response], {type: contentType});
+                        let link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        resolve();
+                    } else {
                         reject();
-                        return;
                     }
+                }.bind(this);
 
-                    options = options || {};
-                    headers = $.extend(headers, options.headers || {});
-                    var params = $.extend(Craft.apiParams || {}, options.params || {});
-
-                    axios.request($.extend({}, options, {
-                            url: uri,
-                            method: method,
-                            baseURL: Craft.baseApiUrl,
-                            headers: headers,
-                            params: params,
-                        }))
-                        .then(function(response) {
-                            Craft.postActionRequest('app/process-api-response-headers', {
-                                headers: response.headers,
-                            }, function() {
-                                resolve(response.data);
-                            });
-                        })
-                        .catch(reject);
-                }.bind(this));
-            }.bind(this));
+                request.send(body);
+            });
         },
 
         /**
@@ -645,8 +727,8 @@ $.extend(Craft,
             });
 
             // Group all of the old & new params by namespace
-            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false);
-            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true);
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false, true);
+            var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true, false);
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
@@ -667,7 +749,7 @@ $.extend(Craft,
             return params.join('&');
         },
 
-        _groupParamsByDeltaNames: function(params, deltaNames, withRoot) {
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValues) {
             var grouped = {};
 
             if (withRoot) {
@@ -694,6 +776,15 @@ $.extend(Craft,
 
                 if (withRoot) {
                     grouped.__root__.push(params[p]);
+                }
+            }
+
+            if (useInitialValues) {
+                debugger;
+                for (let name in Craft.initialDeltaValues) {
+                    if (Craft.initialDeltaValues.hasOwnProperty(name)) {
+                        grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
+                    }
                 }
             }
 
