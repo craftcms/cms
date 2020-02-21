@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where Craft could get itself in an unrecoverable state if a custom field’s handle *and* type were changed at the same time, but the new field type’s content column was incompatible with the existing field data.
+- Fixed a JavaScript error that occurred when displaying some charts in the control panel.
 
 ## 3.4.7.1 - 2020-02-20
 

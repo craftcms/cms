@@ -17,8 +17,8 @@ Craft.charts.DataTable = Garnish.Base.extend(
         rows: null,
 
         init: function(data) {
-            columns = data.columns;
-            rows = data.rows;
+            let columns = data.columns;
+            let rows = data.rows;
 
             rows.forEach($.proxy(function(d) {
                 $.each(d, function(cellIndex) {
