@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added the `withTransforms` argument to the Asset GraphQL queries that can be used to provide a list of tranform handles to eager-load.
+- Added the `withTransforms` argument to asset GraphQL queries, which can be used to specify image transforms that should be eager-loaded.
 
 ## 3.4.7.1 - 2020-02-20
 
