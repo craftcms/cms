@@ -77,6 +77,11 @@ class Asset extends ElementArguments
                 'type' => Type::boolean(),
                 'description' => 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.'
             ],
+            'withTransforms' => [
+                'name' => 'withTransforms',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'A list of transform handles to preload.'
+            ]
         ]);
     }
 

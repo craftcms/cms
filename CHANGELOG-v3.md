@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `withTransforms` argument to the Asset GraphQL queries that can be used to provide a list of tranform handles to eager-load.
+
 ## 3.4.7.1 - 2020-02-20
 
 ### Fixed
