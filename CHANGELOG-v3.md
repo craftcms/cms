@@ -1,5 +1,27 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.8 - 2020-02-21
+
+### Added
+- Added the `withTransforms` argument to asset GraphQL queries, which can be used to specify image transforms that should be eager-loaded.
+- Added `craft\controllers\AssetsController::asBrokenImage()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requirePeerVolumePermissionByAsset()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requireVolumePermission()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requireVolumePermissionByAsset()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\controllers\AssetsController::requireVolumePermissionByFolder()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\queue\jobs\ApplyNewPropagationMethod`.
+
+### Changed
+- When a section’s Propagation Method setting changes, the section’s entries are now duplicated into any sites where their content would have otherwise been deleted.
+- Craft now sends `X-Robots-Tag: none` headers back for all tokenized requests. ([#5698](https://github.com/craftcms/cms/issues/5698))
+
+### Deprecated
+- Deprecated `craft\queue\jobs\ApplyMatrixPropagationMethod`.
+
+### Fixed
+- Fixed a bug where Craft could get itself in an unrecoverable state if a custom field’s handle *and* type were changed at the same time, but the new field type’s content column was incompatible with the existing field data.
+- Fixed a JavaScript error that occurred when displaying some charts in the control panel.
+
 ## 3.4.7.1 - 2020-02-20
 
 ### Fixed

@@ -780,7 +780,6 @@ $.extend(Craft,
             }
 
             if (useInitialValues) {
-                debugger;
                 for (let name in Craft.initialDeltaValues) {
                     if (Craft.initialDeltaValues.hasOwnProperty(name)) {
                         grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
