@@ -132,7 +132,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * ```php
      * // Fetch a draft
      * ${elements-var} = {php-method}
-     *     ->draftIf(10)
+     *     ->draftId(10)
      *     ->all();
      * ```
      *
