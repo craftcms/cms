@@ -34,7 +34,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use craft\models\MatrixBlockType;
-use craft\queue\jobs\ApplyMatrixPropagationMethod;
+use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
@@ -912,10 +912,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($this->oldSettings !== null) {
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
             if ($this->propagationMethod !== $oldPropagationMethod) {
-                Craft::$app->getQueue()->push(new ApplyMatrixPropagationMethod([
-                    'fieldId' => $this->id,
-                    'oldPropagationMethod' => $oldPropagationMethod,
-                    'newPropagationMethod' => $this->propagationMethod,
+                Craft::$app->getQueue()->push(new ApplyNewPropagationMethod([
+                    'description' => Craft::t('app', 'Applying new propagation method to Matrix blocks'),
+                    'elementType' => MatrixBlock::class,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
                 ]));
             }
         }

@@ -9,9 +9,13 @@
 - Added `craft\controllers\AssetsController::requireVolumePermission()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
 - Added `craft\controllers\AssetsController::requireVolumePermissionByAsset()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
 - Added `craft\controllers\AssetsController::requireVolumePermissionByFolder()`. ([#5702](https://github.com/craftcms/cms/issues/5702))
+- Added `craft\queue\jobs\ApplyNewPropagationMethod`.
 
 ### Changed
 - Craft now sends `X-Robots-Tag: none` headers back for all tokenized requests. ([#5698](https://github.com/craftcms/cms/issues/5698))
+
+### Deprecated
+- Deprecated `craft\queue\jobs\ApplyMatrixPropagationMethod`.
 
 ### Fixed
 - Fixed a bug where Craft could get itself in an unrecoverable state if a custom field’s handle *and* type were changed at the same time, but the new field type’s content column was incompatible with the existing field data.
