@@ -31,6 +31,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\models\Structure;
+use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
@@ -106,6 +107,10 @@ class Sections extends Component
 
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
+     *
+     * ::: tip
+     * Entries will be resaved regardless of what this is set to, when a section’s Propagation Method setting changes.
+     * :::
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
@@ -612,6 +617,7 @@ class Sections extends Component
                 : null;
 
             $isNewSection = $sectionRecord->getIsNewRecord();
+            $propagationMethodChanged = $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod');
 
             if ($data['type'] === Section::TYPE_STRUCTURE) {
                 // Save the structure
@@ -631,7 +637,7 @@ class Sections extends Component
             $resaveEntries = (
                 $sectionRecord->handle !== $sectionRecord->getOldAttribute('handle') ||
                 $sectionRecord->type !== $sectionRecord->getOldAttribute('type') ||
-                $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod') ||
+                $propagationMethodChanged ||
                 $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
             );
 
@@ -719,20 +725,33 @@ class Sections extends Component
             // Finally, deal with the existing entries...
             // -----------------------------------------------------------------
 
-            if (!$isNewSection && $resaveEntries && $this->autoResaveEntries) {
-                Craft::$app->getQueue()->push(new ResaveElements([
-                    'description' => Craft::t('app', 'Resaving {section} entries', [
-                        'section' => $sectionRecord->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
-                        'sectionId' => $sectionRecord->id,
-                        'siteId' => array_values($siteIdMap),
-                        'unique' => true,
-                        'status' => null,
-                        'enabledForSite' => false,
-                    ]
-                ]));
+            if (!$isNewSection && $resaveEntries) {
+                // If the propagation method just changed, we definitely need to update entries for that
+                if ($propagationMethodChanged) {
+                    Craft::$app->getQueue()->push(new ApplyNewPropagationMethod([
+                        'description' => Craft::t('app', 'Applying new propagation method to {section} entries', [
+                            'section' => $sectionRecord->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'sectionId' => $sectionRecord->id,
+                        ],
+                    ]));
+                } else if ($this->autoResaveEntries) {
+                    Craft::$app->getQueue()->push(new ResaveElements([
+                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                            'section' => $sectionRecord->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'sectionId' => $sectionRecord->id,
+                            'siteId' => array_values($siteIdMap),
+                            'unique' => true,
+                            'status' => null,
+                            'enabledForSite' => false,
+                        ],
+                    ]));
+                }
             }
 
             $transaction->commit();

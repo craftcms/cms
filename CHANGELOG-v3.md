@@ -12,6 +12,7 @@
 - Added `craft\queue\jobs\ApplyNewPropagationMethod`.
 
 ### Changed
+- When a section’s Propagation Method setting changes, the section’s entries are now duplicated into any sites where their content would have otherwise been deleted.
 - Craft now sends `X-Robots-Tag: none` headers back for all tokenized requests. ([#5698](https://github.com/craftcms/cms/issues/5698))
 
 ### Deprecated
