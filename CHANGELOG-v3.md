@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where relational fields weren’t validating that their Limit setting was set to an integer. ([#5709](https://github.com/craftcms/cms/issues/5709))
+
 ## 3.4.8 - 2020-02-21
 
 ### Added

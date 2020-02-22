@@ -211,6 +211,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @inheritdoc
+     * @since 3.4.9
+     */
+    protected function defineRules(): array
+    {
+         $rules = parent::defineRules();
+         $rules[] = [['limit'], 'number', 'integerOnly' => true];
+         return $rules;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function settingsAttributes(): array
     {
