@@ -42,7 +42,7 @@ class EntriesController extends BaseEntriesController
     const EVENT_PREVIEW_ENTRY = 'previewEntry';
 
     /**
-     * Called when a user beings up an entry for editing before being displayed.
+     * Called when a user brings up an entry for editing before being displayed.
      *
      * @param string $section The section’s handle
      * @param int|null $entryId The entry’s ID, if editing an existing entry.
