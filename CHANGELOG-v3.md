@@ -7,6 +7,7 @@
 - Fixed a bug where structure data was getting joined into entry queries even if the `section` param was set to a non-Structure section. ([#5707](https://github.com/craftcms/cms/issues/5707))
 - Fixed a JavaScript error that occurred when attempting to set the cropping constraint using the image editor. ([#5718](https://github.com/craftcms/cms/issues/5718))
 - Fixed a SQL error that occurred when running the `utils/prune-revisions` command when using PostgreSQL. ([#5712](https://github.com/craftcms/cms/issues/5712))
+- Fixed a bug where root-level classes weren’t properly namespaced in `CustomFieldBehavior.php` docblocks. ([#5716](https://github.com/craftcms/cms/issues/5716))
 
 ## 3.4.8 - 2020-02-21
 
