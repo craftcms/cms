@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where relational fields weren’t validating that their Limit setting was set to an integer. ([#5709](https://github.com/craftcms/cms/issues/5709))
 - Fixed a bug where structure data was getting joined into entry queries even if the `section` param was set to a non-Structure section. ([#5707](https://github.com/craftcms/cms/issues/5707))
+- Fixed a JavaScript error that occurred when attempting to set the cropping constraint using the image editor. ([#5718](https://github.com/craftcms/cms/issues/5718))
 
 ## 3.4.8 - 2020-02-21
 
