@@ -14,6 +14,7 @@ use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\events\ElementIndexAvailableTableAttributesEvent;
 use craft\helpers\Json;
 use yii\base\Component;
 
@@ -26,6 +27,11 @@ use yii\base\Component;
  */
 class ElementIndexes extends Component
 {
+    /**
+     * @event ElementIndexAvailableTableAttributesEvent The event that is triggered allowing modification of available table attributes for an element
+     */
+    const EVENT_MODIFY_AVAILABLE_TABLE_ATTRIBUTES = 'modifyAvailableTableAttributes';
+    
     private $_indexSettings;
 
     /**
@@ -216,6 +222,18 @@ class ElementIndexes extends Component
                 /** @var Field $field */
                 $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
+        }
+
+        // Fire a 'modifyAvailableTableAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_MODIFY_AVAILABLE_TABLE_ATTRIBUTES)) {
+            $event = new ElementIndexAvailableTableAttributesEvent([
+                'elementType' => $elementType,
+                'includeFields' => $includeFields,
+                'attributes' => $attributes,
+            ]);
+            $this->trigger(self::EVENT_MODIFY_AVAILABLE_TABLE_ATTRIBUTES, $event);
+
+            $attributes = $event->attributes;
         }
 
         return $attributes;
