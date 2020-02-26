@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-02-20 */
+/*!   - 2020-02-21 */
 (function ($) {
   /** global: Craft */
 
@@ -832,8 +832,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       if (useInitialValues) {
-        debugger;
-
         for (var name in Craft.initialDeltaValues) {
           if (Craft.initialDeltaValues.hasOwnProperty(name)) {
             grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
@@ -10477,8 +10475,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     columns: null,
     rows: null,
     init: function init(data) {
-      columns = data.columns;
-      rows = data.rows;
+      var columns = data.columns;
+      var rows = data.rows;
       rows.forEach($.proxy(function (d) {
         $.each(d, function (cellIndex) {
           var column = columns[cellIndex];

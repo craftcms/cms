@@ -19,6 +19,7 @@ use craft\services\Elements;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.18
+ * @deprecated in 3.4.8. Use [[ApplyNewPropagationMethod]] instead.
  */
 class ApplyMatrixPropagationMethod extends BaseJob
 {

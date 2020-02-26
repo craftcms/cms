@@ -1463,6 +1463,11 @@ class Fields extends Component
 
                 // Are we dealing with an existing column?
                 if ($db->columnExists($contentTable, $oldColumnName)) {
+                    // Alter it first, in case that results in an error due to incompatible column data
+                    $db->createCommand()
+                        ->alterColumn($contentTable, $oldColumnName, $columnType)
+                        ->execute();
+
                     // Name change?
                     if ($oldColumnName !== $newColumnName) {
                         // Does the new column already exist?
@@ -1478,11 +1483,6 @@ class Fields extends Component
                             ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                             ->execute();
                     }
-
-                    // Alter it
-                    $db->createCommand()
-                        ->alterColumn($contentTable, $newColumnName, $columnType)
-                        ->execute();
                 } else {
                     // Does the new column already exist?
                     if ($db->columnExists($contentTable, $newColumnName)) {
