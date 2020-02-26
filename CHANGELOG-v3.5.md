@@ -1,4 +1,4 @@
-# Running Release Notes for Craft 3.5
+# Running Release Notes for Craft CMS 3.5
 
 ### Added
 - Added the `drafts`, `draftOf`, `draftId`, `draftCreator`, `revisions`, `revisionOf`, `revisionId` and `revisionCreator` arguments to element queries using GraphQL API. ([#5580](https://github.com/craftcms/cms/issues/5580)) 
