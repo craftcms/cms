@@ -17,6 +17,7 @@ use craft\events\ConfigEvent;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
+use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
@@ -35,6 +36,7 @@ use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\mutations\Ping as PingMutation;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
@@ -45,6 +47,7 @@ use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
+use craft\gql\types\Mutation;
 use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
@@ -120,6 +123,31 @@ class Gql extends Component
      * ```
      */
     const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
+
+    /**
+     * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
+     *
+     * Plugins get a chance to add their own GraphQL mutations.
+     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     *
+     * ---
+     * ```php
+     * use craft\events\RegisterGqlMutationsEvent;
+     * use craft\services\GraphQl;
+     * use yii\base\Event;
+     * use GraphQL\Type\Definition\Type;
+     *
+     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_MUTATIONS, function(RegisterGqlMutationsEvent $event) {
+     *     // Add my GraphQL queries
+     *     $event->queries['mutationPluginData'] =
+     *     [
+     *         'type' => Type::listOf(MyType::getType())),
+     *         'args' => MyArguments::getArguments(),
+     *     ];
+     * });
+     * ```
+     */
+    const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
 
     /**
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
@@ -268,10 +296,12 @@ class Gql extends Component
             // Either cached version was not found or we need a pre-built schema.
             $registeredTypes = $this->_registerGqlTypes();
             $this->_registerGqlQueries();
+            $this->_registerGqlMutations();
 
             $schemaConfig = [
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
+                'mutation' => TypeLoader::loadType('Mutation'),
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
@@ -1026,6 +1056,31 @@ class Gql extends Component
 
         TypeLoader::registerType('Query', function() use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
+        });
+    }
+
+    /**
+     * Get GraphQL mutation definitions
+     *
+     * @return void
+     */
+    private function _registerGqlMutations()
+    {
+        $mutationList = [
+            // Mutations
+            PingMutation::getMutations(),
+            EntryMutation::getMutations(),
+        ];
+
+
+        $event = new RegisterGqlMutationsEvent([
+            'mutations' => array_merge(...$mutationList)
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
+
+        TypeLoader::registerType('Mutation', function() use ($event) {
+            return call_user_func(Mutation::class . '::getType', $event->mutations);
         });
     }
 
