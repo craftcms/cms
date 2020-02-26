@@ -38,6 +38,12 @@ class Tag extends Query
                 'resolve' => TagResolver::class . '::resolve',
                 'description' => 'This query is used to query for tags.'
             ],
+            'tagCount' => [
+                'type' => Type::nonNull(Type::int()),
+                'args' => TagArguments::getArguments(),
+                'resolve' => TagResolver::class . '::resolveCount',
+                'description' => 'This query is used to return the number of tags.'
+            ],
             'tag' => [
                 'type' => TagInterface::getType(),
                 'args' => TagArguments::getArguments(),

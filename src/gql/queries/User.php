@@ -38,6 +38,12 @@ class User extends Query
                 'resolve' => UserResolver::class . '::resolve',
                 'description' => 'This query is used to query for users.'
             ],
+            'userCount' => [
+                'type' => Type::nonNull(Type::int()),
+                'args' => UserArguments::getArguments(),
+                'resolve' => UserResolver::class . '::resolveCount',
+                'description' => 'This query is used to return the number of users.'
+            ],
             'user' => [
                 'type' => UserInterface::getType(),
                 'args' => UserArguments::getArguments(),

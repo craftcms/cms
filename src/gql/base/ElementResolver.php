@@ -59,6 +59,21 @@ abstract class ElementResolver extends Resolver
     }
 
     /**
+     * Resolve an element query to a total count of elements.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return Element|null|mixed
+     */
+    public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        return $query->count();
+    }
+
+    /**
      * Prepare an element query for given resolution argument set.
      *
      * @param $source
