@@ -8,6 +8,7 @@
 - Fixed a JavaScript error that occurred when attempting to set the cropping constraint using the image editor. ([#5718](https://github.com/craftcms/cms/issues/5718))
 - Fixed a SQL error that occurred when running the `utils/prune-revisions` command when using PostgreSQL. ([#5712](https://github.com/craftcms/cms/issues/5712))
 - Fixed a bug where root-level classes weren’t properly namespaced in `CustomFieldBehavior.php` docblocks. ([#5716](https://github.com/craftcms/cms/issues/5716))
+- Fixed an error that could occur while installing Craft with an existing `project.yaml` file. ([#5697](https://github.com/craftcms/cms/issues/5697))
 
 ## 3.4.8 - 2020-02-21
 
