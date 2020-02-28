@@ -31,7 +31,7 @@ class EntryMutation extends ElementMutationArguments
         return array_merge(parent::getArguments(), [
             'authorId' => [
                 'name' => 'authorId',
-                'type' => Type::nonNull(Type::id()),
+                'type' => Type::id(),
                 'description' => 'The ID of the user that created this entry.'
             ],
             'postDate' => [
