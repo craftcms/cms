@@ -12,7 +12,7 @@ use craft\base\Field;
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\arguments\elements\EntryMutation;
+use craft\gql\arguments\elements\EntryMutation as EntryMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -20,7 +20,11 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\Section;
+use GraphQL\Error\UserError;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Type\Definition\WrappingType;
 
 /**
  * Class Entry
@@ -55,20 +59,85 @@ class Entry extends Mutation
             if ($isAllowedEntryType && $isAllowedSection) {
                 $mutationName = EntryElement::gqlMutationNameByContext($entryType);
                 $contentFields = $entryType->getFields();
-                $mutationArguments = EntryMutation::getArguments();
+                $mutationArguments = EntryMutationArguments::getArguments();
+                $contentFieldHandles = [];
 
                 /** @var Field $contentField */
                 foreach ($contentFields as $contentField) {
-                    $mutationArguments[$contentField->handle] = $contentField->getContentGqlInputType();
+                    $contentFieldType = $contentField->getContentGqlInputType();
+
+                    // Force non-null for required fields
+                    if ($contentField->required && !$contentFieldType['type'] instanceof WrappingType) {
+                        $contentFieldType['type'] = Type::nonNull($contentFieldType['type']);
+                    }
+
+                    $mutationArguments[$contentField->handle] = $contentFieldType;
+                    $contentFieldHandles[$contentField->handle] = true;
                 }
 
                 $section = $entryType->getSection();
 
+                // TODO Feels like the mutation should be created in a separate class to de-clutter this.
+                switch ($section->type) {
+                    case Section::TYPE_SINGLE:
+                        $description = 'Create a new “' . $entryType->name . '” entry.';
+                        unset($mutationArguments['authorId'], $mutationArguments['id'], $mutationArguments['uid']);
+                        break;
+                    case Section::TYPE_STRUCTURE:
+                        $mutationArguments['newParentId'] = [
+                            'name' => 'newParentId',
+                            'type' => Type::id(),
+                            'description' => 'The ID of the parent entry.'
+                        ];
+                    default:
+                        $description = 'Create a new “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
+                }
+
                 $mutationList[$mutationName] = [
                     'name' => $mutationName,
-                    'description' => 'Create a new “' . $entryType->name . '” entry' . ($section->type === 'single'  ? '.' : ' in the “' . $section->name . '” section.'),
+                    'description' => $description,
                     'args' => $mutationArguments,
-                    'resolve' => 'Eh',
+                    'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($entryType, $section, $contentFields) {
+                        $entry = null;
+
+                        if ($section->type == Section::TYPE_SINGLE) {
+                            $entry = EntryElement::findOne(['typeId' => $entryType->id]);
+                        } else if (!empty($arguments['uid'])) {
+                            $entry = EntryElement::findOne(['uid' => $arguments['uid']]);
+                        } else if (!empty($arguments['id'])) {
+                            $entry = EntryElement::findOne(['id' => $arguments['id']]);
+                        }
+
+                        if (!$entry) {
+                            $entry = new EntryElement();
+                        }
+
+                        $entry->sectionId = $section->id;
+                        $entry->typeId = $entryType->id;
+
+                        foreach ($arguments as $argument => $value) {
+                            if (isset($contentFieldHandles[$argument])) {
+                                $entry->setFieldValue($argument, $value);
+                            } else {
+                                $entry->{$argument} = $value;
+                            }
+                        }
+
+                        // TODO setting an authorID to an ID that is not
+                        Craft::$app->getElements()->saveElement($entry);
+
+                        if ($entry->hasErrors()) {
+                            $validationErrors = [];
+
+                            foreach ($entry->getFirstErrors() as $attribute => $errorMessage) {
+                                $validationErrors[] = $errorMessage;
+                            }
+
+                            throw new UserError(implode("\n", $validationErrors));
+                        }
+
+                        return $entry;
+                    },
                     'type' => EntryType::generateType($entryType)
                 ];
             }
