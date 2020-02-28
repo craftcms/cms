@@ -519,7 +519,6 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @since 3.3.0
      */
     public static function gqlTypeNameByContext($context): string
     {
@@ -538,7 +537,6 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @since 3.3.0
      */
     public static function gqlScopesByContext($context): array
     {
