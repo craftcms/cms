@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Category as CategoryElement;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\ObjectType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\TypeManager;
@@ -35,33 +36,42 @@ class CategoryType implements GeneratorInterface
         $gqlTypes = [];
 
         foreach ($categoryGroups as $categoryGroup) {
-            /** @var CategoryGroup $categoryGroup */
-            $typeName = CategoryElement::gqlTypeNameByContext($categoryGroup);
             $requiredContexts = CategoryElement::gqlScopesByContext($categoryGroup);
 
             if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 
-            $contentFields = $categoryGroup->getFields();
-            $contentFieldGqlTypes = [];
-
-            /** @var Field $contentField */
-            foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-
-            $categoryGroupFields = TypeManager::prepareFieldDefinitions(array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
-
-            // Generate a type for each entry type
-            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Category([
-                'name' => $typeName,
-                'fields' => function() use ($categoryGroupFields) {
-                    return $categoryGroupFields;
-                }
-            ]));
+            // Generate a type for each category group
+            $type = static::generateType($categoryGroup);
+            $gqlTypes[$type->name] = $type;
         }
 
         return $gqlTypes;
     }
-}
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function generateType($context): ObjectType
+    {
+        /** @var CategoryGroup $categoryGroup */
+        $typeName = CategoryElement::gqlTypeNameByContext($context);
+        $contentFields = $context->getFields();
+        $contentFieldGqlTypes = [];
+
+        /** @var Field $contentField */
+        foreach ($contentFields as $contentField) {
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+        }
+
+        $categoryGroupFields = TypeManager::prepareFieldDefinitions(array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Category([
+            'name' => $typeName,
+            'fields' => function() use ($categoryGroupFields) {
+                return $categoryGroupFields;
+            }
+        ]));
+    }}

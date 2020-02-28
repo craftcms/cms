@@ -87,6 +87,18 @@ class Gql
     }
 
     /**
+     * Return true if active schema can mutate entries.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateEntries(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('write');
+        return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
+    }
+
+    /**
      * Return true if active schema can query entries.
      *
      * @return bool

@@ -9,6 +9,7 @@ namespace craft\gql\types\generators;
 
 use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\ObjectType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
@@ -28,6 +29,23 @@ class TableRowType implements GeneratorInterface
      * @inheritdoc
      */
     public static function generateTypes($context = null): array
+    {
+        return [static::generateType($context)];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName($context = null): string
+    {
+        /** @var TableField $context */
+        return $context->handle . '_TableRow';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function generateType($context): ObjectType
     {
         /** @var TableField $context */
         $typeName = self::getName($context);
@@ -56,23 +74,11 @@ class TableRowType implements GeneratorInterface
 
         $contentFields = TypeManager::prepareFieldDefinitions($contentFields, $typeName);
 
-        // Generate a type for each entry type
-        $tableRowType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
             'name' => $typeName,
             'fields' => function() use ($contentFields) {
                 return $contentFields;
             }
         ]));
-
-        return [$tableRowType];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName($context = null): string
-    {
-        /** @var TableField $context */
-        return $context->handle . '_TableRow';
     }
 }

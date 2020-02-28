@@ -20,7 +20,16 @@ interface GeneratorInterface
      * Generate GraphQL types.
      *
      * @param mixed $context Context for generated types
-     * @return array
+     * @return ObjectType[]
      */
     public static function generateTypes($context = null): array;
+
+    /**
+     * Generate a single GraphQL type based on a context.
+     *
+     * @param mixed $context Context for generated types
+     * @return mixed|null
+     * @since 3.5.0
+     */
+    public static function generateType($context);
 }

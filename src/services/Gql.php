@@ -36,6 +36,7 @@ use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\mutations\Entry as EntryMutation;
 use craft\gql\mutations\Ping as PingMutation;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Category as CategoryQuery;
@@ -1142,6 +1143,17 @@ class Gql extends Component
                 }
 
                 $sectionPermissions['sections.' . $section->uid . ':read'] = $nested;
+            }
+
+            // Now the same for mutations
+            foreach (Craft::$app->getSections()->getAllSections() as $section) {
+                $nested = ['label' => Craft::t('app', 'Edit section - {section}', ['section' => Craft::t('site', $section->name)])];
+
+                foreach ($sortedEntryTypes[$section->id] as $entryType) {
+                    $nested['nested']['entrytypes.' . $entryType->uid . ':write'] = ['label' => Craft::t('app', 'Edit entry type - {entryType}', ['entryType' => Craft::t('site', $entryType->name)])];
+                }
+
+                $sectionPermissions['sections.' . $section->uid . ':write'] = $nested;
             }
 
             $permissions[$label] = $sectionPermissions;

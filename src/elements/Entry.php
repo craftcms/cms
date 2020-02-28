@@ -524,7 +524,16 @@ class Entry extends Element
     public static function gqlTypeNameByContext($context): string
     {
         /** @var EntryType $context */
-        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
+        return self::getGqlIdentifierByContext($context) . '_Entry';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var EntryType $context */
+        return 'save_' . self::getGqlIdentifierByContext($context) . '_Entry';
     }
 
     /**
@@ -1426,5 +1435,17 @@ EOD;
             !$this->getIsRevision() &&
             $this->getSection()->enableVersioning
         );
+    }
+
+    /**
+     * Get the GraphQL identifier by context.
+     *
+     * @param EntryType $context
+     * @return string
+     */
+    private static function getGqlIdentifierByContext(EntryType $context): string
+    {
+        $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
+        return $gqlIdentifier;
     }
 }
