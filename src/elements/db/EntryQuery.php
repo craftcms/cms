@@ -285,9 +285,18 @@ class EntryQuery extends ElementQuery
      */
     public function section($value)
     {
+        // If the value is a section handle, swap it with the section
+        if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
+            $value = $section;
+        }
+
         if ($value instanceof Section) {
-            $this->structureId = ($value->structureId ?: false);
             $this->sectionId = $value->id;
+            if ($value->structureId) {
+                $this->structureId = $value->structureId;
+            } else {
+                $this->withStructure = false;
+            }
         } else if ($value !== null) {
             $this->sectionId = (new Query())
                 ->select(['id'])

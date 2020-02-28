@@ -614,7 +614,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         _handleConstraintClick: function (ev) {
             var constraint = $(ev.currentTarget).data('constraint');
-            $target = $(ev.currentTarget);
+            var $target = $(ev.currentTarget);
             $target.siblings().removeClass('active');
             $target.addClass('active');
 

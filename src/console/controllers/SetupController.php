@@ -15,6 +15,7 @@ use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -291,8 +292,9 @@ EOD;
         $dbConfig->schema = $this->schema;
         $dbConfig->tablePrefix = $this->tablePrefix;
 
-        /** @var Connection $db */
-        $db = Craft::createObject(App::dbConfig($dbConfig));
+        $db = Craft::$app->getDb();
+        $db->close();
+        Craft::configure($db, ArrayHelper::without(App::dbConfig($dbConfig), 'class'));
 
         try {
             $db->open();
@@ -345,7 +347,6 @@ EOD;
             goto top;
         }
 
-        Craft::$app->set('db', $db);
         Craft::$app->setIsInstalled(null);
 
         $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);

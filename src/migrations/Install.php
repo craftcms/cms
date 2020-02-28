@@ -219,7 +219,7 @@ class Install extends Migration
             'lastOccurrence' => $this->dateTime()->notNull(),
             'file' => $this->string()->notNull(),
             'line' => $this->smallInteger()->unsigned(),
-            'message' => $this->string(),
+            'message' => $this->text(),
             'traces' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

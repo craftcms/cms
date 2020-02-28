@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
 use yii\console\ExitCode;
+use yii\db\Expression;
 
 /**
  * Prunes excess element revisions.
@@ -58,13 +59,20 @@ class PruneRevisionsController extends Controller
         $this->stdout('Finding elements with too many revisions ... ');
         $elements = (new Query())
             ->select([
-                'e.type', 'e.id', 'count' => (new Query())
-                    ->select(['count(*)'])
-                    ->from(['r' => Table::REVISIONS])
-                    ->where('[[r.sourceId]] = [[e.id]]')
+                'id' => 's.sourceId',
+                's.count',
+                'type' => (new Query())
+                    ->select(['type'])
+                    ->from([Table::ELEMENTS])
+                    ->where(new Expression('[[id]] = [[s.sourceId]]'))
             ])
-            ->from(['e' => Table::ELEMENTS])
-            ->having(['>', 'count', $this->maxRevisions])
+            ->from([
+                's' => (new Query())
+                    ->select(['sourceId', 'count' => 'COUNT(*)'])
+                    ->from(['r' => Table::REVISIONS])
+                    ->groupBy(['sourceId'])
+                    ->having(['>', 'COUNT(*)', $this->maxRevisions])
+            ])
             ->all();
         $this->stdout('done' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 

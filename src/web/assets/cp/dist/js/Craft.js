@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-02-21 */
+/*!   - 2020-02-25 */
 (function ($) {
   /** global: Craft */
 
@@ -5839,7 +5839,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      */
     _handleConstraintClick: function _handleConstraintClick(ev) {
       var constraint = $(ev.currentTarget).data('constraint');
-      $target = $(ev.currentTarget);
+      var $target = $(ev.currentTarget);
       $target.siblings().removeClass('active');
       $target.addClass('active');
 

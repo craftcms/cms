@@ -247,9 +247,9 @@ class InstallController extends Controller
             $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
 
             // Update the db component based on new values
-            /** @var Connection $db */
-            $db = Craft::createObject(App::dbConfig($dbConfig));
-            Craft::$app->set('db', $db);
+            $db = Craft::$app->getDb();
+            $db->close();
+            Craft::configure($db, ArrayHelper::without(App::dbConfig($dbConfig), 'class'));
         }
 
         // Run the install migration
