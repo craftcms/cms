@@ -97,7 +97,7 @@ class Entry extends Mutation
                     'name' => $mutationName,
                     'description' => $description,
                     'args' => $mutationArguments,
-                    'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($entryType, $section, $contentFields) {
+                    'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($entryType, $section, $contentFields, $contentFieldHandles) {
                         $entry = null;
 
                         if ($section->type == Section::TYPE_SINGLE) {
