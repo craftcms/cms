@@ -1543,9 +1543,6 @@ class Fields extends Component
         // Clear caches
         $this->refreshFields();
 
-        // Update the field version
-        $this->updateFieldVersion();
-
         // Tell the current CustomFieldBehavior class about the field
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
