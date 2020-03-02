@@ -828,8 +828,6 @@ class ProjectConfig extends Component
             }
         }
 
-        $info = Craft::$app->getInfo();
-
         if ($this->_updateConfigMap && $this->_useConfigFile()) {
             $configMap = $this->_generateConfigMap();
 
@@ -837,10 +835,10 @@ class ProjectConfig extends Component
                 $filePath = Craft::alias($filePath);
             }
 
+            $info = Craft::$app->getInfo();
             $info->configMap = Json::encode($configMap);
+            Craft::$app->saveInfoAfterRequest();
         }
-
-        Craft::$app->saveInfoAfterRequest();
     }
 
     /**
