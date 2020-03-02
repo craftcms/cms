@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Reduced the likelihood of a race condition that can result in a PHP error, if a request comes in between the time a field is saved with a new field handle, and the `info.fieldVersion` value is updated in the database. ([#5742](https://github.com/craftcms/cms/issues/5742))
 - `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
 
 ## 3.4.9 - 2020-02-28
