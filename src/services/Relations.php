@@ -61,9 +61,17 @@ class Relations extends Component
                 ];
             }
 
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::RELATIONS, $oldRelationConditions)
-                ->execute();
+            $existingIds = (new Query)
+                ->select('id')
+                ->from(Table::RELATIONS)
+                ->where($oldRelationConditions)
+                ->column();
+
+            if (count($existingIds)) {
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::RELATIONS, ['id' => $existingIds])
+                    ->execute();
+            }
 
             // Add the new ones
             if (!empty($targetIds)) {
