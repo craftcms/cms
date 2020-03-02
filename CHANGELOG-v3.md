@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
+
 ## 3.4.9 - 2020-02-28
 
 ### Fixed
