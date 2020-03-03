@@ -1525,6 +1525,7 @@ table {
   th.thin,
   td.thin {
     width: 0.01% !important;
+    white-space: nowrap;
   }
 
   thead {
