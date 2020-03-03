@@ -219,7 +219,7 @@ const actions = {
             const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
 
             for (let pluginHandle in pluginLicenseInfo) {
-                if (pluginLicenseInfo.hasOwnProperty(pluginHandle)) {
+                if (Object.prototype.hasOwnProperty.call(pluginLicenseInfo, pluginHandle)) {
                     pluginHandles.push(pluginHandle)
                 }
             }
