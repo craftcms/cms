@@ -262,10 +262,16 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is installed.
      *
+     * @param bool $refresh
      * @return bool
      */
-    public function getIsInstalled(): bool
+    public function getIsInstalled(bool $refresh = false): bool
     {
+        if ($refresh) {
+            $this->_isInstalled = null;
+            $this->_info = null;
+        }
+
         if ($this->_isInstalled !== null) {
             return $this->_isInstalled;
         }
