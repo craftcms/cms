@@ -45,6 +45,12 @@ class Search extends Component
     const EVENT_AFTER_SEARCH = 'afterSearch';
 
     /**
+     * @var bool Whether fulltext searches should be used ever. (MySQL only.)
+     * @since 3.4.10
+     */
+    public $useFullText = true;
+
+    /**
      * @var int The minimum word length that keywords must be in order to use a full-text search.
      */
     public $minFullTextWordLength;
@@ -829,6 +835,7 @@ SQL;
     private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
         return
+            $this->useFullText &&
             $keywords !== '' &&
             !$term->subLeft &&
             !$term->exact &&

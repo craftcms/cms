@@ -606,7 +606,7 @@ body.rtl .tablepane table th:last-child, body.rtl .tablepane table td:last-child
 .tablepane table thead th, .tablepane table thead td { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
 
 table.fixed-layout { table-layout: fixed; }
-table th.thin, table td.thin { width: 0.01% !important; }
+table th.thin, table td.thin { width: 0.01% !important; white-space: nowrap; }
 table thead th { font-weight: bold; vertical-align: top; color: #7b8793; }
 body.ltr table thead th { text-align: left; }
 body.rtl table thead th { text-align: right; }

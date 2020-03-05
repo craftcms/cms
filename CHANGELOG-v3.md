@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Search::$useFullText`. ([#5696](https://github.com/craftcms/cms/issues/5696))
+
+### Changed
+- Reduced the likelihood of a race condition that can result in a PHP error, if a request comes in between the time a field is saved with a new field handle, and the `info.fieldVersion` value is updated in the database. ([#5742](https://github.com/craftcms/cms/issues/5742))
+- `craft\base\ApplicationTrait::getIsInstalled()` now has a `$refresh` argument.
+- `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
+
+### Fixed
+- Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
+- Fixed a bug where the Plugin Store was not showing validation errors during the payment process. ([#5728](https://github.com/craftcms/cms/issues/5728))
+- Fixed an error that could occur when processing Project Config changes that also included new sites.
+- Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
+- Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
+
+## 3.4.9 - 2020-02-28
+
 ### Fixed
 - Fixed a bug where relational fields weren’t validating that their Limit setting was set to an integer. ([#5709](https://github.com/craftcms/cms/issues/5709))
 - Fixed a bug where structure data was getting joined into entry queries even if the `section` param was set to a non-Structure section. ([#5707](https://github.com/craftcms/cms/issues/5707))
@@ -9,6 +26,7 @@
 - Fixed a SQL error that occurred when running the `utils/prune-revisions` command when using PostgreSQL. ([#5712](https://github.com/craftcms/cms/issues/5712))
 - Fixed a bug where root-level classes weren’t properly namespaced in `CustomFieldBehavior.php` docblocks. ([#5716](https://github.com/craftcms/cms/issues/5716))
 - Fixed an error that could occur while installing Craft with an existing `project.yaml` file. ([#5697](https://github.com/craftcms/cms/issues/5697))
+- Fixed an error that could occur if a deprecation warning was logged with a message longer than 255 characters. ([#5738](https://github.com/craftcms/cms/issues/5738))
 
 ## 3.4.8 - 2020-02-21
 
