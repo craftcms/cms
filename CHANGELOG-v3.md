@@ -16,6 +16,7 @@
 - Fixed an error that could occur when processing Project Config changes that also included new sites.
 - Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
 - Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
+- Fixed an error where applying changes to Matrix fields from the `project.yaml` file could result in the file being re-saved.
 
 ## 3.4.9 - 2020-02-28
 
