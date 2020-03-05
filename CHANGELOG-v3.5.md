@@ -8,7 +8,7 @@
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
-- Added the [iFrame Resizer](https://github.com/davidjbradshaw/iframe-resizer) library.
+- Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
 ### Changed
 - Preview frames now maintain their scroll position across refreshes, even for cross-origin preview targets.
