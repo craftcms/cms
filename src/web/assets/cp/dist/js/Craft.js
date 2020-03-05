@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-02-25 */
+/*!   - 2020-03-06 */
 (function ($) {
   /** global: Craft */
 
@@ -16354,6 +16354,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $editorContainer: null,
     $editor: null,
     $dragHandle: null,
+    $previewContainer: null,
     $iframeContainer: null,
     $iframe: null,
     $fieldPlaceholder: null,
@@ -16467,9 +16468,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$editorContainer = $('<div/>', {
           'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
-        this.$iframeContainer = $('<div/>', {
+        this.$previewContainer = $('<div/>', {
           'class': 'lp-preview-container'
         }).appendTo(Garnish.$bod);
+        this.$iframeContainer = $('<div/>', {
+          'class': 'lp-iframe-container'
+        }).appendTo(this.$previewContainer);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
         }).appendTo(this.$editorContainer);
@@ -16501,7 +16505,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
       this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth) + 'px');
-      this.$iframeContainer.css(Craft.right, -this.getIframeWidth()); // Move all the fields into the editor rather than copying them
+      this.$previewContainer.css(Craft.right, -this.getIframeWidth()); // Move all the fields into the editor rather than copying them
       // so any JS that's referencing the elements won't break.
 
       this.fields = [];
@@ -16560,7 +16564,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.trigger('slideIn');
         Garnish.$win.trigger('resize');
       }, this));
-      this.$iframeContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function () {
+      this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function () {
         this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
         this.addListener(Garnish.$bod, 'keyup', function (ev) {
           if (ev.keyCode === Garnish.ESC_KEY) {
@@ -16593,8 +16597,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$editorContainer.hide();
         this.trigger('slideOut');
       }, this));
-      this.$iframeContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function () {
-        this.$iframeContainer.hide();
+      this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function () {
+        this.$previewContainer.hide();
       }, this));
       Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
       this.inPreviewMode = false;
@@ -16619,7 +16623,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
-      this.$iframeContainer.width(this.getIframeWidth());
+      this.$previewContainer.width(this.getIframeWidth());
     },
     updateIframe: function updateIframe(force) {
       if (force) {
@@ -16720,7 +16724,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     _onDragStart: function _onDragStart() {
       this.dragStartEditorWidth = this.editorWidthInPx;
-      this.$iframeContainer.addClass('dragging');
+      this.$previewContainer.addClass('dragging');
     },
     _onDrag: function _onDrag() {
       if (Craft.orientation === 'ltr') {
@@ -16732,7 +16736,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateWidths();
     },
     _onDragStop: function _onDragStop() {
-      this.$iframeContainer.removeClass('dragging');
+      this.$previewContainer.removeClass('dragging');
       Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
     }
   }, {
@@ -16893,6 +16897,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $statusIcon: null,
     $dragHandle: null,
     $previewContainer: null,
+    $iframeContainer: null,
     $targetBtn: null,
     $targetMenu: null,
     $iframe: null,
@@ -16904,7 +16909,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     draftId: null,
     url: null,
     fields: null,
-    scrollLeft: null,
+    iframeHeight: null,
     scrollTop: null,
     dragger: null,
     dragStartEditorWidth: null,
@@ -16998,7 +17003,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         if (this.draftEditor.settings.previewTargets.length > 1) {
           var $previewHeader = $('<header/>', {
-            'class': 'flex'
+            'class': 'lp-preview-header flex'
           }).appendTo(this.$previewContainer);
           this.$targetBtn = $('<div/>', {
             'class': 'btn menubtn',
@@ -17031,6 +17036,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           });
         }
 
+        this.$iframeContainer = $('<div/>', {
+          'class': 'lp-iframe-container'
+        }).appendTo(this.$previewContainer);
         this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
           axis: Garnish.X_AXIS,
           onDragStart: $.proxy(this, '_onDragStart'),
@@ -17183,20 +17191,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function (url) {
-        // Capture the current scroll position?
-        var sameHost;
+        var _this11 = this;
 
-        if (resetScroll) {
-          this.scrollLeft = null;
-          this.scrolllTop = null;
-        } else {
-          sameHost = Craft.isSameHost(url);
-
-          if (sameHost && this.iframeLoaded && this.$iframe && this.$iframe[0].contentWindow) {
-            var $doc = $(this.$iframe[0].contentWindow.document);
-            this.scrollLeft = $doc.scrollLeft();
-            this.scrollTop = $doc.scrollTop();
-          }
+        // Maintain the current scroll position?
+        if (!resetScroll && this.iframeLoaded && this.$iframe) {
+          this.iframeHeight = this.$iframe.height();
+          this.scrollTop = this.$iframeContainer.scrollTop();
         }
 
         this.iframeLoaded = false;
@@ -17205,22 +17205,29 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           frameborder: 0,
           src: url
         });
-        $iframe.on('load', function () {
-          this.iframeLoaded = true;
-
-          if (!resetScroll && sameHost && this.scrollLeft !== null) {
-            var $doc = $($iframe[0].contentWindow.document);
-            $doc.scrollLeft(this.scrollLeft);
-            $doc.scrollTop(this.scrollTop);
-          }
-        }.bind(this));
 
         if (this.$iframe) {
           this.$iframe.replaceWith($iframe);
         } else {
-          $iframe.appendTo(this.$previewContainer);
+          $iframe.appendTo(this.$iframeContainer);
         }
 
+        if (!resetScroll && this.iframeHeight !== null) {
+          $iframe.height(this.iframeHeight);
+          this.$iframeContainer.scrollTop(this.scrollTop);
+        } // Keep the iframe height consistent with its content
+
+
+        iFrameResize({
+          // Allow iframe scrolling until we've successfully initialized the resizer
+          scrolling: true,
+          onInit: function onInit(iframe) {
+            _this11.iframeLoaded = true;
+            _this11.iframeHeight = null;
+            _this11.scrollTop = null;
+            iframe.scrolling = 'no';
+          }
+        }, $iframe[0]);
         this.url = url;
         this.$iframe = $iframe;
         this.afterUpdateIframe();

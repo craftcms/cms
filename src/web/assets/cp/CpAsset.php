@@ -26,6 +26,7 @@ use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
+use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
@@ -64,6 +65,7 @@ class CpAsset extends AssetBundle
             FileUploadAsset::class,
             XregexpAsset::class,
             FabricAsset::class,
+            IframeResizerAsset::class,
         ];
 
         $this->css = [

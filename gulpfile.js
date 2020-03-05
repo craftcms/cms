@@ -27,6 +27,8 @@ var jsDeps = [
     { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'inputmask' },
     { srcGlob: 'node_modules/jquery/dist/jquery.js', dest: libPath+'jquery' },
     { srcGlob: 'node_modules/jquery.payment/lib/jquery.payment.js', dest: libPath+'jquery.payment' },
+    { srcGlob: 'node_modules/iframe-resizer/js/iframeResizer.js', dest: libPath+'iframe-resizer' },
+    { srcGlob: 'node_modules/iframe-resizer/js/iframeResizer.contentWindow.js', dest: libPath+'iframe-resizer-cw' },
     { srcGlob: 'node_modules/picturefill/dist/picturefill.js', dest: libPath+'picturefill' },
     { srcGlob: 'node_modules/punycode/punycode.js', dest: libPath+'punycode' },
     { srcGlob: 'node_modules/selectize/dist/js/standalone/selectize.js', dest: libPath+'selectize' },
