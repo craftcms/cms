@@ -2514,10 +2514,27 @@ ul.tree,
 .status {
   display: inline-block;
   @include margin-right(10px);
-  width: 8px;
-  height: 8px;
-  border-radius: 100%;
+  width: 10px;
+  height: 10px;
   border: 1px solid transparent;
+  border-radius: 100%;
+  box-sizing: border-box;
+
+  body.use-shapes & {
+    &.pending {
+      background-color: transparent;
+      border-style: solid;
+      border-width: 0 5px 10px 5px;
+      border-color: transparent transparent $yellow700 transparent;
+      border-radius: 1px;
+    }
+
+    &.off,
+    &.suspended,
+    &.expired {
+      border-radius: 1px;
+    }
+  }
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {

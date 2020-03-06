@@ -248,6 +248,22 @@
                     value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                 }) }}
 
+                <hr>
+
+                {% embed '_includes/forms/field' with {
+                    label: 'Accessibility'|t('app'),
+                } %}
+                    {% block input %}
+                        {% from '_includes/forms' import checkboxField %}
+                        {{ checkboxField({
+                            label: 'Use shapes to represent statuses'|t('app'),
+                            name: 'useShapes',
+                            id: 'useShapes',
+                            checked: user.getPreference('useShapes')
+                        }) }}
+                    {% endblock %}
+                {% endembed %}
+
                 {% if user.admin %}
                     <hr>
 
