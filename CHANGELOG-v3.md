@@ -16,6 +16,7 @@
 - Fixed an error that could occur when processing Project Config changes that also included new sites.
 - Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
 - Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
+- Fixed a bug where lightswitch inputs would be unresponsive if they had been configured with `disabled` set to an empty, non-boolean value.
 
 ## 3.4.9 - 2020-02-28
 
