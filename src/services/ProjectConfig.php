@@ -429,20 +429,23 @@ class ProjectConfig extends Component
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        if ($value !== $this->get($path)) {
-            if ($this->readOnly) {
-                // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
-                if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
-                    return;
-                }
+        // Pointless to re-set the same value.
+        if ($value === $this->get($path)) {
+            return;
+        }
 
-                throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+        if ($this->readOnly) {
+            // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
+            if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
+                return;
             }
 
-            if (!$this->_timestampUpdated) {
-                $this->_timestampUpdated = true;
-                $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
-            }
+            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+        }
+
+        if (!$this->_timestampUpdated) {
+            $this->_timestampUpdated = true;
+            $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
         }
 
         // Mark this path (and its parent paths) as being processed, and store their current values
