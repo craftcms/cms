@@ -3,6 +3,7 @@
 ### Added
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
+- Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Added the `siteToken` config setting.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
@@ -11,6 +12,7 @@
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added `craft\base\ElementInterface::getIconUrl()`.
+- Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
