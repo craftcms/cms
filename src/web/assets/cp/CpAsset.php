@@ -319,6 +319,7 @@ JS;
             'scriptName' => $request->getScriptFile(),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
+            'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),

@@ -12994,6 +12994,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         if (randoParam || !this.settings.isLive) {
           // Randomize the URL so CDNs don't return cached pages
           params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
+        }
+
+        if (this.settings.siteToken) {
+          params[Craft.siteToken] = this.settings.siteToken;
         } // No need for a token if we're looking at a live element
 
 

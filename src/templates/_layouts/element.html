@@ -361,6 +361,7 @@
     elementTypeDisplayName: element.displayName(),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
+    siteToken: not element.getSite().enabled ? element.siteId|hash,
     isUnsavedDraft: isUnsavedDraft,
     siteStatuses: siteStatuses,
     enabled: element.enabled ? true : false,

@@ -540,6 +540,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
             'primary' => $this->boolean()->notNull(),
+            'enabled' => $this->boolean()->notNull()->defaultValue(true),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'language' => $this->string(12)->notNull(),

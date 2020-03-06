@@ -137,19 +137,13 @@ class Sites extends Component
      * @var Site[]
      * @see getSiteById()
      */
-    private $_sitesById;
+    private $_allSitesById;
 
     /**
      * @var Site[]
-     * @see getSiteByUid()
+     * @see getSiteById()
      */
-    private $_sitesByUid;
-
-    /**
-     * @var Site[]
-     * @see getSiteByHandle()
-     */
-    private $_sitesByHandle;
+    private $_enabledSitesById;
 
     /**
      * @var Site|null the current site
@@ -388,26 +382,29 @@ class Sites extends Component
     /**
      * Returns all of the site IDs.
      *
+     * @param bool|null $withDisabled
      * @return int[] All the sites’ IDs
      */
-    public function getAllSiteIds(): array
+    public function getAllSiteIds(bool $withDisabled = null): array
     {
-        return array_keys($this->_sitesById);
+        return array_keys($this->_allSites($withDisabled));
     }
 
     /**
      * Returns a site by it's UID.
      *
+     * @param string $uid
+     * @param bool|null $withDisabled
      * @return Site the site
      * @throws SiteNotFoundException if no sites exist
      */
-    public function getSiteByUid(string $uid): Site
+    public function getSiteByUid(string $uid, bool $withDisabled = null): Site
     {
-        if (!isset($this->_sitesByUid[$uid])) {
+        $site = ArrayHelper::firstWhere($this->_allSites($withDisabled), 'uid', $uid, true);
+        if ($site === null) {
             throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
-
-        return $this->_sitesByUid[$uid];
+        return $site;
     }
 
     /**
@@ -521,11 +518,12 @@ class Sites extends Component
     /**
      * Returns all sites.
      *
+     * @param bool|null $withDisabled
      * @return Site[] All the sites
      */
-    public function getAllSites(): array
+    public function getAllSites(bool $withDisabled = null): array
     {
-        return array_values($this->_sitesById);
+        return array_values($this->_allSites($withDisabled));
     }
 
     /**
@@ -551,17 +549,12 @@ class Sites extends Component
      * Returns sites by a group ID.
      *
      * @param int $groupId
+     * @param bool|null $withDisabled
      * @return Site[]
      */
-    public function getSitesByGroupId(int $groupId): array
+    public function getSitesByGroupId(int $groupId, bool $withDisabled = null): array
     {
-        $sites = [];
-
-        foreach ($this->getAllSites() as $site) {
-            if ($site->groupId == $groupId) {
-                $sites[] = $site;
-            }
-        }
+        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId);
 
         // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
@@ -593,22 +586,24 @@ class Sites extends Component
      * Returns a site by its ID.
      *
      * @param int $siteId
+     * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteById(int $siteId)
+    public function getSiteById(int $siteId, bool $withDisabled = null)
     {
-        return $this->_sitesById[$siteId] ?? null;
+        return $this->_allSites($withDisabled)[$siteId] ?? null;
     }
 
     /**
      * Returns a site by its handle.
      *
      * @param string $siteHandle
+     * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteByHandle(string $siteHandle)
+    public function getSiteByHandle(string $siteHandle, bool $withDisabled = null)
     {
-        return $this->_sitesByHandle[$siteHandle] ?? null;
+        return ArrayHelper::firstWhere($this->_allSites($withDisabled), 'handle', $siteHandle, true);
     }
 
     /**
@@ -624,7 +619,7 @@ class Sites extends Component
     {
         $isNewSite = !$site->id;
 
-        if (!empty($this->_sitesById)) {
+        if (!empty($this->_allSitesById)) {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } else {
             $oldPrimarySiteId = null;
@@ -656,6 +651,7 @@ class Sites extends Component
             'baseUrl' => $site->baseUrl,
             'sortOrder' => (int)$site->sortOrder,
             'primary' => (bool)$site->primary,
+            'enabled' => (bool)$site->enabled,
         ];
 
         if ($isNewSite) {
@@ -717,6 +713,7 @@ class Sites extends Component
             $siteRecord->hasUrls = $data['hasUrls'];
             $siteRecord->baseUrl = $data['baseUrl'];
             $siteRecord->primary = $data['primary'];
+            $siteRecord->enabled = $data['enabled'] ?? true;
             $siteRecord->sortOrder = $data['sortOrder'];
 
             if ($siteRecord->dateDeleted) {
@@ -1117,7 +1114,8 @@ class Sites extends Component
      */
     private function _refreshAllSites()
     {
-        $this->_sitesById = null;
+        $this->_allSitesById = null;
+        $this->_enabledSitesById = null;
         $this->_loadAllSites();
         Craft::$app->getIsMultiSite(true);
     }
@@ -1127,13 +1125,12 @@ class Sites extends Component
      */
     private function _loadAllSites()
     {
-        if ($this->_sitesById !== null) {
+        if ($this->_allSitesById !== null) {
             return;
         }
 
-        $this->_sitesById = [];
-        $this->_sitesByHandle = [];
-        $this->_sitesByUid = [];
+        $this->_allSitesById = [];
+        $this->_enabledSitesById = [];
 
         if (!Craft::$app->getIsInstalled()) {
             return;
@@ -1148,6 +1145,7 @@ class Sites extends Component
                     's.handle',
                     'language',
                     's.primary',
+                    's.enabled',
                     's.hasUrls',
                     's.baseUrl',
                     's.sortOrder',
@@ -1167,7 +1165,7 @@ class Sites extends Component
             if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42P01'], true)) {
                 return;
             }
-            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId or dateDeleted column yet
+            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId, dateDeleted, or enabled column yet
             if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S22', '42703'], true)) {
                 $results = (new Query())
                     ->select([
@@ -1197,9 +1195,10 @@ class Sites extends Component
 
             foreach ($results as $i => $result) {
                 $site = new Site($result);
-                $this->_sitesById[$site->id] = $site;
-                $this->_sitesByHandle[$site->handle] = $site;
-                $this->_sitesByUid[$site->uid] = $site;
+                $this->_allSitesById[$site->id] = $site;
+                if ($site->enabled) {
+                    $this->_enabledSitesById[$site->id] = $site;
+                }
 
                 if ($site->primary) {
                     $this->_primarySite = $site;
@@ -1257,6 +1256,21 @@ class Sites extends Component
         }
 
         return $query->one() ?? new SiteGroupRecord();
+    }
+
+    /**
+     * Returns all sites, or only enabled sites.
+     *
+     * @param bool|null $withDisabled
+     * @return Site[]
+     */
+    private function _allSites(bool $withDisabled = null)
+    {
+        if ($withDisabled === null) {
+            $withDisabled = Craft::$app->getRequest()->getIsCpRequest();
+        }
+
+        return $withDisabled ? $this->_allSitesById : $this->_enabledSitesById;
     }
 
     /**

@@ -381,6 +381,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                     params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
                 }
 
+                if (this.settings.siteToken) {
+                    params[Craft.siteToken] = this.settings.siteToken;
+                }
+
                 // No need for a token if we're looking at a live element
                 if (this.settings.isLive) {
                     resolve(Craft.getUrl(url, params));

@@ -772,6 +772,11 @@ class GeneralConfig extends BaseObject
      */
     public $siteName;
     /**
+     * @var string The query string parameter name that site tokens should be set to.
+     * @since 3.5.0
+     */
+    public $siteToken = 'siteToken';
+    /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.

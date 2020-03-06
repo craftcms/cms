@@ -1149,7 +1149,23 @@ class Request extends \yii\web\Request
      */
     private function _requestedSite(Sites $sitesService): Site
     {
-        $sites = $sitesService->getAllSites();
+        // Was a site token provided?
+        $siteId = $this->getQueryParam(Craft::$app->getConfig()->getGeneral()->siteToken)
+            ?? $this->getHeaders()->get('X-Craft-Site-Token')
+            ?? false;
+        if ($siteId) {
+            $siteId = Craft::$app->getSecurity()->validateData($siteId);
+            if ($siteId === false) {
+                throw new BadRequestHttpException('Invalid site token');
+            }
+            $site = $sitesService->getSiteById($siteId, true);
+            if (!$site) {
+                throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
+            }
+            return $site;
+        }
+
+        $sites = $sitesService->getAllSites(false);
 
         $hostName = $this->getHostName();
         $baseUrl = $this->_normalizePath($this->getBaseUrl());
