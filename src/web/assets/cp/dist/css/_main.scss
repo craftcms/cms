@@ -3062,16 +3062,8 @@ ul.tree,
 }
 
 .modal-shade {
-  backdrop-filter: blur(10px);
-
   &:not(.dark) {
-    background-color: transparentize($white, 0.25) !important;
-
-    @supports (backdrop-filter: blur(10px)) {
-      & {
-        background-color: transparent !important;
-      }
-    }
+    background-color: transparentize($grey100, 0.35) !important;
   }
 
   &.dark {
