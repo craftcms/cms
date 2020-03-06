@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## 2.9.2 - 2020-03-06
+
+### Security
+- Added the `sameSiteCookieValue` config setting. ([#4462](https://github.com/craftcms/cms/issues/4462))
+
 ## 2.9.1 - 2020-02-06
 
 ### Fixed

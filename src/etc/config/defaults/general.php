@@ -551,6 +551,19 @@ return array(
 	'runTasksAutomatically' => true,
 
 	/**
+	 * The [SameSite](https://www.owasp.org/index.php/SameSite) value that should be set on Craft cookies, if any.
+	 *
+	 * This can be set to `'Lax'`, `'Strict'`, or `null`.
+	 *
+	 * ::: note
+	 * This setting requires PHP 7.3 or later.
+	 * :::
+	 *
+	 * @since 2.9.2
+	 */
+    'sameSiteCookieValue' => null,
+
+	/**
 	 * Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
 	 * Should definitely be enabled if you are accepting SVG uploads from untrusted sources.
 	 */
