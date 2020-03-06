@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -50,7 +51,16 @@ class Delete extends ElementAction
      */
     public function getConfirmationMessage()
     {
-        return $this->confirmationMessage;
+        if ($this->confirmationMessage !== null) {
+            return $this->confirmationMessage;
+        }
+
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType;
+
+        return Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
     }
 
     /**
@@ -63,7 +73,15 @@ class Delete extends ElementAction
             $elementsService->deleteElement($element);
         }
 
-        $this->setMessage($this->successMessage);
+        if ($this->successMessage !== null) {
+            $this->setMessage($this->successMessage);
+        } else {
+            /** @var ElementInterface|string $elementType */
+            $elementType = $this->elementType;
+            $this->setMessage(Craft::t('app', '{type} deleted.', [
+                'type' => $elementType::pluralDisplayName(),
+            ]));
+        }
 
         return true;
     }

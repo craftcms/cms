@@ -247,11 +247,7 @@ class Category extends Element
             }
 
             // Delete
-            $actions[] = $elementsService->createAction([
-                'type' => Delete::class,
-                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
-                'successMessage' => Craft::t('app', 'Categories deleted.'),
-            ]);
+            $actions[] = Delete::class;
         }
 
         // Restore

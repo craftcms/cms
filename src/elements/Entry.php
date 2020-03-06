@@ -393,11 +393,7 @@ class Entry extends Element
                     $userSession->checkPermission('deleteEntries:' . $section->uid) &&
                     $userSession->checkPermission('deletePeerEntries:' . $section->uid)
                 ) {
-                    $actions[] = $elementsService->createAction([
-                        'type' => Delete::class,
-                        'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
-                        'successMessage' => Craft::t('app', 'Entries deleted.'),
-                    ]);
+                    $actions[] = Delete::class;
                 }
             }
         }
