@@ -41,6 +41,13 @@ class HttpCookie extends \CHttpCookie
 			$this->secure = true;
 		}
 
+		$sameSite = craft()->config->get('sameSiteCookieValue');
+
+		if ($sameSite !== null)
+		{
+			$this->sameSite = $sameSite;
+		}
+
 		parent::__construct($name, $value, $options);
 	}
 }

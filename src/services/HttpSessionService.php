@@ -38,6 +38,8 @@ class HttpSessionService extends \CHttpSession
 			$cookieParams['secure'] = true;
 		}
 
+		$cookieParams['sameSite'] = craft()->config->get('sameSiteCookieValue');
+
 		// Set the PHP session cookie to HTTP only.
 		$this->setCookieParams($cookieParams);
 
