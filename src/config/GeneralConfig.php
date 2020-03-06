@@ -160,8 +160,10 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should route to the control panel rather than
+     * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
+     *
+     * If this is set to `null`, then the control panel will only be accessible if the `CRAFT_CP` PHP constant is set to `true`.
      */
     public $cpTrigger = 'admin';
     /**

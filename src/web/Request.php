@@ -211,11 +211,14 @@ class Request extends \yii\web\Request
         $this->_segments = $this->_segments($path);
 
         // Is this a CP request?
-        $this->_isCpRequest = ($this->getSegment(1) == $generalConfig->cpTrigger);
+        $cpTriggerMatch = $generalConfig->cpTrigger && $this->getSegment(1) === $generalConfig->cpTrigger;
+        $this->_isCpRequest = $cpTriggerMatch || (defined('CRAFT_CP') && CRAFT_CP);
 
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
-            array_shift($this->_segments);
+            if ($cpTriggerMatch) {
+                array_shift($this->_segments);
+            }
 
             // Force 'p' pageTrigger
             // (all that really matters is that it doesn't have a trailing slash, but whatever.)

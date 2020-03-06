@@ -383,7 +383,7 @@
                                     setting: 'actionTrigger'
                                 }));
                                 return;
-                            } else if (Craft.startsWith(val, Craft.cpTrigger + '/')) {
+                            } else if (Craft.cpTrigger && Craft.startsWith(val, Craft.cpTrigger + '/')) {
                                 this.addUriError(Craft.t('app', 'The URI can’t begin with the {setting} config setting.', {
                                     setting: 'cpTrigger'
                                 }));
