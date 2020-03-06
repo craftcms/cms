@@ -678,7 +678,7 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 .element:focus, li:focus .element { background-color: #f3f7fc; }
 .element.sel, li.sel .element { background-color: #cdd8e4 !important; cursor: default; }
 .element.sel.loading:after, li.sel .element.loading:after { background-image: url(../images/spinner_element.gif); }
-.element.hasthumb .elementthumb img { display: block; width: 100%; height: 100%; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
+.element.hasthumb .elementthumb img { display: block; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
 .element .label { display: inline-block; }
 .element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 body.ltr .element.small.hasstatus, body.ltr .element.large:not(.hasthumb).hasstatus { padding-left: 22px; }
@@ -691,6 +691,7 @@ body.rtl .element.small.hasthumb, body.rtl .element.large:not(.hasthumb).hasthum
 .element.small.hasthumb .elementthumb, .element.large:not(.hasthumb).hasthumb .elementthumb { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; position: absolute; top: calc(50% - 16px); width: 32px; height: 32px; border-radius: 16px; overflow: hidden; }
 body.ltr .element.small.hasthumb .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb .elementthumb { left: 1px; }
 body.rtl .element.small.hasthumb .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb { right: 1px; }
+.element.small.hasthumb .elementthumb img, .element.large:not(.hasthumb).hasthumb .elementthumb img { width: 100%; height: 100%; }
 body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 53px; }
 body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus { padding-right: 53px; }
 body.ltr .element.small.hasthumb.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .status { left: 38px; }
@@ -701,9 +702,10 @@ body.rtl .element.large.hasthumb.hasstatus { padding-right: 22px; }
 .element.large.hasthumb.hasstatus .status { position: absolute; top: 138px; }
 body.ltr .element.large.hasthumb.hasstatus .status { left: 7px; }
 body.rtl .element.large.hasthumb.hasstatus .status { right: 7px; }
-.element.large.hasthumb .elementthumb { position: absolute; top: 7px; overflow: hidden; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; justify-content: center; -ms-flex-pack: center; -webkit-box-align: center; align-items: center; -ms-flex-align: center; width: 120px; height: 120px; border-radius: 5px; }
+.element.large.hasthumb .elementthumb { position: absolute; top: 7px; overflow: hidden; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; justify-content: center; -ms-flex-pack: center; -webkit-box-align: center; align-items: center; -ms-flex-align: center; width: 120px; height: 120px; }
 body.ltr .element.large.hasthumb .elementthumb { left: 7px; }
 body.rtl .element.large.hasthumb .elementthumb { right: 7px; }
+.element.large.hasthumb .elementthumb img { border-radius: 5px; }
 .element.large.hasthumb .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: normal; }
 body.ltr .element.removable .label { padding-right: 20px; }
 body.rtl .element.removable .label { padding-left: 20px; }
@@ -746,11 +748,15 @@ body.rtl .elements .thumbsview { margin: -7px -7px -8px -8px ; }
 body.ltr .elements .thumbsview li { margin: 0 1px 1px 0 ; }
 body.rtl .elements .thumbsview li { margin: 0 0 1px 1px ; }
 .elements .thumbsview li:hover .element { background-color: #f3f7fc; }
-.elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 109px; }
-body.ltr .elements .thumbsview li.has-checkbox .checkbox { left: 9px; }
-body.rtl .elements .thumbsview li.has-checkbox .checkbox { right: 9px; }
-@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .elements .thumbsview li.has-checkbox div.checkbox:before { background-color: rgba(255, 255, 255, 0.75); border-color: rgba(0, 0, 0, 0.15); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-  .elements .thumbsview li.has-checkbox:focus div.checkbox:before { background-color: rgba(255, 255, 255, 0.9); border-color: rgba(0, 0, 0, 0.5); } }
+body.ltr .elements .thumbsview li.has-checkbox .element.hasthumb:not(.hasstatus) { padding-left: 28px; }
+body.rtl .elements .thumbsview li.has-checkbox .element.hasthumb:not(.hasstatus) { padding-right: 28px; }
+body.ltr .elements .thumbsview li.has-checkbox .element.hasthumb.hasstatus { padding-left: 43px; }
+body.rtl .elements .thumbsview li.has-checkbox .element.hasthumb.hasstatus { padding-right: 43px; }
+body.ltr .elements .thumbsview li.has-checkbox .element.hasthumb.hasstatus .status { left: 28px; }
+body.rtl .elements .thumbsview li.has-checkbox .element.hasthumb.hasstatus .status { right: 28px; }
+.elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 134px; }
+body.ltr .elements .thumbsview li.has-checkbox .checkbox { left: 7px; }
+body.rtl .elements .thumbsview li.has-checkbox .checkbox { right: 7px; }
 
 .export-form { position: relative; }
 .export-form .spinner { position: absolute; bottom: 0; }
