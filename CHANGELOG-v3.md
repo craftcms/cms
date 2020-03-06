@@ -16,6 +16,7 @@
 - Fixed an error that could occur when processing Project Config changes that also included new sites.
 - Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
 - Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
+- Fixed a bug where lightswitch inputs would be unresponsive if they had been configured with `disabled` set to an empty, non-boolean value.
 
 ## 3.4.9 - 2020-02-28
 
@@ -491,7 +492,7 @@
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
-- Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
+- Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell). ([#5228](https://github.com/craftcms/cms/issues/5228))
 - Added the Minify PHP package.
 
 ### Changed
