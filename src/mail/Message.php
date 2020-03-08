@@ -8,6 +8,7 @@
 namespace craft\mail;
 
 use craft\elements\User;
+use craft\helpers\MailerHelper;
 
 /**
  * Represents an email message.
@@ -43,9 +44,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setFrom($from)
     {
-        $from = $this->_normalizeEmails($from);
-        parent::setFrom($from);
-
+        parent::setFrom(MailerHelper::normalizeEmails($from));
         return $this;
     }
 
@@ -61,9 +60,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setReplyTo($replyTo)
     {
-        $replyTo = $this->_normalizeEmails($replyTo);
-        parent::setReplyTo($replyTo);
-
+        parent::setReplyTo(MailerHelper::normalizeEmails($replyTo));
         return $this;
     }
 
@@ -86,9 +83,7 @@ class Message extends \yii\swiftmailer\Message
             $this->variables['user'] = $to;
         }
 
-        $to = $this->_normalizeEmails($to);
-        parent::setTo($to);
-
+        parent::setTo(MailerHelper::normalizeEmails($to));
         return $this;
     }
 
@@ -103,9 +98,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setCc($cc)
     {
-        $cc = $this->_normalizeEmails($cc);
-        parent::setCc($cc);
-
+        parent::setCc(MailerHelper::normalizeEmails($cc));
         return $this;
     }
 
@@ -120,42 +113,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setBcc($bcc)
     {
-        $bcc = $this->_normalizeEmails($bcc);
-        parent::setBcc($bcc);
-
+        parent::setBcc(MailerHelper::normalizeEmails($bcc));
         return $this;
-    }
-
-    /**
-     * @param string|array|User|User[]|null $emails
-     * @return string|array
-     */
-    private function _normalizeEmails($emails)
-    {
-        if (empty($emails)) {
-            return null;
-        }
-
-        if (!is_array($emails)) {
-            $emails = [$emails];
-        }
-
-        $normalized = [];
-
-        foreach ($emails as $key => $value) {
-            if ($value instanceof User) {
-                if (($name = $value->getFullName()) !== null) {
-                    $normalized[$value->email] = $name;
-                } else {
-                    $normalized[] = $value->email;
-                }
-            } else if (is_numeric($key)) {
-                $normalized[] = $value;
-            } else {
-                $normalized[$key] = $value;
-            }
-        }
-
-        return $normalized;
     }
 }

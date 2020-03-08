@@ -12,8 +12,12 @@
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added `craft\base\ElementInterface::getIconUrl()`.
+- Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
+- Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\helpers\MailerHelper::normalizeEmails()`.
+- Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
@@ -26,5 +30,9 @@
 - The preview frame header no longer hides the top 54px of the preview frame when it’s scrolled all the way to the top. ([#5547](https://github.com/craftcms/cms/issues/5547))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
 - The `cpTrigger` config setting can now be set to `null` or an empty string. ([#5122](https://github.com/craftcms/cms/issues/5122))
+- The `mailer/test` command now only supports testing the current email settings.
 - The `QueryArgument` GraphQL type now also allows boolean values.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
+
+### Fixed
+- Fixed a bug where the `mailer/test` command wasn’t factoring in custom `mailer` configurations in its settings report. ([#5763](https://github.com/craftcms/cms/issues/5763))

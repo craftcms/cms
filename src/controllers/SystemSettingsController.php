@@ -239,33 +239,13 @@ class SystemSettingsController extends Controller
         $adapterIsValid = $adapter->validate();
 
         if ($settingsIsValid && $adapterIsValid) {
+            // Try to send the test email
             /** @var Mailer $mailer */
             $mailer = Craft::createObject(App::mailerConfig($settings));
-
-            // Compose the settings list as HTML
-            $settingsList = '';
-
-            foreach (['fromEmail', 'fromName', 'template'] as $name) {
-                if (!empty($settings->$name)) {
-                    $settingsList .= '- **' . $settings->getAttributeLabel($name) . ':** ' . $settings->$name . "\n";
-                }
-            }
-
-            $settingsList .= '- **' . Craft::t('app', 'Transport Type') . ':** ' . $adapter::displayName() . "\n";
-
-            $security = Craft::$app->getSecurity();
-
-            foreach ($adapter->settingsAttributes() as $name) {
-                if (!empty($adapter->$name)) {
-                    $label = $adapter->getAttributeLabel($name);
-                    $value = $security->redactIfSensitive($name, $adapter->$name);
-                    $settingsList .= "- **{$label}:** {$value}\n";
-                }
-            }
-
-            // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => $settingsList])
+                ->composeFromKey('test_email', [
+                    'settings' => MailerHelper::settingsReport($mailer, $adapter)
+                ])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
