@@ -1180,67 +1180,80 @@ class Request extends \yii\web\Request
 
         $scores = [];
         foreach ($sites as $i => $site) {
-            if (!$site->baseUrl) {
-                continue;
+            if ($site->baseUrl) {
+                $score = $this->_scoreUrl($site->getBaseUrl(), $hostName, $fullUri, $scheme, $port);
+            } else {
+                $score = 0;
             }
 
-            if (($parsed = parse_url($site->getBaseUrl())) === false) {
-                Craft::warning('Unable to parse the site base URL: ' . $site->baseUrl);
-                continue;
-            }
-
-            // Does the site URL specify a host name?
-            if (
-                !empty($parsed['host']) &&
-                $hostName &&
-                $parsed['host'] !== $hostName &&
-                (
-                    !function_exists('idn_to_ascii') ||
-                    !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
-                    !defined('INTL_IDNA_VARIANT_UTS46') ||
-                    idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
-                )
-            ) {
-                continue;
-            }
-
-            // Does the site URL specify a base path?
-            $parsedPath = !empty($parsed['path']) ? $this->_normalizePath($parsed['path']) : '';
-            if ($parsedPath && strpos($fullUri . '/', $parsedPath . '/') !== 0) {
-                continue;
-            }
-
-            // It's a possible match!
-            $scores[$i] = 1000 + strlen($parsedPath) * 100;
-
-            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
-            $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
-
-            // Do the ports match?
-            if ($parsedPort == $port) {
-                $scores[$i] += 100;
-            }
-
-            // Do the schemes match?
-            if ($parsedScheme === $scheme) {
-                $scores[$i] += 10;
-            }
-
-            // One Pence point if it's the primary site in case we need a tiebreaker
             if ($site->primary) {
-                $scores[$i]++;
+                // One more point in case we need a tiebreaker
+                $score++;
             }
+
+            $scores[] = $score;
         }
 
-        if (empty($scores)) {
-            // Default to the primary site
-            return $sitesService->getPrimarySite();
+        // Sort sites by scores descending and return the first site
+        array_multisort($scores, SORT_DESC, SORT_NUMERIC, $sites);
+        return reset($sites);
+    }
+
+    /**
+     * Scores a URL to determine how close of a match it is for the current request.
+     *
+     * @param string $url
+     * @param string $hostName
+     * @param string $fullUri
+     * @param string $scheme
+     * @param int $port
+     * @return int
+     */
+    private function _scoreUrl(string $url, string $hostName, string $fullUri, string $scheme, int $port): int
+    {
+        if (($parsed = parse_url($url)) === false) {
+            Craft::warning("Unable to parse the URL: $url");
+            return 0;
         }
 
-        // Sort by scores descending
-        arsort($scores, SORT_NUMERIC);
-        $first = ArrayHelper::firstKey($scores);
-        return $sites[$first];
+        // Does the site URL specify a host name?
+        if (
+            !empty($parsed['host']) &&
+            $hostName &&
+            $parsed['host'] !== $hostName &&
+            (
+                !function_exists('idn_to_ascii') ||
+                !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
+                !defined('INTL_IDNA_VARIANT_UTS46') ||
+                idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
+            )
+        ) {
+            return 0;
+        }
+
+        // Does the site URL specify a base path?
+        $parsedPath = !empty($parsed['path']) ? $this->_normalizePath($parsed['path']) : '';
+        if ($parsedPath && strpos($fullUri . '/', $parsedPath . '/') !== 0) {
+            return 0;
+        }
+
+        // It's a possible match!
+        $score = 1000 + strlen($parsedPath) * 100;
+
+        $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
+        $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
+
+        // Do the ports match?
+        if ($parsedPort == $port) {
+            $score += 100;
+        }
+
+        // Do the schemes match?
+        if ($parsedScheme === $scheme) {
+            $score += 10;
+        }
+
+        return $score;
     }
 
     /**
