@@ -21,6 +21,7 @@
 - Added `craft\models\Site::$enabled`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
+- Added `craft\web\Request::getFullUri()`.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
 ### Changed

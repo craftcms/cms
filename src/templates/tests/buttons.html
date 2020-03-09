@@ -23,6 +23,12 @@
 
 {% block content %}
 
+    <p>Script URL: {{ craft.app.request.getScriptUrl() }}</p>
+    <p>Base URL: {{ craft.app.request.getBaseUrl() }}</p>
+    <p>Full URI: {{ [craft.app.request.getBaseUrl(), craft.app.request.getFullPath()]|filter|join('/') }}</p>
+    <p>Full path: {{ craft.app.request.getFullPath() }}</p>
+    <p>Path info: {{ craft.app.request.getPathInfo() }}</p>
+
     <div class="buttons">
         <div class="btn">Click me</div>
     </div>
