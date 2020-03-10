@@ -860,8 +860,19 @@ class Asset extends Element
      */
     public function getSrcset(array $sizes)
     {
+        if ($this->kind !== self::KIND_IMAGE) {
+            return false;
+        }
+
         $srcset = [];
-        list($currentWidth, $currentHeight) = $this->_dimensions();
+
+        if ($this->_transform && Image::canManipulateAsImage($this->getExtension())) {
+            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->_transform);
+        } else {
+            $transform = null;
+        }
+
+        list($currentWidth, $currentHeight) = $this->_dimensions($transform);
 
         if (!$currentWidth || !$currentHeight) {
             return false;
@@ -886,9 +897,14 @@ class Asset extends Element
             } else {
                 $width = (int)ceil($currentWidth * $value);
             }
-            $height = $currentHeight * ceil($width / $currentWidth);
+            $sizeTransform = ['width' => $width];
 
-            $srcset[] = $this->getUrl(['width' => $width, 'height' => $height]) . ($size !== '1x' ? " $size" : '');
+            // Only set the height if the current transform has a height set on it
+            if ($transform && $transform->height) {
+                $sizeTransform['height'] = $currentHeight * ceil($width / $currentWidth);
+            }
+
+            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $size" : '');
         }
 
         return implode(', ', $srcset);
