@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Image
@@ -34,20 +35,26 @@ class Image
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
     {
+        // If the target width & height are both present, return them
+        if ($targetWidth && $targetHeight) {
+            return [(int)$targetWidth, (int)$targetHeight];
+        }
+
+        // Make sure that there's a source width/height
+        if (!$sourceWidth || !$sourceHeight) {
+            throw new InvalidArgumentException('Image missing its width or height');
+        }
+
         // If neither were supplied, just use the source dimensions
-        if (empty($targetWidth) && empty($targetHeight)) {
+        if (!$targetWidth && !$targetHeight) {
             return [(int)$sourceWidth, (int)$sourceHeight];
         }
 
-        $factor = $sourceWidth / $sourceHeight;
-
-        if (empty($targetHeight)) {
-            $targetHeight = ceil($targetWidth / $factor);
-        } else if (empty($targetWidth)) {
-            $targetWidth = ceil($targetHeight * $factor);
-        }
-
-        return [(int)$targetWidth, (int)$targetHeight];
+        // Fill in the blank
+        return [
+            (int)($targetWidth ?: ceil($targetHeight * ($sourceWidth / $sourceHeight))),
+            (int)($targetHeight ?: ceil($targetWidth * ($sourceHeight / $sourceWidth))),
+        ];
     }
 
     /**
