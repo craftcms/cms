@@ -236,10 +236,6 @@ $config = ArrayHelper::merge(
     $configService->getConfigFromFile("app.{$appType}")
 );
 
-if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-    $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
-}
-
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */
 $app = Craft::createObject($config);

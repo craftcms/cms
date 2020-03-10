@@ -160,7 +160,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => null,
+            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
         ],
         'systemSettings' => [
             'class' => craft\services\SystemSettings::class,
