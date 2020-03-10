@@ -879,18 +879,7 @@ class Asset extends Element
         }
 
         foreach ($sizes as $size) {
-            if (is_numeric($size)) {
-                $size = $size . 'w';
-            }
-            if (!is_string($size)) {
-                throw new InvalidArgumentException("Invalid srcset size");
-            }
-            $size = strtolower($size);
-            if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
-                throw new InvalidArgumentException("Invalid srcset size: $size");
-            }
-            $value = $match[1];
-            $unit = $match[2];
+            list($value, $unit) = Assets::parseSrcsetSize($size);
 
             if ($unit === 'w') {
                 $width = (int)$value;
