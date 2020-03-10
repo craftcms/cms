@@ -48,6 +48,7 @@ use DateTime;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -796,17 +797,16 @@ class Asset extends Element
      * Returns an `<img>` tag based on this asset.
      *
      * @param mixed $transform The transform to use when generating the html.
+     * @param string[]|null $sizes The widths/x-descriptors that should be used for the `srcset` attribute
+     * (see [[getSrcset()]] for example syntaxes)
      * @return Markup|null
+     * @throws InvalidArgumentException
      */
-    public function getImg($transform = null)
+    public function getImg($transform = null, array $sizes = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
-
-        if ($transform) {
-            $this->setTransform($transform);
-        };
 
         /** @var Volume $volume */
         $volume = $this->getVolume();
@@ -815,8 +815,77 @@ class Asset extends Element
             return null;
         }
 
-        $img = '<img src="' . $this->getUrl() . '" width="' . $this->getWidth() . '" height="' . $this->getHeight() . '" alt="' . Html::encode($this->title) . '">';
+        if ($transform) {
+            $oldTransform = $this->_transform;
+            $this->setTransform($transform);
+        }
+
+        $img = Html::tag('img', '', [
+            'src' => $this->getUrl(),
+            'width' => $this->getWidth(),
+            'height' => $this->getHeight(),
+            'srcset' => $sizes ? $this->getSrcset($sizes) : false,
+            'alt' => $this->title,
+        ]);
+
+        if (isset($oldTransform)) {
+            $this->setTransform($oldTransform);
+        }
+
         return Template::raw($img);
+    }
+
+    /**
+     * Returns a `srcset` attribute value based on the given widths or x-descriptors.
+     *
+     * For example, if you pass `['100w', '200w']`, you will get:
+     *
+     * ```
+     * image-url@100w.ext 100w,
+     * image-url@200w.ext 200w
+     * ```
+     *
+     * If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.
+     * So if you pass `['1x', '2x']` on an image with a 100px-wide transform applied, you will get:
+     *
+     * ```
+     * image-url@100w.ext,
+     * image-url@200w.ext 2x
+     * ```
+     *
+     * @param string[] $sizes
+     * @return string
+     * @throws InvalidArgumentException
+     * @since 3.5.0
+     */
+    public function getSrcset(array $sizes): string
+    {
+        $srcset = [];
+
+        foreach ($sizes as $size) {
+            if (is_numeric($size)) {
+                $size = $size . 'w';
+            }
+            if (!is_string($size)) {
+                throw new InvalidArgumentException("Invalid srcset size");
+            }
+            $size = strtolower($size);
+            if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
+                throw new InvalidArgumentException("Invalid srcset size: $size");
+            }
+            $value = $match[1];
+            $unit = $match[2];
+
+            if ($unit === 'w') {
+                $width = (int)$value;
+            } else {
+                $width = (int)floor($this->getWidth() * $value);
+            }
+
+            $srcset[] = $this->getUrl(['width' => $width]) . ($size !== '1x' ? " $size" : '');
+        }
+
+        return implode(', ', $srcset);
     }
 
     /**

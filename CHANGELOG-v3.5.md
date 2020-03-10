@@ -15,6 +15,7 @@
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\elements\actions\Delete::$hard`.
+- Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
@@ -33,6 +34,7 @@
 - The `cpTrigger` config setting can now be set to `null` or an empty string. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - The `mailer/test` command now only supports testing the current email settings.
 - The `QueryArgument` GraphQL type now also allows boolean values.
+- `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 
 ### Fixed
