@@ -221,7 +221,7 @@ abstract class Element extends Component implements ElementInterface
      *     // @var Entry $entry
      *     $entry = $e->sender;
      *
-     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *     if (ElementHelper::isDraftOrRevision($entry)) {
      *         return;
      *     }
      *
