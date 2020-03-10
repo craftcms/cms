@@ -854,13 +854,18 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @return string
+     * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
-    public function getSrcset(array $sizes): string
+    public function getSrcset(array $sizes)
     {
         $srcset = [];
+        list($currentWidth, $currentHeight) = $this->_dimensions();
+
+        if (!$currentWidth || !$currentHeight) {
+            return false;
+        }
 
         foreach ($sizes as $size) {
             if (is_numeric($size)) {
@@ -879,10 +884,11 @@ class Asset extends Element
             if ($unit === 'w') {
                 $width = (int)$value;
             } else {
-                $width = (int)floor($this->getWidth() * $value);
+                $width = (int)ceil($currentWidth * $value);
             }
+            $height = $currentHeight * ceil($width / $currentWidth);
 
-            $srcset[] = $this->getUrl(['width' => $width]) . ($size !== '1x' ? " $size" : '');
+            $srcset[] = $this->getUrl(['width' => $width, 'height' => $height]) . ($size !== '1x' ? " $size" : '');
         }
 
         return implode(', ', $srcset);
@@ -1819,7 +1825,7 @@ class Asset extends Element
      * @param AssetTransform|string|array|null $transform
      * @return array
      */
-    private function _dimensions($transform): array
+    private function _dimensions($transform = null): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return [null, null];
