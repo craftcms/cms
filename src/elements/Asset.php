@@ -881,16 +881,20 @@ class Asset extends Element
         foreach ($sizes as $size) {
             list($value, $unit) = Assets::parseSrcsetSize($size);
 
+            $sizeTransform = [];
             if ($unit === 'w') {
-                $width = (int)$value;
+                $sizeTransform['width'] = (int)$value;
             } else {
-                $width = (int)ceil($currentWidth * $value);
+                $sizeTransform['width'] = (int)ceil($currentWidth * $value);
             }
-            $sizeTransform = ['width' => $width];
 
             // Only set the height if the current transform has a height set on it
             if ($transform && $transform->height) {
-                $sizeTransform['height'] = $currentHeight * ceil($width / $currentWidth);
+                if ($unit === 'w') {
+                    $sizeTransform['height'] = (int)ceil($currentHeight * $sizeTransform['width'] / $currentWidth);
+                } else {
+                    $sizeTransform['height'] = (int)ceil($currentHeight * $value);
+                }
             }
 
             $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $size" : '');
