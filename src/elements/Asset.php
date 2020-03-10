@@ -897,7 +897,7 @@ class Asset extends Element
                 }
             }
 
-            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $size" : '');
+            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " {$value}{$unit}" : '');
         }
 
         return implode(', ', $srcset);
