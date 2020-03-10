@@ -1197,6 +1197,7 @@ class Request extends \yii\web\Request
      * @param Sites $sitesService
      * @param int|null $siteScore
      * @return Site
+     * @throws BadRequestHttpException if a site token was sent, but the site doesn’t exist
      * @throws SiteNotFoundException if no sites exist
      */
     private function _requestedSite(Sites $sitesService, int &$siteScore = null): Site
