@@ -378,6 +378,23 @@ class AssetTransforms extends Component
     /**
      * Eager-loads transform indexes for a given set of file IDs.
      *
+     * You can include `srcset`-style sizes (e.g. `100w` or `2x`) following a normal transform definition, for example:
+     *
+     * ::: code
+     *
+     * ```twig
+     * [{width: 1000, height: 600}, '1.5x', '2x', '3x']
+     * ```
+     *
+     * ```php
+     * [['width' => 1000, 'height' => 600], '1.5x', '2x', '3x']
+     * ```
+     *
+     * :::
+     *
+     * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
+     * reference when determining the resulting transform dimensions.
+     *
      * @param Asset[]|array $assets The files to eager-load tranforms for
      * @param array $transforms The transform definitions to eager-load
      */
@@ -394,25 +411,65 @@ class AssetTransforms extends Component
         $transformsByFingerprint = [];
         $indexCondition = ['or'];
 
+        /** @var AssetTransform|null $refTransform */
+        $refTransform = null;
+
         foreach ($transforms as $transform) {
-            $transform = $this->normalizeTransform($transform);
+            // Is this a srcset-style size (2x, 100w, etc.)?
+            try {
+                list($sizeValue, $sizeUnit) = AssetsHelper::parseSrcsetSize($transform);
+            } catch (InvalidArgumentException $e) {
+                // All good.
+            }
 
-            if ($transform !== null) {
-                $location = $fingerprint = $this->_getTransformFolderName($transform);
-
-                $transformCondition = ['and', ['location' => $location]];
-
-                if ($transform->format === null) {
-                    $transformCondition[] = ['format' => null];
-                } else {
-                    $transformCondition[] = ['format' => $transform->format];
-                    $fingerprint .= ':' . $transform->format;
+            if (isset($sizeValue, $sizeUnit)) {
+                if ($refTransform === null || !$refTransform->width) {
+                    throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
                 }
 
-                $indexCondition[] = $transformCondition;
-                $transformsByFingerprint[$fingerprint] = $transform;
+                $transform = [];
+                if ($sizeUnit === 'w') {
+                    $transform['width'] = (int)$sizeValue;
+                } else {
+                    $transform['width'] = (int)ceil($refTransform->width * $sizeValue);
+                }
+
+                // Only set the height if the reference transform has a height set on it
+                if ($refTransform && $refTransform->height) {
+                    if ($sizeUnit === 'w') {
+                        $transform['height'] = (int)ceil($refTransform->height * $transform['width'] / $refTransform->width);
+                    } else {
+                        $transform['height'] = (int)ceil($refTransform->height * $sizeValue);
+                    }
+                }
+            }
+
+            $transform = $this->normalizeTransform($transform);
+            if ($transform === null) {
+                continue;
+            }
+
+            $location = $fingerprint = $this->_getTransformFolderName($transform);
+
+            $transformCondition = ['and', ['location' => $location]];
+
+            if ($transform->format === null) {
+                $transformCondition[] = ['format' => null];
+            } else {
+                $transformCondition[] = ['format' => $transform->format];
+                $fingerprint .= ':' . $transform->format;
+            }
+
+            $indexCondition[] = $transformCondition;
+            $transformsByFingerprint[$fingerprint] = $transform;
+
+            if (!isset($sizeValue)) {
+                // Use this as the reference transform in case any srcset-style transforms follow it
+                $refTransform = $transform;
             }
         }
+
+        unset($refTransform);
 
         // Query for the indexes
         $results = $this->_createTransformIndexQuery()
