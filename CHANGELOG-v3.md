@@ -19,6 +19,7 @@
 - Fixed an error where applying changes to Matrix fields from the `project.yaml` file could result in the file being re-saved.
 - Fixed a bug where GraphQL cache was not invalidated when structured elements were rearranged. ([#5761](https://github.com/craftcms/cms/issues/5761))
 - Fixed a bug where lightswitch inputs would be unresponsive if they had been configured with `disabled` set to an empty, non-boolean value.
+- Fixed a bug where Edit Entry pages would often create a draft when clicking the “Preview” button even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load.
 
 ## 3.4.9 - 2020-02-28
 
