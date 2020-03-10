@@ -1219,6 +1219,10 @@ class Request extends \yii\web\Request
 
         $sites = $sitesService->getAllSites(false);
 
+        if (empty($sites)) {
+            throw new SiteNotFoundException('No sites exist');
+        }
+
         $scores = [];
         foreach ($sites as $site) {
             $scores[] = $this->_scoreSite($site);
