@@ -536,7 +536,6 @@ class AssetTransforms extends Component
 
         if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->_eagerLoadedTransformIndexes[$fingerprint];
-
             return new AssetTransformIndex($result);
         }
 

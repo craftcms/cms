@@ -9,6 +9,7 @@ namespace craft\gql\base;
 
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
@@ -95,43 +96,16 @@ abstract class ElementResolver extends Resolver
         }
 
         /** @var ElementQuery $query */
-        $preloadNodes = self::extractEagerLoadCondition($resolveInfo);
-        $eagerLoadConditions = [];
 
-        $relationCountFields = [];
+        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions();
 
-        // Set up the preload count
-        foreach ($preloadNodes as $element => $parameters) {
-            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                if (isset($parameters['field'])) {
-                    $relationCountFields[$parameters['field']] = true;
-                }
+        foreach ($conditions as $method => $parameters) {
+            if (method_exists($query, $method)) {
+                $query = $query->{$method}($parameters);
             }
         }
 
-        foreach ($relationCountFields as $fieldName => $dud) {
-            if (!array_key_exists($fieldName, $preloadNodes)) {
-                $preloadNodes[$fieldName] = [];
-            }
-        }
-
-        foreach ($preloadNodes as $element => $parameters) {
-            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                continue;
-            }
-
-            if (!empty($relationCountFields[$element])) {
-                $parameters['count'] = true;
-            }
-
-            if (empty($parameters)) {
-                $eagerLoadConditions[] = $element;
-            } else {
-                $eagerLoadConditions[] = [$element, $parameters];
-            }
-        }
-
-        return $query->with($eagerLoadConditions);
+        return $query;
     }
 
     /**

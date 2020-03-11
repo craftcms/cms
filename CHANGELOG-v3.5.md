@@ -16,6 +16,7 @@
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft/gql/ElementQueryConditionBuilder`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
@@ -25,6 +26,7 @@
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getFullUri()`.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
+- Added transform support to `width` and `height` for Assets when using GraphQL API.
 
 ### Changed
 - Large asset thumbnails now use the same aspect ratio as the source image. ([#5515](https://github.com/craftcms/cms/issues/5515))
@@ -38,6 +40,10 @@
 - The `QueryArgument` GraphQL type now also allows boolean values.
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
+- Improved transform eager-loading support when using GraphQL API.
 
 ### Fixed
 - Fixed a bug where the `mailer/test` command wasn’t factoring in custom `mailer` configurations in its settings report. ([#5763](https://github.com/craftcms/cms/issues/5763))
+
+### Deprecated
+- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.

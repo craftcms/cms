@@ -112,11 +112,13 @@ class Asset extends Element
             ],
             'height' => [
                 'name' => 'height',
+                'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The height in pixels or null if it\'s not an image.'
             ],
             'width' => [
                 'name' => 'width',
+                'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The width in pixels or null if it\'s not an image.'
             ],
