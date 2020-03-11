@@ -146,7 +146,7 @@ class ElementQueryConditionBuilder
             }
         } else {
             $nodeName = $nodeName ?? $argumentNode->name->value;
-            $extractedValue = $argumentNode->kind === 'Variable' ? $this->_resolveInfo->variableValues[$nodeName] : ($argumentNode->value ?? null);
+            $extractedValue = $argumentNode->kind === 'Variable' ? $this->_resolveInfo->variableValues[$nodeName] : ($argumentNode->value->value ?? ($argumentNode->value ?? null));
         }
 
         return $extractedValue;
