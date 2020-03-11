@@ -16,6 +16,7 @@ use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
 use yii\base\InvalidConfigException;
+use yii\validators\InlineValidator;
 
 /**
  * Site model class.
@@ -54,6 +55,12 @@ class Site extends Model
      * @var bool Primary site?
      */
     public $primary = false;
+
+    /**
+     * @var bool Enabled?
+     * @since 3.5.0
+     */
+    public $enabled = true;
 
     /**
      * @var bool Has URLs
@@ -154,6 +161,12 @@ class Site extends Model
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
+
+        $rules[] = [['enabled'], function(string $attribute) {
+            if ($this->primary && !$this->enabled) {
+                $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
+            }
+        }];
 
         return $rules;
     }

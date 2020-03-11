@@ -13,6 +13,7 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\elements\actions\Delete;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -575,12 +576,27 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if (!$action instanceof Restore) {
+                if ($action instanceof Delete) {
+                    $action->hard = true;
+                } else if (!$action instanceof Restore) {
                     unset($actions[$i]);
                 }
             } else if ($action instanceof Restore) {
                 unset($actions[$i]);
             }
+        }
+
+        if ($this->elementQuery->trashed) {
+            // Make sure Restore goes first
+            usort($actions, function($a, $b): int {
+                if ($a instanceof Restore) {
+                    return -1;
+                }
+                if ($b instanceof Restore) {
+                    return 1;
+                }
+                return 0;
+            });
         }
 
         return array_values($actions);

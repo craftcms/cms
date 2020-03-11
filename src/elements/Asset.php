@@ -30,6 +30,7 @@ use craft\errors\FileException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -47,6 +48,7 @@ use DateTime;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -795,17 +797,16 @@ class Asset extends Element
      * Returns an `<img>` tag based on this asset.
      *
      * @param mixed $transform The transform to use when generating the html.
+     * @param string[]|null $sizes The widths/x-descriptors that should be used for the `srcset` attribute
+     * (see [[getSrcset()]] for example syntaxes)
      * @return Markup|null
+     * @throws InvalidArgumentException
      */
-    public function getImg($transform = null)
+    public function getImg($transform = null, array $sizes = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
-
-        if ($transform) {
-            $this->setTransform($transform);
-        };
 
         /** @var Volume $volume */
         $volume = $this->getVolume();
@@ -814,8 +815,92 @@ class Asset extends Element
             return null;
         }
 
-        $img = '<img src="' . $this->getUrl() . '" width="' . $this->getWidth() . '" height="' . $this->getHeight() . '" alt="' . Html::encode($this->title) . '">';
+        if ($transform) {
+            $oldTransform = $this->_transform;
+            $this->setTransform($transform);
+        }
+
+        $img = Html::tag('img', '', [
+            'src' => $this->getUrl(),
+            'width' => $this->getWidth(),
+            'height' => $this->getHeight(),
+            'srcset' => $sizes ? $this->getSrcset($sizes) : false,
+            'alt' => $this->title,
+        ]);
+
+        if (isset($oldTransform)) {
+            $this->setTransform($oldTransform);
+        }
+
         return Template::raw($img);
+    }
+
+    /**
+     * Returns a `srcset` attribute value based on the given widths or x-descriptors.
+     *
+     * For example, if you pass `['100w', '200w']`, you will get:
+     *
+     * ```
+     * image-url@100w.ext 100w,
+     * image-url@200w.ext 200w
+     * ```
+     *
+     * If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.
+     * So if you pass `['1x', '2x']` on an image with a 100px-wide transform applied, you will get:
+     *
+     * ```
+     * image-url@100w.ext,
+     * image-url@200w.ext 2x
+     * ```
+     *
+     * @param string[] $sizes
+     * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
+     * @throws InvalidArgumentException
+     * @since 3.5.0
+     */
+    public function getSrcset(array $sizes)
+    {
+        if ($this->kind !== self::KIND_IMAGE) {
+            return false;
+        }
+
+        $srcset = [];
+
+        if ($this->_transform && Image::canManipulateAsImage($this->getExtension())) {
+            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->_transform);
+        } else {
+            $transform = null;
+        }
+
+        list($currentWidth, $currentHeight) = $this->_dimensions($transform);
+
+        if (!$currentWidth || !$currentHeight) {
+            return false;
+        }
+
+        foreach ($sizes as $size) {
+            list($value, $unit) = Assets::parseSrcsetSize($size);
+
+            $sizeTransform = [];
+            if ($unit === 'w') {
+                $sizeTransform['width'] = (int)$value;
+            } else {
+                $sizeTransform['width'] = (int)ceil($currentWidth * $value);
+            }
+
+            // Only set the height if the current transform has a height set on it
+            if ($transform && $transform->height) {
+                if ($unit === 'w') {
+                    $sizeTransform['height'] = (int)ceil($currentHeight * $sizeTransform['width'] / $currentWidth);
+                } else {
+                    $sizeTransform['height'] = (int)ceil($currentHeight * $value);
+                }
+            }
+
+            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " {$value}{$unit}" : '');
+        }
+
+        return implode(', ', $srcset);
     }
 
     /**
@@ -970,9 +1055,23 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size)
+    public function getIconUrl(int $size)
     {
         return Craft::$app->getAssets()->getThumbUrl($this, $size, $size, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbUrl(int $size)
+    {
+        if ($this->width && $this->height) {
+            list($width, $height) = Assets::scaledDimensions($this->width, $this->height, $size, $size);
+        } else {
+            $width = $height = $size;
+        }
+
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
     }
 
     /**
@@ -988,6 +1087,7 @@ class Asset extends Element
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
+        list($width, $height) = Assets::scaledDimensions($this->width, $this->height, $width, $height);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -1057,7 +1157,7 @@ class Asset extends Element
 
     public function getHeight($transform = null)
     {
-        return $this->_getDimension('height', $transform);
+        return $this->_dimensions($transform)[1];
     }
 
     /**
@@ -1078,7 +1178,7 @@ class Asset extends Element
      */
     public function getWidth($transform = null)
     {
-        return $this->_getDimension('width', $transform);
+        return $this->_dimensions($transform)[0];
     }
 
     /**
@@ -1729,50 +1829,39 @@ class Asset extends Element
     }
 
     /**
-     * Return a dimension of the image.
+     * Returns the width and height of the image.
      *
-     * @param string $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
-     * @return int|float|null
+     * @return array
      */
-    private function _getDimension(string $dimension, $transform)
+    private function _dimensions($transform = null): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
-            return null;
+            return [null, null];
+        }
+
+        if (!$this->_width || !$this->_height) {
+            Craft::warning("Asset {$this->id} is missing its width or height", __METHOD__);
+            return [null, null];
         }
 
         $transform = $transform ?? $this->_transform;
 
-        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
-            $transform = null;
-        }
-
-        if ($transform === null) {
-            return $this->{'_' . $dimension};
+        if ($transform === null || !Image::canManipulateAsImage($this->getExtension())) {
+            return [$this->_width, $this->_height];
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
-
-        $dimensions = [
-            'width' => $transform->width,
-            'height' => $transform->height
-        ];
-
-        if (!$transform->width || !$transform->height) {
-            // Fill in the blank
-            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_width, $this->_height);
-            $dimensions['width'] = (int)$dimensionArray[0];
-            $dimensions['height'] = (int)$dimensionArray[1];
-        }
+        list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
-            $factor = max($this->_width / $dimensions['width'], $this->_height / $dimensions['height']);
-            $dimensions['width'] = (int)round($this->_width / $factor);
-            $dimensions['height'] = (int)round($this->_height / $factor);
+            $factor = max($this->_width / $width, $this->_height / $height);
+            $width = (int)round($this->_width / $factor);
+            $height = (int)round($this->_height / $factor);
         }
 
-        return $dimensions[$dimension];
+        return [$width, $height];
     }
 
     /**

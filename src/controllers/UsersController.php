@@ -1107,6 +1107,7 @@ class UsersController extends Controller
         $preferences = [
             'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+            'useShapes' => (bool)$request->getBodyParam('useShapes', $user->getPreference('useShapes')),
         ];
 
         if ($user->admin) {
@@ -1661,13 +1662,15 @@ class UsersController extends Controller
      */
     private function _renderSetPasswordTemplate(array $variables): Response
     {
-        $view = $this->getView();
-
-        // If this is a site request, see if a custom Set Password template exists
+        // If this is a site request, try handling the request like normal
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
-            $templatePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
-            if ($view->doesTemplateExist($templatePath)) {
-                return $this->renderTemplate($templatePath, $variables);
+            try {
+                Craft::$app->getUrlManager()->setRouteParams([
+                    'variables' => $variables,
+                ]);
+                return Craft::$app->handleRequest(Craft::$app->getRequest(), true);
+            } catch (NotFoundHttpException $e) {
+                // Just go with the CP template
             }
         }
 

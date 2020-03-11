@@ -103,6 +103,21 @@
     </div>
 {% endblock %}
 
+{% block details %}
+    {% if (craft.app.isMultiSite or not site.id) %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                label: 'Enabled on the front end?'|t('app'),
+                id: 'enabled',
+                name: 'enabled',
+                on: site.primary or site.enabled,
+                disabled: site.primary,
+                errors: site.getErrors('enabled'),
+            }) }}
+        </div>
+    {% endif %}
+{% endblock %}
+
 
 {% if not site.handle %}
     {% js %}

@@ -1207,7 +1207,6 @@ class Users extends Component
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1221,11 +1220,11 @@ class Users extends Component
 
         // Only use cpUrl() if the base CP URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if ($generalConfig->baseCpUrl) {
+        if (Craft::$app->getConfig()->getGeneral()->baseCpUrl) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 
-        $path = $generalConfig->cpTrigger . '/' . $cpPath;
+        $path = UrlHelper::prependCpTrigger($cpPath);
         return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

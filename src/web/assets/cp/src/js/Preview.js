@@ -14,6 +14,7 @@ Craft.Preview = Garnish.Base.extend(
         $statusIcon: null,
         $dragHandle: null,
         $previewContainer: null,
+        $iframeContainer: null,
         $targetBtn: null,
         $targetMenu: null,
         $iframe: null,
@@ -27,7 +28,7 @@ Craft.Preview = Garnish.Base.extend(
         url: null,
         fields: null,
 
-        scrollLeft: null,
+        iframeHeight: null,
         scrollTop: null,
 
         dragger: null,
@@ -104,7 +105,7 @@ Craft.Preview = Garnish.Base.extend(
                 this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
                 if (this.draftEditor.settings.previewTargets.length > 1) {
-                    var $previewHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$previewContainer);
+                    var $previewHeader = $('<header/>', {'class': 'lp-preview-header flex'}).appendTo(this.$previewContainer);
                     this.$targetBtn = $('<div/>', {
                         'class': 'btn menubtn',
                         text: this.draftEditor.settings.previewTargets[0].label,
@@ -127,6 +128,8 @@ Craft.Preview = Garnish.Base.extend(
                         }, this)
                     });
                 }
+
+                this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
 
                 this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                     axis: Garnish.X_AXIS,
@@ -315,18 +318,10 @@ Craft.Preview = Garnish.Base.extend(
             }
 
             this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function(url) {
-                // Capture the current scroll position?
-                var sameHost;
-                if (resetScroll) {
-                    this.scrollLeft = null;
-                    this.scrolllTop = null;
-                } else {
-                    sameHost = Craft.isSameHost(url);
-                    if (sameHost && this.iframeLoaded && this.$iframe && this.$iframe[0].contentWindow) {
-                        var $doc = $(this.$iframe[0].contentWindow.document);
-                        this.scrollLeft = $doc.scrollLeft();
-                        this.scrollTop = $doc.scrollTop();
-                    }
+                // Maintain the current scroll position?
+                if (!resetScroll && this.iframeLoaded && this.$iframe) {
+                    this.iframeHeight = this.$iframe.height();
+                    this.scrollTop = this.$iframeContainer.scrollTop();
                 }
 
                 this.iframeLoaded = false;
@@ -337,20 +332,28 @@ Craft.Preview = Garnish.Base.extend(
                     src: url,
                 });
 
-                $iframe.on('load', function() {
-                    this.iframeLoaded = true;
-                    if (!resetScroll && sameHost && this.scrollLeft !== null) {
-                        var $doc = $($iframe[0].contentWindow.document);
-                        $doc.scrollLeft(this.scrollLeft);
-                        $doc.scrollTop(this.scrollTop);
-                    }
-                }.bind(this));
-
                 if (this.$iframe) {
                     this.$iframe.replaceWith($iframe);
                 } else {
-                    $iframe.appendTo(this.$previewContainer);
+                    $iframe.appendTo(this.$iframeContainer);
                 }
+
+                if (!resetScroll && this.iframeHeight !== null) {
+                    $iframe.height(this.iframeHeight);
+                    this.$iframeContainer.scrollTop(this.scrollTop);
+                }
+
+                // Keep the iframe height consistent with its content
+                iFrameResize({
+                    // Allow iframe scrolling until we've successfully initialized the resizer
+                    scrolling: true,
+                    onInit: iframe => {
+                        this.iframeLoaded = true;
+                        this.iframeHeight = null;
+                        this.scrollTop = null;
+                        iframe.scrolling = 'no';
+                    },
+                }, $iframe[0])
 
                 this.url = url;
                 this.$iframe = $iframe;

@@ -18,6 +18,7 @@ use craft\events\SetAssetFilenameEvent;
 use craft\models\VolumeFolder;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Assets
@@ -697,5 +698,59 @@ class Assets
         }
 
         return $uploadInBytes;
+    }
+
+    /**
+     * Returns scaled width & height values for a maximum container size.
+     *
+     * @param int $realWidth
+     * @param int $realHeight
+     * @param int $maxWidth
+     * @param int $maxHeight
+     * @return array The scaled width and height
+     * @since 3.5.0
+     */
+    public static function scaledDimensions(int $realWidth, int $realHeight, int $maxWidth, int $maxHeight): array
+    {
+        // Avoid division by 0 errors
+        if ($realWidth === 0 || $realHeight === 0) {
+            return [$maxWidth, $maxHeight];
+        }
+
+        $realRatio = $realWidth / $realHeight;
+        $boundingRatio = $maxWidth / $maxHeight;
+
+        if ($realRatio >= $boundingRatio) {
+            $scaledWidth = $maxWidth;
+            $scaledHeight = floor($realHeight * ($scaledWidth / $realWidth));
+        } else {
+            $scaledHeight = $maxHeight;
+            $scaledWidth = floor($realWidth * ($scaledHeight / $realHeight));
+        }
+
+        return [(int)$scaledWidth, (int)$scaledHeight];
+    }
+
+    /**
+     * Parses a srcset size (e.g. `100w` or `2x`).
+     *
+     * @param mixed $size
+     * @return array An array of the size value and unit (`w` or `x`)
+     * @throws InvalidArgumentException if the size can’t be parsed
+     * @since 3.5.0
+     */
+    public static function parseSrcsetSize($size)
+    {
+        if (is_numeric($size)) {
+            $size = $size . 'w';
+        }
+        if (!is_string($size)) {
+            throw new InvalidArgumentException('Invalid srcset size');
+        }
+        $size = strtolower($size);
+        if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
+            throw new InvalidArgumentException("Invalid srcset size: $size");
+        }
+        return [(float)$match[1], $match[2]];
     }
 }

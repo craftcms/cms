@@ -1418,7 +1418,7 @@ class Fields extends Component
 
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
-        Craft::$app->saveInfoAfterRequest();
+        Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
     /**
@@ -1542,9 +1542,6 @@ class Fields extends Component
 
         // Clear caches
         $this->refreshFields();
-
-        // Update the field version
-        $this->updateFieldVersion();
 
         // Tell the current CustomFieldBehavior class about the field
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;

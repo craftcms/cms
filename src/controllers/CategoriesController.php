@@ -828,7 +828,7 @@ class CategoriesController extends Controller
             throw new ServerErrorHttpException('The category ' . $category->id . ' doesn’t have a URL for the site ' . $category->siteId . '.');
         }
 
-        $site = Craft::$app->getSites()->getSiteById($category->siteId);
+        $site = Craft::$app->getSites()->getSiteById($category->siteId, true);
 
         if (!$site) {
             throw new ServerErrorHttpException('Invalid site ID: ' . $category->siteId);

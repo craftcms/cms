@@ -1309,12 +1309,23 @@ $toolbarIconColor: darken($inputColor, 10%);
     font-size: 0;
   }
 
-  header {
+  .lp-preview-header {
     justify-content: center;
+
+    & + .lp-iframe-container {
+      padding-top: 54px;
+    }
   }
 
-  .lp-preview {
+  .lp-iframe-container {
     flex: 1;
+    overflow: auto;
+
+    .lp-preview {
+      display: block;
+      width: 100%;
+      min-height: 100%;
+    }
   }
 }
 

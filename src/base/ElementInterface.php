@@ -626,9 +626,18 @@ interface ElementInterface extends ComponentInterface
     public function getPreviewTargets(): array;
 
     /**
+     * Returns the URL to the element’s icon, if there is one.
+     *
+     * @param int $size The width and height the icon should have
+     * @return string|null
+     * @since 3.5.0
+     */
+    public function getIconUrl(int $size);
+
+    /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param int $size
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function getThumbUrl(int $size);

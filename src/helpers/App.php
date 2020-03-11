@@ -656,6 +656,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
+            'isCpRequest' => defined('CRAFT_CP') ? (bool)CRAFT_CP : null,
         ];
 
         if ($generalConfig->trustedHosts !== null) {

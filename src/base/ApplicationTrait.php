@@ -37,6 +37,7 @@ use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Structures;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Users;
@@ -262,10 +263,16 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is installed.
      *
+     * @param bool $refresh
      * @return bool
      */
-    public function getIsInstalled(): bool
+    public function getIsInstalled(bool $refresh = false): bool
     {
+        if ($refresh) {
+            $this->_isInstalled = null;
+            $this->_info = null;
+        }
+
         if ($this->_isInstalled !== null) {
             return $this->_isInstalled;
         }
@@ -688,32 +695,35 @@ trait ApplicationTrait
      * Updates the info row.
      *
      * @param Info $info
+     * @param string[]|null $attributeNames The attributes to save
      * @return bool
      */
-    public function saveInfo(Info $info): bool
+    public function saveInfo(Info $info, array $attributeNames = null): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (!$info->validate()) {
+
+        if ($attributeNames === null) {
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configMap', 'fieldVersion'];
+        }
+
+        if (!$info->validate($attributeNames)) {
             return false;
         }
 
-        $attributes = [
-            'version' => $info->version,
-            'schemaVersion' => $info->schemaVersion,
-            'maintenance' => $info->maintenance,
-            'configMap' => Db::prepareValueForDb($info->configMap),
-            'fieldVersion' => $info->fieldVersion,
-        ];
+        $attributes = $info->getAttributes($attributeNames);
 
         // TODO: Remove this after the next breakpoint
         if (version_compare($info['version'], '3.1', '<')) {
             unset($attributes['config'], $attributes['configMap']);
         }
 
-
         // TODO: Remove this after the next breakpoint
         if (version_compare($info['version'], '3.0', '<')) {
             unset($attributes['fieldVersion']);
+        }
+
+        if (isset($attributes['configMap'])) {
+            $attributes['configMap'] = Db::prepareValueForDb($attributes['configMap']);
         }
 
         $infoRowExists = (new Query())
@@ -1478,6 +1488,7 @@ trait ApplicationTrait
         $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
+        $this->getStructures()->on(Structures::EVENT_AFTER_MOVE_ELEMENT, $invalidate);
     }
 
     /**

@@ -240,7 +240,7 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         if ($request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+            $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -270,7 +270,7 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
-        $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+        $path = static::prependCpTrigger($path);
 
         return self::_createUrl($path, $params, $scheme, true);
     }
@@ -342,7 +342,7 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         if ($request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+            $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -539,6 +539,18 @@ class UrlHelper
         }
 
         return $host;
+    }
+
+    /**
+     * Prepends the CP trigger onto the given path.
+     *
+     * @param string $path
+     * @return string
+     * @since 3.5.0
+     */
+    public static function prependCpTrigger(string $path): string
+    {
+        return implode('/', array_filter([Craft::$app->getConfig()->getGeneral()->cpTrigger, $path]));
     }
 
     // Deprecated Methods

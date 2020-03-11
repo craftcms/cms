@@ -160,8 +160,12 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should route to the control panel rather than
+     * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
+     *
+     * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`),
+     * or you are running Craft in [Headless Mode](config:headlessMode). Note that if you do that, you will also need to
+     * set the <config:baseCpUrl> config setting.
      */
     public $cpTrigger = 'admin';
     /**
@@ -721,7 +725,7 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to `'Lax'`, `'Strict'`, or `null`.
      *
-     * ::: note
+     * ::: tip
      * This setting requires PHP 7.3 or later.
      * :::
      *
@@ -771,6 +775,11 @@ class GeneralConfig extends BaseObject
      * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
      */
     public $siteName;
+    /**
+     * @var string The query string parameter name that site tokens should be set to.
+     * @since 3.5.0
+     */
+    public $siteToken = 'siteToken';
     /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
@@ -1263,5 +1272,24 @@ class GeneralConfig extends BaseObject
         }
 
         return $pageTrigger;
+    }
+
+    /**
+     * Returns the normalized test email addresses.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getTestToEmailAddress(): array
+    {
+        $to = [];
+        foreach ((array)$this->testToEmailAddress as $key => $value) {
+            if (is_numeric($key)) {
+                $to[$value] = Craft::t('app', 'Test Recipient');
+            } else {
+                $to[$key] = $value;
+            }
+        }
+        return $to;
     }
 }

@@ -2,8 +2,37 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Search::$useFullText`. ([#5696](https://github.com/craftcms/cms/issues/5696))
+
+### Changed
+- Reduced the likelihood of a race condition that can result in a PHP error, if a request comes in between the time a field is saved with a new field handle, and the `info.fieldVersion` value is updated in the database. ([#5742](https://github.com/craftcms/cms/issues/5742))
+- `craft\base\ApplicationTrait::getIsInstalled()` now has a `$refresh` argument.
+- `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
+
+### Fixed
+- Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
+- Fixed a bug where the Plugin Store was not showing validation errors during the payment process. ([#5728](https://github.com/craftcms/cms/issues/5728))
+- Fixed an error that could occur when processing Project Config changes that also included new sites.
+- Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
+- Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
+- Fixed an error where applying changes to Matrix fields from the `project.yaml` file could result in the file being re-saved.
+- Fixed a bug where GraphQL cache was not invalidated when structured elements were rearranged. ([#5761](https://github.com/craftcms/cms/issues/5761))
+- Fixed a bug where lightswitch inputs would be unresponsive if they had been configured with `disabled` set to an empty, non-boolean value.
+- Fixed a bug where Edit Entry pages would often create a draft when clicking the “Preview” button even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load.
+- Fixed a bug where Redactor fields weren’t getting autofocused when a new Matrix block was added. ([#5773](https://github.com/craftcms/cms/issues/5773))
+- Fixed a “Division by zero” error that occurred if an image didn’t have a width or height.
+
+## 3.4.9 - 2020-02-28
+
 ### Fixed
 - Fixed a bug where relational fields weren’t validating that their Limit setting was set to an integer. ([#5709](https://github.com/craftcms/cms/issues/5709))
+- Fixed a bug where structure data was getting joined into entry queries even if the `section` param was set to a non-Structure section. ([#5707](https://github.com/craftcms/cms/issues/5707))
+- Fixed a JavaScript error that occurred when attempting to set the cropping constraint using the image editor. ([#5718](https://github.com/craftcms/cms/issues/5718))
+- Fixed a SQL error that occurred when running the `utils/prune-revisions` command when using PostgreSQL. ([#5712](https://github.com/craftcms/cms/issues/5712))
+- Fixed a bug where root-level classes weren’t properly namespaced in `CustomFieldBehavior.php` docblocks. ([#5716](https://github.com/craftcms/cms/issues/5716))
+- Fixed an error that could occur while installing Craft with an existing `project.yaml` file. ([#5697](https://github.com/craftcms/cms/issues/5697))
+- Fixed an error that could occur if a deprecation warning was logged with a message longer than 255 characters. ([#5738](https://github.com/craftcms/cms/issues/5738))
 
 ## 3.4.8 - 2020-02-21
 
@@ -293,7 +322,7 @@
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
 - Control panel pages can now implement Vue-based admin tables that support bulk actions, search, and pagination.
-- Elements now have a `_count` field when queried via GraphQL, which returns the total number of related elements for a given relational field handle
+- Elements now have a `_count` field when queried via GraphQL, which returns the total number of related elements for a given relational field handle.
 - It’s now possible to filter users by their groups when querying for them via GraphQL. ([#5374](https://github.com/craftcms/cms/issues/5374))
 - Added the `asset`, `category`, `entry`, `globalSet`, `tag`, and `user` queries to fetch single elements via GraphQL. ([#5363](https://github.com/craftcms/cms/issues/5363))
 - It’s now possible to apply the `transform` GraphQL directive to entire assets. ([#5425](https://github.com/craftcms/cms/issues/5425))
@@ -468,7 +497,7 @@
 - The `Craft.t()` JavaScript method is now capable of parsing `number` and `plural` formatted params (e.g. `{num, plural, =1{item} other{items}}`).
 - Added the `cp.users.edit.prefs` template hook to the Edit User page. ([#5114](https://github.com/craftcms/cms/issues/5114))
 - The `_layouts/elements.html` control panel layout template can now be used for elements that don’t support drafts or revisions.
-- Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell).
+- Added the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell). ([#5228](https://github.com/craftcms/cms/issues/5228))
 - Added the Minify PHP package.
 
 ### Changed
@@ -1300,7 +1329,7 @@
 - Fixed a bug where default field values weren’t being applied to Matrix blocks that were autocreated per the Min Blocks setting. ([#4806](https://github.com/craftcms/cms/issues/4806))
 - Fixed Plugin Store dropdowns which were not working properly with Windows Edge browsers.
 - Fixed a SQL error that could occur when `:empty:` or `not :empty:` was passed to a date param on an element query when running MySQL 8. ([#4808](https://github.com/craftcms/cms/issues/4808))
-- Fixed a bug where Dropdown and Multi-select fields’ Dropdown Options settings weren’t autofocussing on the first input when adding a new row with the keyboard. ([#4823](https://github.com/craftcms/cms/issues/4823))
+- Fixed a bug where Dropdown and Multi-select fields’ Dropdown Options settings weren’t autofocusing on the first input when adding a new row with the keyboard. ([#4823](https://github.com/craftcms/cms/issues/4823))
 
 ## 3.2.10 - 2019-08-13
 

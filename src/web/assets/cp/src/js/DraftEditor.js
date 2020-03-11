@@ -69,9 +69,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            // Store the initial form value
-            this.lastSerializedValue = this.serializeForm(true);
-
             // Override the serializer to use our own
             Craft.cp.$primaryForm.data('serializer', function() {
                 return this.serializeForm(true)
@@ -381,6 +378,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                     params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
                 }
 
+                if (this.settings.siteToken) {
+                    params[Craft.siteToken] = this.settings.siteToken;
+                }
+
                 // No need for a token if we're looking at a live element
                 if (this.settings.isLive) {
                     resolve(Craft.getUrl(url, params));
@@ -478,7 +479,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (force || data !== this.lastSerializedValue) {
+            if (force || data !== (this.lastSerializedValue || Craft.cp.$primaryForm.data('initialSerializedValue'))) {
                 this.saveDraft(data);
             }
         },

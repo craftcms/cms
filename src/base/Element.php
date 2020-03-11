@@ -221,7 +221,7 @@ abstract class Element extends Component implements ElementInterface
      *     // @var Entry $entry
      *     $entry = $e->sender;
      *
-     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *     if (ElementHelper::isDraftOrRevision($entry)) {
      *         return;
      *     }
      *
@@ -1701,6 +1701,14 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $normalized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIconUrl(int $size)
+    {
+        return null;
     }
 
     /**

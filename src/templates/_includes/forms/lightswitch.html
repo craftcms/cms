@@ -5,7 +5,7 @@
 {%- set small = small ?? false %}
 {%- set toggle = toggle ?? null %}
 {%- set reverseToggle = reverseToggle ?? null %}
-{%- set disabled = disabled ?? false %}
+{%- set disabled = (disabled ?? false) ? true : false %}
 
 {%- set containerAttributes = {
     id: id ?? null,
