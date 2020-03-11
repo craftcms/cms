@@ -16,7 +16,7 @@
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
-- Added `craft/gql/ElementQueryConditionBuilder`.
+- Added `craft\gql\ElementQueryConditionBuilder`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
