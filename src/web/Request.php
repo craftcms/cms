@@ -1197,6 +1197,7 @@ class Request extends \yii\web\Request
      * @param Sites $sitesService
      * @param int|null $siteScore
      * @return Site
+     * @throws BadRequestHttpException if a site token was sent, but the site doesn’t exist
      * @throws SiteNotFoundException if no sites exist
      */
     private function _requestedSite(Sites $sitesService, int &$siteScore = null): Site
@@ -1218,6 +1219,10 @@ class Request extends \yii\web\Request
         }
 
         $sites = $sitesService->getAllSites(false);
+
+        if (empty($sites)) {
+            throw new SiteNotFoundException('No sites exist');
+        }
 
         $scores = [];
         foreach ($sites as $site) {

@@ -69,9 +69,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            // Store the initial form value
-            this.lastSerializedValue = this.serializeForm(true);
-
             // Override the serializer to use our own
             Craft.cp.$primaryForm.data('serializer', function() {
                 return this.serializeForm(true)
@@ -482,7 +479,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Has anything changed?
             var data = this.serializeForm(true);
-            if (force || data !== this.lastSerializedValue) {
+            if (force || data !== (this.lastSerializedValue || Craft.cp.$primaryForm.data('initialSerializedValue'))) {
                 this.saveDraft(data);
             }
         },

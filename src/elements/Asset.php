@@ -854,35 +854,50 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @return string
+     * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
-    public function getSrcset(array $sizes): string
+    public function getSrcset(array $sizes)
     {
+        if ($this->kind !== self::KIND_IMAGE) {
+            return false;
+        }
+
         $srcset = [];
 
+        if ($this->_transform && Image::canManipulateAsImage($this->getExtension())) {
+            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->_transform);
+        } else {
+            $transform = null;
+        }
+
+        list($currentWidth, $currentHeight) = $this->_dimensions($transform);
+
+        if (!$currentWidth || !$currentHeight) {
+            return false;
+        }
+
         foreach ($sizes as $size) {
-            if (is_numeric($size)) {
-                $size = $size . 'w';
-            }
-            if (!is_string($size)) {
-                throw new InvalidArgumentException("Invalid srcset size");
-            }
-            $size = strtolower($size);
-            if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
-                throw new InvalidArgumentException("Invalid srcset size: $size");
-            }
-            $value = $match[1];
-            $unit = $match[2];
+            list($value, $unit) = Assets::parseSrcsetSize($size);
 
+            $sizeTransform = [];
             if ($unit === 'w') {
-                $width = (int)$value;
+                $sizeTransform['width'] = (int)$value;
             } else {
-                $width = (int)floor($this->getWidth() * $value);
+                $sizeTransform['width'] = (int)ceil($currentWidth * $value);
             }
 
-            $srcset[] = $this->getUrl(['width' => $width]) . ($size !== '1x' ? " $size" : '');
+            // Only set the height if the current transform has a height set on it
+            if ($transform && $transform->height) {
+                if ($unit === 'w') {
+                    $sizeTransform['height'] = (int)ceil($currentHeight * $sizeTransform['width'] / $currentWidth);
+                } else {
+                    $sizeTransform['height'] = (int)ceil($currentHeight * $value);
+                }
+            }
+
+            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " {$value}{$unit}" : '');
         }
 
         return implode(', ', $srcset);
@@ -1142,7 +1157,7 @@ class Asset extends Element
 
     public function getHeight($transform = null)
     {
-        return $this->_getDimension('height', $transform);
+        return $this->_dimensions($transform)[1];
     }
 
     /**
@@ -1163,7 +1178,7 @@ class Asset extends Element
      */
     public function getWidth($transform = null)
     {
-        return $this->_getDimension('width', $transform);
+        return $this->_dimensions($transform)[0];
     }
 
     /**
@@ -1814,50 +1829,39 @@ class Asset extends Element
     }
 
     /**
-     * Return a dimension of the image.
+     * Returns the width and height of the image.
      *
-     * @param string $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
-     * @return int|float|null
+     * @return array
      */
-    private function _getDimension(string $dimension, $transform)
+    private function _dimensions($transform = null): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
-            return null;
+            return [null, null];
+        }
+
+        if (!$this->_width || !$this->_height) {
+            Craft::warning("Asset {$this->id} is missing its width or height", __METHOD__);
+            return [null, null];
         }
 
         $transform = $transform ?? $this->_transform;
 
-        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
-            $transform = null;
-        }
-
-        if ($transform === null) {
-            return $this->{'_' . $dimension};
+        if ($transform === null || !Image::canManipulateAsImage($this->getExtension())) {
+            return [$this->_width, $this->_height];
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
-
-        $dimensions = [
-            'width' => $transform->width,
-            'height' => $transform->height
-        ];
-
-        if (!$transform->width || !$transform->height) {
-            // Fill in the blank
-            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_width, $this->_height);
-            $dimensions['width'] = (int)$dimensionArray[0];
-            $dimensions['height'] = (int)$dimensionArray[1];
-        }
+        list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
-            $factor = max($this->_width / $dimensions['width'], $this->_height / $dimensions['height']);
-            $dimensions['width'] = (int)round($this->_width / $factor);
-            $dimensions['height'] = (int)round($this->_height / $factor);
+            $factor = max($this->_width / $width, $this->_height / $height);
+            $width = (int)round($this->_width / $factor);
+            $height = (int)round($this->_height / $factor);
         }
 
-        return $dimensions[$dimension];
+        return [$width, $height];
     }
 
     /**

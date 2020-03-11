@@ -37,6 +37,7 @@ use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Structures;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Users;
@@ -1487,6 +1488,7 @@ trait ApplicationTrait
         $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
         $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
+        $this->getStructures()->on(Structures::EVENT_AFTER_MOVE_ELEMENT, $invalidate);
     }
 
     /**
