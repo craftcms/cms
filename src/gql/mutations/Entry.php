@@ -12,12 +12,8 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
-use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\arguments\elements\EntryMutation as EntryMutationArguments;
 use craft\gql\base\Mutation;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
@@ -26,7 +22,6 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\WrappingType;
 
 /**
  * Class Entry
