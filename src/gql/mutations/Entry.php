@@ -21,6 +21,7 @@ use craft\gql\types\generators\EntryType;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\Section;
+use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -100,15 +101,22 @@ class Entry extends Mutation
                     'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($entryType, $section, $contentFields, $contentFieldHandles) {
                         $entry = null;
 
+                        $updateEntry = false;
+
                         if ($section->type == Section::TYPE_SINGLE) {
                             $entry = EntryElement::findOne(['typeId' => $entryType->id]);
                         } else if (!empty($arguments['uid'])) {
                             $entry = EntryElement::findOne(['uid' => $arguments['uid']]);
+                            $updateEntry = true;
                         } else if (!empty($arguments['id'])) {
                             $entry = EntryElement::findOne(['id' => $arguments['id']]);
+                            $updateEntry = true;
                         }
 
                         if (!$entry) {
+                            if ($updateEntry) {
+                                throw new Error('No such entry exists');
+                            }
                             $entry = new EntryElement();
                         }
 
