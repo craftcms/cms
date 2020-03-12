@@ -8,6 +8,7 @@
 namespace craft\gql\mutations;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
@@ -66,11 +67,6 @@ class Entry extends Mutation
                 /** @var Field $contentField */
                 foreach ($contentFields as $contentField) {
                     $contentFieldType = $contentField->getContentGqlInputType();
-
-                    // Force non-null for required fields
-                    if ($contentField->required && !$contentFieldType['type'] instanceof WrappingType) {
-                        $contentFieldType['type'] = Type::nonNull($contentFieldType['type']);
-                    }
 
                     $mutationArguments[$contentField->handle] = $contentFieldType;
                     $contentFieldHandles[$contentField->handle] = true;
@@ -131,8 +127,11 @@ class Entry extends Mutation
                             }
                         }
 
-                        // TODO setting an authorID to an ID that is not
-                        Craft::$app->getElements()->saveElement($entry);
+                        if ($entry->enabled) {
+                            $entry->setScenario(Element::SCENARIO_LIVE);
+                        }
+
+                        $result = Craft::$app->getElements()->saveElement($entry);
 
                         if ($entry->hasErrors()) {
                             $validationErrors = [];
