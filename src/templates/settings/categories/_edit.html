@@ -49,64 +49,62 @@
             errors: categoryGroup.getErrors('maxLevels')
         }) }}
 
-        {% if not headlessMode %}
-            <hr>
+        <hr>
 
-            {% set siteRows = [] %}
-            {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
+        {% set siteRows = [] %}
+        {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
 
-            {% for site in craft.app.sites.getAllSites() %}
-                {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
-                {% if siteSettings %}
-                    {% for attribute, errors in siteSettings.getErrors() %}
-                        {% set siteErrors = siteErrors|merge(errors) %}
-                    {% endfor %}
-                {% endif %}
-                {% set siteRows = siteRows|merge({
-                    (site.handle): {
-                        heading: site.name|t('site')|e,
-                        uriFormat: {
-                            value: siteSettings.uriFormat ?? null,
-                            hasErrors: siteSettings.hasErrors('uriFormat') ?? false
-                        },
-                        template: {
-                            value: siteSettings.template ?? null,
-                            hasErrors: siteSettings.hasErrors('template') ?? false,
-                        }
-                    }
-                }) %}
-            {% endfor %}
-
-            {{ forms.editableTableField({
-                label: "Site Settings"|t('app'),
-                instructions: "Configure the category group’s site-specific settings."|t('app'),
-                id: 'sites',
-                name: 'sites',
-                cols: {
-                    heading: {
-                        type: 'heading',
-                        heading: "Site"|t('app'),
-                        class: 'thin'
-                    },
+        {% for site in craft.app.sites.getAllSites() %}
+            {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
+            {% if siteSettings %}
+                {% for attribute, errors in siteSettings.getErrors() %}
+                    {% set siteErrors = siteErrors|merge(errors) %}
+                {% endfor %}
+            {% endif %}
+            {% set siteRows = siteRows|merge({
+                (site.handle): {
+                    heading: site.name|t('site')|e,
                     uriFormat: {
-                        type: 'singleline',
-                        heading: "Category URI Format"|t('app'),
-                        info: "What category URIs should look like for the site."|t('app'),
-                        placeholder: "Leave blank if categories don’t have URLs"|t('app'),
-                        code: true
+                        value: siteSettings.uriFormat ?? null,
+                        hasErrors: siteSettings.hasErrors('uriFormat') ?? false
                     },
-                    template: {
-                        type: 'template',
-                        heading: "Template"|t('app'),
-                        info: "Which template should be loaded when a category’s URL is requested."|t('app'),
-                        code: true
-                    },
+                    template: not headlessMode ? {
+                        value: siteSettings.template ?? null,
+                        hasErrors: siteSettings.hasErrors('template') ?? false,
+                    }
+                }
+            }) %}
+        {% endfor %}
+
+        {{ forms.editableTableField({
+            label: "Site Settings"|t('app'),
+            instructions: "Configure the category group’s site-specific settings."|t('app'),
+            id: 'sites',
+            name: 'sites',
+            cols: {
+                heading: {
+                    type: 'heading',
+                    heading: "Site"|t('app'),
+                    class: 'thin'
                 },
-                rows: siteRows,
-                staticRows: true,
-                errors: siteErrors|unique
-            }) }}
-        {% endif %}
+                uriFormat: {
+                    type: 'singleline',
+                    heading: "Category URI Format"|t('app'),
+                    info: "What category URIs should look like for the site."|t('app'),
+                    placeholder: "Leave blank if categories don’t have URLs"|t('app'),
+                    code: true
+                },
+                template: not headlessMode ? {
+                    type: 'template',
+                    heading: "Template"|t('app'),
+                    info: "Which template should be loaded when a category’s URL is requested."|t('app'),
+                    code: true
+                },
+            }|filter,
+            rows: siteRows,
+            staticRows: true,
+            errors: siteErrors|unique
+        }) }}
 
     </div>
 
