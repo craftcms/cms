@@ -691,7 +691,11 @@ class App
         ];
 
         // Default to JSON responses if running in headless mode
-        if (Craft::$app->getRequest()->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->headlessMode) {
+        if (
+            Craft::$app->has('request', true) &&
+            Craft::$app->getRequest()->getIsSiteRequest() &&
+            Craft::$app->getConfig()->getGeneral()->headlessMode
+        ) {
             $config['format'] = WebResponse::FORMAT_JSON;
         }
 

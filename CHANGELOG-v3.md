@@ -3,12 +3,15 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\Elements::markAsDirty()`.
 - Added `craft\services\Search::$useFullText`. ([#5696](https://github.com/craftcms/cms/issues/5696))
 
 ### Changed
 - Reduced the likelihood of a race condition that can result in a PHP error, if a request comes in between the time a field is saved with a new field handle, and the `info.fieldVersion` value is updated in the database. ([#5742](https://github.com/craftcms/cms/issues/5742))
 - `craft\base\ApplicationTrait::getIsInstalled()` now has a `$refresh` argument.
 - `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
+- The `$siteElement` argument of `craft\services\Elements::propagateElement()` can now be set to `false` to indicate that the element is known to not exist for the target site yet.
+- XML element exports now call all generic nodes `<item>`, instead of being named after the element type that is getting exported.
 
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
@@ -22,6 +25,8 @@
 - Fixed a bug where Edit Entry pages would often create a draft when clicking the “Preview” button even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load.
 - Fixed a bug where Redactor fields weren’t getting autofocused when a new Matrix block was added. ([#5773](https://github.com/craftcms/cms/issues/5773))
 - Fixed a “Division by zero” error that occurred if an image didn’t have a width or height.
+- Fixed a bug where Matrix and relational fields weren’t getting propagated correctly for global sets, assets, categories, and tags, when a new site was added. ([#5775](https://github.com/craftcms/cms/issues/5775))
+- Fixed a “Nesting level too deep” error that could occur if a fatal error occurred during the `request` component initialization. ([#5788](https://github.com/craftcms/cms/issues/5788))
 
 ## 3.4.9 - 2020-02-28
 
