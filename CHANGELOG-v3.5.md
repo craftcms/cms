@@ -38,9 +38,9 @@
 - The `mailer/test` command now only supports testing the current email settings.
 - The `withTransforms` asset query param can now include `srcset`-style sizes (e.g. `100w` or `2x`), following a normal transform definition.
 - The `QueryArgument` GraphQL type now also allows boolean values.
+- Improved transform eager-loading support when using GraphQL API.
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
-- Improved transform eager-loading support when using GraphQL API.
 
 ### Fixed
 - Fixed a bug where the `mailer/test` command wasn’t factoring in custom `mailer` configurations in its settings report. ([#5763](https://github.com/craftcms/cms/issues/5763))
