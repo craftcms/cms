@@ -11,6 +11,7 @@
 - `craft\base\ApplicationTrait::getIsInstalled()` now has a `$refresh` argument.
 - `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
 - The `$siteElement` argument of `craft\services\Elements::propagateElement()` can now be set to `false` to indicate that the element is known to not exist for the target site yet.
+- XML element exports now call all generic nodes `<item>`, instead of being named after the element type that is getting exported.
 
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
