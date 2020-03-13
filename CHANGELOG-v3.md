@@ -9,6 +9,7 @@
 - Reduced the likelihood of a race condition that can result in a PHP error, if a request comes in between the time a field is saved with a new field handle, and the `info.fieldVersion` value is updated in the database. ([#5742](https://github.com/craftcms/cms/issues/5742))
 - `craft\base\ApplicationTrait::getIsInstalled()` now has a `$refresh` argument.
 - `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
+- The `$siteElement` argument of `craft\services\Elements::propagateElement()` can now be set to `false` to indicate that the element is known to not exist for the target site yet.
 
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
