@@ -2244,6 +2244,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function markAsDirty()
+    {
+        $this->_allDirty = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function markAsClean()
     {
         $this->_allDirty = false;

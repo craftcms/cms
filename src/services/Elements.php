@@ -683,6 +683,10 @@ class Elements extends Component
                             }
                         }
                     }
+
+                    // It's now fully duplicated and propagated
+                    $element->markAsDirty();
+                    $element->afterPropagate(false);
                 } catch (\Throwable $e) {
                     if (!$continueOnError) {
                         throw $e;

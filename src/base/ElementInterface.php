@@ -907,6 +907,13 @@ interface ElementInterface extends ComponentInterface
     public function getDirtyFields(): array;
 
     /**
+     * Marks all fields and attributes as dirty.
+     *
+     * @since 3.4.10
+     */
+    public function markAsDirty();
+
+    /**
      * Resets the record of dirty attributes and fields.
      *
      * @since 3.4.0
