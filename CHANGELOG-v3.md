@@ -26,6 +26,7 @@
 - Fixed a bug where Redactor fields weren’t getting autofocused when a new Matrix block was added. ([#5773](https://github.com/craftcms/cms/issues/5773))
 - Fixed a “Division by zero” error that occurred if an image didn’t have a width or height.
 - Fixed a bug where Matrix and relational fields weren’t getting propagated correctly for global sets, assets, categories, and tags, when a new site was added. ([#5775](https://github.com/craftcms/cms/issues/5775))
+- Fixed a “Nesting level too deep” error that could occur if a fatal error occurred during the `request` component initialization. ([#5788](https://github.com/craftcms/cms/issues/5788))
 
 ## 3.4.9 - 2020-02-28
 
