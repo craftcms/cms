@@ -17,7 +17,7 @@
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
 - Fixed a bug where the Plugin Store was not showing validation errors during the payment process. ([#5728](https://github.com/craftcms/cms/issues/5728))
-- Fixed an error that could occur when processing Project Config changes that also included new sites.
+- Fixed an error that could occur when processing project config changes that included newly created sites. ([#5790](https://github.com/craftcms/cms/issues/5790))
 - Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
 - Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
 - Fixed an error where applying changes to Matrix fields from the `project.yaml` file could result in the file being re-saved.
