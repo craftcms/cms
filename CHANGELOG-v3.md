@@ -17,7 +17,7 @@
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
 - Fixed a bug where the Plugin Store was not showing validation errors during the payment process. ([#5728](https://github.com/craftcms/cms/issues/5728))
-- Fixed an error that could occur when processing Project Config changes that also included new sites.
+- Fixed an error that could occur when processing project config changes that included newly created sites. ([#5790](https://github.com/craftcms/cms/issues/5790))
 - Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
 - Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
 - Fixed an error where applying changes to Matrix fields from the `project.yaml` file could result in the file being re-saved.
@@ -27,7 +27,8 @@
 - Fixed a bug where Redactor fields weren’t getting autofocused when a new Matrix block was added. ([#5773](https://github.com/craftcms/cms/issues/5773))
 - Fixed a “Division by zero” error that occurred if an image didn’t have a width or height.
 - Fixed a bug where Matrix and relational fields weren’t getting propagated correctly for global sets, assets, categories, and tags, when a new site was added. ([#5775](https://github.com/craftcms/cms/issues/5775))
-- Fixed a “Nesting level too deep” error that could occur if a fatal error occurred during the `request` component initialization. ([#5788](https://github.com/craftcms/cms/issues/5788))
+- Fixed a “Nesting level too deep” error that could occur if a fatal error occurred during the `request` component initialization. ([#5788](https://github.com/craftcms/cms/issues/5788), [#5791](https://github.com/craftcms/cms/issues/5791))
+- Fixed a bug where it was possible to delete an autocreated Matrix block if the Min Blocks and Max Blocks settings were both set to the same value, and there was only one block type. ([#5781](https://github.com/craftcms/cms/issues/5781))
 
 ## 3.4.9 - 2020-02-28
 

@@ -170,4 +170,13 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $user->getPreference('showExceptionView')
         );
     }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.10
+     */
+    protected function shouldRenderSimpleHtml()
+    {
+        return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
+    }
 }
