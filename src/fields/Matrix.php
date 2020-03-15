@@ -643,11 +643,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $view->registerAssetBundle(MatrixAsset::class);
 
+        $settings = [
+            'maxBlocks' => $this->maxBlocks,
+            'staticBlocks' => $staticBlocks,
+        ];
+
         $js = 'var matrixInput = new Craft.MatrixInput(' .
             '"' . $view->namespaceInputId($id) . '", ' .
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             '"' . $view->namespaceInputName($this->handle) . '", ' .
-            ($this->maxBlocks ?: 'null') .
+            Json::encode($settings) .
             ');';
 
         // Safe to create the default blocks?
