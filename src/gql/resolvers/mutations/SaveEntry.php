@@ -45,9 +45,15 @@ class SaveEntry extends MutationResolver
         } else if (!empty($arguments['uid'])) {
             $entry = EntryElement::findOne(['uid' => $arguments['uid']]);
             $updateEntry = true;
+
+            // Prevent changing ID.
+            unset($arguments['id']);
         } else if (!empty($arguments['id'])) {
             $entry = EntryElement::findOne(['id' => $arguments['id']]);
             $updateEntry = true;
+
+            // Prevent changing UID.
+            unset($arguments['uid']);
         }
 
         if (!$entry) {
