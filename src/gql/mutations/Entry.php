@@ -13,6 +13,8 @@ use craft\db\Table;
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\EntryMutation as EntryMutationArguments;
 use craft\gql\base\Mutation;
+use craft\gql\resolvers\mutations\CreateDraft;
+use craft\gql\resolvers\mutations\DeleteEntry;
 use craft\gql\resolvers\mutations\SaveEntry;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Db;
@@ -43,11 +45,9 @@ class Entry extends Mutation
         $allowedSectionIds = Db::idsByUids(Table::SECTIONS, $allowedSectionUids);
         $allowedEntryTypeUids = $pairs['entrytypes'];
 
-        $allEntryTypes = Craft::$app->getSections()->getAllEntryTypes();
-
         $mutationList = [];
 
-        foreach ($allEntryTypes as $entryType) {
+        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
             $isAllowedSection = in_array($entryType->sectionId, $allowedSectionIds, true);
             $isAllowedEntryType = in_array($entryType->uid, $allowedEntryTypeUids, true);
 
@@ -59,10 +59,14 @@ class Entry extends Mutation
             }
         }
 
+        foreach (self::createCommonMutations() as $commonMutation) {
+            $mutationList[$commonMutation['name']] = $commonMutation;
+        }
+
         return $mutationList;
     }
 
-    public static function createMutations(EntryTypeModel $entryType): array
+    protected static function createMutations(EntryTypeModel $entryType): array
     {
         $mutations = [];
 
@@ -111,5 +115,30 @@ class Entry extends Mutation
         ];
 
         return $mutations;
+    }
+
+    /**
+     * Create mutations common to all entries, regardless of entry types.
+     * 
+     * @return array
+     */
+    protected static function createCommonMutations(): array
+    {
+        return [
+            [
+                'name' => 'deleteEntry',
+                'args' => ['id' => Type::nonNull(Type::int())],
+                'resolve' => [new DeleteEntry(), 'resolve'],
+                'description' => 'Delete an entry.',
+                'type' => Type::boolean()
+            ],
+            [
+                'name' => 'createDraft',
+                'args' => ['id' => Type::nonNull(Type::int())],
+                'resolve' => [new CreateDraft(), 'resolve'],
+                'description' => 'Create a draft for an entry.',
+                'type' => Type::boolean()
+            ],
+        ];
     }
 }
