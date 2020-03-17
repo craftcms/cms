@@ -22,7 +22,7 @@
     "element-resize-detector": "^1.1.15",
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
-    "garnishjs": "^0.1.33",
+    "garnishjs": "^0.1.34",
     "graphiql": "^0.14.2",
     "grunt": "^1.0.3",
     "grunt-babel": "^8.0.0",
