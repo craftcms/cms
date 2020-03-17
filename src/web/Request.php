@@ -1231,16 +1231,14 @@ class Request extends \yii\web\Request
         }
 
         $scores = [];
-        foreach ($sites as $site) {
-            $scores[] = $this->_scoreSite($site);
+        foreach ($sites as $i => $site) {
+            $scores[$i] = $this->_scoreSite($site);
         }
 
-        // Sort sites by scores descending and return the first site
-        // (Using the SORT_ASC and SORT_NUMERIC flags on $sites to work around a "Nesting level too deep" error)
-        // (see https://www.php.net/manual/en/function.array-multisort.php#113445)
-        array_multisort($scores, SORT_DESC, SORT_NUMERIC, $sites, SORT_ASC, SORT_NUMERIC);
-        $siteScore = reset($scores);
-        return reset($sites);
+        // Sort by scores descending
+        arsort($scores, SORT_NUMERIC);
+        $first = ArrayHelper::firstKey($scores);
+        return $sites[$first];
     }
 
     /**
