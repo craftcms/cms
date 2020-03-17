@@ -287,6 +287,23 @@ class View extends \yii\web\View
     }
 
     /**
+     * Runs a callback with given template mode.
+     *
+     * @param string $templateMode
+     * @param callable $callback
+     * @return mixed The return value of the callback.
+     */
+    public function withTemplateMode(string $templateMode, callable $callback)
+    {
+        $currentMode = $this->getTemplateMode();
+        $this->setTemplateMode($templateMode);
+        $return = call_user_func($callback);
+        $this->setTemplateMode($currentMode);
+
+        return $return;
+    }
+
+    /**
      * Returns the Twig environment.
      *
      * @return Environment
