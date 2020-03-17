@@ -213,24 +213,30 @@ class Request extends \yii\web\Request
 
         // Is the jury still out on whether this is a CP request?
         if ($this->_isCpRequest === null) {
+            $this->_isCpRequest = false;
             // Is it a possibility?
             if ($generalConfig->cpTrigger || $generalConfig->baseCpUrl) {
                 // Figure out the base URL the request must have if this is a CP request
+                $testBaseCpUrls = [];
+                if ($generalConfig->baseCpUrl) {
+                    $testBaseCpUrls[] = rtrim($generalConfig->baseCpUrl, '/');
+                }
                 if ($generalConfig->cpTrigger) {
-                    $baseCpUrl = ($baseUrl ?? $this->getBaseUrl()) . '/' . $generalConfig->cpTrigger;
-                } else {
-                    $baseCpUrl = rtrim($generalConfig->baseCpUrl, '/');
+                    if (isset($baseUrl)) {
+                        $testBaseCpUrls[] = "$baseUrl/{$generalConfig->cpTrigger}";
+                    }
+                    $testBaseCpUrls[] = $this->getBaseUrl() . "/{$generalConfig->cpTrigger}";
                 }
-                // See how the base CP URL compares with the requested URL
-                $cpScore = $this->_scoreUrl($baseCpUrl);
                 $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
-                $this->_isCpRequest = $cpScore > $siteScore;
-                if ($this->_isCpRequest) {
-                    $baseUrl = $baseCpUrl;
-                    $site = null;
+                foreach ($testBaseCpUrls as $baseCpUrl) {
+                    $cpScore = $this->_scoreUrl($baseCpUrl);
+                    if ($cpScore > $siteScore) {
+                        $this->_isCpRequest = true;
+                        $baseUrl = $baseCpUrl;
+                        $site = null;
+                        break;
+                    }
                 }
-            } else {
-                $this->_isCpRequest = false;
             }
         }
 
