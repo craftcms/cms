@@ -113,7 +113,7 @@ class View extends \yii\web\View
     /**
      * @var array The sizes that element icons should be rendered in
      */
-    private static $_elementIconSizes = [32, 64];
+    private static $_elementIconSizes = [34, 68];
 
     /**
      * @var array The sizes that element thumbnails should be rendered in

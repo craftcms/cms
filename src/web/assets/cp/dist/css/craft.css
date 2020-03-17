@@ -422,7 +422,7 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 .btn.chromeless { background-color: transparent; height: auto; padding: 0; }
 .btn.chromeless:hover, .btn.chromeless:active, .btn.chromeless:focus { background-color: transparent; }
 .btn.chromeless:hover, .btn.chromeless:active { text-decoration: underline; }
-.btn.rounded { border-radius: 17px; }
+body.round-icons .btn.rounded { border-radius: 17px; }
 .btn:focus, .btn:hover { background-color: rgba(96, 125, 159, 0.35); }
 .btn:active, .btn.active { background-color: rgba(96, 125, 159, 0.5); }
 .btn[type='color'] { padding: 6px !important; width: 36px; }
@@ -680,22 +680,24 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 .element.sel.loading:after, li.sel .element.loading:after { background-image: url(../images/spinner_element.gif); }
 .element.hasthumb .elementthumb img { display: block; -ms-flex-negative: 0; flex-shrink: 0; pointer-events: none; }
 .element .label { display: inline-block; }
-.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 17px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+.element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; border-radius: 5px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+body.round-icons .element.small, body.round-icons .element.large:not(.hasthumb) { border-radius: 17px; }
 body.ltr .element.small.hasstatus, body.ltr .element.large:not(.hasthumb).hasstatus { padding-left: 22px; }
 body.rtl .element.small.hasstatus, body.rtl .element.large:not(.hasthumb).hasstatus { padding-right: 22px; }
 .element.small.hasstatus .status, .element.large:not(.hasthumb).hasstatus .status { position: absolute; top: calc(50% - 5px); }
 body.ltr .element.small.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasstatus .status { left: 7px; }
 body.rtl .element.small.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasstatus .status { right: 7px; }
-body.ltr .element.small.hasthumb, body.ltr .element.large:not(.hasthumb).hasthumb { padding-left: 38px; }
-body.rtl .element.small.hasthumb, body.rtl .element.large:not(.hasthumb).hasthumb { padding-right: 38px; }
-.element.small.hasthumb .elementthumb, .element.large:not(.hasthumb).hasthumb .elementthumb { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; position: absolute; top: calc(50% - 16px); width: 32px; height: 32px; border-radius: 16px; overflow: hidden; }
-body.ltr .element.small.hasthumb .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb .elementthumb { left: 1px; }
-body.rtl .element.small.hasthumb .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb { right: 1px; }
+body.ltr .element.small.hasthumb, body.ltr .element.large:not(.hasthumb).hasthumb { padding-left: 39px; }
+body.rtl .element.small.hasthumb, body.rtl .element.large:not(.hasthumb).hasthumb { padding-right: 39px; }
+.element.small.hasthumb .elementthumb, .element.large:not(.hasthumb).hasthumb .elementthumb { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; position: absolute; top: calc(50% - 17px); width: 34px; height: 34px; border-radius: 5px; overflow: hidden; }
+body.ltr .element.small.hasthumb .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb .elementthumb { left: 0; }
+body.rtl .element.small.hasthumb .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb { right: 0; }
+body.round-icons .element.small.hasthumb .elementthumb, body.round-icons .element.large:not(.hasthumb).hasthumb .elementthumb { border-radius: 17px; }
 .element.small.hasthumb .elementthumb img, .element.large:not(.hasthumb).hasthumb .elementthumb img { width: 100%; height: 100%; }
-body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 53px; }
-body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus { padding-right: 53px; }
-body.ltr .element.small.hasthumb.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .status { left: 38px; }
-body.rtl .element.small.hasthumb.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus .status { right: 38px; }
+body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 54px; }
+body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus { padding-right: 54px; }
+body.ltr .element.small.hasthumb.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .status { left: 39px; }
+body.rtl .element.small.hasthumb.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus .status { right: 39px; }
 .element.large.hasthumb { display: block; padding: 132px 7px 7px; width: 134px; -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 3px; }
 body.ltr .element.large.hasthumb.hasstatus { padding-left: 22px; }
 body.rtl .element.large.hasthumb.hasstatus { padding-right: 22px; }

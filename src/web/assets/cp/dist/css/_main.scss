@@ -973,7 +973,7 @@ ul.icons {
     }
   }
 
-  &.rounded {
+  body.round-icons &.rounded {
     border-radius: 17px;
   }
 
@@ -1784,7 +1784,7 @@ table {
 }
 
 /* elements */
-$smallThumbSize: 32px;
+$smallThumbSize: 34px;
 $largeThumbSize: 120px;
 $statusSize: 10px;
 $baseElementSidePadding: 7px;
@@ -1825,8 +1825,12 @@ $elementInnerSpacing: 5px;
   &.large:not(.hasthumb) {
     display: inline-block;
     padding: $baseElementSidePadding;
-    border-radius: 17px;
+    border-radius: $largeBorderRadius;
     box-sizing: border-box;
+
+    body.round-icons & {
+      border-radius: 17px;
+    }
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
@@ -1839,19 +1843,23 @@ $elementInnerSpacing: 5px;
     }
 
     &.hasthumb {
-      @include padding-left(1px + $smallThumbSize + $elementInnerSpacing);
+      @include padding-left($smallThumbSize + $elementInnerSpacing);
 
       .elementthumb {
         display: flex;
         align-items: center;
         justify-content: center;
         position: absolute;
-        top: calc(50% - 16px);
-        @include left(1px);
+        top: calc(50% - 17px);
+        @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
-        border-radius: 16px;
+        border-radius: $largeBorderRadius;
         overflow: hidden;
+
+        body.round-icons & {
+          border-radius: 17px;
+        }
 
         img {
           width: 100%;
@@ -1860,10 +1868,10 @@ $elementInnerSpacing: 5px;
       }
 
       &.hasstatus {
-        @include padding-left(1px + $smallThumbSize + $elementInnerSpacing * 2 + $statusSize);
+        @include padding-left($smallThumbSize + $elementInnerSpacing * 2 + $statusSize);
 
         .status {
-          @include left(1px + $smallThumbSize + $elementInnerSpacing);
+          @include left($smallThumbSize + $elementInnerSpacing);
         }
       }
     }
