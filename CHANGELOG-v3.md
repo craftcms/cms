@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur when saving an asset. ([#5801](https://github.com/craftcms/cms/issues/5801))
+
 ## 3.4.10 - 2020-03-17
 
 ### Added

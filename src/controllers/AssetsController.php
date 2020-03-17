@@ -200,10 +200,10 @@ class AssetsController extends Controller
     /**
      * Saves an asset.
      *
-     * @return Response
+     * @return Response|null
      * @since 3.4.0
      */
-    public function actionSaveAsset(): Response
+    public function actionSaveAsset()
     {
         if (UploadedFile::getInstanceByName('assets-upload') !== null) {
             Craft::$app->getDeprecator()->log(__METHOD__, 'Uploading new files via assets/save-asset has been deprecated. Use assets/upload instead.');
