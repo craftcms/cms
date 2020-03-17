@@ -13,6 +13,7 @@
 - `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
 - The `$siteElement` argument of `craft\services\Elements::propagateElement()` can now be set to `false` to indicate that the element is known to not exist for the target site yet.
 - XML element exports now call all generic nodes `<item>`, instead of being named after the element type that is getting exported.
+- Updated Garnish to 0.1.34.
 
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
@@ -29,6 +30,7 @@
 - Fixed a bug where Matrix and relational fields weren’t getting propagated correctly for global sets, assets, categories, and tags, when a new site was added. ([#5775](https://github.com/craftcms/cms/issues/5775))
 - Fixed a bug where the `request` component could be loaded recursively in the event that a fatal error occurred during its initialization. ([#5788](https://github.com/craftcms/cms/issues/5788), [#5791](https://github.com/craftcms/cms/issues/5791))
 - Fixed a bug where it was possible to delete an autocreated Matrix block if the Min Blocks and Max Blocks settings were both set to the same value, and there was only one block type. ([#5781](https://github.com/craftcms/cms/issues/5781))
+- Fixed a bug where elements weren’t styled correctly while dragging.
 
 ## 3.4.9 - 2020-02-28
 
