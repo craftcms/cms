@@ -26,9 +26,11 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 class SaveDraft extends SaveEntry
 {
+    /**
+     * @inheritdoc
+     */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
         return $entryQuery->draftId($arguments['draftId']);
     }
-
 }
