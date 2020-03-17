@@ -11,7 +11,6 @@
             blockTypesByHandle: null,
             inputNamePrefix: null,
             inputIdPrefix: null,
-            maxBlocks: null,
 
             showingAddBlockMenu: false,
             addBlockBtnGroupWidth: null,
@@ -27,12 +26,17 @@
             blockSelect: null,
             totalNewBlocks: 0,
 
-            init: function(id, blockTypes, inputNamePrefix, maxBlocks) {
+            init: function(id, blockTypes, inputNamePrefix, settings) {
                 this.id = id;
                 this.blockTypes = blockTypes;
                 this.inputNamePrefix = inputNamePrefix;
                 this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
-                this.maxBlocks = maxBlocks;
+
+                // see if settings was actually set to the maxBlocks value
+                if (typeof settings === 'number') {
+                    settings = {maxBlocks: settings};
+                }
+                this.setSettings(settings, Craft.MatrixInput.defaults);
 
                 this.$container = $('#' + this.id);
                 this.$blockContainer = this.$container.children('.blocks');
@@ -206,44 +210,51 @@
 
                 var id = 'new' + this.totalNewBlocks;
 
-                var html =
-                    '<div class="matrixblock" data-id="' + id + '" data-type="' + type + '">' +
-                    '<input type="hidden" name="' + this.inputNamePrefix + '[sortOrder][]" value="' + id + '"/>' +
-                    '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][type]" value="' + type + '"/>' +
-                    '<input type="hidden" name="' + this.inputNamePrefix + '[blocks][' + id + '][enabled]" value="1"/>' +
-                    '<div class="titlebar">' +
-                    '<div class="blocktype">' + this.getBlockTypeByHandle(type).name + '</div>' +
-                    '<div class="preview"></div>' +
-                    '</div>' +
-                    '<div class="checkbox" title="' + Craft.t('app', 'Select') + '"></div>' +
-                    '<div class="actions">' +
-                    '<div class="status off" title="' + Craft.t('app', 'Disabled') + '"></div>' +
-                    '<a class="settings icon menubtn" title="' + Craft.t('app', 'Actions') + '" role="button"></a> ' +
-                    '<div class="menu">' +
-                    '<ul class="padded">' +
-                    '<li><a data-icon="collapse" data-action="collapse">' + Craft.t('app', 'Collapse') + '</a></li>' +
-                    '<li class="hidden"><a data-icon="expand" data-action="expand">' + Craft.t('app', 'Expand') + '</a></li>' +
-                    '<li><a data-icon="disabled" data-action="disable">' + Craft.t('app', 'Disable') + '</a></li>' +
-                    '<li class="hidden"><a data-icon="enabled" data-action="enable">' + Craft.t('app', 'Enable') + '</a></li>' +
-                    '</ul>' +
-                    '<hr class="padded"/>' +
-                    '<ul class="padded">' +
-                    '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
-                    '</ul>' +
-                    '<hr class="padded"/>' +
-                    '<ul class="padded">';
+                var html = `
+<div class="matrixblock" data-id="${id}" data-type="${type}">
+  <input type="hidden" name="${this.inputNamePrefix}[sortOrder][]" value="${id}"/>
+  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][type]" value="${type}"/>
+  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][enabled]" value="1"/>
+  <div class="titlebar">
+    <div class="blocktype">${this.getBlockTypeByHandle(type).name}</div>
+    <div class="preview"></div>
+  </div>
+  <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
+  <div class="actions">
+    <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
+    <a class="settings icon menubtn" title="${Craft.t('app', 'Actions')}" role="button"></a> 
+    <div class="menu">
+      <ul class="padded">
+        <li><a data-icon="collapse" data-action="collapse">${Craft.t('app', 'Collapse')}</a></li>
+        <li class="hidden"><a data-icon="expand" data-action="expand">${Craft.t('app', 'Expand')}</a></li>
+        <li><a data-icon="disabled" data-action="disable">${Craft.t('app', 'Disable')}</a></li>
+        <li class="hidden"><a data-icon="enabled" data-action="enable">${Craft.t('app', 'Enable')}</a></li>
+      </ul>`;
 
-                for (var i = 0; i < this.blockTypes.length; i++) {
-                    var blockType = this.blockTypes[i];
-                    html += '<li><a data-icon="plus" data-action="add" data-type="' + blockType.handle + '">' + Craft.t('app', 'Add {type} above', {type: blockType.name}) + '</a></li>';
+                if (!this.settings.staticBlocks) {
+                    html += `
+      <hr class="padded"/>
+      <ul class="padded">
+        <li><a class="error" data-icon="remove" data-action="delete">${Craft.t('app', 'Delete')}</a></li>
+      </ul>
+      <hr class="padded"/>
+      <ul class="padded">`;
+
+                    for (var i = 0; i < this.blockTypes.length; i++) {
+                        var blockType = this.blockTypes[i];
+                        html += `
+        <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
+                    }
+
+                    html += `
+      </ul>`
                 }
 
-                html +=
-                    '</ul>' +
-                    '</div>' +
-                    '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '" role="button"></a> ' +
-                    '</div>' +
-                    '</div>';
+                html += `
+    </div>
+    <a class="move icon" title="${Craft.t('app', 'Reorder')}" role="button"></a>
+  </div>
+</div>`;
 
                 var $block = $(html);
 
@@ -282,7 +293,7 @@
                         Garnish.scrollContainerToElement($block);
 
                         // Focus on the first text input
-                        $block.find('.text:first').trigger('focus');
+                        $block.find('.text,[contenteditable]').first().trigger('focus');
                     });
                 }, this));
             },
@@ -335,9 +346,18 @@
                 else {
                     return '';
                 }
-            }
+            },
+
+            get maxBlocks() {
+                return this.settings.maxBlocks;
+            },
         },
         {
+            defaults: {
+                maxBlocks: null,
+                staticBlocks: false,
+            },
+
             collapsedBlockStorageKey: 'Craft-' + Craft.systemUid + '.MatrixInput.collapsedBlocks',
 
             getCollapsedBlockIds: function() {

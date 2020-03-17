@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-02-25 */
+/*!   - 2020-03-09 */
 (function ($) {
   /** global: Craft */
 
@@ -12702,10 +12702,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (this.settings.revisionId) {
         return;
-      } // Store the initial form value
+      } // Override the serializer to use our own
 
-
-      this.lastSerializedValue = this.serializeForm(true); // Override the serializer to use our own
 
       Craft.cp.$primaryForm.data('serializer', function () {
         return this.serializeForm(true);
@@ -13079,7 +13077,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var data = this.serializeForm(true);
 
-      if (force || data !== this.lastSerializedValue) {
+      if (force || data !== (this.lastSerializedValue || Craft.cp.$primaryForm.data('initialSerializedValue'))) {
         this.saveDraft(data);
       }
     },

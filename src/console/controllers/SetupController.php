@@ -106,7 +106,7 @@ class SetupController extends Controller
 
         $this->run('db-creds');
 
-        if (Craft::$app->getIsInstalled()) {
+        if (Craft::$app->getIsInstalled(true)) {
             $this->stdout("It looks like Craft is already installed, so we're done here." . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }

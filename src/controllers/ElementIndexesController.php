@@ -305,7 +305,6 @@ class ElementIndexesController extends BaseElementsController
                 /** @var string|ElementInterface $elementType */
                 $elementType = $this->elementType;
                 $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
-                $response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
                 break;
         }
 

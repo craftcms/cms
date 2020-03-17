@@ -47,6 +47,7 @@ use DateTime;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -1057,7 +1058,7 @@ class Asset extends Element
 
     public function getHeight($transform = null)
     {
-        return $this->_getDimension('height', $transform);
+        return $this->_dimensions($transform)[1];
     }
 
     /**
@@ -1078,7 +1079,7 @@ class Asset extends Element
      */
     public function getWidth($transform = null)
     {
-        return $this->_getDimension('width', $transform);
+        return $this->_dimensions($transform)[0];
     }
 
     /**
@@ -1729,50 +1730,39 @@ class Asset extends Element
     }
 
     /**
-     * Return a dimension of the image.
+     * Returns the width and height of the image.
      *
-     * @param string $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
-     * @return int|float|null
+     * @return array
      */
-    private function _getDimension(string $dimension, $transform)
+    private function _dimensions($transform): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
-            return null;
+            return [null, null];
+        }
+
+        if (!$this->_width || !$this->_height) {
+            Craft::warning("Asset {$this->id} is missing its width or height", __METHOD__);
+            return [null, null];
         }
 
         $transform = $transform ?? $this->_transform;
 
-        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
-            $transform = null;
-        }
-
-        if ($transform === null) {
-            return $this->{'_' . $dimension};
+        if ($transform === null || !Image::canManipulateAsImage($this->getExtension())) {
+            return [$this->_width, $this->_height];
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
-
-        $dimensions = [
-            'width' => $transform->width,
-            'height' => $transform->height
-        ];
-
-        if (!$transform->width || !$transform->height) {
-            // Fill in the blank
-            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_width, $this->_height);
-            $dimensions['width'] = (int)$dimensionArray[0];
-            $dimensions['height'] = (int)$dimensionArray[1];
-        }
+        list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
-            $factor = max($this->_width / $dimensions['width'], $this->_height / $dimensions['height']);
-            $dimensions['width'] = (int)round($this->_width / $factor);
-            $dimensions['height'] = (int)round($this->_height / $factor);
+            $factor = max($this->_width / $width, $this->_height / $height);
+            $width = (int)round($this->_width / $factor);
+            $height = (int)round($this->_height / $factor);
         }
 
-        return $dimensions[$dimension];
+        return [$width, $height];
     }
 
     /**
