@@ -44,8 +44,9 @@ class CreateDraft extends MutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
+        /** @var Entry $draft */
+        $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
 
-        return true;
+        return $draft->draftId;
     }
 }

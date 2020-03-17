@@ -11,14 +11,17 @@ use Craft;
 use craft\base\Field;
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
+use craft\gql\arguments\elements\DraftMutation as DraftMutationArguments;
 use craft\gql\arguments\elements\EntryMutation as EntryMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\CreateDraft;
 use craft\gql\resolvers\mutations\DeleteEntry;
+use craft\gql\resolvers\mutations\SaveDraft;
 use craft\gql\resolvers\mutations\SaveEntry;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
+use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
 use GraphQL\Type\Definition\Type;
@@ -66,6 +69,13 @@ class Entry extends Mutation
         return $mutationList;
     }
 
+    /**
+     * Create the per-entry-type mutations.
+     *
+     * @param EntryTypeModel $entryType
+     * @return array
+     * @throws \yii\base\InvalidConfigException
+     */
     protected static function createMutations(EntryTypeModel $entryType): array
     {
         $mutations = [];
@@ -73,13 +83,15 @@ class Entry extends Mutation
         /** @var EntryTypeModel $mutationName */
         $mutationName = EntryElement::gqlMutationNameByContext($entryType);
         $contentFields = $entryType->getFields();
-        $mutationArguments = EntryMutationArguments::getArguments();
+        $entryMutationArguments = EntryMutationArguments::getArguments();
+        $draftMutationArguments = DraftMutationArguments::getArguments();
         $contentFieldHandles = [];
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
             $contentFieldType = $contentField->getContentGqlInputType();
-            $mutationArguments[$contentField->handle] = $contentFieldType;
+            $entryMutationArguments[$contentField->handle] = $contentFieldType;
+            $draftMutationArguments[$contentField->handle] = $contentFieldType;
             $contentFieldHandles[$contentField->handle] = true;
         }
 
@@ -87,31 +99,53 @@ class Entry extends Mutation
 
         switch ($section->type) {
             case Section::TYPE_SINGLE:
-                $description = 'Create a new “' . $entryType->name . '” entry.';
-                unset($mutationArguments['authorId'], $mutationArguments['id'], $mutationArguments['uid']);
+                $description = 'Save the “' . $entryType->name . '” entry.';
+                $draftDescription = 'Save the “' . $entryType->name . '” draft.';
+
+                unset($entryMutationArguments['authorId'], $entryMutationArguments['id'], $entryMutationArguments['uid']);
+                unset($draftMutationArguments['authorId'], $draftMutationArguments['id'], $draftMutationArguments['uid']);
                 break;
             case Section::TYPE_STRUCTURE:
-                $mutationArguments['newParentId'] = [
+                $entryMutationArguments['newParentId'] = [
                     'name' => 'newParentId',
                     'type' => Type::id(),
                     'description' => 'The ID of the parent entry.'
                 ];
             default:
-                $description = 'Create a new “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
+                $description = 'Save a “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
+                $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
         }
 
-        $resolver = new SaveEntry([
+        $resolverData = [
+            'section' => $section,
+            'entryType' => $entryType,
+            'contentFieldHandles' => $contentFieldHandles
+        ];
+
+        $saveResolver = new SaveEntry($resolverData);
+
+        $generatedType = EntryType::generateType($entryType);
+
+        $mutations[] = [
+            'name' => $mutationName,
+            'description' => $description,
+            'args' => $entryMutationArguments,
+            'resolve' => [$saveResolver, 'resolve'],
+            'type' => $generatedType
+        ];
+
+        $draftResolver = new SaveDraft([
             'section' => $section,
             'entryType' => $entryType,
             'contentFieldHandles' => $contentFieldHandles
         ]);
 
         $mutations[] = [
-            'name' => $mutationName,
-            'description' => $description,
-            'args' => $mutationArguments,
-            'resolve' => [$resolver, 'resolve'],
-            'type' => EntryType::generateType($entryType)
+            'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
+            'description' => $draftDescription,
+            'args' => $draftMutationArguments,
+            'resolve' => [$draftResolver, 'resolve'],
+            'type' => $generatedType
         ];
 
         return $mutations;
@@ -119,7 +153,7 @@ class Entry extends Mutation
 
     /**
      * Create mutations common to all entries, regardless of entry types.
-     * 
+     *
      * @return array
      */
     protected static function createCommonMutations(): array
@@ -137,7 +171,7 @@ class Entry extends Mutation
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [new CreateDraft(), 'resolve'],
                 'description' => 'Create a draft for an entry.',
-                'type' => Type::boolean()
+                'type' => Type::id()
             ],
         ];
     }

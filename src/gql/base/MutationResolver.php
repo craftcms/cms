@@ -55,7 +55,7 @@ abstract class MutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
-     * @throws Error if reasons.
+     * @throws \Throwable if reasons.
      */
     abstract public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
 }

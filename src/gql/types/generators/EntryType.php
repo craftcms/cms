@@ -57,6 +57,11 @@ class EntryType implements GeneratorInterface
     {
         /** @var EntryTypeModel $entryType */
         $typeName = EntryElement::gqlTypeNameByContext($context);
+
+        if ($createdType = GqlEntityRegistry::getEntity($typeName)) {
+            return $createdType;
+        }
+
         $contentFields = $context->getFields();
         $contentFieldGqlTypes = [];
 
@@ -67,7 +72,7 @@ class EntryType implements GeneratorInterface
 
         $entryTypeFields = TypeManager::prepareFieldDefinitions(array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Entry([
+        return GqlEntityRegistry::createEntity($typeName, new Entry([
             'name' => $typeName,
             'fields' => function() use ($entryTypeFields) {
                 return $entryTypeFields;

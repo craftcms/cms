@@ -18,6 +18,7 @@
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\events\RegisterGqlMutationsEvent`.
+- Added `craft\gql\arguments\elements\DraftMutation`.
 - Added `craft\gql\arguments\elements\EntryMutation`.
 - Added `craft\gql\base\ElementMutationArguments`.
 - Added `craft\gql\base\GeneratorInterface::generateType()`.
@@ -26,6 +27,9 @@
 - Added `craft\gql\Mutation`.
 - Added `craft\gql\mutations\Entry`.
 - Added `craft\gql\mutations\Ping`.
+- Added `craft\gql\resolvers\mutations\CreateDraft`.
+- Added `craft\gql\resolvers\mutations\SaveDraft`.
+- Added `craft\gql\resolvers\mutations\SaveEntry`.
 - Added `craft\gql\types\Mutation`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.

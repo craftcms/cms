@@ -61,7 +61,7 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(static::getDraftFieldDefinitions(), parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             Gql::GRAPHQL_COUNT_FIELD => [
                 'name' => Gql::GRAPHQL_COUNT_FIELD,
                 'type' => Type::int(),
@@ -155,6 +155,11 @@ class Element extends InterfaceType
                'type' => Type::int(),
                'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
            ],
+           'draftId' => [
+               'name' => 'draftId',
+               'type' => Type::int(),
+               'description' => 'The ID of the draft to return (from the `drafts` table)',
+            ],
            'sourceUid' => [
                'name' => 'sourceUid',
                'type' => Type::string(),
@@ -165,6 +170,16 @@ class Element extends InterfaceType
                'type' => Type::boolean(),
                'description' => 'Returns whether this is a draft.',
            ],
+           'draftName' => [
+               'name' => 'draftName',
+               'type' => Type::string(),
+               'description' => 'The name of the draft.',
+           ],
+           'draftNotes' => [
+               'name' => 'draftNotes',
+               'type' => Type::string(),
+               'description' => 'The notes for the draft.',
+           ]
        ];
     }
 

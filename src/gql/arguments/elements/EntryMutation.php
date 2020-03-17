@@ -7,12 +7,7 @@
 
 namespace craft\gql\arguments\elements;
 
-use Craft;
-use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationArguments;
-use craft\gql\base\StructureElementArguments;
-use craft\gql\types\QueryArgument;
-use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\Type;
 
 /**

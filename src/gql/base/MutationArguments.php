@@ -7,12 +7,10 @@
 
 namespace craft\gql\base;
 
-use Craft;
-use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class Arguments
+ * Class MutationArguments
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
