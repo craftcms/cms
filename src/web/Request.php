@@ -1236,7 +1236,9 @@ class Request extends \yii\web\Request
         }
 
         // Sort sites by scores descending and return the first site
-        array_multisort($scores, SORT_DESC, SORT_NUMERIC, $sites);
+        // (Using the SORT_ASC and SORT_NUMERIC flags on $sites to work around a "Nesting level too deep" error)
+        // (see https://www.php.net/manual/en/function.array-multisort.php#113445)
+        array_multisort($scores, SORT_DESC, SORT_NUMERIC, $sites, SORT_ASC, SORT_NUMERIC);
         $siteScore = reset($scores);
         return reset($sites);
     }
