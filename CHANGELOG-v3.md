@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that could occur when saving an asset. ([#5801](https://github.com/craftcms/cms/issues/5801))
+- Fixed an error where it was sometimes impossible to save changes to fields. ([#5803](https://github.com/craftcms/cms/issues/5803))
 
 ## 3.4.10 - 2020-03-17
 
