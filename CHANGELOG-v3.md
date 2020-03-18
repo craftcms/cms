@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.10.1 - 2020-03-18
+
+### Fixed
+- Fixed an error that could occur when saving an asset. ([#5801](https://github.com/craftcms/cms/issues/5801))
+- Fixed a bug where field types’ `afterSave()` methods weren’t getting called if no top-level field settings had changed. ([#5803](https://github.com/craftcms/cms/issues/5803))
+
 ## 3.4.10 - 2020-03-17
 
 ### Added

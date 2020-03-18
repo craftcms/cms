@@ -429,23 +429,24 @@ class ProjectConfig extends Component
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        // Pointless to re-set the same value.
-        if ($value === $this->get($path)) {
-            return;
-        }
+        $valueChanged = false;
 
-        if ($this->readOnly) {
-            // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
-            if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
-                return;
+        if ($value !== $this->get($path)) {
+            if ($this->readOnly) {
+                // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
+                if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
+                    return;
+                }
+
+                throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
             }
 
-            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
-        }
+            if (!$this->_timestampUpdated) {
+                $this->_timestampUpdated = true;
+                $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
+            }
 
-        if (!$this->_timestampUpdated) {
-            $this->_timestampUpdated = true;
-            $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
+            $valueChanged = true;
         }
 
         // Mark this path (and its parent paths) as being processed, and store their current values
@@ -479,7 +480,12 @@ class ProjectConfig extends Component
         }
 
         $this->_traverseDataArray($config, $path, $value, $value === null);
-        $this->_saveConfig($config, $targetFilePath);
+
+        // Save config only if something actually changed.
+        if ($valueChanged) {
+            $this->_saveConfig($config, $targetFilePath);
+        }
+
         $this->processConfigChanges($path, true, $message);
     }
 
