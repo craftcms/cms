@@ -28,6 +28,7 @@
 - Added `craft\gql\mutations\Entry`.
 - Added `craft\gql\mutations\Ping`.
 - Added `craft\gql\resolvers\mutations\CreateDraft`.
+- Added `craft\gql\resolvers\mutations\PublishDraft`.
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
 - Added `craft\gql\types\Mutation`.

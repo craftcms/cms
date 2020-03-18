@@ -32,7 +32,7 @@ class SaveEntry extends MutationResolver
      */
     public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $entry = $this->getEntry($arguments);
+        $entry = $this->getEntryElement($arguments);
 
         // Prevent modification of immutables.
         unset ($arguments['id'], $arguments['uid'], $arguments['draftId']);
@@ -65,7 +65,7 @@ class SaveEntry extends MutationResolver
      * @return EntryElement
      * @throws \Exception if reasons
      */
-    protected function getEntry(array $arguments): EntryElement
+    protected function getEntryElement(array $arguments): EntryElement
     {
         /** @var Section $section */
         /** @var EntryType $entryType */

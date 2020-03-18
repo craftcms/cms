@@ -16,6 +16,7 @@ use craft\gql\arguments\elements\EntryMutation as EntryMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\CreateDraft;
 use craft\gql\resolvers\mutations\DeleteEntry;
+use craft\gql\resolvers\mutations\PublishDraft;
 use craft\gql\resolvers\mutations\SaveDraft;
 use craft\gql\resolvers\mutations\SaveEntry;
 use craft\gql\types\generators\EntryType;
@@ -170,7 +171,14 @@ class Entry extends Mutation
                 'name' => 'createDraft',
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [new CreateDraft(), 'resolve'],
-                'description' => 'Create a draft for an entry.',
+                'description' => 'Create a draft for an entry and return the draft ID.',
+                'type' => Type::id()
+            ],
+            [
+                'name' => 'publishDraft',
+                'args' => ['id' => Type::nonNull(Type::int())],
+                'resolve' => [new PublishDraft(), 'resolve'],
+                'description' => 'Publish a draft for the entry and return the entry ID.',
                 'type' => Type::id()
             ],
         ];
