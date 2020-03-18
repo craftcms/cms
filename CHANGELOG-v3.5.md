@@ -38,6 +38,7 @@
 - It’s now possible to specify aliases when eager-loading elements via the `with` param. ([#5793](https://github.com/craftcms/cms/issues/5793)) 
 - The `cpTrigger` config setting can now be set to `null` or an empty string. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - The `mailer/test` command now only supports testing the current email settings.
+- Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
 - The `withTransforms` asset query param can now include `srcset`-style sizes (e.g. `100w` or `2x`), following a normal transform definition.
 - The `QueryArgument` GraphQL type now also allows boolean values.
 - Improved transform eager-loading support when using GraphQL API.

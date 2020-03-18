@@ -1505,37 +1505,42 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}]+))?\}/',
-            function($matches) use (
+            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
+            function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
             ) {
+                $matches = array_pad($matches, 6, null);
+                list($fullMatch, $elementType, $ref, $siteId, $attribute, $fallback) = $matches;
+                if ($fallback === null) {
+                    $fallback = $fullMatch;
+                }
+
                 // Does it already have a full element type class name?
-                if (is_subclass_of($matches[1], ElementInterface::class)) {
-                    $elementType = $matches[1];
-                } else if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
-                    // Leave the tag alone
-                    return $matches[0];
+                if (
+                    !is_subclass_of($elementType, ElementInterface::class) &&
+                    ($elementType = $this->getElementTypeByRefHandle($elementType)) === null
+                ) {
+                    return $fallback;
                 }
 
                 // Get the site
-                if (!empty($matches[3])) {
-                    if (is_numeric($matches[3])) {
-                        $siteId = (int)$matches[3];
+                if (!empty($siteId)) {
+                    if (is_numeric($siteId)) {
+                        $siteId = (int)$siteId;
                     } else {
                         try {
-                            if (StringHelper::isUUID($matches[3])) {
-                                $site = $sitesService->getSiteByUid($matches[3]);
+                            if (StringHelper::isUUID($siteId)) {
+                                $site = $sitesService->getSiteByUid($siteId);
                             } else {
-                                $site = $sitesService->getSiteByHandle($matches[3]);
+                                $site = $sitesService->getSiteByHandle($siteId);
                             }
                         } catch (SiteNotFoundException $e) {
                             $site = null;
                         }
                         if (!$site) {
-                            // Leave the tag alone
-                            return $matches[0];
+                            return $fallback;
                         }
                         $siteId = $site->id;
                     }
@@ -1543,9 +1548,9 @@ class Elements extends Component
                     $siteId = $defaultSiteId;
                 }
 
-                $refType = is_numeric($matches[2]) ? 'id' : 'ref';
+                $refType = is_numeric($ref) ? 'id' : 'ref';
                 $token = '{' . StringHelper::randomString(9) . '}';
-                $allRefTagTokens[$siteId][$elementType][$refType][$matches[2]][] = [$token, $matches];
+                $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
             }, $str, -1, $count);
@@ -1581,9 +1586,9 @@ class Elements extends Component
                     foreach ($tokensByName as $refName => $tokens) {
                         $element = $elements[$refName] ?? null;
 
-                        foreach ($tokens as list($token, $matches)) {
+                        foreach ($tokens as list($token, $attribute, $fallback, $fullMatch)) {
                             $search[] = $token;
-                            $replace[] = $this->_getRefTokenReplacement($element, $matches);
+                            $replace[] = $this->_getRefTokenReplacement($element, $attribute, $fallback, $fullMatch);
                         }
                     }
                 }
@@ -2367,24 +2372,26 @@ SQL;
      * Returns the replacement for a given reference tag.
      *
      * @param ElementInterface|null $element
-     * @param array $matches
+     * @param string|null $attribute
+     * @param string $fallback
+     * @param string $fullMatch
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string
+    private function _getRefTokenReplacement(ElementInterface $element = null, string  $attribute = null, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back
-            return $matches[0];
+            return $fallback;
         }
 
-        if (empty($matches[4]) || !isset($element->{$matches[4]})) {
+        if (empty($attribute) || !isset($element->$attribute)) {
             // Default to the URL
             return (string)$element->getUrl();
         }
 
         try {
-            $value = $element->{$matches[4]};
+            $value = $element->$attribute;
 
             if (is_object($value) && !method_exists($value, '__toString')) {
                 throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');
@@ -2393,10 +2400,10 @@ SQL;
             return $this->parseRefs((string)$value);
         } catch (\Throwable $e) {
             // Log it
-            Craft::error('An exception was thrown when parsing the ref tag "' . $matches[0] . "\":\n" . $e->getMessage(), __METHOD__);
+            Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), __METHOD__);
 
-            // Replace the token with the original ref tag
-            return $matches[0];
+            // Replace the token with the default value
+            return $fallback;
         }
     }
 }
