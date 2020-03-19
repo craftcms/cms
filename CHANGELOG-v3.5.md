@@ -12,6 +12,7 @@
 - Added the `isDraft`, `isRevision`, `sourceId`, `sourceUid`, and `isUnsavedDraft` fields to elements when using GraphPQL API. ([#5580](https://github.com/craftcms/cms/issues/5580))
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
+- Added support for specifying a transform on assets’ `width` and `height` fields via GraphQL.
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
@@ -27,7 +28,6 @@
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getFullUri()`.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
-- Added transform support to `width` and `height` for Assets when using GraphQL API.
 
 ### Changed
 - Large asset thumbnails now use the same aspect ratio as the source image. ([#5515](https://github.com/craftcms/cms/issues/5515))
