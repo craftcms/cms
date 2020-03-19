@@ -78,6 +78,23 @@ class InstallController extends Controller
     }
 
     /**
+     * Checks whether Craft is already installed.
+     *
+     * @return int
+     * @since 3.5.0
+     */
+    public function actionCheck(): int
+    {
+        if (!Craft::$app->getIsInstalled()) {
+            $this->stdout('Craft is not installed yet.' . PHP_EOL);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('Craft is installed.' . PHP_EOL);
+        return ExitCode::OK;
+    }
+
+    /**
      * Runs the install migration.
      *
      * @return int
