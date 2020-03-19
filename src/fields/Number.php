@@ -233,4 +233,16 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         return NumberType::getType();
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => NumberType::getType(),
+            'description' => $this->instructions,
+        ];
+    }
 }

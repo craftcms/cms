@@ -8,6 +8,7 @@
 namespace craft\gql\arguments\elements;
 
 use craft\gql\base\ElementMutationArguments;
+use craft\gql\types\DateTime;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -31,12 +32,12 @@ class EntryMutation extends ElementMutationArguments
             ],
             'postDate' => [
                 'name' => 'postDate',
-                'type' => Type::listOf(Type::string()),
+                'type' => DateTime::getType(),
                 'description' => 'When should the entry be posted.'
             ],
             'expiryDate' => [
                 'name' => 'expiryDate',
-                'type' => Type::listOf(Type::string()),
+                'type' => DateTime::getType(),
                 'description' => 'When should the entry expire.'
             ],
         ]);

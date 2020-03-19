@@ -246,4 +246,16 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     {
         return DateTimeType::getType();
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => DateTimeType::getType(),
+            'description' => $this->instructions,
+        ];
+    }
 }
