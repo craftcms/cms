@@ -93,6 +93,12 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             if ($this->hasAttribute('uid') && !isset($this->uid)) {
                 $this->uid = StringHelper::UUID();
             }
+            
+            // Unset ID if null to avoid Postgres throwing an error.
+            if (Craft::$app->getDb()->getIsPgsql() && $this->hasAttribute('id') && $this->id === null) {
+                unset($this->id);
+            }
+        }
         } else if (
             !empty($this->getDirtyAttributes()) &&
             $this->hasAttribute('dateUpdated')
