@@ -122,6 +122,22 @@ class SetupController extends Controller
     }
 
     /**
+     * Checks whether Craft is installed.
+     *
+     * @return int
+     */
+    public function actionIsInstalled(): int
+    {
+        if (!Craft::$app->getIsInstalled(true)) {
+            Console::output('Craft isn’t installed yet!');
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        Console::output("It looks like Craft is already installed.");
+        return ExitCode::OK;
+    }
+
+    /**
      * Called from the post-create-project-cmd Composer hook.
      *
      * @return int
