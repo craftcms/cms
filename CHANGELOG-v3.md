@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that could occur during garbage collection if there were any unsaved drafts due to be purged, whose entry type had been deleted. ([#5820](https://github.com/craftcms/cms/issues/5820))
+- Fixed a bug where `craft\helpers\Console::outputWarning()` was mangling its output if the input text contained a line break.
 
 ## 3.4.10.1 - 2020-03-18
 
