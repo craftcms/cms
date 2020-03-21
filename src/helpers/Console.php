@@ -110,7 +110,7 @@ class Console extends \yii\helpers\Console
 
         foreach ($lines as $line) {
             $extra = $width - strlen($line);
-            static::output(static::ansiFormat(str_repeat(' ', floor($extra / 2)) . $text . str_repeat(' ', ceil($extra / 2)), $format));
+            static::output(static::ansiFormat(str_repeat(' ', floor($extra / 2)) . $line . str_repeat(' ', ceil($extra / 2)), $format));
         }
 
         if ($isColorEnabled) {
