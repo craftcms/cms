@@ -33,6 +33,7 @@
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
 - Added `craft\gql\types\Mutation`.
+- Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.

@@ -49,30 +49,7 @@ class TableRowType implements GeneratorInterface
     {
         /** @var TableField $context */
         $typeName = self::getName($context);
-
-        $contentFields = [];
-
-        foreach ($context->columns as $columnKey => $columnDefinition) {
-            switch ($columnDefinition['type']){
-                case 'date':
-                case 'time':
-                    $cellType = DateTime::getType();
-                    break;
-                case 'number':
-                    $cellType = Number::getType();
-                    break;
-                case 'lightswitch':
-                    $cellType = Type::boolean();
-                    break;
-                default:
-                    $cellType = Type::string();
-            }
-
-            $contentFields[$columnKey] = $cellType;
-            $contentFields[$columnDefinition['handle']] = $cellType;
-        }
-
-        $contentFields = TypeManager::prepareFieldDefinitions($contentFields, $typeName);
+        $contentFields = TableRow::prepareRowFieldDefinition($context->columns, $typeName);
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
             'name' => $typeName,
