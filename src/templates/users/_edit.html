@@ -99,7 +99,7 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
+            {% elseif user.getIsCurrent() or currentUser.can('administrateUsers') %}
                 <hr>
 
                 {{ forms.textField({
