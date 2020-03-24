@@ -12,6 +12,7 @@
 {% do view.setIsDeltaRegistrationActive(true) %}
 
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
+{% set canAdministrateUsers = currentUser.can('administrateUsers') %}
 
 {% if craft.app.request.isPost %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
@@ -82,7 +83,7 @@
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
+                    instructions: (requireEmailVerification and not canAdministrateUsers ? 'A verification email will be sent automatically.'|t('app')),
                     id: 'email',
                     name: 'email',
                     value: user.email,
@@ -91,7 +92,7 @@
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
-                {% if requireEmailVerification %}
+                {% if requireEmailVerification and canAdministrateUsers %}
                     {{ forms.checkboxField({
                         label: "Send an activation email now?"|t('app'),
                         name: 'sendVerificationEmail',
@@ -99,12 +100,12 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.can('administrateUsers') %}
+            {% elseif user.getIsCurrent() or canAdministrateUsers %}
                 <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t('app')),
+                    instructions: (requireEmailVerification and not canAdministrateUsers ? 'New email addresses must be verified before taking effect.'|t('app')),
                     id: 'email',
                     name: 'email',
                     value: user.email,

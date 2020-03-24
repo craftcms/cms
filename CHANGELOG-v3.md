@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed an error that could occur during garbage collection if there were any unsaved drafts due to be purged, whose entry type had been deleted. ([#5820](https://github.com/craftcms/cms/issues/5820))
 - Fixed a bug where `craft\helpers\Console::outputWarning()` was mangling its output if the input text contained a line break.
+- Fixed a bug where user registration pages would show the “Send an activation email now?” setting even if the logged-in user didn’t have permission to administrate users, in which case activation emails would be sent regardless of what they chose.
 
 ## 3.4.10.1 - 2020-03-18
 
