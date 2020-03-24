@@ -77,9 +77,8 @@
                 }, include('users/_photo', {user: user}, with_context = false)) }}
             {% endif %}
 
-            <hr>
-
             {% if isNewUser %}
+                <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
@@ -100,7 +99,8 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
+            {% elseif user.getIsCurrent() or currentUser.can('administrateUsers') %}
+                <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
