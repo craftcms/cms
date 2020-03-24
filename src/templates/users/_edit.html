@@ -83,7 +83,8 @@
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not canAdministrateUsers ? 'A verification email will be sent automatically.'|t('app')),
+                    instructions: requireEmailVerification and not canAdministrateUsers ?
+                        'A verification email will be sent automatically.'|t('app'),
                     id: 'email',
                     name: 'email',
                     value: user.email,
