@@ -7,6 +7,7 @@
 - Fixed a bug where `craft\helpers\Console::outputWarning()` was mangling its output if the input text contained a line break.
 - Fixed a bug where activation emails were getting sent after user registration regardless of the “Send an activation email now?” setting, if the logged-in user didn’t have permission to administrate users.
 - Fixed a bug where removing two elements from a relation field in rapid succession could trigger an element editor HUD. ([#5831](https://github.com/craftcms/cms/issues/5831))
+- Fixed a bug where setting a field’s translation method to “Translate for each site group” wouldn’t work if the field type was changed at the same time. ([#5832](https://github.com/craftcms/cms/issues/5832))
 
 ## 3.4.10.1 - 2020-03-18
 
