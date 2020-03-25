@@ -104,7 +104,7 @@
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: requireEmailVerification and not canAdministrateUsers
+                    warning: requireEmailVerification and not canAdministrateUsers
                         ? 'New email addresses must be verified before taking effect.'|t('app'),
                     id: 'email',
                     name: 'email',
