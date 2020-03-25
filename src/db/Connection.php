@@ -187,6 +187,18 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * @inheritdoc
+     * @since 3.4.11
+     */
+    public function close()
+    {
+        parent::close();
+        $this->_supportsMb4 = null;
+        $this->_quotedTableNames = null;
+        $this->_quotedColumnNames = null;
+    }
+
+    /**
      * Returns the path for a new backup file.
      *
      * @return string
@@ -359,7 +371,7 @@ class Connection extends \yii\db\Connection
         if (isset($this->_quotedTableNames[$name])) {
             return $this->_quotedTableNames[$name];
         }
-        return $this->_quotedTableNames[$name] = parent::quoteTableName($name);
+        return $this->_quotedTableNames[$name] = $this->getSchema()->quoteTableName($name);
     }
 
     /**
@@ -370,7 +382,7 @@ class Connection extends \yii\db\Connection
         if (isset($this->_quotedColumnNames[$name])) {
             return $this->_quotedColumnNames[$name];
         }
-        return $this->_quotedColumnNames[$name] = parent::quoteColumnName($name);
+        return $this->_quotedColumnNames[$name] = $this->getSchema()->quoteColumnName($name);
     }
 
     /**
