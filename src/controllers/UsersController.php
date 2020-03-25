@@ -971,11 +971,20 @@ class UsersController extends Controller
 
             if ($newEmail) {
                 // Should we be sending a verification email now?
+                // Even if verification isn't required, send one out on account creation if we don't have a password yet
                 $sendVerificationEmail = (
-                    $requireEmailVerification && (
-                        $isPublicRegistration ||
-                        ($isCurrentUser && !$canAdministrateUsers) ||
-                        $request->getBodyParam('sendVerificationEmail')
+                    (
+                        $requireEmailVerification && (
+                            $isPublicRegistration ||
+                            ($isCurrentUser && !$canAdministrateUsers) ||
+                            $request->getBodyParam('sendVerificationEmail')
+                        )
+                    ) ||
+                    (
+                        !$requireEmailVerification && $isNewUser && (
+                            ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
+                            $request->getBodyParam('sendVerificationEmail')
+                        )
                     )
                 );
 

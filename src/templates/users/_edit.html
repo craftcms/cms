@@ -91,13 +91,11 @@
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
-                {% if requireEmailVerification %}
-                    {{ forms.checkboxField({
-                        label: 'Send an activation email now'|t('app'),
-                        name: 'sendVerificationEmail',
-                        checked: true
-                    }) }}
-                {% endif %}
+                {{ forms.checkboxField({
+                    label: 'Send an activation email now'|t('app'),
+                    name: 'sendVerificationEmail',
+                    checked: true
+                }) }}
 
             {% elseif user.getIsCurrent() or canAdministrateUsers %}
                 <hr>
