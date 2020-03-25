@@ -542,7 +542,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the available element exporters for a given source.
      *
-     * @param string|null $source The selected source’s key
+     * @param string $source The selected source’s key
      * @return array The available element exporters
      * @see exporters()
      * @since 3.4.0
@@ -2256,6 +2256,14 @@ abstract class Element extends Component implements ElementInterface
     private function _allDirty(): bool
     {
         return $this->_allDirty || $this->resaving;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function markAsDirty()
+    {
+        $this->_allDirty = true;
     }
 
     /**

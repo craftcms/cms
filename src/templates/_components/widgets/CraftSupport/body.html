@@ -69,14 +69,14 @@
 
                 <div id="{{ idPrefix }}-support-more" class="cs-support-more hidden">
                     {{ forms.checkboxField({
-                        label: "Attach error logs?"|t('app'),
+                        label: 'Attach error logs'|t('app'),
                         name: 'attachLogs',
                         checked: true
                     }) }}
 
                     {% if showBackupOption %}
                         {{ forms.checkboxField({
-                            label: "Attach a database backup?"|t('app'),
+                            label: 'Attach a database backup'|t('app'),
                             name: 'attachDbBackup',
                             checked: true
                         }) }}
@@ -85,11 +85,11 @@
                     {{ forms.checkboxField({
                         name: 'attachTemplates',
                         checked: true,
-                        label: "Include your template files?"|t('app'),
+                        label: 'Include your template files'|t('app'),
                     }) }}
 
                     {{ forms.fileField({
-                        label: "Attach an additional file?"|t('app'),
+                        label: 'Attach an additional file'|t('app'),
                         class: 'cs-support-attachment',
                         name: 'attachAdditionalFile',
                     }) }}

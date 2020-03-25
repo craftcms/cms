@@ -50,6 +50,7 @@ use craft\queue\jobs\UpdateSearchIndex;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
+use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use yii\base\Behavior;
 use yii\base\Component;
@@ -679,10 +680,14 @@ class Elements extends Component
                             /** @var Element $siteElement */
                             $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                $this->propagateElement($element, $siteId, $siteElement);
+                                $this->propagateElement($element, $siteId, $siteElement ?? false);
                             }
                         }
                     }
+
+                    // It's now fully duplicated and propagated
+                    $element->markAsDirty();
+                    $element->afterPropagate(false);
                 } catch (\Throwable $e) {
                     if (!$continueOnError) {
                         throw $e;
@@ -1500,37 +1505,42 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}]+))?\}/',
-            function($matches) use (
+            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
+            function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
             ) {
+                $matches = array_pad($matches, 6, null);
+                list($fullMatch, $elementType, $ref, $siteId, $attribute, $fallback) = $matches;
+                if ($fallback === null) {
+                    $fallback = $fullMatch;
+                }
+
                 // Does it already have a full element type class name?
-                if (is_subclass_of($matches[1], ElementInterface::class)) {
-                    $elementType = $matches[1];
-                } else if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
-                    // Leave the tag alone
-                    return $matches[0];
+                if (
+                    !is_subclass_of($elementType, ElementInterface::class) &&
+                    ($elementType = $this->getElementTypeByRefHandle($elementType)) === null
+                ) {
+                    return $fallback;
                 }
 
                 // Get the site
-                if (!empty($matches[3])) {
-                    if (is_numeric($matches[3])) {
-                        $siteId = (int)$matches[3];
+                if (!empty($siteId)) {
+                    if (is_numeric($siteId)) {
+                        $siteId = (int)$siteId;
                     } else {
                         try {
-                            if (StringHelper::isUUID($matches[3])) {
-                                $site = $sitesService->getSiteByUid($matches[3]);
+                            if (StringHelper::isUUID($siteId)) {
+                                $site = $sitesService->getSiteByUid($siteId);
                             } else {
-                                $site = $sitesService->getSiteByHandle($matches[3]);
+                                $site = $sitesService->getSiteByHandle($siteId);
                             }
                         } catch (SiteNotFoundException $e) {
                             $site = null;
                         }
                         if (!$site) {
-                            // Leave the tag alone
-                            return $matches[0];
+                            return $fallback;
                         }
                         $siteId = $site->id;
                     }
@@ -1538,9 +1548,9 @@ class Elements extends Component
                     $siteId = $defaultSiteId;
                 }
 
-                $refType = is_numeric($matches[2]) ? 'id' : 'ref';
+                $refType = is_numeric($ref) ? 'id' : 'ref';
                 $token = '{' . StringHelper::randomString(9) . '}';
-                $allRefTagTokens[$siteId][$elementType][$refType][$matches[2]][] = [$token, $matches];
+                $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
             }, $str, -1, $count);
@@ -1576,9 +1586,9 @@ class Elements extends Component
                     foreach ($tokensByName as $refName => $tokens) {
                         $element = $elements[$refName] ?? null;
 
-                        foreach ($tokens as list($token, $matches)) {
+                        foreach ($tokens as list($token, $attribute, $fallback, $fullMatch)) {
                             $search[] = $token;
-                            $replace[] = $this->_getRefTokenReplacement($element, $matches);
+                            $replace[] = $this->_getRefTokenReplacement($element, $attribute, $fallback, $fullMatch);
                         }
                     }
                 }
@@ -1653,215 +1663,204 @@ class Elements extends Component
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
+        /** @var ElementInterface|string $elementType */
         /** @var Element[] $elements */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
         }
 
-        // Normalize the paths and find any custom path criterias
+        $elements = array_values($elements);
+
+        // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {
             $with = StringHelper::split($with);
         }
 
-        $paths = [];
-        $pathCriterias = [];
-        $countPaths = [];
+        $groups = [];
 
         foreach ($with as $path) {
-            // Using the array syntax?
-            // ['foo.bar'] or ['foo.bar', criteria]
+            // Separate the path and the criteria
             if (is_array($path)) {
-                if (!empty($path[1])) {
-                    // Is this a count path?
-                    if (ArrayHelper::remove($path[1], 'count', false)) {
-                        $countPaths[$path[0]] = true;
-                    }
-                    $pathCriterias['__root__.' . $path[0]] = $path[1];
-                }
-
-                $paths[] = $path[0];
+                $criteria = $path[1] ?? null;
+                $path = $path[0];
             } else {
-                $paths[] = $path;
+                $criteria = null;
+            }
+
+            // Split the path into the top segment and subpath
+            if (($dot = strpos($path, '.')) !== false) {
+                $handle = substr($path, 0, $dot);
+                $subpath = substr($path, $dot + 1);
+            } else {
+                $handle = $path;
+                $subpath = null;
+            }
+
+            // Get the handle & alias
+            if (preg_match('/^(' . HandleValidator::$handlePattern . ')\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle, $match)) {
+                $handle = $match[1];
+                $alias = $match[2];
+            } else {
+                $alias = $handle;
+            }
+
+            if (!isset($groups[$alias])) {
+                // [handle, criteria, getCount, subWith]
+                $groups[$alias] = [$handle, [], false, []];
+            }
+
+            // Only set the criteria if there's no subpath
+            if ($subpath === null) {
+                if ($criteria !== null) {
+                    $getCount = ArrayHelper::remove($criteria, 'count', false);
+                    $groups[$alias][1] = $criteria;
+                    $groups[$alias][2] = $groups[$alias][2] || $getCount;
+                }
+            } else {
+                // Add this as a nested "with"
+                $groups[$alias][3][] = [$subpath, $criteria];
             }
         }
 
-        // Load 'em up!
-        $elementsByPath = ['__root__' => $elements];
-        $elementTypesByPath = ['__root__' => $elementType];
-        $eagerLoadingMapsByPath = [];
+        foreach ($groups as $alias => list($handle, $criteria, $getCount, $subWith)) {
+            /** @var string $handle */
+            /** @var array $criteria */
+            /** @var bool $getCount */
+            /** @var array $subWith */
 
-        foreach ($paths as $path) {
-            $pathSegments = explode('.', $path);
-            $totalSegments = count($pathSegments);
-            $sourcePath = '__root__';
+            // Figure out the path mapping wants a custom order
+            $useCustomOrder = !empty($criteria['orderBy']) || !empty($criteria['order']);
 
-            foreach ($pathSegments as $segIndex => $segment) {
-                $targetPath = $sourcePath . '.' . $segment;
-                $pathCriteria = $pathCriterias[$targetPath] ?? [];
+            // Get the eager-loading map from the source element type
+            $map = $elementType::eagerLoadingMap($elements, $handle);
 
-                // Are we just fetching the count?
-                $getCount = isset($countPaths[$path]) && $segIndex === $totalSegments - 1;
+            if ($map === null) {
+                // Null means to skip eager-loading this segment
+                continue;
+            }
 
-                // Figure out the path mapping wants a custom order
-                $useCustomOrder = !$getCount && (
-                        !empty($pathCriteria['orderBy']) ||
-                        !empty($pathCriteria['order'])
-                    );
+            $targetElementIdsBySourceIds = null;
+            $query = null;
+            $offset = 0;
+            $limit = null;
 
-                // Make sure we haven't already eager-loaded this target path
-                if ($getCount || !isset($elementsByPath[$targetPath])) {
-                    // Have we already fetched the map from an earlier `count` path?
-                    if (array_key_exists($targetPath, $eagerLoadingMapsByPath)) {
-                        $map = $eagerLoadingMapsByPath[$targetPath];
-                    } else {
-                        // Get the eager-loading map from the source element type
-                        /** @var Element $sourceElementType */
-                        $sourceElementType = $elementTypesByPath[$sourcePath];
-                        $map = $eagerLoadingMapsByPath[$targetPath] = $sourceElementType::eagerLoadingMap(array_values($elementsByPath[$sourcePath]), $segment);
-                    }
+            if ($map && !empty($map['map'])) {
+                // Loop through the map to find:
+                // - unique target element IDs
+                // - target element IDs indexed by source element IDs
+                $uniqueTargetElementIds = [];
+                $targetElementIdsBySourceIds = [];
 
-                    if ($map === null) {
-                        break;
-                    }
+                foreach ($map['map'] as $mapping) {
+                    $uniqueTargetElementIds[$mapping['target']] = true;
+                    $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
+                }
 
-                    $targetElementIdsBySourceIds = null;
-                    $query = null;
-                    $offset = 0;
-                    $limit = null;
+                // Get the target elements
+                /** @var ElementInterface|string $targetElementType */
+                $targetElementType = $map['elementType'];
+                /** @var ElementQuery $query */
+                $query = $targetElementType::find();
 
-                    if ($map && !empty($map['map'])) {
-                        // Remember the element type in case there are more segments after this
-                        $elementTypesByPath[$targetPath] = $map['elementType'];
+                // Default to no order, offset, or limit, but allow the element type/path criteria to override
+                $query->orderBy = null;
+                $query->offset = null;
+                $query->limit = null;
 
-                        // Loop through the map to find:
-                        // - unique target element IDs
-                        // - target element IDs indexed by source element IDs
-                        $uniqueTargetElementIds = [];
-                        $targetElementIdsBySourceIds = [];
+                $criteria = array_merge(
+                    $map['criteria'] ?? [],
+                    $criteria
+                );
 
-                        foreach ($map['map'] as $mapping) {
-                            if (!in_array($mapping['target'], $uniqueTargetElementIds, false)) {
-                                $uniqueTargetElementIds[] = $mapping['target'];
+                // Save the offset & limit params for later
+                $offset = ArrayHelper::remove($criteria, 'offset', 0);
+                $limit = ArrayHelper::remove($criteria, 'limit');
+
+                Craft::configure($query, $criteria);
+
+                if (!$query->siteId) {
+                    $query->siteId = reset($elements)->siteId;
+                }
+
+                $query->andWhere([
+                    'elements.id' => array_keys($uniqueTargetElementIds),
+                ]);
+            }
+
+            // Do we just need the count?
+            if ($getCount && empty($subWith)) {
+                // Just fetch the target elements’ IDs
+                $targetElementIds = $query ? array_flip($query->ids()) : [];
+
+                // Loop through the source elements and count up their targets
+                foreach ($elements as $sourceElement) {
+                    $count = 0;
+                    if (!empty($targetElementIds) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                        foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                            if (isset($targetElementIds[$targetElementId])) {
+                                $count++;
                             }
-
-                            $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
                         }
-
-                        // Get the target elements
-                        /** @var Element $targetElementType */
-                        $targetElementType = $map['elementType'];
-                        /** @var ElementQuery $query */
-                        $query = $targetElementType::find();
-
-                        // Default to no order, offset, or limit, but allow the element type/path criteria to override
-                        $query->orderBy = null;
-                        $query->offset = null;
-                        $query->limit = null;
-
-                        $criteria = array_merge(
-                            $map['criteria'] ?? [],
-                            $pathCriteria
-                        );
-
-                        // Save the offset & limit params for later
-                        $offset = ArrayHelper::remove($criteria, 'offset', 0);
-                        $limit = ArrayHelper::remove($criteria, 'limit');
-
-                        Craft::configure($query, $criteria);
-
-                        if (!$query->siteId) {
-                            $query->siteId = reset($elements)->siteId;
-                        }
-
-                        $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
                     }
+                    $sourceElement->setEagerLoadedElementCount($alias, $count);
+                }
+            } else {
+                /** @var array|ElementInterface[] $targetElementData */
+                $targetElementData = $query ? $query->asArray()->indexBy('id')->all() : [];
+                $targetElements = [];
+
+                // Tell the source elements about their eager-loaded elements
+                foreach ($elements as $sourceElement) {
+                    /** @var Element $sourceElement */
+                    $targetElementIdsForSource = [];
+                    $targetElementsForSource = [];
+
+                    if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                        if ($useCustomOrder) {
+                            // Assign the elements in the order they were returned from the query
+                            foreach ($targetElementData as &$elementData) {
+                                /** @var array|ElementInterface $elementData */
+                                if (isset($targetElementIdsBySourceIds[$sourceElement->id][$elementData['id']])) {
+                                    $targetElementIdsForSource[] = $elementData['id'];
+                                }
+                            }
+                            unset($elementData);
+                        } else {
+                            // Assign the elements in the order defined by the map
+                            foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                if (isset($targetElementData[$targetElementId])) {
+                                    $targetElementIdsForSource[] = $targetElementId;
+                                }
+                            }
+                        }
+
+                        // Ignore elements that don't fall within the offset & limit
+                        if ($offset || $limit) {
+                            $targetElementIdsForSource = array_slice($targetElementIdsForSource, $offset, $limit);
+                        }
+
+                        // Create the elements
+                        foreach ($targetElementIdsForSource as $elementId) {
+                            if (!isset($targetElements[$elementId])) {
+                                $targetElements[$elementId] = $query->createElement($targetElementData[$elementId]);
+                            }
+                            $targetElementsForSource[] = $targetElements[$elementId];
+                        }
+                    }
+
+                    $sourceElement->setEagerLoadedElements($alias, $targetElementsForSource);
 
                     if ($getCount) {
-                        // Just fetch the target elements’ IDs
-                        $targetElementIds = $query ? array_flip($query->ids()) : [];
-
-                        // Loop through the source elements and count up their targets
-                        foreach ($elementsByPath[$sourcePath] as $sourceElement) {
-                            $count = 0;
-                            if (!empty($targetElementIds) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                                    if (isset($targetElementIds[$targetElementId])) {
-                                        $count++;
-                                    }
-                                }
-                            }
-                            $sourceElement->setEagerLoadedElementCount($segment, $count);
-                        }
-                    } else {
-                        /** @var array|ElementInterface[] $targetElements */
-                        $targetElements = $query ? $query->asArray()->all() : [];
-                        $elementsByPath[$targetPath] = [];
-
-                        // Index the target elements by their IDs if we are using the map-defined order
-                        if (!$useCustomOrder) {
-                            /** @var array|ElementInterface[] $targetElementsById */
-                            $targetElementsById = [];
-                            foreach ($targetElements as &$targetElement) {
-                                $targetElementsById[$targetElement['id']] = &$targetElement;
-                            }
-                        }
-
-                        // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
-                        foreach ($elementsByPath[$sourcePath] as $sourceElement) {
-                            /** @var Element $sourceElement */
-                            $targetElementsForSource = [];
-
-                            if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                                if ($useCustomOrder) {
-                                    // Assign the elements in the order they were returned from the query
-                                    foreach ($targetElements as &$targetElement) {
-                                        /** @var array|ElementInterface $targetElement */
-                                        $targetElementId = ArrayHelper::getValue($targetElement, 'id');
-                                        if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
-                                            $targetElementsForSource[] = &$targetElement;
-                                        }
-                                    }
-                                } else {
-                                    // Assign the elements in the order defined by the map
-                                    foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                                        if (isset($targetElementsById[$targetElementId])) {
-                                            $targetElementsForSource[] = &$targetElementsById[$targetElementId];
-                                        }
-                                    }
-                                }
-
-                                // Ignore elements that don't fall within the offset & limit
-                                if ($offset || $limit) {
-                                    $targetElementsForSource = array_slice($targetElementsForSource, $offset, $limit);
-                                }
-
-                                foreach ($targetElementsForSource as &$targetElement) {
-                                    // Make sure the element has been instantiated
-                                    if (is_array($targetElement)) {
-                                        $targetElement = $query->createElement($targetElement);
-                                    }
-
-                                    // Store it on $elementsByPath FFR
-                                    if (!isset($elementsByPath[$targetPath][$targetElement->id])) {
-                                        $elementsByPath[$targetPath][$targetElement->id] = $targetElement;
-                                    }
-                                }
-                                unset($targetElement);
-                            }
-
-                            $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
-                        }
+                        $sourceElement->setEagerLoadedElementCount($alias, count($targetElementsForSource));
                     }
                 }
 
-                if (empty($elementsByPath[$targetPath])) {
-                    // Dead end - stop wasting time on this path
-                    break;
+                // Now eager-load any sub paths
+                if (!empty($subWith)) {
+                    /** @var ElementInterface|string $targetElementType */
+                    $this->eagerLoadElements($targetElementType, $targetElements, $subWith);
                 }
-
-                // Update the source path
-                $sourcePath = $targetPath;
             }
         }
     }
@@ -1871,16 +1870,13 @@ class Elements extends Component
      *
      * @param ElementInterface $element The element to propagate
      * @param int $siteId The site ID that the element should be propagated to
-     * @param ElementInterface|null $siteElement The element loaded for the propagated site (only pass this if you
-     * already had a reason to load it)
+     * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
+     * already had a reason to load it). Set to `false` if it is known to not exist yet.
      * @throws Exception if the element couldn't be propagated
      * @since 3.0.13
      */
-    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface $siteElement = null)
+    public function propagateElement(ElementInterface $element, int $siteId, $siteElement = null)
     {
-        /** @var Element $element */
-        $isNewElement = !$element->id;
-
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
             throw new Exception('All elements must have at least one site associated with them.');
@@ -1893,7 +1889,7 @@ class Elements extends Component
             throw new Exception('Attempting to propagate an element to an unsupported site.');
         }
 
-        $this->_propagateElement($element, $isNewElement, $siteInfo, $siteElement);
+        $this->_propagateElement($element, $siteInfo, $siteElement);
     }
 
     /**
@@ -2129,7 +2125,7 @@ class Elements extends Component
                 foreach ($supportedSites as $siteInfo) {
                     // Skip the master site
                     if ($siteInfo['siteId'] != $element->siteId) {
-                        $this->_propagateElement($element, $isNewElement, $siteInfo);
+                        $this->_propagateElement($element, $siteInfo, $isNewElement ? false : null);
                     }
                 }
             }
@@ -2258,18 +2254,19 @@ class Elements extends Component
      * Propagates an element to a different site
      *
      * @param ElementInterface $element
-     * @param bool $isNewElement
      * @param array $siteInfo
-     * @param ElementInterface|null $siteElement The element loaded for the propagated site
+     * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
      * @throws Exception if the element couldn't be propagated
      */
-    private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo, ElementInterface $siteElement = null)
+    private function _propagateElement(ElementInterface $element, array $siteInfo, $siteElement = null)
     {
         /** @var Element $element */
         // Try to fetch the element in this site
         /** @var Element|null $siteElement */
-        if ($siteElement === null && !$isNewElement) {
+        if ($siteElement === null && $element->id) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
+        } else if (!$siteElement) {
+            $siteElement = null;
         }
 
         // If it doesn't exist yet, just clone the master site
@@ -2375,24 +2372,26 @@ SQL;
      * Returns the replacement for a given reference tag.
      *
      * @param ElementInterface|null $element
-     * @param array $matches
+     * @param string|null $attribute
+     * @param string $fallback
+     * @param string $fullMatch
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string
+    private function _getRefTokenReplacement(ElementInterface $element = null, string  $attribute = null, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back
-            return $matches[0];
+            return $fallback;
         }
 
-        if (empty($matches[4]) || !isset($element->{$matches[4]})) {
+        if (empty($attribute) || !isset($element->$attribute)) {
             // Default to the URL
             return (string)$element->getUrl();
         }
 
         try {
-            $value = $element->{$matches[4]};
+            $value = $element->$attribute;
 
             if (is_object($value) && !method_exists($value, '__toString')) {
                 throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');
@@ -2401,10 +2400,10 @@ SQL;
             return $this->parseRefs((string)$value);
         } catch (\Throwable $e) {
             // Log it
-            Craft::error('An exception was thrown when parsing the ref tag "' . $matches[0] . "\":\n" . $e->getMessage(), __METHOD__);
+            Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), __METHOD__);
 
-            // Replace the token with the original ref tag
-            return $matches[0];
+            // Replace the token with the default value
+            return $fallback;
         }
     }
 }

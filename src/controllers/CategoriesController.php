@@ -154,7 +154,7 @@ class CategoriesController extends Controller
 
             if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
                 $siteSettings->uriFormat = $postedSettings['uriFormat'];
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->template = $postedSettings['template'] ?? null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;
@@ -364,6 +364,8 @@ class CategoriesController extends Controller
             ];
         }
 
+        $variables['showPreviewBtn'] = false;
+
         // Enable Live Preview?
         if (!$request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
@@ -378,7 +380,9 @@ class CategoriesController extends Controller
                     ]
                 ]) . ');');
 
-            $variables['showPreviewBtn'] = true;
+            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+                $variables['showPreviewBtn'] = true;
+            }
 
             // Should we show the Share button too?
             if ($category->id !== null) {
@@ -393,8 +397,6 @@ class CategoriesController extends Controller
                         ]);
                 }
             }
-        } else {
-            $variables['showPreviewBtn'] = false;
         }
 
         // Set the base CP edit URL

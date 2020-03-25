@@ -812,7 +812,16 @@ class Entry extends Element
      */
     public function getFieldLayout()
     {
-        return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+        if (($fieldLayout = parent::getFieldLayout()) !== null) {
+            return $fieldLayout;
+        }
+        try {
+            $entryType = $this->getType();
+        } catch (InvalidConfigException $e) {
+            // The entry type was probably deleted
+            return null;
+        }
+        return $entryType->getFieldLayout();
     }
 
     /**

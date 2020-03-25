@@ -70,14 +70,14 @@
 
         {% if CraftEdition == CraftPro %}
             {{ forms.checkboxField({
-                label: "Verify email addresses?"|t('app'),
+                label: 'Verify email addresses'|t('app'),
                 instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t('app'),
                 name: 'requireEmailVerification',
                 checked: settings.requireEmailVerification,
             }) }}
 
             {{ forms.checkboxField({
-                label: "Allow public registration?"|t('app'),
+                label: 'Allow public registration'|t('app'),
                 name: 'allowPublicRegistration',
                 checked: settings.allowPublicRegistration,
                 toggle: 'publicRegistrationSettings'

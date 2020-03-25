@@ -10,13 +10,13 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
 use yii\console\ExitCode;
-use yii\helpers\Console;
 
 /**
  * Craft CMS CLI installer.
@@ -75,6 +75,23 @@ class InstallController extends Controller
         }
 
         return $options;
+    }
+
+    /**
+     * Checks whether Craft is already installed.
+     *
+     * @return int
+     * @since 3.5.0
+     */
+    public function actionCheck(): int
+    {
+        if (!Craft::$app->getIsInstalled()) {
+            $this->stdout('Craft is not installed yet.' . PHP_EOL);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('Craft is installed.' . PHP_EOL);
+        return ExitCode::OK;
     }
 
     /**
@@ -173,28 +190,16 @@ class InstallController extends Controller
     }
 
     /**
-     * Installs a plugin.
+     * Installs a plugin. (DEPRECATED -- use plugin/install instead.)
      *
      * @param string $handle
      * @return int
+     * @deprecated in 3.5.0. Use `plugin/uninstall` instead.
      */
     public function actionPlugin(string $handle): int
     {
-        $this->_ensureYamlFileExists();
-
-        $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
-        $start = microtime(true);
-
-        try {
-            Craft::$app->plugins->installPlugin($handle);
-        } catch (\Throwable $e) {
-            $this->stderr("*** failed to install {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
-        $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** installed {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
-        return ExitCode::OK;
+        Console::outputWarning("The install/plugin command is deprecated.\nRunning plugin/install instead...");
+        return Craft::$app->runAction('plugin/install', [$handle]);
     }
 
     /**
@@ -299,14 +304,5 @@ class InstallController extends Controller
             goto top;
         }
         return $password;
-    }
-
-    private function _ensureYamlFileExists()
-    {
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $this->stdout('Generating project.yaml file from internal config ... ', Console::FG_YELLOW);
-            Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
-            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        }
     }
 }

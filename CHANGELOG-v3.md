@@ -2,18 +2,36 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed an error that could occur during garbage collection if there were any unsaved drafts due to be purged, whose entry type had been deleted. ([#5820](https://github.com/craftcms/cms/issues/5820))
+- Fixed a bug where `craft\helpers\Console::outputWarning()` was mangling its output if the input text contained a line break.
+- Fixed a bug where activation emails were getting sent after user registration regardless of the “Send an activation email now?” setting, if the logged-in user didn’t have permission to administrate users.
+
+## 3.4.10.1 - 2020-03-18
+
+### Fixed
+- Fixed an error that could occur when saving an asset. ([#5801](https://github.com/craftcms/cms/issues/5801))
+- Fixed a bug where field types’ `afterSave()` methods weren’t getting called if no top-level field settings had changed. ([#5803](https://github.com/craftcms/cms/issues/5803))
+
+## 3.4.10 - 2020-03-17
+
 ### Added
+- Added `craft\base\Elements::markAsDirty()`.
 - Added `craft\services\Search::$useFullText`. ([#5696](https://github.com/craftcms/cms/issues/5696))
 
 ### Changed
+- Category groups’ category URI format settings are now shown when running Craft in headless mode. ([#5786](https://github.com/craftcms/cms/issues/5786))
 - Reduced the likelihood of a race condition that can result in a PHP error, if a request comes in between the time a field is saved with a new field handle, and the `info.fieldVersion` value is updated in the database. ([#5742](https://github.com/craftcms/cms/issues/5742))
 - `craft\base\ApplicationTrait::getIsInstalled()` now has a `$refresh` argument.
 - `craft\base\ApplicationTrait::saveInfo()` now has an `$attributeNames` argument.
+- The `$siteElement` argument of `craft\services\Elements::propagateElement()` can now be set to `false` to indicate that the element is known to not exist for the target site yet.
+- XML element exports now call all generic nodes `<item>`, instead of being named after the element type that is getting exported.
+- Updated Garnish to 0.1.34.
 
 ### Fixed
 - Fixed a bug where a SQL deadlock could occur if two elements’ relational field values were being saved simultaneously. ([#5745](https://github.com/craftcms/cms/pull/5745))
 - Fixed a bug where the Plugin Store was not showing validation errors during the payment process. ([#5728](https://github.com/craftcms/cms/issues/5728))
-- Fixed an error that could occur when processing Project Config changes that also included new sites.
+- Fixed an error that could occur when processing project config changes that included newly created sites. ([#5790](https://github.com/craftcms/cms/issues/5790))
 - Fixed a bug where table cells with the `thin` class were wrapping. ([#5746](https://github.com/craftcms/cms/pull/5746))
 - Fixed a bug where Craft could think it was already installed after running the `setup` command, if it had been installed at the beginning of the request.
 - Fixed an error where applying changes to Matrix fields from the `project.yaml` file could result in the file being re-saved.
@@ -22,6 +40,10 @@
 - Fixed a bug where Edit Entry pages would often create a draft when clicking the “Preview” button even if nothing had changed, if there was a Redactor field or other field that was doing its own value normalization on page load.
 - Fixed a bug where Redactor fields weren’t getting autofocused when a new Matrix block was added. ([#5773](https://github.com/craftcms/cms/issues/5773))
 - Fixed a “Division by zero” error that occurred if an image didn’t have a width or height.
+- Fixed a bug where Matrix and relational fields weren’t getting propagated correctly for global sets, assets, categories, and tags, when a new site was added. ([#5775](https://github.com/craftcms/cms/issues/5775))
+- Fixed a bug where the `request` component could be loaded recursively in the event that a fatal error occurred during its initialization. ([#5788](https://github.com/craftcms/cms/issues/5788), [#5791](https://github.com/craftcms/cms/issues/5791))
+- Fixed a bug where it was possible to delete an autocreated Matrix block if the Min Blocks and Max Blocks settings were both set to the same value, and there was only one block type. ([#5781](https://github.com/craftcms/cms/issues/5781))
+- Fixed a bug where elements weren’t styled correctly while dragging.
 
 ## 3.4.9 - 2020-02-28
 
