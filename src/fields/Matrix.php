@@ -24,8 +24,10 @@ use craft\elements\MatrixBlock;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\events\BlockTypesEvent;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
+use craft\gql\types\TableRow;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -39,6 +41,7 @@ use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -837,6 +840,72 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             'resolve' => MatrixBlockResolver::class . '::resolve',
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlArgumentType()
+    {
+        $typeName = $this->handle . '_MatrixInput';
+
+        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
+            return $argumentType;
+        }
+
+        // Array of block types.
+        $blockTypes = $this->getBlockTypes();
+        $blockInputTypes = [];
+
+        // For all the blocktypes
+        foreach ($blockTypes as $blockType) {
+            $fields = $blockType->getFields();
+            $blockTypeFields = [];
+
+            // Get the field input types
+            foreach ($fields as $field) {
+                /** @var Field $field */
+                 $blockTypeFields[$field->handle] = $field->getContentGqlArgumentType();
+            }
+
+            $blockTypeGqlName = $this->handle . '_' . $blockType->handle . '_MatrixBlockInput';
+            $blockInputTypes[$blockType->handle] = [
+                'name' => $blockType->handle,
+                'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
+                    'name' => $blockTypeGqlName,
+                    'fields' => $blockTypeFields
+                ]))
+            ];
+        }
+
+        // All the different field block types now get wrapped in a container input.
+        // If two different block types are passed, the selected block type to parse is undefined.
+        $blockTypeContainerName = $this->handle . '_MatrixBlockContainerInput';
+        $blockContainerInputType = GqlEntityRegistry::createEntity($blockTypeContainerName, new InputObjectType([
+            'name' => $blockTypeContainerName,
+            'fields' => function() use ($blockInputTypes) {
+                return $blockInputTypes;
+            }
+        ]));
+
+        $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+            'name' => $typeName,
+            'fields' => function() use ($blockContainerInputType) {
+                return [
+                    'sortOrder' => [
+                        'name' => 'sortOrder',
+                        'type' => Type::listOf(Type::int())
+                    ],
+                    'blocks' => [
+                        'name' => 'blocks',
+                        'type' => Type::listOf($blockContainerInputType)
+                    ]
+                ];
+            }
+        ]));
+
+        return $argumentType;
+    }
+
 
     /**
      * @inheritdoc

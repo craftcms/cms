@@ -434,7 +434,6 @@ class Table extends Field
      */
     public function getContentGqlArgumentType()
     {
-        /** @var TableField $context */
         $typeName = $this->handle . '_TableRowInput';
 
         if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
