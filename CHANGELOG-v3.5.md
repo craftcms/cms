@@ -3,6 +3,7 @@
 ### Added
 - Added the “Show rounded icons” user preference. ([#5518](https://github.com/craftcms/cms/issues/5518))
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
+- Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))

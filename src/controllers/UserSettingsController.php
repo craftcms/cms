@@ -130,6 +130,7 @@ class UserSettingsController extends Controller
         if (Craft::$app->getEdition() === Craft::Pro) {
             $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
             $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
+            $settings['suspendByDefault'] = (bool)Craft::$app->getRequest()->getBodyParam('suspendByDefault');
             $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
         }
 
