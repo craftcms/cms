@@ -365,6 +365,7 @@ class Connection extends \yii\db\Connection
 
     /**
      * @inheritdoc
+     * @todo remove this when https://github.com/yiisoft/yii2/pull/17935 is merged + released
      */
     public function quoteTableName($name)
     {
@@ -376,6 +377,7 @@ class Connection extends \yii\db\Connection
 
     /**
      * @inheritdoc
+     * @todo remove this when https://github.com/yiisoft/yii2/pull/17935 is merged + released
      */
     public function quoteColumnName($name)
     {
