@@ -899,6 +899,7 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
+        $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $requireEmailVerification = Craft::$app->getProjectConfig()->get('users.requireEmailVerification') ?? true;
 
@@ -960,7 +961,7 @@ class UsersController extends Controller
         $sendVerificationEmail = false;
 
         // Are they allowed to set the email address?
-        if ($isNewUser || $isCurrentUser || $currentUser->can('administrateUsers')) {
+        if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
             $newEmail = $request->getBodyParam('email');
 
             // Make sure it actually changed
@@ -969,21 +970,20 @@ class UsersController extends Controller
             }
 
             if ($newEmail) {
-                // Does that email need to be verified?
-                if ($requireEmailVerification && (
-                        !$currentUser ||
-                        !$currentUser->can('administrateUsers') ||
+                // Should we be sending a verification email now?
+                $sendVerificationEmail = (
+                    $requireEmailVerification && (
+                        $isPublicRegistration ||
+                        ($isCurrentUser && !$canAdministrateUsers) ||
                         $request->getBodyParam('sendVerificationEmail')
-                    )) {
-                    // Save it as an unverified email for now
-                    $user->unverifiedEmail = $newEmail;
-                    $sendVerificationEmail = true;
+                    )
+                );
 
-                    if ($isNewUser) {
-                        $user->email = $newEmail;
-                    }
-                } else {
-                    // We trust them
+                if ($sendVerificationEmail) {
+                    $user->unverifiedEmail = $newEmail;
+                }
+
+                if (!$sendVerificationEmail || $isNewUser) {
                     $user->email = $newEmail;
                 }
             }
