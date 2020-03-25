@@ -901,7 +901,8 @@ class UsersController extends Controller
         $currentUser = $userSession->getIdentity();
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $requireEmailVerification = Craft::$app->getProjectConfig()->get('users.requireEmailVerification') ?? true;
+        $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
+        $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -937,7 +938,7 @@ class UsersController extends Controller
                 $this->requirePermission('registerUsers');
             } else {
                 // Make sure public registration is allowed
-                $allowPublicRegistration = Craft::$app->getProjectConfig()->get('users.allowPublicRegistration') ?? false;
+                $allowPublicRegistration = $userSettings['allowPublicRegistration'] ?? false;
                 if (!$allowPublicRegistration) {
                     throw new ForbiddenHttpException('Public registration is not allowed');
                 }
