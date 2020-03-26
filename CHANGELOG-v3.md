@@ -12,6 +12,7 @@
 - Fixed a bug where removing two elements from a relation field in rapid succession could trigger an element editor HUD. ([#5831](https://github.com/craftcms/cms/issues/5831))
 - Fixed a bug where setting a field’s translation method to “Translate for each site group” wouldn’t work if the field type was changed at the same time. ([#5832](https://github.com/craftcms/cms/issues/5832))
 - Fixed a SQL error that could occur when installing Craft via the `craft setup` command, if using PostgreSQL. ([#5757](https://github.com/craftcms/cms/issues/5757))
+- Fixed a bug where content wasn’t getting transferred correctly when deleting a user from the Users index page. ([#5838](https://github.com/craftcms/cms/issues/5838))
 
 ## 3.4.10.1 - 2020-03-18
 
