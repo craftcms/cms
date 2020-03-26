@@ -86,17 +86,6 @@ class Connection extends \yii\db\Connection
     private $_supportsMb4;
 
     /**
-     * @var string[]
-     * @see quoteTableName()
-     */
-    private $_quotedTableNames;
-    /**
-     * @var string[]
-     * @see quoteColumnName()
-     */
-    private $_quotedColumnNames;
-
-    /**
      * Returns whether this is a MySQL connection.
      *
      * @return bool
@@ -194,8 +183,6 @@ class Connection extends \yii\db\Connection
     {
         parent::close();
         $this->_supportsMb4 = null;
-        $this->_quotedTableNames = null;
-        $this->_quotedColumnNames = null;
     }
 
     /**
@@ -361,30 +348,6 @@ class Connection extends \yii\db\Connection
     public function quoteDatabaseName(string $name): string
     {
         return $this->getSchema()->quoteTableName($name);
-    }
-
-    /**
-     * @inheritdoc
-     * @todo remove this when https://github.com/yiisoft/yii2/pull/17935 is merged + released
-     */
-    public function quoteTableName($name)
-    {
-        if (isset($this->_quotedTableNames[$name])) {
-            return $this->_quotedTableNames[$name];
-        }
-        return $this->_quotedTableNames[$name] = $this->getSchema()->quoteTableName($name);
-    }
-
-    /**
-     * @inheritdoc
-     * @todo remove this when https://github.com/yiisoft/yii2/pull/17935 is merged + released
-     */
-    public function quoteColumnName($name)
-    {
-        if (isset($this->_quotedColumnNames[$name])) {
-            return $this->_quotedColumnNames[$name];
-        }
-        return $this->_quotedColumnNames[$name] = $this->getSchema()->quoteColumnName($name);
     }
 
     /**
