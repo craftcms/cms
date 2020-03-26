@@ -12,6 +12,7 @@
 {% do view.setIsDeltaRegistrationActive(true) %}
 
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
+{% set canAdministrateUsers = currentUser.can('administrateUsers') %}
 
 {% if craft.app.request.isPost %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
@@ -77,13 +78,11 @@
                 }, include('users/_photo', {user: user}, with_context = false)) }}
             {% endif %}
 
-            <hr>
-
             {% if isNewUser %}
+                <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
                     id: 'email',
                     name: 'email',
                     value: user.email,
@@ -100,11 +99,13 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
+            {% elseif user.getIsCurrent() or canAdministrateUsers %}
+                <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t('app')),
+                    warning: requireEmailVerification and not canAdministrateUsers
+                        ? 'New email addresses must be verified before taking effect.'|t('app'),
                     id: 'email',
                     name: 'email',
                     value: user.email,

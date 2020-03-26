@@ -731,6 +731,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Get ready to submit
             var viewParams = this.getViewParams();
 
+            actionParams = actionParams ? Craft.expandPostArray(actionParams) : {};
             var params = $.extend(viewParams, actionParams, {
                 elementAction: actionClass,
                 elementIds: selectedElementIds

@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-03-09 */
+/*!   - 2020-03-26 */
 (function ($) {
   /** global: Craft */
 
@@ -2807,6 +2807,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
       var viewParams = this.getViewParams();
+      actionParams = actionParams ? Craft.expandPostArray(actionParams) : {};
       var params = $.extend(viewParams, actionParams, {
         elementAction: actionClass,
         elementIds: selectedElementIds
@@ -4482,8 +4483,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       }
 
-      $elements.find('.delete').on('click', $.proxy(function (ev) {
-        this.removeElement($(ev.currentTarget).closest('.element'));
+      $elements.find('.delete').on('click dblclick', $.proxy(function (ev) {
+        this.removeElement($(ev.currentTarget).closest('.element')); // Prevent this from acting as one of a double-click
+
+        ev.stopPropagation();
       }, this));
       this.$elements = this.$elements.add($elements);
       this.updateAddElementsBtn();

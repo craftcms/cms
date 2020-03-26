@@ -899,7 +899,10 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
-        $requireEmailVerification = Craft::$app->getProjectConfig()->get('users.requireEmailVerification') ?? true;
+        $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
+        $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -935,7 +938,7 @@ class UsersController extends Controller
                 $this->requirePermission('registerUsers');
             } else {
                 // Make sure public registration is allowed
-                $allowPublicRegistration = Craft::$app->getProjectConfig()->get('users.allowPublicRegistration') ?? false;
+                $allowPublicRegistration = $userSettings['allowPublicRegistration'] ?? false;
                 if (!$allowPublicRegistration) {
                     throw new ForbiddenHttpException('Public registration is not allowed');
                 }
@@ -956,10 +959,10 @@ class UsersController extends Controller
         // Handle secure properties (email and password)
         // ---------------------------------------------------------------------
 
-        $verifyNewEmail = false;
+        $sendVerificationEmail = false;
 
         // Are they allowed to set the email address?
-        if ($isNewUser || $isCurrentUser || $currentUser->can('administrateUsers')) {
+        if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
             $newEmail = $request->getBodyParam('email');
 
             // Make sure it actually changed
@@ -968,21 +971,20 @@ class UsersController extends Controller
             }
 
             if ($newEmail) {
-                // Does that email need to be verified?
-                if ($requireEmailVerification && (
-                        !$currentUser ||
-                        (!$currentUser->admin && !$currentUser->can('administrateUsers')) ||
+                // Should we be sending a verification email now?
+                $sendVerificationEmail = (
+                    $requireEmailVerification && (
+                        $isPublicRegistration ||
+                        ($isCurrentUser && !$canAdministrateUsers) ||
                         $request->getBodyParam('sendVerificationEmail')
-                    )) {
-                    // Save it as an unverified email for now
-                    $user->unverifiedEmail = $newEmail;
-                    $verifyNewEmail = true;
+                    )
+                );
 
-                    if ($isNewUser) {
-                        $user->email = $newEmail;
-                    }
-                } else {
-                    // We trust them
+                if ($sendVerificationEmail) {
+                    $user->unverifiedEmail = $newEmail;
+                }
+
+                if (!$sendVerificationEmail || $isNewUser) {
                     $user->email = $newEmail;
                 }
             }
@@ -990,7 +992,7 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($isPublicRegistration) {
-            if (!Craft::$app->getConfig()->getGeneral()->deferPublicRegistrationPassword) {
+            if (!$generalConfig->deferPublicRegistrationPassword) {
                 $user->newPassword = $request->getBodyParam('password', '');
             }
         } else {
@@ -1015,7 +1017,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         // Is the site set to use email addresses as usernames?
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if ($generalConfig->useEmailAsUsername) {
             $user->username = $user->email;
         } else {
             $user->username = $request->getBodyParam('username', ($user->username ?: $user->email));
@@ -1149,7 +1151,7 @@ class UsersController extends Controller
         }
 
         // Do we need to send a verification email out?
-        if ($verifyNewEmail) {
+        if ($sendVerificationEmail) {
             // Temporarily set the unverified email on the User so the verification email goes to the
             // right place
             $originalEmail = $user->email;
