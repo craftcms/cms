@@ -81,6 +81,7 @@
     <div id="fields">
         {{ forms.textField({
             label: "Title"|t('app'),
+            altLabel: tag('code', {text: 'title'}),
             siteId: category.siteId,
             id: 'title',
             name: 'title',

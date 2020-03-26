@@ -11190,6 +11190,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
           $(this).attr('rel', 'noopener').attr('target', '_blank');
         }
+      }); // Listen for Option/ALT presses
+
+      this.addListener(Garnish.$win, 'keydown', function (ev) {
+        if (ev.keyCode === Garnish.ALT_KEY) {
+          Garnish.$bod.addClass('altkeydown');
+        }
+      });
+      this.addListener(Garnish.$win, 'keyup', function (ev) {
+        if (ev.keyCode === Garnish.ALT_KEY) {
+          Garnish.$bod.removeClass('altkeydown');
+        }
       });
     },
     initSpecialForms: function initSpecialForms() {

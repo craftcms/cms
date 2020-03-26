@@ -9,6 +9,7 @@
     {% if section.type != 'single' and entryType.hasTitleField %}
         {{ forms.textField({
             label: entryType.titleLabel|t('app'),
+            altLabel: tag('code', {text: 'title'}),
             id: 'title',
             name: 'title',
             required: true,

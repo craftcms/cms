@@ -2,6 +2,7 @@
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
 {%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
+{%- set altLabel = altLabel ?? false %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
 {%- set required = required ?? false %}
@@ -48,7 +49,14 @@
                     for: id ?? null,
                 }|merge(labelAttributes ?? [], recursive=true) %}
                 <label {{ attr(labelAttributes) }}>
-                    {{- label|raw -}}
+                    {%- if altLabel %}
+                        {%- apply spaceless %}
+                            <span class="primary-label">{{- label|raw -}}</span>
+                            <span class="alt-label">{{- altLabel|raw -}}</span>
+                        {% endapply %}
+                    {%- else %}
+                        {{- label|raw }}
+                    {%- endif %}
                     {%- if translatable %}
                         {{ tag('span', {
                             class: ['extralight'],
