@@ -145,7 +145,7 @@
             $container.find('select').html(
                 ($.inArray('none', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="none">{{ "Not translatable"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('site', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site"|t('app')|e('js') }}</option>' : '') +
-                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="siteGroup">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('custom', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="custom">{{ "Custom…"|t('app')|e('js') }}</option>' : '')
             );

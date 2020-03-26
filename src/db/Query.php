@@ -256,53 +256,7 @@ class Query extends \yii\db\Query
     protected function queryScalar($selectExpression, $db)
     {
         try {
-            // Copied from yii\db\Query::queryScalar(), ex
-            if ($this->emulateExecution) {
-                return null;
-            }
-
-            if (
-                !$this->distinct
-                && empty($this->groupBy)
-                && empty($this->having)
-                && empty($this->union)
-            ) {
-                $select = $this->select;
-                $order = $this->orderBy;
-                $limit = $this->limit;
-                $offset = $this->offset;
-
-                $this->select = [$selectExpression];
-                $this->orderBy = null;
-                $this->limit = null;
-                $this->offset = null;
-
-                $e = null;
-                try {
-                    $command = $this->createCommand($db);
-                } catch (\Throwable $e) {
-                    // throw it later
-                }
-
-                $this->select = $select;
-                $this->orderBy = $order;
-                $this->limit = $limit;
-                $this->offset = $offset;
-
-                if ($e !== null) {
-                    throw $e;
-                }
-
-                return $command->queryScalar();
-            }
-
-            $command = (new self())
-                ->select([$selectExpression])
-                ->from(['c' => $this])
-                ->createCommand($db);
-            $this->setCommandCache($command);
-
-            return $command->queryScalar();
+            return parent::queryScalar($selectExpression, $db);
         } catch (QueryAbortedException $e) {
             return false;
         }
