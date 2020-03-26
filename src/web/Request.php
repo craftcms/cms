@@ -498,6 +498,11 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is an element preview request.
      *
+     * ::: tip
+     * This will only return `true` when previewing entries at the moment. For all other element types, check
+     * [[getIsLivePreview()]].
+     * :::
+     *
      * ---
      * ```php
      * $isPreviewRequest = Craft::$app->request->isPreview;
@@ -517,6 +522,11 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is a Live Preview request.
      *
+     * ::: tip
+     * As of Craft 3.2, entries use a new previewing system, so this won’t return `true` for them. Check
+     * [[getIsPreview()]] instead for entries.
+     * :::
+     *
      * ---
      * ```php
      * $isLivePreview = Craft::$app->request->isLivePreview;
@@ -526,7 +536,6 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
-     * @deprecated in 3.2.0
      */
     public function getIsLivePreview(): bool
     {
