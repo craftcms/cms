@@ -1740,6 +1740,7 @@ class Elements extends Component
                 continue;
             }
 
+            $targetElementType = null;
             $targetElementIdsBySourceIds = null;
             $query = null;
             $offset = 0;
@@ -1857,7 +1858,7 @@ class Elements extends Component
                 }
 
                 // Now eager-load any sub paths
-                if (!empty($subWith)) {
+                if ($targetElementType && !empty($subWith)) {
                     /** @var ElementInterface|string $targetElementType */
                     $this->eagerLoadElements($targetElementType, $targetElements, $subWith);
                 }
