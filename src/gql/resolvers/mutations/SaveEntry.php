@@ -10,6 +10,7 @@ namespace craft\gql\resolvers\mutations;
 use Craft;
 use craft\base\Element;
 use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\MutationResolver;
@@ -37,7 +38,7 @@ class SaveEntry extends MutationResolver
         // Prevent modification of immutables.
         unset ($arguments['id'], $arguments['uid'], $arguments['draftId']);
 
-        $entry = $this->populateEntryWithData($entry, $arguments);
+        $entry = $this->populateElementWithData($entry, $arguments);
 
         if ($entry->enabled) {
             $entry->setScenario(Element::SCENARIO_LIVE);
@@ -55,7 +56,7 @@ class SaveEntry extends MutationResolver
             throw new UserError(implode("\n", $validationErrors));
         }
 
-        return $entry;
+        return Entry::findOne($entry->id);
     }
 
     /**
@@ -96,30 +97,6 @@ class SaveEntry extends MutationResolver
 
         $entry->sectionId = $section->id;
         $entry->typeId = $entryType->id;
-
-        return $entry;
-    }
-
-    /**
-     * Populate the entry with submitted data.
-     *
-     * @param EntryElement $entry
-     * @param array $arguments
-     * @return EntryElement
-     * @throws GqlException if data not found.
-     */
-    protected function populateEntryWithData(EntryElement $entry, array $arguments): EntryElement
-    {
-        /** @var array $contentFieldHandles */
-        $contentFieldHandles = $this->_getData('contentFieldHandles');
-
-        foreach ($arguments as $argument => $value) {
-            if (isset($contentFieldHandles[$argument])) {
-                $entry->setFieldValue($argument, $value);
-            } else {
-                $entry->{$argument} = $value;
-            }
-        }
 
         return $entry;
     }

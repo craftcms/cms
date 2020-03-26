@@ -87,6 +87,7 @@ class Entry extends Mutation
         $entryMutationArguments = EntryMutationArguments::getArguments();
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $contentFieldHandles = [];
+        $valueNormalizers = [];
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
@@ -94,6 +95,11 @@ class Entry extends Mutation
             $entryMutationArguments[$contentField->handle] = $contentFieldType;
             $draftMutationArguments[$contentField->handle] = $contentFieldType;
             $contentFieldHandles[$contentField->handle] = true;
+
+            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
+            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
+                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
+            }
         }
 
         $section = $entryType->getSection();
@@ -120,10 +126,10 @@ class Entry extends Mutation
         $resolverData = [
             'section' => $section,
             'entryType' => $entryType,
-            'contentFieldHandles' => $contentFieldHandles
+            'contentFieldHandles' => $contentFieldHandles,
         ];
 
-        $saveResolver = new SaveEntry($resolverData);
+        $saveResolver = new SaveEntry($resolverData, $valueNormalizers);
 
         $generatedType = EntryType::generateType($entryType);
 
@@ -135,11 +141,7 @@ class Entry extends Mutation
             'type' => $generatedType
         ];
 
-        $draftResolver = new SaveDraft([
-            'section' => $section,
-            'entryType' => $entryType,
-            'contentFieldHandles' => $contentFieldHandles
-        ]);
+        $draftResolver = new SaveDraft($resolverData, $valueNormalizers);
 
         $mutations[] = [
             'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),

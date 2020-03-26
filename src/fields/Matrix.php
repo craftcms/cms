@@ -27,6 +27,7 @@ use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
+use craft\gql\types\QueryArgument;
 use craft\gql\types\TableRow;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -893,13 +894,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
-                        'type' => Type::listOf(Type::int())
+                        'type' => Type::nonNull(Type::listOf(QueryArgument::getType()))
                     ],
                     'blocks' => [
                         'name' => 'blocks',
                         'type' => Type::listOf($blockContainerInputType)
                     ]
                 ];
+            },
+            'normalizeValue' => function ($value) {
+                $preparedBlocks = [];
+                $blockCounter = 1;
+
+                if (!empty($value['blocks'])) {
+                    foreach ($value['blocks'] as $block) {
+                        if (!empty($block)) {
+                            $type = array_key_first($block);
+                            $block = reset($block);
+                            $blockId = !empty($block['id']) ? $block['id'] : 'new:' . ($blockCounter++);
+                            $preparedBlocks[$blockId] = [
+                                'type' => $type,
+                                'fields' => $block
+                            ];
+                        }
+                    }
+
+                    $value['blocks'] = $preparedBlocks;
+                }
+
+                return $value;
             }
         ]));
 

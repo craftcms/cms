@@ -7,6 +7,8 @@
 
 namespace craft\gql\base;
 
+use craft\base\Element;
+use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -20,15 +22,18 @@ use GraphQL\Type\Definition\ResolveInfo;
 abstract class MutationResolver
 {
     private $_resolutionData = [];
+    
+    protected $valueNormalizers = [];
 
     /**
      * Construct a mutation resolver and store the resolution data.
      *
      * @param array $data
      */
-    public function __construct(array $data = [])
+    public function __construct(array $data = [], array $valueNormalizers = [])
     {
         $this->_resolutionData = $data;
+        $this->valueNormalizers = $valueNormalizers;
     }
 
     /**
@@ -45,6 +50,38 @@ abstract class MutationResolver
         }
 
         return $this->_resolutionData[$key];
+    }
+
+    /**
+     * Populate the element with submitted data.
+     *
+     * @param Element $element
+     * @param array $arguments
+     * @return EntryElement
+     * @throws GqlException if data not found.
+     */
+    protected function populateElementWithData(Element $element, array $arguments): Element
+    {
+        /** @var array $contentFieldHandles */
+        $contentFieldHandles = $this->_getData('contentFieldHandles');
+
+        foreach ($arguments as $argument => $value) {
+            if (isset($contentFieldHandles[$argument])) {
+                if (array_key_exists($argument, $this->valueNormalizers)) {
+                    $normalizer = $this->valueNormalizers[$argument];
+
+                    if (is_callable($normalizer)) {
+                        $value = $normalizer($value);
+                    }
+                }
+
+                $element->setFieldValue($argument, $value);
+            } else {
+                $element->{$argument} = $value;
+            }
+        }
+
+        return $element;
     }
 
     /**
