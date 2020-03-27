@@ -49,7 +49,7 @@
                     for: id ?? null,
                 }|merge(labelAttributes ?? [], recursive=true) %}
                 <label {{ attr(labelAttributes) }}>
-                    {%- if altLabel %}
+                    {%- if altLabel and currentUser.admin ?? false %}
                         {%- apply spaceless %}
                             <span class="primary-label">{{- label|raw -}}</span>
                             <span class="alt-label">{{- altLabel|raw -}}</span>
