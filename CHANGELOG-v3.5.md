@@ -58,6 +58,7 @@
 
 ### Removed
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
+- Removed `craft\controllers\UtilitiesController::actionDbBackupPerformAction()`.
 
 ### Fixed
 - Fixed a bug where the `mailer/test` command wasn’t factoring in custom `mailer` configurations in its settings report. ([#5763](https://github.com/craftcms/cms/issues/5763))

@@ -375,29 +375,6 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Returns a database backup zip file to the browser.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
-     * @throws NotFoundHttpException if the requested backup cannot be found
-     */
-    public function actionDownloadBackupFile(): Response
-    {
-        $this->requirePermission('utility:db-backup');
-
-        $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
-
-        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
-            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
-                'filename' => $filename
-            ]));
-        }
-
-        return Craft::$app->getResponse()->sendFile($filePath);
-    }
-
-    /**
      * Performs a Find And Replace action
      *
      * @return Response
