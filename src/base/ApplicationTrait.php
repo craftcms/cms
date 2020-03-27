@@ -47,6 +47,7 @@ use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\View;
 use yii\base\Application;
+use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -789,16 +790,24 @@ trait ApplicationTrait
     public function getIsDbConnectionValid(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
+        $e = null;
         try {
             $this->getDb()->open();
-            return true;
         } catch (DbConnectException $e) {
-            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
-            return false;
+            // throw it later
         } catch (InvalidConfigException $e) {
+            // throw it later
+        }
+
+        if ($e !== null) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
+            /** @var ErrorHandler $errorHandler */
+            $errorHandler = $this->getErrorHandler();
+            $errorHandler->logException($e);
             return false;
         }
+
+        return true;
     }
 
     // Service Getters
