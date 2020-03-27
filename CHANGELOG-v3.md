@@ -4,6 +4,7 @@
 
 ### Changed
 - `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
+- `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
 
 ## 3.4.11 - 2020-03-26
 

@@ -285,6 +285,10 @@ trait ApplicationTrait
         try {
             $info = $this->getInfo(true);
         } catch (DbException $e) {
+            Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
+            /** @var ErrorHandler $errorHandler */
+            $errorHandler = $this->getErrorHandler();
+            $errorHandler->logException($e);
             return $this->_isInstalled = false;
         }
 
