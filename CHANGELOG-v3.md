@@ -3,7 +3,7 @@
 ## 3.4.11 - 2020-03-26
 
 ### Changed
-- Updated Yii to 3.0.34.
+- Updated Yii to 2.0.34.
 
 ### Fixed
 - Fixed an error that could occur during garbage collection if there were any unsaved drafts due to be purged, whose entry type had been deleted. ([#5820](https://github.com/craftcms/cms/issues/5820))
