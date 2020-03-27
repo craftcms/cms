@@ -81,7 +81,7 @@ There are some feature that are **not available** when using data mode, these ar
 
  ### API Mode
 
-This mode uses the `tableDataEnpoint` option to pull data into the table. The component expects this data in a specific format.
+This mode uses the `tableDataEndpoint` option to pull data into the table. The component expects this data in a specific format.
 
 Below is an example response from a controller required by the admin table
 
