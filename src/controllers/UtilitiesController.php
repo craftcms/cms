@@ -365,7 +365,7 @@ class UtilitiesController extends Controller
             throw new Exception('Cannot create zip at ' . $zipPath);
         }
 
-        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
+        $filename = basename($backupPath);
         $zip->addFile($backupPath, $filename);
         $zip->close();
 

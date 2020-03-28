@@ -407,7 +407,7 @@ class DashboardController extends Controller
                     }
 
                     foreach ($logFiles as $logFile) {
-                        $zip->addFile($logFile, 'logs/' . pathinfo($logFile, PATHINFO_BASENAME));
+                        $zip->addFile($logFile, 'logs/' . basename($logFile));
                     }
                 }
             }
@@ -418,7 +418,7 @@ class DashboardController extends Controller
                 // for debugging.
                 try {
                     $backupPath = Craft::$app->getDb()->backup();
-                    $zip->addFile($backupPath, pathinfo($backupPath, PATHINFO_BASENAME));
+                    $zip->addFile($backupPath, basename($backupPath));
                 } catch (\Throwable $e) {
                     Craft::warning('Error adding database backup to support request: ' . $e->getMessage(), __METHOD__);
                     $getHelpModel->message .= "\n\n---\n\nError adding database backup: " . $e->getMessage();
