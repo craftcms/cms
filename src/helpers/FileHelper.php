@@ -16,6 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use ZipArchive;
 
 /**
  * Class FileHelper
@@ -614,6 +615,37 @@ class FileHelper extends \yii\helpers\FileHelper
         clearstatcache(true, $file);
         if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
             @opcache_invalidate($file, true);
+        }
+    }
+
+    /**
+     * Adds all the files in a given directory to a ZipArchive, preserving the nested directory structure.
+     *
+     * @param ZipArchive $zip the ZipArchive object
+     * @param string $dir the directory path
+     * @param string|null $prefix the path prefix to use when adding the contents of the directory
+     * @param array $options options for file searching. See [[findFiles()]] for available options.
+     * @param 3.5.0
+     */
+    public static function addFilesToZip(ZipArchive $zip, string $dir, string $prefix = null, $options = [])
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        if ($prefix !== null) {
+            $prefix = static::normalizePath($prefix) . '/';
+        } else {
+            $prefix = '';
+        }
+
+        $files = static::findFiles($dir, $options);
+
+        foreach ($files as $file) {
+            // Use forward slashes
+            $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
+            // Preserve the directory structure within the templates folder
+            $zip->addFile($file, $prefix . substr($file, strlen($dir) + 1));
         }
     }
 }
