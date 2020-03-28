@@ -6,6 +6,9 @@
 - `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
 - `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
 
+### Fixed
+- Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
+
 ## 3.4.11 - 2020-03-26
 
 ### Changed

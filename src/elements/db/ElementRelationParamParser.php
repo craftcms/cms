@@ -315,6 +315,7 @@ class ElementRelationParamParser extends BaseObject
                             ->where([
                                 "$targetMatrixBlocksAlias.ownerId" => $relElementIds,
                                 "$targetMatrixBlocksAlias.fieldId" => $fieldModel->id,
+                                "$targetMatrixElementsAlias.enabled" => true,
                                 "$targetMatrixElementsAlias.dateDeleted" => null,
                             ]);
 
