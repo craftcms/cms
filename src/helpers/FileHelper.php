@@ -619,6 +619,46 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Zips a file.
+     *
+     * @param string $path the file/directory path
+     * @param string|null $to the target zip file path. If null, the original path will be used, with “.zip” appended to it.
+     * @return string the zip file path
+     * @throws InvalidArgumentException if `$path` is not a valid file/directory path
+     * @throws Exception if the zip cannot be created
+     * @since 3.5.0
+     */
+    public static function zip(string $path, string $to = null): string
+    {
+        $path = static::normalizePath($path);
+
+        if (!file_exists($path)) {
+            throw new InvalidArgumentException("No file/directory exists at $path");
+        }
+
+        if ($to === null) {
+            $to = "$path.zip";
+        }
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($to, ZipArchive::CREATE) !== true) {
+            throw new Exception("Cannot create zip at $to");
+        }
+
+        $name = basename($path);
+
+        if (is_file($path)) {
+            $zip->addFile($path, $name);
+        } else {
+            static::addFilesToZip($zip, $path);
+        }
+
+        $zip->close();
+        return $to;
+    }
+
+    /**
      * Adds all the files in a given directory to a ZipArchive, preserving the nested directory structure.
      *
      * @param ZipArchive $zip the ZipArchive object
