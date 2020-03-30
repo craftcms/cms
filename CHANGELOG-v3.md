@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- “Updating search indexes” jobs now get a lower priority than other jobs.
 - `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
 - `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
 
