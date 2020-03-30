@@ -61,7 +61,7 @@ use yii\db\Exception as DbException;
  * The Elements service provides APIs for managing elements.
  * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>int|int[]|string|null
  * @since 3.0.0
  */
 class Elements extends Component
@@ -283,12 +283,12 @@ class Elements extends Component
      *
      * @param int $elementId The element’s ID.
      * @param string|null $elementType The element class.
-     * @param int|null $siteId The site to fetch the element in.
+     * @param int|int[]|string|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, string $elementType = null, int $siteId = null, array $criteria = [])
+    public function getElementById(int $elementId, string $elementType = null, $siteId = null, array $criteria = [])
     {
         if (!$elementId) {
             return null;
