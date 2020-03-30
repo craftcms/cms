@@ -1147,10 +1147,10 @@ class Gql extends Component
 
             // Now the same for mutations
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                $nested = ['label' => Craft::t('app', 'Edit section - {section}', ['section' => Craft::t('site', $section->name)])];
+                $nested = ['label' => Craft::t('app', 'Edit entries in the “{section}” section', ['section' => Craft::t('site', $section->name)])];
 
                 foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                    $nested['nested']['entrytypes.' . $entryType->uid . ':write'] = ['label' => Craft::t('app', 'Edit entry type - {entryType}', ['entryType' => Craft::t('site', $entryType->name)])];
+                    $nested['nested']['entrytypes.' . $entryType->uid . ':write'] = ['label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])];
                 }
 
                 $sectionPermissions['sections.' . $section->uid . ':write'] = $nested;
