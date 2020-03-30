@@ -36,6 +36,7 @@
 - Added `craft\gql\resolvers\mutations\PublishDraft`.
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
+- Added `craft\gql\types\input\Matrix`.
 - Added `craft\gql\types\Mutation`.
 - Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
