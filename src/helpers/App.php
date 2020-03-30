@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\behaviors\SessionBehavior;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -569,6 +570,7 @@ class App
 
         return [
             'class' => Session::class,
+            'as session' => SessionBehavior::class,
             'flashParam' => $stateKeyPrefix . '__flash',
             'authAccessParam' => $stateKeyPrefix . '__auth_access',
             'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,

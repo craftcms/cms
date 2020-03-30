@@ -6,6 +6,7 @@
 - “Updating search indexes” jobs now get a lower priority than other jobs.
 - `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
 - `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
+- It’s no longer necessary to manually apply `craft\behaviors\SessionBehavior` to custom-defined `session` components, if using `craft\helpers\App::sessionConfig()` as a starting point.
 
 ### Fixed
 - Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
