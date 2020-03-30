@@ -1182,12 +1182,6 @@ class Gql extends Component
                 $volumePermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
             }
 
-            // Now the same for mutations
-            foreach ($volumes as $volume) {
-                $suffix = 'volumes.' . $volume->uid;
-                $volumePermissions[$suffix . ':write'] = ['label' => Craft::t('app', 'Manage assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])];
-            }
-
             $permissions[$label] = $volumePermissions;
         }
 
@@ -1212,12 +1206,6 @@ class Gql extends Component
             foreach ($globalSets as $globalSet) {
                 $suffix = 'globalsets.' . $globalSet->uid;
                 $globalSetPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
-            }
-
-            // Now the same for mutations
-            foreach ($globalSets as $globalSet) {
-                $suffix = 'globalsets.' . $globalSet->uid;
-                $globalSetPermissions[$suffix . ':write'] = ['label' => Craft::t('app', 'Edit the “{globalSet}” global set', ['globalSet' => Craft::t('site', $globalSet->name)])];
             }
 
             $permissions[$label] = $globalSetPermissions;
@@ -1246,12 +1234,6 @@ class Gql extends Component
                 $categoryPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])];
             }
 
-            // Now the same for mutations
-            foreach ($categoryGroups as $categoryGroup) {
-                $suffix = 'categorygroups.' . $categoryGroup->uid;
-                $categoryPermissions[$suffix . ':write'] = ['label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])];;
-            }
-
             $permissions[$label] = $categoryPermissions;
         }
 
@@ -1276,12 +1258,6 @@ class Gql extends Component
             foreach ($tagGroups as $tagGroup) {
                 $suffix = 'taggroups.' . $tagGroup->uid;
                 $tagPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)])];
-            }
-
-            // Now the same for mutations
-            foreach ($tagGroups as $tagGroup) {
-                $suffix = 'taggroups.' . $tagGroup->uid;
-                $tagPermissions[$suffix . ':write'] = ['label' => Craft::t('app', 'Edit tags in the “{tagGroup}” group', ['tagGroup' => Craft::t('site', $tagGroup->name)])];;
             }
 
             $permissions[$label] = $tagPermissions;
@@ -1309,9 +1285,6 @@ class Gql extends Component
             $suffix = 'usergroups.' . $userGroup->uid;
             $userPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
         }
-
-        // Now the same for mutation
-        $userPermissions['users:write'] = ['label' => Craft::t('app', 'Edit users')];
 
         $permissions[$label] = $userPermissions;
 
