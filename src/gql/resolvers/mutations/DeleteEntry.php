@@ -38,12 +38,8 @@ class DeleteEntry extends MutationResolver
         }
 
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
-        $sectionUid = Db::uidById(Table::SECTIONS, $entry->sectionId);
-
-        if (!(Gql::canSchema('entrytypes.' . $entryTypeUid, 'write') && Gql::canSchema('sections.' . $sectionUid, 'write'))) {
-            throw new Error('Unable to perform the action.');
-        }
-
+        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
+        
         Craft::$app->getElements()->deleteElementById($entryId);
 
         return true;

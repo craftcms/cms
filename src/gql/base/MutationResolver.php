@@ -10,6 +10,7 @@ namespace craft\gql\base;
 use craft\base\Element;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
+use craft\helpers\Gql;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -95,4 +96,19 @@ abstract class MutationResolver
      * @throws \Throwable if reasons.
      */
     abstract public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
+
+    /**
+     * Check if schema can perform the action on a scope and throw an Exception if not.
+     *
+     * @param string $scope
+     * @param string $action
+     *
+     * @throws \Exception if reasons
+     */
+    protected function requireSchemaAction(string $scope, string $action)
+    {
+        if (!Gql::canSchema($scope, $action)) {
+            throw new Error('Unable to perform the action.');
+        }
+    }
 }

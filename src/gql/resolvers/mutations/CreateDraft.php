@@ -37,26 +37,12 @@ class CreateDraft extends MutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $this->performSchemaCheck($entry);
+        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
+        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         /** @var Entry $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
 
         return $draft->draftId;
-    }
-
-    /**
-     * @param $entry
-     * @return void
-     * @throws \Throwable if cannot perform draft operation
-     */
-    protected function performSchemaCheck($entry)
-    {
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
-        $sectionUid = Db::uidById(Table::SECTIONS, $entry->sectionId);
-
-        if (!(Gql::canSchema('entrytypes.' . $entryTypeUid, 'write') && Gql::canSchema('sections.' . $sectionUid, 'write'))) {
-            throw new Error('Unable to perform the action.');
-        }
     }
 }

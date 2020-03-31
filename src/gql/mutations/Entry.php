@@ -21,6 +21,7 @@ use craft\gql\resolvers\mutations\SaveDraft;
 use craft\gql\resolvers\mutations\SaveEntry;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Db;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
@@ -44,40 +45,72 @@ class Entry extends Mutation
             return [];
         }
 
-        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('write');
-        $allowedSectionUids = $pairs['sections'];
-        $allowedSectionIds = Db::idsByUids(Table::SECTIONS, $allowedSectionUids);
-        $allowedEntryTypeUids = $pairs['entrytypes'];
-
         $mutationList = [];
 
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
-            $isAllowedSection = in_array($entryType->sectionId, $allowedSectionIds, true);
-            $isAllowedEntryType = in_array($entryType->uid, $allowedEntryTypeUids, true);
+        $createDeleteMutation = false;
+        $createDraftMutations = false;
 
-            if ($isAllowedEntryType && $isAllowedSection) {
+
+        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
+            $scope = 'entrytypes.' . $entryType->uid;
+            $canCreate = Gql::canSchema($scope, 'create');
+            $canSave = Gql::canSchema($scope, 'save');
+
+            if ($canCreate || $canSave) {
                 // Create a mutation for each entry type
-                foreach (static::createMutations($entryType) as $mutation) {
+                foreach (static::createSaveMutations($entryType, $canSave) as $mutation) {
                     $mutationList[$mutation['name']] = $mutation;
                 }
             }
+
+            if (!$createDraftMutations && $canSave) {
+                $createDraftMutations = true;
+            }
+
+            if (!$createDeleteMutation && Gql::canSchema($scope, 'delete')) {
+                $createDeleteMutation = true;
+            }
         }
 
-        foreach (self::createCommonMutations() as $commonMutation) {
-            $mutationList[$commonMutation['name']] = $commonMutation;
+        if ($createDeleteMutation) {
+            $mutationList['deleteEntry'] = [
+                'name' => 'deleteEntry',
+                'args' => ['id' => Type::nonNull(Type::int())],
+                'resolve' => [new DeleteEntry(), 'resolve'],
+                'description' => 'Delete an entry.',
+                'type' => Type::boolean()
+            ];
+        }
+
+        if ($createDraftMutations) {
+            $mutationList['createDraft'] = [
+                'name' => 'createDraft',
+                'args' => ['id' => Type::nonNull(Type::int())],
+                'resolve' => [new CreateDraft(), 'resolve'],
+                'description' => 'Create a draft for an entry and return the draft ID.',
+                'type' => Type::id()
+            ];
+
+            $mutationList['publishDraft'] = [
+                'name' => 'publishDraft',
+                'args' => ['id' => Type::nonNull(Type::int())],
+                'resolve' => [new PublishDraft(), 'resolve'],
+                'description' => 'Publish a draft for the entry and return the entry ID.',
+                'type' => Type::id()
+            ];
         }
 
         return $mutationList;
     }
 
     /**
-     * Create the per-entry-type mutations.
+     * Create the per-entry-type save mutations.
      *
      * @param EntryTypeModel $entryType
      * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    protected static function createMutations(EntryTypeModel $entryType): array
+    protected static function createSaveMutations(EntryTypeModel $entryType, bool $createSaveDraftMutation): array
     {
         $mutations = [];
 
@@ -129,7 +162,7 @@ class Entry extends Mutation
             'contentFieldHandles' => $contentFieldHandles,
         ];
 
-        $saveResolver = new SaveEntry($resolverData, $valueNormalizers);
+
 
         $generatedType = EntryType::generateType($entryType);
 
@@ -137,19 +170,20 @@ class Entry extends Mutation
             'name' => $mutationName,
             'description' => $description,
             'args' => $entryMutationArguments,
-            'resolve' => [$saveResolver, 'resolve'],
+            'resolve' => [new SaveEntry($resolverData, $valueNormalizers), 'resolve'],
             'type' => $generatedType
         ];
 
-        $draftResolver = new SaveDraft($resolverData, $valueNormalizers);
-
-        $mutations[] = [
-            'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
-            'description' => $draftDescription,
-            'args' => $draftMutationArguments,
-            'resolve' => [$draftResolver, 'resolve'],
-            'type' => $generatedType
-        ];
+        // This gets created only if allowed to save entries
+        if ($createSaveDraftMutation) {
+            $mutations[] = [
+                'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
+                'description' => $draftDescription,
+                'args' => $draftMutationArguments,
+                'resolve' => [new SaveDraft($resolverData, $valueNormalizers), 'resolve'],
+                'type' => $generatedType
+            ];
+        }
 
         return $mutations;
     }
@@ -162,27 +196,7 @@ class Entry extends Mutation
     protected static function createCommonMutations(): array
     {
         return [
-            [
-                'name' => 'deleteEntry',
-                'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new DeleteEntry(), 'resolve'],
-                'description' => 'Delete an entry.',
-                'type' => Type::boolean()
-            ],
-            [
-                'name' => 'createDraft',
-                'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new CreateDraft(), 'resolve'],
-                'description' => 'Create a draft for an entry and return the draft ID.',
-                'type' => Type::id()
-            ],
-            [
-                'name' => 'publishDraft',
-                'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new PublishDraft(), 'resolve'],
-                'description' => 'Publish a draft for the entry and return the entry ID.',
-                'type' => Type::id()
-            ],
+
         ];
     }
 }

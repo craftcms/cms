@@ -14,6 +14,7 @@ use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\MutationResolver;
+use craft\helpers\Gql;
 use craft\models\EntryType;
 use craft\models\Section;
 use GraphQL\Error\Error;
@@ -78,9 +79,12 @@ class SaveEntry extends MutationResolver
         $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
         $entryQuery = EntryElement::find()->anyStatus()->siteId($siteId);
 
+        $canIdentify = $section->type == Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']);
+        $this->requireSchemaAction('entrytypes.' . $entryType->uid, $canIdentify ? 'save' : 'create');
+
         $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
-        if ($entryQuery) {
+        if ($canIdentify) {
             $entry = $entryQuery->one();
 
             if (!$entry) {
