@@ -9,6 +9,7 @@
 - “Updating search indexes” jobs now get a lower priority than other jobs.
 - `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
 - `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
+- The `$siteId` argument of `craft\services\Elements::getElementById()` now accepts the same value types as element query `siteId` params. ([#5861](https://github.com/craftcms/cms/pull/5861))
 - It’s no longer necessary to manually apply `craft\behaviors\SessionBehavior` to custom-defined `session` components, if using `craft\helpers\App::sessionConfig()` as a starting point.
 
 ### Fixed
