@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.12 - 2020-03-31
 
 ### Added
 - Added the `utils/ascii-filenames` command, which converts all non-ASCII asset filenames to ASCII.
