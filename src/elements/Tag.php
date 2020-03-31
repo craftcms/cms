@@ -195,12 +195,16 @@ class Tag extends Element
      */
     public function validateTitle(string $attribute, array $params = null, InlineValidator $validator)
     {
-        $exists = static::find()
+        $query = static::find()
             ->groupId($this->groupId)
             ->siteId($this->siteId)
-            ->title(Db::escapeParam($this->title))
-            ->exists();
-        if ($exists) {
+            ->title(Db::escapeParam($this->title));
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
             $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
         }
     }
