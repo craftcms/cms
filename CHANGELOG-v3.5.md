@@ -42,6 +42,7 @@
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
+- Added `craft\helpers\Gql::extractEntityAllowedActions()`
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\models\Site::$enabled`.
