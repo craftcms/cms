@@ -19,6 +19,7 @@ use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
 use Twig\Template as TwigTemplate;
+use yii\base\Application;
 use yii\base\Component;
 use yii\db\IntegrityException;
 
@@ -59,6 +60,19 @@ class Deprecator extends Component
     private $_allLogs;
 
     /**
+     * @inheritdoc
+     * @since 3.4.12
+     */
+    public function init()
+    {
+        if (!$this->throwExceptions && $this->logTarget === 'db') {
+            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
+        }
+
+        parent::init();
+    }
+
+    /**
      * Logs a new deprecation error.
      *
      * @param string $key
@@ -70,17 +84,6 @@ class Deprecator extends Component
     public function log(string $key, string $message, string $file = null, int $line = null)
     {
         if ($this->logTarget === false) {
-            return;
-        }
-
-        // todo: maybe remove the Craft version check after the next breakpoint
-        // (depending on whether the minimum version warning shows up before any config deprecation errors)
-        if (
-            $this->logTarget === 'logs' ||
-            !Craft::$app->getIsInstalled() ||
-            version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '<')
-        ) {
-            Craft::warning($message, 'deprecation-error');
             return;
         }
 
@@ -96,14 +99,9 @@ class Deprecator extends Component
         }
 
         $fingerprint = $file . ($line ? ':' . $line : '');
-        $index = $key . '-' . $fingerprint;
 
         // Don't log the same key/fingerprint twice in the same request
-        if (isset($this->_requestLogs[$index])) {
-            return;
-        }
-
-        $log = $this->_requestLogs[$index] = new DeprecationError([
+        $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
             'lastOccurrence' => new \DateTime(),
@@ -112,28 +110,40 @@ class Deprecator extends Component
             'message' => $message,
             'traces' => $this->_cleanTraces($traces)
         ]);
+    }
 
+    /**
+     * Stores all the deprecation warnings that were logged in this request.
+     *
+     * @since 3.4.12
+     */
+    public function storeLogs()
+    {
         $db = Craft::$app->getDb();
-        $command = $db->createCommand()
-            ->upsert(
-                Table::DEPRECATIONERRORS,
-                [
-                    'key' => $log->key,
-                    'fingerprint' => $log->fingerprint
-                ],
-                [
-                    'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
-                    'file' => $log->file,
-                    'line' => $log->line,
-                    'message' => $log->message,
-                    'traces' => Json::encode($log->traces),
-                ]);
 
-        try {
-            $command->execute();
-            $log->id = $db->getLastInsertID();
-        } catch (IntegrityException $e) {
-            // todo: remove this try/catch after the next breakpoint
+        foreach ($this->_requestLogs as $log) {
+            $command = $db->createCommand()
+                ->upsert(
+                    Table::DEPRECATIONERRORS,
+                    [
+                        'key' => $log->key,
+                        'fingerprint' => $log->fingerprint
+                    ],
+                    [
+                        'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
+                        'file' => $log->file,
+                        'line' => $log->line,
+                        'message' => $log->message,
+                        'traces' => Json::encode($log->traces),
+                    ]);
+
+            try {
+                $command->execute();
+                $log->id = $db->getLastInsertID();
+            } catch (IntegrityException $e) {
+                // todo: remove this try/catch after the next breakpoint
+                break;
+            }
         }
     }
 
