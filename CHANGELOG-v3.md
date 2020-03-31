@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
+- Fixed a bug where Craft would not generate a missing project.yml file before rebuilding the project config.
 
 ## 3.4.11 - 2020-03-26
 
