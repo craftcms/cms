@@ -20,7 +20,7 @@ use yii\db\Expression;
  * Converts all non-ASCII asset filenames to ASCII.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.11
+ * @since 3.4.12
  */
 class AsciiFilenamesController extends Controller
 {

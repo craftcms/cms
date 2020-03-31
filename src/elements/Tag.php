@@ -12,10 +12,12 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\validators\InlineValidator;
 
 /**
  * Tag represents a tag element.
@@ -173,7 +175,38 @@ class Tag extends Element
     {
         $rules = parent::defineRules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [
+            ['title'],
+            'validateTitle',
+            'when' => function(): bool {
+                return !$this->hasErrors('groupId') && !$this->hasErrors('title');
+            },
+        ];
         return $rules;
+    }
+
+    /**
+     * Validates the tag title.
+     *
+     * @param string $attribute
+     * @param array|null $params
+     * @param InlineValidator $validator
+     * @since 3.4.12
+     */
+    public function validateTitle(string $attribute, array $params = null, InlineValidator $validator)
+    {
+        $query = static::find()
+            ->groupId($this->groupId)
+            ->siteId($this->siteId)
+            ->title(Db::escapeParam($this->title));
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
+            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
+        }
     }
 
     /**
