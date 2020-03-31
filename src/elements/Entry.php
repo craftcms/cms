@@ -519,7 +519,7 @@ class Entry extends Element
     public static function gqlTypeNameByContext($context): string
     {
         /** @var EntryType $context */
-        return self::getGqlIdentifierByContext($context) . '_Entry';
+        return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
     /**
@@ -528,7 +528,7 @@ class Entry extends Element
     public static function gqlMutationNameByContext($context): string
     {
         /** @var EntryType $context */
-        return 'save_' . self::getGqlIdentifierByContext($context) . '_Entry';
+        return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
     /**
@@ -1446,7 +1446,7 @@ EOD;
      * @param EntryType $context
      * @return string
      */
-    private static function getGqlIdentifierByContext(EntryType $context): string
+    private static function _getGqlIdentifierByContext(EntryType $context): string
     {
         $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
         return $gqlIdentifier;
