@@ -58,6 +58,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
@@ -1136,24 +1137,35 @@ class Gql extends Component
             $sectionPermissions = [];
 
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                $nested = ['label' => Craft::t('app', 'View section - {section}', ['section' => Craft::t('site', $section->name)])];
+                $nested = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
 
                 foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                    $nested['nested']['entrytypes.' . $entryType->uid . ':read'] = ['label' => Craft::t('app', 'View entry type - {entryType}', ['entryType' => Craft::t('site', $entryType->name)])];
+                    $suffix = 'entrytypes.' . $entryType->uid;
+
+                    if ($section->type == Section::TYPE_SINGLE) {
+                        $permissionSet = [
+                            $suffix . ':save' => ['label' => Craft::t('app', 'Edit “{entryType}”', ['entryType' => Craft::t('site', $entryType->name)])]
+                        ];
+                    } else {
+                        $permissionSet = [
+                            $suffix . ':edit' => [
+                                'label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
+                                'nested' => [
+                                    $suffix . ':create' => ['label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
+                                    $suffix . ':save' => ['label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
+                                    $suffix . ':delete' => ['label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
+                                ],
+                            ],
+                        ];
+                    }
+
+                    $nested['nested'][$suffix . ':read'] = [
+                        'label' => Craft::t('app', 'View entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
+                        'nested' => $permissionSet
+                    ];
                 }
 
                 $sectionPermissions['sections.' . $section->uid . ':read'] = $nested;
-            }
-
-            // Now the same for mutations
-            foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                $nested = ['label' => Craft::t('app', 'Edit entries in the “{section}” section', ['section' => Craft::t('site', $section->name)])];
-
-                foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                    $nested['nested']['entrytypes.' . $entryType->uid . ':write'] = ['label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])];
-                }
-
-                $sectionPermissions['sections.' . $section->uid . ':write'] = $nested;
             }
 
             $permissions[$label] = $sectionPermissions;
