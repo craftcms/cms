@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `utils/ascii-filenames` command, which converts all non-ASCII asset filenames to ASCII.
+- Added `craft\services\Deprecator::storeLogs()`.
 
 ### Changed
 - “Updating search indexes” jobs now get a lower priority than other jobs.
@@ -16,6 +17,8 @@
 - Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
 - Fixed a bug where Craft wasn’t ensuring that a `project.yaml` file exists before rebuilding the project config.
 - Fixed a bug where it was possible to create multiple tags with the same title. ([#5865](https://github.com/craftcms/cms/issues/5865))
+- Fixed a PHP error that occurred if any deprecated config settings were set.
+- Fixed a bug where the debug toolbar wasn’t showing deprecation warnings if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
 
 ## 3.4.11 - 2020-03-26
 
