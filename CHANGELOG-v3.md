@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `utils/ascii-filenames` command, which converts all non-ASCII asset filenames to ASCII.
+
 ### Changed
 - “Updating search indexes” jobs now get a lower priority than other jobs.
 - `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
