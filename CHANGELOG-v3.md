@@ -2,8 +2,23 @@
 
 ## Unreleased
 
+### Added
+- Added the `utils/ascii-filenames` command, which converts all non-ASCII asset filenames to ASCII.
+
 ### Changed
-- Updated Yii to 3.0.33.
+- “Updating search indexes” jobs now get a lower priority than other jobs.
+- `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
+- `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
+- It’s no longer necessary to manually apply `craft\behaviors\SessionBehavior` to custom-defined `session` components, if using `craft\helpers\App::sessionConfig()` as a starting point.
+
+### Fixed
+- Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
+- Fixed a bug where Craft wasn’t ensuring that a `project.yaml` file exists before rebuilding the project config.
+
+## 3.4.11 - 2020-03-26
+
+### Changed
+- Updated Yii to 2.0.34.
 
 ### Fixed
 - Fixed an error that could occur during garbage collection if there were any unsaved drafts due to be purged, whose entry type had been deleted. ([#5820](https://github.com/craftcms/cms/issues/5820))
@@ -12,6 +27,7 @@
 - Fixed a bug where removing two elements from a relation field in rapid succession could trigger an element editor HUD. ([#5831](https://github.com/craftcms/cms/issues/5831))
 - Fixed a bug where setting a field’s translation method to “Translate for each site group” wouldn’t work if the field type was changed at the same time. ([#5832](https://github.com/craftcms/cms/issues/5832))
 - Fixed a SQL error that could occur when installing Craft via the `craft setup` command, if using PostgreSQL. ([#5757](https://github.com/craftcms/cms/issues/5757))
+- Fixed a bug where content wasn’t getting transferred correctly when deleting a user from the Users index page. ([#5838](https://github.com/craftcms/cms/issues/5838))
 
 ## 3.4.10.1 - 2020-03-18
 

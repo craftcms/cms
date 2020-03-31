@@ -2189,7 +2189,7 @@ class Elements extends Component
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             } else {
-                Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                Craft::$app->getQueue()->priority(2048)->push(new UpdateSearchIndex([
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,
