@@ -143,6 +143,18 @@ Craft.CP = Garnish.Base.extend(
                     $(this).attr('rel', 'noopener').attr('target', '_blank')
                 }
             });
+
+            // Listen for Option/ALT presses
+            this.addListener(Garnish.$win, 'keydown', function(ev) {
+                if (ev.keyCode === Garnish.ALT_KEY) {
+                    Garnish.$bod.addClass('altkeydown');
+                }
+            });
+            this.addListener(Garnish.$win, 'keyup', function(ev) {
+                if (ev.keyCode === Garnish.ALT_KEY) {
+                    Garnish.$bod.removeClass('altkeydown');
+                }
+            });
         },
 
         initSpecialForms: function() {

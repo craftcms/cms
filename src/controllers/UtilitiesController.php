@@ -345,56 +345,17 @@ class UtilitiesController extends Controller
             throw new Exception("Could not create backup: the backup file doesn't exist.");
         }
 
+        // Zip it up and delete the SQL file
+        $zipPath = FileHelper::zip($backupPath);
+        unlink($backupPath);
+
         if (!Craft::$app->getRequest()->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
-
-        if (is_file($zipPath)) {
-            try {
-                FileHelper::unlink($zipPath);
-            } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
-            }
-        }
-
-        $zip = new ZipArchive();
-
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Cannot create zip at ' . $zipPath);
-        }
-
-        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
-        $zip->addFile($backupPath, $filename);
-        $zip->close();
-
         return Craft::$app->getResponse()->sendFile($zipPath, null, [
             'mimeType' => 'application/zip',
         ]);
-    }
-
-    /**
-     * Returns a database backup zip file to the browser.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
-     * @throws NotFoundHttpException if the requested backup cannot be found
-     */
-    public function actionDownloadBackupFile(): Response
-    {
-        $this->requirePermission('utility:db-backup');
-
-        $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
-
-        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
-            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
-                'filename' => $filename
-            ]));
-        }
-
-        return Craft::$app->getResponse()->sendFile($filePath);
     }
 
     /**

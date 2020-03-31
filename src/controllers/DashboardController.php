@@ -393,23 +393,11 @@ class DashboardController extends Controller
             // Logs
             if ($getHelpModel->attachLogs) {
                 $logPath = Craft::$app->getPath()->getLogPath();
-                if (is_dir($logPath)) {
-                    // Grab it all.
-                    try {
-                        $logFiles = FileHelper::findFiles($logPath, [
-                            'only' => ['*.log'],
-                            'except' => ['web-404s.log'],
-                            'recursive' => false
-                        ]);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to find log files in \"{$logPath}\": " . $e->getMessage(), __METHOD__);
-                        $logFiles = [];
-                    }
-
-                    foreach ($logFiles as $logFile) {
-                        $zip->addFile($logFile, 'logs/' . pathinfo($logFile, PATHINFO_BASENAME));
-                    }
-                }
+                FileHelper::addFilesToZip($zip, $logPath, 'logs', [
+                    'only' => ['*.log'],
+                    'except' => ['web-404s.log'],
+                    'recursive' => false
+                ]);
             }
 
             // DB backups
@@ -418,7 +406,7 @@ class DashboardController extends Controller
                 // for debugging.
                 try {
                     $backupPath = Craft::$app->getDb()->backup();
-                    $zip->addFile($backupPath, pathinfo($backupPath, PATHINFO_BASENAME));
+                    $zip->addFile($backupPath, basename($backupPath));
                 } catch (\Throwable $e) {
                     Craft::warning('Error adding database backup to support request: ' . $e->getMessage(), __METHOD__);
                     $getHelpModel->message .= "\n\n---\n\nError adding database backup: " . $e->getMessage();
@@ -428,13 +416,7 @@ class DashboardController extends Controller
             // Templates
             if ($getHelpModel->attachTemplates) {
                 $templatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
-                if (is_dir($templatesPath)) {
-                    $templateFiles = FileHelper::findFiles($templatesPath);
-                    foreach ($templateFiles as $templateFile) {
-                        // Preserve the directory structure within the templates folder
-                        $zip->addFile($templateFile, 'templates' . str_replace(DIRECTORY_SEPARATOR, '/', substr($templateFile, strlen($templatesPath))));
-                    }
-                }
+                FileHelper::addFilesToZip($zip, $templatesPath, 'templates');
             }
 
             // Attachment?

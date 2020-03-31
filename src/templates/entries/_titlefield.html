@@ -5,6 +5,7 @@
 {{ textField({
     status: entry.getAttributeStatus('title'),
     label: entryType.titleLabel|t('site')|e ?: 'Title'|t('app'),
+    altLabel: tag('code', {text: 'title'}),
     siteId: entryType.hasTitleField ? entry.siteId,
     translationDescription: 'This field is translated for each site.'|t('app'),
     id: 'title',

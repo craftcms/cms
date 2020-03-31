@@ -20,16 +20,6 @@ class Session extends \yii\web\Session
 {
     /**
      * @inheritdoc
-     */
-    public function behaviors()
-    {
-        return [
-            SessionBehavior::class,
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * ---
      *

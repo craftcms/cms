@@ -1740,6 +1740,7 @@ class Elements extends Component
                 continue;
             }
 
+            $targetElementType = null;
             $targetElementIdsBySourceIds = null;
             $query = null;
             $offset = 0;
@@ -1857,7 +1858,7 @@ class Elements extends Component
                 }
 
                 // Now eager-load any sub paths
-                if (!empty($subWith)) {
+                if ($targetElementType && !empty($subWith)) {
                     /** @var ElementInterface|string $targetElementType */
                     $this->eagerLoadElements($targetElementType, $targetElements, $subWith);
                 }
@@ -2188,7 +2189,7 @@ class Elements extends Component
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             } else {
-                Craft::$app->getQueue()->push(new UpdateSearchIndex([
+                Craft::$app->getQueue()->priority(2048)->push(new UpdateSearchIndex([
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,

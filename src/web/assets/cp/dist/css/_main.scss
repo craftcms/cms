@@ -3916,6 +3916,15 @@ textarea.text.fullwidth {
       font-weight: bold;
       color: $mediumDarkTextColor;
 
+      code {
+        font-size: 1em !important;
+      }
+
+      body:not(.altkeydown) & > .alt-label,
+      body.altkeydown & > .primary-label {
+        display: none;
+      }
+
       & > .site {
         display: inline-block;
         border-radius: $mediumBorderRadius;

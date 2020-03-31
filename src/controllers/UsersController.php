@@ -901,7 +901,8 @@ class UsersController extends Controller
         $currentUser = $userSession->getIdentity();
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $requireEmailVerification = Craft::$app->getProjectConfig()->get('users.requireEmailVerification') ?? true;
+        $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
+        $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -937,7 +938,7 @@ class UsersController extends Controller
                 $this->requirePermission('registerUsers');
             } else {
                 // Make sure public registration is allowed
-                $allowPublicRegistration = Craft::$app->getProjectConfig()->get('users.allowPublicRegistration') ?? false;
+                $allowPublicRegistration = $userSettings['allowPublicRegistration'] ?? false;
                 if (!$allowPublicRegistration) {
                     throw new ForbiddenHttpException('Public registration is not allowed');
                 }
@@ -946,6 +947,10 @@ class UsersController extends Controller
             }
 
             $user = new User();
+
+            if ($isPublicRegistration && $userSettings['suspendByDefault'] ?? false) {
+                $user->suspended = true;
+            }
         }
 
         $isCurrentUser = $user->getIsCurrent();
@@ -1161,7 +1166,7 @@ class UsersController extends Controller
         }
 
         // Do we need to send a verification email out?
-        if ($sendVerificationEmail) {
+        if ($sendVerificationEmail && !$user->suspended) {
             // Temporarily set the unverified email on the User so the verification email goes to the
             // right place
             $originalEmail = $user->email;

@@ -148,6 +148,10 @@ class GeneralConfig extends BaseObject
     public $cacheDuration = 86400;
     /**
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
+     *
+     * ::: tip
+     * You can run `./craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * :::
      */
     public $convertFilenamesToAscii = false;
     /**

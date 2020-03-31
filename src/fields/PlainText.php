@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\helpers\Db;
 use LitEmoji\LitEmoji;
 use yii\db\Schema;
@@ -21,7 +22,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements PreviewableFieldInterface
+class PlainText extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
