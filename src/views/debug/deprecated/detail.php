@@ -35,7 +35,7 @@ $logs = $panel->data;
         <tr>
           <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
           <td><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')) . ($log->line ? ':' . $log->line : '') ?></td>
-          <td><a href="<?= $panel->getUrl() . '&trace=' . $log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a></td>
+          <td><?php if ($log->id): ?><a href="<?= $panel->getUrl() . '&trace=' . $log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a><?php else: ?><?= Craft::t('app', 'See logs') ?><?php endif; ?></td>
         </tr>
       <?php endforeach; ?>
       </tbody>

@@ -1,5 +1,25 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.12 - 2020-03-31
+
+### Added
+- Added the `utils/ascii-filenames` command, which converts all non-ASCII asset filenames to ASCII.
+- Added `craft\services\Deprecator::storeLogs()`.
+
+### Changed
+- “Updating search indexes” jobs now get a lower priority than other jobs.
+- `craft\base\ApplicationTrait::getIsConnectionValid()` now logs exceptions thrown by `craft\db\Connection::open()`.
+- `craft\base\ApplicationTrait::getIsInstalled()` now logs exceptions thrown by `getInfo()`.
+- The `$siteId` argument of `craft\services\Elements::getElementById()` now accepts the same value types as element query `siteId` params. ([#5861](https://github.com/craftcms/cms/pull/5861))
+- It’s no longer necessary to manually apply `craft\behaviors\SessionBehavior` to custom-defined `session` components, if using `craft\helpers\App::sessionConfig()` as a starting point.
+
+### Fixed
+- Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
+- Fixed a bug where Craft wasn’t ensuring that a `project.yaml` file exists before rebuilding the project config.
+- Fixed a bug where it was possible to create multiple tags with the same title. ([#5865](https://github.com/craftcms/cms/issues/5865))
+- Fixed a PHP error that occurred if any deprecated config settings were set.
+- Fixed a bug where the debug toolbar wasn’t showing deprecation warnings if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
+
 ## 3.4.11 - 2020-03-26
 
 ### Changed
