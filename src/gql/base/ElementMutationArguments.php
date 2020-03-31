@@ -27,17 +27,7 @@ abstract class ElementMutationArguments extends MutationArguments
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
-                'description' => 'Narrows the query results based on the elements’ titles.'
-            ],
-            'slug' => [
-                'name' => 'slug',
-                'type' => Type::string(),
-                'description' => 'Narrows the query results based on the elements’ slugs.'
-            ],
-            'siteId' => [
-                'name' => 'siteId',
-                'type' => Type::int(),
-                'description' => 'Determines which site(s) the elements should be saved to. Defaults to the primary site.'
+                'description' => 'The title of the element.'
             ],
             'enabled' => [
                 'name' => 'enabled',

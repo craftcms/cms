@@ -5,19 +5,19 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\gql\arguments\elements;
+namespace craft\gql\arguments\mutations;
 
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\types\DateTime;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class EntryMutation
+ * Class Entry
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class EntryMutation extends ElementMutationArguments
+class Entry extends ElementMutationArguments
 {
     /**
      * @inheritdoc
@@ -39,6 +39,16 @@ class EntryMutation extends ElementMutationArguments
                 'name' => 'expiryDate',
                 'type' => DateTime::getType(),
                 'description' => 'When should the entry expire.'
+            ],
+            'slug' => [
+                'name' => 'slug',
+                'type' => Type::string(),
+                'description' => 'Narrows the query results based on the elements’ slugs.'
+            ],
+            'siteId' => [
+                'name' => 'siteId',
+                'type' => Type::int(),
+                'description' => 'Determines which site(s) the elements should be saved to. Defaults to the primary site.'
             ],
         ]);
     }

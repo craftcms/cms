@@ -28,24 +28,13 @@ abstract class MutationArguments
             'id' => [
                 'name' => 'id',
                 'type' => Type::id(),
-                'description' => 'Narrows the query results based on the elements’ IDs.'
+                'description' => 'Set the element’s ID.'
             ],
             'uid' => [
                 'name' => 'uid',
                 'type' => Type::string(),
-                'description' => 'Narrows the query results based on the elements’ UIDs.'
+                'description' => 'Set the element’s UID.'
             ],
         ];
-    }
-
-    /**
-     * Returns arguments defined by the content fields based on the context.
-     *
-     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
-     * @return array
-     */
-    public static function getContentArguments($context): array
-    {
-        return [];
     }
 }

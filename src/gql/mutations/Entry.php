@@ -9,10 +9,9 @@ namespace craft\gql\mutations;
 
 use Craft;
 use craft\base\Field;
-use craft\db\Table;
 use craft\elements\Entry as EntryElement;
-use craft\gql\arguments\elements\DraftMutation as DraftMutationArguments;
-use craft\gql\arguments\elements\EntryMutation as EntryMutationArguments;
+use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
+use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\CreateDraft;
 use craft\gql\resolvers\mutations\DeleteEntry;
@@ -20,7 +19,6 @@ use craft\gql\resolvers\mutations\PublishDraft;
 use craft\gql\resolvers\mutations\SaveDraft;
 use craft\gql\resolvers\mutations\SaveEntry;
 use craft\gql\types\generators\EntryType;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
@@ -114,7 +112,6 @@ class Entry extends Mutation
     {
         $mutations = [];
 
-        /** @var EntryTypeModel $mutationName */
         $mutationName = EntryElement::gqlMutationNameByContext($entryType);
         $contentFields = $entryType->getFields();
         $entryMutationArguments = EntryMutationArguments::getArguments();

@@ -5,17 +5,17 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\gql\arguments\elements;
+namespace craft\gql\arguments\mutations;
 
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class DraftMutation
+ * Class Draft
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class DraftMutation extends EntryMutation
+class Draft extends Entry
 {
     /**
      * @inheritdoc
