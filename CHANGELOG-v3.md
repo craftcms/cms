@@ -4,6 +4,10 @@
 
 ### Changed
 - Ajax requests sent with `Craft.sendActionRequest()` now have an `X-Requested-With: XMLHttpRequest` header. ([#5868](https://github.com/craftcms/cms/issues/5868))
+- `craft\helpers\Db::parseParam()` no longer assumes that `null` values within boolean columns should equate to `false`.
+
+### Fixed
+- Fixed a bug where Lightswitch element query params were filtering out entries that hadn’t been saved since the Lightswitch field was added, if the field’s default value was enabled. ([#5866](https://github.com/craftcms/cms/issues/5866))
 
 ## 3.4.12 - 2020-03-31
 
