@@ -220,8 +220,7 @@ class Request extends \yii\web\Request
                 $testBaseCpUrls = [];
                 if ($generalConfig->baseCpUrl) {
                     $testBaseCpUrls[] = implode('/', array_filter([rtrim($generalConfig->baseCpUrl, '/'), $generalConfig->cpTrigger]));
-                }
-                if ($generalConfig->cpTrigger) {
+                } else {
                     if (isset($baseUrl)) {
                         $testBaseCpUrls[] = "$baseUrl/{$generalConfig->cpTrigger}";
                     }
