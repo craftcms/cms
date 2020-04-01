@@ -15,6 +15,7 @@ use craft\elements\Entry as EntryElement;
 use craft\elements\Category;
 use craft\errors\GqlException;
 use craft\gql\base\MutationResolver;
+use craft\gql\base\StructureMutationTrait;
 use craft\helpers\Gql;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -31,6 +32,8 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 class SaveCategory extends MutationResolver
 {
+    use StructureMutationTrait;
+
     /**
      * @inheritdoc
      */
@@ -55,6 +58,8 @@ class SaveCategory extends MutationResolver
         $category = $this->populateElementWithData($category, $arguments);
 
         $this->saveElement($category);
+
+        $this->performStructureOperations($category, $arguments);
 
         return Category::find()->anyStatus()->id($category->id)->one();
     }

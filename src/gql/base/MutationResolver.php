@@ -81,7 +81,9 @@ abstract class MutationResolver
 
                 $element->setFieldValue($argument, $value);
             } else {
-                $element->{$argument} = $value;
+                if (property_exists($element, $argument)) {
+                    $element->{$argument} = $value;
+                }
             }
         }
 

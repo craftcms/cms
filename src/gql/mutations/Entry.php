@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
+use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\CreateDraft;
 use craft\gql\resolvers\mutations\DeleteEntry;
@@ -119,19 +120,6 @@ class Entry extends Mutation
         $contentFieldHandles = [];
         $valueNormalizers = [];
 
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlArgumentType();
-            $entryMutationArguments[$contentField->handle] = $contentFieldType;
-            $draftMutationArguments[$contentField->handle] = $contentFieldType;
-            $contentFieldHandles[$contentField->handle] = true;
-
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-            }
-        }
-
         $section = $entryType->getSection();
 
         switch ($section->type) {
@@ -143,14 +131,23 @@ class Entry extends Mutation
                 unset($draftMutationArguments['authorId'], $draftMutationArguments['id'], $draftMutationArguments['uid']);
                 break;
             case Section::TYPE_STRUCTURE:
-                $entryMutationArguments['newParentId'] = [
-                    'name' => 'newParentId',
-                    'type' => Type::id(),
-                    'description' => 'The ID of the parent entry.'
-                ];
+                $entryMutationArguments = array_merge($entryMutationArguments, StructureArguments::getArguments());
             default:
                 $description = 'Save a “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
                 $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
+        }
+
+        /** @var Field $contentField */
+        foreach ($contentFields as $contentField) {
+            $contentFieldType = $contentField->getContentGqlArgumentType();
+            $entryMutationArguments[$contentField->handle] = $contentFieldType;
+            $draftMutationArguments[$contentField->handle] = $contentFieldType;
+            $contentFieldHandles[$contentField->handle] = true;
+
+            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
+            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
+                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
+            }
         }
 
         $resolverData = [

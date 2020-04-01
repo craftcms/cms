@@ -8,12 +8,12 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\MutationResolver;
+use craft\gql\base\StructureMutationTrait;
 use craft\models\EntryType;
 use craft\models\Section;
 use GraphQL\Error\Error;
@@ -27,6 +27,8 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 class SaveEntry extends MutationResolver
 {
+    use StructureMutationTrait;
+
     /**
      * @inheritdoc
      */
@@ -40,6 +42,8 @@ class SaveEntry extends MutationResolver
         $entry = $this->populateElementWithData($entry, $arguments);
 
         $this->saveElement($entry);
+
+        $this->performStructureOperations($entry, $arguments);
 
         return Entry::find()->anyStatus()->id($entry->id)->one();
     }

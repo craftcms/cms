@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\mutations\Category as CategoryMutationArguments;
+use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\DeleteCategory;
@@ -82,7 +83,7 @@ class Category extends Mutation
     {
         $mutationName = CategoryElement::gqlMutationNameByContext($categoryGroup);
         $contentFields = $categoryGroup->getFields();
-        $mutationArguments = ElementMutationArguments::getArguments();
+        $mutationArguments = array_merge(ElementMutationArguments::getArguments(), StructureArguments::getArguments());
         $contentFieldHandles = [];
         $valueNormalizers = [];
 
