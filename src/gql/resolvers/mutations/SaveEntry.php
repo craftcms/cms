@@ -41,7 +41,7 @@ class SaveEntry extends MutationResolver
 
         $this->saveElement($entry);
 
-        return Entry::findOne($entry->id);
+        return Entry::find()->anyStatus()->id($entry->id)->one();
     }
 
     /**

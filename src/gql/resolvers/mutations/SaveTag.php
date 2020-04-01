@@ -56,6 +56,6 @@ class SaveTag extends MutationResolver
 
         $this->saveElement($tag);
 
-        return Tag::findOne($tag->id);
+        return Tag::find()->anyStatus()->id($tag->id)->one();
     }
 }
