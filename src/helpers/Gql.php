@@ -122,6 +122,18 @@ class Gql
     }
 
     /**
+     * Return true if active schema can mutate tags.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateTags(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['taggroups']);
+    }
+
+    /**
      * Return true if active schema can query entries.
      *
      * @return bool

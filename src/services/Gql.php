@@ -38,6 +38,7 @@ use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\mutations\Entry as EntryMutation;
 use craft\gql\mutations\Ping as PingMutation;
+use craft\gql\mutations\Tag as TagMutation;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
@@ -1072,6 +1073,7 @@ class Gql extends Component
             // Mutations
             PingMutation::getMutations(),
             EntryMutation::getMutations(),
+            TagMutation::getMutations(),
         ];
 
 
@@ -1269,7 +1271,18 @@ class Gql extends Component
 
             foreach ($tagGroups as $tagGroup) {
                 $suffix = 'taggroups.' . $tagGroup->uid;
-                $tagPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)])];
+                $tagPermissions[$suffix . ':read'] = [
+                    'label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)]),
+                    'nested' => [
+                        $suffix . ':edit' => [
+                            'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)]),
+                            'nested' => [
+                                $suffix .':save' => ['label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
+                                $suffix .':delete' => ['label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
+                            ]
+                        ],
+                    ],
+                ];
             }
 
             $permissions[$label] = $tagPermissions;

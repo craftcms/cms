@@ -23,13 +23,12 @@ class Tag extends ElementMutationArguments
      */
     public static function getArguments(): array
     {
-        // Tags are weird. No use for a id or a UID.
-        return [
+        return array_merge(parent::getArguments(), [
             'title' => [
                 'name' => 'title',
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Title of the tag.'
             ],
-        ];
+        ]);
     }
 }

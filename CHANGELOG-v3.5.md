@@ -44,6 +44,7 @@
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
+- Added `craft\helpers\Gql::canMutateTags()`.
 - Added `craft\helpers\Gql::extractEntityAllowedActions()`.
 - Added `craft\helpers\FileHelper::addFilesToZip()`.
 - Added `craft\helpers\FileHelper::zip()`.
