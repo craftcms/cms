@@ -619,7 +619,7 @@ class UrlHelper
         if ($showScriptName) {
             if ($request->getIsConsoleRequest()) {
                 // No way to know for sure, so just guess
-                $baseUrl = '/' . $request->getScriptFilename();
+                $baseUrl = '/index.php';
             } else {
                 $baseUrl = static::host() . $request->getScriptUrl();
             }
