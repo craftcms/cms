@@ -7,11 +7,14 @@
 
 namespace craft\gql\base;
 
+use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\helpers\Gql;
 use GraphQL\Error\Error;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -109,6 +112,27 @@ abstract class MutationResolver
     {
         if (!Gql::canSchema($scope, $action)) {
             throw new Error('Unable to perform the action.');
+        }
+    }
+
+    /**
+     * Save an element.
+     *
+     * @param ElementInterface $element
+     * @throws UserError if validation errors.
+     */
+    protected function saveElement(ElementInterface $element)
+    {
+        Craft::$app->getElements()->saveElement($element);
+
+        if ($element->hasErrors()) {
+            $validationErrors = [];
+
+            foreach ($element->getFirstErrors() as $attribute => $errorMessage) {
+                $validationErrors[] = $errorMessage;
+            }
+
+            throw new UserError(implode("\n", $validationErrors));
         }
     }
 }

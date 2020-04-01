@@ -14,11 +14,9 @@ use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\MutationResolver;
-use craft\helpers\Gql;
 use craft\models\EntryType;
 use craft\models\Section;
 use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -45,17 +43,7 @@ class SaveEntry extends MutationResolver
             $entry->setScenario(Element::SCENARIO_LIVE);
         }
 
-        Craft::$app->getElements()->saveElement($entry);
-
-        if ($entry->hasErrors()) {
-            $validationErrors = [];
-
-            foreach ($entry->getFirstErrors() as $attribute => $errorMessage) {
-                $validationErrors[] = $errorMessage;
-            }
-
-            throw new UserError(implode("\n", $validationErrors));
-        }
+        $this->saveElement($entry);
 
         return Entry::findOne($entry->id);
     }
