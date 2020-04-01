@@ -219,7 +219,7 @@ class Request extends \yii\web\Request
                 // Figure out the base URL the request must have if this is a CP request
                 $testBaseCpUrls = [];
                 if ($generalConfig->baseCpUrl) {
-                    $testBaseCpUrls[] = rtrim($generalConfig->baseCpUrl, '/');
+                    $testBaseCpUrls[] = implode('/', array_filter([rtrim($generalConfig->baseCpUrl, '/'), $generalConfig->cpTrigger]));
                 }
                 if ($generalConfig->cpTrigger) {
                     if (isset($baseUrl)) {
