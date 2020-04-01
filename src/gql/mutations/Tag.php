@@ -10,7 +10,7 @@ namespace craft\gql\mutations;
 use Craft;
 use craft\base\Field;
 use craft\elements\Tag as TagElement;
-use craft\gql\arguments\mutations\Tag as TagMutationArguments;
+use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\DeleteTag;
 use craft\gql\resolvers\mutations\SaveTag;
@@ -81,7 +81,7 @@ class Tag extends Mutation
     {
         $mutationName = TagElement::gqlMutationNameByContext($tagGroup);
         $contentFields = $tagGroup->getFields();
-        $mutationArguments = TagMutationArguments::getArguments();
+        $mutationArguments = ElementMutationArguments::getArguments();
         $contentFieldHandles = [];
         $valueNormalizers = [];
 
