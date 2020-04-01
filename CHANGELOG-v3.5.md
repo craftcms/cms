@@ -32,14 +32,17 @@
 - Added `craft\gql\base\MutationArguments`.
 - Added `craft\gql\ElementQueryConditionBuilder`.
 - Added `craft\gql\Mutation`.
+- Added `craft\gql\mutations\Category`.
 - Added `craft\gql\mutations\Entry`.
 - Added `craft\gql\mutations\Ping`.
 - Added `craft\gql\mutations\Tag`.
 - Added `craft\gql\resolvers\mutations\CreateDraft`.
+- Added `craft\gql\resolvers\mutations\DeleteCategory`.
 - Added `craft\gql\resolvers\mutations\DeleteEntry`.
 - Added `craft\gql\resolvers\mutations\DeleteTag`.
 - Added `craft\gql\resolvers\mutations\PublishDraft`.
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
+- Added `craft\gql\resolvers\mutations\SaveCategory`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
 - Added `craft\gql\resolvers\mutations\SaveTag`.
 - Added `craft\gql\types\input\Matrix`.
@@ -47,6 +50,7 @@
 - Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
 - Added `craft\helpers\Gql::canMutateTags()`.
 - Added `craft\helpers\Gql::extractEntityAllowedActions()`.

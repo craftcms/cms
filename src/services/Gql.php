@@ -36,6 +36,7 @@ use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\mutations\Category as CategoryMutation;
 use craft\gql\mutations\Entry as EntryMutation;
 use craft\gql\mutations\Ping as PingMutation;
 use craft\gql\mutations\Tag as TagMutation;
@@ -1074,6 +1075,7 @@ class Gql extends Component
             PingMutation::getMutations(),
             EntryMutation::getMutations(),
             TagMutation::getMutations(),
+            CategoryMutation::getMutations(),
         ];
 
 
@@ -1245,7 +1247,18 @@ class Gql extends Component
 
             foreach ($categoryGroups as $categoryGroup) {
                 $suffix = 'categorygroups.' . $categoryGroup->uid;
-                $categoryPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])];
+                $categoryPermissions[$suffix . ':read'] = [
+                    'label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)]),
+                    'nested' => [
+                        $suffix . ':edit' => [
+                            'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)]),
+                            'nested' => [
+                                $suffix .':save' => ['label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
+                                $suffix .':delete' => ['label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
+                            ]
+                        ],
+                    ],
+                ];
             }
 
             $permissions[$label] = $categoryPermissions;

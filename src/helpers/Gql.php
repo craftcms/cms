@@ -134,6 +134,18 @@ class Gql
     }
 
     /**
+     * Return true if active schema can mutate categories.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateCategories(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['categorygroups']);
+    }
+
+    /**
      * Return true if active schema can query entries.
      *
      * @return bool
