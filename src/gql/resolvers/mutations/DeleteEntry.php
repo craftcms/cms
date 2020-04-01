@@ -34,7 +34,7 @@ class DeleteEntry extends MutationResolver
         $entry = Entry::findOne($entryId);
 
         if (!$entry) {
-            throw new Error('Unable to perform the action.');
+            return true;
         }
 
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);

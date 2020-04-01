@@ -33,7 +33,7 @@ class DeleteTag extends MutationResolver
         $tag = Tag::findOne($tagId);
 
         if (!$tag) {
-            throw new Error('Unable to perform the action.');
+            return true;
         }
 
         $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
