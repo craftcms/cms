@@ -39,10 +39,6 @@ class SaveEntry extends MutationResolver
 
         $entry = $this->populateElementWithData($entry, $arguments);
 
-        if ($entry->enabled) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
-        }
-
         $this->saveElement($entry);
 
         return Entry::findOne($entry->id);

@@ -123,6 +123,11 @@ abstract class MutationResolver
      */
     protected function saveElement(ElementInterface $element)
     {
+
+        if ($element->enabled) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+        }
+
         Craft::$app->getElements()->saveElement($element);
 
         if ($element->hasErrors()) {
