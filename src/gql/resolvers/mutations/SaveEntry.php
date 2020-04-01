@@ -99,7 +99,7 @@ class SaveEntry extends MutationResolver
         }
 
         // Null the field layout id in case the entry type changes.
-        if ($entry->typeId !== $entryType->id) {
+        if ($entry->typeId != $entryType->id) {
             $entry->fieldLayoutId = null;
         }
 
