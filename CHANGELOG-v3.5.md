@@ -34,10 +34,14 @@
 - Added `craft\gql\Mutation`.
 - Added `craft\gql\mutations\Entry`.
 - Added `craft\gql\mutations\Ping`.
+- Added `craft\gql\mutations\Tag`.
 - Added `craft\gql\resolvers\mutations\CreateDraft`.
+- Added `craft\gql\resolvers\mutations\DeleteEntry`.
+- Added `craft\gql\resolvers\mutations\DeleteTag`.
 - Added `craft\gql\resolvers\mutations\PublishDraft`.
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
+- Added `craft\gql\resolvers\mutations\SaveTag`.
 - Added `craft\gql\types\input\Matrix`.
 - Added `craft\gql\types\Mutation`.
 - Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
