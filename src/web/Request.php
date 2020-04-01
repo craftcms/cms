@@ -228,11 +228,11 @@ class Request extends \yii\web\Request
                     $testBaseCpUrls[] = $this->getBaseUrl() . "/{$generalConfig->cpTrigger}";
                 }
                 $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
-                foreach ($testBaseCpUrls as $baseCpUrl) {
-                    $cpScore = $this->_scoreUrl($baseCpUrl);
+                foreach ($testBaseCpUrls as $testUrl) {
+                    $cpScore = $this->_scoreUrl($testUrl);
                     if ($cpScore > $siteScore) {
                         $this->_isCpRequest = true;
-                        $baseUrl = $baseCpUrl;
+                        $baseUrl = $testUrl;
                         $site = null;
                         break;
                     }
