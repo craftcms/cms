@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a bug where Lightswitch element query params were filtering out entries that hadn’t been saved since the Lightswitch field was added, if the field’s default value was enabled. ([#5866](https://github.com/craftcms/cms/issues/5866))
 - Fixed an error that could occur if the `graphql/api` controller action wasn’t able to determine which GraphQL schema to use.
+- Fixed an error that could occur when transforming images to exactly the same size. ([#5772](https://github.com/craftcms/cms/issues/5772))
 - Fixed an error that occurred when adding “Updating search indexes” jobs to the queue, if the queue didn’t support custom push priorities. ([#5876](https://github.com/craftcms/cms/issues/5876))
 
 ## 3.4.12 - 2020-03-31
