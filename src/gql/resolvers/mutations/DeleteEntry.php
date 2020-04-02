@@ -12,8 +12,6 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\gql\base\MutationResolver;
 use craft\helpers\Db;
-use craft\helpers\Gql;
-use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

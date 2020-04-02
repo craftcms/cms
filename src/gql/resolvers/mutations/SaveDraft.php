@@ -7,16 +7,7 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
-use craft\elements\Entry as EntryElement;
-use craft\gql\base\MutationResolver;
-use craft\models\EntryType;
-use craft\models\Section;
-use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class SaveDraft

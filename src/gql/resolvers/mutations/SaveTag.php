@@ -7,20 +7,10 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use Craft;
-use craft\base\Element;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
-use craft\elements\Entry as EntryElement;
 use craft\elements\Tag;
-use craft\errors\GqlException;
 use craft\gql\base\MutationResolver;
-use craft\helpers\Gql;
-use craft\models\EntryType;
-use craft\models\Section;
 use craft\models\TagGroup;
 use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
