@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.13 - 2020-04-02
 
 ### Added
 - Added `craft\models\GqlToken::getIsValid()`.
