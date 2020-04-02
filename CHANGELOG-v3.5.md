@@ -36,6 +36,7 @@
 - Added `craft\gql\Mutation`.
 - Added `craft\gql\mutations\Category`.
 - Added `craft\gql\mutations\Entry`.
+- Added `craft\gql\mutations\GlobalSet`.
 - Added `craft\gql\mutations\Ping`.
 - Added `craft\gql\mutations\Tag`.
 - Added `craft\gql\resolvers\mutations\CreateDraft`.
@@ -46,6 +47,7 @@
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
 - Added `craft\gql\resolvers\mutations\SaveCategory`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
+- Added `craft\gql\resolvers\mutations\SaveGlobalSet`.
 - Added `craft\gql\resolvers\mutations\SaveTag`.
 - Added `craft\gql\types\input\Matrix`.
 - Added `craft\gql\types\Mutation`.
@@ -54,6 +56,7 @@
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
+- Added `craft\helpers\Gql::canMutateGlobalSets()`.
 - Added `craft\helpers\Gql::canMutateTags()`.
 - Added `craft\helpers\Gql::extractEntityAllowedActions()`.
 - Added `craft\helpers\FileHelper::addFilesToZip()`.

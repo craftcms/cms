@@ -38,6 +38,7 @@ use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\mutations\Category as CategoryMutation;
 use craft\gql\mutations\Entry as EntryMutation;
+use craft\gql\mutations\GlobalSet as GlobalSetMutation;
 use craft\gql\mutations\Ping as PingMutation;
 use craft\gql\mutations\Tag as TagMutation;
 use craft\gql\queries\Asset as AssetQuery;
@@ -1076,6 +1077,7 @@ class Gql extends Component
             EntryMutation::getMutations(),
             TagMutation::getMutations(),
             CategoryMutation::getMutations(),
+            GlobalSetMutation::getMutations(),
         ];
 
 
@@ -1221,7 +1223,12 @@ class Gql extends Component
 
             foreach ($globalSets as $globalSet) {
                 $suffix = 'globalsets.' . $globalSet->uid;
-                $globalSetPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
+                $globalSetPermissions[$suffix . ':read'] = [
+                    'label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)]),
+                    'nested' => [
+                        $suffix . ':edit' => ['label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => Craft::t('site', $globalSet->name)])]
+                    ]
+                ];
             }
 
             $permissions[$label] = $globalSetPermissions;

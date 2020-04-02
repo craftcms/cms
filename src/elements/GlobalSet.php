@@ -121,6 +121,15 @@ class GlobalSet extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var GlobalSetElement $context */
+        return 'save_' . $context->handle . '_GlobalSet';
+    }
+
+    /**
      * @var string|null Name
      */
     public $name;

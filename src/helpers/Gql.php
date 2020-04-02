@@ -134,6 +134,18 @@ class Gql
     }
 
     /**
+     * Return true if active schema can mutate global sets.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateGlobalSets(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['globalsets']);
+    }
+
+    /**
      * Return true if active schema can mutate categories.
      *
      * @return bool
