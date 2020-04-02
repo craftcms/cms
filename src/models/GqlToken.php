@@ -16,7 +16,7 @@ use craft\validators\UniqueValidator;
 /**
  * GraphQL token class
  *
- * @property bool $isPublic Whether this is the public schema
+ * @property bool $isPublic Whether this is the public token
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
@@ -137,6 +137,17 @@ class GqlToken extends Model
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    /**
+     * Returns whether the token is enabled and hasn't expired.
+     *
+     * @return bool
+     * @since 3.4.13
+     */
+    public function getIsValid(): bool
+    {
+        return $this->enabled && !$this->getIsExpired();
     }
 
     /**

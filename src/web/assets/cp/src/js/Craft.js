@@ -595,7 +595,9 @@ $.extend(Craft,
                 options = options ? $.extend({}, options) : {};
                 options.method = method;
                 options.url = Craft.getActionUrl(action);
-                options.headers = $.extend({}, options.headers || {}, this._actionHeaders());
+                options.headers = $.extend({
+                    'X-Requested-With': 'XMLHttpRequest',
+                }, options.headers || {}, this._actionHeaders());
                 options.params = $.extend({}, options.params || {}, {
                     // Force Safari to not load from cache
                     v: new Date().getTime(),
