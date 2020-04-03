@@ -716,7 +716,7 @@ JS;
             // Make sure it's not a heading
             if (!isset($source['heading'])) {
                 $options[] = [
-                    'label' => Html::encode($source['label']),
+                    'label' => $source['label'],
                     'value' => $source['key']
                 ];
                 $optionNames[] = $source['label'];

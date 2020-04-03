@@ -190,7 +190,7 @@
 
                     {% if currentUser.admin and CraftEdition == CraftPro %}
                         {{ forms.checkboxField({
-                            label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
+                            label: raw("<b>#{'Admin'|t('app')}</b>"),
                             name: 'admin',
                             id: 'admin',
                             checked: user.admin,

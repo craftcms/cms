@@ -27,7 +27,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
-use craft\helpers\Html;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -218,7 +217,7 @@ class Assets extends BaseRelationField
         foreach (Asset::sources('settings') as $key => $volume) {
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
-                    'label' => Html::encode($volume['label']),
+                    'label' => $volume['label'],
                     'value' => $volume['key']
                 ];
             }
