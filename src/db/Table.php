@@ -19,6 +19,8 @@ abstract class Table
     const ASSETS = '{{%assets}}';
     const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
     const ASSETTRANSFORMS = '{{%assettransforms}}';
+    /** @since 3.4.14 */
+    const CACHE = '{{%cache}}';
     const CATEGORIES = '{{%categories}}';
     const CATEGORYGROUPS = '{{%categorygroups}}';
     const CATEGORYGROUPS_SITES = '{{%categorygroups_sites}}';
