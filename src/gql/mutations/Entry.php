@@ -49,7 +49,6 @@ class Entry extends Mutation
         $createDeleteMutation = false;
         $createDraftMutations = false;
 
-
         foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
             $scope = 'entrytypes.' . $entryType->uid;
             $canCreate = Gql::canSchema($scope, 'create');
@@ -180,17 +179,5 @@ class Entry extends Mutation
         }
 
         return $mutations;
-    }
-
-    /**
-     * Create mutations common to all entries, regardless of entry types.
-     *
-     * @return array
-     */
-    protected static function createCommonMutations(): array
-    {
-        return [
-
-        ];
     }
 }

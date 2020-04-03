@@ -37,45 +37,55 @@ class GlobalSet extends Mutation
         foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
             $scope = 'globalsets.' . $globalSet->uid;
 
-            if (!Gql::canSchema($scope, 'edit')) {
-                continue;
-            }
+            if (Gql::canSchema($scope, 'edit')) {
+                $mutation = static::createSaveMutation($globalSet);
+                $mutationList[$mutation['name']] = $mutation;
 
-            $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
-            $contentFields = $globalSet->getFields();
-            $mutationArguments = [];
-            $contentFieldHandles = [];
-            $valueNormalizers = [];
-
-            foreach ($contentFields as $contentField) {
-                $contentFieldType = $contentField->getContentGqlArgumentType();
-                $mutationArguments[$contentField->handle] = $contentField->getContentGqlArgumentType();
-                $contentFieldHandles[$contentField->handle] = true;
-
-                $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-
-                if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                    $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-                }
-
-                $resolverData = [
-                    'globalSet' => $globalSet,
-                    'contentFieldHandles' => $contentFieldHandles,
-                ];
-
-                $generatedType = GlobalSetType::generateType($globalSet);
-
-                $mutationList[$mutationName] = [
-                    'name' => $mutationName,
-                    'description' => 'Update the ”' . $globalSet . '“ global set.',
-                    'args' => $mutationArguments,
-                    'resolve' => [new SaveGlobalSet($resolverData, $valueNormalizers), 'resolve'],
-                    'type' => $generatedType
-                ];
             }
         }
 
         return $mutationList;
     }
 
+    /**
+     * Create the per-global-set save mutation.
+     *
+     * @param GlobalSetElement $globalSet
+     * @return array
+     */
+    protected static function createSaveMutation(GlobalSetElement $globalSet): array
+    {
+        $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
+        $contentFields = $globalSet->getFields();
+        $mutationArguments = [];
+        $contentFieldHandles = [];
+        $valueNormalizers = [];
+
+        foreach ($contentFields as $contentField) {
+            $contentFieldType = $contentField->getContentGqlArgumentType();
+            $mutationArguments[$contentField->handle] = $contentField->getContentGqlArgumentType();
+            $contentFieldHandles[$contentField->handle] = true;
+
+            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
+
+            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
+                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
+            }
+
+            $resolverData = [
+                'globalSet' => $globalSet,
+                'contentFieldHandles' => $contentFieldHandles,
+            ];
+
+            $generatedType = GlobalSetType::generateType($globalSet);
+
+            return [
+                'name' => $mutationName,
+                'description' => 'Update the ”' . $globalSet . '“ global set.',
+                'args' => $mutationArguments,
+                'resolve' => [new SaveGlobalSet($resolverData, $valueNormalizers), 'resolve'],
+                'type' => $generatedType
+            ];
+        }
+    }
 }

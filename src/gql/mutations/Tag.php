@@ -46,10 +46,9 @@ class Tag extends Mutation
             $scope = 'taggroups.' . $tagGroup->uid;
 
             if (Gql::canSchema($scope, 'save')) {
-                // Create a mutation for each tag group
-                foreach (static::createSaveMutation($tagGroup) as $mutation) {
-                    $mutationList[$mutation['name']] = $mutation;
-                }
+                // Create a mutation for the tag group
+                $mutation = static::createSaveMutation($tagGroup);
+                $mutationList[$mutation['name']] = $mutation;
             }
 
             if (!$createDeleteMutation && Gql::canSchema($scope, 'delete')) {
@@ -107,14 +106,12 @@ class Tag extends Mutation
 
         $generatedType = TagType::generateType($tagGroup);
 
-        $mutation[] = [
+        return [
             'name' => $mutationName,
             'description' => $description,
             'args' => $mutationArguments,
             'resolve' => [new SaveTag($resolverData, $valueNormalizers), 'resolve'],
             'type' => $generatedType
-        ];
-
-        return $mutation;
+        ];;
     }
 }

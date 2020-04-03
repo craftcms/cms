@@ -49,9 +49,8 @@ class Category extends Mutation
 
             if (Gql::canSchema($scope, 'save')) {
                 // Create a mutation for each category group
-                foreach (static::createSaveMutation($categoryGroup) as $mutation) {
-                    $mutationList[$mutation['name']] = $mutation;
-                }
+                $mutation = static::createSaveMutation($categoryGroup);
+                $mutationList[$mutation['name']] = $mutation;
             }
 
             if (!$createDeleteMutation && Gql::canSchema($scope, 'delete')) {
@@ -109,14 +108,12 @@ class Category extends Mutation
 
         $generatedType = CategoryType::generateType($categoryGroup);
 
-        $mutation[] = [
+        return [
             'name' => $mutationName,
             'description' => $description,
             'args' => $mutationArguments,
             'resolve' => [new SaveCategory($resolverData, $valueNormalizers), 'resolve'],
             'type' => $generatedType
         ];
-
-        return $mutation;
     }
 }
