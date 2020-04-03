@@ -890,13 +890,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
-            new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
+            new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
             new TwigFunction('combine', 'array_combine'),
+            new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
