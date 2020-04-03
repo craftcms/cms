@@ -22,6 +22,7 @@ use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
+use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\web\twig\nodevisitors\EventTagAdder;
@@ -904,6 +905,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('round', [$this, 'roundFunction']),
             new TwigFunction('seq', [$this, 'seqFunction']),

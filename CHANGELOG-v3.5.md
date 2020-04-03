@@ -11,6 +11,7 @@
 - Added the `siteToken` config setting.
 - Added the `install/check` command. ([#5810](https://github.com/craftcms/cms/issues/5810))
 - Added the `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands. ([#5817](https://github.com/craftcms/cms/issues/5817))
+- Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - Added the `drafts`, `draftOf`, `draftId`, `draftCreator`, `revisions`, `revisionOf`, `revisionId` and `revisionCreator` arguments to element queries using GraphQL API. ([#5580](https://github.com/craftcms/cms/issues/5580)) 
 - Added the `isDraft`, `isRevision`, `sourceId`, `sourceUid`, and `isUnsavedDraft` fields to elements when using GraphPQL API. ([#5580](https://github.com/craftcms/cms/issues/5580))
