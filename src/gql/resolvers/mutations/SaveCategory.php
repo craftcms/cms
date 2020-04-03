@@ -31,10 +31,15 @@ class SaveCategory extends MutationResolver
     {
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->_getData('categoryGroup');
-        $canIdentify = !empty($arguments['id']);
+
+        $canIdentify = !empty($arguments['id'] || !empty($arguments['uid']));
 
         if ($canIdentify) {
-            $category = Category::findOne($arguments['id']);
+            if (!empty($arguments['uid'])) {
+                $category = Category::findOne(['uid' => $arguments['uid']]);
+            } else {
+                $category = Category::findOne($arguments['id']);
+            }
         } else {
             $category = new Category(['groupId' => $categoryGroup->id]);
         }

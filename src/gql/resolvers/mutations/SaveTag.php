@@ -28,10 +28,14 @@ class SaveTag extends MutationResolver
     {
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->_getData('tagGroup');
-        $canIdentify = !empty($arguments['id']);
+        $canIdentify = !empty($arguments['id'] || !empty($arguments['uid']));
 
         if ($canIdentify) {
-            $tag = Tag::findOne($arguments['id']);
+            if (!empty($arguments['uid'])) {
+                $tag = Tag::findOne(['uid' => $arguments['uid']]);
+            } else {
+                $tag = Tag::findOne($arguments['id']);
+            }
         } else {
             $tag = new Tag(['groupId' => $tagGroup->id]);
         }
