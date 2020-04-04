@@ -10,6 +10,9 @@
 ### Changed
 - Craft now disables read/write splitting before applying new `project.yaml` changes. ([#5802](https://github.com/craftcms/cms/issues/5802))
 
+### Fixed
+- Fixed a PHP error that occurred when running the `project-config/rebuild` command, if no `project.yaml` file existed yet. ([#5888](https://github.com/craftcms/cms/pull/5888))
+
 ## 3.4.13 - 2020-04-02
 
 ### Added
