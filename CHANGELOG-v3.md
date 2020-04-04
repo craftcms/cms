@@ -7,6 +7,9 @@
 - Added `craft\cache\DbCache`, which should be used instead of `yii\caching\DbCache` if storing data caches in the database. ([#5884](https://github.com/craftcms/cms/issues/5884))
 - Added `craft\db\Table::CACHE`.
 
+### Changed
+- Craft now disables read/write splitting before applying new `project.yaml` changes. ([#5802](https://github.com/craftcms/cms/issues/5802))
+
 ## 3.4.13 - 2020-04-02
 
 ### Added
