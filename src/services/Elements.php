@@ -56,6 +56,7 @@ use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
 /**
@@ -2189,12 +2190,19 @@ class Elements extends Component
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             } else {
-                Craft::$app->getQueue()->priority(2048)->push(new UpdateSearchIndex([
+                $queue = Craft::$app->getQueue();
+                $job = new UpdateSearchIndex([
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,
                     'fieldHandles' => $element->getDirtyFields(),
-                ]));
+                ]);
+                try {
+                    $queue->priority(2048)->push($job);
+                } catch (NotSupportedException $e) {
+                    // The queue probably doesn't support custom push priorities. Try again without one.
+                    $queue->push($job);
+                }
             }
         }
 

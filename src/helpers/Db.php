@@ -483,7 +483,7 @@ class Db
                 if ($operator === '!=') {
                     $val = !$val;
                 }
-                $condition[] = $val ? [$column => true] : ['or', ['not', [$column => true]], [$column => null]];
+                $condition[] = [$column => (bool)$val];
                 continue;
             }
 

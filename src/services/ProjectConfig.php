@@ -528,6 +528,9 @@ class ProjectConfig extends Component
             throw new Exception('Could not acquire a lock for the syncing project config.');
         }
 
+        // Disable read/write splitting for the remainder of this request
+        Craft::$app->getDb()->enableSlaves = false;
+
         $this->_applyingYamlChanges = true;
         Craft::$app->getCache()->delete(self::CACHE_KEY);
 

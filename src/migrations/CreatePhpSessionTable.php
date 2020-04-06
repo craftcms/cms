@@ -30,9 +30,9 @@ class CreatePhpSessionTable extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY([[id]])',
         ]);
 
-        $this->addPrimaryKey(null, Table::PHPSESSIONS, 'id');
         $this->createIndex(null, Table::PHPSESSIONS, ['expire']);
     }
 

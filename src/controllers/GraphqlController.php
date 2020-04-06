@@ -10,10 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use yii\base\InvalidArgumentException;
@@ -70,7 +71,6 @@ class GraphqlController extends Controller
     public function actionApi(): Response
     {
         $request = Craft::$app->getRequest();
-        $requestHeaders = $request->getHeaders();
         $response = Craft::$app->getResponse();
 
         // Add CORS headers
@@ -89,59 +89,7 @@ class GraphqlController extends Controller
         $response->format = Response::FORMAT_JSON;
 
         $gqlService = Craft::$app->getGql();
-
-        $token = null;
-        $schema = null;
-
-        if (!empty($requestHeaders->get('authorization'))) {
-            if (!preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
-                throw new BadRequestHttpException('Invalid Authorization header');
-            }
-            try {
-                $token = $gqlService->getTokenByAccessToken($matches[1]);
-            } catch (InvalidArgumentException $e) {
-                throw new BadRequestHttpException('Invalid Authorization header');
-            }
-        } else if ($requestHeaders->has('x-craft-gql-schema')) {
-            $this->requireAdmin(false);
-            $schemaUid = $requestHeaders->get('x-craft-gql-schema');
-            if ($schemaUid === '*') {
-                $schema = Gql::createFullAccessSchema();
-            } else {
-                $schema = $gqlService->getSchemaByUid($schemaUid);
-            }
-        }
-
-        // What if something already set it on the service?
-        if (!$token && !$schema) {
-            try {
-                $schema = $gqlService->getActiveSchema();
-            } catch (GqlException $exception) {
-                // Ensure a public schema and get the public access token for validation
-                $schema = $gqlService->getPublicSchema();
-                if ($schema === null) {
-                    throw new BadRequestHttpException('Invalid access token');
-                }
-                try {
-                    $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-                } catch (InvalidArgumentException $e) {
-                    throw new BadRequestHttpException('Invalid access token');
-                }
-            }
-        }
-
-        if ($token) {
-            // Make sure the token is active
-            if (!$token->enabled || $token->getIsExpired()) {
-                throw new BadRequestHttpException('Invalid access token');
-            }
-
-            // Don't re-fetch public schema
-            if (!$schema) {
-                $schema = $token->getSchema();
-            }
-        }
-
+        $schema = $this->_schema($gqlService);
         $query = $operationName = $variables = null;
 
         // Check the body if it's a POST request
@@ -164,11 +112,6 @@ class GraphqlController extends Controller
             throw new BadRequestHttpException('No GraphQL query was supplied');
         }
 
-        if ($token) {
-            $token->lastUsed = DateTimeHelper::currentUTCDateTime();
-            $gqlService->saveToken($token);
-        }
-
         // Generate all transforms immediately
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
 
@@ -187,6 +130,80 @@ class GraphqlController extends Controller
         }
 
         return $this->asJson($result);
+    }
+
+    /**
+     * Returns the requested GraphQL schema
+     *
+     * @param GqlService $gqlService
+     * @throws ForbiddenHttpException
+     * @throws BadRequestHttpException
+     */
+    private function _schema(GqlService $gqlService): GqlSchema
+    {
+        $request = Craft::$app->getRequest();
+        $requestHeaders = $request->getHeaders();
+
+        // Admins can access schemas directly with a X-Craft-Gql-Schema header
+        if ($requestHeaders->has('x-craft-gql-schema')) {
+            $this->requireAdmin(false);
+            $schemaUid = $requestHeaders->get('x-craft-gql-schema');
+            if ($schemaUid === '*') {
+                return GqlHelper::createFullAccessSchema();
+            }
+            $schema = $gqlService->getSchemaByUid($schemaUid);
+            if (!$schema) {
+                throw new BadRequestHttpException('Invalid X-Craft-Gql-Schema header');
+            }
+            return $schema;
+        }
+
+        // Was a specific token passed?
+        if ($requestHeaders->has('authorization')) {
+            if (preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
+                try {
+                    $token = $gqlService->getTokenByAccessToken($matches[1]);
+                } catch (InvalidArgumentException $e) {
+                }
+            }
+            if (!isset($token) || !$token->getIsValid()) {
+                throw new BadRequestHttpException('Invalid Authorization header');
+            }
+        } else {
+            // Get the public schema, if it exists & is valid
+            $token = $this->_publicToken($gqlService);
+
+            // If we couldn't find a token, then return the active schema if there is one, otherwise bail
+            if (!$token) {
+                try {
+                    return $gqlService->getActiveSchema();
+                } catch (GqlException $exception) {
+                    throw new BadRequestHttpException('Missing Authorization header');
+                }
+            }
+        }
+
+        // Update the lastUsed timestamp
+        $token->lastUsed = DateTimeHelper::currentUTCDateTime();
+        $gqlService->saveToken($token);
+
+        return $token->getSchema();
+    }
+
+    /**
+     * Returns the public token, if it exists and is valid.
+     *
+     * @param GqlService $gqlService
+     * @return GqlToken|null
+     */
+    private function _publicToken(GqlService $gqlService)
+    {
+        try {
+            $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        } catch (InvalidArgumentException $e) {
+            return null;
+        }
+        return $token->getIsValid() ? $token : null;
     }
 
     /**
@@ -214,7 +231,7 @@ class GraphqlController extends Controller
             }
             Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
         } else {
-            $selectedSchema = Gql::createFullAccessSchema();
+            $selectedSchema = GqlHelper::createFullAccessSchema();
         }
 
         $schemas = [
