@@ -2425,7 +2425,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
         } else {
-            $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
+            $this->subQuery->andWhere($this->_placeholderCondition(['elements.isSource' => true]));
         }
 
         if ($this->revisions) {

@@ -248,6 +248,7 @@ class Install extends Migration
             'revisionId' => $this->integer(),
             'fieldLayoutId' => $this->integer(),
             'type' => $this->string()->notNull(),
+            'isSource' => $this->boolean()->notNull()->defaultValue(true),
             'enabled' => $this->boolean()->notNull()->defaultValue(true),
             'archived' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -771,8 +772,9 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
-        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
-        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated', 'revisionId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'isSource'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);

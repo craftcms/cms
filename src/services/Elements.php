@@ -376,7 +376,9 @@ class Elements extends Component
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->andWhere(['elements.dateDeleted' => null]);
         }
-        if (version_compare($schemaVersion, '3.2.6', '>=')) {
+        if (version_compare($schemaVersion, '3.5.1', '>=')) {
+            $query->andWhere(['elements.isSource' => true]);
+        } else if (version_compare($schemaVersion, '3.2.6', '>=')) {
             $query->andWhere([
                 'elements.draftId' => null,
                 'elements.revisionId' => null,
@@ -2015,6 +2017,7 @@ class Elements extends Component
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
+                $elementRecord->isSource = !($element->draftId || $element->revisionId);
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
 

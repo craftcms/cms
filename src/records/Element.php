@@ -18,6 +18,7 @@ use craft\db\Table;
  * @property int|null $revisionId Revision ID
  * @property int $fieldLayoutId ID
  * @property string $type Type
+ * @property bool $isSource Is source element
  * @property bool $enabled Enabled
  * @property bool $archived Archived
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
