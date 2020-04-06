@@ -182,7 +182,6 @@ Garnish.$doc.ready(function() {
                             e.preventDefault()
                             this.openModal('cart')
                             break
-
                     }
                 }.bind(this))
 

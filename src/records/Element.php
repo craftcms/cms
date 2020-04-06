@@ -25,9 +25,6 @@ use craft\db\Table;
  */
 class Element extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

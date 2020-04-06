@@ -87,7 +87,6 @@ Craft.AdminTable = Garnish.Base.extend(
                         Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
                     }
                 }
-
             }, this));
         },
 

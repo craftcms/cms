@@ -25,21 +25,12 @@ use yii\web\BadRequestHttpException;
  */
 class GraphqlController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     const GQL_SCHEMA_EXTENSION = ".graphql";
-
-    // Public Properties
-    // =========================================================================
 
     /**
      * @var string The token to look up to determine the appropriate GraphQL schema
      */
     public $token = null;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -61,11 +52,15 @@ class GraphqlController extends Controller
     {
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
-        if ($schema !== null) {
-            $schemaDef = $gqlService->getSchemaDef($schema, true);
-            // Output the schema
-            echo SchemaPrinter::doPrint($schemaDef);
+
+        if (!$schema) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        $schemaDef = $gqlService->getSchemaDef($schema, true);
+
+        // Output the schema
+        echo SchemaPrinter::doPrint($schemaDef);
 
         return ExitCode::OK;
     }
@@ -79,21 +74,21 @@ class GraphqlController extends Controller
     {
         $gqlService = Craft::$app->getGql();
         $schema = $this->getGqlSchema();
-        if ($schema !== null) {
-            $schemaDef = $gqlService->getSchemaDef($schema, true);
-            // Output the schema
-            $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
-            $schemaDump = SchemaPrinter::doPrint($schemaDef);
-            $result = file_put_contents($filename, $schemaDump);
-            $this->stdout('Dumping GraphQL schema to file: ', Console::FG_YELLOW);
-            $this->stdout($filename . PHP_EOL);
+
+        if (!$schema) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        $schemaDef = $gqlService->getSchemaDef($schema, true);
+        // Output the schema
+        $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
+        $schemaDump = SchemaPrinter::doPrint($schemaDef);
+        $this->stdout("Dumping GraphQL schema to {$filename} ... ", Console::FG_YELLOW);
+        file_put_contents($filename, $schemaDump);
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @return \craft\models\GqlSchema|null
@@ -102,28 +97,42 @@ class GraphqlController extends Controller
      */
     protected function getGqlSchema()
     {
-        $schema = null;
+        $token = null;
         $gqlService = Craft::$app->getGql();
-        // First try to get the schema from the passed in token
+
+        // First try to get the token from the passed in token
         if ($this->token !== null) {
             try {
-                $schema = $gqlService->getSchemaByAccessToken($this->token);
+                $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
-                $this->stdout('Invalid authorization token: ', Console::FG_RED);
-                $this->stdout($this->token . PHP_EOL, Console::FG_YELLOW);
+                $this->stderr("Invalid authorization token: {$this->token}" . PHP_EOL, Console::FG_RED);
                 return null;
             }
-        }
-        // Next look up the active schema
-        if ($schema === null) {
-            try {
-                $schema = $gqlService->getActiveSchema();
-            } catch (GqlException $exception) {
-                // Well, go for the public schema then.
-                $schema = $gqlService->getPublicSchema();
+
+            $schema = $token->getSchema();
+
+            if (!$schema) {
+                $this->stderr("No schema selected for token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                return null;
             }
+
+            return $schema;
         }
 
-        return $schema;
+        // Next look up the active token
+        try {
+            return $gqlService->getActiveSchema();
+        } catch (GqlException $exception) {
+            // Well, go for the public token then.
+            $schema = $gqlService->getPublicSchema();
+
+            if (!$schema) {
+                $this->stderr('No public schema exists, and one can’t be created because allowAdminChanges is disabled.' .
+                    PHP_EOL, Console::FG_RED);
+                return null;
+            }
+
+            return $schema;
+        }
     }
 }

@@ -13,7 +13,6 @@
 
 {% do view.registerTranslations('app', [
     "Email sent successfully! Check your inbox.",
-    "An unknown error occurred.",
 ]) %}
 
 
@@ -53,6 +52,17 @@
         autofocus: true,
         required: true,
         errors: (freshSettings ? null : settings.getErrors('fromEmail'))
+    }) }}
+
+    {{ forms.autosuggestField({
+        first: true,
+        label: 'Reply-To Address'|t('app'),
+        instructions: 'The Reply-To email address Craft CMS should use when sending email.'|t('app'),
+        id: 'replyToEmail',
+        name: 'replyToEmail',
+        suggestEnvVars: true,
+        value: settings.replyToEmail,
+        errors: (freshSettings ? null : settings.getErrors('replyToEmail'))
     }) }}
 
     {{ forms.autosuggestField({

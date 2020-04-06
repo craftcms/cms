@@ -30,9 +30,6 @@ use DateInterval;
  */
 class UserElementTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var Users
      */
@@ -47,12 +44,6 @@ class UserElementTest extends TestCase
      * @var User
      */
     protected $activeUser;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests Methods
-    // =========================================================================
 
     /**
      *
@@ -278,9 +269,6 @@ class UserElementTest extends TestCase
         });
         $this->activeUser->pending = false;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

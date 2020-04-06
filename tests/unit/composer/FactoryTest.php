@@ -23,9 +23,6 @@ use UnitTester;
  */
 class FactoryTest extends TestCase
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Factory
      */
@@ -36,9 +33,6 @@ class FactoryTest extends TestCase
      */
     protected $tester;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -46,9 +40,6 @@ class FactoryTest extends TestCase
     {
         $this->factory = new Factory();
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test creating an archive manager which doesnt have zip and phar archivers. .

@@ -18,9 +18,6 @@ use craft\base\Model;
  */
 class ExampleModel extends Model
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var
      */
@@ -40,9 +37,6 @@ class ExampleModel extends Model
      * @var
      */
     public $dateUpdated;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -21,9 +21,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 class Duplicate extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to also duplicate the selected elements’ descendants
      */
@@ -34,9 +31,6 @@ class Duplicate extends ElementAction
      */
     public $successMessage;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -46,9 +40,6 @@ class Duplicate extends ElementAction
             ? Craft::t('app', 'Duplicate (with descendants)')
             : Craft::t('app', 'Duplicate');
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

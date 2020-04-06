@@ -8,9 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\MatrixBlock;
 use craft\events\BatchElementActionEvent;
 use craft\fields\Matrix;
@@ -22,12 +19,10 @@ use craft\services\Elements;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.18
+ * @deprecated in 3.4.8. Use [[ApplyNewPropagationMethod]] instead.
  */
 class ApplyMatrixPropagationMethod extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int The Matrix field ID
      */
@@ -42,9 +37,6 @@ class ApplyMatrixPropagationMethod extends BaseJob
      * @var string The field’s new propagation method
      */
     public $newPropagationMethod;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -113,9 +105,6 @@ class ApplyMatrixPropagationMethod extends BaseJob
         $elementsService->resaveElements($query);
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

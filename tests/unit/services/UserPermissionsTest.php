@@ -31,9 +31,6 @@ use yii\db\Exception as YiiDbException;
  */
 class UserPermissionsTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -48,9 +45,6 @@ class UserPermissionsTest extends TestCase
      * @var User
      */
     protected $activeUser;
-
-    // Public Methods
-    // =========================================================================
 
     public function _fixtures() : array
     {
@@ -75,9 +69,6 @@ class UserPermissionsTest extends TestCase
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -216,9 +207,6 @@ class UserPermissionsTest extends TestCase
         $this->assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
     }
 
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

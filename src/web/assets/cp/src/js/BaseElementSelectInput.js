@@ -217,8 +217,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 }
             }
 
-            $elements.find('.delete').on('click', $.proxy(function(ev) {
+            $elements.find('.delete').on('click dblclick', $.proxy(function(ev) {
                 this.removeElement($(ev.currentTarget).closest('.element'));
+                // Prevent this from acting as one of a double-click
+                ev.stopPropagation();
             }, this));
 
             this.$elements = this.$elements.add($elements);

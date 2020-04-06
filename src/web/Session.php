@@ -18,19 +18,6 @@ use craft\behaviors\SessionBehavior;
  */
 class Session extends \yii\web\Session
 {
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        return [
-            SessionBehavior::class,
-        ];
-    }
-
     /**
      * @inheritdoc
      *

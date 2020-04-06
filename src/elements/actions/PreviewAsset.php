@@ -19,16 +19,10 @@ use craft\helpers\Json;
  */
 class PreviewAsset extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

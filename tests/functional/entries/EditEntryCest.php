@@ -20,9 +20,6 @@ use FunctionalTester;
  */
 class EditEntryCest
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -32,9 +29,6 @@ class EditEntryCest
      * @var
      */
     public $currentUser;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -48,9 +42,6 @@ class EditEntryCest
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I

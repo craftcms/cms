@@ -18,9 +18,6 @@ use craft\base\Utility;
  */
 class Migrations extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -70,5 +67,4 @@ class Migrations extends Utility
             'newMigrations' => $newMigrations
         ]);
     }
-
 }

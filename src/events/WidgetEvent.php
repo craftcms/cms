@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class WidgetEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var WidgetInterface|null The widget associated with this event.
      */

@@ -18,5 +18,4 @@ use Twig\Extension\AbstractExtension;
  */
 class TwigExtension extends AbstractExtension
 {
-
 }

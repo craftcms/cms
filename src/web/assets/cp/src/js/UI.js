@@ -282,11 +282,13 @@ Craft.ui =
 
         createLightswitch: function(config) {
             var value = config.value || '1';
+            var indeterminateValue = config.indeterminateValue || '-';
 
             var $container = $('<div/>', {
                 'class': 'lightswitch',
                 tabindex: '0',
                 'data-value': value,
+                'data-indeterminate-value': indeterminateValue,
                 id: config.id,
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,
@@ -295,6 +297,8 @@ Craft.ui =
 
             if (config.on) {
                 $container.addClass('on');
+            } else if (config.indeterminate) {
+                $container.addClass('indeterminate');
             }
 
             if (config.small) {
@@ -307,9 +311,7 @@ Craft.ui =
 
             $(
                 '<div class="lightswitch-container">' +
-                '<div class="label on"></div>' +
                 '<div class="handle"></div>' +
-                '<div class="label off"></div>' +
                 '</div>'
             ).appendTo($container);
 
@@ -317,7 +319,7 @@ Craft.ui =
                 $('<input/>', {
                     type: 'hidden',
                     name: config.name,
-                    value: (config.on ? value : ''),
+                    value: config.on ? value : (config.indeterminate ? indeterminateValue : ''),
                     disabled: config.disabled
                 }).appendTo($container);
             }
@@ -331,7 +333,8 @@ Craft.ui =
         },
 
         createLightswitchField: function(config) {
-            return this.createField(this.createLightswitch(config), config);
+            return this.createField(this.createLightswitch(config), config)
+                .addClass('lightswitch-field');
         },
 
         createColorInput: function(config) {
@@ -417,6 +420,237 @@ Craft.ui =
 
         createDateField: function(config) {
             return this.createField(this.createDateInput(config), config);
+        },
+
+        createDateRangePicker: function(config) {
+            var now = new Date();
+            var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            config = $.extend({
+                class: '',
+                options: [
+                    'today',
+                    'thisWeek',
+                    'thisMonth',
+                    'thisYear',
+                    'past7Days',
+                    'past30Days',
+                    'past90Days',
+                    'pastYear',
+                ],
+                onChange: $.noop,
+                selected: null,
+                startDate:null,
+                endDate: null,
+            }, config);
+
+            var $menu = $('<div/>', {'class': 'menu'});
+            var $ul = $('<ul/>', {'class': 'padded'}).appendTo($menu);
+            var menu = new Garnish.Menu($menu);
+            var $allOption = $('<a/>')
+                .addClass('sel')
+                .text(Craft.t('app', 'All'))
+                .data('handle', 'all');
+
+            $('<li/>')
+                .append($allOption)
+                .appendTo($ul);
+
+            var option;
+            var selectedOption;
+            for (var i = 0; i < config.options.length; i++) {
+                var handle = config.options[i];
+                switch (handle) {
+                    case 'today':
+                        option = {
+                            label: Craft.t('app', 'Today'),
+                            startDate: today,
+                            endDate: today,
+                        };
+                        break;
+                    case 'thisWeek':
+                        var firstDayOffset = now.getDay() - Craft.datepickerOptions.firstDay;
+                        if (firstDayOffset < 0) {
+                            firstDayOffset += 7;
+                        }
+                        option = {
+                            label: Craft.t('app', 'This week'),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - firstDayOffset),
+                            endDate: today,
+                        };
+                        break;
+                    case 'thisMonth':
+                        option = {
+                            label: Craft.t('app', 'This month'),
+                            startDate: new Date(now.getFullYear(), now.getMonth()),
+                            endDate: today,
+                        };
+                        break;
+                    case 'thisYear':
+                        option = {
+                            label: Craft.t('app', 'This year'),
+                            startDate: new Date(now.getFullYear(), 0),
+                            endDate: today,
+                        };
+                        break;
+                    case 'past7Days':
+                        option = {
+                            label: Craft.t('app', 'Past {num} days', {num: 7}),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7),
+                            endDate: today,
+                        };
+                        break;
+                    case 'past30Days':
+                        option = {
+                            label: Craft.t('app', 'Past {num} days', {num: 30}),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30),
+                            endDate: today,
+                        };
+                        break;
+                    case 'past90Days':
+                        option = {
+                            label: Craft.t('app', 'Past {num} days', {num: 90}),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90),
+                            endDate: today,
+                        };
+                        break;
+                    case 'pastYear':
+                        option = {
+                            label: Craft.t('app', 'Past year'),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 365),
+                            endDate: today,
+                        };
+                        break;
+                }
+
+                var $li = $('<li/>');
+                var $a = $('<a/>', {text: option.label})
+                    .data('handle', handle)
+                    .data('startDate', option.startDate)
+                    .data('endDate', option.endDate)
+                    .data('startTime', option.startDate ? option.startDate.getTime() : null)
+                    .data('endTime', option.endDate ? option.endDate.getTime() : null);
+
+                if (config.selected && handle == config.selected) {
+                    selectedOption = $a[0];
+                }
+
+                $li.append($a);
+                $li.appendTo($ul);
+            }
+
+            $('<hr/>').appendTo($menu);
+
+            var $flex = $('<div/>', {'class': 'flex flex-nowrap padded'}).appendTo($menu);
+            var $startDate = this.createDateField({label: Craft.t('app', 'From')}).appendTo($flex).find('input');
+            var $endDate = this.createDateField({label: Craft.t('app', 'To')}).appendTo($flex).find('input');
+
+            // prevent ESC keypresses in the date inputs from closing the menu
+            var $dateInputs = $startDate.add($endDate);
+            $dateInputs.on('keyup', function(ev) {
+                if (ev.keyCode === Garnish.ESC_KEY && $(this).data('datepicker').dpDiv.is(':visible')) {
+                    ev.stopPropagation();
+                }
+            });
+
+            // prevent clicks in the datepicker divs from closing the menu
+            $startDate.data('datepicker').dpDiv.on('mousedown', function(ev) {
+                ev.stopPropagation();
+            });
+            $endDate.data('datepicker').dpDiv.on('mousedown', function(ev) {
+                ev.stopPropagation();
+            });
+
+            var menu = new Garnish.Menu($menu, {
+                onOptionSelect: function(option) {
+                    var $option = $(option);
+                    $btn.text($option.text());
+                    menu.setPositionRelativeToAnchor();
+                    $menu.find('.sel').removeClass('sel');
+                    $option.addClass('sel');
+
+                    // Update the start/end dates
+                    $startDate.datepicker('setDate', $option.data('startDate'));
+                    $endDate.datepicker('setDate', $option.data('endDate'));
+
+                    config.onChange($option.data('startDate') || null, $option.data('endDate') || null, $option.data('handle'));
+                }
+            });
+
+            $dateInputs.on('change', function() {
+                // Do the start & end dates match one of our options?
+                var startDate = $startDate.datepicker('getDate');
+                var endDate = $endDate.datepicker('getDate');
+                var startTime = startDate ? startDate.getTime() : null;
+                var endTime = endDate ? endDate.getTime() : null;
+
+                var $options = $ul.find('a');
+                var $option;
+                var foundOption = false;
+
+                for (var i = 0; i < $options.length; i++) {
+                    $option = $options.eq(i);
+                    if (
+                        startTime === ($option.data('startTime') || null) &&
+                        endTime === ($option.data('endTime') || null)
+                    ) {
+                        menu.selectOption($option[0]);
+                        foundOption = true;
+                        config.onChange(null, null, $option.data('handle'));
+                        break;
+                    }
+                }
+
+                if (!foundOption) {
+                    $menu.find('.sel').removeClass('sel');
+                    $flex.addClass('sel');
+
+                    if (!startTime && !endTime) {
+                        $btn.text(Craft.t('app', 'All'));
+                    } else if (startTime && endTime) {
+                        $btn.text($startDate.val() + ' - ' + $endDate.val());
+                    } else if (startTime) {
+                        $btn.text(Craft.t('app', 'From {date}', {date: $startDate.val()}));
+                    } else {
+                        $btn.text(Craft.t('app', 'To {date}', {date: $endDate.val()}));
+                    }
+                    menu.setPositionRelativeToAnchor();
+
+                    config.onChange(startDate, endDate, 'custom');
+                }
+            });
+
+            menu.on('hide', function() {
+                $startDate.datepicker('hide');
+                $endDate.datepicker('hide');
+            });
+
+            var btnClasses = 'btn menubtn';
+            if (config.class) {
+                btnClasses = btnClasses + ' ' + config.class;
+            }
+
+            var $btn = $('<div class="'+btnClasses+'" data-icon="date"/>')
+                .text(Craft.t('app', 'All'));
+
+            new Garnish.MenuBtn($btn, menu);
+
+            if (selectedOption) {
+                menu.selectOption(selectedOption);
+            }
+
+            if (config.startDate) {
+                $startDate.datepicker('setDate', config.startDate);
+            }
+
+            if (config.endDate) {
+                $endDate.datepicker('setDate', config.endDate);
+            }
+
+            if (config.startDate || config.endDate) {
+                $dateInputs.trigger('change');
+            }
+
+            return $btn;
         },
 
         createTimeInput: function(config) {

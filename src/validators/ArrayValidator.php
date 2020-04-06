@@ -18,9 +18,6 @@ use yii\validators\Validator;
  */
 class ArrayValidator extends Validator
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @var int|array|null specifies the count limit of the value to be validated.
      *

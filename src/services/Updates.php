@@ -35,9 +35,6 @@ use yii\base\InvalidArgumentException;
  */
 class Updates extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -52,9 +49,6 @@ class Updates extends Component
      * @var bool|null
      */
     private $_isCraftDbMigrationNeeded;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the update info is cached.
@@ -156,8 +150,9 @@ class Updates extends Component
         // so we don't accidentally overwrite other pending changes
         $projectConfig = Craft::$app->getProjectConfig();
         $key = Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion';
+
         if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
-            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion);
+            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
         }
 
         return (bool)$affectedRows;
@@ -340,7 +335,7 @@ class Updates extends Component
         // so we don't accidentally overwrite other pending changes
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true) !== $info->schemaVersion) {
-            Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion);
+            Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion, 'Update Craft schema version');
         }
 
         return true;

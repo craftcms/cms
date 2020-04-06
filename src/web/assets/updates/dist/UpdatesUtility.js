@@ -42,14 +42,9 @@
                         $status.remove();
 
                         // Add the page title
-                        var headingText;
-
-                        if (this.totalAvailableUpdates === 1) {
-                            headingText = Craft.t('app', '1 Available Update');
-                        }
-                        else {
-                            headingText = Craft.t('app', '{num} Available Updates', {num: this.totalAvailableUpdates});
-                        }
+                        var headingText = Craft.t('app', '{num, number} {num, plural, =1{Available Update} other{Available Updates}}', {
+                            num: this.totalAvailableUpdates,
+                        });
 
                         $('#header h1').text(headingText);
 

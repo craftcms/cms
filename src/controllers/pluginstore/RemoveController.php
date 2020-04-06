@@ -19,9 +19,6 @@ use craft\controllers\BaseUpdaterController;
  */
 class RemoveController extends BaseUpdaterController
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -36,9 +33,6 @@ class RemoveController extends BaseUpdaterController
 
         return true;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

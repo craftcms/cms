@@ -19,8 +19,19 @@ use yii\web\Response;
  */
 class ElementIndexSettingsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
 
     /**
      * Returns all the info needed by the Customize Sources modal.
@@ -109,6 +120,6 @@ class ElementIndexSettingsController extends BaseElementsController
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 }

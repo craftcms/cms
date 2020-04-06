@@ -17,9 +17,6 @@ use craft\helpers\Image as ImageHelper;
  */
 class Image
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -34,9 +31,6 @@ class Image
      * @var
      */
     protected $size;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

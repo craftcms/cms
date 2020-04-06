@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterTemplateRootsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The registered template roots. Each key should be a root template path, and values should be the corresponding directory path.
      */

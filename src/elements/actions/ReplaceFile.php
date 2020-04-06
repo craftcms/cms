@@ -19,9 +19,6 @@ use craft\helpers\Json;
  */
 class ReplaceFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,6 +40,10 @@ class ReplaceFile extends ElementAction
     var trigger = new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable');
+        },
         activate: function(\$selectedItems)
         {
             $('.replaceFile').remove();

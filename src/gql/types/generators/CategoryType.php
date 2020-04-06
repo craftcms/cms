@@ -13,6 +13,7 @@ use craft\elements\Category as CategoryElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
+use craft\gql\TypeManager;
 use craft\gql\types\elements\Category;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\CategoryGroup;
@@ -50,7 +51,7 @@ class CategoryType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $categoryGroupFields = array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+            $categoryGroupFields = TypeManager::prepareFieldDefinitions(array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Category([

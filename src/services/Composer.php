@@ -35,9 +35,6 @@ use yii\base\Exception;
  */
 class Composer extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -63,9 +60,6 @@ class Composer extends Component
      * @var string[]|null
      */
     private $_composerClasses;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the path to composer.json.
@@ -339,9 +333,6 @@ class Composer extends Component
     {
         $this->_composerClasses[] = $className;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.

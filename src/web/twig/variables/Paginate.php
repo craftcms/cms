@@ -21,9 +21,6 @@ use yii\base\BaseObject;
  */
 class Paginate extends BaseObject
 {
-    // Static
-    // =========================================================================
-
     /**
      * Creates a new instance based on a Paginator object
      *
@@ -44,9 +41,6 @@ class Paginate extends BaseObject
             'totalPages' => $paginator->getTotalPages(),
         ]);
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var
@@ -79,9 +73,6 @@ class Paginate extends BaseObject
      * @see setBasePath()
      */
     private $_basePath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the base path that should be used for pagination URLs.
@@ -228,7 +219,7 @@ class Paginate extends BaseObject
      *
      * @param int $start
      * @param int $end
-     * @return array
+     * @return string[]
      */
     public function getRangeUrls(int $start, int $end): array
     {
@@ -247,5 +238,21 @@ class Paginate extends BaseObject
         }
 
         return $urls;
+    }
+
+    /**
+     * Returns a dynamic range of page URLs that surround (and include) the current page.
+     *
+     * @param int $max The maximum number of links to return
+     * @return string[]
+     */
+    public function getDynamicRangeUrls($max = 10)
+    {
+        $start = max(1, $this->currentPage - floor($max / 2));
+        $end = min($this->totalPages, $start + $max - 1);
+        if ($end - $start < $max) {
+            $start = max(1, $end - $max + 1);
+        }
+        return $this->getRangeUrls($start, $end);
     }
 }

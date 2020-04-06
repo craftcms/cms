@@ -19,17 +19,11 @@ use yii\validators\UrlValidator as YiiUrlValidator;
  */
 class UrlValidator extends YiiUrlValidator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the value can begin with an alias
      * @deprecated
      */
     public $allowAlias = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

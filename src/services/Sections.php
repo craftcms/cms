@@ -31,10 +31,12 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\models\Structure;
+use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -47,9 +49,6 @@ use yii\base\Exception;
  */
 class Sections extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
      */
@@ -106,11 +105,12 @@ class Sections extends Component
 
     const CONFIG_ENTRYTYPES_KEY = 'entryTypes';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
+     *
+     * ::: tip
+     * Entries will be resaved regardless of what this is set to, when a section’s Propagation Method setting changes.
+     * :::
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
@@ -130,9 +130,6 @@ class Sections extends Component
      * @var
      */
     private $_entryTypesById;
-
-    // Public Methods
-    // =========================================================================
 
     // Sections
     // -------------------------------------------------------------------------
@@ -463,7 +460,7 @@ class Sections extends Component
         ];
 
         if (!empty($section->previewTargets)) {
-            $configData['previewTargets'] = $section->previewTargets;
+            $configData['previewTargets'] = ProjectConfigHelper::packAssociativeArray($section->previewTargets);
         }
 
         if ($section->type === Section::TYPE_STRUCTURE) {
@@ -512,7 +509,7 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
-            $projectConfig->set($configPath, $configData);
+            $projectConfig->set($configPath, $configData, "Save section “{$section->handle}”");
 
             if ($isNewSection) {
                 $section->id = Db::idByUid(Table::SECTIONS, $section->uid);
@@ -615,9 +612,12 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
-            $sectionRecord->previewTargets = $data['previewTargets'] ?? null;
+            $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
+                ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
+                : null;
 
             $isNewSection = $sectionRecord->getIsNewRecord();
+            $propagationMethodChanged = $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod');
 
             if ($data['type'] === Section::TYPE_STRUCTURE) {
                 // Save the structure
@@ -637,7 +637,7 @@ class Sections extends Component
             $resaveEntries = (
                 $sectionRecord->handle !== $sectionRecord->getOldAttribute('handle') ||
                 $sectionRecord->type !== $sectionRecord->getOldAttribute('type') ||
-                $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod') ||
+                $propagationMethodChanged ||
                 $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
             );
 
@@ -725,20 +725,33 @@ class Sections extends Component
             // Finally, deal with the existing entries...
             // -----------------------------------------------------------------
 
-            if (!$isNewSection && $resaveEntries && $this->autoResaveEntries) {
-                Craft::$app->getQueue()->push(new ResaveElements([
-                    'description' => Craft::t('app', 'Resaving {section} entries', [
-                        'section' => $sectionRecord->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
-                        'sectionId' => $sectionRecord->id,
-                        'siteId' => '*',
-                        'unique' => true,
-                        'status' => null,
-                        'enabledForSite' => false,
-                    ]
-                ]));
+            if (!$isNewSection && $resaveEntries) {
+                // If the propagation method just changed, we definitely need to update entries for that
+                if ($propagationMethodChanged) {
+                    Craft::$app->getQueue()->push(new ApplyNewPropagationMethod([
+                        'description' => Craft::t('app', 'Applying new propagation method to {section} entries', [
+                            'section' => $sectionRecord->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'sectionId' => $sectionRecord->id,
+                        ],
+                    ]));
+                } else if ($this->autoResaveEntries) {
+                    Craft::$app->getQueue()->push(new ResaveElements([
+                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                            'section' => $sectionRecord->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'sectionId' => $sectionRecord->id,
+                            'siteId' => array_values($siteIdMap),
+                            'unique' => true,
+                            'status' => null,
+                            'enabledForSite' => false,
+                        ],
+                    ]));
+                }
             }
 
             $transaction->commit();
@@ -825,7 +838,7 @@ class Sections extends Component
         }
 
         // Remove the section from the project config
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $section->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $section->uid, "Delete the “{$section->handle}” section");
         return true;
     }
 
@@ -909,7 +922,7 @@ class Sections extends Component
         // Loop through the sections and prune the UID from field layouts.
         if (is_array($sections)) {
             foreach ($sections as $sectionUid => $sectionGroup) {
-                $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid);
+                $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid, 'Remove section settings that belong to a site being deleted');
             }
         }
     }
@@ -941,7 +954,7 @@ class Sections extends Component
                             foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
                                 if (!empty($layout['tabs'])) {
                                     foreach ($layout['tabs'] as $tabUid => $tab) {
-                                        $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                        $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                                     }
                                 }
                             }
@@ -970,24 +983,12 @@ class Sections extends Component
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
-        if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
-            // Set Craft to the site template mode
-            $view = Craft::$app->getView();
-            $oldTemplateMode = $view->getTemplateMode();
-            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-
-            // Does the template exist?
-            $templateExists = Craft::$app->getView()->doesTemplateExist((string)$sectionSiteSettings[$siteId]->template);
-
-            // Restore the original template mode
-            $view->setTemplateMode($oldTemplateMode);
-
-            if ($templateExists) {
-                return true;
-            }
+        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+            return false;
         }
 
-        return false;
+        $template = (string)$sectionSiteSettings[$siteId]->template;
+        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
     }
 
     // Entry Types
@@ -1171,7 +1172,7 @@ class Sections extends Component
         }
 
         $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
         if ($isNewEntryType) {
             $entryType->id = Db::idByUid(Table::ENTRYTYPES, $entryType->uid);
@@ -1324,10 +1325,9 @@ class Sections extends Component
                 }
 
                 $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
-                $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder + 1);
+                $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder + 1, 'Reorder entry types');
             }
         }
-
 
         return true;
     }
@@ -1382,7 +1382,7 @@ class Sections extends Component
         $section = $entryType->getSection();
         $sectionUid = $section->uid;
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid, "Delete the “{$entryType->handle}” entry type");
         return true;
     }
 
@@ -1454,9 +1454,6 @@ class Sections extends Component
             ]));
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving sections.

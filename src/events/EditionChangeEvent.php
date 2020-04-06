@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class EditionChangeEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The old edition
      */

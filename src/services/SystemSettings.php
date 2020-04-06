@@ -22,16 +22,10 @@ use yii\base\Component;
  */
 class SystemSettings extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
     public $defaults;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the system settings for a category.
@@ -64,7 +58,7 @@ class SystemSettings extends Component
      * @param string $category
      * @param array|null $settings
      * @return bool Whether the new settings saved
-     * @deprecated in 3.1.0. Use [[\craft\services\ProjectConfig::save()]] instead.
+     * @deprecated in 3.1.0. Use [[\craft\services\ProjectConfig::set()]] instead.
      */
     public function saveSettings(string $category, array $settings = null): bool
     {

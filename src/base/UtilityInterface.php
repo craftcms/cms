@@ -15,9 +15,6 @@ namespace craft\base;
  */
 interface UtilityInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the utility’s unique identifier.
      *
@@ -49,4 +46,20 @@ interface UtilityInterface extends ComponentInterface
      * @return string
      */
     public static function contentHtml(): string;
+
+    /**
+     * Returns the utility’s toolbar HTML.
+     *
+     * @return string
+     * @since 3.4.0
+     */
+    public static function toolbarHtml(): string;
+
+    /**
+     * Returns the utility’s footer HTML.
+     *
+     * @return string
+     * @since 3.4.0
+     */
+    public static function footerHtml(): string;
 }

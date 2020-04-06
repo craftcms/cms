@@ -32,9 +32,6 @@ use yii\web\Response;
  */
 abstract class BaseUpdaterController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_PRECHECK = 'precheck';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
@@ -44,9 +41,6 @@ abstract class BaseUpdaterController extends Controller
      */
     const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -58,12 +52,9 @@ abstract class BaseUpdaterController extends Controller
      */
     protected $data = [];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a CP request
+     * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
     public function beforeAction($action)
@@ -268,9 +259,6 @@ abstract class BaseUpdaterController extends Controller
             'returnUrl' => $this->returnUrl(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the page title
@@ -631,9 +619,6 @@ abstract class BaseUpdaterController extends Controller
 
         return [$success, $tempResponse, $errorDetails];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the hashed data for JS.

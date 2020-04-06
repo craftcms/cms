@@ -21,9 +21,6 @@ use craft\errors\VolumeObjectNotFoundException;
  */
 interface VolumeInterface extends SavableComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the URL to the source, if it’s accessible via HTTP traffic.
      *

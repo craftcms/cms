@@ -21,9 +21,6 @@ class GqlHelperTest extends Unit
      */
     protected $tester;
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test Schema helper methods.
      *
@@ -122,7 +119,6 @@ class GqlHelperTest extends Unit
     public function testFullAccessSchema()
     {
         $schema = GqlHelper::createFullAccessSchema();
-        $this->assertTrue($schema->isTemporary);
 
         // Not very realistic to test *everything* without duplicating logic in the helper method
         $this->assertNotEmpty($schema->scope);
@@ -237,7 +233,7 @@ class GqlHelperTest extends Unit
     public function _setSchemaWithPermissions($scopeSet)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => $scopeSet, 'isTemporary' => true]);
+        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'scope' => $scopeSet]);
         $gqlService->setActiveSchema($schema);
     }
 }

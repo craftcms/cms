@@ -11,7 +11,9 @@ use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\fields\BaseRelationField;
 use craft\helpers\StringHelper;
+use craft\services\Gql;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
@@ -115,7 +117,7 @@ abstract class Resolver
          * @param null $parentField the current parent field, that we are in.
          * @return array
          */
-        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments, $eagerLoadableFieldsByContext) {
+        $traverseNodes = function(Node $parentNode, $prefix = '', $context = 'global', $parentField = null) use (&$traverseNodes, $fragments, $eagerLoadableFieldsByContext, $resolveInfo) {
             $eagerLoadNodes = [];
             $subNodes = $parentNode->selectionSet->selections ?? [];
 
@@ -125,11 +127,10 @@ abstract class Resolver
 
                 // If that's a GraphQL field
                 if ($subNode instanceof FieldNode) {
-
                     $field = $eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                     // That is a Craft field that can be eager-loaded or is the special `children` property
-                    if ($field || $subNode->name->value === 'children') {
+                    if ($field || $nodeName === 'children' || $nodeName === Gql::GRAPHQL_COUNT_FIELD) {
                         $arguments = [];
 
                         // Any arguments?
@@ -145,7 +146,7 @@ abstract class Resolver
 
                                 $arguments[$argumentNode->name->value] = $values;
                             } else {
-                                $arguments[$argumentNode->name->value] = $argumentNode->value->value ?? null;
+                                $arguments[$argumentNode->name->value] = $argumentNode->value->kind === 'Variable' ? $resolveInfo->variableValues[$argumentNode->value->name->value] : ($argumentNode->value->value ?? null);
                             }
                         }
 
@@ -183,13 +184,37 @@ abstract class Resolver
                             }
                         }
 
+                        if ($nodeName == Gql::GRAPHQL_COUNT_FIELD) {
+                            if (!empty($subNode->alias) && !empty($subNode->alias->value)) {
+                                $nodeName = $subNode->alias->value . '@' . $nodeName;
+                            } else {
+                                // Just re-use the node name, then.
+                                $nodeName .= '@' . $nodeName;
+                            }
+                        }
+
                         // Add it all to the list
-                        $eagerLoadNodes[$prefix . $nodeName] = $arguments;
+                        if (array_key_exists($prefix . $nodeName, $eagerLoadNodes)) {
+                            $eagerLoadNodes[$prefix . $nodeName] = array_merge_recursive($eagerLoadNodes[$prefix . $nodeName], $arguments);
+                        } else {
+                            $eagerLoadNodes[$prefix . $nodeName] = $arguments;
+                        }
 
                         // If it has any more selections, build the prefix further and proceed in a recursive manner
                         if (!empty($subNode->selectionSet)) {
                             $traversePrefix = $prefix . ($field ? $field->handle : 'children');
-                            $traverseContext = $field ? $field->context : $context;
+
+                            if ($field) {
+                                // Relational fields should reset context to global.
+                                if ($field instanceof BaseRelationField) {
+                                    $traverseContext = 'global';
+                                } else {
+                                    $traverseContext = $field->context;
+                                }
+                            } else {
+                                $traverseContext = $context;
+                            }
+
                             $eagerLoadNodes += $traverseNodes($subNode, $traversePrefix . '.', $traverseContext, $field);
                         }
                     }

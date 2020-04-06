@@ -20,9 +20,6 @@ use yii\web\NotFoundHttpException;
  */
 class DeprecatedPanel extends Panel
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      *
      */

@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Image
@@ -19,15 +20,9 @@ use craft\image\Svg;
  */
 class Image
 {
-    // Constants
-    // =========================================================================
-
     const EXIF_IFD0_ROTATE_180 = 3;
     const EXIF_IFD0_ROTATE_90 = 6;
     const EXIF_IFD0_ROTATE_270 = 8;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Calculates a missing target dimension for an image.
@@ -40,15 +35,26 @@ class Image
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
     {
-        $factor = $sourceWidth / $sourceHeight;
-
-        if (empty($targetHeight)) {
-            $targetHeight = ceil($targetWidth / $factor);
-        } else if (empty($targetWidth)) {
-            $targetWidth = ceil($targetHeight * $factor);
+        // If the target width & height are both present, return them
+        if ($targetWidth && $targetHeight) {
+            return [(int)$targetWidth, (int)$targetHeight];
         }
 
-        return [(int)$targetWidth, (int)$targetHeight];
+        // Make sure that there's a source width/height
+        if (!$sourceWidth || !$sourceHeight) {
+            throw new InvalidArgumentException('Image missing its width or height');
+        }
+
+        // If neither were supplied, just use the source dimensions
+        if (!$targetWidth && !$targetHeight) {
+            return [(int)$sourceWidth, (int)$sourceHeight];
+        }
+
+        // Fill in the blank
+        return [
+            (int)($targetWidth ?: ceil($targetHeight * ($sourceWidth / $sourceHeight))),
+            (int)($targetHeight ?: ceil($targetWidth * ($sourceHeight / $sourceWidth))),
+        ];
     }
 
     /**
@@ -353,9 +359,6 @@ class Image
             }
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the multiplier that should be used to convert an image size unit to pixels.

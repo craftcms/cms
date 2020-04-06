@@ -25,16 +25,10 @@ use yii\base\InvalidConfigException;
  */
 class AssetsHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
 
     public function _fixtures(): array
     {
@@ -44,9 +38,6 @@ class AssetsHelperTest extends Unit
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider urlGenerationDataProvider
@@ -192,9 +183,6 @@ class AssetsHelperTest extends Unit
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
         $this->assertSame(1, Assets::getMaxUploadSize());
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

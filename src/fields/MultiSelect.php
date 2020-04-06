@@ -19,9 +19,6 @@ use craft\fields\data\MultiOptionsFieldData;
  */
 class MultiSelect extends BaseOptionsField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,9 +35,6 @@ class MultiSelect extends BaseOptionsField
         return MultiOptionsFieldData::class;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -50,9 +44,6 @@ class MultiSelect extends BaseOptionsField
      * @inheritdoc
      */
     public $optgroups = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -65,9 +56,6 @@ class MultiSelect extends BaseOptionsField
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

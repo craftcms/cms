@@ -40,9 +40,6 @@ use yii\base\UnknownPropertyException;
  */
 class Volumes extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
      *
@@ -93,9 +90,6 @@ class Volumes extends Component
 
     const CONFIG_VOLUME_KEY = 'volumes';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var VolumeInterface[]
      */
@@ -105,9 +99,6 @@ class Volumes extends Component
      * @var array|null Volume setting overrides
      */
     private $_overrides;
-
-    // Public Methods
-    // =========================================================================
 
     // Volumes
     // -------------------------------------------------------------------------
@@ -326,7 +317,7 @@ class Volumes extends Component
             'type' => \get_class($volume),
             'hasUrls' => (bool)$volume->hasUrls,
             'url' => $volume->url,
-            'settings' => $volume->getSettings(),
+            'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
             'sortOrder' => (int)$volume->sortOrder,
         ];
 
@@ -348,7 +339,7 @@ class Volumes extends Component
 
 
         $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
             $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
@@ -381,7 +372,7 @@ class Volumes extends Component
             $volumeRecord->hasUrls = $data['hasUrls'];
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
-            $volumeRecord->settings = $data['settings'];
+            $volumeRecord->settings = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
@@ -473,7 +464,7 @@ class Volumes extends Component
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
                 $volumeUid = $uidsByIds[$volumeId];
-                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1);
+                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
             }
         }
 
@@ -617,7 +608,7 @@ class Volumes extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
         return true;
     }
 
@@ -717,7 +708,7 @@ class Volumes extends Component
                     foreach ($volume['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -731,9 +722,6 @@ class Volumes extends Component
         // Allow events again
         $projectConfig->muteEvents = false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a DbCommand object prepped for retrieving volumes.

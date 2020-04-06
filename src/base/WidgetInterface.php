@@ -16,9 +16,6 @@ namespace craft\base;
  */
 interface WidgetInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the path to the widget’s SVG icon, or the actual SVG contents.
      *
@@ -34,15 +31,21 @@ interface WidgetInterface extends SavableComponentInterface
      */
     public static function maxColspan();
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the widget’s title.
      *
      * @return string The widget’s title.
+     * @todo allow this to return null in Craft 4
      */
     public function getTitle(): string;
+
+    /**
+     * Returns the widget’s subtitle.
+     *
+     * @return string|null The widget’s subtitle
+     * @since 3.4.0
+     */
+    public function getSubtitle();
 
     /**
      * Returns the widget's body HTML.

@@ -18,9 +18,6 @@ use Craft;
  */
 class SystemSettings
 {
-    // Public Methods
-    // =========================================================================
-
     /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a setting category exists.

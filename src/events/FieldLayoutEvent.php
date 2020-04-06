@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class FieldLayoutEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var FieldLayout|null The field layout associated with this event.
      */

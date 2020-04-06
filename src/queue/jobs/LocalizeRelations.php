@@ -20,16 +20,10 @@ use craft\queue\BaseJob;
  */
 class LocalizeRelations extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The field ID whose data should be localized
      */
     public $fieldId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -77,9 +71,6 @@ class LocalizeRelations extends BaseJob
             }
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

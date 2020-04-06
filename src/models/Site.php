@@ -25,9 +25,6 @@ use yii\base\InvalidConfigException;
  */
 class Site extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -98,9 +95,6 @@ class Site extends Model
      */
     public $dateUpdated;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the site’s base URL.
      *
@@ -121,14 +115,14 @@ class Site extends Model
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'baseUrl',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'baseUrl',
+            ],
         ];
+        return $behaviors;
     }
 
     /**
@@ -147,9 +141,9 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];

@@ -241,9 +241,9 @@
                             },
 
                             // error
-                            (response) => {
-                                if (response.data.errors) {
-                                    response.data.errors.forEach(error => {
+                            (error) => {
+                                if (error.response && error.response.data.errors) {
+                                    error.response.data.errors.forEach(error => {
                                         this.errors[error.param] = [error.message]
                                     })
                                 }
@@ -393,7 +393,6 @@
 
 <style lang="scss">
     .payment {
-
         .field {
             margin-top: 0.75rem !important;
             margin-bottom: 0 !important;

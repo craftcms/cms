@@ -7,7 +7,7 @@ html, body {
 
 body {
   overflow: hidden;
-  background: $bgColor url(images/install-bg-1920.png) no-repeat 50% 50%;
+  background: $grey100 url(images/installer-bg.png) no-repeat 50% 50%;
   background-size: cover;
 }
 
@@ -27,6 +27,7 @@ body {
   font-size: 19px;
   height: 42px;
   line-height: 18px;
+  box-shadow: 0 0 0 4px $grey100;
 }
 
 #install-modal {
@@ -52,7 +53,7 @@ body {
           left: -100px;
           width: 500px;
           height: 500px;
-          @include svg-mask($bgColor);
+          @include svg-mask($grey050);
         }
       }
 
@@ -86,7 +87,7 @@ body {
     & > div {
       display: inline-block;
       border-radius: 4px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
+      border: 1px solid $hairlineColor;
       width: 6px;
       height: 6px;
 
@@ -95,8 +96,8 @@ body {
       }
 
       &.sel {
-        border-color: $submitColor;
-        background: $submitColor;
+        border-color: $primaryColor;
+        background: $primaryColor;
       }
     }
   }
@@ -192,21 +193,5 @@ only screen and (min-resolution: 1.5dppx) {
   .buttons .btn.loading:after {
     background-image: url(images/spinner_submit_2x.gif);
     background-size: 20px;
-  }
-}
-
-@media only screen and (min-width: 1921px) {
-  body {
-    background-image: url(images/install-bg-5120.png);
-  }
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (min-width: 961px),
-only screen and (-moz-min-device-pixel-ratio: 1.5) and (min-width: 961px),
-only screen and (-o-min-device-pixel-ratio: 3/2) and (min-width: 961px),
-only screen and (min-device-pixel-ratio: 1.5) and (min-width: 961px),
-only screen and (min-resolution: 1.5dppx) and (min-width: 961px) {
-  body {
-    background-image: url(images/install-bg-5120.png);
   }
 }

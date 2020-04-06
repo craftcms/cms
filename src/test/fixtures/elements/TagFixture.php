@@ -23,9 +23,6 @@ use craft\elements\Tag;
  */
 abstract class TagFixture extends ElementFixture
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * {@inheritdoc}
      */
@@ -35,9 +32,6 @@ abstract class TagFixture extends ElementFixture
      * @var array
      */
     protected $groupIds = [];
-
-    // Public methods
-    // =========================================================================
 
     /**
      * {@inheritdoc}
@@ -50,9 +44,6 @@ abstract class TagFixture extends ElementFixture
             $this->groupIds[$group->handle] = $group->id;
         }
     }
-
-    // Protected methods
-    // =========================================================================
 
     /**
      * {@inheritdoc}

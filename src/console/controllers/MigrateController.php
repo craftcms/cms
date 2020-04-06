@@ -46,13 +46,7 @@ use yii\helpers\Console;
  */
 class MigrateController extends BaseMigrateController
 {
-    // Traits
-    // =========================================================================
-
     use ControllerTrait;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
@@ -69,15 +63,18 @@ class MigrateController extends BaseMigrateController
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent;
+    public $noContent = false;
+
+    /**
+     * @var bool Skip backing up the database.
+     * @since 3.4.3
+     */
+    public $noBackup = false;
 
     /**
      * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -115,6 +112,7 @@ class MigrateController extends BaseMigrateController
         $options[] = 'plugin';
 
         if ($actionID === 'all') {
+            $options[] = 'noBackup';
             $options[] = 'noContent';
         }
 
@@ -242,20 +240,16 @@ class MigrateController extends BaseMigrateController
 
         // Anything to update?
         if (!empty($handles)) {
-
             // Enable maintenance mode
             Craft::$app->enableMaintenanceMode();
 
             // Backup the DB?
-            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-            if ($backup) {
+            if (!$this->noBackup && Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate()) {
                 try {
                     $backupPath = $db->backup();
                 } catch (\Throwable $e) {
                     Craft::$app->disableMaintenanceMode();
                     $this->stderr("Error backing up the database: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
-                    Craft::error("Error backing up the database: {$e->getMessage()}", __METHOD__);
-                    Craft::$app->getErrorHandler()->logException($e);
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
             }
@@ -343,9 +337,6 @@ class MigrateController extends BaseMigrateController
 
         return $res;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the migration manager that should be used for this request

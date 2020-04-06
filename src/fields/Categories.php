@@ -29,9 +29,6 @@ use GraphQL\Type\Definition\Type;
  */
 class Categories extends BaseRelationField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -63,9 +60,6 @@ class Categories extends BaseRelationField
     {
         return CategoryQuery::class;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -101,9 +95,6 @@ class Categories extends BaseRelationField
      * @inheritdoc
      */
     protected $sortable = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

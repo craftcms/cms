@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\User as UserElement;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
+use craft\gql\TypeManager;
 use craft\gql\types\generators\UserType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
@@ -68,7 +69,7 @@ class User extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'friendlyName' => [
                 'name' => 'friendlyName',
                 'type' => Type::string(),
@@ -114,7 +115,7 @@ class User extends Element
                 'type' => Type::string(),
                 'description' => 'The user\'s email.'
             ],
-        ]);
+        ]), self::getName());
     }
 
     /**

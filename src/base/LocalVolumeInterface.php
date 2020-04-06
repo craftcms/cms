@@ -15,9 +15,6 @@ namespace craft\base;
  */
 interface LocalVolumeInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the root path for the volume.
      *

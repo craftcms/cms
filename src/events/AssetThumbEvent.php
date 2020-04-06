@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class AssetThumbEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Asset The Asset a thumbnail was requested for
      */

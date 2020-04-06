@@ -27,9 +27,6 @@ use yii\base\Exception;
  */
 class Assets
 {
-    // Constants
-    // =========================================================================
-
     const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
@@ -42,9 +39,6 @@ class Assets
      */
     const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Supported file kinds
      * @see getFileKinds()
@@ -56,9 +50,6 @@ class Assets
      * @see getAllowedFileKinds()
      */
     private static $_allowedFileKinds;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Get a temporary file path.
@@ -84,17 +75,17 @@ class Assets
      * Generate a URL for a given Assets file in a Source Type.
      *
      * @param VolumeInterface $volume
-     * @param Asset $file
+     * @param Asset $asset
+     * @param string $uri Asset URI to use. Defaults to the filename.
      * @return string
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $file): string
+    public static function generateUrl(VolumeInterface $volume, Asset $asset, $uri = null): string
     {
         $baseUrl = $volume->getRootUrl();
-        $folderPath = $file->getFolder()->path;
-        $filename = $file->filename;
-        $appendix = static::urlAppendix($volume, $file);
+        $folderPath = $asset->getFolder()->path;
+        $appendix = static::urlAppendix($volume, $asset);
 
-        return $baseUrl . $folderPath . $filename . $appendix;
+        return $baseUrl . $folderPath . ($uri ?? $asset->filename) . $appendix;
     }
 
     /**
@@ -110,7 +101,8 @@ class Assets
 
         /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
-            $appendix = '?mtime=' . $file->dateModified->format('YmdHis');
+            $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
+            $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
         }
 
         return $appendix;
@@ -369,9 +361,6 @@ class Assets
 
         return [$folderId, $filename];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Builds the internal file kinds array, if it hasn't been built already.

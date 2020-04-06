@@ -33,7 +33,7 @@ class ExtractEagerLoadingParameterTest extends Unit
     protected function _before()
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
 
         $this->tester->mockMethods(
@@ -65,6 +65,11 @@ class ExtractEagerLoadingParameterTest extends Unit
                         'context' => 'matrix',
                         'getEagerLoadingGqlConditions' => []
                     ]),
+                    $this->make(Entries::class, [
+                        'handle' => 'linkedEntriesThroughMatrix',
+                        'context' => 'global',
+                        'getEagerLoadingGqlConditions' => []
+                    ]),
                     $this->make(Assets::class, [
                         'handle' => 'image',
                         'context' => 'matrix',
@@ -92,9 +97,6 @@ class ExtractEagerLoadingParameterTest extends Unit
     protected function _after()
     {
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test eager loading parameter extraction from a query string
@@ -155,6 +157,11 @@ class ExtractEagerLoadingParameterTest extends Unit
         ... on articleBody_linkedEntries_BlockType {
           entriesInMatrix (id: 80) {
             title
+            ... on articles_news_Entry {
+                linkedEntriesThroughMatrix (id: 99) {
+                    title
+                }
+            }
           }
         }
       }
@@ -173,6 +180,7 @@ GQL;
             'matrixField',
             ['matrixField.mockedBlockHandle:image', ['volumeId' => 2]],
             ['matrixField.mockedBlockHandle:entriesInMatrix', ['id' => 80]],
+            ['matrixField.mockedBlockHandle:entriesInMatrix.linkedEntriesThroughMatrix', ['id' => 99]],
             ['entryField', ['sectionId' => [5], 'typeId' => [2]]],
             ['assetField', ['volumeId' => [5]]],
         ];
@@ -182,6 +190,12 @@ GQL;
                 '{ entries { assetField (volumeId: 4) { filename }}}',
                 [
                     ['assetField', ['id' => 0]]
+                ],
+            ],
+            [
+                '{ entries { _count(field: "assetField") assetField { filename }}}',
+                [
+                    ['assetField', ['volumeId' => [5, 7], 'count' => true]]
                 ],
             ],
             [

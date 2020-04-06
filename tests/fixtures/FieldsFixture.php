@@ -18,9 +18,6 @@ use craft\test\fixtures\FieldFixture;
  */
 class FieldsFixture extends FieldFixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

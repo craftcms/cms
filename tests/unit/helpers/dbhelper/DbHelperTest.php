@@ -28,9 +28,6 @@ use yii\db\Schema;
  */
 class DbHelperTest extends Unit
 {
-    // Constants
-    // =========================================================================
-
     const MULTI_PARSEPARAM_NOT = [
         'or',
         [
@@ -46,9 +43,6 @@ class DbHelperTest extends Unit
     ];
 
     const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var UnitTester
@@ -74,12 +68,6 @@ class DbHelperTest extends Unit
      * @var bool
      */
     protected $isMysql;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider parseParamDataProvider
@@ -301,9 +289,6 @@ class DbHelperTest extends Unit
         $this->assertSame($result, $prepared);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -376,23 +361,23 @@ class DbHelperTest extends Unit
                 'foo', 'not :empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', false, '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', 0, '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', '0', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', 'not 1', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', ':empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
         ];
@@ -610,9 +595,6 @@ class DbHelperTest extends Unit
             [['😀😘'], ['😀😘']]
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -21,6 +21,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -35,9 +36,6 @@ use yii\web\ServerErrorHttpException;
  */
 class EntryRevisionsController extends BaseEntriesController
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Creates a new entry draft and redirects the client to its edit URL
      *
@@ -313,6 +311,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response|null
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      * @throws ServerErrorHttpException if the entry draft is missing its entry
+     * @throws ForbiddenHttpException if the user doesn't have the necessary permissions
      */
     public function actionPublishDraft()
     {
@@ -359,8 +358,13 @@ class EntryRevisionsController extends BaseEntriesController
         $this->_setDraftAttributesFromPost($draft);
 
         // Even more permission enforcement
-        if ($draft->enabled) {
-            $this->requirePermission('publishEntries:' . $section->uid);
+        if ($draft->enabled && !Craft::$app->getUser()->checkPermission("publishEntries:{$section->uid}")) {
+            if ($draft->getIsUnsavedDraft()) {
+                // Just disable it
+                $draft->enabled = false;
+            } else {
+                throw new ForbiddenHttpException('User is not permitted to perform this action');
+            }
         }
 
         // Populate the field content
@@ -454,9 +458,6 @@ class EntryRevisionsController extends BaseEntriesController
         return $this->redirectToPostedUrl($revision);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Sets a draft's attributes from the post data.
      *
@@ -479,8 +480,15 @@ class EntryRevisionsController extends BaseEntriesController
         if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
             $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
-        $draft->enabled = (bool)$request->getBodyParam('enabled');
-        $draft->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $draft->enabledForSite);
+
+        $enabledForSite = $this->enabledForSiteValue();
+        if (is_array($enabledForSite)) {
+            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+            $draft->enabled = in_array(true, $enabledForSite, false) || $draft->enabled;
+        } else {
+            $draft->enabled = (bool)$request->getBodyParam('enabled', $draft->enabled);
+        }
+        $draft->setEnabledForSite($enabledForSite ?? $draft->getEnabledForSite());
         $draft->title = $request->getBodyParam('title');
 
         if (!$draft->typeId) {

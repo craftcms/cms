@@ -12,9 +12,6 @@ use craft\helpers\MigrationHelper;
  */
 class m150403_185142_volumes extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

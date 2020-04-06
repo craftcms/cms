@@ -2,11 +2,11 @@
 @import "../../../../../lib/craftcms-sass/mixins";
 
 div.cp-image div.cp-current-image {
-  border-radius: $paneBorderRadius;
+  border-radius: $largeBorderRadius;
   width: 100px;
   height: 100px;
   background: no-repeat;
-  box-shadow: inset 0 0 0 1px $hairlineColorAlpha;
+  box-shadow: inset 0 0 0 1px $hairlineColor;
 }
 
 div.cp-image div.cp-image-controls {
@@ -16,7 +16,7 @@ div.cp-image div.cp-image-controls {
 }
 
 div.cp-image-controls .progress-shade {
-  background: rgba(255, 255, 255, 0.8);
+  background: transparentize($white, 0.2);
   width: 100%;
   height: 100%;
   position: absolute;

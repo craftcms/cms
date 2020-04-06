@@ -26,19 +26,10 @@ use yii\log\Logger;
  */
 class ImageHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -182,9 +173,6 @@ class ImageHelperTest extends Unit
         $result = Image::imageSizeByStream($input);
         $this->assertSame([], $result);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

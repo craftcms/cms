@@ -25,15 +25,9 @@ use yii\base\UnknownPropertyException;
  */
 class GeneralConfig extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
     const IMAGE_DRIVER_IMAGICK = 'imagick';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a
@@ -41,7 +35,7 @@ class GeneralConfig extends BaseObject
      */
     public $actionTrigger = 'actions';
     /**
-     * @var mixed The URI that users without access to the Control Panel should be redirected to after activating their account.
+     * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getActivateAccountSuccessPath()
@@ -61,7 +55,7 @@ class GeneralConfig extends BaseObject
      * If this is disabled, the Settings and Plugin Store sections will be hidden,
      * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
      *
-     * Therefore you should only disable this in production environments when [[useProjectConfigFile]] is enabled,
+     * Therefore you should only disable this in production environments when <config:useProjectConfigFile> is enabled,
      * and you have a deployment workflow that runs `composer install` automatically on deploy.
      *
      * ::: warning
@@ -72,9 +66,9 @@ class GeneralConfig extends BaseObject
      */
     public $allowAdminChanges = true;
     /**
-     * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+     * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if [[allowAdminChanges]] is disabled.
+     * This setting will automatically be disabled if <config:allowAdminChanges> is disabled.
      */
     public $allowUpdates = true;
     /**
@@ -119,12 +113,12 @@ class GeneralConfig extends BaseObject
      */
     public $backupCommand;
     /**
-     * @var string|null The base URL that Craft should use when generating Control Panel URLs.
+     * @var string|null The base URL that Craft should use when generating control panel URLs.
      *
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base CP URL should **not** include the [[cpTrigger|CP trigger word]] (e.g. `/admin`).
+     * The base control panel URL should **not** include the [control panel trigger word](config:cpTrigger) (e.g. `/admin`).
      * :::
      */
     public $baseCpUrl;
@@ -154,6 +148,10 @@ class GeneralConfig extends BaseObject
     public $cacheDuration = 86400;
     /**
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
+     *
+     * ::: tip
+     * You can run `./craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * :::
      */
     public $convertFilenamesToAscii = false;
     /**
@@ -166,12 +164,12 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should route to the Control Panel rather than
+     * @var string The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      */
     public $cpTrigger = 'admin';
     /**
-     * @var string The name of CSRF token used for CSRF validation if [[enableCsrfProtection]] is set to `true`.
+     * @var string The name of CSRF token used for CSRF validation if <config:enableCsrfProtection> is set to `true`.
      * @see enableCsrfProtection
      */
     public $csrfTokenName = 'CRAFT_CSRF_TOKEN';
@@ -197,7 +195,7 @@ class GeneralConfig extends BaseObject
      */
     public $defaultCookieDomain = '';
     /**
-     * @var string|null The default language the Control Panel should use for users who haven’t set a preferred language yet.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      */
     public $defaultCpLanguage;
     /**
@@ -278,7 +276,7 @@ class GeneralConfig extends BaseObject
      */
     public $disabledPlugins = [];
     /**
-     * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
+     * @var bool Whether to use a cookie to persist the CSRF token if <config:enableCsrfProtection> is enabled. If false, the CSRF token
      * will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is needed, which may
      * degrade site performance.
@@ -332,7 +330,7 @@ class GeneralConfig extends BaseObject
      */
     public $errorTemplatePrefix = '';
     /**
-     * @var string[]|null List of file extensions that will be merged into the [[allowedFileExtensions]] config setting.
+     * @var string[]|null List of file extensions that will be merged into the <config:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      */
     public $extraAllowedFileExtensions;
@@ -347,7 +345,7 @@ class GeneralConfig extends BaseObject
     public $extraAppLocales;
     /**
      * @var array List of additional file kinds Craft should support. This array
-     * will get merged with the one defined in [[craft\helpers\Assets::_buildFileKinds()]].
+     * will get merged with the one defined in `\craft\helpers\Assets::_buildFileKinds()`.
      *
      * ```php
      * 'extraFileKinds' => [
@@ -365,7 +363,7 @@ class GeneralConfig extends BaseObject
      *
      * ::: tip
      * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-     * the [[$extraAllowedFileExtensions]] config setting.
+     * the <config:extraAllowedFileExtensions> config setting.
      * :::
      *
      * @since 3.0.37
@@ -381,16 +379,18 @@ class GeneralConfig extends BaseObject
     public $generateTransformsBeforePageLoad = false;
     /**
      * @var bool bool Whether the system should run in Headless Mode, which
-     * optimizes the system and Control Panel for headless CMS implementations.
+     * optimizes the system and control panel for headless CMS implementations.
      *
      * When this is enabled, the following changes will take place:
      *
-     * - URI Format settings for sections and category groups will be hidden.
+     * - Template settings for sections and category groups will be hidden.
      * - Template route management will be hidden.
      * - Front-end routing will skip checks for element and template requests.
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON
      *   rather than HTML by default for front-end requests.
+     * - The <config:loginPath>, <config:logoutPath>, <config:setPasswordPath>, and
+     *   <config:verifyEmailPath> settings will be ignored.
      *
      * @since 3.3.0
      */
@@ -443,12 +443,16 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The URI Craft should use for user login on the front-end.
      *
+     * This can be set to `false` to disable front-end login.
+     *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
      * @var mixed The URI Craft should use for user logout on the front-end.
+     *
+     * This can be set to `false` to disable front-end logout.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLogoutPath()
@@ -464,6 +468,11 @@ class GeneralConfig extends BaseObject
      * locked.
      */
     public $maxInvalidLogins = 5;
+    /**
+     * @var int|false The number of backups that Craft should make before it starts deleting the oldest backups.
+     * If it is set to `false`, then Craft will not delete any backups.
+     */
+    public $maxBackups = 20;
     /**
      * @var int|null The maximum number of revisions that should be stored for each element.
      *
@@ -514,7 +523,7 @@ class GeneralConfig extends BaseObject
      * `?page` | `/news?page=5`
      *
      * ::: tip
-     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [[$pathParam]] setting as well,
+     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your <config:pathParam> setting as well,
      * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
      * in your `.htaccess` file to match your new `pathParam` value.
      * :::
@@ -544,10 +553,10 @@ class GeneralConfig extends BaseObject
      */
     public $phpSessionName = 'CraftSessionId';
     /**
-     * @var mixed The path that users should be redirected to after logging in from the Control Panel.
+     * @var mixed The path that users should be redirected to after logging in from the control panel.
      *
-     * This setting will also come into effect if the user visits the CP’s Login page (`/admin/login`)
-     * or the CP’s root URL (/admin) when they are already logged in.
+     * This setting will also come into effect if a user visits the control panel’s Login page (`/admin/login`)
+     * or the control panel’s root URL (/admin) when they are already logged in.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -572,10 +581,10 @@ class GeneralConfig extends BaseObject
      */
     public $postLogoutRedirect = '';
     /**
-     * @var bool Whether CMYK should be preserved as the colorspace when when manipulating images.
+     * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
      *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions can cause color
-     * distortion in the image. This will only have effect if ImageMagick is in use.
+     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions
+     * it can cause color distortion in the image. This will only have effect if ImageMagick is in use.
      *
      * @since 3.0.8
      */
@@ -603,7 +612,7 @@ class GeneralConfig extends BaseObject
      */
     public $privateTemplateTrigger = '_';
     /**
-     * @var bool When set to `false` and you go through the "forgot password" workflow on the Control Panel login page, for example,
+     * @var bool When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
      * you get distinct messages saying if the username/email didn't exist or the email was successfully sent and to check
      * your email for further instructions. This can allow for username/email enumeration based on the response. If set
      * `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
@@ -640,7 +649,7 @@ class GeneralConfig extends BaseObject
      */
     public $purgeUnsavedDraftsDuration = 2592000;
     /**
-     * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
+     * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
      *
@@ -665,11 +674,11 @@ class GeneralConfig extends BaseObject
      */
     public $requireUserAgentAndIpForSession = true;
     /**
-     * @var string The path to the root directory that should store published CP resources.
+     * @var string The path to the root directory that should store published control panel resources.
      */
     public $resourceBasePath = '@webroot/cpresources';
     /**
-     * @var string The URL to the root directory that should store published CP resources.
+     * @var string The URL to the root directory that should store published control panel resources.
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
@@ -695,18 +704,20 @@ class GeneralConfig extends BaseObject
      */
     public $rotateImagesOnUploadByExifData = true;
     /**
-     * @var bool Whether Craft should run pending queue jobs automatically over HTTP requests.
+     * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
      *
+     * If disabled, an alternate queue worker *must* be set up separately, either as an
+     * [always-running daemon](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/worker.md), or a
+     * cron job that runs the `queue/run` command every minute:
+     *
+     * ```cron
+     * * * * * * /path/to/project/craft queue/run
+     * ```
+     *
+     * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
-     *
-     * If disabled, an alternate queue runner *must* be set up separately.
-     *
-     * Here is an example of how you would setup a queue runner from a cron job that ran every minute:
-     *
-     * ```text
-     * /1 * * * * /path/to/project/root/craft queue/run
-     * ```
+     * :::
      */
     public $runQueueAutomatically = true;
     /**
@@ -714,7 +725,7 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to `'Lax'`, `'Strict'`, or `null`.
      *
-     * ::: note
+     * ::: tip
      * This setting requires PHP 7.3 or later.
      * :::
      *
@@ -740,7 +751,7 @@ class GeneralConfig extends BaseObject
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var mixed The password-reset template path. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for Set Password forms on the front-end.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -769,7 +780,7 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
      *
-     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [[aliases|alias]].
+     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](config:aliases).
      *
      * ```php
      * 'siteUrl' => [
@@ -858,6 +869,11 @@ class GeneralConfig extends BaseObject
      */
     public $trustedHosts = ['any'];
     /**
+     * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
+     * @since 3.4.0
+     */
+    public $upscaleImages = true;
+    /**
      * @var bool Whether Craft should use compressed JavaScript files whenever possible.
      */
     public $useCompressedJs = true;
@@ -868,7 +884,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *
-     * Note that this setting only takes effect if [[omitScriptNameInUrls]] is set to false.
+     * Note that this setting only takes effect if <config:omitScriptNameInUrls> is set to false.
      */
     public $usePathInfo = false;
     /**
@@ -928,7 +944,15 @@ class GeneralConfig extends BaseObject
      */
     public $verificationCodeDuration = 86400;
     /**
-     * @var mixed The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
+     * @var mixed The URI Craft should use for email verification links on the front-end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * @see getVerifyEmailPath()
+     * @since 3.4.0
+     */
+    public $verifyEmailPath = 'verifyemail';
+    /**
+     * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getVerifyEmailSuccessPath()
@@ -940,9 +964,6 @@ class GeneralConfig extends BaseObject
      * @var array Stores any custom config settings
      */
     private $_customSettings = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1088,6 +1109,19 @@ class GeneralConfig extends BaseObject
     }
 
     /**
+     * Returns the localized Verify Email Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     * @return string
+     * @see verifyEmailPath
+     * @since 3.4.0
+     */
+    public function getVerifyEmailPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+    }
+
+    /**
      * Returns the localized Verify Email Success Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
@@ -1116,10 +1150,10 @@ class GeneralConfig extends BaseObject
      * Returns the localized Login Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return mixed
      * @see loginPath
      */
-    public function getLoginPath(string $siteHandle = null): string
+    public function getLoginPath(string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
     }
@@ -1128,16 +1162,16 @@ class GeneralConfig extends BaseObject
      * Returns the localized Logout Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return mixed
      * @see logoutPath
      */
-    public function getLogoutPath(string $siteHandle = null): string
+    public function getLogoutPath(string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
     }
 
     /**
-     * Returns the localized Post-CP Login Redirect path.
+     * Returns the localized Post-Login Redirect path for the control panel.
      *
      * @return string
      * @see postCpLoginRedirect

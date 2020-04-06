@@ -23,9 +23,6 @@ use yii\db\ActiveQueryInterface;
  */
 class UserGroup extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

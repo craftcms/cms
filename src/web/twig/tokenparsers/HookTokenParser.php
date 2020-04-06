@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class HookTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

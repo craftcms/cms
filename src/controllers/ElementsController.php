@@ -30,8 +30,19 @@ use yii\web\Response;
  */
 class ElementsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
 
     /**
      * Renders and returns the body of an ElementSelectorModal.
@@ -40,11 +51,12 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetModalBody(): Response
     {
-        $sourceKeys = Craft::$app->getRequest()->getParam('sources');
+        $request = Craft::$app->getRequest();
+        $sourceKeys = $request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
-        $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
+        $showSiteMenu = $request->getParam('showSiteMenu', 'auto');
 
         if ($showSiteMenu !== 'auto') {
             $showSiteMenu = (bool)$showSiteMenu;
@@ -129,10 +141,11 @@ class ElementsController extends BaseElementsController
         $element = $this->_getEditorElement();
 
         // Figure out where the data will be in POST
-        $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
+        $request = Craft::$app->getRequest();
+        $namespace = $request->getRequiredBodyParam('namespace');
 
         // Configure the element
-        $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
+        $params = $request->getBodyParam($namespace, []);
         ArrayHelper::remove($params, 'fields');
         Craft::configure($element, $params);
 
@@ -154,7 +167,7 @@ class ElementsController extends BaseElementsController
             ];
 
             // Should we be including table attributes too?
-            $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
+            $sourceKey = $request->getBodyParam('includeTableAttributesForSource');
 
             if ($sourceKey) {
                 $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
@@ -223,21 +236,27 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetElementHtml(): Response
     {
-        $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
-        $size = Craft::$app->getRequest()->getBodyParam('size', null);
-        $viewMode = Craft::$app->getRequest()->getBodyParam('viewMode', null);
+        $request = Craft::$app->getRequest();
+        $elementId = $request->getRequiredBodyParam('elementId');
+        $siteId = $request->getBodyParam('siteId', null);
+        $size = $request->getBodyParam('size', null);
+        $viewMode = $request->getBodyParam('viewMode', null);
+        $context = $request->getBodyParam('context', 'field');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', compact('element', 'size', 'viewMode'));
-        $headHtml = $view->getHeadHtml();
+        $html = $view->renderTemplate('_elements/element', compact(
+            'element',
+            'size',
+            'viewMode',
+            'context'
+        ));
 
-        return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
+        return $this->asJson([
+            'html' => $html,
+            'headHtml' => $view->getHeadHtml(),
+        ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the element that is currently being edited.
@@ -396,8 +415,9 @@ class ElementsController extends BaseElementsController
 
         $response['siteId'] = $element->siteId;
 
+        $view = $this->getView();
         $namespace = 'editor_' . StringHelper::randomString(10);
-        $this->getView()->setNamespace($namespace);
+        $view->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
@@ -410,12 +430,12 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">' .
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
+            $view->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
-        $view = $this->getView();
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
+        $response['deltaNames'] = $view->getDeltaNames();
 
         return $this->asJson($response);
     }

@@ -23,9 +23,6 @@ use yii\base\InvalidConfigException;
  */
 class EntryRevisions extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event DraftEvent The event that is triggered before a draft is saved.
      * @deprecated in 3.2.0
@@ -73,9 +70,6 @@ class EntryRevisions extends Component
      * @deprecated in 3.2.0
      */
     const EVENT_AFTER_REVERT_ENTRY_TO_VERSION = 'afterRevertEntryToVersion';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a draft by its ID.

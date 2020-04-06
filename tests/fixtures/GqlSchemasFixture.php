@@ -19,9 +19,6 @@ use craft\test\Fixture;
  */
 class GqlSchemasFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

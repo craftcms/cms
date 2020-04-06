@@ -23,9 +23,6 @@ use UnitTester;
  */
 class PaginatorTest extends Unit
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * @var Paginator
      */
@@ -35,12 +32,6 @@ class PaginatorTest extends Unit
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -166,9 +157,6 @@ class PaginatorTest extends Unit
         $this->paginator->setCurrentPage(3);
         $this->assertSame(2, $this->paginator->getCurrentPage());
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param array $queryParams

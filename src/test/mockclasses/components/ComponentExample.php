@@ -18,9 +18,6 @@ use craft\base\ComponentInterface;
  */
 class ComponentExample implements ComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @return string
      */

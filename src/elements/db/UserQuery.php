@@ -34,9 +34,6 @@ use yii\db\Connection;
  */
 class UserQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -84,7 +81,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with CP access #}
+     * {# fetch users with control panel access #}
      * {% set admins = craft.users()
      *     .can('accessCp')
      *     .all() %}
@@ -142,9 +139,6 @@ class UserQuery extends ElementQuery
      * @used-by lastLoginDate()
      */
     public $lastLoginDate;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -208,14 +202,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the Control Panel #}
+     * {# Fetch users that can access the control panel #}
      * {% set {elements-var} = {twig-method}
      *     .can('accessCp')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the Control Panel
+     * // Fetch users that can access the control panel
      * ${elements-var} = {element-class}::find()
      *     ->can('accessCp')
      *     ->all();
@@ -545,9 +539,6 @@ class UserQuery extends ElementQuery
         return parent::status($value);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -656,9 +647,6 @@ class UserQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'can' param to the query being prepared.

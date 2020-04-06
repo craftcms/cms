@@ -18,9 +18,6 @@ use craft\helpers\StringHelper;
  */
 class StringValidator extends \yii\validators\StringValidator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool whether the string should be checked for 4+ byte characters (like emoji)
      */
@@ -38,9 +35,6 @@ class StringValidator extends \yii\validators\StringValidator
      * @deprecated in 3.0.32. Use Yii’s `'trim'` validator instead.
      */
     public $trim = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

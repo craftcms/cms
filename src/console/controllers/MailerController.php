@@ -34,9 +34,6 @@ use yii\console\ExitCode;
  */
 class MailerController extends Controller
 {
-    // Public functions
-    // =========================================================================
-
     /**
      * Allows for the testing of email settings within Craft using one of the following scenarios:
      *
@@ -172,9 +169,6 @@ class MailerController extends Controller
         // FOR... SPARTAAA!
         return $this->_testEmailSending($mailParams, $receiverEmail);
     }
-
-    // Protected functions
-    // =========================================================================
 
     /**
      * Copied from `craft\controllers\SystemSettingsController::actionTestEmailSettings()`

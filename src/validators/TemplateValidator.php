@@ -19,9 +19,6 @@ use yii\validators\Validator;
  */
 class TemplateValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The template mode to use when looking for the template
      */
@@ -31,9 +28,6 @@ class TemplateValidator extends Validator
      * @var string user-defined error message used when the value is not a string.
      */
     public $message;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -52,13 +46,7 @@ class TemplateValidator extends Validator
      */
     public function validateValue($value)
     {
-        $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode($this->templateMode);
-        $exists = $view->resolveTemplate($value) !== false;
-        $view->setTemplateMode($templateMode);
-
-        if (!$exists) {
+        if (Craft::$app->getView()->resolveTemplate($value, $this->templateMode) === false) {
             return [$this->message, []];
         }
 

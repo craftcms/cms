@@ -25,16 +25,10 @@ use yii\web\HttpException;
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ExceptionEvent The event that is triggered before handling an exception.
      */
     const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -119,9 +113,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -161,9 +152,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
         return $url;
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns whether the full exception view should be shown.
      *
@@ -181,5 +169,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $user->admin &&
             $user->getPreference('showExceptionView')
         );
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.10
+     */
+    protected function shouldRenderSimpleHtml()
+    {
+        return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }
 }

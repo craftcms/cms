@@ -8,9 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\db\Connection;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\web\Controller;
+use craft\web\View;
 use ErrorException;
 use yii\base\UserException;
 use yii\web\ForbiddenHttpException;
@@ -31,9 +34,6 @@ use yii\web\ServerErrorHttpException;
  */
 class TemplatesController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -45,9 +45,6 @@ class TemplatesController extends Controller
         'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'render-error' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -109,13 +106,12 @@ class TemplatesController extends Controller
     public function actionOffline(): Response
     {
         // If this is a site request, make sure the offline template exists
-        $view = $this->getView();
-        if (Craft::$app->getRequest()->getIsSiteRequest() && !$view->doesTemplateExist('offline')) {
-            $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+        if (Craft::$app->getRequest()->getIsSiteRequest() && !$this->getView()->doesTemplateExist('offline')) {
+            $templateMode = View::TEMPLATE_MODE_CP;
         }
 
         // Output the offline template
-        return $this->renderTemplate('offline');
+        return $this->renderTemplate('offline', [], $templateMode ?? null);
     }
 
     /**
@@ -158,7 +154,7 @@ class TemplatesController extends Controller
         $reqCheck = new \RequirementsChecker();
         $dbConfig = Craft::$app->getConfig()->getDb();
         $reqCheck->dsn = $dbConfig->dsn;
-        $reqCheck->dbDriver = $dbConfig->driver;
+        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
         $reqCheck->dbUser = $dbConfig->user;
         $reqCheck->dbPassword = $dbConfig->password;
 
@@ -227,7 +223,7 @@ class TemplatesController extends Controller
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
             $view = $this->getView();
-            $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
 
             if ($view->doesTemplateExist($statusCode)) {
                 $template = $statusCode;

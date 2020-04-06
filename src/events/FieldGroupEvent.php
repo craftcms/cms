@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class FieldGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var FieldGroup|null The field group associated with this event.
      */

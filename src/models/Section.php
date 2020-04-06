@@ -11,7 +11,9 @@ use Craft;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -27,9 +29,6 @@ use craft\validators\UniqueValidator;
  */
 class Section extends Model
 {
-    // Constants
-    // =========================================================================
-
     const TYPE_SINGLE = 'single';
     const TYPE_CHANNEL = 'channel';
     const TYPE_STRUCTURE = 'structure';
@@ -38,9 +37,6 @@ class Section extends Model
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
     const PROPAGATION_METHOD_ALL = 'all';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null ID
@@ -100,7 +96,7 @@ class Section extends Model
     /**
      * @var array Preview targets
      */
-    public $previewTargets = [];
+    public $previewTargets = null;
 
     /**
      * @var string|null Section's UID
@@ -117,14 +113,22 @@ class Section extends Model
      */
     private $_entryTypes;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function init()
     {
+        if ($this->previewTargets === null) {
+            $this->previewTargets = [
+                [
+                    'label' => Craft::t('app', 'Primary {type} page', [
+                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                    ]),
+                    'urlFormat' => '{url}',
+                ]
+            ];
+        }
+
         // todo: remove this in 4.0
         // Set propagateEntries in case anything is still checking it
         $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
@@ -147,9 +151,9 @@ class Section extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [

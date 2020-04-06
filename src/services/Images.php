@@ -31,15 +31,9 @@ use yii\base\Exception;
  */
 class Images extends Component
 {
-    // Constants
-    // =========================================================================
-
     const DRIVER_GD = 'gd';
     const DRIVER_IMAGICK = 'imagick';
     const MINIMUM_IMAGICK_VERSION = '6.2.9';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array Image formats that can be manipulated.
@@ -55,9 +49,6 @@ class Images extends Component
      * @var string|null Imagick version being used, if any.
      */
     private $_imagickVersion;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Decide on the image driver being used.
@@ -158,6 +149,11 @@ class Images extends Component
             return false;
         }
 
+        // https://github.com/craftcms/cms/issues/5435
+        if (empty(\Imagick::queryFormats())) {
+            return false;
+        }
+
         // Make sure it meets the minimum API version requirement
         if (version_compare($this->getImageMagickApiVersion(), self::MINIMUM_IMAGICK_VERSION) === -1) {
             return false;
@@ -197,9 +193,10 @@ class Images extends Component
     /**
      * Determines if there is enough memory to process this image.
      *
-     * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
-     * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, then try again.
+     * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
+     * It will first attempt to do it with available memory. If that fails,
+     * Craft will bump the memory to amount defined by the
+     * <config:phpMaxMemoryLimit> config setting, then try again.
      *
      * @param string $filePath The path to the image file.
      * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.

@@ -9,12 +9,13 @@ module.exports = function(grunt) {
                     'src/web/assets/**/*.scss',
                     '!src/web/assets/graphiql/**/*.scss',
                     '!src/web/assets/pluginstore/**/*.scss',
+                    '!src/web/assets/admintable/**/*.scss',
                 ],
                 tasks: 'css'
             },
             cpjs: {
                 files: ['src/web/assets/cp/src/js/*.js'],
-                tasks: ['concat', 'uglify:cpjs']
+                tasks: ['cpjs']
             },
             otherjs: {
                 files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js', '!src/web/assets/pluginstore/**/*.js'],
@@ -36,7 +37,8 @@ module.exports = function(grunt) {
                 src: [
                     '**/*.scss',
                     '!graphiql/**/*.scss',
-                    '!pluginstore/**/*.scss'
+                    '!pluginstore/**/*.scss',
+                    '!admintable/**/*.scss'
                 ],
                 dest: 'src/web/assets',
                 rename: function(dest, src) {
@@ -59,9 +61,21 @@ module.exports = function(grunt) {
                 src: [
                     '**/*.css',
                     '!graphiql/**/*.css',
-                    '!pluginstore/**/*.css'
+                    '!pluginstore/**/*.css',
+                    '!admintable/**/*.css'
                 ],
                 dest: 'src/web/assets'
+            }
+        },
+        babel: {
+            options: {
+                presets: ['@babel/preset-env'],
+                compact: false,
+            },
+            dist: {
+                files: {
+                    'src/web/assets/cp/dist/js/Craft.js': 'src/web/assets/cp/dist/js/Craft.js'
+                }
             }
         },
         concat: {
@@ -77,7 +91,8 @@ module.exports = function(grunt) {
                     'src/web/assets/cp/src/js/*.js',
                     '!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)',
                     '!src/web/assets/graphiql/**/*.js',
-                    '!src/web/assets/pluginstore/**/*.js'
+                    '!src/web/assets/pluginstore/**/*.js',
+                    '!src/web/assets/admintable/**/*.js'
                 ],
                 dest: 'src/web/assets/cp/dist/js/Craft.js'
             }
@@ -125,7 +140,8 @@ module.exports = function(grunt) {
                 '!src/web/assets/**/*.min.js',
                 '!src/web/assets/cp/dist/js/Craft.js',
                 '!src/web/assets/graphiql/**/*.js',
-                '!src/web/assets/pluginstore/**/*.js'
+                '!src/web/assets/pluginstore/**/*.js',
+                '!src/web/assets/admintable/**/*.js'
             ],
             afterconcat: [
                 'src/web/assets/cp/dist/js/Craft.js'
@@ -137,13 +153,14 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify-es');
+    grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
     grunt.registerTask('css', ['sass', 'postcss']);
     grunt.registerTask('js', ['jshint:beforeconcat', 'concat', 'jshint:afterconcat', 'uglify']);
-    grunt.registerTask('cpjs', ['concat', 'uglify:cpjs']);
+    grunt.registerTask('cpjs', ['concat', 'babel', 'uglify:cpjs']);
     grunt.registerTask('default', ['css', 'js']);
 };

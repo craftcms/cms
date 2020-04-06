@@ -22,9 +22,6 @@ use craft\helpers\Json;
  */
 class SuspendUsers extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

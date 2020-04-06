@@ -330,7 +330,6 @@ Craft.Grid = Garnish.Base.extend(
 
                     // If every item is at position 0, then let them lay out au naturel
                     if (this.isSimpleLayout()) {
-
                         this.$container.height('auto');
                         this.$items.css({
                             position: 'relative',
@@ -566,5 +565,4 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
 
             delete this._;
         }
-
     });

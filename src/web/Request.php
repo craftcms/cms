@@ -23,12 +23,12 @@ use yii\web\NotFoundHttpException;
 
 /**
  * @inheritdoc
- * @property string $fullPath The full requested path, including the CP trigger and pagination info.
- * @property string $path The requested path, sans CP trigger and pagination info.
+ * @property string $fullPath The full requested path, including the control panel trigger and pagination info.
+ * @property string $path The requested path, sans control panel trigger and pagination info.
  * @property array $segments The segments of the requested path.
  * @property int $pageNum The requested page number.
  * @property string $token The token submitted with the request, if there is one.
- * @property bool $isCpRequest Whether the Control Panel was requested.
+ * @property bool $isCpRequest Whether the control panel was requested.
  * @property bool $isSiteRequest Whether the front end site was requested.
  * @property bool $isActionRequest Whether a specific controller action was requested.
  * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
@@ -40,13 +40,13 @@ use yii\web\NotFoundHttpException;
  */
 class Request extends \yii\web\Request
 {
-    // Traits
-    // =========================================================================
-
     use RequestTrait;
 
-    // Properties
-    // =========================================================================
+    const CP_PATH_LOGIN = 'login';
+    const CP_PATH_LOGOUT = 'logout';
+    const CP_PATH_SET_PASSWORD = 'set-password';
+    const CP_PATH_VERIFY_EMAIL = 'verify-email';
+    const CP_PATH_UPDATE = 'update';
 
     /**
      * @inheritdoc
@@ -157,9 +157,6 @@ class Request extends \yii\web\Request
      */
     public $_token;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -190,7 +187,6 @@ class Request extends \yii\web\Request
                 $site = $sitesService->getCurrentSite();
             } else {
                 $site = $this->_requestedSite($sitesService);
-                $sitesService->setCurrentSite($site);
             }
 
             // If the requested URI begins with the current site's base URL path,
@@ -224,6 +220,16 @@ class Request extends \yii\web\Request
             // Force 'p' pageTrigger
             // (all that really matters is that it doesn't have a trailing slash, but whatever.)
             $generalConfig->pageTrigger = 'p';
+        }
+
+        if (isset($sitesService)) {
+            // Set the active site to either the requested site or the primary site, depending on the request type
+            if ($this->_isCpRequest) {
+                // The current site could have been set by the bootstrop script if the CRAFT_SITE constant is defined
+                $sitesService->setCurrentSite(null);
+            } else if (isset($site)) {
+                $sitesService->setCurrentSite($site);
+            }
         }
 
         // Is this a paginated request?
@@ -291,15 +297,13 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the requested path, sans CP trigger and pagination info.
+     * Returns the requested path, sans control panel trigger and pagination info.
      *
-     * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
+     * If $returnRealPathInfo is returned, then [[\yii\web\Request::getPathInfo()]] will be returned.
      *
      * @param bool $returnRealPathInfo Whether the real path info should be returned instead.
      * @return string The requested path, or the path info.
      * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
-     * @see \yii\web\UrlManager::processRequest()
-     * @see \yii\web\UrlRule::processRequest()
      */
     public function getPathInfo(bool $returnRealPathInfo = false): string
     {
@@ -314,9 +318,9 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [[\craft\config\GeneralConfig::cpTrigger|CP trigger]]
-     * if it’s a CP request, or the [[\craft\config\GeneralConfig::pageTrigger|page trigger]] or page
-     * number if it’s a paginated request.
+     * Note that the segments will not include the [control panel trigger](config:cpTrigger)
+     * if it’s a control panel request, or the [page trigger](config:pageTrigger)
+     * or page number if it’s a paginated request.
      * :::
      *
      * ---
@@ -389,8 +393,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
+     * Tokens must be sent either as a query string param named after the <config:tokenParam> config setting (`token` by
+     * default), or an `X-Craft-Token` HTTP header on the request.
+     *
      * @return string|null The token, or `null` if there isn’t one.
      * @throws BadRequestHttpException if an invalid token is supplied
+     * @see \craft\services\Tokens::createToken()
+     * @see Controller::requireToken()
      */
     public function getToken()
     {
@@ -409,12 +418,12 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the Control Panel was requested.
+     * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [[\craft\config\GeneralConfig::cpTrigger|CP trigger]].
+     * [control panel trigger](config:cpTrigger).
      *
-     * @return bool Whether the current request should be routed to the Control Panel.
+     * @return bool Whether the current request should be routed to the control panel.
      */
     public function getIsCpRequest(): bool
     {
@@ -437,9 +446,9 @@ class Request extends \yii\web\Request
      * Returns whether a specific controller action was requested.
      *
      * There are several ways that this method could return `true`:
-     * - If the first segment in the Craft path matches the
-     *   [[\craft\config\GeneralConfig::actionTrigger|action trigger]]
-     * - If there is an 'action' param in either the POST data or query string
+     *
+     * - If the first segment in the Craft path matches the [action trigger](config:actionTrigger)
+     * - If there is an `action` param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
      * @return bool Whether the current request should be routed to a controller action.
@@ -489,6 +498,11 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is an element preview request.
      *
+     * ::: tip
+     * This will only return `true` when previewing entries at the moment. For all other element types, check
+     * [[getIsLivePreview()]].
+     * :::
+     *
      * ---
      * ```php
      * $isPreviewRequest = Craft::$app->request->isPreview;
@@ -508,6 +522,11 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is a Live Preview request.
      *
+     * ::: tip
+     * As of Craft 3.2, entries use a new previewing system, so this won’t return `true` for them. Check
+     * [[getIsPreview()]] instead for entries.
+     * :::
+     *
      * ---
      * ```php
      * $isLivePreview = Craft::$app->request->isLivePreview;
@@ -517,7 +536,6 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
-     * @deprecated in 3.2.0
      */
     public function getIsLivePreview(): bool
     {
@@ -1021,9 +1039,6 @@ class Request extends \yii\web\Request
         return [$route, $params + $this->getQueryParams()];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Generates an unmasked random token used to perform CSRF validation.
      *
@@ -1112,9 +1127,6 @@ class Request extends \yii\web\Request
         return Craft::$app->getSecurity()->compareString($expectedToken, $token);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the segments of a given path.
      *
@@ -1189,19 +1201,19 @@ class Request extends \yii\web\Request
             }
 
             // It's a possible match!
-            $scores[$i] = 8 + strlen($parsedPath);
+            $scores[$i] = 1000 + strlen($parsedPath) * 100;
 
             $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
             $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
 
             // Do the ports match?
             if ($parsedPort == $port) {
-                $scores[$i] += 4;
+                $scores[$i] += 100;
             }
 
             // Do the schemes match?
             if ($parsedScheme === $scheme) {
-                $scores[$i] += 2;
+                $scores[$i] += 10;
             }
 
             // One Pence point if it's the primary site in case we need a tiebreaker
@@ -1253,14 +1265,25 @@ class Request extends \yii\web\Request
             $firstSegment = $this->getSegment(1);
 
             // Is this an action request?
+            $checkSpecialPaths = false;
+            $loginPath = $logoutPath = $setPasswordPath = $verifyEmailPath = $updatePath = null;
             if ($this->_isCpRequest) {
-                $loginPath = 'login';
-                $logoutPath = 'logout';
-                $updatePath = 'update';
-            } else {
-                $loginPath = trim($generalConfig->getLoginPath(), '/');
-                $logoutPath = trim($generalConfig->getLogoutPath(), '/');
-                $updatePath = null;
+                $checkSpecialPaths = true;
+                $loginPath = self::CP_PATH_LOGIN;
+                $logoutPath = self::CP_PATH_LOGOUT;
+                $setPasswordPath = self::CP_PATH_SET_PASSWORD;
+                $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
+                $updatePath = self::CP_PATH_UPDATE;
+            } else if (!$generalConfig->headlessMode) {
+                $checkSpecialPaths = true;
+                if (is_string($loginPath = $generalConfig->getLoginPath())) {
+                    $loginPath = trim($loginPath, '/');
+                }
+                if (is_string($logoutPath = $generalConfig->getLogoutPath())) {
+                    $logoutPath = trim($logoutPath, '/');
+                }
+                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                $verifyEmailPath = trim($generalConfig->getVerifyEmailPath(), '/');
             }
 
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
@@ -1270,7 +1293,13 @@ class Request extends \yii\web\Request
                 $actionParam = $this->getQueryParam('action');
             }
             $hasActionParam = $actionParam !== null;
-            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $updatePath], true);
+            $hasSpecialPath = $checkSpecialPaths && in_array($this->_path, [
+                $loginPath,
+                $logoutPath,
+                $setPasswordPath,
+                $verifyEmailPath,
+                $updatePath,
+            ], true);
 
             if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
@@ -1294,6 +1323,12 @@ class Request extends \yii\web\Request
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
+                            break;
+                        case $setPasswordPath:
+                            $this->_actionSegments = ['users', 'set-password'];
+                            break;
+                        case $verifyEmailPath:
+                            $this->_actionSegments = ['users', 'verify-email'];
                             break;
                         case $updatePath:
                             $this->_actionSegments = ['updater', 'index'];

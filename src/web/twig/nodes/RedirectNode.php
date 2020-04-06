@@ -19,9 +19,6 @@ use Twig\Node\Node;
  */
 class RedirectNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

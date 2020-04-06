@@ -21,16 +21,10 @@ use craft\queue\BaseJob;
  */
 class DeleteStaleTemplateCaches extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|int[]|null The element ID(s) whose caches need to be cleared
      */
     public $elementId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -74,7 +68,6 @@ class DeleteStaleTemplateCaches extends BaseJob
         $deleteCacheIds = [];
 
         foreach ($query->each() as $row) {
-
             $this->setProgress($queue, $currentRow / $totalRows, Craft::t('app', '{step} of {total}', [
                 'step' => $currentRow + 1,
                 'total' => $totalRows,
@@ -100,9 +93,6 @@ class DeleteStaleTemplateCaches extends BaseJob
             $templateCachesService->deleteCacheById(array_keys($deleteCacheIds));
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

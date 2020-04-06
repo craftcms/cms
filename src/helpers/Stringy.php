@@ -18,9 +18,6 @@ use Craft;
  */
 class Stringy extends \Stringy\Stringy
 {
-    // Static
-    // =========================================================================
-
     /**
      * Public wrapper for [[langSpecificCharsArray()]].
      *
@@ -33,9 +30,6 @@ class Stringy extends \Stringy\Stringy
         return static::langSpecificCharsArray($language);
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Public wrapper for [[charsArray()]].
      *
@@ -46,12 +40,9 @@ class Stringy extends \Stringy\Stringy
         return $this->charsArray();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     * Returns the replacements for the toAscii() method, including any custom mappings provided by the
-     * [[\craft\config\GeneralConfig::customAsciiCharMappings|customAsciiCharMappings]] config setting.
+     * Returns the replacements for the toAscii() method, including any custom
+     * mappings provided by the <config:customAsciiCharMappings> config setting.
      *
      * @return array
      */

@@ -26,9 +26,6 @@ use yii\base\Exception;
  */
 class ImagesTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -175,9 +172,6 @@ class ImagesTest extends Unit
         $this->assertFalse($this->images->stripOrientationFromExifData($this->sandboxPath . 'craft-logo.svg'));
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      * @todo Can we get this to fail?
@@ -189,9 +183,6 @@ class ImagesTest extends Unit
             [true, 'empty-file.text'],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -215,9 +206,6 @@ class ImagesTest extends Unit
         copy($this->path . 'craft-logo.svg', $this->sandboxPath . 'craft-logo.svg');
         copy($this->path . 'example-gif.gif', $this->sandboxPath . 'example-gif.gif');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      *

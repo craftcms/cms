@@ -25,9 +25,6 @@ use DateTime;
  */
 class UserQueryTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -58,9 +55,6 @@ class UserQueryTest extends TestCase
      */
     protected $suspendedUser;
 
-    // Public Methods
-    // =========================================================================
-
     public function _fixtures() : array
     {
         return [
@@ -69,9 +63,6 @@ class UserQueryTest extends TestCase
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -188,9 +179,6 @@ class UserQueryTest extends TestCase
 //
 //        $this->assertCount(2, $results);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param array $methodCalls

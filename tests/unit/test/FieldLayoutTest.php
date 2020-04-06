@@ -23,16 +23,10 @@ use yii\base\NotSupportedException;
  */
 class FieldLayoutTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
 
     public function _fixtures(): array
     {
@@ -42,9 +36,6 @@ class FieldLayoutTest extends Unit
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @throws NotSupportedException

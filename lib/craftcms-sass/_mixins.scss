@@ -1,62 +1,119 @@
-$hue: 212;
+$white: #fff;
+$black: #000;
 
-// status colors
-$green: #27AE60;
-$orange: #F2842D;
-$red: #D0021B;
-$yellow: #F1C40E;
-$pink: #FF50F2;
-$purple: #9B59B6;
-$blue: #0D99F2;
-$turquoise: #2CE0BD;
-$light: #CCD1D6;
-$grey: #98A3AE;
-$black: #32475E;
+$grey050: hsl(212, 60%, 97%);
+$grey100: hsl(212, 50%, 93%);
+$grey200: hsl(212, 30%, 85%);
+$grey300: hsl(211, 13%, 65%);
+$grey350: hsl(211, 11%, 59%);
+$grey400: hsl(211, 10%, 53%);
+$grey500: hsl(211, 12%, 43%);
+$grey600: hsl(209, 14%, 37%);
+$grey700: hsl(209, 18%, 30%);
+$grey800: hsl(209, 20%, 25%);
+$grey900: hsl(210, 24%, 16%);
+$grey1000: hsl(210, 24%, 10%);
 
-// BG colors
-$subnavBgColor: hsl($hue, 20%, 30%);
-$bgColor: #f1f5f8;
-$lightBgColor: lighten($bgColor, 3%);
+$blue050: #E3F8FF;
+$blue100: #B3ECFF;
+$blue200: #81DEFD;
+$blue300: #5ED0FA;
+$blue400: #40C3F7;
+$blue500: #2BB0ED;
+$blue600: #1992D4;
+$blue700: #127FBF;
+$blue800: #0B69A3;
+$blue900: #035388;
 
-// text colors
-$textColor: hsl($hue, 20%, 20%);
-$mediumDarkTextColor: hsl($hue, 15%, 40%);
-$mediumTextColor: hsl($hue, 10%, 60%);
-$lightTextColor: hsl($hue, 10%, 75%);
-$linkColor: hsl($hue, 90%, 50%);
+$cyan050: #E0FCFF;
+$cyan100: #BEF8FD;
+$cyan200: #87EAF2;
+$cyan300: #54D1DB;
+$cyan400: #38BEC9;
+$cyan500: #2CB1BC;
+$cyan600: #14919B;
+$cyan700: #0E7C86;
+$cyan800: #0A6C74;
+$cyan900: #044E54;
 
-// hairline colors
-$hairlineColor: hsl($hue, 10%, 90%);
-$hairlineColorAlpha: hsla(240, 100%, 4%, 0.1);
-$mediumHairlineColorAlpha: hsla(240, 100%, 4%, 0.2);
-$darkHairlineColorAlpha: hsla(240, 100%, 4%, 0.4);
+$pink050: #FFE3EC;
+$pink100: #FFB8D2;
+$pink200: #FF8CBA;
+$pink300: #F364A2;
+$pink400: #E8368F;
+$pink500: #DA127D;
+$pink600: #BC0A6F;
+$pink700: #A30664;
+$pink800: #870557;
+$pink900: #620042;
 
-// selection colors
-$lightSelColor: hsl($hue, 10%, 85%);
-$darkSelColor: hsl($hue, 10%, 50%);
+$red050: #FFE3E3;
+$red100: #FFBDBD;
+$red200: #FF9B9B;
+$red300: #F86A6A;
+$red400: #EF4E4E;
+$red500: #E12D39;
+$red600: #CF1124;
+$red700: #AB091E;
+$red800: #8A041A;
+$red900: #610316;
+
+$yellow050: #FFFBEA;
+$yellow100: #FFF3C4;
+$yellow200: #FCE588;
+$yellow300: #FADB5F;
+$yellow400: #F7C948;
+$yellow500: #F0B429;
+$yellow600: #DE911D;
+$yellow700: #CB6E17;
+$yellow800: #B44D12;
+$yellow900: #8D2B0B;
+
+$teal050: #EFFCF6;
+$teal100: #C6F7E2;
+$teal200: #8EEDC7;
+$teal300: #65D6AD;
+$teal400: #3EBD93;
+$teal500: #27AB83;
+$teal600: #199473;
+$teal700: #147D64;
+$teal800: #0C6B58;
+$teal900: #014D40;
 
 // submit button colors
-$submitColor: #da5a47;
-$submitHoverColor: #bf503f;
-$submitActiveColor: #8c3b2e;
+$primaryColor: #E5422B;
+$secondaryColor: $grey350;
 
-// secondary submit button colors
-$secondarySubmitColor: hsl($hue, 10%, 60%);
-$secondarySubmitHoverColor: hsl($hue, 10%, 50%);
-$secondarySubmitActiveColor: hsl($hue, 10%, 40%);
+$inputColor: hsl(212, 25%, 50%);
+
+// text colors
+$textColor: $grey700;
+$mediumDarkTextColor: $grey500;
+$mediumTextColor: $grey400;
+$lightTextColor: $grey300;
+$linkColor: $blue800;
+
+// hairline colors
+$hairlineColor: transparentize($grey800, 0.9);
+$mediumHairlineColor: transparentize($grey600, 0.75);
+$darkHairlineColor: transparentize($grey400, 0.5);
+
+// selection colors
+$lightSelColor: $grey200;
+$darkSelColor: $grey600;
 
 // alert/notice colors
-$errorColor: #da5a47;
-$warningColor: #e78640;
-$successColor: #00b007;
-$noticeColor: #5286d9;
+$errorColor: $red400;
+$warningColor: $yellow700;
+$successColor: $teal500;
+$noticeColor: $blue700;
 
 // UI element styles
-$btnBorderRadius: 2px;
-$textBorderRadius: 2px;
-$paneBorderRadius: 5px;
-$menuBorderRadius: 2px;
-$elementBorderRadius: 2px;
+$smallBorderRadius: 3px;
+$mediumBorderRadius: 4px;
+$largeBorderRadius: 5px;
+
+$checkboxSize: 16px;
 
 @mixin sans-serif-font {
   font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -67,14 +124,13 @@ $elementBorderRadius: 2px;
   font-size: 0.9em !important;
 }
 
-// Flexbox stuff
-
 // Other
 
 @mixin svg-mask($color) {
   rect, circle, ellipse, line, polyline, polygon, path, text {
     fill: $color;
     stroke-width: 0;
+    transition: fill linear 100ms;
   }
 }
 
@@ -102,6 +158,8 @@ $elementBorderRadius: 2px;
   vertical-align: middle;
   word-wrap: normal !important;
   user-select: none;
+
+  opacity: 0.8;
 }
 
 @mixin clearafter {
@@ -112,9 +170,19 @@ $elementBorderRadius: 2px;
   visibility: hidden;
 }
 
+@mixin shadow {
+  box-shadow: 0 1px 5px -1px transparentize($grey900, 0.8);
+}
+
 @mixin pane {
-  background: #fff;
-  box-shadow: 0 0 0 1px $hairlineColor;
+  background: $white;
+  box-shadow: 0 0 0 1px transparentize($grey200, 0.75), 0 2px 12px transparentize($grey200, 0.5);
+}
+
+@mixin modal {
+  border-radius: $largeBorderRadius;
+  background-color: $white;
+  box-shadow: 0 25px 100px transparentize($grey900, 0.5);
 }
 
 @mixin light-on-dark-text() {
@@ -178,6 +246,24 @@ $elementBorderRadius: 2px;
   }
   body.rtl & {
     border-left: $params;
+  }
+}
+
+@mixin border-left-width($param) {
+  body.ltr & {
+    border-left-width: $param;
+  }
+  body.rtl & {
+    border-right-width: $param;
+  }
+}
+
+@mixin border-right-width($param) {
+  body.ltr & {
+    border-right-width: $param;
+  }
+  body.rtl & {
+    border-left-width: $param;
   }
 }
 
@@ -271,12 +357,12 @@ $elementBorderRadius: 2px;
   }
 }
 
-@mixin padding($t, $r, $b, $l) {
+@mixin padding($t, $r, $b, $l, $important: '') {
   body.ltr & {
-    padding: $t $r $b $l;
+    padding: $t $r $b $l unquote($important);
   }
   body.rtl & {
-    padding: $t $l $b $r;
+    padding: $t $l $b $r unquote($important);
   }
 }
 
@@ -300,6 +386,33 @@ $elementBorderRadius: 2px;
 
 // Misc
 
+@mixin dark-inputs {
+  @include placeholder-styles($grey400);
+
+  .btn,
+  .select:not(.selectize) select {
+    background-color: $grey200;
+
+    &:focus,
+    &:hover {
+      background-color: darken($grey200, 5%);
+    }
+
+    &:active,
+    &.active {
+      background-color: darken($grey200, 10%);
+    }
+  }
+
+  .text {
+    background-color: $grey200;
+
+    &:focus {
+      background-color: darken($grey200, 5%);
+    }
+  }
+}
+
 @mixin h6-styles {
   margin: 14px 0 3px;
   font-size: 10px;
@@ -311,24 +424,23 @@ $elementBorderRadius: 2px;
 
 @mixin token-styles {
   display: inline-block;
-  border: 1px solid #c1c1c1;
   border-radius: 10px;
-  padding: 1px 7px;
+  padding: 2px 7px;
   font-size: 12px;
   line-height: 14px;
   color: $textColor;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
-  background: #ddd;
+  background-color: transparentize($white, 0.5);
+  box-shadow: 0 0 0 1px $darkHairlineColor;
 }
 
 @mixin menu-styles {
   z-index: 100;
-  border-radius: $menuBorderRadius;
+  border-radius: $mediumBorderRadius;
   padding: 0 14px;
   overflow: auto;
-  background: #fff;
+  background: $white;
   user-select: none;
-  box-shadow: 0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 5px 20px transparentize($grey900, 0.75);
 }
 
 @mixin menu-option-styles {
@@ -341,34 +453,56 @@ $elementBorderRadius: 2px;
 
 @mixin menu-option-active-styles {
   color: $textColor;
-  background-color: $lightSelColor;
+  background-color: $grey050;
 }
 
-@mixin text-input-styles {
-  border: 1px solid $hairlineColorAlpha;
-  border-radius: $textBorderRadius;
-  transition: border linear 50ms;
+@mixin input-styles {
+  border-radius: $smallBorderRadius;
+  border: 1px solid transparentize($inputColor, 0.75);
+  background-color: hsl(212, 50%, 99%);
+  box-shadow: inset 0 1px 4px -1px transparentize($inputColor, 0.75);
+  background-clip: padding-box;
 }
 
-@mixin text-input-focused-styles {
-  border-color: $blue;
+@mixin input-focused-styles {
   outline: none;
+  border-color: transparentize($inputColor, 0.2);
 }
 
-@mixin placeholder-styles {
-  color: $lightTextColor;
+@mixin placeholder-styles($color) {
+  ::-webkit-input-placeholder {
+    color: $color;
+  }
+
+  input:-ms-input-placeholder {
+    color: $color;
+  }
+
+  ::-ms-input-placeholder {
+    color: $color;
+  }
+
+  :-moz-placeholder {
+    color: $color;
+  }
+
+  ::-moz-placeholder {
+    color: $color;
+  }
+
+  ::placeholder {
+    color: $color;
+  }
 }
 
 @mixin select-styles {
   position: relative;
-  border-radius: $menuBorderRadius;
+  border-radius: $largeBorderRadius;
   white-space: nowrap;
 }
 
 @mixin select-container-styles {
   position: relative;
-  background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
   :not(.flex) > & {
     display: inline-block;
   }
@@ -392,11 +526,9 @@ $elementBorderRadius: 2px;
   border: none;
   @include padding(7px, 22px, 7px, 10px);
   font-size: 14px;
-  line-height: 18px;
+  line-height: 20px;
   color: $textColor;
-  background: none;
-  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
-  transition: box-shadow linear 50ms;
+  background-color: transparentize($inputColor, 0.75);
   appearance: none;
   // from https://stackoverflow.com/a/15933790/1688568
   &::-ms-expand {
@@ -410,7 +542,7 @@ $elementBorderRadius: 2px;
 
 @mixin select-input-focused-styles {
   outline: none;
-  box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+  background-color: transparentize($inputColor, 0.5);
 }
 
 @mixin readable {

@@ -26,9 +26,6 @@ use yii\db\Schema;
  */
 class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -45,16 +42,10 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         return 'bool';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the lightswitch should be enabled by default
      */
     public $default = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -130,9 +121,17 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             return null;
         }
 
+        $value = (bool)$value;
         $column = 'content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle;
+        $condition = Db::parseParam($column, $value, '=', false, Schema::TYPE_BOOLEAN);
+
+        // If the value matches the default value, allow null values as well
+        if ($value == $this->default) {
+            $condition = ['or', $condition, [$column => null]];
+        }
+
         /** @var ElementQuery $query */
-        $query->subQuery->andWhere(Db::parseParam($column, $value, '=', false, Schema::TYPE_BOOLEAN));
+        $query->subQuery->andWhere($condition);
         return null;
     }
 

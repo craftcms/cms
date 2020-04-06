@@ -31,18 +31,12 @@ use yii\db\QueryInterface;
  */
 class Template
 {
-    // Constants
-    // =========================================================================
-
     const PROFILE_TYPE_TEMPLATE = 'template';
     const PROFILE_TYPE_BLOCK = 'block';
     const PROFILE_TYPE_MACRO = 'macro';
 
     const PROFILE_STAGE_BEGIN = 'begin';
     const PROFILE_STAGE_END = 'end';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether to enable profiling for this request
@@ -56,9 +50,6 @@ class Template
      * @see endProfile()
      */
     private static $_profileCounters;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the attribute value for a given array/object.
@@ -182,9 +173,6 @@ class Template
         $count = self::$_profileCounters[$type][$name]--;
         Craft::endProfile(self::_profileToken($type, $name, $count), 'Twig template');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether to profile the given template element.

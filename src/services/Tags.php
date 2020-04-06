@@ -33,9 +33,6 @@ use yii\base\Component;
  */
 class Tags extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event TagGroupEvent The event that is triggered before a tag group is saved.
      */
@@ -64,16 +61,10 @@ class Tags extends Component
 
     const CONFIG_TAGGROUP_KEY = 'tagGroups';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var TagGroup[]
      */
     private $_tagGroups;
-
-    // Public Methods
-    // =========================================================================
 
     // Tag groups
     // -------------------------------------------------------------------------
@@ -216,7 +207,7 @@ class Tags extends Component
         }
 
         $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
             $tagGroup->id = Db::idByUid(Table::TAGGROUPS, $tagGroup->uid);
@@ -339,7 +330,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
         return true;
     }
 
@@ -432,7 +423,7 @@ class Tags extends Component
                     foreach ($tagGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -462,9 +453,6 @@ class Tags extends Component
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
-
-    // Private methods
-    // =========================================================================
 
     /**
      * Gets a tag group's record by uid.

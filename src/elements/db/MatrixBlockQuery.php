@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
@@ -37,9 +38,6 @@ use yii\db\Connection;
  */
 class MatrixBlockQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -101,9 +99,6 @@ class MatrixBlockQuery extends ElementQuery
      */
     public $typeId;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -122,6 +117,68 @@ class MatrixBlockQuery extends ElementQuery
             default:
                 parent::__set($name, $value);
         }
+    }
+
+    /**
+     * Narrows the query results based on the field the Matrix blocks belong to.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | in a field with a handle of `foo`.
+     * | `'not foo'` | not in a field with a handle of `foo`.
+     * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a field with a handle of `foo` or `bar`.
+     * | a [[MatrixField]] object | in a field represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} in the Foo field #}
+     * {% set {elements-var} = {twig-method}
+     *     .field('foo')
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} in the Foo field
+     * ${elements-var} = {php-method}
+     *     ->field('foo')
+     *     ->all();
+     * ```
+     *
+     * @param string|string[]|MatrixField|null $value The property value
+     * @return static self reference
+     * @uses $fieldId
+     * @since 3.4.0
+     */
+    public function field($value)
+    {
+        if ($value instanceof MatrixField) {
+            $this->fieldId = $value->id;
+        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+            if (!is_string($value)) {
+                $value = reset($value);
+            }
+            $field = Craft::$app->getFields()->getFieldByHandle($value);
+            if ($field && $field instanceof MatrixField) {
+                $this->fieldId = $field->id;
+            } else {
+                $this->fieldId = false;
+            }
+        } else if ($value !== null) {
+            $this->fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(Db::parseParam('handle', $value))
+                ->andWhere(['type' => MatrixField::class])
+                ->column();
+        } else {
+            $this->fieldId = null;
+        }
+
+        return $this;
     }
 
     /**
@@ -391,14 +448,15 @@ class MatrixBlockQuery extends ElementQuery
         return $this;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected function beforePrepare(): bool
     {
+        if ($this->fieldId !== null && empty($this->fieldId)) {
+            throw new QueryAbortedException();
+        }
+
         $this->joinElementTable('matrixblocks');
 
         // Figure out which content table to use

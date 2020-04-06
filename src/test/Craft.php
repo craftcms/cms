@@ -64,9 +64,6 @@ use yii\db\Exception;
  */
 class Craft extends Yii2
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var array A static version of the testing config.
      *
@@ -101,9 +98,6 @@ class Craft extends Yii2
      * @var array For expecting events code
      */
     protected $requiredEvents = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Craft constructor.
@@ -327,19 +321,13 @@ class Craft extends Yii2
     public static function createDbConfig(): DbConfig
     {
         return new DbConfig([
-            'password' => Craft::getEnv('DB_PASSWORD'),
+            'dsn' => Craft::getEnv('DB_DSN'),
             'user' => Craft::getEnv('DB_USER'),
-            'database' => Craft::getEnv('DB_DATABASE'),
+            'password' => Craft::getEnv('DB_PASSWORD'),
             'tablePrefix' => Craft::getEnv('DB_TABLE_PREFIX'),
-            'driver' => Craft::getEnv('DB_DRIVER'),
-            'port' => Craft::getEnv('DB_PORT'),
             'schema' => Craft::getEnv('DB_SCHEMA'),
-            'server' => Craft::getEnv('DB_SERVER'),
         ]);
     }
-
-    // Helpers for test methods
-    // =========================================================================
 
     /**
      * Ensure that an event is triggered by the $callback() function.
@@ -567,9 +555,6 @@ class Craft extends Yii2
 
         return $items;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param $event

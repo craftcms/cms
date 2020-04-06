@@ -20,9 +20,6 @@ use craft\fields\data\SingleOptionFieldData;
  */
 class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -39,9 +36,6 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
         return SingleOptionFieldData::class;
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -53,9 +47,6 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

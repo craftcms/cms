@@ -18,9 +18,6 @@ use Twig\Node\Node;
  */
 class HookNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -19,7 +19,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class Entry extends ObjectType
+class Entry extends Element
 {
     /**
      * @inheritdoc
@@ -28,7 +28,6 @@ class Entry extends ObjectType
     {
         $config['interfaces'] = [
             EntryInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);
@@ -53,6 +52,6 @@ class Entry extends ObjectType
                 return $source->getType()->handle;
         }
 
-        return $source->$fieldName;
+        return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 }

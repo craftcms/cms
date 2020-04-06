@@ -24,9 +24,6 @@ use craft\records\GlobalSet as GlobalSetRecord;
  */
 abstract class GlobalSetFixture extends ElementFixture
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * {@inheritdoc}
      */
@@ -61,9 +58,6 @@ abstract class GlobalSetFixture extends ElementFixture
             }
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

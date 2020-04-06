@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterGqlQueriesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array[] List of GraphQL query definitions
      */

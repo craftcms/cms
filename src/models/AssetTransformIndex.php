@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class AssetTransformIndex extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -89,9 +86,6 @@ class AssetTransformIndex extends Model
      */
     private $_transform;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -105,9 +99,9 @@ class AssetTransformIndex extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true];
         $rules[] = [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class];
         return $rules;

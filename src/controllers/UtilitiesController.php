@@ -30,9 +30,6 @@ use ZipArchive;
 
 class UtilitiesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Index
      *
@@ -86,6 +83,8 @@ class UtilitiesController extends Controller
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
+            'toolbarHtml' => $class::toolbarHtml(),
+            'footerHtml' => $class::footerHtml(),
             'utilities' => $this->_utilityInfo(),
         ]);
     }
@@ -165,7 +164,6 @@ class UtilitiesController extends Controller
 
         // Initial request
         if (!empty($params['start'])) {
-
             $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
 
             $response = [
@@ -444,9 +442,6 @@ class UtilitiesController extends Controller
 
         return $this->redirect('utilities/migrations');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns info about all of the utilities.

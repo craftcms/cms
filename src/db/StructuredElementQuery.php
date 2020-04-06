@@ -18,9 +18,6 @@ use yii\db\ActiveQuery;
  */
 class StructuredElementQuery extends ActiveQuery
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

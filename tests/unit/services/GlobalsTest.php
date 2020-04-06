@@ -22,9 +22,6 @@ use UnitTester;
  */
 class GlobalsTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -33,12 +30,6 @@ class GlobalsTest extends Unit
     protected function _before()
     {
     }
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     // @TODO: more tests, obviously.
 
@@ -59,6 +50,6 @@ class GlobalsTest extends Unit
 
         $this->tester->mockMethods(Craft::$app, 'elements', ['saveElement' => false]);
 
-        $this->tester->expectException(ElementNotFoundException::class, function () use ($configEvent) { Craft::$app->getGlobals()->handleChangedGlobalSet($configEvent);});
+        $this->tester->expectThrowable(ElementNotFoundException::class, function () use ($configEvent) { Craft::$app->getGlobals()->handleChangedGlobalSet($configEvent);});
     }
 }

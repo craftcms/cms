@@ -21,9 +21,6 @@ use yii\helpers\Console;
  */
 class ClearCacheAction extends Action
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|callable
      */
@@ -38,9 +35,6 @@ class ClearCacheAction extends Action
      * @var array
      */
     public $params;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

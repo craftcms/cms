@@ -101,7 +101,6 @@ Craft.Uploader = Garnish.Base.extend(
                 var file = data.files[0];
                 var pass = true;
                 if (validateExtension) {
-
                     var matches = file.name.match(/\.([a-z0-4_]+)$/i);
                     var fileExtension = matches[1];
                     if ($.inArray(fileExtension.toLowerCase(), this._extensionList) === -1) {
@@ -131,7 +130,6 @@ Craft.Uploader = Garnish.Base.extend(
                     this._validFileCounter = 0;
                     this.processErrorMessages();
                 }
-
             }, this));
 
             return true;
@@ -224,10 +222,6 @@ Craft.Uploader = Garnish.Base.extend(
             this.base();
         }
     },
-
-// Static Properties
-// =============================================================================
-
     {
         defaults: {
             dropZone: null,

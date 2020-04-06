@@ -19,9 +19,6 @@ use craft\web\assets\updates\UpdatesAsset;
  */
 class Updates extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

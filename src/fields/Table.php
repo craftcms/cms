@@ -31,9 +31,6 @@ use yii\validators\EmailValidator;
  */
 class Table extends Field
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -49,9 +46,6 @@ class Table extends Field
     {
         return 'array|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null Custom add row button label
@@ -88,9 +82,6 @@ class Table extends Field
      * @var string The type of database column the field should have in the content table
      */
     public $columnType = Schema::TYPE_TEXT;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -150,9 +141,9 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
@@ -352,8 +343,13 @@ class Table extends Field
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
-            foreach ($value as $row) {
+            foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
                     if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
                     }
@@ -429,9 +425,6 @@ class Table extends Field
         $typeArray = TableRowTypeGenerator::generateTypes($this);
         return Type::listOf(array_pop($typeArray));
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Normalizes a cell’s value.

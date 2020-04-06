@@ -1,6 +1,10 @@
+@charset "UTF-8";
+@import "../../../../../../lib/craftcms-sass/mixins";
+
 #main-container #main #main-content #content-container #content {
   display: flex;
   padding: 0;
+  min-height: 400px;
 }
 
 .ps-wrapper {
@@ -8,7 +12,9 @@
   padding-bottom: 0 !important;
 
   .ps-sidebar {
-    @apply .bg-grey-lightest .px-6 .py-6 .w-full .border-b .border-solid .border-grey-light;
+    @apply .px-6 .py-6 .w-full;
+    background-color: $grey050;
+    @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
   }
 
   .ps-main {
@@ -27,7 +33,7 @@
 @media only screen and (min-width: 975px) {
   .ps-wrapper {
     @apply .flex-row;
-    
+
     .ps-sidebar {
       @apply .border-b-0 .border-r .overflow-auto;
       max-width: 225px;

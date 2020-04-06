@@ -47,9 +47,6 @@ use yii\db\Connection;
  */
 class EntryQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -195,9 +192,6 @@ class EntryQuery extends ElementQuery
      */
     protected $defaultOrderBy = ['entries.postDate' => SORT_DESC];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -291,9 +285,18 @@ class EntryQuery extends ElementQuery
      */
     public function section($value)
     {
+        // If the value is a section handle, swap it with the section
+        if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
+            $value = $section;
+        }
+
         if ($value instanceof Section) {
-            $this->structureId = ($value->structureId ?: false);
             $this->sectionId = $value->id;
+            if ($value->structureId) {
+                $this->structureId = $value->structureId;
+            } else {
+                $this->withStructure = false;
+            }
         } else if ($value !== null) {
             $this->sectionId = (new Query())
                 ->select(['id'])
@@ -761,9 +764,6 @@ class EntryQuery extends ElementQuery
         return parent::status($value);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -827,7 +827,7 @@ class EntryQuery extends ElementQuery
      */
     protected function statusCondition(string $status)
     {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime(), true);
 
         switch ($status) {
             case Entry::STATUS_LIVE:
@@ -867,9 +867,6 @@ class EntryQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'editable' param to the query being prepared.

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DefineBehaviorsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The component definitions
      */

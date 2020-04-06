@@ -14,6 +14,7 @@ use craft\elements\Asset as AssetElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\TypeManager;
 use craft\gql\types\elements\Asset;
 use craft\helpers\Gql as GqlHelper;
 
@@ -50,7 +51,7 @@ class AssetType implements GeneratorInterface
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
 
-            $assetFields = array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
+            $assetFields = TypeManager::prepareFieldDefinitions(array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
             // Generate a type for each entry type
             $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Asset([

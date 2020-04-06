@@ -9,9 +9,14 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\Json;
+use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
+use yii\base\InvalidArgumentException;
+use yii\db\Exception as YiiDbException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
@@ -25,16 +30,10 @@ use yii\web\ServerErrorHttpException;
  */
 class QueueController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = ['run'];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -99,7 +98,7 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
         Craft::$app->getQueue()->retry($id);
@@ -117,7 +116,7 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
         Craft::$app->getQueue()->release($id);
@@ -125,6 +124,47 @@ class QueueController extends Controller
         return $this->asJson([
             'success' => true
         ]);
+    }
+
+    /**
+     * Releases ALL jobs
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws YiiDbException
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionReleaseAll(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requirePermission('utility:queue-manager');
+
+        Craft::$app->getQueue()->releaseAll();
+
+        return $this->asJson([
+            'success' => true
+        ]);
+    }
+
+    /**
+     * Retries ALL jobs
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionRetryAll(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requirePermission('utility:queue-manager');
+
+        Craft::$app->getQueue()->retryAll();
+
+        return $this->actionRun();
     }
 
     /**
@@ -137,8 +177,50 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        $limit = Craft::$app->getRequest()->getBodyParam('limit');
+        $limit = Craft::$app->getRequest()->getParam('limit');
+        $queue = Craft::$app->getQueue();
 
-        return $this->asJson(Craft::$app->getQueue()->getJobInfo($limit));
+        return $this->asJson([
+            'total' => $queue->getTotalJobs(),
+            'jobs' => $queue->getJobInfo($limit),
+        ]);
+    }
+
+    /**
+     * Returns the details for a particular job. This includes the `job` column containing a lot of raw data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionGetJobDetails(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePermission('utility:queue-manager');
+
+        $jobId = Craft::$app->getRequest()->getRequiredParam('id');
+        $details = [
+            'id' => $jobId,
+        ];
+
+        try {
+            $details += Craft::$app->getQueue()->getJobDetails($jobId);
+        } catch (InvalidArgumentException $e) {
+            $details += [
+                'description' => Craft::t('app', 'Completed job'),
+                'status' => Queue::STATUS_DONE,
+            ];
+        }
+
+        if (isset($details['job'])) {
+            try {
+                $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            } catch (InvalidArgumentException $e) {
+                // Just leave the message alone
+            }
+        }
+
+        return $this->asJson($details);
     }
 }

@@ -18,9 +18,6 @@ use craft\helpers\Console;
  */
 trait ControllerTrait
 {
-    // Protected methods
-    // =========================================================================
-
     /**
      * @param string $command
      * @param bool $withScriptName

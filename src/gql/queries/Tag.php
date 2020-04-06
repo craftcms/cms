@@ -38,6 +38,12 @@ class Tag extends Query
                 'resolve' => TagResolver::class . '::resolve',
                 'description' => 'This query is used to query for tags.'
             ],
+            'tag' => [
+                'type' => TagInterface::getType(),
+                'args' => TagArguments::getArguments(),
+                'resolve' => TagResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for a single tag.'
+            ],
         ];
     }
 }

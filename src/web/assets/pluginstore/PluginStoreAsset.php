@@ -21,16 +21,10 @@ use yii\web\NotFoundHttpException;
  */
 class PluginStoreAsset extends AssetBundle
 {
-    // Constants
-    // =========================================================================
-
     const CACHE_KEY = 'pluginstore';
     const CACHE_TAG = 'pluginstore';
 
     const DEVMODE_CACHE_DURATION = 1;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array
@@ -41,9 +35,6 @@ class PluginStoreAsset extends AssetBundle
      * @var bool
      */
     private $isHot = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -165,8 +156,7 @@ class PluginStoreAsset extends AssetBundle
         $pluginStoreService = Craft::$app->getPluginStore();
         $useDevServer = $pluginStoreService->useDevServer;
 
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-        $this->isHot = ($devMode && $useDevServer);
+        $this->isHot = YII_DEBUG && $useDevServer;
         $manifest = null;
 
         while ($manifest === null) {
@@ -266,9 +256,7 @@ class PluginStoreAsset extends AssetBundle
             ],
         ]);
         // Set the cache duration based on devMode
-        $cacheDuration = Craft::$app->getConfig()->getGeneral()->devMode
-            ? self::DEVMODE_CACHE_DURATION
-            : null;
+        $cacheDuration = YII_DEBUG ? self::DEVMODE_CACHE_DURATION : null;
         // Get the result from the cache, or parse the file
         $cache = Craft::$app->getCache();
         $file = $cache->getOrSet(
@@ -353,8 +341,7 @@ class PluginStoreAsset extends AssetBundle
      */
     private function reportError(string $error, $soft = false)
     {
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-        if ($devMode && !$soft) {
+        if (YII_DEBUG && !$soft) {
             throw new NotFoundHttpException($error);
         }
         Craft::error($error, __METHOD__);

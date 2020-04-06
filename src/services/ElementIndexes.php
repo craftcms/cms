@@ -26,13 +26,7 @@ use yii\base\Component;
  */
 class ElementIndexes extends Component
 {
-    // Properties
-    // =========================================================================
-
     private $_indexSettings;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the element index settings for a given element type.
@@ -293,9 +287,6 @@ class ElementIndexes extends Component
 
         return $availableFields;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Normalizes an element type’s source list.

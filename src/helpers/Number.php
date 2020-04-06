@@ -17,9 +17,6 @@ use Craft;
  */
 class Number
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the "word" version of a number
      *

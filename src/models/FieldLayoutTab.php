@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
@@ -22,9 +24,6 @@ use yii\base\InvalidConfigException;
  */
 class FieldLayoutTab extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -60,15 +59,12 @@ class FieldLayoutTab extends Model
      */
     private $_fields;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'layoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['sortOrder'], 'string', 'max' => 4];
@@ -151,5 +147,29 @@ class FieldLayoutTab extends Model
     public function getHtmlId(): string
     {
         return 'tab-' . StringHelper::toKebabCase($this->name);
+    }
+
+    /**
+     * Returns whether the given element has any validation errors within the fields in this tab.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.4.0
+     */
+    public function elementHasErrors(ElementInterface $element): bool
+    {
+        /** @var Element $element */
+        if (!$element->hasErrors()) {
+            return false;
+        }
+
+        foreach ($this->getFields() as $field) {
+            /** @var Field $field */
+            if ($element->hasErrors("{$field->handle}.*")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

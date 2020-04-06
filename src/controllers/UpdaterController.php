@@ -24,18 +24,12 @@ use yii\web\Response;
  */
 class UpdaterController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_FORCE_UPDATE = 'force-update';
     const ACTION_BACKUP = 'backup';
     const ACTION_SERVER_CHECK = 'server-check';
     const ACTION_REVERT = 'revert';
     const ACTION_RESTORE_DB = 'restore-db';
     const ACTION_MIGRATE = 'migrate';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -209,9 +203,6 @@ class UpdaterController extends BaseUpdaterController
         return $this->runMigrations($handles, self::ACTION_RESTORE_DB) ?? $this->sendFinished();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -376,9 +367,6 @@ class UpdaterController extends BaseUpdaterController
 
         return parent::sendFinished($state);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Parses the 'install` param and returns handle => version pairs.

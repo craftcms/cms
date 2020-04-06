@@ -113,18 +113,17 @@ trait SoftDeleteTrait
      */
     public function behaviors()
     {
-        return [
-            'softDelete' => [
-                'class' => SoftDeleteBehavior::class,
-                'softDeleteAttributeValues' => [
-                    'dateDeleted' => function() {
-                        return Db::prepareDateForDb(new \DateTime());
-                    }
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['softDelete'] = [
+            'class' => SoftDeleteBehavior::class,
+            'softDeleteAttributeValues' => [
+                'dateDeleted' => function() {
+                    return Db::prepareDateForDb(new \DateTime());
+                }
+            ],
         ];
+        return $behaviors;
     }
-
 
     /**
      * This method is called at the beginning of restoring a record.

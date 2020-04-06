@@ -65,7 +65,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.$saveBtn.removeClass('disabled');
                     this.buildModal(response);
                 }
-
             }, this));
 
             this.addListener(this.$newHeadingBtn, 'click', 'handleNewHeadingBtnClick');
@@ -207,7 +206,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.hide();
                 }
                 else {
-                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
+                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'A server error occurred.'));
                     Craft.cp.displayError(error);
                 }
             }, this));

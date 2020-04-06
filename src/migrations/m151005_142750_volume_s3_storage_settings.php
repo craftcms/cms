@@ -13,9 +13,6 @@ use craft\helpers\Json;
  */
 class m151005_142750_volume_s3_storage_settings extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -37,6 +37,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             // Ignore if we're in the middle of getting the elevated session timeout
             if (Craft.elevatedSessionManager.fetchingTimeout) {
                 ev.preventDefault();
+                ev.stopImmediatePropagation();
                 return;
             }
 
@@ -67,6 +68,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
             // Prevent the form from submitting until the user has an elevated session
             ev.preventDefault();
+            ev.stopImmediatePropagation();
             Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'submitForm'));
         },
 

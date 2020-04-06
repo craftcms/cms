@@ -18,7 +18,6 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
-use craft\web\assets\editcategory\EditCategoryAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -37,16 +36,10 @@ use yii\web\ServerErrorHttpException;
  */
 class CategoriesController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
      */
     const EVENT_PREVIEW_CATEGORY = 'previewCategory';
-
-    // Public Methods
-    // =========================================================================
 
     // Category Groups
     // -------------------------------------------------------------------------
@@ -161,7 +154,7 @@ class CategoriesController extends Controller
 
             if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
                 $siteSettings->uriFormat = $postedSettings['uriFormat'];
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->template = $postedSettings['template'] ?? null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;
@@ -371,6 +364,8 @@ class CategoriesController extends Controller
             ];
         }
 
+        $variables['showPreviewBtn'] = false;
+
         // Enable Live Preview?
         if (!$request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
@@ -385,7 +380,9 @@ class CategoriesController extends Controller
                     ]
                 ]) . ');');
 
-            $variables['showPreviewBtn'] = true;
+            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+                $variables['showPreviewBtn'] = true;
+            }
 
             // Should we show the Share button too?
             if ($category->id !== null) {
@@ -400,8 +397,6 @@ class CategoriesController extends Controller
                         ]);
                 }
             }
-        } else {
-            $variables['showPreviewBtn'] = false;
         }
 
         // Set the base CP edit URL
@@ -415,8 +410,6 @@ class CategoriesController extends Controller
         $variables['nextCategoryUrl'] = "categories/{$variables['group']->handle}/new{$siteSegment}";
 
         // Render the template!
-        $this->getView()->registerAssetBundle(EditCategoryAsset::class);
-
         return $this->renderTemplate('categories/_edit', $variables);
     }
 
@@ -642,9 +635,6 @@ class CategoriesController extends Controller
 
         return $this->_showCategory($category);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Preps category category variables.

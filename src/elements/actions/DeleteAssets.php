@@ -22,9 +22,6 @@ use yii\base\Exception;
  */
 class DeleteAssets extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

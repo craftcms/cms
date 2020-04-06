@@ -20,9 +20,6 @@ use yii\base\InvalidArgumentException;
  */
 class Config
 {
-    // Public Methods
-    // =========================================================================
-
     /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a config item exists.

@@ -17,9 +17,6 @@ use craft\base\ElementInterface;
  */
 class BatchElementActionEvent extends ElementQueryEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface The element being processed
      */

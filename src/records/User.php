@@ -47,9 +47,6 @@ use yii\db\ActiveQueryInterface;
  */
 class User extends ActiveRecord
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string
@@ -91,9 +88,6 @@ class User extends ActiveRecord
     {
         return static::find()->where(['not', ['element.dateDeleted' => null]]);
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the user’s element.

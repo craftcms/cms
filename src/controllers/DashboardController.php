@@ -40,9 +40,6 @@ use ZipArchive;
  */
 class DashboardController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Dashboard index.
      *
@@ -495,9 +492,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
@@ -537,6 +531,7 @@ class DashboardController extends Controller
             'type' => get_class($widget),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
+            'subtitle' => $widget->getSubtitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,

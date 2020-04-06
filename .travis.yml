@@ -8,6 +8,7 @@ env:
 branches:
   only:
   - develop
+  - 3.4
 services:
 - mysql
 - postgresql

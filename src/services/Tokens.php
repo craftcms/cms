@@ -27,16 +27,10 @@ use yii\db\Expression;
  */
 class Tokens extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
     private $_deletedExpiredTokens = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates a new token and returns it.

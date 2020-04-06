@@ -298,7 +298,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
                     this.maybeLoadMore();
                 }
-
             }, this));
         },
 

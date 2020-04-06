@@ -21,9 +21,6 @@ use yii\validators\Validator;
  */
 class SlugValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The source attribute that auto-generated slugs should be based on. Set to null to skip validation for blank slugs.
      */
@@ -39,9 +36,6 @@ class SlugValidator extends Validator
      * @since 3.1.9
      */
     public $language;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -97,9 +91,6 @@ class SlugValidator extends Validator
             }
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

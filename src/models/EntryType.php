@@ -26,9 +26,6 @@ use yii\base\InvalidConfigException;
  */
 class EntryType extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -74,20 +71,17 @@ class EntryType extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Entry::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Entry::class,
         ];
+        return $behaviors;
     }
 
     /**
@@ -106,9 +100,9 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
@@ -152,7 +146,7 @@ class EntryType extends Model
     }
 
     /**
-     * Returns the entry’s CP edit URL.
+     * Returns the entry’s edit URL in the control panel.
      *
      * @return string
      */

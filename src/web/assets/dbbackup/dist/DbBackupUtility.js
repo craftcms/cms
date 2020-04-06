@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.DbBackupUtility = Garnish.Base.extend(
         {
             $trigger: null,
@@ -31,43 +30,27 @@
                         },
                         {
                             complete: $.proxy(function() {
-                                var postData = Garnish.getPostData(this.$form);
-
-                                // h/t https://nehalist.io/downloading-files-from-post-requests/
-                                var request = new XMLHttpRequest();
-                                request.open('POST', Craft.getActionUrl(postData.action), true);
-                                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-                                request.responseType = postData.downloadBackup ? 'blob' : 'json';
-
-                                request.onload = function() {
-                                    this.updateProgressBar();
-
-                                    // Only handle status code 200
-                                    if (request.status === 200) {
-                                        if (postData.downloadBackup) {
-                                            // Try to find out the filename from the content disposition `filename` value
-                                            var disposition = request.getResponseHeader('content-disposition');
-                                            var matches = /"([^"]*)"/.exec(disposition);
-                                            var filename = (matches != null && matches[1] ? matches[1] : 'Backup.zip');
-
-                                            // The actual download
-                                            var blob = new Blob([request.response], {type: 'application/zip'});
-                                            var link = document.createElement('a');
-                                            link.href = window.URL.createObjectURL(blob);
-                                            link.download = filename;
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
+                                if (($('#download-backup').prop('checked'))) {
+                                    Craft.downloadFromUrl('POST', Craft.getActionUrl('utilities/db-backup-perform-action'), this.$form.serialize())
+                                        .then(function() {
+                                            this.updateProgressBar();
+                                            setTimeout(this.onComplete.bind(this), 300);
+                                        }.bind(this))
+                                        .catch(function() {
+                                            Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
+                                            this.onComplete(false);
+                                        }.bind(this));
+                                } else {
+                                    Craft.postActionRequest('utilities/db-backup-perform-action', function(response, textStatus) {
+                                        this.updateProgressBar();
+                                        if (textStatus === 'success') {
+                                            setTimeout(this.onComplete.bind(this), 300);
+                                        } else {
+                                            Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
+                                            this.onComplete(false);
                                         }
-
-                                        setTimeout($.proxy(this, 'onComplete'), 300);
-                                    } else {
-                                        Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
-                                        this.onComplete(false);
-                                    }
-                                }.bind(this);
-
-                                request.send(this.$form.serialize());
+                                    }.bind(this))
+                                }
                             }.bind(this))
                         });
 
@@ -86,7 +69,6 @@
             },
 
             onComplete: function(showAllDone) {
-
                 if (!this.$allDone) {
                     this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.$status);
                     this.$allDone.css('opacity', 0);
@@ -104,5 +86,4 @@
                 });
             }
         });
-
 })(jQuery);

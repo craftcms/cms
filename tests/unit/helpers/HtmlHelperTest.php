@@ -21,19 +21,10 @@ use yii\base\InvalidArgumentException;
  */
 class HtmlHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider htmlEncodingDataProvider
@@ -149,9 +140,6 @@ class HtmlHelperTest extends Unit
     {
         $this->assertSame($result, Html::normalizeTagAttributes($attributes));
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array

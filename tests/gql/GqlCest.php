@@ -33,7 +33,7 @@ class GqlCest
 
     public function _before(FunctionalTester $I)
     {
-        $this->_setToken('My+voice+is+my+passport.+Verify me.');
+        $this->_setSchema(1000);
     }
 
     public function _after(FunctionalTester $I)
@@ -42,11 +42,13 @@ class GqlCest
         $gqlService->flushCaches();
     }
 
-    public function _setToken(string $accessToken)
+    public function _setSchema(int $tokenId)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken($accessToken);
+        $schema = $gqlService->getSchemaById($tokenId);
         $gqlService->setActiveSchema($schema);
+
+        return $schema;
     }
 
     /**
@@ -113,8 +115,8 @@ class GqlCest
         $testData = file_get_contents(__DIR__ . '/data/gql.txt');
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
             list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
-            list ($token, $query) = explode('-----TOKEN DELIMITER-----', $query);
-            $this->_setToken(trim($token));
+            list ($schemaId, $query) = explode('-----TOKEN DELIMITER-----', $query);
+            $schema = $this->_setSchema(trim($schemaId));
             $I->amOnPage('?action=graphql/api&query='.urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();

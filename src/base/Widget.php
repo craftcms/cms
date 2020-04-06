@@ -17,13 +17,7 @@ use Craft;
  */
 abstract class Widget extends SavableComponent implements WidgetInterface
 {
-    // Traits
-    // =========================================================================
-
     use WidgetTrait;
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -70,15 +64,12 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         return null;
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         // Only validate the ID if it's not a new widget
         if (!$this->getIsNew()) {
@@ -95,6 +86,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     {
         // Default to the widget's display name
         return static::displayName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSubtitle()
+    {
+        return null;
     }
 
     /**

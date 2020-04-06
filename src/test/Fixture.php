@@ -21,16 +21,10 @@ use yii\test\ActiveFixture;
  */
 class Fixture extends ActiveFixture
 {
-    // Private properties
-    // =========================================================================
-
     /**
      * @var array
      */
     protected $ids = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

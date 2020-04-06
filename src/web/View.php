@@ -13,7 +13,7 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Html as HtmlHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
@@ -22,7 +22,10 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
+use JSMin\JSMin;
+use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Error\RuntimeError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
@@ -33,15 +36,15 @@ use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
-use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
+use yii\web\Response as WebResponse;
 
 /**
  * @inheritdoc
  * @property string $templateMode the current template mode (either `site` or `cp`)
  * @property string $templatesPath the base path that templates should be found in
  * @property string|null $namespace the active namespace
- * @property-read array $cpTemplateRoots any registered CP template roots
+ * @property-read array $cpTemplateRoots any registered control panel template roots
  * @property-read array $siteTemplateRoots any registered site template roots
  * @property-read bool $isRenderingPageTemplate whether a page template is currently being rendered
  * @property-read bool $isRenderingTemplate whether a template is currently being rendered
@@ -55,11 +58,8 @@ use yii\web\AssetBundle as YiiAssetBundle;
  */
 class View extends \yii\web\View
 {
-    // Constants
-    // =========================================================================
-
     /**
-     * @event RegisterTemplateRootsEvent The event that is triggered when registering CP template roots
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
     const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
@@ -98,16 +98,25 @@ class View extends \yii\web\View
      */
     const TEMPLATE_MODE_SITE = 'site';
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var bool Whether to minify CSS registered with [[registerCss()]]
+     * @since 3.4.0
+     */
+    public $minifyCss;
+
+    /**
+     * @var bool Whether to minify JS registered with [[registerJs()]]
+     * @since 3.4.0
+     */
+    public $minifyJs;
 
     /**
      * @var array The sizes that element thumbnails should be rendered in
      */
-    private static $_elementThumbSizes = [30, 60, 100, 200];
+    private static $_elementThumbSizes = [32, 64, 120, 240];
 
     /**
-     * @var Environment|null The Twig environment instance used for CP templates
+     * @var Environment|null The Twig environment instance used for control panel templates
      */
     private $_cpTwig;
 
@@ -177,6 +186,26 @@ class View extends \yii\web\View
     private $_namespace;
 
     /**
+     * @var bool Whether delta input name registration is open.
+     * @see getIsDeltaRegistrationActive()
+     * @see setIsDeltaRegistrationActive()
+     * @see registerDeltaName()
+     */
+    private $_registerDeltaNames = false;
+
+    /**
+     * @var string[] The registered delta input names.
+     * @see registerDeltaName()
+     */
+    private $_deltaNames = [];
+
+    /**
+     * @var mixed[] The initial delta input values.
+     * @see setInitialDeltaValue()
+     */
+    private $_initialDeltaValues = [];
+
+    /**
      * @var array
      */
     private $_jsBuffers = [];
@@ -221,9 +250,6 @@ class View extends \yii\web\View
      */
     private $_registeredJsFiles = [];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -237,6 +263,23 @@ class View extends \yii\web\View
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
         } else {
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
+        }
+
+        if ($this->minifyCss === null || $this->minifyJs === null) {
+            $response = Craft::$app->getResponse();
+            if ($this->minifyCss === null) {
+                $this->minifyCss = (
+                    $response instanceof WebResponse &&
+                    $response->format === WebResponse::FORMAT_HTML
+                );
+            }
+            if ($this->minifyJs === null) {
+                $this->minifyJs = (
+                    $response instanceof WebResponse &&
+                    $response->format === WebResponse::FORMAT_HTML &&
+                    Craft::$app->getConfig()->getGeneral()->useCompressedJs
+                );
+            }
         }
 
         // Register the cp.elements.element hook
@@ -323,36 +366,47 @@ class View extends \yii\web\View
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
+     * @param string|null $templateMode The template mode to use
      * @return string the rendering result
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
+     * @throws Exception if $templateMode is invalid
      */
-    public function renderTemplate(string $template, array $variables = []): string
+    public function renderTemplate(string $template, array $variables = [], string $templateMode = null): string
     {
-        if (!$this->beforeRenderTemplate($template, $variables)) {
+        if ($templateMode === null) {
+            $templateMode = $this->getTemplateMode();
+        }
+
+        if (!$this->beforeRenderTemplate($template, $variables, $templateMode)) {
             return '';
         }
 
         Craft::debug("Rendering template: $template", __METHOD__);
 
+        $oldTemplateMode = $this->getTemplateMode();
+        $this->setTemplateMode($templateMode);
+
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
 
+        $e = null;
         try {
             $output = $this->getTwig()->render($template, $variables);
-        } catch (\RuntimeException $e) {
-            if (!YII_DEBUG) {
-                // Throw a generic exception instead
-                throw new \RuntimeException('An error occurred when rendering a template.', 0, $e);
-            }
-            throw $e;
+        } catch (\Throwable $e) {
+            // throw it later
         }
 
         $this->_renderingTemplate = $renderingTemplate;
+        $this->setTemplateMode($oldTemplateMode);
 
-        $this->afterRenderTemplate($template, $variables, $output);
+        if ($e !== null) {
+            throw $e;
+        }
+
+        $this->afterRenderTemplate($template, $variables, $templateMode, $output);
 
         return $output;
     }
@@ -372,32 +426,50 @@ class View extends \yii\web\View
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
+     * @param string|null $templateMode The template mode to use
      * @return string the rendering result
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
+     * @throws Exception if $templateMode is invalid
      */
-    public function renderPageTemplate(string $template, array $variables = []): string
+    public function renderPageTemplate(string $template, array $variables = [], string $templateMode = null): string
     {
-        if (!$this->beforeRenderPageTemplate($template, $variables)) {
+        if ($templateMode === null) {
+            $templateMode = $this->getTemplateMode();
+        }
+
+        if (!$this->beforeRenderPageTemplate($template, $variables, $templateMode)) {
             return '';
         }
 
         ob_start();
         ob_implicit_flush(false);
 
+        $oldTemplateMode = $this->getTemplateMode();
+        $this->setTemplateMode($templateMode);
+
         $isRenderingPageTemplate = $this->_isRenderingPageTemplate;
         $this->_isRenderingPageTemplate = true;
 
-        $this->beginPage();
-        echo $this->renderTemplate($template, $variables);
-        $this->endPage();
+        $e = null;
+        try {
+            $this->beginPage();
+            echo $this->renderTemplate($template, $variables);
+            $this->endPage();
+        } catch (\Throwable $e) {
+            // throw it later
+        }
 
         $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
-
+        $this->setTemplateMode($oldTemplateMode);
         $output = ob_get_clean();
 
-        $this->afterRenderPageTemplate($template, $variables, $output);
+        if ($e !== null) {
+            throw $e;
+        }
+
+        $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
 
         return $output;
     }
@@ -408,30 +480,41 @@ class View extends \yii\web\View
      * @param string $template The name of the template the macro lives in.
      * @param string $macro The name of the macro.
      * @param array $args Any arguments that should be passed to the macro.
+     * @param string|null $templateMode The template mode to use.
      * @return string The rendered macro output.
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
+     * @throws Exception if $templateMode is invalid
      */
-    public function renderTemplateMacro(string $template, string $macro, array $args = []): string
+    public function renderTemplateMacro(string $template, string $macro, array $args = [], string $templateMode = null): string
     {
+        if ($templateMode === null) {
+            $templateMode = $this->getTemplateMode();
+        }
+
+        $oldTemplateMode = $this->getTemplateMode();
+        $this->setTemplateMode($templateMode);
+
         $twig = $this->getTwig();
         $twigTemplate = $twig->loadTemplate($template);
 
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
 
+        $e = null;
         try {
             $output = call_user_func_array([$twigTemplate, 'macro_' . $macro], $args);
-        } catch (\RuntimeException $e) {
-            if (!YII_DEBUG) {
-                // Throw a generic exception instead
-                throw new \RuntimeException('An error occurred when rendering a template.', 0, $e);
-            }
-            throw $e;
+        } catch (\Throwable $e) {
+            // throw it later
         }
 
         $this->_renderingTemplate = $renderingTemplate;
+        $this->setTemplateMode($oldTemplateMode);
+
+        if ($e !== null) {
+            throw $e;
+        }
 
         return (string)$output;
     }
@@ -473,10 +556,6 @@ class View extends \yii\web\View
         $this->setTemplateMode($oldTemplateMode);
 
         if ($e !== null) {
-            if (!YII_DEBUG) {
-                // Throw a generic exception instead
-                throw new Exception('An error occurred when rendering a template.', 0, $e);
-            }
             throw $e;
         }
 
@@ -578,10 +657,6 @@ class View extends \yii\web\View
         }
 
         if ($e !== null) {
-            if (!YII_DEBUG) {
-                // Throw a generic exception instead
-                throw new Exception('An error occurred when rendering a template.', 0, $e);
-            }
             throw $e;
         }
 
@@ -627,16 +702,29 @@ class View extends \yii\web\View
      * method found anything.
      *
      * @param string $name The name of the template.
+     * @param string|null $templateMode The template mode to use.
      * @return bool Whether the template exists.
+     * @throws Exception
      */
-    public function doesTemplateExist(string $name): bool
+    public function doesTemplateExist(string $name, string $templateMode = null): bool
     {
-        try {
-            return ($this->resolveTemplate($name) !== false);
-        } catch (TwigLoaderError $e) {
-            // _validateTemplateName() han an issue with it
-            return false;
+        if ($templateMode === null) {
+            $templateMode = $this->getTemplateMode();
         }
+
+        $oldTemplateMode = $this->getTemplateMode();
+        $this->setTemplateMode($templateMode);
+
+        try {
+            $templateExists = ($this->resolveTemplate($name) !== false);
+        } catch (TwigLoaderError $e) {
+            // _validateTemplateName() had an issue with it
+            $templateExists = false;
+        }
+
+        $this->setTemplateMode($oldTemplateMode);
+
+        return $templateExists;
     }
 
     /**
@@ -650,9 +738,9 @@ class View extends \yii\web\View
      * - TemplateName/index.html
      * - TemplateName/index.twig
      *
-     * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [[\craft\config\GeneralConfig::defaultTemplateExtensions|defaultTemplateExtensions]] and
-     * [[\craft\config\GeneralConfig::indexTemplateFilenames|indexTemplateFilenames]] config settings.
+     * If this is a front-end request, the actual list of file extensions and
+     * index filenames are configurable via the <config:defaultTemplateExtensions>
+     * and <config:indexTemplateFilenames> config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -676,7 +764,7 @@ class View extends \yii\web\View
      * - templates/SiteHandle/...
      * - templates/...
      *
-     * And finally, if this is a Control Panel request _and_ the template name includes multiple segments _and_ the first
+     * And finally, if this is a control panel request _and_ the template name includes multiple segments _and_ the first
      * segment of the template name matches a plugin’s handle, then Craft will look for a template named with the
      * remaining segments within that plugin’s templates/ subfolder.
      *
@@ -694,7 +782,7 @@ class View extends \yii\web\View
      *     - templates/foo/bar.twig
      *     - templates/foo/bar/index.html
      *     - templates/foo/bar/index.twig
-     * - Control Panel requests:
+     * - Control panel requests:
      *     - vendor/craftcms/cms/src/templates/foo/bar
      *     - vendor/craftcms/cms/src/templates/foo/bar.html
      *     - vendor/craftcms/cms/src/templates/foo/bar.twig
@@ -707,9 +795,43 @@ class View extends \yii\web\View
      *     - path/to/fooplugin/templates/bar/index.twig
      *
      * @param string $name The name of the template.
+     * @param string|null $templateMode The template mode to use.
      * @return string|false The path to the template if it exists, or `false`.
+     * @throws TwigLoaderError
      */
-    public function resolveTemplate(string $name)
+    public function resolveTemplate(string $name, string $templateMode = null)
+    {
+        if ($templateMode === null) {
+            $templateMode = $this->getTemplateMode();
+        }
+
+        $oldTemplateMode = $this->getTemplateMode();
+        $this->setTemplateMode($templateMode);
+
+        $e = null;
+        try {
+            $path = $this->_resolveTemplateInternal($name);
+        } catch (\Throwable $e) {
+            // throw it later
+        }
+
+        $this->setTemplateMode($oldTemplateMode);
+
+        if ($e !== null) {
+            throw $e;
+        }
+
+        return $path;
+    }
+
+    /**
+     * Finds a template on the file system and returns its path.
+     *
+     * @param string $name The name of the template.
+     * @return string|false The path to the template if it exists, or `false`.
+     * @throws TwigLoaderError
+     */
+    private function _resolveTemplateInternal(string $name)
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
@@ -772,7 +894,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns any registered CP template roots.
+     * Returns any registered control panel template roots.
      *
      * @return array
      */
@@ -789,6 +911,19 @@ class View extends \yii\web\View
     public function getSiteTemplateRoots(): array
     {
         return $this->_getTemplateRoots('site');
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function registerCss($css, $options = [], $key = null)
+    {
+        if ($this->minifyCss) {
+            $css = Minify_CSSmin::minify($css);
+        }
+
+        parent::registerCss($css, $options, $key);
     }
 
     /**
@@ -823,6 +958,11 @@ class View extends \yii\web\View
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
+
+        if ($this->minifyJs) {
+            $js = JSMin::minify($js);
+        }
+
         parent::registerJs($js, $position, $key);
     }
 
@@ -987,10 +1127,10 @@ class View extends \yii\web\View
 
     /**
      * Translates messages for a given translation category, so they will be
-     * available for `Craft.t()` calls in the Control Panel.
+     * available for `Craft.t()` calls in the control panel.
      * Note this should always be called *before* any JavaScript is registered
      * that will need to use the translations, unless the JavaScript is
-     * registered at [[self::POS_READY]].
+     * registered at [[\yii\web\View::POS_READY]].
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
@@ -1047,6 +1187,92 @@ JS;
     public function setNamespace(string $namespace = null)
     {
         $this->_namespace = $namespace;
+    }
+
+    /**
+     * Registers a delta input name.
+     *
+     * This can be either the name of a single form input, or a prefix used by multiple input names.
+     *
+     * The input name will be namespaced with the currently active [[getNamespace()|namespace]], if any.
+     *
+     * When a form that supports delta updates is submitted, any delta inputs (or groups of inputs) that didn’t change
+     * over the lifespan of the page will be omitted from the POST request.
+     *
+     * Note that delta input names will only be registered if delta registration is active
+     * (see [[getIsDeltaRegistrationActive()]]).
+     *
+     * @param string $inputName
+     * @since 3.4.0
+     */
+    public function registerDeltaName(string $inputName)
+    {
+        if ($this->_registerDeltaNames) {
+            $this->_deltaNames[] = $this->namespaceInputName($inputName);
+        }
+    }
+
+    /**
+     * Returns the initial values of delta inputs.
+     *
+     * @return mixed[]
+     * @see setInitialDeltaValue()
+     * @since 3.4.6
+     */
+    public function getInitialDeltaValue()
+    {
+        return $this->_initialDeltaValues;
+    }
+
+    /**
+     * Sets the initial value of a delta input name.
+     *
+     * @param string $inputName
+     * @param mixed $value
+     * @see getInitialDeltaValue()
+     * @since 3.4.6
+     */
+    public function setInitialDeltaValue(string $inputName, $value)
+    {
+        if ($this->_registerDeltaNames) {
+            $this->_initialDeltaValues[$this->namespaceInputName($inputName)] = $value;
+        }
+    }
+
+    /**
+     * Returns whether delta input name registration is currently active
+     *
+     * @return bool
+     * @see registerDeltaName()
+     * @since 3.4.0
+     */
+    public function getIsDeltaRegistrationActive(): bool
+    {
+        return $this->_registerDeltaNames;
+    }
+
+    /**
+     * Sets whether delta input name registration is active.
+     *
+     * @param bool $active
+     * @see registerDeltaName()
+     * @since 3.4.0
+     */
+    public function setIsDeltaRegistrationActive(bool $active)
+    {
+        $this->_registerDeltaNames = $active;
+    }
+
+    /**
+     * Returns all of the registered delta input names.
+     *
+     * @return string[]
+     * @since 3.4.0
+     * @see registerDeltaName()
+     */
+    public function getDeltaNames(): array
+    {
+        return $this->_deltaNames;
     }
 
     /**
@@ -1260,7 +1486,7 @@ JS;
     /**
      * Queues up a method to be called by a given template hook.
      *
-     * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
+     * For example, if you place this in your plugin’s [[\craft\base\Plugin::init()|init()]] method:
      *
      * ```php
      * Craft::$app->view->hook('myAwesomeHook', function(&$context) {
@@ -1353,17 +1579,22 @@ JS;
      *
      * @param mixed $template The name of the template to render
      * @param array &$variables The variables that should be available to the template
+     * @param string &$templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array &$variables): bool
+    public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderTemplate' event
         $event = new TemplateEvent([
             'template' => $template,
             'variables' => $variables,
+            'templateMode' => $templateMode,
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+
         $variables = $event->variables;
+        $templateMode = $event->templateMode;
+
         return $event->isValid;
     }
 
@@ -1372,18 +1603,21 @@ JS;
      *
      * @param mixed $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
+     * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
      */
-    public function afterRenderTemplate(string $template, array $variables, string &$output)
+    public function afterRenderTemplate(string $template, array $variables, string $templateMode, string &$output)
     {
         // Fire an 'afterRenderTemplate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
                 'variables' => $variables,
+                'templateMode' => $templateMode,
                 'output' => $output,
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER_TEMPLATE, $event);
+
             $output = $event->output;
         }
     }
@@ -1393,17 +1627,22 @@ JS;
      *
      * @param mixed $template The name of the template to render
      * @param array &$variables The variables that should be available to the template
+     * @param string &$templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array &$variables): bool
+    public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         $event = new TemplateEvent([
             'template' => $template,
             'variables' => &$variables,
+            'templateMode' => $templateMode,
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+
         $variables = $event->variables;
+        $templateMode = $event->templateMode;
+
         return $event->isValid;
     }
 
@@ -1412,24 +1651,24 @@ JS;
      *
      * @param mixed $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
+     * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
      */
-    public function afterRenderPageTemplate(string $template, array $variables, string &$output)
+    public function afterRenderPageTemplate(string $template, array $variables, string $templateMode, string &$output)
     {
         // Fire an 'afterRenderPageTemplate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
                 'variables' => $variables,
+                'templateMode' => $templateMode,
                 'output' => $output,
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $event);
+
             $output = $event->output;
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -1531,9 +1770,6 @@ JS;
         $this->_registeredAssetBundles[$name] = true;
         parent::registerAssetFiles($name);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Ensures that a template name isn't null, and that it doesn't lead outside the template folder. Borrowed from
@@ -1700,7 +1936,7 @@ JS;
     }
 
     /**
-     * Returns the HTML for an element in the CP.
+     * Returns the HTML for an element in the control panel.
      *
      * @param array &$context
      * @return string|null
@@ -1785,8 +2021,10 @@ JS;
 
         $html = '<div';
 
+        // todo: swap this with Html::renderTagAttributse in 4.0
+        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
         foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . HtmlHelper::encode($value) . '"' : '');
+            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
         }
 
         if (ElementHelper::isElementEditable($element)) {
@@ -1815,16 +2053,20 @@ JS;
 
         $html .= '<span class="title">';
 
-        $encodedLabel = HtmlHelper::encode($label);
+        $encodedLabel = Html::encode($label);
 
-        if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
+        if (
+            $context['context'] === 'index' &&
+            !$element->trashed &&
+            ($cpEditUrl = $element->getCpEditUrl())
+        ) {
             if ($element->getIsDraft()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
             } else if ($element->getIsRevision()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
             }
 
-            $cpEditUrl = HtmlHelper::encode($cpEditUrl);
+            $cpEditUrl = Html::encode($cpEditUrl);
             $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
         } else {
             $html .= $encodedLabel;

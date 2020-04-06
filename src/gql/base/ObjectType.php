@@ -7,8 +7,10 @@
 
 namespace craft\gql\base;
 
+use craft\elements\db\ElementQueryInterface;
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -44,31 +46,13 @@ abstract class ObjectType extends GqlObjectType
     {
         try {
             $value = $this->resolve($source, $arguments, $context, $resolveInfo);
-
-            if (isset($resolveInfo->fieldNodes[0]->directives)) {
-                foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                    /** @var Directive $directiveEntity */
-                    $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
-                    $arguments = [];
-
-                    if (isset($directive->arguments[0])) {
-                        foreach ($directive->arguments as $argument) {
-                            $arguments[$argument->name->value] = $argument->value->value;
-                        }
-                    }
-
-                    $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
-                }
-            }
+            $value = GqlHelper::applyDirectives($source, $resolveInfo, $value);
         } catch (\Throwable $exception) {
             throw new GqlException($exception->getMessage(), 0, $exception);
         }
 
         return $value;
     }
-
-    // Protected methods
-    // =========================================================================
 
     /**
      * Resolve a field value with arguments, context and resolve information.
@@ -82,7 +66,12 @@ abstract class ObjectType extends GqlObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        return $source->{$resolveInfo->fieldName};
-    }
+        $result = $source->{$resolveInfo->fieldName};
+        
+        if ($result instanceof ElementQueryInterface) {
+            return $result->all();
+        }
 
+        return $result;
+    }
 }

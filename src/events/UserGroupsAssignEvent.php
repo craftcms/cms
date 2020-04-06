@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class UserGroupsAssignEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user ID associated with this event
      */

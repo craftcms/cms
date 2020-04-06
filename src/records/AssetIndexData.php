@@ -30,9 +30,6 @@ use yii\db\ActiveQueryInterface;
  */
 class AssetIndexData extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

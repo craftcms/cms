@@ -106,6 +106,12 @@ class ProjectConfigController extends Controller
     public function actionRebuild(): int
     {
         $projectConfig = Craft::$app->getProjectConfig();
+        
+        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
+            $projectConfig->regenerateYamlFromConfig();
+        }
+        
         $this->stdout('Rebuilding the project config from the current state ... ', Console::FG_YELLOW);
 
         try {

@@ -30,9 +30,6 @@ use yii\db\Connection;
  */
 class GlobalSetQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -52,9 +49,6 @@ class GlobalSetQuery extends ElementQuery
      * @used-by handle()
      */
     public $handle;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Sets the [[$editable]] property.
@@ -107,9 +101,6 @@ class GlobalSetQuery extends ElementQuery
         return $this;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -132,9 +123,6 @@ class GlobalSetQuery extends ElementQuery
 
         return parent::beforePrepare();
     }
-
-    // Private Methods
-    // =========================================================================
 
 
     /**

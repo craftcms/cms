@@ -23,9 +23,6 @@ use yii\base\Exception;
  */
 class FindAndReplace extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The search text
      */
@@ -40,9 +37,6 @@ class FindAndReplace extends BaseJob
      * @var
      */
     private $_textColumns;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -74,9 +68,6 @@ class FindAndReplace extends BaseJob
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -87,9 +78,6 @@ class FindAndReplace extends BaseJob
             'replace' => $this->replace
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Checks whether the given field is saving data into a textual column, and saves it accordingly.

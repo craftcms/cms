@@ -37,18 +37,12 @@ use yii\web\ServerErrorHttpException;
  */
 class AppController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -192,7 +186,7 @@ class AppController extends Controller
      * plugin, & content migrations, and syncs `project.yaml` changes in one go.
      *
      * This action can be used as a post-deploy webhook with site deployment
-     * services (like [DeployBot](https://deploybot.com/)) to minimize site
+     * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      *
      * @throws ServerErrorException if something went wrong
@@ -307,7 +301,7 @@ class AppController extends Controller
     }
 
     /**
-     * Loads any CP alerts.
+     * Returns any alerts that should be displayed in the control panel.
      *
      * @return Response
      */
@@ -325,7 +319,7 @@ class AppController extends Controller
     }
 
     /**
-     * Shuns a CP alert for 24 hours.
+     * Shuns a control panel alert for 24 hours.
      *
      * @return Response
      */
@@ -346,7 +340,7 @@ class AppController extends Controller
             ]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 
     /**
@@ -448,9 +442,6 @@ class AppController extends Controller
         // Return the new plugin license info
         return $this->asJson(1);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.

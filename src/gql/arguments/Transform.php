@@ -11,7 +11,7 @@ use craft\gql\base\Arguments;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class Asset
+ * Class Transform
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0

@@ -58,11 +58,11 @@
 
     .category-selector-btn {
         @apply .hidden .relative;
-        background: $lightBgColor;
+        background: $grey050;
         border: 1px solid $hairlineColor;
         padding: 10px 20px;
         border-radius: 4px;
-        color: $secondarySubmitColor;
+        color: $secondaryColor;
 
         &:before {
             @include icon;

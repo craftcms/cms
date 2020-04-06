@@ -26,9 +26,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Plugin extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

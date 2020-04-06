@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
@@ -24,9 +25,6 @@ use craft\i18n\Locale;
  */
 class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,9 +40,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         return 'int|float|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|float|null The default value for new elements
@@ -80,9 +75,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      * @var string|null Text that should be displayed after the input
      */
     public $suffix;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -120,9 +112,9 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
         $rules[] = [
@@ -232,5 +224,13 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         }
 
         return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return NumberType::getType();
     }
 }

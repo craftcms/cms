@@ -21,9 +21,6 @@ use craft\web\assets\assetindexes\AssetIndexesAsset;
  */
 class AssetIndexes extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
