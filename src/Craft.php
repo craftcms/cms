@@ -10,6 +10,7 @@ use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
@@ -65,6 +66,25 @@ class Craft extends Yii
     // =========================================================================
 
     /**
+     * Returns the value of the environment variable varname, or 
+     * FALSE if the environment variable varname does not exist.
+     *
+     * @param string $varname
+     * @return string|bool The variable value or false if it does not exist.
+     */
+    public static function getEnv(string $varname)
+    {
+        $value = ArrayHelper::getValue($_SERVER, $varname);
+
+        // Return false if it does not exist
+        if($value === null) {
+            return false;
+        }
+
+        return $value;
+    }
+
+    /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
      *
@@ -90,7 +110,7 @@ class Craft extends Yii
         }
 
         if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = getenv($matches[1]);
+            $value = Craft::getEnv($matches[1]);
             if ($value !== false) {
                 switch (strtolower($value)) {
                     case 'true':

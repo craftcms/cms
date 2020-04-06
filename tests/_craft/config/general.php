@@ -1,5 +1,4 @@
 <?php
-
 /**
  * General Configuration
  *
@@ -12,7 +11,7 @@ $config = [
     'siteUrl' => 'https://test.craftcms.test/index.php',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
-    'securityKey' => getenv('SECURITY_KEY')
+    'securityKey' => \craft\test\Craft::getEnv('SECURITY_KEY')
 ];
 
 

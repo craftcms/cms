@@ -348,12 +348,12 @@ class Composer extends Component
      */
     protected function _ensureHomeVar()
     {
-        if (getenv('COMPOSER_HOME') !== false) {
+        if (Craft::getEnv('COMPOSER_HOME') !== false) {
             return;
         }
 
         $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-        if (getenv($alt) !== false) {
+        if (Craft::getEnv($alt) !== false) {
             return;
         }
 

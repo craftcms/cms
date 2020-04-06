@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'password' => getenv('DB_PASSWORD'),
-    'user' => getenv('DB_USER'),
-    'database' => getenv('DB_DATABASE'),
-    'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-    'driver' => getenv('DB_DRIVER'),
-    'port' => getenv('DB_PORT'),
-    'schema' => getenv('DB_SCHEMA'),
-    'server' => getenv('DB_SERVER'),
+    'password' => \craft\test\Craft::getEnv('DB_PASSWORD'),
+    'user' => \craft\test\Craft::getEnv('DB_USER'),
+    'database' => \craft\test\Craft::getEnv('DB_DATABASE'),
+    'tablePrefix' => \craft\test\Craft::getEnv('DB_TABLE_PREFIX'),
+    'driver' => \craft\test\Craft::getEnv('DB_DRIVER'),
+    'port' => \craft\test\Craft::getEnv('DB_PORT'),
+    'schema' => \craft\test\Craft::getEnv('DB_SCHEMA'),
+    'server' => \craft\test\Craft::getEnv('DB_SERVER'),
 ];

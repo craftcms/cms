@@ -833,7 +833,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
-            new TwigFunction('getenv', 'getenv'),
+            new TwigFunction('getenv', [Craft::class, 'getEnv']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),

@@ -345,7 +345,7 @@ class InstallController extends Controller
         $tempValues = [];
 
         foreach ($vars as $setting => $var) {
-            $realValues[$setting] = getenv($var);
+            $realValues[$setting] = Craft::getEnv($var);
             $tempValues[$setting] = StringHelper::randomString();
             putenv("{$var}={$tempValues[$setting]}");
         }
