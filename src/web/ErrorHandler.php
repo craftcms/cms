@@ -16,6 +16,7 @@ use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
 use yii\log\FileTarget;
 use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class ErrorHandler
@@ -118,9 +119,18 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
+        // Show a broken image for image requests
+        if (
+            $exception instanceof NotFoundHttpException &&
+            Craft::$app->has('request') &&
+            Craft::$app->getRequest()->getAcceptsImage() &&
+            Craft::$app->getConfig()->getGeneral()->brokenImagePath
+        ) {
+            $this->errorAction = 'app/broken-image';
+        }
         // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
         // or if the user is an admin and has indicated they want to see it
-        if ($this->_showExceptionView()) {
+        else if ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }

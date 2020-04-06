@@ -21,6 +21,7 @@ use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -42,6 +43,7 @@ class AppController extends Controller
      */
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -565,5 +567,27 @@ class AppController extends Controller
         }
 
         return $result;
+    }
+
+    /**
+     * Sends a broken image.
+     *
+     * @return Response
+     * @throws InvalidConfigException
+     * @since 3.5.0
+     */
+    public function actionBrokenImage(): Response
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
+        if (!is_file($imagePath)) {
+            throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");
+        }
+
+        $response = Craft::$app->getResponse();
+        $statusCode = $response->getStatusCode();
+        return $response
+            ->sendFile($imagePath, ['inline' => true])
+            ->setStatusCode($statusCode);
     }
 }

@@ -8,6 +8,7 @@
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
+- Added the `brokenImagePath` config setting. ([#5877](https://github.com/craftcms/cms/issues/5877))
 - Added the `siteToken` config setting.
 - Added the `install/check` command. ([#5810](https://github.com/craftcms/cms/issues/5810))
 - Added the `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands. ([#5817](https://github.com/craftcms/cms/issues/5817))
@@ -21,6 +22,7 @@
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
+- Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\gql\ElementQueryConditionBuilder`.
@@ -33,6 +35,7 @@
 - Added `craft\models\Site::$enabled`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
+- Added `craft\web\Request::getAcceptsImage()`.
 - Added `craft\web\Request::getFullUri()`.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 

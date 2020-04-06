@@ -135,6 +135,14 @@ class GeneralConfig extends BaseObject
      */
     public $blowfishHashCost = 13;
     /**
+     * @var string|null The server path to an image file that should be sent when responding to an image request with a
+     * 404 status code.
+     *
+     * This can be set to an aliased path such as `@webroot/assets/404.svg`.
+     * @since 3.5.0
+     */
+    public $brokenImagePath;
+    /**
      * @var bool Whether Craft should cache element queries that fall inside `{% cache %}` tags.
      */
     public $cacheElementQueries = true;

@@ -1064,6 +1064,17 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether the request will accept an image response.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getAcceptsImage(): bool
+    {
+        return $this->accepts('image/*');
+    }
+
+    /**
      * Returns the normalized content type.
      *
      * @return string|null
