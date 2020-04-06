@@ -874,7 +874,8 @@ class GeneralConfig extends BaseObject
      */
     public $upscaleImages = true;
     /**
-     * @var bool Whether Craft should use compressed JavaScript files whenever possible.
+     * @var bool Whether Craft should include minified JavaScript files whenever possible, and minify JavaScript code
+     * passed to [[\craft\web\View::includeJs()]] or `{% js %}` Twig tags.
      */
     public $useCompressedJs = true;
     /**
