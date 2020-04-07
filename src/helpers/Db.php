@@ -619,6 +619,41 @@ class Db
     }
 
     /**
+     * Parses a query param value for a boolean column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - `true` or `false`
+     * - `:empty:` or `:notempty:` (normalizes to `false` and `true`)
+     * - `'not x'` or `'!= x'` (normalizes to the opposite of the boolean value of `x`)
+     * - Anything else (normalizes to the boolean value of itself)
+     *
+     * If `$defaultValue` is set, and it matches the normalized `$value`, then the resulting condition will match any
+     * `null` values as well.
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|bool $value The param value
+     * @param bool|null $defaultValue How `null` values should be treated
+     * @return mixed
+     * @since 3.4.15
+     */
+    public static function parseBooleanParam(string $column, $value, bool $defaultValue = null)
+    {
+        self::_normalizeEmptyValue($value);
+        $operator = self::_parseParamOperator($value, '=');
+        $value = $value === ':empty:' ? false : (bool)$value;
+        if ($operator === '!=') {
+            $value = !$value;
+        }
+        $condition = $condition[] = [$column => $value];
+        if ($defaultValue === $value) {
+            $condition = ['or', $condition, [$column => null]];
+        }
+        return $condition;
+    }
+
+    /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
      * @param string $type
