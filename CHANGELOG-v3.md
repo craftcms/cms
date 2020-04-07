@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.14 - 2020-04-06
 
 ### Added
 - Added the `setup/db-cache-table` command.
