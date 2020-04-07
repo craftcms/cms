@@ -119,7 +119,8 @@ class UsersController extends Controller
      */
     public function actionLogin()
     {
-        if (!Craft::$app->getUser()->getIsGuest()) {
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->getIsGuest()) {
             // Too easy.
             return $this->_handleSuccessfulLogin();
         }
@@ -158,7 +159,7 @@ class UsersController extends Controller
         }
 
         // Try logging them in
-        if (!Craft::$app->getUser()->login($user, $duration)) {
+        if (!$userSession->login($user, $duration)) {
             // Unknown error
             return $this->_handleLoginFailure(null, $user);
         }
@@ -227,13 +228,13 @@ class UsersController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $userService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
         /** @var User|null $user */
-        $user = $userService->getIdentity();
+        $user = $userSession->getIdentity();
 
         $return = [
             'isGuest' => $user === null,
-            'timeout' => $userService->getRemainingSessionTime(),
+            'timeout' => $userSession->getRemainingSessionTime(),
         ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -1135,7 +1136,7 @@ class UsersController extends Controller
         // Is this the current user, and did their username just change?
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
-            Craft::$app->getUser()->sendUsernameCookie($user);
+            $userSession->sendUsernameCookie($user);
         }
 
         // Save the user's photo, if it was submitted
@@ -1760,7 +1761,8 @@ class UsersController extends Controller
      */
     private function _processUserGroupsPermissions(User $user)
     {
-        if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
+        $userSession = Craft::$app->getUser();
+        if (($currentUser = $userSession->getIdentity()) === null) {
             return;
         }
 
@@ -1783,7 +1785,6 @@ class UsersController extends Controller
             if (is_array($permissions)) {
                 // See if there are any new permissions in here
                 $hasNewPermissions = false;
-                $userSession = Craft::$app->getUser();
 
                 foreach ($permissions as $permission) {
                     if (!$user->can($permission)) {
