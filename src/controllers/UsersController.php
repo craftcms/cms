@@ -460,7 +460,7 @@ class UsersController extends Controller
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
 
         if (!$user || !$isCodeValid) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($request);
         }
 
         $user->newPassword = $request->getRequiredBodyParam('newPassword');
@@ -1893,7 +1893,7 @@ class UsersController extends Controller
             ->one();
 
         if (!$user) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($request);
         }
 
         // If someone is logged in and it's not this person, log them out
@@ -1911,7 +1911,7 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($request);
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1925,11 +1925,16 @@ class UsersController extends Controller
     }
 
     /**
+     * @param Request $request
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(): Response
+    private function _processInvalidToken(Request $request): Response
     {
+        if ($request->getAcceptsJson()) {
+            return $this->asErrorJson('InvalidVerificationCode');
+        }
+
         // If they're already logged-in, just send them to the post-login URL
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
