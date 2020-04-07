@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.14 - 2020-04-06
+
+### Added
+- Added the `setup/db-cache-table` command.
+- Added `craft\cache\DbCache`, which should be used instead of `yii\caching\DbCache` if storing data caches in the database. ([#5884](https://github.com/craftcms/cms/issues/5884))
+- Added `craft\db\Table::CACHE`.
+- Added `craft\helpers\Db::parseBooleanParam()`.
+
+### Changed
+- Craft now disables read/write splitting before applying new `project.yaml` changes. ([#5802](https://github.com/craftcms/cms/issues/5802))
+
+### Fixed
+- Fixed a PHP error that occurred when running the `project-config/rebuild` command, if no `project.yaml` file existed yet. ([#5888](https://github.com/craftcms/cms/pull/5888))
+- Fixed a bug where passing `'not 1'` or `:empty:` to a Lightswitch field’s element query param would have the opposite effect that was intended. ([#5896](https://github.com/craftcms/cms/issues/5896))
+
 ## 3.4.13 - 2020-04-02
 
 ### Added

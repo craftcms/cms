@@ -2205,7 +2205,7 @@ class Elements extends Component
                     $queue->priority(2048)->push($job);
                 } catch (NotSupportedException $e) {
                     // The queue probably doesn't support custom push priorities. Try again without one.
-                    Craft::$app->getQueue()->push($job);
+                    $queue->push($job);
                 }
             }
         }
