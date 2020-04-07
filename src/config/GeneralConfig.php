@@ -742,8 +742,7 @@ class GeneralConfig extends BaseObject
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
      * data in [[\craft\services\Security]].
      *
-     * This value should be the same across all environments. Note that if this key ever changes, any data that
-     * was encrypted with it will be inaccessible.
+     * This value affects cookies and hashed form values and can differ across environments.
      */
     public $securityKey;
     /**
