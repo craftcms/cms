@@ -245,6 +245,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('percentage', [$formatter, 'asPercent']),
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('push', [$this, 'pushFilter']),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -255,6 +256,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', 'ucwords'),
             new TwigFilter('unique', 'array_unique'),
+            new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
@@ -523,6 +525,36 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return HtmlPurifier::process($html, $config);
+    }
+
+    /**
+     * Pushes one or more items onto the end of an array.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.5.0
+     */
+    public function pushFilter(array $array): array
+    {
+        $args = func_get_args();
+        array_shift($args);
+        array_push($array, ...$args);
+        return $array;
+    }
+
+    /**
+     * Prepends one or more items onto the end of an array.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.5.0
+     */
+    public function unshiftFilter(array $array): array
+    {
+        $args = func_get_args();
+        array_shift($args);
+        array_unshift($array, ...$args);
+        return $array;
     }
 
     /**

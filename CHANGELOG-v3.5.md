@@ -14,6 +14,8 @@
 - Added the `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands. ([#5817](https://github.com/craftcms/cms/issues/5817))
 - Added the `|explodeClass` Twig filter, which converts class names into an array.
 - Added the `|explodeStyle` Twig filter, which converts CSS styles into an array of property/value pairs.
+- Added the `|push` Twig filter, which returns a new array with one or more items appended to it.
+- Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
 - Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - Added the `drafts`, `draftOf`, `draftId`, `draftCreator`, `revisions`, `revisionOf`, `revisionId` and `revisionCreator` arguments to element queries using GraphQL API. ([#5580](https://github.com/craftcms/cms/issues/5580)) 
