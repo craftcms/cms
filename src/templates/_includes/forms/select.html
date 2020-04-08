@@ -1,14 +1,13 @@
-{%- set class = [
+{%- set class = (class ?? [])|explodeClass|merge([
     'select',
-    (class is defined ? class : null),
-    (disabled is defined and disabled ? 'disabled' : null),
-]|filter|join(' ') %}
+    (disabled ?? false) ? 'disabled',
+]|filter) %}
 
 {%- set options = (options is defined ? options : []) %}
 {%- set value = (value is defined ? value : null) %}
 {%- set hasOptgroups = false -%}
 
-<div class="{{ class }}"
+<div class="{{ class|join(' ') }}"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <select
         {%- if id is defined %} id="{{ id }}"{% endif %}

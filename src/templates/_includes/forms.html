@@ -17,7 +17,7 @@
 
 
 {% macro password(config) %}
-    {% include "_includes/forms/text" with config|merge({ type: 'password' }) only %}
+    {% include "_includes/forms/password" with config only %}
 {% endmacro %}
 
 

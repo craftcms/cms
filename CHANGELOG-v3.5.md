@@ -43,6 +43,7 @@
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getAcceptsImage()`.
 - Added `craft\web\Request::getFullUri()`.
+- Added the `_includes/forms/password.html` control panel template.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
 ### Changed
@@ -68,6 +69,7 @@
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
+- Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 
 ### Deprecated
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
