@@ -2360,7 +2360,7 @@
 ## 3.1.8 - 2019-02-05
 
 ### Changed
-- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled.
+- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled. ([#1025](https://github.com/craftcms/cms/issues/1025))
 
 ### Fixed
 - Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables with a static number of rows would add a new row. ([#3765](https://github.com/craftcms/cms/issues/3765))
