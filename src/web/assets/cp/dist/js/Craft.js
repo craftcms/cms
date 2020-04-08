@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-03-31 */
+/*!   - 2020-04-08 */
 (function ($) {
   /** global: Craft */
 
@@ -13209,10 +13209,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                 }).insertAfter($draftHeading);
               }
 
-              var $draftLi = $('<li/>').appendTo($draftsUl);
+              var $draftLi = $('<li/>').prependTo($draftsUl);
               var $draftA = $('<a/>', {
                 'class': 'sel',
-                html: '<span class="draft-name"></span> <span class="draft-creator light"></span>'
+                html: '<span class="draft-name"></span> <span class="draft-meta light"></span>'
               }).appendTo($draftLi);
               revisionMenu.addOptions($draftA);
               revisionMenu.selectOption($draftA); // Update the site URLs
@@ -13230,9 +13230,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
           if (revisionMenu) {
             revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-            revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
-              creator: response.creator
-            }));
+            revisionMenu.$options.filter('.sel').find('.draft-meta').text("\u2013 ".concat(response.timestamp) + (response.creator ? ", ".concat(response.creator) : ''));
           } // Did the controller send us updated preview targets?
 
 

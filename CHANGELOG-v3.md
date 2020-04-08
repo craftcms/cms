@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+### Changed
+- Entry revision menus now list drafts sorted by date updated in descending order, and show the drafts’ update timestamps. ([#5889](https://github.com/craftcms/cms/issues/5889))
+
 ### Fixed
 - Fixed a bug where `craft\i18n\Formatter::asTimestamp()` and the `|timestamp` filter weren’t returning weekday names for dates within the past 3-7 days.
 - Fixed a bug where `craft\base\Element::getCurrentRevision()` would return `null` when called on a draft or revision.
+- Fixed a bug where entry revision menus could list revisions out of order.
 
 ## 3.4.14 - 2020-04-06
 
