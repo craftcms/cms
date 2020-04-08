@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where `craft\i18n\Formatter::asTimestamp()` and the `|timestamp` filter weren’t returning weekday names for dates within the past 3-7 days.
+
 ## 3.4.14 - 2020-04-06
 
 ### Added
@@ -2360,7 +2365,7 @@
 ## 3.1.8 - 2019-02-05
 
 ### Changed
-- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled.
+- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled. ([#1025](https://github.com/craftcms/cms/issues/1025))
 
 ### Fixed
 - Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables with a static number of rows would add a new row. ([#3765](https://github.com/craftcms/cms/issues/3765))
