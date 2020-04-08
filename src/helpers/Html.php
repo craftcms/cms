@@ -304,35 +304,75 @@ class Html extends \yii\helpers\Html
         $normalized = [];
 
         foreach ($attributes as $name => $value) {
-            if (!is_bool($value) && !is_array($value)) {
-                if ($name === 'class') {
-                    $normalized[$name] = ArrayHelper::filterEmptyStringsFromArray(explode(' ', $value));
-                    continue;
-                }
-
-                if ($name === 'style') {
-                    $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
-                    foreach ($styles as $style) {
-                        list($n, $v) = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
-                        $normalized[$name][$n] = $v;
+            switch ($name) {
+                case 'class':
+                    $normalized[$name] = static::explodeClass($value);
+                    break;
+                case 'style':
+                    $normalized[$name] = static::explodeStyle($value);
+                    break;
+                default:
+                    // See if it's a data attribute
+                    foreach (self::_sortedDataAttributes() as $dataAttribute) {
+                        if (strpos($name, $dataAttribute . '-') === 0) {
+                            $n = substr($name, strlen($dataAttribute) + 1);
+                            $normalized[$dataAttribute][$n] = $value;
+                            break 2;
+                        }
                     }
-                    continue;
-                }
-
-                // See if it's a data attribute
-                foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                    if (strpos($name, $dataAttribute . '-') === 0) {
-                        $n = substr($name, strlen($dataAttribute) + 1);
-                        $normalized[$dataAttribute][$n] = $value;
-                        continue 2;
-                    }
-                }
+                    $normalized[$name] = $value;
             }
-
-            $normalized[$name] = $value;
         }
 
         return $normalized;
+    }
+
+    /**
+     * Explodes a `class` attribute into an array.
+     *
+     * @param string|string[]|bool|null $value
+     * @return string[]
+     * @since 3.5.0
+     */
+    public static function explodeClass($value): array
+    {
+        if ($value === null || is_bool($value)) {
+            return [];
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            return ArrayHelper::filterEmptyStringsFromArray(explode(' ', $value));
+        }
+        throw new InvalidArgumentException('Invalid class value');
+    }
+
+    /**
+     * Explodes a `style` attribute into an array of property/value pairs.
+     *
+     * @param string|string[]|bool|null $value
+     * @return string[]
+     * @since 3.5.0
+     */
+    public static function explodeStyle($value): array
+    {
+        if ($value === null || is_bool($value)) {
+            return [];
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+            $normalized = [];
+            foreach ($styles as $style) {
+                list($n, $v) = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
+                $normalized[$n] = $v;
+            }
+            return $normalized;
+        }
+        throw new InvalidArgumentException('Invalid style value');
     }
 
     /**

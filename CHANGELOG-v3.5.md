@@ -30,6 +30,8 @@
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\FileHelper::addFilesToZip()`.
 - Added `craft\helpers\FileHelper::zip()`.
+- Added `craft\helpers\Html::explodeClass()`.
+- Added `craft\helpers\Html::explodeStyle()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\models\Site::$enabled`.
@@ -61,6 +63,7 @@
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
+- Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 
 ### Deprecated
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.

@@ -224,7 +224,7 @@ class HtmlHelperTest extends Unit
             [['data' => ['foo' => '1', 'bar' => '2']], '<div data-foo="1" data-bar="2">'],
             [['data-ng' => ['foo' => '1', 'bar' => '2']], '<div data-ng-foo="1" data-ng-bar="2">'],
             [['ng' => ['foo' => '1', 'bar' => '2']], '<div ng-foo="1" ng-bar="2">'],
-            [['data-foo' => true], '<div data-foo>'],
+            [['data' => ['foo' => true]], '<div data-foo>'],
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
             [false, '<div'],
@@ -266,7 +266,7 @@ class HtmlHelperTest extends Unit
             [['data' => ['foo' => '1', 'bar' => '2']], ['data-foo' => '1', 'data-bar' => '2']],
             [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
             [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
-            [['data-foo' => true], ['data-foo' => true]],
+            [['data' => ['foo' => true]], ['data-foo' => true]],
         ];
     }
 }
