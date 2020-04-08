@@ -50,7 +50,7 @@
 - Plain Text fields are now sortable in the control panel. ([#5819](https://github.com/craftcms/cms/issues/5819))
 - Database backups created by the Database Backup utility are now saved as zip files. ([#5822](https://github.com/craftcms/cms/issues/5822))
 - It’s now possible to specify aliases when eager-loading elements via the `with` param. ([#5793](https://github.com/craftcms/cms/issues/5793)) 
-- The `cpTrigger` config setting can now be set to `null` or an empty string. ([#5122](https://github.com/craftcms/cms/issues/5122))
+- The `cpTrigger` config setting can now be set to `null`. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - If the `baseCpUrl` config setting is set, Craft will no longer treat any other base URLs as control panel requests, even if they contain the correct trigger segment. ([#5860](https://github.com/craftcms/cms/issues/5860))  
 - The `mailer/test` command now only supports testing the current email settings.
 - Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
