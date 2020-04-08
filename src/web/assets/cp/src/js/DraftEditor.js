@@ -629,7 +629,15 @@ Craft.DraftEditor = Garnish.Base.extend(
 
                     if (revisionMenu) {
                         revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                        revisionMenu.$options.filter('.sel').find('.draft-meta').text(`– ${response.timestamp}` + (response.creator ? `, ${response.creator}` : ''));
+                        revisionMenu.$options.filter('.sel').find('.draft-meta').text('– ' + (response.creator
+                            ? Craft.t('app', 'saved {timestamp} by {creator}', {
+                                timestamp: response.timestamp,
+                                creator: response.creator
+                            })
+                            : Craft.t('app', 'updated {timestamp}', {
+                                timestamp: response.timestamp,
+                            })
+                        ));
                     }
 
                     // Did the controller send us updated preview targets?

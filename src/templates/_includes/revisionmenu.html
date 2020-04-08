@@ -107,8 +107,12 @@
                     <li>
                         <a{% if not isDraft and not isRevision %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
                             <span class="light">–
-                                {{ currentRevisionEditTime|timestamp('short') }}
-                                {%- if currentRevisionCreator %}, {{ currentRevisionCreator.name }}{% endif %}
+                                {{ currentRevisionCreator ? 'saved {timestamp} by {creator}'|t('app', {
+                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                    creator: currentRevisionCreator.name,
+                                }) : 'updated {timestamp}'|t('app', {
+                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                }) }}
                             </span>
                         </a>
                     </li>
@@ -125,8 +129,12 @@
                                 <span class="draft-name">{{ draft.draftName }}</span>
                                 {% set creator = draft.getCreator() %}
                                 <span class="draft-meta light">–
-                                    {{ draft.dateUpdated|timestamp('short') }}
-                                    {%- if creator %}, {{ creator.name }}{% endif %}
+                                    {{ creator ? 'updated {timestamp} by {creator}'|t('app', {
+                                        timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
+                                        creator: creator.name,
+                                    }) : 'updated {timestamp}'|t('app', {
+                                        timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
+                                    }) }}
                                 </span>
                             </a>
                         </li>
@@ -144,8 +152,12 @@
                                 {{ revision.getRevisionLabel() }}
                                 {% set creator = revision.getCreator() %}
                                 <span class="light">–
-                                    {{ revision.dateCreated|timestamp('short') }}
-                                    {%- if creator %}, {{ creator.name }}{% endif %}
+                                    {{ creator ? 'saved {timestamp} by {creator}'|t('app', {
+                                        timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
+                                        creator: creator.name,
+                                    }) : 'updated {timestamp}'|t('app', {
+                                        timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
+                                    }) }}
                                 </span>
                             </a>
                         </li>

@@ -188,12 +188,14 @@ class Formatter extends \yii\i18n\Formatter
      * It can also be a custom format as specified in the [ICU manual](http://userguide.icu-project.org/formatparse/datetime).
      * Alternatively this can be a string prefixed with `php:` representing a format that can be recognized by the
      * PHP [date()](http://php.net/manual/en/function.date.php)-function.
+     * @param bool $withPreposition Whether a preposition should be included in the returned string
+     * (e.g. “**at** 12:00 PM” or “**on** Wednesday”).
      * @return string the formatted result.
      * @throws InvalidArgumentException if the input value can not be evaluated as a date value.
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, string $format = null): string
+    public function asTimestamp($value, string $format = null, bool $withPreposition = false): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
@@ -202,22 +204,28 @@ class Formatter extends \yii\i18n\Formatter
 
         // If it's today or missing date info, just return the local time.
         if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
-            return $hasTimeInfo ? $this->asTime($timestamp, $format) : Craft::t('app', 'Today');
+            if ($hasTimeInfo) {
+                $time = $this->asTime($timestamp, $format);
+                return $withPreposition ? Craft::t('app', 'at {time}', ['time' => $time]) : $time;
+            }
+            return $withPreposition ? Craft::t('app', 'today') : Craft::t('app', 'Today');
         }
 
         // If it was yesterday, display 'Yesterday'
         if (DateTimeHelper::isYesterday($timestamp)) {
-            return Craft::t('app', 'Yesterday');
+            return $withPreposition ? Craft::t('app', 'yesterday') : Craft::t('app', 'Yesterday');
         }
 
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            return Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            $dayName = Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
 
         // Otherwise, just return the local date.
-        return $this->asDate($timestamp, $format);
+        $date = $this->asDate($timestamp, $format);
+        return $withPreposition ? Craft::t('app', 'on {date}', ['date' => $date]) : $date;
     }
 
     /**

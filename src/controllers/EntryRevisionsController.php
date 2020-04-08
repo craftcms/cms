@@ -251,7 +251,7 @@ class EntryRevisionsController extends BaseEntriesController
             return $this->asJson([
                 'sourceId' => $draft->sourceId,
                 'draftId' => $draft->draftId,
-                'timestamp' => Craft::$app->getFormatter()->asTimestamp($draft->dateUpdated, 'short'),
+                'timestamp' => Craft::$app->getFormatter()->asTimestamp($draft->dateUpdated, 'short', true),
                 'creator' => $creator ? $creator->getName() : null,
                 'draftName' => $draft->draftName,
                 'draftNotes' => $draft->draftNotes,
