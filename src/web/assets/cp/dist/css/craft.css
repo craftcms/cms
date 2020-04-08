@@ -1252,9 +1252,9 @@ table.shadow-box thead:first-child tr:first-child th:last-child, table.shadow-bo
 table.shadow-box thead:last-child tr:last-child th:first-child, table.shadow-box thead:last-child tr:last-child th:first-child.disabled:after, table.shadow-box thead:last-child tr:last-child td:first-child, table.shadow-box thead:last-child tr:last-child td:first-child.disabled:after, table.shadow-box tbody:last-child tr:last-child th:first-child, table.shadow-box tbody:last-child tr:last-child th:first-child.disabled:after, table.shadow-box tbody:last-child tr:last-child td:first-child, table.shadow-box tbody:last-child tr:last-child td:first-child.disabled:after, table.editable thead:last-child tr:last-child th:first-child, table.editable thead:last-child tr:last-child th:first-child.disabled:after, table.editable thead:last-child tr:last-child td:first-child, table.editable thead:last-child tr:last-child td:first-child.disabled:after, table.editable tbody:last-child tr:last-child th:first-child, table.editable tbody:last-child tr:last-child th:first-child.disabled:after, table.editable tbody:last-child tr:last-child td:first-child, table.editable tbody:last-child tr:last-child td:first-child.disabled:after { border-bottom-left-radius: 4px; }
 table.shadow-box thead:last-child tr:last-child th:last-child, table.shadow-box thead:last-child tr:last-child th:last-child.disabled:after, table.shadow-box thead:last-child tr:last-child td:last-child, table.shadow-box thead:last-child tr:last-child td:last-child.disabled:after, table.shadow-box tbody:last-child tr:last-child th:last-child, table.shadow-box tbody:last-child tr:last-child th:last-child.disabled:after, table.shadow-box tbody:last-child tr:last-child td:last-child, table.shadow-box tbody:last-child tr:last-child td:last-child.disabled:after, table.editable thead:last-child tr:last-child th:last-child, table.editable thead:last-child tr:last-child th:last-child.disabled:after, table.editable thead:last-child tr:last-child td:last-child, table.editable thead:last-child tr:last-child td:last-child.disabled:after, table.editable tbody:last-child tr:last-child th:last-child, table.editable tbody:last-child tr:last-child th:last-child.disabled:after, table.editable tbody:last-child tr:last-child td:last-child, table.editable tbody:last-child tr:last-child td:last-child.disabled:after { border-bottom-right-radius: 4px; }
 
-.text:not(.selectize-text), .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input, .multiselect > select, .selectize.multiselect .selectize-control.multi .selectize-input { border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; -webkit-box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; }
+.text:not(.selectize-text), .passwordwrapper, .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input, .multiselect > select, .selectize.multiselect .selectize-control.multi .selectize-input { border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; -webkit-box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; }
 
-.text.focus, .text:focus, .border-box.focus, .border-box:focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize-text > .selectize-control > .selectize-input:focus { outline: none; border-color: rgba(96, 125, 159, 0.8); }
+.text.focus, .text:focus, .passwordwrapper.focus, .passwordwrapper:focus, .border-box.focus, .border-box:focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize-text > .selectize-control > .selectize-input:focus { outline: none; border-color: rgba(96, 125, 159, 0.8); }
 
 input.text, textarea.text, .text > input, .text > textarea, table.editable textarea, .selectize-text > .selectize-control > .selectize-input { font-size: 14px; line-height: 20px; color: #3f4d5a; min-height: 3px; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 
@@ -1374,7 +1374,7 @@ body.rtl .checkboxfield.has-instructions .instructions { padding-right: 21px; }
 .text.small { padding: 3px; }
 .text input { margin: 0; padding: 0; border: none; outline: none; background-color: transparent; }
 
-.input.errors > .text, .input.errors > .border-box, .input.errors > .passwordwrapper > .text, .input.errors > .autosuggest-container .text, .text.error { border: 1px solid #EF4E4E !important; }
+.input.errors > .text, .input.errors > .border-box, .input.errors > .passwordwrapper, .input.errors > .autosuggest-container .text, .text.error { border: 1px solid #EF4E4E !important; }
 
 .texticon { position: relative; cursor: text; min-width: 130px; }
 .texticon.icon:before { position: absolute; top: 9px; color: #7b8793; }
@@ -1394,16 +1394,10 @@ body.rtl .texticon .clear { left: 9px; }
 
 .texthint { position: absolute; top: -1px; width: 100%; color: #9aa5b1; cursor: text; }
 
-.passwordwrapper { position: relative; }
-.passwordwrapper .password { width: 100%; }
-.passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; }
-body.ltr .passwordwrapper .password-toggle { right: 7px; }
-body.rtl .passwordwrapper .password-toggle { left: 7px; }
-body.ltr .passwordwrapper .password-toggle { text-align: right; }
-body.rtl .passwordwrapper .password-toggle { text-align: left; }
-
-body.ltr .password { padding-right: 5em; }
-body.rtl .password { padding-left: 5em; }
+.passwordwrapper { position: relative; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
+.passwordwrapper .password { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; border: none; }
+body.ltr .passwordwrapper .password-toggle { padding-right: 7px; }
+body.rtl .passwordwrapper .password-toggle { padding-left: 7px; }
 
 .datewrapper, .timewrapper { display: inline-block; position: relative; }
 .datewrapper .text, .timewrapper .text { position: relative; z-index: 1; width: 100%; }

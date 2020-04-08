@@ -113,11 +113,10 @@
                 }) }}
 
                 {% if user.getIsCurrent() %}
-                    {{ forms.textField({
+                    {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
                         name: 'newPassword',
-                        type: 'password',
                         autocomplete: 'new-password',
                         errors: user.getErrors('newPassword')
                     }) }}
