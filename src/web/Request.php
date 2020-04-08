@@ -922,16 +922,21 @@ class Request extends \yii\web\Request
     {
         // Get the full query string
         $queryString = $this->getQueryString();
-        $parts = explode('&', $queryString);
-        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
 
+        // If there's no path param, just return the full query string
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->pathParam) {
+            return $queryString;
+        }
+
+        // Tear it down and rebuild it without the path param
+        $parts = explode('&', $queryString);
         foreach ($parts as $key => $part) {
-            if (strpos($part, $pathParam . '=') === 0) {
+            if (strpos($part, $generalConfig->pathParam . '=') === 0) {
                 unset($parts[$key]);
                 break;
             }
         }
-
         return implode('&', $parts);
     }
 

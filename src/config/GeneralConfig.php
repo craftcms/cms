@@ -544,12 +544,13 @@ class GeneralConfig extends BaseObject
      */
     public $pageTrigger = 'p';
     /**
-     * @var string The query string param that Craft will check when determining the request's path.
+     * @var string|null The query string param that Craft will check when determining the request's path.
      *
-     * ::: tip
-     * If you change this and your server is running Apache, don’t forget to update the redirect code in your
-     * `.htaccess` file to match the new value.
-     * :::
+     * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query
+     * string param. If you’re using Apache, that means you’ll need to change the `RewriteRule` line in your `.htaccess`
+     * file to:
+     *
+     *     RewriteRule (.+) index.php [QSA,L]
      */
     public $pathParam = 'p';
     /**

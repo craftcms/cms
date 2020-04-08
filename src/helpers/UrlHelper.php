@@ -337,7 +337,8 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
     {
-        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . trim($path, '/');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
 
         $request = Craft::$app->getRequest();
 
@@ -353,7 +354,7 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, true, false);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, (bool)$generalConfig->pathParam, false);
     }
 
     /**
@@ -651,7 +652,7 @@ class UrlHelper
         }
 
         // Put it all together
-        if (!$showScriptName || $generalConfig->usePathInfo) {
+        if (!$showScriptName || $generalConfig->usePathInfo || !$generalConfig->pathParam) {
             if ($path) {
                 $url = rtrim($baseUrl, '/') . '/' . trim($path, '/');
 
