@@ -666,9 +666,8 @@ class UrlHelper
 
             if ($path) {
                 // Prepend it to the params array
-                $pathParam = $generalConfig->pathParam;
-                ArrayHelper::remove($params, $pathParam);
-                $params = array_merge([$pathParam => $path], $params);
+                ArrayHelper::remove($params, $generalConfig->pathParam);
+                $params = array_merge([$generalConfig->pathParam => $path], $params);
             }
         }
 
