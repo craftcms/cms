@@ -214,6 +214,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
+            new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
+            new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
             new TwigFilter('filter', [$this, 'filterFilter']),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
