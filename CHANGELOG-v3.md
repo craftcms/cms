@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where `craft\i18n\Formatter::asTimestamp()` and the `|timestamp` filter weren’t returning weekday names for dates within the past 3-7 days.
+- Fixed a bug where `craft\base\Element::getCurrentRevision()` would return `null` when called on a draft or revision.
 
 ## 3.4.14 - 2020-04-06
 
