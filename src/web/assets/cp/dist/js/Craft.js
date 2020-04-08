@@ -13224,10 +13224,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                 }).insertAfter($draftHeading);
               }
 
-              var $draftLi = $('<li/>').appendTo($draftsUl);
+              var $draftLi = $('<li/>').prependTo($draftsUl);
               var $draftA = $('<a/>', {
                 'class': 'sel',
-                html: '<span class="draft-name"></span> <span class="draft-creator light"></span>'
+                html: '<span class="draft-name"></span> <span class="draft-meta light"></span>'
               }).appendTo($draftLi);
               revisionMenu.addOptions($draftA);
               revisionMenu.selectOption($draftA); // Update the site URLs
@@ -13245,9 +13245,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
           if (revisionMenu) {
             revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-            revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
-              creator: response.creator
-            }));
+            revisionMenu.$options.filter('.sel').find('.draft-meta').text("\u2013 ".concat(response.timestamp) + (response.creator ? ", ".concat(response.creator) : ''));
           } // Did the controller send us updated preview targets?
 
 
