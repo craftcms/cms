@@ -38,6 +38,7 @@
 - Added `craft\helpers\Html::explodeStyle()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
+- Added `craft\helpers\Queue`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.

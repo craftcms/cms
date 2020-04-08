@@ -15,6 +15,7 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\events\DeleteTemplateCachesEvent;
 use craft\helpers\Db;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
@@ -481,7 +482,7 @@ class TemplateCaches extends Component
     {
         // It's possible this is already null
         if ($this->_deleteCachesIndex !== null) {
-            Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
+            Queue::push(new DeleteStaleTemplateCaches([
                 'elementId' => array_keys($this->_deleteCachesIndex),
             ]));
 

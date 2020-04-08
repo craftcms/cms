@@ -43,6 +43,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
@@ -880,7 +881,7 @@ class Elements extends Component
     {
         /** @var Element $element */
         if ($queue) {
-            Craft::$app->getQueue()->push(new UpdateElementSlugsAndUris([
+            Queue::push(new UpdateElementSlugsAndUris([
                 'elementId' => $element->id,
                 'elementType' => get_class($element),
                 'siteId' => $element->siteId,
@@ -979,7 +980,7 @@ class Elements extends Component
             $childIds = $query->ids();
 
             if (!empty($childIds)) {
-                Craft::$app->getQueue()->push(new UpdateElementSlugsAndUris([
+                Queue::push(new UpdateElementSlugsAndUris([
                     'elementId' => $childIds,
                     'elementType' => get_class($element),
                     'siteId' => $element->siteId,
@@ -1116,15 +1117,14 @@ class Elements extends Component
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "{{$refHandle}:";
-                $queue = Craft::$app->getQueue();
 
-                $queue->push(new FindAndReplace([
+                Queue::push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . ':',
                     'replace' => $refTagPrefix . $prevailingElement->id . ':',
                 ]));
 
-                $queue->push(new FindAndReplace([
+                Queue::push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . '}',
                     'replace' => $refTagPrefix . $prevailingElement->id . '}',
@@ -2190,19 +2190,12 @@ class Elements extends Component
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             } else {
-                $queue = Craft::$app->getQueue();
-                $job = new UpdateSearchIndex([
+                Queue::push(new UpdateSearchIndex([
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,
                     'fieldHandles' => $element->getDirtyFields(),
-                ]);
-                try {
-                    $queue->priority(2048)->push($job);
-                } catch (NotSupportedException $e) {
-                    // The queue probably doesn't support custom push priorities. Try again without one.
-                    $queue->push($job);
-                }
+                ]), 2048);
             }
         }
 

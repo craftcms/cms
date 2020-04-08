@@ -38,6 +38,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\AssetTransform;
@@ -609,7 +610,7 @@ class Assets extends Component
 
         // Queue up a new Generate Pending Transforms job
         if (!$this->_queuedGeneratePendingTransformsJob) {
-            Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms());
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
