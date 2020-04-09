@@ -804,6 +804,27 @@ abstract class Element extends Component implements ElementInterface
                     'elementType' => static::class,
                     'map' => $map
                 ];
+
+            case 'currentRevision':
+                // Get the source element IDs
+                $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+                $map = (new Query)
+                    ->select([
+                        'source' => 'se.id',
+                        'target' => 're.id',
+                    ])
+                    ->from(['re' => Table::ELEMENTS])
+                    ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[re.revisionId]]')
+                    ->innerJoin(['se' => Table::ELEMENTS], '[[se.id]] = [[r.sourceId]]')
+                    ->where('[[re.dateCreated]] = [[se.dateUpdated]]')
+                    ->andWhere(['se.id' => $sourceElementIds])
+                    ->all();
+
+                return [
+                    'elementType' => static::class,
+                    'map' => $map,
+                    'criteria' => ['revisions' => true],
         }
 
         // Is $handle a custom field handle?
@@ -2361,7 +2382,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
-        $this->_eagerLoadedElements[$handle] = $elements;
+        if ($handle === 'currentRevision') {
+            $this->_currentRevision = $elements[0] ?? false;
+        } else {
+            $this->_eagerLoadedElements[$handle] = $elements;
+        }
     }
 
     /**
