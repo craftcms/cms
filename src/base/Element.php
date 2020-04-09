@@ -29,6 +29,7 @@ use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
+use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
@@ -170,6 +171,16 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.1.0
      */
     const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
+
+    /**
+     * @event SetEagerLoadedElementsEvent The event that is triggered when setting eager-loaded elements.
+     *
+     * Set [[Event::$handled]] to `true` to prevent the elements from getting stored to the private
+     * `$_eagerLoadedElements` array.
+     *
+     * @since 3.5.0
+     */
+    const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
 
     /**
      * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
@@ -2385,7 +2396,16 @@ abstract class Element extends Component implements ElementInterface
         if ($handle === 'currentRevision') {
             $this->_currentRevision = $elements[0] ?? false;
         } else {
-            $this->_eagerLoadedElements[$handle] = $elements;
+            // Give plugins a chance to store this
+            $event = new SetEagerLoadedElementsEvent([
+                'handle' => $handle,
+                'elements' => $elements,
+            ]);
+            Event::trigger(static::class, self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
+            if (!$event->handled) {
+                // No takers. Just store it in the internal array then.
+                $this->_eagerLoadedElements[$handle] = $elements;
+            }
         }
     }
 

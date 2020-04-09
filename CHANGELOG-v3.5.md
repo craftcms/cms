@@ -24,12 +24,14 @@
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added support for specifying a transform on assets’ `width` and `height` fields via GraphQL.
+- Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft\events\SetEagerLoadedElementsEvent`.
 - Added `craft\gql\ElementQueryConditionBuilder`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.

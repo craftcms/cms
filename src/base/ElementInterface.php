@@ -990,7 +990,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets some eager-loaded elements on a given handle.
      *
-     * @param string $handle The handle to load the elements with in the future
+     * @param string $handle The handle that was used to eager-load the elements
      * @param ElementInterface[] $elements The eager-loaded elements
      */
     public function setEagerLoadedElements(string $handle, array $elements);
