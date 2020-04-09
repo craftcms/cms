@@ -125,8 +125,8 @@ abstract class MutationResolver
      */
     protected function saveElement(ElementInterface $element)
     {
-
-        if ($element->enabled) {
+        /** @var Element $element */
+        if ($element->enabled && $element->getScenario() == Element::SCENARIO_DEFAULT) {
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
