@@ -11,6 +11,7 @@
     .siteId(element.siteId)
     .anyStatus()
     .orderBy({dateUpdated: SORT_DESC})
+    .with(['draftCreator'])
     .all() : [] %}
 
 {% set revisions = element.find()
@@ -20,6 +21,7 @@
     .offset(1)
     .limit(10)
     .orderBy({dateCreated: SORT_DESC})
+    .with(['revisionCreator'])
     .all() %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}

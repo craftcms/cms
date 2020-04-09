@@ -17,6 +17,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
+use craft\elements\User;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
@@ -836,6 +837,47 @@ abstract class Element extends Component implements ElementInterface
                     'elementType' => static::class,
                     'map' => $map,
                     'criteria' => ['revisions' => true],
+                ];
+
+            case 'draftCreator':
+                // Get the source element IDs
+                $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+                $map = (new Query())
+                    ->select([
+                        'source' => 'e.id',
+                        'target' => 'd.creatorId',
+                    ])
+                    ->from(['e' => Table::ELEMENTS])
+                    ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
+                    ->where(['e.id' => $sourceElementIds])
+                    ->andWhere(['not', ['d.creatorId' => null]])
+                    ->all();
+
+                return [
+                    'elementType' => User::class,
+                    'map' => $map,
+                ];
+
+            case 'revisionCreator':
+                // Get the source element IDs
+                $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+                $map = (new Query())
+                    ->select([
+                        'source' => 'e.id',
+                        'target' => 'r.creatorId',
+                    ])
+                    ->from(['e' => Table::ELEMENTS])
+                    ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[e.revisionId]]')
+                    ->where(['e.id' => $sourceElementIds])
+                    ->andWhere(['not', ['r.creatorId' => null]])
+                    ->all();
+
+                return [
+                    'elementType' => User::class,
+                    'map' => $map,
+                ];
         }
 
         // Is $handle a custom field handle?
@@ -2396,6 +2438,18 @@ abstract class Element extends Component implements ElementInterface
         switch ($handle) {
             case 'currentRevision':
                 $this->_currentRevision = $elements[0] ?? false;
+                break;
+            case 'draftCreator':
+                /** @var DraftBehavior|null $behavior */
+                if ($behavior = $this->getBehavior('draft')) {
+                    $behavior->setCreator($elements[0] ?? null);
+                }
+                break;
+            case 'revisionCreator':
+                /** @var RevisionBehavior|null $behavior */
+                if ($behavior = $this->getBehavior('revision')) {
+                    $behavior->setCreator($elements[0] ?? null);
+                }
                 break;
             default:
                 // Give plugins a chance to store this
