@@ -395,7 +395,7 @@ class Asset extends Element
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-            'uploader' => ['label' => Craft::t('app', 'Uploaded by')],
+            'uploader' => ['label' => Craft::t('app', 'Uploaded By')],
         ];
 
         // Hide Author from Craft Solo
