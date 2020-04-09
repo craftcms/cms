@@ -248,7 +248,7 @@ abstract class Element extends Component implements ElementInterface
      *     // @var Entry $entry
      *     $entry = $e->sender;
      *
-     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *     if (ElementHelper::isDraftOrRevision($entry)) {
      *         return;
      *     }
      *
@@ -735,84 +735,82 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
-        // Eager-loading descendants or direct children?
-        if ($handle === 'descendants' || $handle === 'children') {
-            // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        switch ($handle) {
+            case 'descendants':
+            case 'children':
+                // Get the source element IDs
+                $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
-            // Get the structure data for these elements
-            $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
-
-            if ($handle === 'children') {
-                $selectColumns[] = 'level';
-            }
-
-            $structureData = (new Query())
-                ->select($selectColumns)
-                ->from([Table::STRUCTUREELEMENTS])
-                ->where(['elementId' => $sourceElementIds])
-                ->all();
-
-            if (empty($structureData)) {
-                return;
-            }
-
-            $db = Craft::$app->getDb();
-            $qb = $db->getQueryBuilder();
-            $query = new Query();
-            $sourceSelectSql = '(CASE';
-            $condition = ['or'];
-
-            foreach ($structureData as $i => $elementStructureData) {
-                $thisElementCondition = [
-                    'and',
-                    ['structureId' => $elementStructureData['structureId']],
-                    ['>', 'lft', $elementStructureData['lft']],
-                    ['<', 'rgt', $elementStructureData['rgt']],
-                ];
+                // Get the structure data for these elements
+                $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
 
                 if ($handle === 'children') {
-                    $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
+                    $selectColumns[] = 'level';
                 }
 
-                $condition[] = $thisElementCondition;
-                $sourceSelectSql .= ' WHEN ' .
-                    $qb->buildCondition(
-                        [
-                            'and',
-                            ['structureId' => $elementStructureData['structureId']],
-                            ['>', 'lft', $elementStructureData['lft']],
-                            ['<', 'rgt', $elementStructureData['rgt']]
-                        ],
-                        $query->params) .
-                    " THEN :sourceId{$i}";
-                $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
-            }
+                $structureData = (new Query())
+                    ->select($selectColumns)
+                    ->from([Table::STRUCTUREELEMENTS])
+                    ->where(['elementId' => $sourceElementIds])
+                    ->all();
 
-            $sourceSelectSql .= ' END) as source';
+                if (empty($structureData)) {
+                    return null;
+                }
 
-            // Return any child elements
-            $map = $query
-                ->select([$sourceSelectSql, 'elementId as target'])
-                ->from([Table::STRUCTUREELEMENTS])
-                ->where($condition)
-                ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
-                ->all();
+                $db = Craft::$app->getDb();
+                $qb = $db->getQueryBuilder();
+                $query = new Query();
+                $sourceSelectSql = '(CASE';
+                $condition = ['or'];
 
-            return [
-                'elementType' => static::class,
-                'map' => $map
-            ];
+                foreach ($structureData as $i => $elementStructureData) {
+                    $thisElementCondition = [
+                        'and',
+                        ['structureId' => $elementStructureData['structureId']],
+                        ['>', 'lft', $elementStructureData['lft']],
+                        ['<', 'rgt', $elementStructureData['rgt']],
+                    ];
+
+                    if ($handle === 'children') {
+                        $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
+                    }
+
+                    $condition[] = $thisElementCondition;
+                    $sourceSelectSql .= ' WHEN ' .
+                        $qb->buildCondition(
+                            [
+                                'and',
+                                ['structureId' => $elementStructureData['structureId']],
+                                ['>', 'lft', $elementStructureData['lft']],
+                                ['<', 'rgt', $elementStructureData['rgt']]
+                            ],
+                            $query->params) .
+                        " THEN :sourceId{$i}";
+                    $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
+                }
+
+                $sourceSelectSql .= ' END) as source';
+
+                // Return any child elements
+                $map = $query
+                    ->select([$sourceSelectSql, 'elementId as target'])
+                    ->from([Table::STRUCTUREELEMENTS])
+                    ->where($condition)
+                    ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
+                    ->all();
+
+                return [
+                    'elementType' => static::class,
+                    'map' => $map
+                ];
         }
 
         // Is $handle a custom field handle?
         // (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
         $field = Craft::$app->getFields()->getFieldByHandle($handle);
-
-        if ($field) {
-            if ($field instanceof EagerLoadingFieldInterface) {
-                return $field->getEagerLoadingMap($sourceElements);
-            }
+        if ($field && $field instanceof EagerLoadingFieldInterface) {
+            return $field->getEagerLoadingMap($sourceElements);
         }
 
         // Give plugins a chance to provide custom mappings
@@ -821,7 +819,6 @@ abstract class Element extends Component implements ElementInterface
             'handle' => $handle
         ]);
         Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
-
         if ($event->elementType !== null) {
             return [
                 'elementType' => $event->elementType,
@@ -2409,9 +2406,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
+            /** @var Element $source */
+            $source = ElementHelper::sourceElement($this);
             $this->_currentRevision = static::find()
-                ->revisionOf($this->getSourceId())
-                ->dateCreated($this->dateUpdated)
+                ->revisionOf($source->id)
+                ->dateCreated($source->dateUpdated)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;

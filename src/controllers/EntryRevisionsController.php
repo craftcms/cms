@@ -247,10 +247,12 @@ class EntryRevisionsController extends BaseEntriesController
 
         /** @var ElementInterface|DraftBehavior */
         if ($request->getAcceptsJson()) {
+            $creator = $draft->getCreator();
             return $this->asJson([
                 'sourceId' => $draft->sourceId,
                 'draftId' => $draft->draftId,
-                'creator' => (string)$draft->getCreator(),
+                'timestamp' => Craft::$app->getFormatter()->asTimestamp($draft->dateUpdated, 'short'),
+                'creator' => $creator ? $creator->getName() : null,
                 'draftName' => $draft->draftName,
                 'draftNotes' => $draft->draftNotes,
                 'docTitle' => $this->docTitle($draft),

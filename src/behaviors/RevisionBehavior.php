@@ -19,7 +19,7 @@ use yii\base\Behavior;
  *
  * @property ElementInterface|Element $owner
  * @property-read ElementInterface|Element $source
- * @property-read User $creator
+ * @property-read User|null $creator
  * @property-read string $revisionLabel
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0

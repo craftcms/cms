@@ -10,6 +10,7 @@
     .draftOf(element)
     .siteId(element.siteId)
     .anyStatus()
+    .orderBy({dateUpdated: SORT_DESC})
     .all() : [] %}
 
 {% set revisions = element.find()
@@ -18,6 +19,7 @@
     .anyStatus()
     .offset(1)
     .limit(10)
+    .orderBy({dateCreated: SORT_DESC})
     .all() %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
@@ -98,10 +100,12 @@
                 <ul class="padded revision-group-current">
                     {% set currentRevision = element.getCurrentRevision() %}
                     {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
+                    {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
                     <li>
                         <a{% if not isDraft and not isRevision %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
-                            <span class="light">{{ currentRevisionEditTime|timestamp('short') }}
-                                {%- if currentRevision %}, {{ currentRevision.creator }}{% endif %}
+                            <span class="light">–
+                                {{ currentRevisionEditTime|timestamp('short') }}
+                                {%- if currentRevisionCreator %}, {{ currentRevisionCreator.name }}{% endif %}
                             </span>
                         </a>
                     </li>
@@ -117,9 +121,10 @@
                             <a{% if draft.draftId == element.draftId %} class="sel"{% endif %} href="{{ url }}">
                                 <span class="draft-name">{{ draft.draftName }}</span>
                                 {% set creator = draft.getCreator() %}
-                                {% if creator %}
-                                    <span class="draft-creator light">{{ "by {creator}"|t('app', { creator: creator }) }}</span>
-                                {% endif %}
+                                <span class="draft-meta light">–
+                                    {{ draft.dateUpdated|timestamp('short') }}
+                                    {%- if creator %}, {{ creator.name }}{% endif %}
+                                </span>
                             </a>
                         </li>
                     {% endfor %}
@@ -135,9 +140,10 @@
                             <a{% if revision.revisionId == element.revisionId %} class="sel"{% endif %} href="{{ url }}">
                                 {{ revision.getRevisionLabel() }}
                                 {% set creator = revision.getCreator() %}
-                                {% if creator %}
-                                    <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ creator }}</span>
-                                {% endif %}
+                                <span class="light">–
+                                    {{ revision.dateCreated|timestamp('short') }}
+                                    {%- if creator %}, {{ creator.name }}{% endif %}
+                                </span>
                             </a>
                         </li>
                     {% endfor %}
