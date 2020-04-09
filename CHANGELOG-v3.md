@@ -3,7 +3,7 @@
 ## 3.4.15 - 2020-04-09
 
 ### Added
-- Categories now have a`url` field when queried via GraphQL.
+- Categories now have a `url` field when queried via GraphQL.
 
 ### Changed
 - Entry revision menus now list drafts sorted by date updated in descending order, and show the drafts’ update timestamps. ([#5889](https://github.com/craftcms/cms/issues/5889))
