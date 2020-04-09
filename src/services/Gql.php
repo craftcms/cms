@@ -36,6 +36,7 @@ use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\mutations\Asset as AssetMutation;
 use craft\gql\mutations\Category as CategoryMutation;
 use craft\gql\mutations\Entry as EntryMutation;
 use craft\gql\mutations\GlobalSet as GlobalSetMutation;
@@ -1078,6 +1079,7 @@ class Gql extends Component
             TagMutation::getMutations(),
             CategoryMutation::getMutations(),
             GlobalSetMutation::getMutations(),
+            AssetMutation::getMutations(),
         ];
 
 
@@ -1197,7 +1199,19 @@ class Gql extends Component
 
             foreach ($volumes as $volume) {
                 $suffix = 'volumes.' . $volume->uid;
-                $volumePermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
+                $volumePermissions[$suffix . ':read'] = [
+                    'label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)]),
+                    'nested' => [
+                        $suffix . ':edit' => [
+                            'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)]),
+                            'nested' => [
+                                $suffix . ':create' => ['label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                                $suffix . ':save' => ['label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                                $suffix . ':delete' => ['label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                            ],
+                        ],
+                    ],
+                ];
             }
 
             $permissions[$label] = $volumePermissions;

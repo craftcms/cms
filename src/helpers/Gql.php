@@ -158,6 +158,18 @@ class Gql
     }
 
     /**
+     * Return true if active schema can mutate assets.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateAssets(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['volumes']);
+    }
+
+    /**
      * Return true if active schema can query entries.
      *
      * @return bool

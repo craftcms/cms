@@ -38,6 +38,7 @@ use craft\helpers\Image;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
+use craft\models\TagGroup;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
@@ -247,6 +248,15 @@ class Asset extends Element
     {
         /** @var Volume $context */
         return ['volumes.' . $context->uid];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var Volume $context */
+        return 'save_' . $context->handle . '_Asset';
     }
 
     /**

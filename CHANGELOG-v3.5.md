@@ -32,6 +32,7 @@
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\events\RegisterGqlMutationsEvent`.
+- Added `craft\gql\arguments\mutations\Asset`.
 - Added `craft\gql\arguments\mutations\Draft`.
 - Added `craft\gql\arguments\mutations\Entry`.
 - Added `craft\gql\arguments\mutations\Structure`.
@@ -47,20 +48,24 @@
 - Added `craft\gql\mutations\Ping`.
 - Added `craft\gql\mutations\Tag`.
 - Added `craft\gql\resolvers\mutations\CreateDraft`.
+- Added `craft\gql\resolvers\mutations\DeleteAsset`.
 - Added `craft\gql\resolvers\mutations\DeleteCategory`.
 - Added `craft\gql\resolvers\mutations\DeleteEntry`.
 - Added `craft\gql\resolvers\mutations\DeleteTag`.
 - Added `craft\gql\resolvers\mutations\PublishDraft`.
+- Added `craft\gql\resolvers\mutations\SaveAsset`.
 - Added `craft\gql\resolvers\mutations\SaveDraft`.
 - Added `craft\gql\resolvers\mutations\SaveCategory`.
 - Added `craft\gql\resolvers\mutations\SaveEntry`.
 - Added `craft\gql\resolvers\mutations\SaveGlobalSet`.
 - Added `craft\gql\resolvers\mutations\SaveTag`.
+- Added `craft\gql\types\input\File`.
 - Added `craft\gql\types\input\Matrix`.
 - Added `craft\gql\types\Mutation`.
 - Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\helpers\Gql::canMutateAssets()`.
 - Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
 - Added `craft\helpers\Gql::canMutateGlobalSets()`.
