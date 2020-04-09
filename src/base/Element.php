@@ -2393,19 +2393,21 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
-        if ($handle === 'currentRevision') {
-            $this->_currentRevision = $elements[0] ?? false;
-        } else {
-            // Give plugins a chance to store this
-            $event = new SetEagerLoadedElementsEvent([
-                'handle' => $handle,
-                'elements' => $elements,
-            ]);
-            Event::trigger(static::class, self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
-            if (!$event->handled) {
-                // No takers. Just store it in the internal array then.
-                $this->_eagerLoadedElements[$handle] = $elements;
-            }
+        switch ($handle) {
+            case 'currentRevision':
+                $this->_currentRevision = $elements[0] ?? false;
+                break;
+            default:
+                // Give plugins a chance to store this
+                $event = new SetEagerLoadedElementsEvent([
+                    'handle' => $handle,
+                    'elements' => $elements,
+                ]);
+                Event::trigger(static::class, self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
+                if (!$event->handled) {
+                    // No takers. Just store it in the internal array then.
+                    $this->_eagerLoadedElements[$handle] = $elements;
+                }
         }
     }
 
