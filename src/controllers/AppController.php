@@ -500,7 +500,8 @@ class AppController extends Controller
             $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
         }
 
-        $allPluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        $pluginsService = Craft::$app->getPlugins();
+        $allPluginInfo = $pluginsService->getAllPluginInfo();
 
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
@@ -516,7 +517,7 @@ class AppController extends Controller
                     if (
                         !isset($allPluginInfo[$handle]) ||
                         !$allPluginInfo[$handle]['licenseKey'] ||
-                        $allPluginInfo[$handle]['licenseKey'] === $pluginLicenseInfo['key']
+                        $pluginsService->normalizePluginLicenseKey(Craft::parseEnv($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
                     ) {
                         $result[$handle] = [
                             'edition' => null,
@@ -555,7 +556,7 @@ class AppController extends Controller
                 'version' => $pluginInfo['version'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginInfo['licenseKey'],
+                'licenseKey' => $pluginsService->normalizePluginLicenseKey(Craft::parseEnv($pluginInfo['licenseKey'])),
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'licenseIssues' => $pluginInfo['licenseIssues'],

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the `app/get-plugin-license-info` action was not parsing license key environment variables.
+
 ## 3.4.15 - 2020-04-09
 
 ### Added
