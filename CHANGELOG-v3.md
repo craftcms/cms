@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `url` field for categories when using the GraphQL API.
+
 ### Changed
 - Entry revision menus now list drafts sorted by date updated in descending order, and show the drafts’ update timestamps. ([#5889](https://github.com/craftcms/cms/issues/5889))
 
