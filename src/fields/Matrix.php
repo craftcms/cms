@@ -24,12 +24,9 @@ use craft\elements\MatrixBlock;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\events\BlockTypesEvent;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
-use craft\gql\types\QueryArgument;
-use craft\gql\types\TableRow;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -44,7 +41,6 @@ use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
-use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -849,7 +845,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getContentGqlArgumentType()
     {
-        return MatrixInputType::createType($this);
+        return MatrixInputType::getType($this);
     }
 
 

@@ -8,6 +8,7 @@
 namespace craft\gql\types\input;
 
 use craft\base\Field;
+use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\InputObjectType;
@@ -21,9 +22,15 @@ use GraphQL\Type\Definition\Type;
  */
 class Matrix extends InputObjectType
 {
-    public static function createType($context)
+    /**
+     * Create the type for a matrix field.
+     *
+     * @param $context
+     * @return bool|mixed
+     */
+    public static function getType(MatrixField $context)
     {
-        /** @var \craft\fields\Matrix $context */
+        /** @var MatrixField $context */
         $typeName = $context->handle . '_MatrixInput';
 
         if ($inputType = GqlEntityRegistry::getEntity($typeName)) {
