@@ -3,7 +3,52 @@
 ## Unreleased
 
 ### Added
+- Added the `url` field for categories when using the GraphQL API.
+
+### Changed
+- Entry revision menus now list drafts sorted by date updated in descending order, and show the drafts’ update timestamps. ([#5889](https://github.com/craftcms/cms/issues/5889))
+
+### Fixed
+- Fixed a bug where `craft\i18n\Formatter::asTimestamp()` and the `|timestamp` filter weren’t returning weekday names for dates within the past 3-7 days.
+- Fixed a bug where `craft\base\Element::getCurrentRevision()` would return `null` when called on a draft or revision.
+- Fixed a bug where entry revision menus could list revisions out of order.
+
+## 3.4.14 - 2020-04-06
+
+### Added
+- Added the `setup/db-cache-table` command.
+- Added `craft\cache\DbCache`, which should be used instead of `yii\caching\DbCache` if storing data caches in the database. ([#5884](https://github.com/craftcms/cms/issues/5884))
+- Added `craft\db\Table::CACHE`.
+- Added `craft\helpers\Db::parseBooleanParam()`.
+
+### Changed
+- Craft now disables read/write splitting before applying new `project.yaml` changes. ([#5802](https://github.com/craftcms/cms/issues/5802))
+
+### Fixed
+- Fixed a PHP error that occurred when running the `project-config/rebuild` command, if no `project.yaml` file existed yet. ([#5888](https://github.com/craftcms/cms/pull/5888))
+- Fixed a bug where passing `'not 1'` or `:empty:` to a Lightswitch field’s element query param would have the opposite effect that was intended. ([#5896](https://github.com/craftcms/cms/issues/5896))
+
+## 3.4.13 - 2020-04-02
+
+### Added
+- Added `craft\models\GqlToken::getIsValid()`.
+
+### Changed
+- Improved the 400 response messages returned by the `graphql/api` controller action, if the bearer token was missing or invalid.
+- Ajax requests sent with `Craft.sendActionRequest()` now have an `X-Requested-With: XMLHttpRequest` header. ([#5868](https://github.com/craftcms/cms/issues/5868))
+- `craft\helpers\Db::parseParam()` no longer assumes that `null` values within boolean columns should equate to `false`.
+
+### Fixed
+- Fixed a bug where Lightswitch element query params were filtering out entries that hadn’t been saved since the Lightswitch field was added, if the field’s default value was enabled. ([#5866](https://github.com/craftcms/cms/issues/5866))
+- Fixed an error that could occur if the `graphql/api` controller action wasn’t able to determine which GraphQL schema to use.
+- Fixed an error that could occur when transforming images to exactly the same size. ([#5772](https://github.com/craftcms/cms/issues/5772))
+- Fixed an error that occurred when adding “Updating search indexes” jobs to the queue, if the queue didn’t support custom push priorities. ([#5876](https://github.com/craftcms/cms/issues/5876))
+
+## 3.4.12 - 2020-03-31
+
+### Added
 - Added the `utils/ascii-filenames` command, which converts all non-ASCII asset filenames to ASCII.
+- Added `craft\services\Deprecator::storeLogs()`.
 
 ### Changed
 - “Updating search indexes” jobs now get a lower priority than other jobs.
@@ -16,6 +61,8 @@
 - Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks. ([#5849](https://github.com/craftcms/cms/issues/5849))
 - Fixed a bug where Craft wasn’t ensuring that a `project.yaml` file exists before rebuilding the project config.
 - Fixed a bug where it was possible to create multiple tags with the same title. ([#5865](https://github.com/craftcms/cms/issues/5865))
+- Fixed a PHP error that occurred if any deprecated config settings were set.
+- Fixed a bug where the debug toolbar wasn’t showing deprecation warnings if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
 
 ## 3.4.11 - 2020-03-26
 
@@ -2326,7 +2373,7 @@
 ## 3.1.8 - 2019-02-05
 
 ### Changed
-- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled.
+- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled. ([#1025](https://github.com/craftcms/cms/issues/1025))
 
 ### Fixed
 - Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables with a static number of rows would add a new row. ([#3765](https://github.com/craftcms/cms/issues/3765))

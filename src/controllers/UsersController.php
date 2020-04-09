@@ -119,18 +119,20 @@ class UsersController extends Controller
      */
     public function actionLogin()
     {
-        if (!Craft::$app->getUser()->getIsGuest()) {
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->getIsGuest()) {
             // Too easy.
             return $this->_handleSuccessfulLogin();
         }
 
-        if (!Craft::$app->getRequest()->getIsPost()) {
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsPost()) {
             return null;
         }
 
-        $loginName = Craft::$app->getRequest()->getRequiredBodyParam('loginName');
-        $password = Craft::$app->getRequest()->getRequiredBodyParam('password');
-        $rememberMe = (bool)Craft::$app->getRequest()->getBodyParam('rememberMe');
+        $loginName = $request->getRequiredBodyParam('loginName');
+        $password = $request->getRequiredBodyParam('password');
+        $rememberMe = (bool)$request->getBodyParam('rememberMe');
 
         // Does a user exist with that username/email?
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
@@ -158,7 +160,7 @@ class UsersController extends Controller
         }
 
         // Try logging them in
-        if (!Craft::$app->getUser()->login($user, $duration)) {
+        if (!$userSession->login($user, $duration)) {
             // Unknown error
             return $this->_handleLoginFailure(null, $user);
         }
@@ -227,13 +229,13 @@ class UsersController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $userService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
         /** @var User|null $user */
-        $user = $userService->getIdentity();
+        $user = $userSession->getIdentity();
 
         $return = [
             'isGuest' => $user === null,
-            'timeout' => $userService->getRemainingSessionTime(),
+            'timeout' => $userSession->getRemainingSessionTime(),
         ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -316,7 +318,7 @@ class UsersController extends Controller
         }
 
         // Redirect to the login page if this is a CP request
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
+        if ($request->getIsCpRequest()) {
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
@@ -332,6 +334,7 @@ class UsersController extends Controller
     public function actionSendPasswordResetEmail()
     {
         $this->requirePostRequest();
+        $request = Craft::$app->getRequest();
 
         $errors = [];
         $existingUser = false;
@@ -339,7 +342,7 @@ class UsersController extends Controller
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
         if (Craft::$app->getUser()->checkPermission('editUsers')) {
-            $userId = Craft::$app->getRequest()->getBodyParam('userId');
+            $userId = $request->getBodyParam('userId');
 
             if ($userId) {
                 $user = Craft::$app->getUsers()->getUserById($userId);
@@ -354,7 +357,7 @@ class UsersController extends Controller
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($user)) {
-            $loginName = Craft::$app->getRequest()->getBodyParam('loginName');
+            $loginName = $request->getBodyParam('loginName');
 
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
@@ -380,7 +383,7 @@ class UsersController extends Controller
         }
 
         if (empty($errors)) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }
 
@@ -427,7 +430,8 @@ class UsersController extends Controller
     public function actionSetPassword(): Response
     {
         // Have they just submitted a password, or are we just displaying the page?
-        if (!Craft::$app->getRequest()->getIsPost()) {
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsPost()) {
             if (!is_array($info = $this->_processTokenRequest())) {
                 return $info;
             }
@@ -448,24 +452,24 @@ class UsersController extends Controller
         }
 
         // POST request. They've just set the password.
-        $code = Craft::$app->getRequest()->getRequiredBodyParam('code');
-        $uid = Craft::$app->getRequest()->getRequiredParam('id');
+        $code = $request->getRequiredBodyParam('code');
+        $uid = $request->getRequiredParam('id');
         $user = Craft::$app->getUsers()->getUserByUid($uid);
 
         // See if we still have a valid token.
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
 
         if (!$user || !$isCodeValid) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($request);
         }
 
-        $user->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
+        $user->newPassword = $request->getRequiredBodyParam('newPassword');
         $user->setScenario(User::SCENARIO_PASSWORD);
 
         if (!Craft::$app->getElements()->saveElement($user)) {
             $errors = $user->getErrors('newPassword');
 
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asErrorJson(implode(', ', $errors));
             }
 
@@ -492,7 +496,7 @@ class UsersController extends Controller
         // Maybe automatically log them in
         $this->_maybeLoginUserAfterAccountActivation($user);
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        if ($request->getAcceptsJson()) {
             return $this->asJson(['success' => true]);
         }
 
@@ -1150,7 +1154,7 @@ class UsersController extends Controller
         // Is this the current user, and did their username just change?
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
-            Craft::$app->getUser()->sendUsernameCookie($user);
+            $userSession->sendUsernameCookie($user);
         }
 
         // Save the user's photo, if it was submitted
@@ -1314,7 +1318,8 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
-        $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $request = Craft::$app->getRequest();
+        $userId = $request->getRequiredBodyParam('userId');
 
         $user = User::find()
             ->id($userId)
@@ -1334,7 +1339,7 @@ class UsersController extends Controller
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        if ($request->getAcceptsJson()) {
             return $this->asJson(['success' => $emailSent]);
         }
 
@@ -1473,7 +1478,8 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireLogin();
 
-        $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $request = Craft::$app->getRequest();
+        $userId = $request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
@@ -1490,7 +1496,7 @@ class UsersController extends Controller
         }
 
         // Are we transferring the user's content to a different user?
-        $transferContentToId = Craft::$app->getRequest()->getBodyParam('transferContentTo');
+        $transferContentToId = $request->getBodyParam('transferContentTo');
 
         if (is_array($transferContentToId) && isset($transferContentToId[0])) {
             $transferContentToId = $transferContentToId[0];
@@ -1618,7 +1624,8 @@ class UsersController extends Controller
         ]);
         $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        $request = Craft::$app->getRequest();
+        if ($request->getAcceptsJson()) {
             return $this->asJson([
                 'errorCode' => $authError,
                 'error' => $event->message
@@ -1628,8 +1635,8 @@ class UsersController extends Controller
         Craft::$app->getSession()->setError($event->message);
 
         Craft::$app->getUrlManager()->setRouteParams([
-            'loginName' => Craft::$app->getRequest()->getBodyParam('loginName'),
-            'rememberMe' => (bool)Craft::$app->getRequest()->getBodyParam('rememberMe'),
+            'loginName' => $request->getBodyParam('loginName'),
+            'rememberMe' => (bool)$request->getBodyParam('rememberMe'),
             'errorCode' => $authError,
             'errorMessage' => $event->message,
         ]);
@@ -1777,7 +1784,8 @@ class UsersController extends Controller
      */
     private function _processUserGroupsPermissions(User $user)
     {
-        if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
+        $userSession = Craft::$app->getUser();
+        if (($currentUser = $userSession->getIdentity()) === null) {
             return;
         }
 
@@ -1800,7 +1808,6 @@ class UsersController extends Controller
             if (is_array($permissions)) {
                 // See if there are any new permissions in here
                 $hasNewPermissions = false;
-                $userSession = Craft::$app->getUser();
 
                 foreach ($permissions as $permission) {
                     if (!$user->can($permission)) {
@@ -1874,8 +1881,9 @@ class UsersController extends Controller
      */
     private function _processTokenRequest()
     {
-        $uid = Craft::$app->getRequest()->getRequiredParam('id');
-        $code = Craft::$app->getRequest()->getRequiredParam('code');
+        $request = Craft::$app->getRequest();
+        $uid = $request->getRequiredParam('id');
+        $code = $request->getRequiredParam('code');
 
         /** @var User|null $user */
         $user = User::find()
@@ -1885,7 +1893,7 @@ class UsersController extends Controller
             ->one();
 
         if (!$user) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($request);
         }
 
         // If someone is logged in and it's not this person, log them out
@@ -1903,7 +1911,7 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($request);
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1917,11 +1925,16 @@ class UsersController extends Controller
     }
 
     /**
+     * @param Request $request
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(): Response
+    private function _processInvalidToken(Request $request): Response
     {
+        if ($request->getAcceptsJson()) {
+            return $this->asErrorJson('InvalidVerificationCode');
+        }
+
         // If they're already logged-in, just send them to the post-login URL
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {

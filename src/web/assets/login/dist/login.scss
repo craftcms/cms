@@ -67,13 +67,9 @@ body {
   z-index: 1;
 }
 
-#loginName,
-#password {
-  width: calc(100% + 2px);
-}
-
 #loginName {
   margin: -1px -1px 0;
+  width: calc(100% + 2px);
   padding: 14px 16px;
   border-radius: $largeBorderRadius $largeBorderRadius 0 0;
   border-bottom-width: 0;
@@ -89,15 +85,17 @@ body {
   border-bottom-right-radius: $largeBorderRadius;
 }
 
-#password {
+.passwordwrapper {
   margin: 0 -1px -1px;
-  @include padding(14px, 5em, 14px, 16px);
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
-}
 
-#password-field .passwordwrapper .password-toggle {
-  top: 14px;
-  @include right(14px);
+  #password {
+    @include padding(14px, 7px, 14px, 16px);
+  }
+
+  .password-toggle {
+    @include padding-right(14px);
+  }
 }
 
 #password-fields {

@@ -3754,6 +3754,7 @@ table.editable {
 }
 
 .text:not(.selectize-text),
+.passwordwrapper,
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input,
@@ -3763,6 +3764,7 @@ table.editable {
 }
 
 .text,
+.passwordwrapper,
 .border-box,
 .selectize-text > .selectize-control > .selectize-input {
   &.focus,
@@ -4157,7 +4159,7 @@ input.checkbox:focus + label:before,
 
 .input.errors > .text,
 .input.errors > .border-box,
-.input.errors > .passwordwrapper > .text,
+.input.errors > .passwordwrapper,
 .input.errors > .autosuggest-container .text,
 .text.error {
   border: 1px solid $errorColor !important;
@@ -4218,22 +4220,17 @@ input.checkbox:focus + label:before,
 
 .passwordwrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 
   .password {
-    width: 100%;
+    flex: 1;
+    border: none;
   }
 
   .password-toggle {
-    display: block;
-    position: absolute;
-    top: 7px;
-    @include right(7px);
-    @include alignright;
+    @include padding-right(7px);
   }
-}
-
-.password {
-  @include padding-right(5em);
 }
 
 .datewrapper,

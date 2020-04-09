@@ -25,6 +25,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
@@ -661,7 +662,7 @@ JS;
     public function afterSave(bool $isNew)
     {
         if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getQueue()->push(new LocalizeRelations([
+            Queue::push(new LocalizeRelations([
                 'fieldId' => $this->id,
             ]));
         }
@@ -716,7 +717,7 @@ JS;
             // Make sure it's not a heading
             if (!isset($source['heading'])) {
                 $options[] = [
-                    'label' => Html::encode($source['label']),
+                    'label' => $source['label'],
                     'value' => $source['key']
                 ];
                 $optionNames[] = $source['label'];

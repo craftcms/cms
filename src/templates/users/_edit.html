@@ -113,11 +113,10 @@
                 }) }}
 
                 {% if user.getIsCurrent() %}
-                    {{ forms.textField({
+                    {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
                         name: 'newPassword',
-                        type: 'password',
                         autocomplete: 'new-password',
                         errors: user.getErrors('newPassword')
                     }) }}
@@ -190,7 +189,7 @@
 
                     {% if currentUser.admin and CraftEdition == CraftPro %}
                         {{ forms.checkboxField({
-                            label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
+                            label: raw("<b>#{'Admin'|t('app')}</b>"),
                             name: 'admin',
                             id: 'admin',
                             checked: user.admin,

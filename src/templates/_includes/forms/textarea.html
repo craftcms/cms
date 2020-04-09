@@ -1,13 +1,12 @@
-{%- set class = [
+{%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (class is defined and class ? class : null),
-    (size is defined and size ? null : 'fullwidth')
-]|filter|join(' ') %}
+    not (size ?? false) ? 'fullwidth',
+]|filter) %}
 
 {%- set rows = (rows is defined ? rows : 2) %}
 {%- set cols = (cols is defined ? cols : 50) -%}
 
-<textarea class="{{ class }}" rows="{{ rows }}" cols="{{ cols }}"
+<textarea class="{{ class|join(' ') }}" rows="{{ rows }}" cols="{{ cols }}"
     {%- if id is defined %} id="{{ id }}"{% endif %}
     {%- if name is defined %} name="{{ name }}"{% endif %}
     {%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}

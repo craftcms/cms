@@ -415,10 +415,12 @@ class Db
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.
+     *
      * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
      * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
      * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
      * `'='` will be assumed.
+     *
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
@@ -483,7 +485,7 @@ class Db
                 if ($operator === '!=') {
                     $val = !$val;
                 }
-                $condition[] = $val ? [$column => true] : ['or', ['not', [$column => true]], [$column => null]];
+                $condition[] = [$column => (bool)$val];
                 continue;
             }
 
@@ -570,10 +572,11 @@ class Db
     }
 
     /**
-     * Normalizes date params and then sends them off to parseParam().
+     * Parses a query param value for a date/time column, and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
-     * @param string $column
-     * @param string|array|\DateTime $value
+     * @param string $column The database column that the param is targeting.
+     * @param string|array|\DateTime $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
@@ -613,6 +616,41 @@ class Db
         }
 
         return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
+    }
+
+    /**
+     * Parses a query param value for a boolean column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - `true` or `false`
+     * - `:empty:` or `:notempty:` (normalizes to `false` and `true`)
+     * - `'not x'` or `'!= x'` (normalizes to the opposite of the boolean value of `x`)
+     * - Anything else (normalizes to the boolean value of itself)
+     *
+     * If `$defaultValue` is set, and it matches the normalized `$value`, then the resulting condition will match any
+     * `null` values as well.
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|bool $value The param value
+     * @param bool|null $defaultValue How `null` values should be treated
+     * @return mixed
+     * @since 3.4.15
+     */
+    public static function parseBooleanParam(string $column, $value, bool $defaultValue = null)
+    {
+        self::_normalizeEmptyValue($value);
+        $operator = self::_parseParamOperator($value, '=');
+        $value = $value === ':empty:' ? false : (bool)$value;
+        if ($operator === '!=') {
+            $value = !$value;
+        }
+        $condition = $condition[] = [$column => $value];
+        if ($defaultValue === $value) {
+            $condition = ['or', $condition, [$column => null]];
+        }
+        return $condition;
     }
 
     /**

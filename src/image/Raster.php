@@ -265,6 +265,9 @@ class Raster extends Image
             $newWidth = $this->getWidth();
             $targetHeight = round($targetHeight / $factor);
             $targetWidth = round($targetWidth / $factor);
+        } else {
+            $newHeight = $this->getHeight();
+            $newWidth = $this->getWidth();
         }
 
         if (is_array($cropPosition)) {

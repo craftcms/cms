@@ -22,6 +22,7 @@ use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
+use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\web\twig\nodevisitors\EventTagAdder;
@@ -213,6 +214,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
+            new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
+            new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
             new TwigFilter('filter', [$this, 'filterFilter']),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
@@ -242,6 +245,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('percentage', [$formatter, 'asPercent']),
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('push', [$this, 'pushFilter']),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -252,6 +256,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', 'ucwords'),
             new TwigFilter('unique', 'array_unique'),
+            new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
@@ -520,6 +525,36 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return HtmlPurifier::process($html, $config);
+    }
+
+    /**
+     * Pushes one or more items onto the end of an array.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.5.0
+     */
+    public function pushFilter(array $array): array
+    {
+        $args = func_get_args();
+        array_shift($args);
+        array_push($array, ...$args);
+        return $array;
+    }
+
+    /**
+     * Prepends one or more items onto the end of an array.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.5.0
+     */
+    public function unshiftFilter(array $array): array
+    {
+        $args = func_get_args();
+        array_shift($args);
+        array_unshift($array, ...$args);
+        return $array;
     }
 
     /**
@@ -890,13 +925,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
-            new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
+            new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
             new TwigFunction('combine', 'array_combine'),
+            new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
@@ -904,6 +939,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('round', [$this, 'roundFunction']),
             new TwigFunction('seq', [$this, 'seqFunction']),

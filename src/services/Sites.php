@@ -24,6 +24,7 @@ use craft\events\SiteGroupEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
@@ -763,7 +764,6 @@ class Sites extends Component
             // Re-save most localizable element types
             // (skip entries because they only support specific sites)
             // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
-            $queue = Craft::$app->getQueue();
             $elementTypes = [
                 GlobalSet::class,
                 Asset::class,
@@ -772,7 +772,7 @@ class Sites extends Component
             ];
 
             foreach ($elementTypes as $elementType) {
-                $queue->push(new PropagateElements([
+                Queue::push(new PropagateElements([
                     'elementType' => $elementType,
                     'criteria' => [
                         'siteId' => $oldPrimarySiteId,

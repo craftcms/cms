@@ -219,20 +219,19 @@ class Request extends \yii\web\Request
                 // Figure out the base URL the request must have if this is a CP request
                 $testBaseCpUrls = [];
                 if ($generalConfig->baseCpUrl) {
-                    $testBaseCpUrls[] = rtrim($generalConfig->baseCpUrl, '/');
-                }
-                if ($generalConfig->cpTrigger) {
+                    $testBaseCpUrls[] = implode('/', array_filter([rtrim($generalConfig->baseCpUrl, '/'), $generalConfig->cpTrigger]));
+                } else {
                     if (isset($baseUrl)) {
                         $testBaseCpUrls[] = "$baseUrl/{$generalConfig->cpTrigger}";
                     }
                     $testBaseCpUrls[] = $this->getBaseUrl() . "/{$generalConfig->cpTrigger}";
                 }
                 $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
-                foreach ($testBaseCpUrls as $baseCpUrl) {
-                    $cpScore = $this->_scoreUrl($baseCpUrl);
+                foreach ($testBaseCpUrls as $testUrl) {
+                    $cpScore = $this->_scoreUrl($testUrl);
                     if ($cpScore > $siteScore) {
                         $this->_isCpRequest = true;
-                        $baseUrl = $baseCpUrl;
+                        $baseUrl = $testUrl;
                         $site = null;
                         break;
                     }
@@ -923,16 +922,21 @@ class Request extends \yii\web\Request
     {
         // Get the full query string
         $queryString = $this->getQueryString();
-        $parts = explode('&', $queryString);
-        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
 
+        // If there's no path param, just return the full query string
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->pathParam) {
+            return $queryString;
+        }
+
+        // Tear it down and rebuild it without the path param
+        $parts = explode('&', $queryString);
         foreach ($parts as $key => $part) {
-            if (strpos($part, $pathParam . '=') === 0) {
+            if (strpos($part, $generalConfig->pathParam . '=') === 0) {
                 unset($parts[$key]);
                 break;
             }
         }
-
         return implode('&', $parts);
     }
 
@@ -1062,6 +1066,17 @@ class Request extends \yii\web\Request
     public function getAcceptsJson(): bool
     {
         return $this->accepts('application/json');
+    }
+
+    /**
+     * Returns whether the request will accept an image response.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getAcceptsImage(): bool
+    {
+        return $this->accepts('image/*');
     }
 
     /**

@@ -123,7 +123,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
 
         $column = 'content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle;
         /** @var ElementQuery $query */
-        $query->subQuery->andWhere(Db::parseParam($column, $value, '=', false, Schema::TYPE_BOOLEAN));
+        $query->subQuery->andWhere(Db::parseBooleanParam($column, $value, (bool)$this->default));
         return null;
     }
 

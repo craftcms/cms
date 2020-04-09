@@ -248,7 +248,7 @@ abstract class Element extends Component implements ElementInterface
      *     // @var Entry $entry
      *     $entry = $e->sender;
      *
-     *     if (ElementHelper::isDraftOrRevision($entry) {
+     *     if (ElementHelper::isDraftOrRevision($entry)) {
      *         return;
      *     }
      *
@@ -2426,9 +2426,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
+            /** @var Element $source */
+            $source = ElementHelper::sourceElement($this);
             $this->_currentRevision = static::find()
-                ->revisionOf($this->getSourceId())
-                ->dateCreated($this->dateUpdated)
+                ->revisionOf($source->id)
+                ->dateCreated($source->dateUpdated)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;

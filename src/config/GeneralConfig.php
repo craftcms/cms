@@ -135,6 +135,14 @@ class GeneralConfig extends BaseObject
      */
     public $blowfishHashCost = 13;
     /**
+     * @var string|null The server path to an image file that should be sent when responding to an image request with a
+     * 404 status code.
+     *
+     * This can be set to an aliased path such as `@webroot/assets/404.svg`.
+     * @since 3.5.0
+     */
+    public $brokenImagePath;
+    /**
      * @var bool Whether Craft should cache element queries that fall inside `{% cache %}` tags.
      */
     public $cacheElementQueries = true;
@@ -536,12 +544,13 @@ class GeneralConfig extends BaseObject
      */
     public $pageTrigger = 'p';
     /**
-     * @var string The query string param that Craft will check when determining the request's path.
+     * @var string|null The query string param that Craft will check when determining the request's path.
      *
-     * ::: tip
-     * If you change this and your server is running Apache, don’t forget to update the redirect code in your
-     * `.htaccess` file to match the new value.
-     * :::
+     * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query
+     * string param. If you’re using Apache, that means you’ll need to change the `RewriteRule` line in your `.htaccess`
+     * file to:
+     *
+     *     RewriteRule (.+) index.php [QSA,L]
      */
     public $pathParam = 'p';
     /**
@@ -883,7 +892,8 @@ class GeneralConfig extends BaseObject
      */
     public $upscaleImages = true;
     /**
-     * @var bool Whether Craft should use compressed JavaScript files whenever possible.
+     * @var bool Whether Craft should include minified JavaScript files whenever possible, and minify JavaScript code
+     * passed to [[\craft\web\View::includeJs()]] or `{% js %}` Twig tags.
      */
     public $useCompressedJs = true;
     /**

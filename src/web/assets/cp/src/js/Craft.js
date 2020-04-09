@@ -350,7 +350,7 @@ $.extend(Craft,
             if (baseUrl) {
                 url = baseUrl;
 
-                if (path) {
+                if (path && Craft.pathParam) {
                     // Does baseUrl already contain a path?
                     var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
@@ -370,7 +370,7 @@ $.extend(Craft,
             }
 
             if (!Craft.omitScriptNameInUrls && path) {
-                if (Craft.usePathInfo) {
+                if (Craft.usePathInfo || !Craft.pathParam) {
                     // Make sure that the script name is in the URL
                     if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
@@ -595,7 +595,9 @@ $.extend(Craft,
                 options = options ? $.extend({}, options) : {};
                 options.method = method;
                 options.url = Craft.getActionUrl(action);
-                options.headers = $.extend({}, options.headers || {}, this._actionHeaders());
+                options.headers = $.extend({
+                    'X-Requested-With': 'XMLHttpRequest',
+                }, options.headers || {}, this._actionHeaders());
                 options.params = $.extend({}, options.params || {}, {
                     // Force Safari to not load from cache
                     v: new Date().getTime(),

@@ -10,6 +10,7 @@
     .draftOf(element)
     .siteId(element.siteId)
     .anyStatus()
+    .orderBy({dateUpdated: SORT_DESC})
     .all() : [] %}
 
 {% set revisions = element.find()
@@ -18,9 +19,13 @@
     .anyStatus()
     .offset(1)
     .limit(10)
+    .orderBy({dateCreated: SORT_DESC})
     .all() %}
 
-{% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
+{% set baseParams = craft.app.request.queryParams|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
+{% if craft.app.config.general.pathParam %}
+    {% set baseParams = baseParams|withoutKey(craft.app.config.general.pathParam) %}
+{% endif %}
 {% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
 {% set editableSiteIds = editableSiteIds ?? supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
@@ -98,10 +103,16 @@
                 <ul class="padded revision-group-current">
                     {% set currentRevision = element.getCurrentRevision() %}
                     {% set currentRevisionEditTime = currentRevision.dateCreated ?? element.dateUpdated %}
+                    {% set currentRevisionCreator = currentRevision ? currentRevision.getCreator() %}
                     <li>
                         <a{% if not isDraft and not isRevision %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
-                            <span class="light">{{ currentRevisionEditTime|timestamp('short') }}
-                                {%- if currentRevision %}, {{ currentRevision.creator }}{% endif %}
+                            <span class="light">–
+                                {{ currentRevisionCreator ? 'saved {timestamp} by {creator}'|t('app', {
+                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                    creator: currentRevisionCreator.name,
+                                }) : 'updated {timestamp}'|t('app', {
+                                    timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
+                                }) }}
                             </span>
                         </a>
                     </li>
@@ -117,9 +128,14 @@
                             <a{% if draft.draftId == element.draftId %} class="sel"{% endif %} href="{{ url }}">
                                 <span class="draft-name">{{ draft.draftName }}</span>
                                 {% set creator = draft.getCreator() %}
-                                {% if creator %}
-                                    <span class="draft-creator light">{{ "by {creator}"|t('app', { creator: creator }) }}</span>
-                                {% endif %}
+                                <span class="draft-meta light">–
+                                    {{ creator ? 'updated {timestamp} by {creator}'|t('app', {
+                                        timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
+                                        creator: creator.name,
+                                    }) : 'updated {timestamp}'|t('app', {
+                                        timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
+                                    }) }}
+                                </span>
                             </a>
                         </li>
                     {% endfor %}
@@ -135,9 +151,14 @@
                             <a{% if revision.revisionId == element.revisionId %} class="sel"{% endif %} href="{{ url }}">
                                 {{ revision.getRevisionLabel() }}
                                 {% set creator = revision.getCreator() %}
-                                {% if creator %}
-                                    <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ creator }}</span>
-                                {% endif %}
+                                <span class="light">–
+                                    {{ creator ? 'saved {timestamp} by {creator}'|t('app', {
+                                        timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
+                                        creator: creator.name,
+                                    }) : 'updated {timestamp}'|t('app', {
+                                        timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
+                                    }) }}
+                                </span>
                             </a>
                         </li>
                     {% endfor %}

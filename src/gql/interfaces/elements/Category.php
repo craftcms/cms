@@ -91,6 +91,11 @@ class Category extends Structure
                 'type' => CategoryInterface::getType(),
                 'description' => 'The category’s parent.'
             ],
+            'url' => [
+                'name' => 'url',
+                'type' => Type::string(),
+                'description' => 'The element’s full URL',
+            ]
         ]), self::getName());
     }
 }

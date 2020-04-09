@@ -19,6 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
@@ -396,6 +397,29 @@ EOD;
         }
 
         $this->stdout('The `phpsessions` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Creates a database table for storing DB caches.
+     *
+     * @return int
+     * @since 3.4.14
+     */
+    public function actionDbCacheTable(): int
+    {
+        if (Craft::$app->getDb()->tableExists(Table::CACHE)) {
+            $this->stdout('The `cache` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $migration = new CreateDbCacheTable();
+        if ($migration->up() === false) {
+            $this->stderr('An error occurred while creating the `cache` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('The `cache` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 

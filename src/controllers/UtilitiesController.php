@@ -15,6 +15,7 @@ use craft\elements\Asset;
 use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
+use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -371,7 +372,7 @@ class UtilitiesController extends Controller
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getQueue()->push(new FindAndReplace([
+            Queue::push(new FindAndReplace([
                 'find' => $params['find'],
                 'replace' => $params['replace'],
             ]));
