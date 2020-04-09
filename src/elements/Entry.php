@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -457,11 +458,13 @@ class Entry extends Element
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
+            'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
         ];
 
-        // Hide Author from Craft Solo
+        // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
-            unset($attributes['author']);
+            unset($attributes['author'], $attributes['revisionCreator']);
         }
 
         return $attributes;
@@ -544,6 +547,12 @@ class Entry extends Element
         switch ($attribute) {
             case 'author':
                 $elementQuery->andWith('author');
+                break;
+            case 'revisionNotes':
+                $elementQuery->andWith('currentRevision');
+                break;
+            case 'revisionCreator':
+                $elementQuery->andWith('currentRevision.revisionCreator');
                 break;
             default:
                 parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
@@ -1047,6 +1056,29 @@ class Entry extends Element
                 } catch (InvalidConfigException $e) {
                     return Craft::t('app', 'Unknown');
                 }
+
+            case 'revisionNotes':
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
+                if (
+                    ($revision = $this->getCurrentRevision()) === null ||
+                    ($behavior = $revision->getBehavior('revision')) === null
+                ) {
+                    return '';
+                }
+                return Html::encode($behavior->revisionNotes);
+
+            case 'revisionCreator':
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
+                if (
+                    ($revision = $this->getCurrentRevision()) === null ||
+                    ($behavior = $revision->getBehavior('revision')) === null ||
+                    ($creator = $behavior->getCreator()) === null
+                ) {
+                    return '';
+                }
+                return Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $creator]);
         }
 
         return parent::tableAttributeHtml($attribute);
