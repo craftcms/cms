@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.15 - 2020-04-09
 
 ### Added
 - Categories now have a`url` field when queried via GraphQL.
