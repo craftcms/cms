@@ -69,6 +69,7 @@ class Asset extends Element
      */
     public static function getFieldDefinitions(): array
     {
+        // @TODO Remove the `uri` field for Assets.
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'volumeId' => [
                 'name' => 'volumeId',
