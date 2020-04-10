@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -116,7 +115,6 @@ class Dashboard extends Component
         }
 
         try {
-            /** @var Widget $widget */
             $widget = ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
@@ -189,7 +187,6 @@ class Dashboard extends Component
      */
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
-        /** @var Widget $widget */
         $isNewWidget = $widget->getIsNew();
 
         // Fire a 'beforeSaveWidget' event
@@ -277,7 +274,6 @@ class Dashboard extends Component
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
-        /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_WIDGET)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([

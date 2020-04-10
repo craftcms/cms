@@ -8,9 +8,7 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\helpers\StringHelper;
@@ -119,7 +117,6 @@ class FieldLayoutTab extends Model
 
         if ($layout = $this->getLayout()) {
             foreach ($layout->getFields() as $field) {
-                /** @var Field $field */
                 if ($field->tabId == $this->id) {
                     $this->_fields[] = $field;
                 }
@@ -158,13 +155,11 @@ class FieldLayoutTab extends Model
      */
     public function elementHasErrors(ElementInterface $element): bool
     {
-        /** @var Element $element */
         if (!$element->hasErrors()) {
             return false;
         }
 
         foreach ($this->getFields() as $field) {
-            /** @var Field $field */
             if ($element->hasErrors("{$field->handle}.*")) {
                 return true;
             }

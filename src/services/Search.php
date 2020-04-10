@@ -8,9 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SiteNotFoundException;
@@ -107,7 +106,6 @@ class Search extends Component
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
-        /** @var Element $element */
         $lockKey = "searchindex:{$element->id}:{$element->siteId}";
 
         if (!$mutex->acquire($lockKey)) {
@@ -116,7 +114,7 @@ class Search extends Component
         }
 
         // Figure out which fields to update, and which to ignore
-        /** @var Field[] $updateFields */
+        /** @var FieldInterface[] $updateFields */
         $updateFields = [];
         /** @var string[] $ignoreFieldIds */
         $ignoreFieldIds = [];
@@ -125,7 +123,6 @@ class Search extends Component
                 $fieldHandles = array_flip($fieldHandles);
             }
             foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
                 if ($field->searchable) {
                     // Are we updating this field's keywords?
                     if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
@@ -737,7 +734,6 @@ SQL;
     private function _getFieldIdFromAttribute(string $attribute): int
     {
         // Get field id from service
-        /** @var Field $field */
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
         // Fallback to 0

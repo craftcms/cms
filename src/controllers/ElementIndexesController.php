@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
@@ -465,7 +464,6 @@ class ElementIndexesController extends BaseElementsController
                 ->anyStatus();
 
             // Get the actual elements
-            /** @var Element[] $collapsedElements */
             $collapsedElementsQuery = clone $descendantQuery;
             $collapsedElements = $collapsedElementsQuery
                 ->id($collapsedElementIds)

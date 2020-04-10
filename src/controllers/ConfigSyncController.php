@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Plugin;
 use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
@@ -172,7 +171,6 @@ class ConfigSyncController extends BaseUpdaterController
                     $plugin = null;
                 }
 
-                /** @var Plugin|null $plugin */
                 if (
                     !$plugin ||
                     $plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)

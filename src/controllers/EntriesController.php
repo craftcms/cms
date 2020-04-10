@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -628,7 +627,6 @@ class EntriesController extends BaseEntriesController
 
             if ($variables['entry']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
                     if ($hasErrors = $variables['entry']->hasErrors($field->handle . '.*')) {
                         break;
                     }

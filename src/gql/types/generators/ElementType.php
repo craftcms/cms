@@ -7,7 +7,7 @@
 
 namespace craft\gql\types\generators;
 
-use craft\base\Element as BaseElement;
+use craft\base\ElementInterface as BaseElementInterface;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
@@ -28,7 +28,7 @@ class ElementType implements GeneratorInterface
     public static function generateTypes($context = null): array
     {
         $gqlTypes = [];
-        $typeName = BaseElement::gqlTypeNameByContext(null);
+        $typeName = BaseElementInterface::gqlTypeNameByContext(null);
 
         $elementFields = TypeManager::prepareFieldDefinitions(ElementInterface::getFieldDefinitions(), $typeName);
 

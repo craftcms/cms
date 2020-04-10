@@ -8,9 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\MatrixBlockQuery;
@@ -186,7 +184,6 @@ class Matrix extends Component
         $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
         foreach ($blockType->getFields() as $field) {
-            /** @var Field $field */
             // Hack to allow blank field names
             if (!$field->name) {
                 $field->name = '__blank__';
@@ -245,7 +242,6 @@ class Matrix extends Component
 
         $fieldsService = Craft::$app->getFields();
 
-        /** @var Field $parentField */
         $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
         $projectConfig = Craft::$app->getProjectConfig();
@@ -265,7 +261,6 @@ class Matrix extends Component
         $configData['fields'] = [];
 
         foreach ($blockType->getFields() as $field) {
-            /** @var Field $field */
             $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
 
             $field->sortOrder = ++$sortOrder;
@@ -747,7 +742,6 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
-        /** @var Element $owner */
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
@@ -809,7 +803,6 @@ class Matrix extends Component
 
                 if (!empty($otherSiteIds)) {
                     // Get the original element and duplicated element for each of those sites
-                    /** @var Element[] $otherTargets */
                     $otherTargets = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->revisions($owner->getIsRevision())
@@ -871,8 +864,6 @@ class Matrix extends Component
      */
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
     {
-        /** @var Element $source */
-        /** @var Element $target */
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
@@ -914,7 +905,6 @@ class Matrix extends Component
 
             if (!empty($otherSiteIds)) {
                 // Get the original element and duplicated element for each of those sites
-                /** @var Element[] $otherSources */
                 $otherSources = $target::find()
                     ->drafts($source->getIsDraft())
                     ->revisions($source->getIsRevision())
@@ -922,7 +912,6 @@ class Matrix extends Component
                     ->siteId($otherSiteIds)
                     ->anyStatus()
                     ->all();
-                /** @var Element[] $otherTargets */
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
                     ->revisions($target->getIsRevision())
@@ -980,7 +969,6 @@ class Matrix extends Component
      */
     public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array
     {
-        /** @var Element $owner */
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
@@ -1092,7 +1080,6 @@ class Matrix extends Component
      */
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
     {
-        /** @var Element $owner */
         $deleteBlocks = MatrixBlock::find()
             ->anyStatus()
             ->ownerId($owner->id)

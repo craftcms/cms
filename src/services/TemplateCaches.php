@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -423,7 +422,7 @@ class TemplateCaches extends Component
         $deleteQueryCaches = !isset($this->_deletedCachesByElementType[$elementType]);
         $elementIds = [];
 
-        /** @var Element[] $elements */
+        /** @var ElementInterface[] $elements */
         foreach ($elements as $element) {
             $elementIds[] = $element->id;
         }

@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Command;
 use craft\db\Query;
@@ -35,7 +34,6 @@ class Relations extends Component
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
     {
-        /** @var Element $source */
         if (!is_array($targetIds)) {
             $targetIds = [];
         }

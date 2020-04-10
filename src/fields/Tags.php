@@ -8,7 +8,6 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
@@ -82,7 +81,6 @@ class Tags extends BaseRelationField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        /** @var Element|null $element */
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
         }

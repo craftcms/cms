@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
@@ -46,7 +45,6 @@ class EntryType implements GeneratorInterface
             $contentFields = $entryType->getFields();
             $contentFieldGqlTypes = [];
 
-            /** @var Field $contentField */
             foreach ($contentFields as $contentField) {
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }

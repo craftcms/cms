@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -786,7 +785,6 @@ class UsersController extends Controller
 
             if ($user->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
                     if ($hasErrors = $user->hasErrors($field->handle . '.*')) {
                         break;
                     }

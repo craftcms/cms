@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\i18n\Locale;
@@ -218,7 +217,6 @@ class Template
      */
     private static function _includeElementInTemplateCaches(ElementInterface $element)
     {
-        /** @var Element $element */
         $elementId = $element->id;
 
         // Don't initialize the TemplateCaches service if we don't have to

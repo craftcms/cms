@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use craft\web\Controller;
@@ -122,7 +121,6 @@ class PreviewController extends Controller
         $element = $query->one();
 
         if ($element) {
-            /** @var Element $element */
             $element->previewing = true;
             Craft::$app->getElements()->setPlaceholderElement($element);
         }

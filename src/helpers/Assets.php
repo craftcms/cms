@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
@@ -100,7 +99,6 @@ class Assets
     {
         $appendix = '';
 
-        /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
             $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
             $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
@@ -266,7 +264,6 @@ class Assets
         $sort = [];
 
         foreach ($tree as $topFolder) {
-            /** @var Volume $volume */
             $volume = $topFolder->getVolume();
             $sort[] = $volume->sortOrder;
         }
@@ -616,7 +613,6 @@ class Assets
             return false;
         }
 
-        /** @var Volume $volume */
         $volume = $asset->getVolume();
 
         $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();

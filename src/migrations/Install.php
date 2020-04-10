@@ -9,7 +9,6 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\base\Plugin;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -1141,7 +1140,6 @@ class Install extends Migration
             $plugin = $pluginsService->createPlugin($handle);
             $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
 
-            /** @var Plugin|null $plugin */
             if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
                 throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
             }

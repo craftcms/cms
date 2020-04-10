@@ -78,11 +78,11 @@ use yii\validators\Validator;
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
  * @property bool $isEditable Whether the current user can edit the element
  * @property Markup|null $link An anchor pre-filled with this element’s URL and title
- * @property Element|null $next The next element relative to this one, from a given set of criteria
- * @property Element|null $nextSibling The element’s next sibling
- * @property Element|null $parent The element’s parent
- * @property Element|null $prev The previous element relative to this one, from a given set of criteria
- * @property Element|null $prevSibling The element’s previous sibling
+ * @property ElementInterface|null $next The next element relative to this one, from a given set of criteria
+ * @property ElementInterface|null $nextSibling The element’s next sibling
+ * @property ElementInterface|null $parent The element’s parent
+ * @property ElementInterface|null $prev The previous element relative to this one, from a given set of criteria
+ * @property ElementInterface|null $prevSibling The element’s previous sibling
  * @property string|null $ref The reference string to this element
  * @property mixed $route The route that should be used when the element’s URI is requested
  * @property array $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
@@ -645,7 +645,6 @@ abstract class Element extends Component implements ElementInterface
 
         // Add custom fields to the fix
         foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
-            /** @var Field $field */
             if ($field instanceof SortableFieldInterface) {
                 $sortOptions[] = $field->getSortOption();
             }
@@ -1254,7 +1253,6 @@ abstract class Element extends Component implements ElementInterface
         // Include custom field handles
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
             foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
                 $names[] = $field->handle;
             }
         }
@@ -1317,7 +1315,6 @@ abstract class Element extends Component implements ElementInterface
 
             if ($layout !== null) {
                 foreach ($layout->getFields() as $field) {
-                    /** @var Field $field */
                     $labels[$field->handle] = Craft::t('site', $field->name);
                 }
             }
@@ -1359,7 +1356,6 @@ abstract class Element extends Component implements ElementInterface
             $fieldsWithColumns = [];
 
             foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
                 $attribute = 'field:' . $field->handle;
                 $isEmpty = [$this, 'isFieldEmpty:' . $field->handle];
 
@@ -1443,7 +1439,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
-        /** @var Field $field */
         /** @var array|null $params */
         list($field, $method, $fieldParams) = $params;
 
@@ -1900,7 +1895,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setParent(ElementInterface $parent = null)
     {
-        /** @var Element $parent */
         $this->_parent = $parent;
 
         if ($parent) {
@@ -2036,9 +2030,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         return ($source->root == $element->root && $source->lft < $element->lft && $source->rgt > $element->rgt);
     }
 
@@ -2047,9 +2039,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isDescendantOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         return ($source->root == $element->root && $source->lft > $element->lft && $source->rgt < $element->rgt);
     }
 
@@ -2058,9 +2048,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         return ($source->root == $element->root && $source->level == $element->level - 1 && $source->isAncestorOf($element));
     }
 
@@ -2069,9 +2057,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isChildOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         return ($source->root == $element->root && $source->level == $element->level + 1 && $source->isDescendantOf($element));
     }
 
@@ -2080,9 +2066,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         if ($source->root == $element->root && $source->level !== null && $source->level == $element->level) {
             if ($source->level == 1 || $source->isPrevSiblingOf($element) || $source->isNextSiblingOf($element)) {
                 return true;
@@ -2103,9 +2087,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isPrevSiblingOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         return ($source->root == $element->root && $source->level == $element->level && $source->rgt == $element->lft - 1);
     }
 
@@ -2114,9 +2096,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isNextSiblingOf(ElementInterface $element): bool
     {
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($this);
-        /** @var Element $element */
         return ($source->root == $element->root && $source->level == $element->level && $source->lft == $element->rgt + 1);
     }
 
@@ -2515,7 +2495,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
-            /** @var Element $source */
             $source = ElementHelper::sourceElement($this);
             $this->_currentRevision = static::find()
                 ->revisionOf($source->id)
@@ -2814,10 +2793,8 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($one) {
-            /** @var Element|null $result */
             $result = $query->one();
         } else {
-            /** @var Element[] $result */
             $result = $query->all();
         }
 
@@ -2828,7 +2805,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the field with a given handle.
      *
      * @param string $handle
-     * @return Field|null
+     * @return FieldInterface|null
      */
     protected function fieldByHandle(string $handle)
     {
@@ -2849,7 +2826,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns each of this element’s fields.
      *
-     * @return Field[] This element’s fields
+     * @return FieldInterface[] This element’s fields
      */
     protected function fieldLayoutFields(): array
     {
@@ -2974,7 +2951,6 @@ abstract class Element extends Component implements ElementInterface
                     $field = Craft::$app->getFields()->getFieldById($fieldId);
 
                     if ($field) {
-                        /** @var Field $field */
                         if ($field instanceof PreviewableFieldInterface) {
                             // Was this field value eager-loaded?
                             if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {

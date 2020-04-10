@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
 use craft\gql\base\GeneratorInterface;
@@ -49,7 +48,6 @@ class MatrixBlockType implements GeneratorInterface
                 $contentFields = $matrixBlockType->getFields();
                 $contentFieldGqlTypes = [];
 
-                /** @var Field $contentField */
                 foreach ($contentFields as $contentField) {
                     $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
                 }

@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -66,12 +65,10 @@ class Revisions extends Component
     public function createRevision(ElementInterface $source, int $creatorId = null, string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
         // Make sure the source isn't a draft or revision
-        /** @var Element $source */
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a revision from another revision or draft.');
         }
 
-        /** @var Element $source */
         $lockKey = 'revision:' . $source->id;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey)) {
@@ -92,7 +89,7 @@ class Revisions extends Component
 
             if (!$force && $lastRevisionNum) {
                 // Get the revision, if it exists for the source's site
-                /** @var Element|RevisionBehavior|null $lastRevision */
+                /** @var ElementInterface|RevisionBehavior|null $lastRevision */
                 $lastRevision = $source::find()
                     ->revisionOf($source)
                     ->siteId($source->siteId)
@@ -156,7 +153,6 @@ class Revisions extends Component
             }
 
             // Duplicate the element
-            /** @var Element $revision */
             $revision = $elementsService->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
@@ -210,8 +206,7 @@ class Revisions extends Component
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var Element|RevisionBehavior $revision */
-        /** @var Element $source */
+        /** @var ElementInterface|RevisionBehavior $revision */
         $source = ElementHelper::sourceElement($revision);
 
         // Fire a 'beforeRevertToRevision' event

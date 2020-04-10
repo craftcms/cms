@@ -13,7 +13,6 @@ use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -879,7 +878,6 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
-        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -991,7 +989,6 @@ class Assets extends Component
             if (!$volume) {
                 throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
             }
-            /** @var Volume $volume */
             $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
                 $folderName;
             $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);

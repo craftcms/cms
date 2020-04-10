@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\Table;
 use craft\errors\MigrateException;
@@ -135,7 +134,6 @@ class Updates extends Component
      */
     public function setNewPluginInfo(PluginInterface $plugin): bool
     {
-        /** @var Plugin $plugin */
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 Table::PLUGINS,
@@ -177,7 +175,6 @@ class Updates extends Component
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
                 $handles[] = $plugin->id;
             }
@@ -227,7 +224,6 @@ class Updates extends Component
                 } else if ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
                 } else {
-                    /** @var Plugin $plugin */
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                     $name = $plugin->name;
                     $plugin->getMigrator()->up();

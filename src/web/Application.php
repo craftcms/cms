@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
@@ -256,7 +255,6 @@ class Application extends \yii\web\Application
             ($firstSeg = $request->getSegment(1)) !== null &&
             ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
         ) {
-            /** @var Plugin $plugin */
             $user = $this->getUser();
             if ($user->getIsGuest()) {
                 return $user->loginRequired();

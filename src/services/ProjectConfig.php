@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -910,7 +909,6 @@ class ProjectConfig extends Component
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            /** @var Plugin $plugin */
             $incomingSchema = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
             $existingSchema = (string)$plugin->schemaVersion;
 

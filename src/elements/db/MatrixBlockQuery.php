@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -312,7 +311,6 @@ class MatrixBlockQuery extends ElementQuery
      */
     public function owner(ElementInterface $owner)
     {
-        /** @var Element $owner */
         $this->ownerId = $owner->id;
         $this->siteId = $owner->siteId;
         return $this;

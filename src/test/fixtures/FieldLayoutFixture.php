@@ -8,7 +8,7 @@
 namespace craft\test\fixtures;
 
 use Craft;
-use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -79,7 +79,6 @@ abstract class FieldLayoutFixture extends Fixture
                     }
 
                     // Create and add a field.
-                    /* @var Field $field */
                     $field = new $class($field);
                     if (!Craft::$app->getFields()->saveField($field)) {
                         $this->throwModelError($field);
@@ -157,7 +156,6 @@ abstract class FieldLayoutFixture extends Fixture
             return false;
         }
 
-        /** @var Field $field */
         $layoutId = (new Query())
             ->select(['layoutId'])
             ->from([Table::FIELDLAYOUTFIELDS])
@@ -219,13 +217,13 @@ abstract class FieldLayoutFixture extends Fixture
 
     /**
      * @param array $link
-     * @param Field $field
+     * @param FieldInterface $field
      * @param FieldLayout $fieldLayout
      * @param FieldLayoutTab $tab
      * @return bool
      * @throws YiiDbException
      */
-    protected function linkFieldToLayout(array $link, Field $field, FieldLayout $fieldLayout, FieldLayoutTab $tab): bool
+    protected function linkFieldToLayout(array $link, FieldInterface $field, FieldLayout $fieldLayout, FieldLayoutTab $tab): bool
     {
         $link['fieldId'] = $field->id;
         $link['tabId'] = $tab->id;

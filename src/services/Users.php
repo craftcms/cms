@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
-use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -431,7 +429,6 @@ class Users extends Component
             }
         }
 
-        /** @var Volume $volume */
         $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
@@ -1103,7 +1100,6 @@ class Users extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 

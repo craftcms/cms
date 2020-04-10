@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
@@ -123,7 +122,6 @@ class IndexAssetsController extends Controller
         $this->stdout(PHP_EOL);
 
         foreach ($volumes as $volume) {
-            /** @var Volume $volume */
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);

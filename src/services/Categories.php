@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
@@ -646,7 +645,6 @@ class Categories extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 

@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
@@ -213,7 +212,6 @@ class ElementIndexes extends Component
         if ($includeFields) {
             // Mix in custom fields
             foreach ($this->getAvailableTableFields($elementType) as $field) {
-                /** @var Field $field */
                 $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }

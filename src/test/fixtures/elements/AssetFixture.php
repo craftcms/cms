@@ -8,7 +8,7 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\records\VolumeFolder;
@@ -91,7 +91,7 @@ abstract class AssetFixture extends ElementFixture
      * Get asset model.
      *
      * @param array $data
-     * @return Element
+     * @return ElementInterface
      */
     public function getElement(array $data = null)
     {

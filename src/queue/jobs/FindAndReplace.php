@@ -8,7 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Table;
 use craft\fields\Matrix;
@@ -88,7 +87,6 @@ class FindAndReplace extends BaseJob
      */
     private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
     {
-        /** @var Field $field */
         if (!$field::hasContentColumn()) {
             return;
         }

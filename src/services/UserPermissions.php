@@ -9,9 +9,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\UtilityInterface;
-use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -83,7 +81,6 @@ class UserPermissions extends Component
         ];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             if ($plugin->hasCpSection) {
                 $general['accessCp']['nested']['accessPlugin-' . $plugin->id] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
@@ -192,7 +189,6 @@ class UserPermissions extends Component
         // Volumes
         // ---------------------------------------------------------------------
 
-        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
         foreach ($volumes as $volume) {

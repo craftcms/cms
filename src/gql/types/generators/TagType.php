@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
@@ -46,7 +45,6 @@ class TagType implements GeneratorInterface
             $contentFields = $tagGroup->getFields();
             $contentFieldGqlTypes = [];
 
-            /** @var Field $contentField */
             foreach ($contentFields as $contentField) {
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }

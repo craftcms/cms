@@ -9,7 +9,6 @@ namespace craft\elements\db;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -271,7 +270,6 @@ class ElementRelationParamParser extends BaseObject
                     return false;
                 }
 
-                /** @var Field $fieldModel */
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
@@ -286,7 +284,6 @@ class ElementRelationParamParser extends BaseObject
 
                         foreach ($blockTypes as $blockType) {
                             foreach ($blockType->getFields() as $blockTypeField) {
-                                /** @var Field $blockTypeField */
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;

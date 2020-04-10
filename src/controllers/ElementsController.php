@@ -137,7 +137,6 @@ class ElementsController extends BaseElementsController
      */
     public function actionSaveElement(): Response
     {
-        /** @var Element $element */
         $element = $this->_getEditorElement();
 
         // Figure out where the data will be in POST
@@ -296,13 +295,11 @@ class ElementsController extends BaseElementsController
         }
 
         // Instantiate the element
-        /** @var Element $element */
         $attributes = $request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
 
-        /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userSession = Craft::$app->getUser();
         if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userSession->checkPermission('editSite:' . $site->uid)) {
@@ -363,7 +360,6 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
     {
-        /** @var Element $element */
         if ($elementId !== null) {
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
 
@@ -391,7 +387,6 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
-        /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
         if (empty($siteIds)) {

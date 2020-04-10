@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -324,7 +323,6 @@ class Structures extends Component
      */
     private function _getElementRecord(int $structureId, ElementInterface $element)
     {
-        /** @var Element $element */
         $elementId = $element->id;
 
         if ($elementId) {
@@ -386,7 +384,6 @@ class Structures extends Component
 
         $elementRecord = null;
 
-        /** @var Element $element */
         // Figure out what we're doing
         if ($mode !== 'insert') {
             // See if there's an existing structure element record

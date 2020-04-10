@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use yii\base\Event;
@@ -115,7 +114,6 @@ class Cp
                 $pluginsService = Craft::$app->getPlugins();
                 $issuePlugins = [];
                 foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-                    /** @var Plugin $plugin */
                     if ($pluginsService->hasIssues($pluginHandle)) {
                         $issuePlugins[] = $plugin->name;
                     }

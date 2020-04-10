@@ -8,7 +8,7 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -22,7 +22,7 @@ use yii\db\Connection;
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
- * @property string|string[]|Volume $volume The handle(s) of the volume(s) that resulting assets must belong to.
+ * @property string|string[]|VolumeInterface $volume The handle(s) of the volume(s) that resulting assets must belong to.
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
  * @method Asset|array|null nth(int $n, Connection $db = null)
@@ -248,7 +248,7 @@ class AssetQuery extends ElementQuery
      * | `'not foo'` | not in a volume with a handle of `foo`.
      * | `['foo', 'bar']` | in a volume with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a volume with a handle of `foo` or `bar`.
-     * | a [[Volume|Volume]] object | in a volume represented by the object.
+     * | a [[VolumeInterface|volume]] object | in a volume represented by the object.
      *
      * ---
      *
@@ -266,13 +266,13 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|Volume|null $value The property value
+     * @param string|string[]|VolumeInterface|null $value The property value
      * @return static self reference
      * @uses $volumeId
      */
     public function volume($value)
     {
-        if ($value instanceof Volume) {
+        if ($value instanceof VolumeInterface) {
             $this->volumeId = $value->id;
         } else if ($value !== null) {
             $this->volumeId = (new Query())
@@ -291,7 +291,7 @@ class AssetQuery extends ElementQuery
     /**
      * Narrows the query results based on the volume the assets belong to.
      *
-     * @param string|string[]|Volume $value The property value
+     * @param string|string[]|VolumeInterface $value The property value
      * @return static self reference
      * @deprecated in 3.0.0. Use [[volume()]] instead.
      */

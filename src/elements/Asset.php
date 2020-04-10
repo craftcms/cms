@@ -10,7 +10,6 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -235,7 +234,6 @@ class Asset extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var Volume $context */
         return $context->handle . '_Asset';
     }
 
@@ -245,7 +243,6 @@ class Asset extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var Volume $context */
         return ['volumes.' . $context->uid];
     }
 
@@ -293,7 +290,6 @@ class Asset extends Element
             $folderId = $matches[1];
 
             $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
-            /** @var Volume $volume */
             $volume = $folder->getVolume();
 
             $actions[] = [
@@ -460,7 +456,6 @@ class Asset extends Element
      */
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true, User $user = null): array
     {
-        /** @var Volume $volume */
         $volume = $folder->getVolume();
 
         if ($volume instanceof Temp) {
@@ -752,7 +747,6 @@ class Asset extends Element
      */
     public function getIsEditable(): bool
     {
-        /** @var Volume $volume */
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         return (
@@ -776,7 +770,6 @@ class Asset extends Element
      */
     public function getCpEditUrl()
     {
-        /** @var Volume $volume */
         $volume = $this->getVolume();
         if ($volume instanceof Temp) {
             return null;
@@ -808,7 +801,6 @@ class Asset extends Element
             return null;
         }
 
-        /** @var Volume $volume */
         $volume = $this->getVolume();
 
         if (!$volume->hasUrls) {
@@ -912,7 +904,6 @@ class Asset extends Element
             return $fieldLayout;
         }
 
-        /** @var Volume $volume */
         $volume = $this->getVolume();
         return $volume->getFieldLayout();
     }
@@ -1016,7 +1007,6 @@ class Asset extends Element
      */
     public function getUrl($transform = null)
     {
-        /** @var Volume $volume */
         $volume = $this->getVolume();
 
         if (!$volume->hasUrls) {
@@ -1357,7 +1347,6 @@ class Asset extends Element
     {
         Craft::$app->getDeprecator()->log(self::class . '::getHasUrls()', self::class . '::getHasUrls() has been deprecated. Use getVolume()->hasUrls instead.');
 
-        /** @var Volume $volume */
         $volume = $this->getVolume();
         return $volume && $volume->hasUrls;
     }
@@ -1506,7 +1495,6 @@ class Asset extends Element
             // Is the image editable, and is the user allowed to edit?
             $userSession = Craft::$app->getUser();
 
-            /** @var Volume $volume */
             $volume = $this->getVolume();
 
             $editable = (
@@ -1657,7 +1645,6 @@ class Asset extends Element
         }
 
         // Set the field layout
-        /** @var Volume $volume */
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
         $this->fieldLayoutId = $volume->fieldLayoutId;
 
@@ -1780,7 +1767,6 @@ class Asset extends Element
             $movable = $replaceable = true;
         } else {
             $attributes['data-peer-file'] = null;
-            /** @var Volume $volume */
             $volume = $this->getVolume();
             $movable = (
                 $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
@@ -1820,7 +1806,6 @@ class Asset extends Element
             return true;
         }
 
-        /** @var Volume $volume */
         $volume = $this->getVolume();
         return (
             $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&

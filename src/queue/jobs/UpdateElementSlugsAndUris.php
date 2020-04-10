@@ -8,7 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -88,7 +87,6 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private function _createElementQuery(): ElementQueryInterface
     {
-        /** @var Element $class */
         $class = $this->elementType;
 
         return $class::find()

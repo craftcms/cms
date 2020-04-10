@@ -9,7 +9,6 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Connection;
@@ -106,7 +105,6 @@ class ConvertEntryRevisions extends BaseJob
         }
 
         foreach ($fieldValues as $id => $value) {
-            /** @var Field $field */
             $field = $this->fieldsService->getFieldById($id);
             if ($field) {
                 $entry->setFieldValue($field->handle, $value);

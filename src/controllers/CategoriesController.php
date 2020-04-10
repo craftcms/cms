@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\elements\Category;
 use craft\errors\InvalidElementException;
 use craft\events\ElementEvent;
@@ -720,7 +719,6 @@ class CategoriesController extends Controller
 
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
                     if ($hasErrors = $variables['category']->hasErrors($field->handle . '.*')) {
                         break;
                     }

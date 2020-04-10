@@ -9,7 +9,6 @@ namespace craft\gql;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
-use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
@@ -50,7 +49,6 @@ class ElementQueryConditionBuilder
 
         // Cache all eager-loadable fields by context
         $allFields = Craft::$app->getFields()->getAllFields(false);
-        /** @var Field $field */
         foreach ($allFields as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
                 $this->_eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;

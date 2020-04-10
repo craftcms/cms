@@ -4,7 +4,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -57,7 +56,6 @@ class AssetIndexer extends Component
     public function prepareIndexList(string $sessionId, int $volumeId, string $directory = ''): array
     {
         try {
-            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
             // Get the file list.
@@ -365,7 +363,7 @@ class AssetIndexer extends Component
     /**
      * Index a single file by Volume and path.
      *
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      * @param string $path
      * @param string $sessionId optional indexing session id.
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
@@ -374,7 +372,7 @@ class AssetIndexer extends Component
      * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      */
-    public function indexFile(Volume $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true)
+    public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true)
     {
         $fileInfo = $volume->getFileMetadata($path);
         $folderPath = dirname($path);
@@ -459,7 +457,6 @@ class AssetIndexer extends Component
             throw new AssetLogicException("The folder {$path} does not exist");
         }
 
-        /** @var Volume $volume */
         $volume = $folder->getVolume();
 
         // Check if the extension is allowed

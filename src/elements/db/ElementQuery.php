@@ -11,7 +11,6 @@ use ArrayIterator;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -436,7 +435,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private $_result;
 
     /**
-     * @var Element[]|null The criteria params that were set when the cached element query result was set
+     * @var array|null The criteria params that were set when the cached element query result was set
      * @see setCachedResult()
      */
     private $_resultCriteria;
@@ -717,7 +716,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftOf($value)
     {
         if ($value instanceof ElementInterface) {
-            /** @var Element $value */
             $this->draftOf = $value->getSourceId();
         } else if (is_numeric($value) || $value === false) {
             $this->draftOf = $value;
@@ -776,7 +774,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function revisionOf($value)
     {
         if ($value instanceof ElementInterface) {
-            /** @var Element $value */
             $this->revisionOf = $value->getSourceId();
         } else if (is_numeric($value)) {
             $this->revisionOf = $value;
@@ -1278,8 +1275,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->id !== null && empty($this->id)) {
             throw new QueryAbortedException();
         }
-
-        /** @var Element $class */
         $class = $this->elementType;
 
         // Make sure the siteId param is set
@@ -1719,7 +1714,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
-        /** @var Element $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -1738,7 +1732,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if (!empty($this->customFields)) {
                 foreach ($this->customFields as $field) {
-                    /** @var Field $field */
                     if ($field->hasContentColumn()) {
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
@@ -1786,7 +1779,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
         }
 
-        /** @var Element $element */
         $element = new $class($row);
         $element->attachBehaviors($behaviors);
 
@@ -2022,7 +2014,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             if (!empty($placeholderElements)) {
                 $siteIds = $this->siteId !== '*' ? array_flip((array)$this->siteId) : null;
                 foreach ($placeholderElements as $element) {
-                    /** @var Element $element */
                     if (
                         $element instanceof $this->elementType &&
                         ($siteIds === null || isset($siteIds[$element->siteId]))
@@ -2083,7 +2074,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             $fieldAttributes = $this->getBehavior('customFields');
 
             foreach ($this->customFields as $field) {
-                /** @var Field $field */
                 if ($field->hasContentColumn()) {
                     $this->query->addSelect(['content.' . $this->_getFieldContentColumnName($field)]);
                 }
@@ -2270,7 +2260,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->ancestorOf) {
-            /** @var Element $ancestorOf */
             $ancestorOf = $this->_normalizeStructureParamValue('ancestorOf', $class);
 
             $this->subQuery->andWhere([
@@ -2286,7 +2275,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->descendantOf) {
-            /** @var Element $descendantOf */
             $descendantOf = $this->_normalizeStructureParamValue('descendantOf', $class);
 
             $this->subQuery->andWhere([
@@ -2306,7 +2294,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 continue;
             }
 
-            /** @var Element $siblingOf */
             $siblingOf = $this->_normalizeStructureParamValue($param, $class);
 
             $this->subQuery->andWhere([
@@ -2319,7 +2306,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
             if ($siblingOf->level != 1) {
-                /** @var Element $parent */
                 $parent = $siblingOf->getParent();
 
                 if (!$parent) {
@@ -2352,7 +2338,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->positionedBefore) {
-            /** @var Element $positionedBefore */
             $positionedBefore = $this->_normalizeStructureParamValue('positionedBefore', $class);
 
             $this->subQuery->andWhere([
@@ -2363,7 +2348,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->positionedAfter) {
-            /** @var Element $positionedAfter */
             $positionedAfter = $this->_normalizeStructureParamValue('positionedAfter', $class);
 
             $this->subQuery->andWhere([
@@ -2467,7 +2451,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
-        /** @var Element $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)
@@ -2766,7 +2749,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _getFieldContentColumnName(FieldInterface $field): string
     {
-        /** @var Field $field */
         return ($field->columnPrefix ?: 'field_') . $field->handle;
     }
 
@@ -2774,7 +2756,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Converts found rows into element instances
      *
      * @param array $rows
-     * @return array|Element[]
+     * @return array|ElementInterface[]
      */
     private function _createElements(array $rows)
     {

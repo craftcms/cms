@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -98,7 +97,6 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByAsset('viewVolume', $asset);
         $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
 
-        /** @var Volume $volume */
         $volume = $asset->getVolume();
 
         $crumbs = [
@@ -1055,7 +1053,6 @@ class AssetsController extends Controller
         App::maxPowerCaptain();
         foreach ($assets as $asset) {
             $localPath = $asset->getCopyOfFile();
-            /** @var Volume $volume */
             $volume = $asset->getVolume();
             $zip->addFile($localPath, $volume->name . '/' . $asset->getPath());
         }
@@ -1234,7 +1231,6 @@ class AssetsController extends Controller
             }
         }
 
-        /** @var Volume $volume */
         $volume = $asset->getVolume();
         $this->requireVolumePermission($permissionName, $volume->uid);
     }
@@ -1276,7 +1272,6 @@ class AssetsController extends Controller
             }
         }
 
-        /** @var Volume $volume */
         $volume = $folder->getVolume();
         $this->requireVolumePermission($permissionName, $volume->uid);
     }

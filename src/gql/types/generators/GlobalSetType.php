@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
@@ -45,7 +44,6 @@ class GlobalSetType implements GeneratorInterface
             $contentFields = $globalSet->getFields();
             $contentFieldGqlTypes = [];
 
-            /** @var Field $contentField */
             foreach ($contentFields as $contentField) {
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }

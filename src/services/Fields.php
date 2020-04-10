@@ -179,7 +179,7 @@ class Fields extends Component
     private $_groups;
 
     /**
-     * @var Field[]
+     * @var FieldInterface[]
      */
     private $_fields;
 
@@ -411,7 +411,6 @@ class Fields extends Component
 
         // Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
         // content columns
-        /** @var Field[] $fields */
         $fields = $this->getFieldsByGroupId($group->id);
 
         foreach ($fields as $field) {
@@ -471,7 +470,7 @@ class Fields extends Component
         $fieldTypes = [];
 
         foreach ($this->getAllFieldTypes() as $fieldType) {
-            /** @var Field|string $fieldType */
+            /** @var FieldInterface|string $fieldType */
             if ($fieldType::hasContentColumn()) {
                 $fieldTypes[] = $fieldType;
             }
@@ -489,7 +488,6 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
-        /** @var Field $field */
         if (!$field::hasContentColumn()) {
             return $includeCurrent ? [get_class($field)] : [];
         }
@@ -549,7 +547,6 @@ class Fields extends Component
         }
 
         try {
-            /** @var Field $field */
             $field = ComponentHelper::createComponent($config, FieldInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
@@ -592,7 +589,6 @@ class Fields extends Component
         }
 
         return ArrayHelper::where($this->_fields, function(FieldInterface $field) use ($context) {
-            /** @var Field $field */
             return in_array($field->context, $context, true);
         });
     }
@@ -742,7 +738,6 @@ class Fields extends Component
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
-        /** @var Field $field */
         $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event
@@ -789,7 +784,6 @@ class Fields extends Component
      */
     public function prepFieldForSave(FieldInterface $field)
     {
-        /** @var Field $field */
         // Clear the translation key format if not using a custom translation method
         if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
             $field->translationKeyFormat = null;
@@ -852,7 +846,6 @@ class Fields extends Component
      */
     public function deleteField(FieldInterface $field): bool
     {
-        /** @var Field $field */
         // Fire a 'beforeDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
@@ -908,7 +901,6 @@ class Fields extends Component
             return;
         }
 
-        /** @var Field $field */
         $field = $this->getFieldById($fieldRecord->id);
 
         // Fire a 'beforeApplyFieldDelete' event
@@ -1302,7 +1294,6 @@ class Fields extends Component
             $tab->uid = $tabRecord->uid;
 
             foreach ($tab->getFields() as $field) {
-                /** @var Field $field */
                 $fieldRecord = new FieldLayoutFieldRecord();
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;
@@ -1447,7 +1438,6 @@ class Fields extends Component
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
-            /** @var Field $class */
             $class = $data['type'];
 
             // Create/alter the content table column
@@ -1547,7 +1537,6 @@ class Fields extends Component
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
         // For CP save requests, make sure we have all the custom data already saved on the object.
-        /** @var Field $field */
         if (isset($this->_savingFields[$fieldUid])) {
             $field = $this->_savingFields[$fieldUid];
 

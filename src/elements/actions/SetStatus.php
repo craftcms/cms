@@ -87,7 +87,6 @@ class SetStatus extends ElementAction
         $isLocalized = $elementType::isLocalized() && Craft::$app->getIsMultiSite();
         $elementsService = Craft::$app->getElements();
 
-        /** @var Element[] $elements */
         $elements = $query->all();
         $failCount = 0;
 

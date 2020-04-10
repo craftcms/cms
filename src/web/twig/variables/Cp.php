@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -143,7 +142,6 @@ class Cp extends Component
         }
 
         // Add any Plugin nav items
-        /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
@@ -329,7 +327,6 @@ class Cp extends Component
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/' . $plugin->id,

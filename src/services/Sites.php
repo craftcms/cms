@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -1318,7 +1318,7 @@ class Sites extends Component
             $nonLocalizedElementTypes = [];
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var Element|string $elementType */
+                /** @var ElementInterface|string $elementType */
                 if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }
