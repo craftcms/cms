@@ -233,7 +233,7 @@ class Db
     public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         $shortColumnType = self::parseColumnType($columnType);
@@ -285,7 +285,7 @@ class Db
     public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         if ($db->getIsMysql()) {
@@ -463,7 +463,7 @@ class Db
         }
 
         $condition = [$glue];
-        $isMysql = Craft::$app->getDb()->getIsMysql();
+        $isMysql = self::db()->getIsMysql();
 
         // Only PostgreSQL supports case-sensitive strings
         if ($isMysql) {
@@ -664,7 +664,7 @@ class Db
     public static function isTypeSupported(string $type, Connection $db = null): bool
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
@@ -688,7 +688,7 @@ class Db
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         $exists = (new Query())
@@ -875,6 +875,20 @@ class Db
 
         return $config;
     }
+
+    /**
+     * Returns the main application's DB connection.
+     * @return Connection
+     */
+    private static function db(): Connection
+    {
+        return self::$_db ?? (self::$_db = Craft::$app->getDb());
+    }
+
+    /**
+     * @var Connection|null;
+     */
+    private static $_db;
 
     /**
      * Converts a given param value to an array.
